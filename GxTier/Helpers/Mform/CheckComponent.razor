@@ -1,0 +1,31 @@
+﻿
+<!-- CheckComponent.razor -->
+
+<input type="checkbox" @bind="IsChecked" @bind:event="onchange" />
+
+@code {
+    [Parameter] public bool IsChecked { get; set; }
+    [Parameter] public EventCallback<bool> IsCheckedChanged { get; set; }
+
+    private async Task OnChange(ChangeEventArgs e)
+    {
+        // This handler is not necessary with @bind which wires Value and ValueChanged
+        IsChecked = (bool)e.Value;
+        await IsCheckedChanged.InvokeAsync(IsChecked);
+    }
+}
+
+@* <input type="checkbox" @bind="IsChecked" @bind:event="onchange" />
+
+@code {
+    [Parameter]
+    public bool IsChecked { get; set; }
+    [Parameter]
+    public EventCallback<bool> IsCheckedChanged { get; set; }
+
+    private async Task OnChange(ChangeEventArgs e)
+    {
+        IsChecked = (bool)e.Value;
+        await IsCheckedChanged.InvokeAsync(IsChecked);   
+    }
+} *@

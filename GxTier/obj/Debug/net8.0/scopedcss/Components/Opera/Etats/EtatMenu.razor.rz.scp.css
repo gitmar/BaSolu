@@ -1,0 +1,129 @@
+.mag-screen-layout[b-671hz0uhrj] {
+    /* Add any global styles for this layout */
+    height: 100vh; /* Ensure the layout fills the viewport */
+}
+
+.toggle-button-row[b-671hz0uhrj] {
+    /* width: 100%; */
+}
+
+.content-and-sidebar-container[b-671hz0uhrj] {
+    display: flex;
+    flex-direction: row; /* This is key */
+    align-items: center;
+    padding-left: 16px;
+    padding-right: 16px;
+    height: 60px;
+    background-color: rgba(25, 135, 84, 0.1); /* Optional: matches your bg class */
+    z-index: 10;
+}
+
+.menu[b-671hz0uhrj] {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    height: 100%;
+}
+
+.nav-item[b-671hz0uhrj] {
+    display: inline-block;
+    padding: 8px 16px;
+    text-decoration: none;
+    color: #444;
+    cursor: pointer;
+    border-radius: 4px;
+    transition: background 0.2s ease;
+    margin-right: 8px;
+}
+
+    .nav-item:last-child[b-671hz0uhrj] {
+        margin-right: 0;
+    }
+
+    .nav-item:hover[b-671hz0uhrj] {
+        background-color: #eee;
+    }
+
+.active[b-671hz0uhrj] {
+    font-weight: bold;
+    color: white;
+    background-color: #0076d4;
+}
+
+
+
+
+/*.content-and-sidebar-container {
+    height: 60px;*/ /* Fixed height for the menu bar */
+/*display: flex;
+    flex-direction: column;
+    align-items: center;*/ /* Vertically center menu items */
+/*padding-left: 16px;*/ /* Optional: add horizontal padding */
+/*padding-right: 16px;*/ /* Optional: add horizontal padding */
+/*box-sizing: border-box;
+    z-index: 10;*/ /* Ensure it stays above content if needed */
+/*}*/
+
+.mag-sidebar[b-671hz0uhrj] {
+    /* Add specific sidebar styles if needed */
+}
+
+.mag-content-container[b-671hz0uhrj] {
+    flex-grow: 1; /* Allow content area to fill remaining space */
+    overflow-y: auto; /* Scroll if content overflows */
+    min-height: 0; /* Prevents flexbox overflow issues */
+}
+
+/*.menu {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;*/ /* Display menu items in a row */
+/*align-items: center;*/ /* Vertically center menu items */
+/*height: 100%;*/ /* Make sure menu fills the container height */
+/*}
+
+.nav-item {
+    display: inline-block;
+    padding: 8px 16px;
+    text-decoration: none;
+    color: #444;
+    cursor: pointer;
+    border-radius: 4px;
+    transition: background 0.2s ease;
+}*/
+
+/*.nav-item {
+    display: inline-block;
+    padding: 8px 16px;
+    text-decoration: none;
+    color: #444;
+    cursor: pointer;
+    border-radius: 4px;
+    transition: background 0.2s ease;
+    line-height: 44px;*/ /* Adjust for vertical alignment if needed */
+/*height: 44px;*/ /* Optional: control individual item height */
+/*margin-right: 8px;*/ /* Optional: add spacing between items */
+/*}*/
+
+/* .nav-item:last-child {
+        margin-right: 0;
+    }
+
+    .nav-item:hover {
+        background-color: #eee;
+    }*/
+
+/*.active {
+    font-weight: bold;
+    color: white;
+    background-color: #0076d4;
+}*/
+.separator[b-671hz0uhrj] {
+    color: #999;
+    padding: 0 8px;
+    display: inline-flex;
+    align-items: center;
+}

@@ -1,0 +1,177 @@
+﻿@page "/login"
+
+@using GxStk.Services
+@using Blazored.LocalStorage
+@using GxShared.GlobModels
+@using GxShared.GlobModels.Auth
+@using Newtonsoft.Json
+@using GxStk.Helpers
+@using System.Security.Claims
+@using System.Text
+
+@inject ILocalStorageService _localStorage
+@inject NavigationManager _navManager
+@inject IServiceProvider _serviceProvider
+@inject HttpClientService _apiClient
+@inject IHttpClientFactory _httpClientFactory
+@inject HttpClientService _clieManager
+@inject SessionContextService _sessionContext
+
+<PageTitle>Login</PageTitle>
+
+<h3>Login</h3>
+
+@if (!string.IsNullOrEmpty(Imessage))
+{
+    <div class="alert alert-danger">@Imessage</div>
+}
+@if (isLoading)
+{
+    <div class="text-center">
+        <Spinner Color="SpinnerColor.Primary" Size="SpinnerSize.Large" />
+        <p>Stock Loading...</p>
+    </div>
+}
+else
+{
+    <EditForm Model="loginModel" OnValidSubmit="HandleLoginAsync">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+
+        <div class="mb-3">
+            <label>Email or Username</label>
+            <InputText class="form-control" @bind-Value="loginModel.UsernameOrEmail" />
+        </div>
+
+        <div class="mb-3">
+            <label>Password</label>
+            <InputText class="form-control" @bind-Value="loginModel.Password" type="password" />
+        </div>
+
+        <button class="btn btn-primary" type="submit">Login</button>
+    </EditForm>
+}
+@code {
+    [Inject]
+    private MyAuthStateProvider _authProvider { get; set; }
+
+    private LoginModel loginModel = new();
+    private string Imessage = "";
+    private bool isLoading = false;
+    private HttpClient _dftClient;
+
+    protected override async Task OnInitializedAsync()
+    {
+        isLoading = true;
+        _dftClient = _httpClientFactory.CreateClient("AUTHClient");
+        isLoading = false;
+    }
+    private async Task HandleLoginAsync()
+    {
+        isLoading = true;
+        bool yaErrors = false;
+        Imessage = "";
+        if (string.IsNullOrEmpty(loginModel.UsernameOrEmail))
+        {
+            Imessage = "Email ou UserName obligatoire";
+            yaErrors = true;
+        }
+        if (string.IsNullOrEmpty(loginModel.Password))
+        {
+            Imessage = Imessage + " /Mot de passe obligatoire";
+            yaErrors = true;
+        }
+        if (yaErrors)
+        {
+            return;
+        }
+        try
+        {
+            loginModel.IsAdminLogin = false; //necessaire pour le login not admin
+            loginModel.Username = loginModel.UsernameOrEmail;
+            loginModel.Email = loginModel.UsernameOrEmail;
+            Console.WriteLine($"uname : {loginModel.Username} et {loginModel.Email}");
+            var json = JsonConvert.SerializeObject(loginModel);
+            var request = new HttpRequestMessage(HttpMethod.Post, "lgauth/login")
+            {
+                Content = new StringContent(json, Encoding.UTF8, "application/json")
+            };
+
+            var response = await _dftClient.SendAsync(request);
+            response.EnsureSuccessStatusCode();
+            var responseContent = await response.Content.ReadAsStringAsync();
+            var result = JsonConvert.DeserializeObject<LoginResponse>(responseContent);
+
+            if (result == null || string.IsNullOrEmpty(result.Atoken))
+            {
+                Imessage = Imessage + " /Invalid login response.";
+                return;
+            }
+
+            Console.WriteLine("Tokens received.");
+            if (_authProvider is MyAuthStateProvider provider)
+            {
+                Console.WriteLine("Refresh token stored.");
+
+                var claims = _authProvider.ParseClaimsFromJwt(result.Atoken);
+
+                await _localStorage.SetItemAsync("blazToken", result.Atoken);
+                await _localStorage.SetItemAsync("blazRtoken", result.Rtoken);
+                await _localStorage.SetItemAsync("authToken", result.Atoken);
+                await _clieManager.SetAuthorizationHeaderAsync("AUTHClient");
+                var userbagResponse = await _clieManager.SendRequestAsync("AUTHClient", HttpMethod.Get, $"usercontext/userbag");
+                var userbag = JsonConvert.DeserializeObject<Userbag>(userbagResponse);
+                if (userbag == null || !userbag.Succeeded)
+                {
+                    Imessage = Imessage + " /Failed to load user context.";
+                    return;
+                }
+                var identity = new ClaimsIdentity(claims, "jwt");
+                var user = new ClaimsPrincipal(identity);
+                provider.NotifyUserAuthentication(user);
+                await _sessionContext.PersistSessionAsync(result, userbag); // ✅ handles everything
+
+                if (user.IsInRole("Admin") || user.IsInRole("Support"))
+                {
+                    if (user.IsInRole("Admin"))
+                    {
+                        var verifclaims = JwtHelper.DecodePayload(result.Atoken);
+                        var siOwner = verifclaims.TryGetValue("Gx.IsOwner", out var uid) ? uid : 0;
+                        int estOwner = Convert.ToInt16(siOwner);
+
+                        if (estOwner != 1)
+                        {
+                            Imessage = Imessage + " /Acces Refuse";
+                            return;
+                        }
+                        Console.WriteLine($"NAVMENU has been notified");
+                    }
+                }
+                else
+                {
+                    Imessage = Imessage + " /Acces Refuse";
+                    return;
+                }
+
+
+                var puzzleSyncService = _serviceProvider.GetService<IPuzzleSyncService>();
+                if (puzzleSyncService != null)
+                {
+                    await puzzleSyncService.EnsureSessionIsFreshAsync();
+                    await puzzleSyncService.SyncPuzzleStateAsync();
+                }
+                else
+                {
+                    Console.WriteLine("PuzzleSyncService could not be resolved.");
+                }
+                _navManager.NavigateTo("/");
+            }
+            Console.WriteLine("12.");
+        }
+        catch (Exception ex)
+        {
+            Imessage = $"Login failed: {ex.Message}";
+        }
+        isLoading = false;
+    }
+}

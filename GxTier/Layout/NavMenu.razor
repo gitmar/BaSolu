@@ -1,0 +1,161 @@
+﻿@using GxTie.Services
+@using GxShared.GlobModels
+@using System.Security.Claims
+@using BlazorBootstrap
+
+@inject NavigationManager _navManager
+
+<div class="top-row navbar navbar-dark bg-success shadow-sm px-3 bg-opacity-25">
+    <a class="navbar-brand text-white fw-bold" href="">Gx-Solutions</a>
+    @* <button class="navbar-toggler" type="button" @onclick="ToggleNavMenu">
+        <span class="navbar-toggler-icon"></span>
+    </button> *@
+</div>
+<div class="@NavMenuCssClass bg-dark text-light vh-100" style="overflow-y: auto;">
+    <nav class="nav flex-column">
+        <NavLink class="nav-link nav-main text-light" href="" Match="NavLinkMatch.All">
+            <i class="bi bi-house-door-fill-nav-menu" aria-hidden="true"></i> Home
+        </NavLink>
+         <AuthorizeView>
+            <Authorized>
+                    <NavLink class="nav-link nav-main text-light" @onclick="ToggleSubManag">
+                    <i class="bi bi-people-fill me-2" aria-hidden="true"></i> Rhumaines
+                </NavLink>
+                @if (isSubManagVisible)
+                {
+                    <nav class="nav flex-column">
+                        <NavLink class="nav-link nav-sub text-light small" href="enrolmenu">
+                            <i class="bi bi-caret-right-square me-2"></i> Enrollement
+                        </NavLink>
+                        <NavLink class="nav-link nav-sub text-light small" href="carrimenu">
+                            <i class="bi bi-caret-right-square me-2"></i> Carrière
+                        </NavLink>
+                        <NavLink class="nav-link nav-sub text-light small" href="subitem3">
+                            <i class="bi bi-caret-right-square me-2"></i> Editions
+                        </NavLink>
+                    </nav>
+                }
+                <NavLink class="nav-link nav-main text-light" @onclick="ToggleSubOper">
+                    <i class="bi bi-gear-fill me-2"></i> Operations
+                </NavLink>
+                @if (isSubOperVisible)
+                {
+                    <nav class="nav flex-column ms-3">
+                        <NavLink class="nav-link nav-sub text-light small" href="saieactlnes">
+                            <i class="bi bi-caret-right-square me-2"></i> Saisies
+                        </NavLink>
+                        <NavLink class="nav-link nav-sub text-light small" href="calcreslnes">
+                            <i class="bi bi-caret-right-square me-2"></i> Calculs
+                        </NavLink>
+                        <NavLink class="nav-link nav-sub text-light small" href="subitem3">
+                            <i class="bi bi-caret-right-square me-2"></i> Editions
+                        </NavLink>
+                    </nav>
+                }
+            </Authorized>
+         </AuthorizeView>
+        <NavLink class="nav-link nav-main text-light" href="about">
+            <i class="bi bi-key me-2" aria-hidden="true"></i> Analyses
+        </NavLink>
+        <NavLink class="nav-link nav-main text-light" href="about">
+            <i class="bi bi-calendar3 me-2" aria-hidden="true"></i> Agendas
+        </NavLink>
+        <NavLink class="nav-link nav-main text-light" href="about">
+            <i class="bi bi-info-circle-fill me-2" aria-hidden="true"></i> About
+        </NavLink>
+    </nav>
+</div>
+<style>
+    .nav-link.active {
+        background-color: #0d6efd !important;
+        color: white !important;
+        font-weight: 600;
+        border-radius: 0.3rem;
+    }
+
+    .nav-link:hover {
+        background-color: rgba(255, 255, 255, 0.1);
+        color: #fff;
+    }
+
+    .nav-main {
+        margin-left: 1rem; /* Main items slightly indented */
+    }
+
+    .nav-sub {
+        margin-left: 2rem; /* Subitems more indented */
+    }
+</style>
+
+@code {
+    [CascadingParameter]
+    private Task<AuthenticationState>? AuthState { get; set; }
+
+    private bool isOwner = false;
+    private ClaimsPrincipal authUser;
+    private bool isAuthenticated = false;
+    private bool success, errors, isSubmitting = false;
+    private string[] errorList = [];
+    private bool collapseNavMenu = false;
+    private string? NavMenuCssClass => collapseNavMenu ? "collapse" : null;
+
+    private bool siOpera=false, siAdmin = false, siStock = true;
+    private int IMyAcc = 2;
+    private bool isSubManagVisible = false;
+    private bool isSubSecuVisible = false;
+    private bool isSubOperVisible = false;
+    private bool isSubParaVisible = false;
+    private bool isSubProgVisible = false;
+    //private void ToggleNavMenu() => collapseNavMenu = !collapseNavMenu;
+    protected override async Task OnInitializedAsync()
+    {
+        var authState = await AuthState;
+        authUser = authState.User;
+        isAuthenticated = authUser.Identity.IsAuthenticated;
+        if (!isAuthenticated)
+        {
+            Console.WriteLine("Authentication Utilisateur ECHEC");
+            return;
+        }
+        else
+        {
+            Console.WriteLine("Authentication MainMenu SUCCESS");
+        }
+        //_appState.OnChange += StateHasChanged;
+    }
+    private void ToggleNavMenu()
+    {
+        collapseNavMenu = !collapseNavMenu;
+    }
+    private void ToggleSubManag()
+    {
+        isSubManagVisible = !isSubManagVisible;
+    }
+    private void ToggleSubSecu()
+    {
+        isSubSecuVisible = !isSubSecuVisible;
+    }
+    private void ToggleSubOper()
+    {
+        isSubOperVisible = !isSubOperVisible;
+    }
+
+    //Admin
+    private void ToggleSubPara()
+    {
+        isSubParaVisible = !isSubParaVisible;
+    }
+    private void ToggleSubProg()
+    {
+        isSubProgVisible = !isSubProgVisible;
+    }
+    private bool Entest = false;
+    public void Dispose()
+    {
+        //_appState.OnChange -= StateHasChanged;
+    }
+    // protected override async Task OnAfterRenderAsync(bool firstRender)
+    // {
+    //     Entest = false;
+    // }
+}

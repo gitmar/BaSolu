@@ -1,0 +1,27 @@
+﻿@using System.Security.Authentication
+@using System.Security.Claims
+@using Microsoft.AspNetCore.Authorization
+
+<div class="d-flex flex-row bg-warning bg-opacity-25 mb-3">
+    <div class="p-2">
+        <a class="active" id="myprofile" href="user-page">Profil</a>
+    </div>
+    <div class="p-2">
+        <a id="myaccount" href="">Compte</a>
+    </div>
+    @* @attribute [Authorize(Roles = "Coordo, Manager, Operat, Parain")]
+    <div class="p-2">
+        <a id="myinvite" href="invitiw">Enrollement</a>
+    </div> *@
+    @attribute [Authorize(Roles = "Coordo, Manager")]
+    <div class="p-2">
+        <a id="myprefer" href="">Preferences</a>
+    </div>
+    @attribute [Authorize(Roles = "Coordo, Manager")]
+    <div class="p-2">
+        <a id="mysessio" href="uactives">Activites</a>
+    </div>
+    @* <div class="p-2">
+        <a id="myinbox" href="usinbox">Courrier</a>
+    </div> *@
+</div>

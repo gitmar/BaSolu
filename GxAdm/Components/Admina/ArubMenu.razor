@@ -1,0 +1,336 @@
+﻿@page "/arubmenu"
+@layout FreeLayout
+
+@using System.Security.Claims
+@using BlazorBootstrap
+@using Blazored.LocalStorage
+@using GxAdm.ClieModels
+@using GxAdm.Components.Admina.ARubs
+@using GxAdm.Services
+@using GxShared.GlobModels
+@using GxWapi.DaModels
+@using Microsoft.OData.Client
+@using Newtonsoft.Json
+
+@inject NavigationManager _navmanager
+@inject ILocalStorageService _localStorage
+@inject HttpClientService _cliemanager
+@inject IODataContextFactory _contextFactory
+@inject SessionContextService _sessionContext
+@inject RendAgres _rendAgres
+
+
+@if (isLoading)
+{
+    <div class="text-center">
+        <Spinner Color="SpinnerColor.Primary" Size="SpinnerSize.Large" />
+        <p>ADMIN/PLANS Loading...</p>
+    </div>
+}
+@if (!isLoading)
+{
+    <div class="mag-screen-layout">
+        <div class="container" style="height: 100vh;">
+            <div class="d-flex flex-column" style="height: 100%;">
+                <!-- Top Menu -->
+                <div class="content-and-sidebar-container bg-success bg-opacity-10">
+                    <button class="navbar-brand text-left text-white bg-dark bg-opacity-75 me-2 py-0 px-1" style="height:44px;" @onclick="NavigateBack">
+                        A24soft Gx-Solutions
+                    </button>
+                    <div><span class="separator">||</span></div>
+                    <ul class="menu">
+                        <li><NavLink @onclick="() => SelMenu(1)" class="nav-item" ActiveClass="active">Grilles</NavLink></li>
+                        <li><span class="separator">|</span></li>
+                        <li><NavLink @onclick="() => SelMenu(2)" class="nav-item">Echeanchier</NavLink></li>
+                        <li><span class="separator">|</span></li>
+                        <li><NavLink @onclick="() => SelMenu(3)" class="nav-item">Organigramme</NavLink></li>
+                        <li><span class="separator">||</span></li>
+                        <li><NavLink @onclick="() => SelMenu(4)" class="nav-item">Apprets</NavLink></li>
+                     </ul>
+                </div>
+                <div class="row">
+                    <div class="col-md-12 input-group align-middle">
+                        <span class="text-uppercase text- text-success"><b>@strComp</b></span>
+                        &nbsp;&nbsp;
+                        <span class="separator">|| </span>
+                        <Button class="btn btn-sm btn-secondary btnsz"
+                                style="@(!allEnable ? "" : "display:none;")"
+                                @onclick="ManEditAll">
+                            Modifier
+                        </Button>
+                        <Button class="btn btn-sm btn-secondary btnsz"
+                                style="@(allEnable ? "" : "display:none;")"
+                                @onclick="ManCnclAll">
+                            Annuler
+                        </Button>
+                        <span class="separator">|  </span>
+                        <Button class="btn btn-sm btn-secondary btnsz"
+                                style="@(allEnable ? "" : "display:none;")"
+                                @onclick="ManSaveAll">
+                            Enregistrer
+                        </Button>
+                        @if (!String.IsNullOrEmpty(MImessage))
+                        {
+                            <span class="bg-info bg-opacity-10" style="font-style:italic;color:red">&nbsp;--> @MImessage</span>
+                        }
+                    </div>
+                </div>
+                <!-- Main Content -->
+                @if (curOrga != null && toChild != null && curODContext != null)
+                {       
+                    if (chxMenu == 1)
+                    { //grilles rubriques
+                        <Rubgrils @ref="myrgrd"
+                                  curOrga="@curOrga"
+                                  toChild="@toChild"
+                                  curODContext="@curODContext">
+                            <ChildContent>
+                                @* <h2 class="child-box">Hello GRILLES</h2> *@
+                            </ChildContent>
+                        </Rubgrils>
+                    }
+                    else if (chxMenu == 2)
+                    { //echeance rubriques
+                        <Rubechs @ref="myrech"
+                                  curOrga="@curOrga"
+                                  toChild="@toChild"
+                                  curODContext="@curODContext">
+                            <ChildContent>
+                                @* <h2 class="child-box">Hello GRILLES</h2> *@
+                            </ChildContent>
+                        </Rubechs>
+                    }
+                    else if (chxMenu == 3)
+                    { //schemas rubriques
+                        <Rubposts @ref="myrpst"
+                                 curOrga="@curOrga"
+                                 toChild="@toChild"
+                                 curODContext="@curODContext">
+                            <ChildContent>
+                                @* <h2 class="child-box">Hello GRILLES</h2> *@
+                            </ChildContent>
+                        </Rubposts>
+                    }
+                }
+            </div>
+        </div>
+    </div>
+}
+@code {
+    private bool isLoading = true;
+    public MyODataContext curODContext;
+    public Gxorga curOrga = new Gxorga();
+    public MyShareVars toChild = new MyShareVars();
+    private bool allEnable = false;
+    private string MImessage = "";
+
+    private Rubgrils myrgrd;
+    private Rubechs myrech;
+    private Rubposts myrpst;
+
+    [CascadingParameter]
+    private Task<AuthenticationState>? AuthState { get; set; }
+    public bool isOwner = false;
+    public ClaimsPrincipal authUser;
+    public bool isAuthenticated = false;
+    //in DATA
+    public List<Gsgfix> LsTables = new List<Gsgfix>();
+
+    private int _GIdTie = 0;
+    private string _strOrga = "", _curSigle = "", strmeta = "", strmeta2 = "";
+    //private int _lgcdu = 0;
+    //entities load
+    private IEnumerable<Gxorga> _lsOrgas = new List<Gxorga>();
+
+    //GlobModels
+    public Userbag _usrBag = new Userbag();
+    public List<Gpfixe> LsFixes = new List<Gpfixe>();
+    //public List<Upara> Uafls = new List<Upara>();
+    public List<Gpdivh> LsDivs = new();
+    public List<Gpvar> LsVars = new List<Gpvar>();
+    public List<Gplan> LsPlans = new List<Gplan>();
+    public List<Gpvar> LtTabls = new List<Gpvar>();
+    public List<Gpvar> LsTabls = new List<Gpvar>();
+    public List<Gpvar> TbElems = new List<Gpvar>();
+    //Navigation
+    private int chxMenu = 1;
+    private string strComp = "Plan GRILLE";
+    //modal management
+    private string SidebarStyle = "width: 200px;";
+    private bool IsOpen = true;
+    private bool FirstLoadCompleted = false;
+    private bool ContentLoaded { get; set; } = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        isLoading = true;
+        var authState = await AuthState;
+        authUser = authState.User;
+        isAuthenticated = authUser.Identity.IsAuthenticated;
+        if (!isAuthenticated)
+        {
+            Console.WriteLine("Authentication in Astreintes Utilisateur ECHEC");
+            return;
+        }
+        else
+        {
+            Console.WriteLine("Authentication in Astreintes SUCCESS");
+        }
+        _usrBag = await _sessionContext.GetUserbagAsync();
+        _GIdTie = _usrBag.Usorga.Gdtie;
+        //var idplnadm = _usrBag.Usorga.Schba;
+        //LsDivs = _usrBag.Usorga.Uhies.Where(uh => uh.Idpln == idplnadm && uh.Sidiv == 1).ToList();
+        // var noslims = LsVars.Where(uv => uv.Idhie == 0 && uv.Gvars == 21 && uv.Itb == 1 && uv.Elea == 1);
+        // if (noslims.Any()) _lgcdu = noslims.FirstOrDefault().Ivala;
+        LsVars = _usrBag.Usorga.Uvars.ToList();
+        LsFixes = _usrBag.Ufixes.ToList();
+        LsPlans = _usrBag.Usorga.Uplns.ToList();
+        LtTabls = _usrBag.Usorga.Uvars.Where(tb => tb.Gvars == 4).ToList();
+        LsTabls = _usrBag.Usorga.Uvars.Where(tb => tb.Gvars == 5).ToList();
+        //ensemble des roles
+        Console.WriteLine("Authentication ENTREE");
+        ////EnrolVue.ShowSubmenu();
+        await LoadSTROrgaAsync();
+        //pita = 5;
+        Console.WriteLine("TIERS A ETE TESTE");
+        toChild.authUser = authUser;
+        toChild.isAuthenticated = isAuthenticated;
+        toChild.LsDivs = await _rendAgres.LoadOrgaPostes();
+        toChild.LsVars = LsVars.ToList();
+        toChild.LsFixes = LsFixes.ToList();
+        toChild.LsPlans = LsPlans.ToList();
+        toChild.LsTabls = LsTabls.ToList();
+        isLoading = false;
+    }
+    //CRUD
+    
+    private async Task ManEditAll()
+    {
+        MImessage = "Edition en preparation...";
+        if (chxMenu == 1)
+        { //grille
+            await myrgrd.EdtAll();
+        }
+        if (chxMenu == 2)
+        { //echeancier
+            await myrech.EdtAll();
+        }
+        if (chxMenu == 3)
+        { //schema
+            await myrpst.EdtAll();
+        }
+        MImessage = "";
+        allEnable = true;
+    }
+    private async Task ManCnclAll()
+    {
+        MImessage = "annulation en cours...";
+        if (chxMenu == 1)
+        { //grille
+            await myrgrd.CncAll();
+        }
+        if (chxMenu == 2)
+        { //echeancier
+            await myrech.CncAll();
+        }
+        if (chxMenu == 3)
+        { //schema
+            await myrpst.CncAll();
+        }
+        //reload
+        LoadSTROrgaAsync();
+        MImessage = "";
+        allEnable = false;
+    }
+    private async Task LoadSTROrgaAsync()
+    {
+        int pisa = 2;
+        try
+        {
+            curODContext = await _contextFactory.CreateAsync();
+            //var token = await _localStorage.GetItemAsync<string>("blazToken");
+            //BON var expand = "Plngens($expand=Rubvars),Plngens($expand=Rubhies),Gsgfixes";
+            //var expand = "Gsgfixes,Gsglnes,Plngens,Plngens($expand=Rubvars),Plngens($expand=Rubhies)";
+            var expand = "Gsgfixes," + "Gsglnes," + "Plngens," +
+             "Plngens($expand=Rubvars)," +
+             "Plngens($expand=Rubhies)";
+            var dxorgas = await curODContext.LoadFilteredAsync<Gxorga>(expand: expand);
+            pisa = 3;
+            curOrga = dxorgas.FirstOrDefault();
+            if (curOrga == null)
+            {
+                Console.WriteLine("No organization found for the current user.");
+                return;
+            }
+            Console.WriteLine($"orga recu {curOrga.Raison}");
+            //pisa = 4;
+            //nsole.WriteLine($"nb pln test : {curOrga.Plngens.Count()}");
+            //Console.WriteLine($"nb gsgfixes : {curOrga.Gsgfixes.Count()}");
+            //Console.WriteLine($"nb gsglines : {curOrga.Gsglnes.Count()}");
+            //Console.WriteLine($"nb rub tables MENU {curOrga.Gsgfixes.Count}");
+            //var cplan = curOrga.Plngens.Where(upl => upl.Idpln == 20).FirstOrDefault();
+            //Console.WriteLine($"nb rub cur plan :  {cplan.Rubvars.Count()}");
+
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"stack trace : {ex.StackTrace} place : {pisa} ex-mess : {ex.Message} and also in-mess: {ex.InnerException}");
+        }
+    }
+    private async Task ManSaveAll()
+    {
+        MImessage = "enregistrement en cours...";
+        if (chxMenu == 1)
+        { //grille
+            await myrgrd.SavAll();
+        }
+        if (chxMenu == 2)
+        { //echeancier
+            await myrech.SavAll();
+        }
+        if (chxMenu == 3)
+        { //schema
+            await myrpst.SavAll();
+        }
+        MImessage = "";
+        allEnable = false;
+    }
+    private async Task SelMenu(int noM)
+    {
+        chxMenu = noM;
+        if (chxMenu == 4) 
+        {
+            strComp = "Schemas";
+            _navmanager.NavigateTo("/iagrmenu");
+        }
+        if (chxMenu == 1) strComp = "Plan GRILLE";
+        if (chxMenu == 2) strComp = "Plan ECHEANCIER";
+        if (chxMenu == 3) strComp = "Plan ORGANIGRAMME";
+        allEnable = false;
+        StateHasChanged();
+        await Task.Delay(800);
+    }
+    private async Task LoadOrgaPostes()
+    {
+        //FmtPsts
+        var indata = await _cliemanager.SendRequestAsync("AUTHClient", HttpMethod.Get, "lgauth/rubhiepsts");
+        //Console.WriteLine($"21RECU DE LOGIN {strcall}");
+        var inResu = JsonConvert.DeserializeObject<List<Gpdivh>>(indata);
+        if (inResu.Any())
+        {
+            Console.WriteLine($"Nb Divs : {inResu.Count}");
+            LsDivs = inResu.ToList();
+        }
+        else
+        {
+            Console.WriteLine("Nb Psts : null");
+            LsDivs = new();
+        }
+        //Pdom 6tiers Patr1baseadm
+        LsDivs = LsDivs.Where(ud => ud.Pdom == 6 && ud.Patr == 1).ToList();
+    }
+    void NavigateBack()
+    {
+        _navmanager.NavigateTo("/");
+    }
+}

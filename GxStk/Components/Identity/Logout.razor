@@ -1,0 +1,49 @@
+﻿@page "/logout"
+@using GxStk.Services
+@using Blazored.LocalStorage
+
+@inject ILocalStorageService _localStorage
+@inject IServiceProvider _serviceProvider
+@inject NavigationManager _navManager
+@inject MyAuthStateProvider _myauthProvider
+@inject SessionContextService _sessionContext
+
+<PageTitle>Logout</PageTitle>
+
+<h1>Logout</h1>
+
+<AuthorizeView>
+    <Authorized>
+        <div class="alert alert-info">Logging you out...</div>
+    </Authorized>
+    <NotAuthorized>
+        <div class="alert alert-success">You're logged out. <a href="/login">Log in.</a></div>
+    </NotAuthorized>
+</AuthorizeView>
+
+@code {
+
+    protected override async Task OnInitializedAsync()
+    {
+        await HandleLogoutAsync();
+        //notify ui
+        //await _myauthProvider.NotifyUserLogout();
+    }
+    public async Task HandleLogoutAsync()
+    {
+        await _myauthProvider.NotifyUserLogout();
+        await _localStorage.RemoveItemAsync("blazToken");
+        await _localStorage.RemoveItemAsync("blazRtoken");
+        await _localStorage.RemoveItemAsync("blazExp");
+        await _localStorage.RemoveItemAsync("blazUserid");
+        await _localStorage.RemoveItemAsync("blazUserbag");
+        await _localStorage.RemoveItemAsync("blazLoginResponse");
+        await _sessionContext.ClearSessionAsync();
+
+        var puzzleSync = _serviceProvider.GetService<IPuzzleSyncService>();
+        if (puzzleSync != null)
+            await puzzleSync.ClearPuzzleStateAsync();
+
+        _navManager.NavigateTo("/login");
+    }
+}

@@ -1,0 +1,81 @@
+﻿@page "/ordaload"
+@layout SaieMenu
+
+@using System.Net.Http.Headers
+@using GxAdm.Services
+@inject HttpClient Http
+
+<h3>File Upload</h3>
+<div class="my-container">
+    @if (Mainsaie != null)
+    {
+        @ChildContent
+    }
+</div>
+<div class="d-flex flex-column">
+    <div>
+        <label for="idphoto">Photo</label>
+        <InputFile id="idphoto" OnChange="HandleFileSelected" accept="image/*" />
+        <button @onclick="UploadFile">Upload</button>
+    </div>
+    <div>
+        <label for="idcard">Identite</label>
+        <InputFile id="idcard" OnChange="HandleFileSelected" accept="image/*" />
+        <button @onclick="UploadFile">Upload</button>
+    </div>
+    <div>
+        <label for="idselfie">Selfie</label>
+        <InputFile id="idselfie" OnChange="HandleFileSelected" accept="image/*" />
+        <button @onclick="UploadFile">Upload</button>
+    </div>
+</div>
+@if (!string.IsNullOrEmpty(StatusMessage))
+{
+    <p>@StatusMessage</p>
+}
+
+@code {
+    private bool isLoading = true;
+    [Parameter]
+    public RenderFragment ChildContent { get; set; }
+
+    [CascadingParameter(Name = "OrdaPage")]
+    public SaieMenu Mainsaie { get; set; }
+    [CascadingParameter]
+    public MyODataContext _gODContext { get; set; }
+
+    private IBrowserFile selectedFile;
+    private string StatusMessage;
+    
+
+    private void HandleFileSelected(InputFileChangeEventArgs e)
+    {
+        selectedFile = e.File;
+    }
+
+    private async Task UploadFile()
+    {
+        if (selectedFile == null)
+        {
+            StatusMessage = "No file selected.";
+            return;
+        }
+
+        var content = new MultipartFormDataContent();
+        var fileContent = new StreamContent(selectedFile.OpenReadStream(maxAllowedSize: 10485760)); // 10 MB max
+        fileContent.Headers.ContentType = new MediaTypeHeaderValue(selectedFile.ContentType);
+
+        content.Add(fileContent, "file", selectedFile.Name);
+
+        var response = await Http.PostAsync("api/lgfileup/upload", content);
+
+        if (response.IsSuccessStatusCode)
+        {
+            StatusMessage = "File uploaded successfully.";
+        }
+        else
+        {
+            StatusMessage = "File upload failed.";
+        }
+    }
+}

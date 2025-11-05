@@ -1,0 +1,78 @@
+.mag-screen-layout[b-xm75n53ck1] {
+    /* Add any global styles for this layout */
+    height: 100vh; /* Ensure the layout fills the viewport */
+    margin: 1px;
+    padding: 1px;
+}
+
+.toggle-button-row[b-xm75n53ck1] {
+    /* width: 100%; */
+}
+
+.container[b-xm75n53ck1] {
+    padding-left: 2px;
+    padding-right: 2px;
+    margin-left: 3px;
+}
+
+.content-and-sidebar-container[b-xm75n53ck1] {
+    display: flex;
+    flex-direction: row; /* This is key */
+    align-items: center;
+    padding-left: 1px;
+    padding-right: 1px;
+    height: 60px;
+    background-color: rgba(25, 135, 84, 0.1); /* Optional: matches your bg class */
+    z-index: 10;
+}
+
+.menu[b-xm75n53ck1] {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    height: 100%;
+}
+
+.nav-item[b-xm75n53ck1] {
+    display: inline-block;
+    padding: 8px 16px;
+    text-decoration: none;
+    color: #444;
+    cursor: pointer;
+    border-radius: 4px;
+    transition: background 0.2s ease;
+    margin-right: 8px;
+}
+
+    .nav-item:last-child[b-xm75n53ck1] {
+        margin-right: 0;
+    }
+
+    .nav-item:hover[b-xm75n53ck1] {
+        background-color: #eee;
+    }
+
+.active[b-xm75n53ck1] {
+    font-weight: bold;
+    color: white;
+    background-color: #0076d4;
+}
+
+.mag-sidebar[b-xm75n53ck1] {
+    /* Add specific sidebar styles if needed */
+}
+
+.mag-content-container[b-xm75n53ck1] {
+    flex-grow: 1; /* Allow content area to fill remaining space */
+    overflow-y: auto; /* Scroll if content overflows */
+    min-height: 0; /* Prevents flexbox overflow issues */
+}
+
+.separator[b-xm75n53ck1] {
+    color: #999;
+    padding: 0 8px;
+    display: inline-flex;
+    align-items: center;
+}

@@ -1,0 +1,238 @@
+﻿@page "/donamenu"
+@inherits FreeLayout
+
+@using System.Security.Claims
+@using BlazorBootstrap
+@using Blazored.LocalStorage
+@using GxShared.GlobModels
+@using GxTie.ClieModels
+@using GxTie.Services
+@using GxTie.ClieModels
+@using GxTie.Services
+@using GxWapi.DaModels
+@using Microsoft.OData.Client
+@using Newtonsoft.Json
+
+@* @inject MyODataContext _gODContext *@
+@inject NavigationManager _navmanager
+@inject ILocalStorageService _localStorage
+@inject HttpClientService _cliemanager
+@inject IODataContextFactory _contextFactory
+@inject SessionContextService _sessionContext
+
+@if (isLoading)
+{
+    <div class="text-center">
+        <Spinner Color="SpinnerColor.Primary" Size="SpinnerSize.Large" />
+        <p>PLANS Loading...</p>
+    </div>
+}
+@if (!isLoading)
+{
+    <div class="mag-screen-layout">
+        <div class="container" style="height: 100vh;">
+            <div class="d-flex flex-column" style="height: 100%;">
+                <!-- Top Menu -->
+                <div class="content-and-sidebar-container bg-success bg-opacity-10">
+                    <button class="navbar-brand text-left text-white bg-dark bg-opacity-75 me-2 py-0 px-1" style="height:44px;" @onclick="NavigateBack">
+                        A24soft Gx-Solutions
+                    </button>
+                    <div><span class="separator">||</span></div>
+                    <ul class="menu">
+                        <li><NavLink @onclick="() => SelMenu(1)" class="nav-item" ActiveClass="active">Sauvegardes</NavLink></li>
+                        <li><span class="separator">|</span></li>
+                        <li><NavLink @onclick="() => SelMenu(2)" class="nav-item">Restauration</NavLink></li>
+                        <li><span class="separator">|</span></li>
+                        <li><NavLink @onclick="() => SelMenu(5)" class="nav-item">Reparation</NavLink></li>
+                    </ul>
+                </div>
+                <!-- Main Content -->
+                @if (this != null)
+                {
+                    @if (chxMenu == 1)
+                    { //SESSIONS
+                      @* <SAsesios ChxMenu="@chxMenu"
+                                    curOrga="@curOrga"
+                                    toChild="@toChild"
+                                    curODContext="@curODContext">
+                              <ChildContent>
+                                  <h2 class="child-box">Hello RECEPTION</h2>
+                              </ChildContent>
+                          </SAsesios> *@
+                    }
+                    else if (chxMenu == 2)
+                    { //ACCES
+                      @* <Regxauth ChxMenu="@chxMenu"
+                                    curOrga="@curOrga"
+                                    toChild="@toChild"
+                                    curODContext="@curODContext">
+                              <ChildContent>
+                                  <h2 class="child-box">Hello RECEPTION</h2>
+                              </ChildContent>
+                          </Regxauth> *@
+                    }
+                    else if (chxMenu == 3)
+                    { //REPRISES
+                      @* <Regxcorg ChxMenu="@chxMenu"
+                                    curOrga="@curOrga"
+                                    toChild="@toChild"
+                                    curODContext="@curODContext">
+                              <ChildContent>
+                                  <h2 class="child-box">Hello RECEPTION</h2>
+                              </ChildContent>
+                          </Regxcorg> *@
+                    }
+                }
+            </div>
+        </div>
+    </div>
+}
+@code {
+    private bool isLoading = true;
+    public MyODataContext curODContext;
+    public Gxorga curOrga = new Gxorga();
+    public MyShareVars toChild = new();
+    private bool allEnable = false;
+
+    // [Parameter]
+    // public RenderFragment Pstands { get; set; }
+    // [Parameter]
+    // public RenderFragment Pmaties { get; set; }
+    // [Parameter]
+    // public RenderFragment Pgrilles { get; set; }
+    // [Parameter]
+    // public RenderFragment Pschemas { get; set; }
+    [CascadingParameter]
+    private Task<AuthenticationState>? AuthState { get; set; }
+    public bool isOwner = false;
+    public ClaimsPrincipal authUser;
+    public bool isAuthenticated = false;
+    //in DATA
+    public List<Gsgfix> LsTables = new List<Gsgfix>();
+
+    public int _GIdTie = 0;
+    public string _strOrga = "", _curSigle = "", strmeta = "", strmeta2 = "";
+
+    //entities load
+    private IEnumerable<Gxorga> _lsOrgas = new List<Gxorga>();
+    //Gestion CRUD Entete
+    public bool EnrEnable = false;
+    public string Imessage = "";
+
+    //GlobModels
+    public Userbag _usrBag = new Userbag();
+
+    private Gporga rfOrga = new Gporga();
+    public List<Gpfixe> LsFixes = new List<Gpfixe>();
+    public List<Gpvar> LsVars = new List<Gpvar>();
+    public List<Gplan> LsPlans = new List<Gplan>();
+    public List<Gpvar> LtTabls = new List<Gpvar>();
+    public List<Gpvar> LsTabls = new List<Gpvar>();
+    public List<Gpvar> TbElems = new List<Gpvar>();
+    //Navigation
+    private int chxMenu = 1;
+    //modal management
+    private string SidebarStyle = "width: 200px;";
+    private bool IsOpen = true;
+    private bool FirstLoadCompleted = false;
+    private bool ContentLoaded = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        isLoading = true;
+        int pita = 0;
+        //pita = 5;
+        _usrBag = await _sessionContext.GetUserbagAsync();
+        _GIdTie = _usrBag.Usorga.Gdtie;
+        isOwner = _usrBag.SiOwner;
+        Console.WriteLine($"RETOUR UserBag...{_usrBag.Ufixes.Count()}");
+        if ((!_usrBag.Ufixes.Any()) ||
+               _usrBag.Yauser == false)
+        {
+            Console.WriteLine("Echec Invite, recommencez.login/support...");
+        }
+
+        _GIdTie = _usrBag.Usorga.Gdtie;
+        LsVars = _usrBag.Usorga.Uvars.ToList();
+        LsFixes = _usrBag.Ufixes.ToList();
+        LsPlans = _usrBag.Usorga.Uplns.Where(pl => pl.Ptyp == 5 || pl.Ptyp == 6).ToList();
+        // LtTabls = _usrBag.Usorga.Uvars.Where(tb => tb.Gvars == 4).ToList();
+        // LsTabls = _usrBag.Usorga.Uvars.Where(tb => tb.Gvars == 5).ToList();
+        // LsCols = ColBag.Ucols.Where(uv => uv.Jtyp == 1).OrderBy(uv => uv.Ydpd).ToList();
+        // TbElems = _usrBag.Usorga.Uvars.Where(uv => uv.Gvars == 5 && uv.Ade == 1 && uv.Elea != 0).ToList();
+        //ensemble des roles
+        ////EnrolVue.ShowSubmenu();
+        pita = 21;
+        //await LoadROrgaAsync();
+        await LoadSTROrgaAsync();
+        toChild.authUser = authUser;
+        toChild.isAuthenticated = isAuthenticated;
+        toChild.LsVars = LsVars.ToList();
+        toChild.LsFixes = LsFixes.ToList();
+        toChild.LsPlans = LsPlans.ToList();
+        //pita = 5;
+        Console.WriteLine("TIERS A ETE TESTE");
+        isLoading = false;
+    }
+    //CRUD
+    private async Task LoadSTROrgaAsync()
+    {
+        int pisa = 2;
+        try
+        {
+            curODContext = await _contextFactory.CreateAsync(); // Use factory
+
+            var expand = "Plngens($expand=Gsesios)";
+            var dxorgas = await curODContext.LoadFilteredAsync<Gxorga>(expand: expand);
+
+            pisa = 3;
+            curOrga = dxorgas.FirstOrDefault();
+
+            if (curOrga == null)
+            {
+                Console.WriteLine("No organization found for the current user.");
+                return;
+            }
+
+            Console.WriteLine($"orga recu {curOrga.Raison}");
+            pisa = 4;
+            Console.WriteLine($"nb pln test : {pisa} et {curOrga.Plngens.Count()}");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"stack trace : {ex.StackTrace} place : {pisa} ex-mess : {ex.Message} and also in-mess: {ex.InnerException}");
+        }
+    }
+    
+    // manage Access all
+    private void EdiAll()
+    {
+        allEnable = true;
+        EnrEnable = true;
+    }
+    private void CncAll()
+    {
+        allEnable = false;
+        EnrEnable = false;
+    }
+    private async Task SavAll()
+    {
+        if (curODContext.MyChangeTracker())
+        {
+            await curODContext.SaveDataAsync();
+        }
+        allEnable = false;
+        EnrEnable = false;
+    }
+    private async Task SelMenu(int noM)
+    {
+        chxMenu = noM;
+        StateHasChanged();
+        Console.WriteLine($"menu choisi : {chxMenu}");
+        await Task.Delay(800);
+    }
+    void NavigateBack()
+    {
+        _navmanager.NavigateTo("/");
+    }
+}

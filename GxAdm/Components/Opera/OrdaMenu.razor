@@ -1,0 +1,44 @@
+﻿@page "/ordamenu"
+@inherits FreeLayout
+
+@inject NavigationManager _navmanager
+
+<div class="-screen-layout">
+    <div class="container" style="height: 100vh;">
+        <div class="row d-flex flex-column" style="height: 100%;">
+            <!-- Sidebar Row -->
+            <div class="content-and-sidebar-container bg-success bg-opacity-10">
+                <!-- Button and links will be aligned horizontally -->
+                <button class="navbar-brand text-left text-white text-opacity-100 bg-dark bg-opacity-75 me-2 py-0 px-1" @onclick="NavigateBack">
+                    A24soft Gx-Solutions
+                </button>
+                <!-- Links should be displayed inline -->
+                <NavLink href="/ordload">Missions</NavLink>
+                &nbsp;|&nbsp;
+                <NavLink href="/ordload">Conges</NavLink>
+                &nbsp;|&nbsp;
+                <!-- Add other links similarly -->
+            </div>
+            <!-- Content Row -->
+            <div class="col d-flex align-items-start flex-grow-1"
+                 style="overflow-y:auto; max-height: calc(100vh - 50px);">
+                <!-- This will take up remaining space due to flex-grow-1 -->
+                <div class="ord-content-container">
+                    @Body
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    private bool isLoading = true;
+    //public MyODataContext curODContext;
+    //public Gxorga curOrga = new Gxorga();
+    //public MyShareVars toChild = new();
+    private bool allEnable = false;
+    void NavigateBack()
+    {
+        _navmanager.NavigateTo("/");
+    }
+}

@@ -1,0 +1,997 @@
+﻿@page "/ictposts"
+@layout IagrMenu
+
+@using System
+@using System.Collections.ObjectModel
+@using System.ComponentModel.DataAnnotations
+@using System.Dynamic
+@using System.Linq.Expressions
+@using System.Net.Http.Headers
+@using System.Reflection
+@using System.Security.Claims
+@using System.Text.RegularExpressions
+@using System.Web
+@using BlazorBootstrap
+@using Blazored.LocalStorage
+@using GxTier.ClieModels
+@using GxTier.Services
+@using GxShared.GlobModels
+@using GxWapi.DaModels
+@using Microsoft.AspNetCore.Components.Forms
+@using Microsoft.AspNetCore.WebUtilities
+@using Microsoft.OData.Client
+@using Newtonsoft.Json
+
+@inject ILocalStorageService _localStorage
+@inject NavigationManager _navmanager
+@inject HttpClientService _cliemanager
+
+<!-- InscTiewComponent.razor -->
+<PageTitle>Tables</PageTitle>
+
+@if (isLoading)
+{
+    <Progress class="progress mb-3">
+        <ProgressBar Width="30" Label="Schema/Poste Loading..." Type="ProgressType.StripedAndAnimated" Color="ProgressColor.Primary" />
+    </Progress>
+}
+else
+{
+    <div class="d-flex flex-column">
+        <div class="my-container">
+            @if (toChild != null)
+            {
+                @ChildContent
+            }
+        </div>
+    </div>
+    <AuthorizeView>
+        <Authorized Context="AuthContext">
+            <div class="row">
+                <div class="col-md-12 input-group align-middle">
+                    <span><b>Message :</b></span>
+                    &nbsp;&nbsp;
+                    @if (!String.IsNullOrEmpty(Imessage))
+                    {
+                        <span class="bg-info bg-opacity-10" style="font-style:italic;color:red">&nbsp;--> @Imessage</span>
+                    }
+                </div>
+            </div>
+            <div class="container-fluid-fixed-top">
+                @if (curOrga == null)
+                {
+                    <p style="color:red;">Warning: curOrga is unexpectedly null.</p>
+                }
+                else
+                {
+                    <EditForm Context="invform" Model="@curOrga">
+                        <DataAnnotationsValidator />
+                        <ValidationSummary />
+                        <div class="form-group">
+                            <div class="btn btn-group">
+                                <label class="me-2">Plan :</label>
+                                <InputSelect @bind-Value="IMyPlan" class="me-3" style="width:auto">
+                                    <option class="jchx" value="0">?plan</option>
+                                    @foreach (var upl in LsPlans)
+                                    {
+                                        <option value="@upl.Idpln" @onclick="() => SelDomPlan(1)">@upl.Liba</option>
+                                    }
+                                </InputSelect>
+                                <label class="fw-bold">@plnDom</label>
+                            </div>
+                        </div>
+                        <div class="row">
+                            @if (IMyPlan != 0)
+                            {
+                                <Grid TItem="Rubhie"
+                                      Data="@MyDaRubrs"
+                                      AllowDetailView="true"
+                                      AllowPaging="true"
+                                      Responsive="true"
+                                      OnRowClick="@OnHieRowClick"
+                                      AllowRowClick="true">
+                                    <GridColumns>
+                                        <GridColumn TItem="Rubhie" HeaderText="No">
+                                            <ChildContent Context="item">@item.Scdrub</ChildContent>
+                                        </GridColumn>
+                                        <GridColumn TItem="Rubhie" HeaderText="Designation">
+                                            <ChildContent Context="item">@item.Liba</ChildContent>
+                                        </GridColumn>
+                                        <GridColumn TItem="Rubhie" HeaderText="abrege">
+                                            <ChildContent Context="item">@item.Abg</ChildContent>
+                                        </GridColumn>
+                                        <GridColumn TItem="Rubhie" HeaderText="actions">
+                                            <ChildContent Context="item">
+                                                
+                                            </ChildContent>
+                                        </GridColumn>
+                                    </GridColumns>
+                                    <GridDetailView TItem="Rubhie" Context="parent">
+                                        <Grid TItem="Rubpst"
+                                              Data="@GetPostes(parent)"
+                                              AllowPaging="true"
+                                              Responsive="true">
+                                            <GridColumns>
+                                                <GridColumn TItem="Rubpst" HeaderText="Code">
+                                                    <ChildContent Context="item">
+                                                        @if (EditingFmtRowGuid == item.Rowguid)
+                                                        {
+                                                            <InputText @bind-Value="draftFmt.Padres"
+                                                                       placeholder="code"
+                                                                       id="rucode"
+                                                                       onblur="@(() => OnBlurHandler(parent, draftFmt))"
+                                                                       onmouseleave="@(() => OnBlurHandler(parent, draftFmt))"
+                                                                       pattern="@($"[0-9]{{{_lgcdu}}}")"
+                                                                       title="@($"{_lgcdu} chiffres obligatoires et unique")" 
+                                                                       required />
+                                                            @if (!string.IsNullOrEmpty(Jmessage))
+                                                            {
+                                                                <div class="text-danger small">@Jmessage</div>
+                                                            }
+                                                        }
+                                                        else
+                                                        {
+                                                            @item.Padres
+                                                        }
+                                                    </ChildContent>
+                                                </GridColumn>
+                                                <GridColumn TItem="Rubpst" HeaderText="Libelle">
+                                                    <ChildContent Context="item">
+                                                        @if (EditingFmtRowGuid == item.Rowguid)
+                                                        {
+                                                            <input @bind="draftFmt.Liba" />
+                                                        }
+                                                        else
+                                                        {
+                                                            @item.Liba
+                                                        }
+                                                    </ChildContent>
+                                                </GridColumn>
+                                                <GridColumn TItem="Rubpst" HeaderText="Abrege">
+                                                    <ChildContent Context="item">
+                                                        @if (EditingFmtRowGuid == item.Rowguid)
+                                                        {
+                                                            <input @bind="draftFmt.Abg" />
+                                                        }
+                                                        else
+                                                        {
+                                                            @item.Abg
+                                                        }
+                                                    </ChildContent>
+                                                </GridColumn>
+                                                <GridColumn TItem="Rubpst" HeaderText="Eta">
+                                                    <HeaderContent>
+                                                        @if (allEnable)
+                                                        {
+                                                            <button class="btn btn-primary btn-sm" @onclick="() => OpenPstmodal(curHier)">
+                                                                ➕ Add
+                                                            </button>
+                                                        }
+                                                        else
+                                                        {
+                                                            <button class="btn btn-info btn-sm" @onclick="ToggleFiltering">
+                                                                @(isFilteringEnabled ? "🚫 Out Filter" : "🔍 In Filter")
+                                                            </button>
+                                                        }
+                                                    </HeaderContent>
+                                                    <ChildContent Context="item">
+                                                        @if (EditingFmtRowGuid == item.Rowguid)
+                                                        {
+                                                            <InputSelect @bind-Value="draftFmt.Eta">
+                                                                <option class="jchx" value="0">?choisir</option>
+                                                                @foreach (var tob in LsFixes.Where(ut => ut.Gvars == 32 && ut.Itb == 1 && ut.Elea != 0))
+                                                                {
+                                                                    <option value="@tob.Elea">@tob.Liba</option>
+                                                                }
+                                                            </InputSelect>
+                                                        }
+                                                        else
+                                                        {
+                                                            <InputSelect @bind-Value="item.Eta" disabled="true">
+                                                                <option class="jchx" value="0">?choisir</option>
+                                                                @foreach (var tob in LsFixes.Where(ut => ut.Gvars == 32 && ut.Itb == 1 && ut.Elea != 0))
+                                                                {
+                                                                    <option value="@tob.Elea">@tob.Liba</option>
+                                                                }
+                                                            </InputSelect>
+                                                        }
+                                                    </ChildContent>
+                                                </GridColumn>
+                                                <GridColumn TItem="Rubpst" HeaderText="Actions" IsVisible="@(allEnable)" Filterable="false">
+                                                    <ChildContent Context="item">
+                                                        @if (IsFmtEditing(item))
+                                                        {
+                                                            <button class="btn btn-sm btn-success" @onclick="() => ConfEdingFmt(draftFmt)">
+                                                                💾 Save
+                                                            </button>
+                                                            <button class="btn btn-sm btn-secondary" @onclick="() => CancEdingFmt(draftFmt)">
+                                                                ❎ Cancel
+                                                            </button>
+                                                        }
+                                                        else if (ConfirmingDeleteRowGuid == item.Rowguid)
+                                                        {
+                                                            <button class="btn btn-sm btn-outline-danger" @onclick="() => PromptRubDelete(item)">
+                                                                🗑️ Delete
+                                                            </button>
+                                                            <button class="btn btn-sm btn-success" @onclick="() => ConfirmRubDelete(item)">
+                                                                ✅ Confirm
+                                                            </button>
+                                                            <button class="btn btn-sm btn-secondary" @onclick="CancelRubDelete">
+                                                                ❌ Cancel
+                                                            </button>
+                                                        }
+                                                        else
+                                                        {
+                                                            <button class="btn btn-sm btn-primary me-1 @(allEnable ? "" : "disabled-action")"
+                                                                    disabled="@(EditingFmtRowGuid != null)"
+                                                                    @onclick="() => PromptFmtEdit(item)">
+                                                                ✏️ Edit
+                                                            </button>
+                                                            <button class="btn btn-sm btn-outline-danger @(allEnable ? "" : "disabled-action")"
+                                                                    disabled="@(EditingFmtRowGuid != null)"
+                                                                    @onclick="() => PromptRubDelete(item)">
+                                                                🗑️ Delete
+                                                            </button>
+                                                        }
+                                                    </ChildContent>
+                                                </GridColumn>
+                                            </GridColumns>
+                                        </Grid>
+                                    </GridDetailView>
+                                </Grid>
+                            }
+                        </div>
+                    </EditForm>
+                }
+            </div>
+            <!-- Modal for ADDING Rubpst -->
+                <Modal @ref="pstModal" class="modal-wide" Title="@pstTitle" ShowCloseButton="false">
+                    <BodyTemplate>
+                        <div class="p-0">
+                        <Grid TItem="Rubpst"
+                              Data="@GrubNewRows"
+                              AllowPaging="false"
+                              Responsive="true"
+                              AllowRowClick="false">
+                            <GridColumns>
+                                <GridColumn TItem="Rubpst" HeaderText="No">
+                                    <ChildContent Context="item">
+                                        <div @key="item.Rowguid">@item.Idzon</div>
+                                    </ChildContent>
+                                </GridColumn>
+                                <GridColumn TItem="Rubpst" HeaderText="Adresse">
+                                    <ChildContent Context="item">
+                                        @if (!string.IsNullOrEmpty(Jmessage))
+                                        {
+                                            <div class="text-danger small">@Jmessage</div>
+                                        }
+                                        <InputText @bind-Value="item.Padres"
+                                                   class="w-100"
+                                                   placeholder="adresse"
+                                                   id="rucode"
+                                                   onblur="@(() => OnBlurHandler(curHier, item))"
+                                                   onmouseleave="@(() => OnBlurHandler(curHier, item))"
+                                                   pattern="@($"[0-9]{{{_lgcdu}}}")"
+                                                   title="@($"{_lgcdu} chiffres obligatoires et unique")"
+                                                   required />
+                                    </ChildContent>
+                                </GridColumn>
+                                <GridColumn TItem="Rubpst" HeaderText="Designation">
+                                    <ChildContent Context="item">
+                                        @if (AddingFmtRowGuid == item.Rowguid)
+                                        {
+                                            <InputText @bind-Value="item.Liba" placeholder="libelle" />
+                                        }
+                                        else
+                                        {
+                                            @item.Liba
+                                        }
+                                    </ChildContent>
+                                </GridColumn>
+                                <GridColumn TItem="Rubpst" HeaderText="Abrege">
+                                    <ChildContent Context="item">
+                                        @if (AddingFmtRowGuid == item.Rowguid)
+                                        {
+                                            <InputText @bind-Value="item.Abg" placeholder="abrege" />
+                                        }
+                                        else
+                                        {
+                                            @item.Abg
+                                        }
+                                    </ChildContent>
+                                </GridColumn>
+                                <GridColumn TItem="Rubpst" HeaderText="Type">
+                                    <ChildContent Context="item">
+                                        @if (AddingFmtRowGuid == item.Rowguid)
+                                        {
+                                            <InputSelect @bind-Value="item.Ztyp" class="form-select form-select-sm w-100 text-truncate padding-0 margin-0 border-0">
+                                                <option class="jchx" value="0">?choisir</option>
+                                                @foreach (var tob in LsFixes.Where(ut => ut.Gvars == 32 && ut.Itb == 2 && ut.Elea != 0))
+                                                {
+                                                    <option value="@tob.Elea">@tob.Liba</option>
+                                                }
+                                            </InputSelect>
+                                        }
+                                        else
+                                        {
+                                            <InputSelect @bind-Value="item.Ztyp" class="form-select form-select-sm w-100 text-truncate padding-0 margin-0 border-0" Disabled="true">
+                                                <option class="jchx" value="0">?choisir</option>
+                                                @foreach (var tob in LsFixes.Where(ut => ut.Gvars == 32 && ut.Itb == 2 && ut.Elea != 0))
+                                                {
+                                                    <option value="@tob.Elea">@tob.Liba</option>
+                                                }
+                                            </InputSelect>
+                                        }
+                                    </ChildContent>
+                                </GridColumn>
+                                <GridColumn TItem="Rubpst">
+                                    <HeaderContent>
+                                        @if (allEnable)
+                                        {
+                                            @if (!siPstAdding)
+                                            {
+                                                <button class="btn btn-sm btn-success d-flex align-items-center" @onclick="() => PreparePoste(curHier)">
+                                                    <span class="me-1">+</span> Ajout
+                                                </button>
+                                            }
+                                        }
+                                    </HeaderContent>
+                                </GridColumn>
+                                <GridColumn TItem="Rubpst" HeaderText="">
+                                    <ChildContent Context="item">
+                                        @if (allEnable)
+                                        {
+                                            @if (siPstAdding && item.Xadd1 == -1)
+                                            {
+                                                <button class="btn btn-sm btn-success d-flex align-items-center" @onclick="() => IncludePoste(item)">
+                                                    <span class="me-1">💾</span> Inclure
+                                                </button>
+                                            }
+                                        }
+                                    </ChildContent>
+                                </GridColumn>
+                            </GridColumns>
+                        </Grid>
+                        </div>
+                    </BodyTemplate>
+                    <FooterTemplate>
+                        <Button class="btn btn-secondary" @onclick="ClosePlnModal">Cancel</Button>
+                    </FooterTemplate>
+                </Modal>
+        </Authorized>
+    </AuthorizeView>
+}
+<style>
+    .compact-select {
+        height: calc(1.5em + 0.5rem + 2px); /* match input height */
+        padding: 0.25rem 0.5rem;
+    }
+    .modal-wide .modal-dialog {
+        max-width: 50vw;
+        width: auto;
+        margin: auto;
+    }
+</style>
+@code {
+    private bool isLoading = true;
+    private bool allEnable = false;
+
+    private string Imessage = "", Jmessage="";
+
+    [CascadingParameter]
+    private Task<AuthenticationState>? AuthState { get; set; }
+    [Parameter]
+    public RenderFragment ChildContent { get; set; }
+    [Parameter]
+    public MyODataContext curODContext { get; set; }
+    [Parameter]
+    public Gxorga curOrga { get; set; } = new();
+    [Parameter]
+    public MyShareVars toChild { get; set; }
+    [Parameter]
+    public int ChxMenu { get; set; }
+    //private Tiersp gridTier = new Tiersp();
+    //private Rubvar curRub = new Rubvar();
+    //private Actsaie curActa = new Actsaie();
+    private Plngen curPlan = new Plngen();
+    private List<Rubvar> LsRubs = new List<Rubvar>();
+
+    private ClaimsPrincipal authUser;
+    private bool isAuthenticated = false;
+    private bool isOwner = false;
+
+    private string _UserId = "", plnDom = "";
+    private int _UorgId = 0;
+    private Userbag _usrBag = new Userbag();
+
+    private Dictionary<int, bool> EdState = new Dictionary<int, bool>();
+
+    //private IEnumerable<Gpvar> LsTabls = new List<Gpvar>();
+    private List<Gplan> LsPlans = new List<Gplan>();
+    private List<Gpfixe> LsFixes = new List<Gpfixe>();
+    private List<Gpvar> LsVars = new List<Gpvar>();
+
+    private int _lgcdu = 0;
+    private bool isFilteringEnabled = false;
+    //private bool isGpeFilteringEnabled = false;
+
+    private int IMyPlan = 0;
+
+    private bool IsFmtEditing(Rubpst item) => EditingFmtRowGuid == item.Rowguid;
+    private Guid? AddingFmtRowGuid; //cmodal
+    private Guid? EditingFmtRowGuid;
+
+    private Guid? ConfirmingDeleteRowGuid;
+    
+    Dictionary<int, Rubhie> rubhieMapByIdhie = new();
+
+    private bool siPstAdding = false;
+    private Modal pstModal;
+    private string pstTitle = "";
+    //private Dictionary<Guid, Rubpst> _originalSnapshots = new();
+    public List<Plngen> MyGPlans { get; set; } = new();
+    public List<Rubhie> MyDaRubrs { get; set; } = new();   
+    private Dictionary<int, List<Rubpst>> postesMap = new();
+    private List<Rubpst> GrubNewRows => postesMap.TryGetValue(curHier.Idhie, out var rows)
+    ? new List<Rubpst>(rows)
+    : new List<Rubpst>();
+
+    private bool isPstValid = false;
+    //private Rubpst nwPoste = new();
+    private Rubhie curHier = new();
+
+    //variables Fmt
+    Rubpst draftFmt = new();
+    Rubpst? editingFmt = null;
+
+    void OnHieRowClick(GridRowEventArgs<Rubhie> args)
+    {
+        Console.WriteLine($"OnHieRowClick Triggered : {args.Item.Idhie}");
+        curHier = args.Item; //get gRubsMap
+        Console.WriteLine($"X1seq {curHier.Idhie}");
+        if (curHier == null || curHier.Idhie == 0)
+        {
+            return;
+        }
+        StateHasChanged();
+    }
+    void BuildRubhieMap()
+    {
+        rubhieMapByIdhie.Clear();
+        foreach (var pln in MyGPlans)
+        {
+            foreach (var rub in pln.Rubhies)
+            {
+                rubhieMapByIdhie[rub.Idhie] = rub;
+            }
+        }
+    }
+    void OpenPstmodal(Rubhie myhie)
+    {
+        curHier = myhie;
+        if (!GrubNewRows.Any())
+        {
+            PreparePoste(myhie);
+        } else  
+        {
+            foreach (var ucr in GrubNewRows)
+            {
+                Console.WriteLine($"detached row : {ucr.Rowguid}");
+                curHier.Rubpsts.Remove(ucr);
+            }
+        }
+        pstTitle = myhie.Scdrub + "- " + myhie.Liba + " (postes en creation)";
+        pstModal.ShowAsync();
+    }
+    void ClosePlnModal()
+    { // RAZ des visions
+        pstTitle = "";
+        pstModal.HideAsync();
+    }
+    void PreparePoste(Rubhie parent)
+    {
+        isPstValid = false;
+        if (parent == null || IMyPlan == 0 || !allEnable)
+        {
+            Imessage = "REFUS, Plan non choisi";
+            return;
+        }
+        var parentId = parent.Idhie;
+        // Make sure the postesMap has an entry for this parent
+        if (!postesMap.ContainsKey(parentId))
+        {
+            postesMap[parentId] = new List<Rubpst>();
+        }
+        var existingRubpsts = parent.Rubpsts ?? new DataServiceCollection<Rubpst>();
+        var mapRubpsts = postesMap[parentId];
+        int maxIdzonFromParent = existingRubpsts.Any() ? (existingRubpsts.Max(r => r.Idzon) ?? 10) : 10;
+        int maxIdzonFromMap = mapRubpsts.Any() ? (mapRubpsts.Max(r => r.Idzon) ?? 10) : 10;
+        int maxIdzon = Math.Max(10, Math.Max(maxIdzonFromParent, maxIdzonFromMap));
+        int nextZon = maxIdzon + 1;
+        Console.WriteLine($"current newPoste zone no : {nextZon}");
+        var newPoste = CreateNewPoste(parent, nextZon);
+        postesMap[parentId].Insert(0, newPoste);
+        AddingFmtRowGuid = newPoste.Rowguid;
+        siPstAdding = true;
+        StateHasChanged();
+        
+    }
+
+    Rubpst CreateNewPoste(Rubhie parent, int nextZon)
+    {
+        return new Rubpst
+        {
+            Rowguid = Guid.NewGuid(),
+            Idhie = parent.Idhie,
+            Padres = "",
+            Pcdrub = parent.Scdrub,
+            Idzon = nextZon,
+            Zcdrub = nextZon.ToString(),
+            Gcdrub = $"{parent.Scdrub}Z{nextZon}",
+            Liba = "",
+            Abg = "",
+            Ztyp = 0,
+            Eta = 1, //1actif
+            Xadd1 = -1 //newly added
+        };
+    }
+    void IncludePoste( Rubpst mypst)
+    {
+        // Use parent Idhie as key to postesMap dictionary
+        var parentId = curHier.Idhie;
+        if (!curODContext.IsEntityTracked(mypst)) // && YaChild)
+        {
+            try
+            {
+                mypst.Xadd1 = -2;  // Mark as being added
+                if (!curODContext.IsEntityTracked(curHier))
+                {
+                    curODContext.AttachTo("Rubhies", curHier);
+                }
+
+                curODContext.AddRelatedObject(curHier, "Rubpsts", mypst);
+
+                if (!postesMap.ContainsKey(parentId))
+                {
+                    postesMap[parentId] = new List<Rubpst>();
+                }
+
+                if (!postesMap[parentId].Any(p => p.Idhie == mypst.Idhie))
+                {
+                    postesMap[parentId].Add(mypst);
+                }
+
+                curHier.Rubpsts.Add(mypst);
+                AddingFmtRowGuid = null;
+                siPstAdding = true;
+                Imessage = "Success... Rubrique ajoutee";
+                Console.WriteLine($"Success addrelatedobject : {mypst.Idhie}");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Erreur addrelatedobject : {ex.Message}");
+            }
+            StateHasChanged();
+        }
+        else
+        {
+            mypst.Xadd1 = 0;
+            Imessage = "Deja ajoute";
+        }
+    }
+    private void OnBlurHandler(Rubhie myhie, Rubpst mypst)
+    {
+        isPstValid = HandleInput(myhie, mypst);
+        Imessage = $"OnBlur active : {isPstValid}";
+        // Optionally trigger UI refresh or logging
+    }
+    private bool HandleInput(Rubhie myhie, Rubpst mypst)
+    {
+        var input = mypst.Padres?.Trim();
+        Jmessage = "";
+        // Basic null/empty check
+        if (string.IsNullOrEmpty(input))
+        {
+            Jmessage = "Le code est requis.";
+            return false;
+        }
+        // Explicit length check
+        if (input.Length != _lgcdu)
+        {
+            Jmessage = $"Le code doit contenir exactement {_lgcdu} chiffres.";
+            return false;
+        }
+        // Digit-only check/No de poste peut ne pas etre numerique
+        if (!Regex.IsMatch(input, @"^[a-zA-Z0-9_\-\/\\|{}]+$"))
+        {
+            //(!Regex.IsMatch(input, @"^\d+$")) /numeric
+            //(Regex.IsMatch(input, @"^[a-zA-Z0-9]+$")) /alphanumeric strict
+            //(Regex.IsMatch(input, @"^[a-zA-Z0-9_\-\/\\|{}]+$") /add some others characters
+            //(Regex.IsMatch(input, @"^[a-zA-Z0-9_\-\/\\|{}]{6}$")) //limit number to 6
+            //(Regex.IsMatch(input, @"^[a-zA-Z0-9_\-\/\\|{}]{4,10}$")) //limit a range 4-10
+            Jmessage = "Le code ne doit contenir que des chiffres.";
+            return false;
+        }
+        // Uniqueness check
+        var exists = myhie.Rubpsts?.Any(uva => uva.Padres == input) ?? false;
+        if (exists)
+        {
+            Jmessage = "Ce code rubrique existe déjà.";
+            return false;
+        }
+        return true;
+    }
+    private List<Rubpst> GetPostes(Rubhie parent)
+    {
+        if (parent == null) return new List<Rubpst>();
+
+        if (!postesMap.TryGetValue(parent.Idhie, out var list))
+            return new List<Rubpst>();
+
+        // Filter duplicates by Rowguid
+        var uniqueList = list
+            .GroupBy(p => p.Rowguid)
+            .Select(g => g.First())
+            .ToList();
+        return new List<Rubpst>(uniqueList);
+    }
+    // void BeginEdit(Rubpst item)
+    // {
+    //     if (!_originalSnapshots.ContainsKey(item.Rowguid))
+    //         _originalSnapshots[item.Rowguid] = Clone(item);
+    //     EditingFmtRowGuid = item.Rowguid;
+    // }
+    // private void SaveEdit(Rubpst item)
+    // {
+    //     if (curODContext.Context.GetEntityDescriptor(item) == null)
+    //     {
+    //         curODContext.Context.AttachTo("Rubpsts", item);
+    //     }
+    //     curODContext.UpdateObject(item); // track update
+    //     EditingFmtRowGuid = null;
+    //     _originalSnapshots.Remove(item.Rowguid);
+    // }
+    // private void CancelEdit(Rubhie parent, Rubpst item)
+    // {
+    //     if (_originalSnapshots.TryGetValue(item.Rowguid, out var original))
+    //     {
+    //         RestoreValues(item, original);
+    //         _originalSnapshots.Remove(item.Rowguid);
+    //         StateHasChanged();  // <-- Ensure UI refresh to show restored values
+    //     }
+    //     EditingFmtRowGuid = null;
+    // }
+    // private void RestoreValues(Rubpst target, Rubpst source)
+    // {
+    //     // Restore all fields
+    //     target.Rowguid = source.Rowguid; //RowGuid.NewGuid(), //unique
+    //     target.Idhie = source.Idhie;
+    //     target.Padres = source.Padres;
+    //     target.Pcdrub = source.Pcdrub;
+    //     target.Idzon = source.Idzon;
+    //     target.Zcdrub = source.Zcdrub;
+    //     target.Gcdrub = source.Gcdrub;
+    //     target.Liba = source.Liba;
+    //     target.Abg = source.Abg;
+    //     target.Ztyp = source.Ztyp;
+    //     target.Eta = source.Eta;
+    //     //target.Xadd1 = source.Xadd1; // <--- Mark as transient/new
+    // }
+
+    void PromptFmtEdit(Rubpst myfmt)
+    {
+        //init edition
+        myfmt.Xedt1 = 0;
+        editingFmt = myfmt;
+        //isEdingLne = true;
+        draftFmt = new Rubpst
+        {
+            Rowguid = myfmt.Rowguid,
+            Idhie = myfmt.Idhie,
+            Padres = myfmt.Padres,
+            Pcdrub = myfmt.Pcdrub,
+            Idzon = myfmt.Idzon,
+            Zcdrub = myfmt.Zcdrub,
+            Gcdrub = myfmt.Gcdrub,
+            Liba = myfmt.Liba,
+            Abg = myfmt.Abg,
+            Ztyp = myfmt.Ztyp,
+            Eta = myfmt.Eta,
+            // Copy other fields as necessary
+        };
+        //init edition
+        myfmt.Xedt1 = -1;
+        EditingFmtRowGuid = myfmt.Rowguid;
+    }
+    void CancEdingFmt(Rubpst myfmt)
+    {
+        myfmt.Xedt1 = 0;
+        //isEdingMan = false;
+        editingFmt = null;
+        draftFmt = null;
+        EditingFmtRowGuid = null;
+    }
+    void ConfEdingFmt(Rubpst myfmt)
+    {
+        if (editingFmt is not null)
+        {
+            // Restore all fields
+            editingFmt.Rowguid = myfmt.Rowguid; //RowGuid.NewGuid(), //unique
+            editingFmt.Idhie = myfmt.Idhie;
+            editingFmt.Padres = myfmt.Padres;
+            editingFmt.Pcdrub = myfmt.Pcdrub;
+            editingFmt.Idzon = myfmt.Idzon;
+            editingFmt.Zcdrub = myfmt.Zcdrub;
+            editingFmt.Gcdrub = myfmt.Gcdrub;
+            editingFmt.Liba = myfmt.Liba;
+            editingFmt.Abg = myfmt.Abg;
+            editingFmt.Ztyp = myfmt.Ztyp;
+            editingFmt.Eta = myfmt.Eta;
+            //editingFmt.Xadd1 = source.Xadd1; // <--- Mark as transient/new
+            if (!curODContext.GetAllTrackedEntities().Any(e => e.Entity == editingFmt))
+            {
+                curODContext.AttachTo("Rubpsts", editingFmt);
+            }
+            curODContext.UpdateObject(editingFmt);
+        }
+        myfmt.Xedt1 = 0;
+        //isEdingMan = false;
+        editingFmt = null;
+        EditingFmtRowGuid = null;
+    }
+    private void PromptRubDelete(Rubpst item)
+    {
+        ConfirmingDeleteRowGuid = item.Rowguid;
+    }
+    private void CancelRubDelete()
+    {
+        ConfirmingDeleteRowGuid = null;
+    }
+    private void ConfirmRubDelete(Rubpst row)
+    {
+        var parent = curHier;
+        if (parent == null)
+            return;
+        Console.WriteLine($"del parent {parent.Liba} and row id : {parent.Idhie}");
+        if (!postesMap.TryGetValue(parent.Idhie, out var coll))
+            return;
+        Console.WriteLine($"postesMap {postesMap.Count}");
+        // For existing rows: mark for OData deletion and remove locally
+        if (curODContext.IsEntityTracked(row))
+        {
+            curODContext.DeleteObject(row); // Mark for deletion in OData context
+        }
+        else
+        {
+            curODContext.Detach(row); // Mark for deletion in OData context
+        }
+        coll.Remove(row);                       // Remove for UI update
+        parent.Rubpsts.Remove(row);             // Remove from tracked collection
+
+        EditingFmtRowGuid = null;
+        StateHasChanged(); // Notify UI about changes
+    }
+    protected override async Task OnInitializedAsync()
+    {
+        isLoading = true;
+        if (toChild == null)
+        {
+            Console.WriteLine("TOCHILD IS NULL");
+            return;
+        }
+        isAuthenticated = toChild.isAuthenticated;
+        authUser = toChild.authUser;
+        if (!isAuthenticated)
+        {
+            Imessage = "Erreur, Utilisateur non authentifie";
+            return;
+        }
+        LsVars = toChild.LsVars;
+        LsFixes = toChild.LsFixes;
+        //LsTabls = toChild.LsTabls.ToList();
+        LsPlans = toChild.LsPlans.Where(pl => pl.Ptyp == 4).ToList();
+      
+        _lgcdu = 3;
+        var noslims = LsVars.Where(uv => uv.Idhie == 0 && uv.Gvars == 21 && uv.Itb == 1 && uv.Elea == 7);
+        if (noslims.Any()) _lgcdu = noslims.FirstOrDefault().Ivala;
+
+        MyGPlans = curOrga.Plngens.Where(pl => pl.Ptyp == 4).ToList();
+        if (MyGPlans.Any())
+        {
+            Console.WriteLine($"3nb. Plans : {MyGPlans.Count()}");
+            curPlan = MyGPlans.Where(pl => pl.Idpln == IMyPlan).FirstOrDefault();
+        }
+
+        MyDaRubrs = new();
+        //MyDaPosts = new();
+        await LoadGRubsAsync();
+        await ChargeParentData();
+        _navmanager.LocationChanged += OnLocationChanged;
+        // RubpstContext = GridContextFactory.Create(
+        //             MyDaPosts.ToList(),
+        //             item => item.Rowguid,
+        //             item => item.Xadd1 == -1
+        //         );
+        //rubpstActions = RubpstContext.Actions;
+        // foreach (var item in MyDaPosts)
+        // {
+        //     RubpstContext.RowManager.Add(item);
+        // }
+        BuildRubhieMap();
+        isLoading = false;
+    }
+    private async Task ChargeParentData()
+    {
+        //domTitle = "Postes";
+        Imessage = "Donnees Postes chargees";
+    }
+    private async Task LoadGRubsAsync()
+    {
+        int pisa = 2;
+        try
+        {
+            //var expand = "Rubhies,Rubhies($expand=Rubpsts)";
+            //var dxplns = await curODContext.LoadFilteredAsync<Plngen>(expand: expand);
+            var dxplns = curOrga.Plngens;
+            MyGPlans = new List<Plngen>(dxplns.Where(pl => pl.Ptyp == 4)).ToList(); //orga services-postes
+            Console.WriteLine($"nb Rubhie Plans interne {MyGPlans.Count()}");
+            if (MyGPlans.Any())
+            {
+                //1er
+                var icplan = MyGPlans.FirstOrDefault();
+                if (icplan == null)
+                {
+                    Console.WriteLine("No plan found for the current user.");
+                    return;
+                }
+                pisa = 4;
+                MyDaRubrs = new List<Rubhie>(icplan.Rubhies.ToList());
+                Console.WriteLine($"nb.hier wl {MyDaRubrs.Count()}");
+            }
+            else
+            {
+                Console.WriteLine("No plan found for the current user.");
+            }
+            Console.WriteLine($"nb rubhies recu : {pisa} et {MyDaRubrs.Count()}");
+            Imessage = "Donnees Postes chargees";
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"stack trace : {ex.StackTrace} place : {pisa} ex-mess : {ex.Message} and also in-mess: {ex.InnerException}");
+        }
+    }
+    //manage SAVING
+    public async Task EdtAll()
+    {
+        allEnable = true;
+        EditingFmtRowGuid = null;
+    }
+    public async Task CncAll()
+    { //reload to annul AddObject/UpdateObject/DeleteObjet
+        Imessage = "Annulation Operations, patience...";
+        allEnable = false;
+        EditingFmtRowGuid = null;
+        Imessage = "";
+    }
+    public async Task SavAll()
+    {
+        Imessage = "Enregistrement Operations, patience...";
+        allEnable = false;
+        EditingFmtRowGuid = null;
+        await curODContext.SaveDataAsync();
+    }
+    private void SelDomPlan(int orig)
+    {
+        Console.WriteLine("Denier Feterdah");
+        try
+        {
+            plnDom = "";
+            if (IMyPlan != 0 && MyGPlans.Any())
+            {
+                curPlan = MyGPlans.Where(pl => pl.Idpln == IMyPlan).FirstOrDefault();
+                if (curPlan != null)
+                {
+                    var pdoms = LsFixes.Where(uf => uf.Gvars == 36 && uf.Itb == 1 && uf.Gp1 == 4 && uf.Elea == curPlan.Toatr).ToList();
+                    if (pdoms.Any())
+                    {
+                        plnDom = "(" + pdoms.FirstOrDefault().Liba + ")";
+                    }
+                    MyDaRubrs = new List<Rubhie>(curPlan.Rubhies.ToList());
+                }
+            }
+            else
+            {
+                plnDom = "";
+                curPlan = new();
+                MyDaRubrs = new();
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Posts exception {ex.Message} et trace {ex.StackTrace}");
+        }
+    }
+    //private void OnInRubHier(GridRowEventArgs<Rubhie> args) //current RUBR
+    //{
+        //curParent = (Rubhie)args.Item;
+        //if (myhier != null)
+        //{
+        //    curParent = myhier;
+        //}
+        // var myhier = (Rubhie)args.Item;
+        // if (myhier != null)
+        // {
+        //     MyDaPosts = new List<Rubpst>(myhier.Rubpsts.Where(pln => pln.Idhie == myhier.Idhie));
+        //     //Imessage =$"nb posts : {MyDaPosts.Count()}";
+        // }
+        // else
+        // {
+        //     //Imessage = "nb posts : zeros ";
+        //     MyDaPosts = new();
+        // }
+    //}
+    private void OnInRubPost(GridRowEventArgs<Rubpst> args)
+    {
+        var mypst = (Rubpst)args.Item;
+        //other code
+    }
+    // private Rubpst Clone(Rubpst source)
+    // {
+    //     return new Rubpst
+    //     {
+    //         Rowguid = source.Rowguid,
+    //         Idhie = source.Idhie,
+    //         Padres = source.Padres,
+    //         Pcdrub = source.Pcdrub,
+    //         Idzon = source.Idzon,
+    //         Zcdrub = source.Zcdrub,
+    //         Gcdrub = source.Gcdrub,
+    //         Liba = source.Liba,
+    //         Abg = source.Abg,
+    //         Ztyp = source.Ztyp,
+    //         Eta = source.Eta,
+    //         //Xadd1 = source.Xadd1,
+    //         // Copy other fields as necessary
+    //     };
+    // }
+    bool AreRowsEqual(Rubpst row1, Rubpst row2) =>
+        row1.Adseq == row2.Adseq && row1.Zcdrub == row2.Zcdrub;
+    private void ToggleFiltering()
+    {
+        isFilteringEnabled = !isFilteringEnabled;
+    }
+    private string GetStyle(int? itemId)
+    {
+        int oId = Convert.ToInt32(itemId);
+        Console.WriteLine($" style state : {oId}");
+        return EdState.TryGetValue(oId, out bool onEditing) && onEditing
+        ? "background-color:yellow;"
+        : "";
+    }
+    private string GetButton(int itemId)
+    {
+        int oId = Convert.ToInt32(itemId);
+        return EdState.TryGetValue(oId, out bool onEditing) && onEditing ? "Confirm" : "Edit";
+    }
+    private void OnLocationChanged(object sender, LocationChangedEventArgs e)
+    {
+        allEnable = false;
+        SaveCurEntities();
+    }
+    private void SaveCurEntities()
+    {
+        Console.WriteLine($"Entities SAVED");
+        try
+        {
+            Console.WriteLine("SAVED PLUS");
+            curODContext.SaveDataAsync();
+            //var wrkplns = curOrga.Plngens.Where(pl => pl.Ptyp == 3 && pl.Totyp == IMyAtr && pl.Tovers == 1).ToList();
+            //MyDaPlans = wrkplns;
+            StateHasChanged();
+        }
+        catch (Exception ex)
+        {
+            //Alert($"ECHEC Entities not SAVED");
+        }
+    }
+}

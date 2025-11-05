@@ -1,0 +1,273 @@
+﻿@page "/paccumodal";
+
+@using GxShared.GlobModels
+@using GxWapi.DaModels
+@using System.Net.Http.Headers
+@using Newtonsoft.Json
+@using GxStk.Services
+
+
+@* @inject IHttpClientFactory _httpfacClient *@
+@inject HttpClientService _httpClie
+<div>
+    @strmeta
+</div>
+<div>ici cest modal recep test</div>
+<div class="my-container">
+    @ChildContent
+</div>
+<div class="modal fade @(IsVisible ? "show" : "")" tabindex="-1" style="display: @(IsVisible ? "block" : "none")" aria-modal="true" role="dialog">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title"><h2>@Title</h2></div>
+                <button type="button" class="btn-close" @onclick="CloseModal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body bg-info bg-opacity-50 text-black">
+                
+                <div class="d-flex flex-column">
+                    @foreach (var upie in LsmFixes.Where(uv => uv.Gvars == 53 && uv.Itb == 3 && uv.Elea != 0))
+                    {
+                        var lsPics = LsmVars.Where(ud => ud.Gvars == 3 && ud.Itb == 2 && ud.Totyp == @upie.Elea && ud.Elea != 0).ToList();
+                        @if (lsPics.Count() > 0){
+                            <div class="d-flex flex-row">
+                                <div><b><i>@upie.Liba</i></b></div>
+                            </div>
+                            @foreach (var udw in lsPics)
+                            {
+                                <div class="d-flex flex-row">
+                                    <div>
+                                        <label for="idphoto">@udw.Liba</label>
+                                        <InputFile id="idphoto" OnChange="HandleFileSelected" accept="image/*" />
+                                        <button @onclick="UploadFile">Upload</button>
+                                    </div>
+                                </div>
+                            }
+                        }
+                    }
+                </div>
+                <!-- Here you can bind inputs to properties of Entity -->
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" @onclick="CloseModal">Annuler</button>
+                <button type="button" class="btn btn-primary" @onclick="SaveChanges">Accepter</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    [CascadingParameter]
+    public Default.Container _icontext { get; set; }
+    [CascadingParameter(Name = "EnrolMenu")]
+    public EnrolMenu EnrolVue { get; set; }
+    [Parameter]
+    public RenderFragment ChildContent { get; set; }
+
+    private bool success, errors;
+    private string successmsg = "";
+    private List<string> errorList = new List<string>();
+    //liste dynamic data
+    // public IQueryable<Tiewel> InTwels = Enumerable.Empty<Tiewel>().AsQueryable();
+    // public IQueryable<Tiersp> InTiers = Enumerable.Empty<Tiersp>().AsQueryable();
+    // public IQueryable<Gsapl> InApls = Enumerable.Empty<Gsapl>().AsQueryable();
+
+    private IBrowserFile selectedFile;
+    private HttpClient _apiClient;
+    // public IEnumerable<Tiewel> ResTiw;
+    // public Tiewel opTwel = new();
+    // public IEnumerable<Tiersp> ResTie;
+    // public Tiersp opTier = new();
+
+    [Parameter]
+    public bool IsVisible { get; set; }
+    [Parameter]
+    public EventCallback<bool> IsVisibleChanged { get; set; }
+    [Parameter]
+    public string Title { get; set; }   
+    [Parameter]
+    public GxWapi.DaModels.Tiewel Entity { get; set; } // Replace with your actual entity type
+    [Parameter]
+    public List<Gpvar> LsmVars { get; set; }
+    [Parameter]
+    public List<Gpfixe> LsmFixes { get; set; }
+    [Parameter]
+    public EventCallback<GxWapi.DaModels.Tiewel> OnSave { get; set; } // Callback to return the modified entity
+    private ProgressBar progressBar;
+    private string strmeta = "", strmeta2 = "";
+
+    protected override async Task OnInitializedAsync()
+    {
+        //isSubmenuVisible = false;
+        int pita = 0;
+        ////Ugpe = 1; //initial Cible
+        //apres Ugpe
+        LsmVars = EnrolVue.LsVars;
+        LsmFixes = EnrolVue.LsFixes;
+        // pita = 3;
+        // await LoadTiwsAsync();
+        // pita = 4;
+        // await LoadTiesAsync();
+        // pita = 5;
+        // Console.WriteLine("TIERS A ETE TESTE");
+    }
+    // private async Task LoadTiwsAsync()
+    // {
+    //     var result = await _icontext.Tiewels.ExecuteAsync();
+    //     ResTiw = result;
+    //     try
+    //     {
+    //         InTwels = ResTiw.AsQueryable();
+    //         opTwel = InTwels.FirstOrDefault();
+    //         //tst = 3;
+    //         if (opTwel != null)
+    //         {
+    //             //tst = 4;
+    //             strmeta = opTwel.Nom;
+    //             strmeta2 = opTwel.Tiwatrs.Count().ToString();
+    //             Console.WriteLine($"1INTIE 111/ {strmeta} / {strmeta2}");
+    //             //InApls = untie.IdorgNavigation.Gsapls.ToList();
+    //             //tst = 5;
+    //         }
+    //         else
+    //         {
+    //             //tst = 6;
+    //             InApls = Enumerable.Empty<Gsapl>().AsQueryable();
+    //             if (result != null)
+    //             {
+    //                 InTwels = ResTiw.AsQueryable();
+    //             }
+    //             else
+    //             {
+    //                 InTwels = Enumerable.Empty<Tiewel>().AsQueryable();
+    //             }
+    //         }
+    //         Console.WriteLine($"1INTIE 222 {InTwels.Count()}");
+    //     }
+    //     catch (Exception ex)
+    //     {
+    //         //strmeta = _entityManager.strmeta;
+    //         Console.WriteLine($"1Probleme EntityManagment : {ex.Message}");
+    //     }
+    //     Console.WriteLine("1SORTIE");
+    // }
+    // private async Task LoadTiesAsync()
+    // {
+    //     var result2 = await _icontext.Tiersps.ExecuteAsync();
+    //     ResTie = result2;
+    //     try
+    //     {
+    //         //tst = 2;
+    //         InTiers = ResTie.AsQueryable();
+    //         opTier = InTiers.FirstOrDefault();
+    //         //tst = 3;
+    //         if (opTier != null)
+    //         {
+    //             //tst = 4;
+    //             strmeta = opTier.Nom;
+    //             strmeta2 = opTier.Tieatrs.Count().ToString();
+    //             Console.WriteLine($"2INTIE 111/ {strmeta} / {strmeta2}");
+    //             InApls = opTier.IdorgNavigation.Gsapls.AsQueryable();
+    //             //tst = 5;
+    //         }
+    //         Console.WriteLine($"2INTIE 222 {InTwels.Count()}");
+    //     }
+    //     catch (Exception ex)
+    //     {
+    //         //strmeta = _entityManager.strmeta;
+    //         Console.WriteLine($"2Probleme EntityManagment : {ex.Message}");
+    //     }
+    //     Console.WriteLine("2SORTIE");
+    // }
+
+    private void CloseModal()
+    {
+        IsVisible = false;
+        IsVisibleChanged.InvokeAsync(IsVisible);
+    }
+
+    private async Task SaveChanges()
+    {
+        // Optionally, perform any validation or processing here
+        await OnSave.InvokeAsync(Entity);
+        CloseModal();
+    }
+    private void HandleFileSelected(InputFileChangeEventArgs e)
+    {
+        selectedFile = e.File;
+    }
+    private async Task UploadFile()
+    {
+        if (selectedFile == null)
+        {
+            errors = true;
+            errorList.Add("Echec, No file selected.");
+            return;
+        }
+
+        var content = new MultipartFormDataContent();
+        var fileContent = new StreamContent(selectedFile.OpenReadStream(maxAllowedSize: 10485760)); // 10 MB max
+        fileContent.Headers.ContentType = new MediaTypeHeaderValue(selectedFile.ContentType);
+
+        content.Add(fileContent, "file", selectedFile.Name);
+        //pour le load des images et photos
+        var strcall = await _httpClie.SendRequestAsync("AUTHClient", HttpMethod.Post, "lgfileup/upload");//, logModel);
+        //Console.WriteLine($"21RECU DE LOGIN {strcall}");
+        var response = JsonConvert.DeserializeObject<LoginResult>(strcall);
+        Console.WriteLine($"22RECU DE LOGIN {response}");
+        //_apiClient = _httpfacClient.CreateClient("BZEClient");
+
+        //var response = await _apiClient.PostAsync("lgfileup/upload", content);
+
+        // if (response.IsSuccessStatusCode)
+        // {
+        //     errors = true;
+        //     errorList.Add("Success, File uploaded successfully.");
+        //     return;
+        // }
+        // else
+        // {
+        //     errors = true;
+        //     errorList.Add("Echec, File upload failed.");
+        //     return;
+        // }
+    }
+    // private async Task UploadFile()
+    // {
+    //     if (selectedFile == null)
+    //     {
+    //         errors = true;
+    //         errorList.Add("Echec, No file selected.");
+    //         return;
+    //     }
+
+    //     var content = new MultipartFormDataContent();
+    //     var fileContent = new StreamContent(selectedFile.OpenReadStream(maxAllowedSize: 10485760)); // 10 MB max
+    //     fileContent.Headers.ContentType = new MediaTypeHeaderValue(selectedFile.ContentType);
+
+    //     content.Add(fileContent, "file", selectedFile.Name);
+    //     //pour le load des images et photos
+    //     _apiClient = _httpfacClient.CreateClient("BZEClient");
+
+    //     var response = await _apiClient.PostAsync("lgfileup/upload", content);
+
+    //     if (response.IsSuccessStatusCode)
+    //     {
+    //         errors = true;
+    //         errorList.Add("Success, File uploaded successfully.");
+    //         return;
+    //     }
+    //     else
+    //     {
+    //         errors = true;
+    //         errorList.Add("Echec, File upload failed.");
+    //         return;
+    //     }
+    // }
+}
+<CascadingValue Value="_icontext">
+    <RecpTiw>
+        <CascadingValue Value="_icontext"></CascadingValue>
+    </RecpTiw>
+</CascadingValue>
+

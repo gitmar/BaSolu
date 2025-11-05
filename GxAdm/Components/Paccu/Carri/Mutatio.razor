@@ -1,0 +1,1195 @@
+﻿@page "/mutatio"
+@layout EnrolMenu
+
+@using System
+@using System.Collections.ObjectModel
+@using System.ComponentModel.DataAnnotations
+@using System.Dynamic
+@using System.Linq.Expressions
+@using System.Net.Http.Headers
+@using System.Reflection
+@using System.Security.Claims
+@using System.Text.RegularExpressions
+@using System.Web
+@using BlazorBootstrap
+@using Blazored.LocalStorage
+@using GxAdm.ClieModels
+@using GxAdm.Components.Paccu.RtPer
+@using GxAdm.Services
+@using GxShared.GlobModels
+@using GxWapi.DaModels
+@using Microsoft.AspNetCore.Components.Forms
+@using Microsoft.AspNetCore.WebUtilities
+@using Microsoft.OData.Client
+@using Newtonsoft.Json
+
+@inject ILocalStorageService _localStorage
+@inject NavigationManager _navmanager
+@inject HttpClientService _cliemanager
+@inject SessionContextService _sessionContext
+@inject RendAgres _rendAgres
+
+<!-- InscTiewComponent.razor -->
+<PageTitle>Tables</PageTitle>
+
+@if (allEnable)
+{
+    
+}
+<div class="row">
+    <div class="col-md-12 input-group align-middle">
+        @if (Ugpe != 0)
+        {
+            <div class="form-group">
+                @* <span class="text-uppercase text- text-success"><b>@strComp</b></span> *@
+                @if (!allEnable)
+                {
+                    <span class="separator">&nbsp; &nbsp;|| </span>
+                    <Button class="btn btn-sm btn-secondary btnsz"
+                            style="@(!allEnable ? "" : "display:none;")"
+                            @onclick="EdtAll">
+                        Modifier
+                    </Button>
+                }
+            </div>
+            @if (allEnable)
+            {
+                <div class="form-group">
+                    <Button class="btn btn-sm btn-secondary btnsz"
+                            @onclick="CncAll">
+                        Annuler
+                    </Button>
+                    <span class="separator">|  </span>
+                    <Button class="btn btn-sm btn-secondary btnsz"
+                            @onclick="SavAll">
+                        Enregistrer
+                    </Button>
+                    <div>
+                        &nbsp;&nbsp;
+                        <Button class="btn btn-warning btn-sm" @onclick="() => OuvrirFiche()">
+                            @stopenFich
+                        </Button>
+                    </div>
+                </div>
+            }
+        }
+    </div>
+</div>
+<!--VISIBLE SAISIE-->
+@if (isFicheVisible)
+{
+    <RtV11Fic @ref="myftie"
+              curOrga="@curOrga"
+              toChild="@toChild"
+              curODContext="@curODContext"
+              curTier="@curTier">
+        <ChildContent>
+            <h2 class="child-box">Fiche d'Inscription</h2>
+        </ChildContent>
+    </RtV11Fic>
+}
+@if (isLoading)
+{
+    <Progress class="progress mb-3">
+        <ProgressBar Width="30" Label="Integration/Tiers Loading..." Type="ProgressType.StripedAndAnimated" Color="ProgressColor.Primary" />
+    </Progress>
+}
+else
+{
+    <div class="d-flex flex-column">
+        <div class="my-container">
+            @if (toChild != null)
+            {
+                @ChildContent
+            }
+        </div>
+    </div>
+    <AuthorizeView>
+        <Authorized Context="AuthContext">
+            <div class="row">
+                <div class="col-md-12 input-group align-middle">
+                    <span><b>Message :</b></span>
+                    &nbsp;&nbsp;
+                    @if (!String.IsNullOrEmpty(Imessage))
+                    {
+                        <span class="bg-info bg-opacity-10" style="font-style:italic;color:red">&nbsp;--> @Imessage</span>
+                    }
+                </div>
+            </div>
+            <div class="container-fluid-fixed-top">
+                @if (curOrga == null)
+                {
+                    <p style="color:red;">Warning: curOrga is unexpectedly null.</p>
+                }
+                else
+                {
+                    <EditForm Context="invform" Model="@curOrga">
+                        <DataAnnotationsValidator />
+                        <ValidationSummary />
+                        <div class="form-group">
+                            <div class="btn btn-group">
+                                @* <label class="me-2">Domaine :</label>
+                                <InputSelect @bind-Value="ITMyDom" class="me-3" style="width:auto">
+                                    <option class="jchx" value="0">?domaine</option>
+                                    @foreach (var tob in LsDoms) //LsFixes.Where(ut => ut.Gvars == 61 && ut.Itb == 1 & ut.Elea != 0))
+                                    {
+                                        <option value="@tob.Gp2" @onclick="() => SelPlanDom(tob.Gp2)">@tob.Liba</option>
+                                    }
+                                </InputSelect> *@
+                                <label>Session : </label>
+                                <div class="text-center">
+                                    <InputSelect id="sesId" @bind-Value="IMySes">
+                                        <option value="0">session?</option>
+                                        @foreach (var oses in toChild.LsSess)
+                                        {
+                                            <option value="@oses.Idses">@oses.Sref</option>
+                                        }
+                                    </InputSelect>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            @if (!String.IsNullOrEmpty(Kmessage))
+                            {
+                                <span class="bg-info bg-opacity-10" style="font-style:italic;color:red">&nbsp;--> @Jmessage</span>
+                            }
+                        </div>
+                        <div class="row">
+                            @* @if (IMySes != 0)
+                            { *@
+                                <Tabs @bind-ActiveTabIndex="activeTabIndex" EnableFadeEffect="true">
+                                    <Tab Title="Tiers">
+                                        <Content>
+                                            <!--Contenu des Tiers-->
+                                            <div class="form-group">
+                                                <label class="fw-bold">Organigramme :</label>
+                                                <InputSelect @bind-Value="ITMyDiv" class="me-3" style="width:auto">
+                                                    <option class="jchx" value="0">?div</option>
+                                                    @foreach (var idv in _lsDivs.Where(dv => dv.Pdom == 6))
+                                                    {
+                                                        <option value="@idv.Idhie">@idv.Liba</option>
+                                                    }
+                                                </InputSelect>
+                                                @if (!allEnable)
+                                                {
+                                                    <button class="btn btn-info btn-sm" @onclick="ToggleTieFiltering">
+                                                        @(isTieFilteringEnabled ? "🚫 Out Filter" : "🔍 In Filter")
+                                                    </button>
+                                                }
+                                            </div>
+                                            <Grid TItem="Tiersp"
+                                                  Data="@MyDaTies"
+                                                  AllowDetailView="true"
+                                                  AllowRowClick="true"
+                                                  OnRowClick="@OnTierRowClick"
+                                                  AllowPaging="true"
+                                                  AllowFiltering="@isTieFilteringEnabled"
+                                                  Responsive="true">
+                                                <GridColumns>
+                                                    <GridColumn TItem="Tiersp" HeaderText="No" Filterable="false">
+                                                        <ChildContent Context="item">
+                                                            @if (item.Xadd1 == -2)
+                                                            {
+                                                                <span>?@jtie</span>
+                                                            }
+                                                            else
+                                                            {
+                                                                <span class="plnpoint">@item?.Tiesq</span>
+                                                            }
+                                                        </ChildContent>
+                                                    </GridColumn>
+                                                    <GridColumn TItem="Tiersp" HeaderText="Nom-Prenom(s)">
+                                                        <ChildContent Context="item">
+                                                            @item.Nom @item.Pnom
+                                                        </ChildContent>
+                                                    </GridColumn>
+                                                    <GridColumn TItem="Tiersp" HeaderText="Matricule">
+                                                        <ChildContent Context="item">
+                                                            @if (editingTiwRowGuid == item.Rowguid)
+                                                            { // show draftTiw inputs
+                                                            }
+                                                        </ChildContent>
+                                                    </GridColumn>
+                                                    <GridColumn TItem="Tiersp" Class="col-md-2" HeaderText="ActuelDivision">
+                                                        <ChildContent Context="item">
+                                                            <InputSelect class="standard-width" id="TypDiv" @bind-Value="item.Idhie" disabled>
+                                                                <option value="0">Aucun</option>
+                                                                @foreach (var divo in _lsDivs)
+                                                                {
+                                                                    <option value="@divo.Idhie">@divo.Liba</option>
+                                                                }
+                                                            </InputSelect>
+                                                        </ChildContent>
+                                                    </GridColumn>
+                                                    <GridColumn TItem="Tiersp" Class="col-md-1" HeaderText="ActuelPoste">
+                                                        <ChildContent Context="item">
+                                                            <InputSelect class="standard-width" id="TypPst" @bind-Value="item.Idpst" disabled>
+                                                                <option value="0">Aucun</option>
+                                                                @foreach (var divo in _lsDivs.FirstOrDefault(d => d.Idhie == item.Idhie)?.Divpsts ?? Enumerable.Empty<Divpst>())
+                                                                {
+                                                                    <option value="@divo.Idpst">@divo.Liba</option>
+                                                                }
+                                                            </InputSelect>
+                                                        </ChildContent>
+                                                    </GridColumn>
+                                                    <GridColumn TItem="Tiersp" Class="col-md-2" HeaderText="NewDivision">
+                                                        <ChildContent Context="item">
+                                                            @if (allEnable)
+                                                            { // show draftTiw inputs
+                                                              <InputSelect class="standard-width" id="TypDiv" @bind-Value="item.Nwhie">
+                                                                  <option value="0">Aucun</option>
+                                                                    @foreach (var divo in _lsDivs)
+                                                                    {
+                                                                        <option value="@divo.Idhie">@divo.Liba</option>
+                                                                    }
+                                                                </InputSelect>
+                                                            }
+                                                            else
+                                                            {
+                                                                <InputSelect class="standard-width" id="TypDiv" @bind-Value="item.Nwpst" disabled>
+                                                                    <option value="0">Aucun</option>
+                                                                    @foreach (var divo in _lsDivs)
+                                                                    {
+                                                                        <option value="@divo.Idhie">@divo.Liba</option>
+                                                                    }
+                                                                </InputSelect>
+                                                            }
+                                                        </ChildContent>
+                                                    </GridColumn>
+                                                    <GridColumn TItem="Tiersp" Class="col-md-1" HeaderText="NewPoste">
+                                                        <ChildContent Context="item">
+                                                            @if (allEnable)
+                                                            { // show draftTiw inputs
+                                                              <InputSelect class="standard-width" id="TypPst" @bind-Value="item.Nwpst">
+                                                                  <option value="0">Aucun</option>
+                                                                    @foreach (var divo in _lsDivs.FirstOrDefault(d => d.Idhie == item.Idhie)?.Divpsts ?? Enumerable.Empty<Divpst>())
+                                                                    {
+                                                                        <option value="@divo.Idpst">@divo.Liba</option>
+                                                                    }
+                                                                </InputSelect>
+                                                            }
+                                                            else
+                                                            {
+                                                                <InputSelect class="standard-width" id="TypPst" @bind-Value="item.Nwpst" disabled>
+                                                                    <option value="0">Aucun</option>
+                                                                    @foreach (var divo in _lsDivs.FirstOrDefault(d => d.Idhie == item.Idhie)?.Divpsts ?? Enumerable.Empty<Divpst>())
+                                                                    {
+                                                                        <option value="@divo.Idpst">@divo.Liba</option>
+                                                                    }
+                                                                </InputSelect>
+                                                            }
+                                                        </ChildContent>
+                                                    </GridColumn>
+                                                    @* <GridColumn TItem="Tiersp" HeaderText="actions" IsVisible="@(allEnable)" Filterable="false">
+                                            <ChildContent Context="item">
+                                                @if (editingTiwRowGuid == item.Rowguid)
+                                                {
+                                                    <button class="btn btn-sm btn-success" @onclick="() => ConfEdingTiw(item)">
+                                                        💾 Accept
+                                                    </button>
+                                                    <button class="btn btn-sm btn-secondary" @onclick="() => CancEdingTiw(item)">
+                                                        ❎ Cancel
+                                                    </button>
+                                                }
+                                                else if (ConfirmingTieDeleteRowGuid == item.Rowguid)
+                                                {
+                                                    @* <button class="btn btn-sm btn-outline-danger" @onclick="() => PromptPlnDelete(item)">
+                                                            🗑️ Delete
+                                                        </button>
+                                                    <button class="btn btn-sm btn-success" @onclick="() => ConfirmTiwDelete(item)">
+                                                        ✅ Confirm
+                                                    </button>
+                                                    <button class="btn btn-sm btn-secondary" @onclick="CancelTiwDelete">
+                                                        ❌ Cancel
+                                                    </button>
+                                                }
+                                                else
+                                                {
+                                                    <button class="btn btn-sm btn-warning me-1 @(allEnable ? "" : "disabled-action")"
+                                                            disabled="@(editingTiwRowGuid != null)"
+                                                            @onclick="() => PromptTiwEdit(item)">
+                                                        ✏️ Edit
+                                                    </button>
+                                                    <button class="btn btn-sm btn-outline-danger @(allEnable ? "" : "disabled-action")"
+                                                            disabled="@(editingTiwRowGuid != null)"
+                                                            @onclick="() => PromptTiwDelete(item)">
+                                                        🗑️ Delete
+                                                    </button>
+                                                }
+                                            </ChildContent>
+                                        </GridColumn> *@
+                                                </GridColumns>
+                                            </Grid>
+                                        </Content>
+                                    </Tab>
+                                    <Tab Title="Matiere">
+                                        <Content>
+                                            <!--Contenu des matieres-->
+                                            <div class="form-group">
+                                                <label class="fw-bold">Schema :</label>
+                                                <InputSelect @bind-Value="IKMyDom" class="me-3" style="width:auto">
+                                                    <option class="jchx" value="0">?dom</option>
+                                                    @foreach (var idv in _lsDivs.Where(ud => ud.Pdom == 7))
+                                                    {
+                                                        <option value="@idv.Idhie">@idv.Liba</option>
+                                                    }
+                                                </InputSelect>
+                                            <label class="fw-bold">Produit :</label>
+                                            <InputSelect @bind-Value="curProd" class="me-3" style="width:auto">
+                                                <option class="jchx" value="0">?prod</option>
+                                                @foreach (var ipd in LsProds)
+                                                {
+                                                    <option value="@ipd.Idpdt">@ipd.Liba</option>
+                                                }
+                                            </InputSelect>
+                                            @if (!allEnable)
+                                            {
+                                                <button class="btn btn-info btn-sm" @onclick="ToggleArtFiltering">
+                                                    @(isArtFilteringEnabled ? "🚫 Out Filter" : "🔍 In Filter")
+                                                </button>
+                                            }
+                                            </div>
+                                            <Grid TItem="Stkart"
+                                                  Data="@MyDaArts"
+                                                  AllowDetailView="true"
+                                                  AllowRowClick="true"
+                                                  OnRowClick="@OnArtRowClick"
+                                                  AllowPaging="true"
+                                                  AllowFiltering="@isArtFilteringEnabled"
+                                                  Responsive="true">
+                                                <GridColumns>
+                                                    <GridColumn TItem="Stkart" HeaderText="No" Filterable="false">
+                                                        <ChildContent Context="item">
+                                                            @* @if (item.Xadd1 == -2)
+                                                            {
+                                                                <span>?@jtie</span>
+                                                            }
+                                                            else
+                                                            {
+                                                                <span class="plnpoint">@item?.Tiesq</span>
+                                                            } *@
+                                                        </ChildContent>
+                                                    </GridColumn>
+                                                </GridColumns>
+                                            </Grid>
+                                        </Content>
+                                    </Tab>
+                                </Tabs>
+                            @* } *@
+                        </div>
+                    </EditForm>
+                }
+            </div>
+        </Authorized>
+    </AuthorizeView>
+}
+<style>
+    .modal-wide .modal-dialog {
+        max-width: 50vw;
+        width: auto;
+        margin: auto;
+    }
+
+    .rubModal-wide .modal-dialog {
+        max-width: 65vw;
+        width: auto;
+        margin: auto;
+    }
+
+    .disabled-action {
+        pointer-events: none;
+        opacity: 0.5;
+    }
+
+    .formul.button {
+        pointer-events: none;
+        opacity: 0.5;
+        heignt: btn btn-success btn-sm
+    }
+
+    .plnpoint {
+        font-weight: bold;
+        background-color: blue;
+        color: white;
+    }
+
+    .rubpoint {
+        font-weight: bold;
+        background-color: yellow;
+        color: black;
+    }
+
+    .fmtpoint {
+        font-weight: bold;
+        background-color: darkolivegreen;
+        color: black;
+    }
+</style>
+@code {
+    private bool isLoading = true;
+    private bool allEnable = false;
+    private bool isFicheVisible = false;
+    // private AccuAfil myafl;
+
+    private string Imessage = "", Jmessage = "", Kmessage = "", stopenFich = "OuvrirRecepisse";
+    [CascadingParameter]
+    private Task<AuthenticationState>? AuthState { get; set; }
+    [Parameter]
+    public RenderFragment ChildContent { get; set; }
+    [Parameter]
+    public MyODataContext curODContext { get; set; }
+    [Parameter]
+    public Gxorga curOrga { get; set; }
+    [Parameter]
+    public MyShareVars toChild { get; set; }
+    [Parameter]
+    public int? Tgpe { get; set; }
+    [Parameter]
+    public int? Ugpe { get; set; }
+    [Parameter]
+    public int ChxMenu { get; set; }
+    //private Tiersp gridTier = new Tiersp();
+    //private Plngen curTier = new Plngen();
+    //private List<Rubvar> LsRubs = new List<Rubvar>();
+
+    private ClaimsPrincipal authUser;
+    private bool isAuthenticated = false;
+    private bool isOwner = false;
+
+    private int activeTabIndex = 0;
+    private RtV11Fic myftie { get; set; }
+    private string plnDom = "", atrTitle = "";
+
+    private Userbag _usrBag = new Userbag();
+
+    private Dictionary<int, bool> EdState = new Dictionary<int, bool>();
+
+    //private IEnumerable<Gpvar> LsTabls = new List<Gpvar>();
+
+    //private List<Gplan> LsPlans = new();
+    private List<Gpfixe> LsFixes = new();
+    private List<Gpvar> LsVars = new();
+
+    //Global
+    private int ITMyDom = 6, IKMyDom = 7;
+    //private int IMyPlan = 0, ITMyDom = 0;
+    private int IMySes, ITMyDiv = 0, IKMyDiv = 0;
+    private int IMyPln = 0, IMyVue = 0, IMyGtie = 0, IMyAtr = 0;
+    private int? tiwMax = 0, jtie = 0;
+
+    private List<Gpfixe> LsDoms = new();
+    private List<Gpfixe> LsPTyps = new();
+    private List<Gpfixe> LsPDoms = new();
+    private List<Gpfixe> LsAtrs = new();
+    private List<Gpfixe> LsGties = new();
+    private List<Gpfixe> LsVues = new();
+    private List<Gpdivh> _lsDivs = new List<Gpdivh>();
+
+    private Gpdivh _curDiv => _lsDivs.FirstOrDefault(ud => ud.Idhie == ITMyDiv);
+    private List<Gplan> LsPlans => toChild.LsPlans.Where(pl => pl.Ptyp == 4 && pl.Todom == ITMyDom).ToList();
+    private List<Stkpdt> LsProds => curOrga.Stkpdts.ToList();
+    private string atrDest = "Programmes de Saisie :";
+    private Tiersp curTier = new();
+    private Stkpdt curProd = new();
+    private Stkart curArt = new();
+    // private Rubvar curRubr = new();
+    // private Rubfmt curFmat = new();
+    private bool siTiwAdding = false;// siRubAdding = false, siFmtAdding = false;
+    private Modal plnModal; // rubModal, fmtModal;
+
+    //pere-editing/adding/deleting
+    //private Guid? addingTiwRowGuid;
+    //private Guid? addingTiwRowGuid;
+    //private Guid? ConfirmingTieDeleteRowGuid;
+
+    //private Dictionary<Guid, Plngen> _originalFixSnapshots = new();
+    //Dictionary<int, Plngen> fxpaterMapByIdpln = new();
+
+    //fils-editing/adding/deleting
+    private bool isRubCodeValid = false;
+
+    //private Guid? AddingRubRowGuid; //cmodal
+    //private Guid? EditingRubRowGuid;
+    //private Guid? ConfirmingRubDeleteRowGuid;
+
+    private Dictionary<Guid, EditContext> rowEditContexts = new();
+
+    private Dictionary<int, List<Tiersp>> gTiwsMap = new();
+    //Grid Data feed management Accepted (accorde, non rejeter et non integre
+    public List<Tiersp> MyDaTies => curOrga.Tiersps
+        .Where(tie => tie.Hiem == 0) //stade inscr tie.Wlcstat >= 4
+        .ToList();
+    public List <Tiersp> MyDaTiesAtt => curOrga.Tiersps
+       .Where(tie => tie.Hiem == ITMyDiv) //non mute
+        .ToList();
+    public List<Stkart> MyDaArts => curProd.Stkarts
+        .Where(art => art.Hiem == 0) //stade inscr tie.Wlcstat >= 4
+        .ToList();
+    public List<Stkart> MyDaArtsAtt => curProd.Stkarts
+       .Where(art => art.Hiem == ITMyDiv) //non mute
+        .ToList();
+    // enum Scenario { None, Yaeche, Yagrill, Yaschm }
+    // Scenario currentScenario =>
+    //     IMyGpln switch
+    //     {
+    //         2 => Scenario.Yaeche,
+    //         3 => Scenario.Yagrill,
+    //         4 => Scenario.Yaschm,
+    //         _ => Scenario.None
+    //     };
+    // public List<Plngen> MyDaPlans =>
+    // currentScenario switch
+    // {
+    //     Scenario.Yaeche => ITMyDom > 0
+    //         ? curOrga.Plngens
+    //             .Where(pl => pl.Ptyp == IMyGpln && pl.Todom == ITMyDom && pl.Tovers == 1)
+    //             .ToList()
+    //         : new List<Plngen>(),
+    //     Scenario.Yagrill => ITMyDom > 0 && IMyAtr > 0
+    //         ? curOrga.Plngens
+    //             .Where(pl => pl.Ptyp == IMyGpln && pl.Todom == ITMyDom && pl.Toatr == IMyAtr && pl.Totyp == IMyGtie && pl.Tovers == 1)
+    //             .ToList()
+    //         : new List<Plngen>(),
+    //     Scenario.Yaschm => ITMyDom > 0 && IMyVue > 0
+    //         ? curOrga.Plngens
+    //             .Where(pl => pl.Ptyp == IMyGpln && pl.Todom == ITMyDom && pl.Tovue == IMyVue && pl.Tovers == 1)
+    //             .ToList()
+    //         : new List<Plngen>(),
+    //     _ => new List<Plngen>()
+    // };
+
+    private Guid? addingTiwRowGuid; //pmodal
+    private Guid? editingTiwRowGuid;
+    private Guid? ConfirmingTieDeleteRowGuid;
+    // private Guid? AddingRubRowGuid; //cmodal
+    // private Guid? EditingRubRowGuid;
+    // private Guid? ConfirmingRubDeleteRowGuid;
+    // private Guid? AddingFmtRowGuid; //cmodal
+    // private Guid? EditingFmtRowGuid;
+    // private Guid? ConfirmingFmtDeleteRowGuid;
+    //pere
+    private List<Tiersp> TieNewRows => gTiwsMap.TryGetValue(curOrga.Idorg, out var rows)
+    ? new List<Tiersp>(rows)
+     : new List<Tiersp>();
+    // // //fils
+    // private List<Rubvar> GrubNewRows => gRubsMap.TryGetValue(curTier.Idpln, out var rows)
+    // ? new List<Rubvar>(rows)
+    // : new List<Rubvar>();
+    // // //petit-fils
+    // private List<Rubfmt> GfmtNewRows => gFmtsMap.TryGetValue(curRubr.Idrub, out var rows)
+    // ? new List<Rubfmt>(rows)
+    // : new List<Rubfmt>();
+
+    //filters
+    private bool isTieFilteringEnabled = false;
+    private bool isArtFilteringEnabled = false;
+    // private bool isRubFilteringEnabled = false;
+    //Modals formule
+    //Modal pForuModal = new(); //plans
+    // Modal rForuModal = new(); //rubriques
+    // Modal gForuModal = new(); //formats
+    private string patTitle = "";
+    private string patInitTitle = "";
+    //private string pstrFormu = "";
+
+
+    //variables Plan
+    Tiersp draftTiw = new();
+    Tiersp? editingTiw = null;
+    // //variables Rub
+    // Rubvar draftRub = new();
+    // Rubvar? editingRub = null;
+    // //variable fmt
+    // Rubfmt draftFmt = new();
+    // Rubfmt? editingFmt = null;
+    protected override async Task OnInitializedAsync()
+    {
+        isLoading = true;
+        //transmis par 2
+
+        LsVars = toChild.LsVars;
+        LsFixes = toChild.LsFixes;
+        LsPTyps = LsFixes.Where(uf => uf.Gvars == 34 && uf.Itb == 4 && uf.Gp2 == 1 && uf.Elea != 0).ToList();
+        LsDoms = LsFixes.Where(ut => ut.Gvars == 36 && ut.Itb == 4 && ut.Gp1 == 3 && ut.Elea != 0).ToList();
+        LsPDoms = LsFixes.Where(ut => ut.Gvars == 36 && ut.Itb == 4 && ut.Gp1 == 3 && ut.Elea != 0).ToList();
+        LsAtrs = LsFixes.Where(ut => ut.Gvars == 36 && ut.Itb == 1 && ut.Gp1 == 3 && ut.Elea != 0).ToList();
+        LsVues = LsFixes.Where(ut => ut.Gvars == 36 && ut.Itb == 4 && ut.Gp1 == 4 && ut.Elea != 0).ToList();
+        _lsDivs = toChild.LsDivs.Where(uh => uh.Sidiv == 1).ToList();
+        //_lsPsts = await _rendAgres.LoadOrgaPostes();
+        _navmanager.LocationChanged += OnLocationChanged;
+        await ChargeParentData();
+        isLoading = false;
+    }
+    private async Task ChargeParentData()
+    {
+        atrTitle = "Saisie";
+        gTiwsMap.Clear();
+        // gRubsMap.Clear();
+        // gFmtsMap.Clear();
+        gTiwsMap[curOrga.Idorg] = new List<Tiersp>(curOrga.Tiersps.Where(uf => uf.Idorg == curOrga.Idorg));
+        // foreach (var uta in curOrga.Plngens)
+        // {
+        //     List<Rubvar> tbcols = curTier.Rubvars.Where(ln => ln.Idpln == uta.Idpln).ToList();
+        //     gRubsMap[uta.Idpln] = new List<Rubvar>(tbcols);
+        //     //Console.WriteLine($"Parent Xseq: {uta.Xseq}, Children count: {tbcols.Count}");
+        // }
+        //var wrkplns = curOrga.Plngens.Where(pl => pl.Ptyp == 5 && pl.Totyp == IMyAtr && pl.Tovers == 1).ToList();
+        //MyDaPlans = wrkplns;
+        //LsDoms = LsFixes.Where(ut => ut.Gvars == 36 && ut.Itb == 4 && ut.Gp1 == 1 && ut.Elea != 0).ToList();
+    }
+    void OnTierRowClick(GridRowEventArgs<Tiersp> args)
+    {
+        Console.WriteLine($"OnTierRowClick Triggered : {args.Item.Idtie}");
+        curTier = args.Item; //get gRubsMap
+        Console.WriteLine($"X1seq {curTier.Idtie}");
+        if (curTier == null || curTier.Idtie == 0)
+        {
+            return;
+        }
+        StateHasChanged();
+    }
+    void OnArtRowClick(GridRowEventArgs<Stkart> args)
+    {
+        Console.WriteLine($"OnArtRowClick Triggered : {args.Item.Idart}");
+        curArt = args.Item; //get gRubsMap
+        Console.WriteLine($"X1seq {curArt.Idart}");
+        if (curArt == null || curArt.Idart == 0)
+        {
+            return;
+        }
+        StateHasChanged();
+    }
+    // void OnRubRowClick(GridRowEventArgs<Rubvar> args)
+    // {
+    //     Console.WriteLine($"OnChildRowClick Triggered : {args.Item.Idrub}");
+    //     curRubr = args.Item; //get gRubsMap
+    //     Console.WriteLine($"X1seq {curRubr.Idrub}");
+    //     if (curRubr == null || curRubr.Idrub == 0)
+    //     {
+    //         return;
+    //     }
+    //     StateHasChanged();
+    // }
+
+    //manage SAVING
+    public async Task EdtAll()
+    {
+        allEnable = true;
+        editingTiwRowGuid = null;
+        // EditingRubRowGuid = null;
+        // EditingFmtRowGuid = null;
+    }
+    public async Task CncAll()
+    { //reload to annul AddObject/UpdateObject/DeleteObjet
+        Imessage = "Annulation Operations, patience...";
+        allEnable = false;
+        editingTiwRowGuid = null;
+        // EditingRubRowGuid = null;
+        // EditingFmtRowGuid = null;
+        foreach (var enty in curODContext.Context.Entities.ToList())
+        {
+            if (curODContext.GetEntityState(enty) == EntityStates.Added)
+            {
+                curODContext.Detach(enty);
+            }
+        }
+        Imessage = "";
+    }
+    public async Task SavAll()
+    {
+        foreach(var tie in MyDaTies)
+        {
+            if (tie.Idhie != tie.Nwhie)
+            {
+                if (tie.Nwhie != 0)
+                {
+                    tie.Idhie = tie.Nwhie;
+                }
+            }
+            if (tie.Idpst != tie.Nwpst)
+            {
+                if (tie.Nwpst != 0)
+                {
+                    tie.Idpst = tie.Nwpst;
+                }
+            }
+            //update
+            curODContext.UpdateObject(tie);
+            //mark the mvt
+            Tiemvt nwMvt = new();
+            nwMvt.Tymvt = 1; //1mutation2affect3promo4sanct
+            nwMvt.Idtie = tie.Idtie;
+            nwMvt.Idhie = tie.Hiem; //mutation
+            nwMvt.Idpst = tie.Pstm; // mutation
+            nwMvt.Usrid = tie.Usrid;//concerne
+            nwMvt.Usrope = _sessionContext?.CurrentSession?.Userid;///operator
+            nwMvt.Idses = IMySes;
+            var wstses = toChild.LsSess.FirstOrDefault(us => us.Idses == IMySes);
+            string ustses = "";
+            if (wstses != null) ustses = wstses.Liba;
+            nwMvt.Stses = ustses;
+            nwMvt.Datope = DateTime.Now;//
+            curODContext.AddRelatedObject(tie, "Tiemvts", nwMvt);
+        }
+        allEnable = false;
+        editingTiwRowGuid = null;
+        // EditingRubRowGuid = null;
+        // EditingFmtRowGuid = null;
+        SaveCurEntities();
+        StateHasChanged();
+    }
+
+    //FILTRES
+    private void ToggleTieFiltering()
+    {
+        isTieFilteringEnabled = !isTieFilteringEnabled;
+    }
+    private void ToggleArtFiltering()
+    {
+        isArtFilteringEnabled = !isArtFilteringEnabled;
+    }
+    // private void ToggleRubFiltering()
+    // {
+    //     isRubFilteringEnabled = !isRubFilteringEnabled;
+    // }
+    // bool AreRowsEqual(Rubvar row1, Rubvar row2) =>
+    //     row1.Liba == row2.Liba && row1.Abg == row2.Abg;
+    // private void ToggleFiltering()
+    // {
+    //     isTieFilteringEnabled = !isTieFilteringEnabled;
+    // }
+    //PLAN Formule modals
+    // private void On1TwChange(ChangeEventArgs e, Tiersp mytiw, int origchk)
+    // { //chge all valid
+
+    //     bool isChecked = (bool)e.Value;
+    //     if (origchk == 1)
+    //     { //chk Valid
+    //         mytiw.Ivalid = isChecked ? 9 : 0;
+    //         if (isChecked)
+    //         {
+    //             mytiw.IsValCheck = true;
+    //             //mytiw.IsRejCheck = false;
+    //         }
+    //         // else
+    //         // {
+    //         //     mytiw.IsValCheck = false;
+    //         // }
+    //         Console.WriteLine($"Valid in Da checked {mytiw.Ivalid} et {mytiw.IsValCheck} / {mytiw.IsRejCheck}");
+    //     }
+    //     if (origchk == 2)
+    //     { //chk Rejet
+    //         mytiw.Irejet = isChecked ? 9 : 0;
+    //         if (isChecked)
+    //         {
+    //             mytiw.IsRejCheck = true;
+    //         }
+    //         // else
+    //         // {
+    //         //     mytiw.IsRejCheck = false;
+    //         // }
+    //         Console.WriteLine($"Rejet in Da checked {mytiw.Inotif} et {mytiw.IsRejCheck} / {mytiw.IsValCheck}");
+    //     }
+    //     if (origchk == 3)
+    //     { //chk Notif
+    //         mytiw.Inotif = isChecked ? 9 : 0;
+    //         if (isChecked)
+    //         {
+    //             mytiw.IsNotCheck = true;
+    //         }
+    //         // else
+    //         // {
+    //         //     mytiw.IsNotCheck = false;
+    //         // }
+    //         Console.WriteLine($"Notig in Da checked {mytiw.Inotif} et {mytiw.IsNotCheck}");
+    //     }
+    //     StateHasChanged();
+    // }
+
+    //RUBR Formule modals
+    // void showFrrubModal(Rubvar myrub)
+    // {
+    //     rstrFormu = "";
+    //     if (!String.IsNullOrEmpty(myrub.Frsource))
+    //     {
+    //         rstrFormu = myrub.Liba.Substring(0, 8);
+    //     }
+    //     curRubr = myrub;
+    //     rForuModal?.ShowAsync();
+    // }
+    // //FMT Formule modals
+    // void showFrfmtModal(Rubfmt myfmt)
+    // {
+    //     fstrFormu = "";
+    //     if (!String.IsNullOrEmpty(myfmt.Ftsource))
+    //     {
+    //         fstrFormu = myfmt.Liba.Substring(0, 8);
+    //     }
+    //     curFmat = myfmt;
+    //     gForuModal?.ShowAsync();
+    // }
+    private async Task OuvrirFiche()
+    {
+        isFicheVisible = !isFicheVisible;
+        if (isFicheVisible)
+        {
+            stopenFich = "FermerRecepisse";
+        }
+        else
+        {
+            stopenFich = "OuvrirRecepisse";
+        }
+    }
+    private bool IsPaterValid(Plngen mypl)
+    {
+        int ercpt = 0;
+        patTitle = patInitTitle;
+        if (string.IsNullOrEmpty(mypl.Liba))
+        {
+            patTitle = patTitle + "Obligatoire Designation";
+            ercpt = ercpt + 1;
+        }
+        if (mypl.Idorg == 0)
+        {
+            patTitle = patTitle + "Obligatoire Institution";
+            ercpt = ercpt + 1;
+        }
+        if (ercpt > 0)
+        {
+            patTitle = "!%2.REFUS, erreur saisie Plan(s)%! " + patTitle;
+            return false;
+        }
+        return true;
+    }
+    // private bool IsChildValid(Rubvar myrb)
+    // {
+    //     int ercpt = 0;
+    //     chlTitle = chlInitTitle;
+    //     if (string.IsNullOrEmpty(myrb.Liba))
+    //     {
+    //         chlTitle = chlTitle + "Obligatoire designation";
+    //         ercpt = ercpt + 1;
+    //     }
+    //     if (isRubCodeValid = false) //verifie scdrub
+    //     {
+    //         chlTitle = chlTitle + "Obligatoire code";
+    //         ercpt = ercpt + 1;
+    //     }
+    //     if (myrb.Idpln == 0)
+    //     {
+    //         chlTitle = chlTitle + "Obligatoire programme";
+    //         ercpt = ercpt + 1;
+    //     }
+    //     if (ercpt > 0)
+    //     {
+    //         chlTitle = "!%2.REFUS, erreur saisie Rubrique(s)%! " + gsnTitle;
+    //         return false;
+    //     }
+    //     return true;
+    // }
+    // private bool IsGsonValid(Rubfmt myft)
+    // {
+    //     int ercpt = 0;
+    //     gsnTitle = gsnInitTitle;
+    //     if (string.IsNullOrEmpty(myft.Liba))
+    //     {
+    //         gsnTitle = gsnTitle + "Obligatoire designation";
+    //         ercpt = ercpt + 1;
+    //     }
+    //     if (string.IsNullOrEmpty(myft.Zcdrub))
+    //     {
+    //         gsnTitle = gsnTitle + "Obligatoire code";
+    //         ercpt = ercpt + 1;
+    //     }
+    //     if (myft.Idrub == 0)
+    //     {
+    //         gsnTitle = gsnTitle + "Obligatoire rubrique";
+    //         ercpt = ercpt + 1;
+    //     }
+    //     int existsrow = GfmtNewRows.Where(ur => ur.Idzon == myft.Idzon).Count();
+    //     if (existsrow > 0)
+    //     {
+    //         gsnTitle = gsnTitle + "Code existe deja";
+    //         ercpt = ercpt + 1;
+    //     }
+    //     if (ercpt > 0)
+    //     {
+    //         gsnTitle = "!%2.REFUS, erreur saisie Format(s)%! " + gsnTitle;
+    //         return false;
+    //     }
+    //     return true;
+    // }
+    // private bool IsChildValid(Rubvar myrb)
+    // {
+    //     int ercpt = 0;
+    //     chlTitle = chlInitTitle;
+    //     if (string.IsNullOrEmpty(myrb.Liba))
+    //     {
+    //         chlTitle = chlTitle + "Obligatoire designation";
+    //         ercpt = ercpt + 1;
+    //     }
+    //     if (isRubCodeValid = false) //verifie scdrub
+    //     {
+    //         chlTitle = chlTitle + "Obligatoire code";
+    //         ercpt = ercpt + 1;
+    //     }
+    //     if (myrb.Idpln == 0)
+    //     {
+    //         chlTitle = chlTitle + "Obligatoire programme";
+    //         ercpt = ercpt + 1;
+    //     }
+    //     if (ercpt > 0)
+    //     {
+    //         chlTitle = "!%2.REFUS, erreur saisie Rubrique(s)%! " + gsnTitle;
+    //         return false;
+    //     }
+    //     return true;
+    // }
+    // private bool IsGsonValid(Rubfmt myft)
+    // {
+    //     int ercpt = 0;
+    //     gsnTitle = gsnInitTitle;
+    //     if (string.IsNullOrEmpty(myft.Liba))
+    //     {
+    //         gsnTitle = gsnTitle + "Obligatoire designation";
+    //         ercpt = ercpt + 1;
+    //     }
+    //     if (string.IsNullOrEmpty(myft.Zcdrub))
+    //     {
+    //         gsnTitle = gsnTitle + "Obligatoire code";
+    //         ercpt = ercpt + 1;
+    //     }
+    //     if (myft.Idrub == 0)
+    //     {
+    //         gsnTitle = gsnTitle + "Obligatoire rubrique";
+    //         ercpt = ercpt + 1;
+    //     }
+    //     int existsrow = GfmtNewRows.Where(ur => ur.Idzon == myft.Idzon).Count();
+    //     if (existsrow > 0)
+    //     {
+    //         gsnTitle = gsnTitle + "Code existe deja";
+    //         ercpt = ercpt + 1;
+    //     }
+    //     if (ercpt > 0)
+    //     {
+    //         gsnTitle = "!%2.REFUS, erreur saisie Format(s)%! " + gsnTitle;
+    //         return false;
+    //     }
+    //     return true;
+    // }
+
+    // private void SelDomPlan(int orig)
+    // {
+    //     if (orig == 1) //doms
+    //     {
+    //         if (ITMyDom != 0)
+    //         {
+    //             if (ITMyDom == 7) //matiere
+    //             {
+    //                 LsGties = LsFixes.Where(ut => ut.Gvars == 32 && ut.Itb == 6 && ut.Gp1 == 1 && ut.Gp2 != 1 && ut.Elea != 0).ToList();
+    //                 LsVues = LsFixes.Where(ut => ut.Gvars == 36 && ut.Itb == 6 && ut.Gp1 == 2 && ut.Elea != 0).ToList();
+    //             }
+    //             else //tiers
+    //             {
+    //                 LsGties = LsFixes.Where(ut => ut.Gvars == 32 && ut.Itb == 6 && ut.Gp1 == 1 && ut.Gp2 != 2 && ut.Elea != 0).ToList();
+    //                 LsVues = LsFixes.Where(ut => ut.Gvars == 36 && ut.Itb == 6 && ut.Gp1 == 1 && ut.Elea != 0).ToList();
+    //             }
+    //         }
+    //         else
+    //         {
+    //             LsVues = new List<Gpfixe>();
+    //         }
+    //     }
+    //     if (orig == 2) //gtiers
+    //     {
+    //         if (IMyGtie != 0 && ITMyDom != 0)
+    //         {
+    //             if (ITMyDom != 0)
+    //             {
+    //                 //MyDaPlans = new List<Plngen>(curOrga.Plngens.Where(pl => pl.Ptyp == 2 && pl.Todom == ITMyDom && pl.Totyp == IMyGtie && pl.Tovers == 1));
+    //             }
+    //         }
+    //         else
+    //         {
+    //             //MyDaPlans = new();
+    //         }
+    //     }
+    //     if (orig == 4)
+    //     {
+    //         if (IMyGpln != 0)
+    //         {
+    //             if (IMyGtie != 0 && ITMyDom != 0)
+    //             {
+    //                 //MyDaPlans = new List<Plngen>(curOrga.Plngens.Where(pl => pl.Ptyp == 2 && pl.Todom == ITMyDom && pl.Totyp == IMyGtie && pl.Tovers == 1));
+    //             }
+    //         }
+    //         else
+    //         {
+    //             //MyDaPlans = new();
+    //         }
+    //     }
+    // }
+    private void SelTypPlan(int xtyp)
+    {
+        // switch(xtyp)
+        // {
+        //     case 2:
+        //     case 3:
+        //     case 4:
+
+        // }
+    }
+    private void SelPlanAtr(int xatr)
+    {
+
+    }
+    private void SelPlanDom(int xdom)
+    {
+        if (xdom != 0)
+        {
+            LsGties = LsFixes.Where(ut => ut.Gvars == 36 && ut.Itb == xdom && ut.Elea != 0 && ut.Elea != 9).ToList();
+        }
+        else
+        {
+            LsGties = new();
+        }
+    }
+    void GetSelectedPlan(Gplan mypln)
+    {
+        toChild.MainOptsOk = false;
+        if (IMyPln != 0)
+        {
+            toChild.MainOptsOk = true;
+            //toChild.curExo = EnsExos.Where(ue => ue.Iexo == froMenu.Uexo).FirstOrDefault();
+            StateHasChanged();
+        }
+    }
+    // if (IMyGtie != 0 && ITMyDom != 0)
+    // {
+    //     if (ITMyDom != 0)
+    //     {
+    //         //MyDaPlans = new List<Plngen>(curOrga.Plngens.Where(pl => pl.Ptyp == 2 && pl.Todom == ITMyDom && pl.Totyp == IMyGtie && pl.Tovers == 1));
+    //     }
+    // }
+    // else
+    // {
+    //     //MyDaPlans = new();
+    // }
+    // if (IMyGpln != 0)
+    // {
+    //     if (IMyGtie != 0 && ITMyDom != 0)
+    //     {
+    //         //MyDaPlans = new List<Plngen>(curOrga.Plngens.Where(pl => pl.Ptyp == 2 && pl.Todom == ITMyDom && pl.Totyp == IMyGtie && pl.Tovers == 1));
+    //     }
+    // }
+    // else
+    // {
+    //     //MyDaPlans = new();
+    // }
+    //}
+    private void SelPlanTier(int xtie)
+    {
+
+    }
+    private void SelPlanVue(int xvue)
+    {
+
+    }
+    private void OnInRubPost(GridRowEventArgs<Rubvar> args)
+    {
+        var mypst = (Rubvar)args.Item;
+        //other code
+    }
+
+    private string GetCodeStyle()
+    {
+        return "width:50%;";
+    }
+    private string GetStyle(int? itemId)
+    {
+        int oId = Convert.ToInt32(itemId);
+        Console.WriteLine($" style state : {oId}");
+        return EdState.TryGetValue(oId, out bool onEditing) && onEditing
+        ? "background-color:yellow;"
+        : "";
+    }
+    private string GetButton(int itemId)
+    {
+        int oId = Convert.ToInt32(itemId);
+        return EdState.TryGetValue(oId, out bool onEditing) && onEditing ? "Confirm" : "Edit";
+    }
+    // private void OnChlBlurHandler(Plngen mypl, Rubvar myvar)
+    // {
+    //     Console.WriteLine("ATTENTION : En Blur....");
+    //     isRubCodeValid = HandleChlInput(mypl, myvar);
+    //     Imessage = $"OnBlur active : {isRubCodeValid}";
+    //     // Optionally trigger UI refresh or logging
+    // }
+    // private void OnChlFocusHandler(Plngen mypl, Rubvar myvar)
+    // {
+
+    // }
+
+    // private bool HandleChlInput(Plngen mypl, Rubvar myvar)
+    // {
+    //     var input = myvar.Scdrub?.Trim();
+    //     Jmessage = "";
+    //     Console.WriteLine($"code entre traiter {input}");
+    //     // Basic null/empty check
+    //     if (string.IsNullOrEmpty(input))
+    //     {
+    //         Jmessage = "Le code est requis.";
+    //         return false;
+    //     }
+    //     // Explicit length check
+    //     if (input.Length != _lgcdu)
+    //     {
+    //         Jmessage = $"Le code doit contenir exactement {_lgcdu} chiffres.";
+    //         return false;
+    //     }
+    //     // Digit-only check/No de poste peut ne pas etre numerique
+    //     if (!Regex.IsMatch(input, @"^[0-9]+$")) // @"^[a-zA-Z0-9_\-\/\\|{}]+$"))
+    //     {
+    //         //(!Regex.IsMatch(input, @"^\d+$")) /numeric
+    //         //(Regex.IsMatch(input, @"^[a-zA-Z0-9]+$")) /alphanumeric strict
+    //         //(Regex.IsMatch(input, @"^[a-zA-Z0-9_\-\/\\|{}]+$") /add some others characters
+    //         //(Regex.IsMatch(input, @"^[a-zA-Z0-9_\-\/\\|{}]{6}$")) //limit number to 6
+    //         //(Regex.IsMatch(input, @"^[a-zA-Z0-9_\-\/\\|{}]{4,10}$")) //limit a range 4-10
+    //         Jmessage = "Le code ne doit contenir que des chiffres.";
+    //         return false;
+    //     }
+    //     // Uniqueness check
+    //     var exists = mypl.Rubvars?.Any(uva => uva.Scdrub == input) ?? false;
+    //     if (exists)
+    //     {
+    //         Jmessage = "Ce code rubrique existe déjà.";
+    //         return false;
+    //     }
+    //     return true;
+    // }
+    private void OnLocationChanged(object sender, LocationChangedEventArgs e)
+    {
+        SaveCurEntities();
+    }
+    public async Task<bool> SaveCurEntities()
+    {
+        try
+        {
+            //if (hasbeenModified)
+            //{
+            await curODContext.SaveDataAsync();
+            Console.WriteLine("Saved SUCCESS");
+            //}
+            //var wrkplns = curOrga.Plngens.Where(pl => pl.Ptyp == 3 && pl.Totyp == IMyAtr && pl.Tovers == 1).ToList();
+            //MyDaPlans = wrkplns;
+            StateHasChanged();
+            return true;
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Saved ISSUE {ex.Message}");
+            //Alert($"ECHEC Entities not SAVED");
+            return false;
+        }
+    }
+}

@@ -1,0 +1,27 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace GxShared.GlobModels
+{
+    public class ResgnModel
+    {
+        public long Id { get; set; } = 0;
+        public int ReqInt { get; set; } = 0;
+        public string Usrid { get; set; } = string.Empty;
+        public int Idorg { get; set; } = 0;
+        public int Orig { get; set; } = 0;
+        public bool Succeeded { get; set; } = false;
+        public string Message { get; set; } = string.Empty;
+        public int siDrap { get; set; } = 0;
+        public int siDrap2 { get; set; } = 0;
+        public int siDrap3 { get; set; } = 0;
+        public ICollection<string> ErrNumb { get; set; } = new List<string>();
+        public ICollection<string> ErrList { get; set; } = new List<string>();
+        public DateTime Datact { get; set; } = DateTime.Now;
+        public string ReqPara1 { get; set; } = string.Empty;
+        public string ReqPara2 { get; set; } = string.Empty;
+    }
+}

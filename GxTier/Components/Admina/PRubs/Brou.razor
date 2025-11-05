@@ -1,0 +1,131 @@
+﻿<Grid TItem="Tiwafl"
+                                                                              Data="@curTiw.Tiwafls.Where(tw=>tw.Tyafl==ufl.Etyp).ToList()"
+                                                                              AllowPaging="true"
+                                                                              Responsive="true">
+                                                                            <GridColumns>
+                                                                            <GridColumn TItem="Tiwafl" HeaderText="no">
+                                                                                <HeaderContent>
+                                                                                    @if (allEnable && curAfl.Xadd1 != -1)
+                                                                                    {
+                                                                                        <button class="btn btn-primary btn-sm" @onclick="() => PrepareAddAfl(curTiw, ufl.Etyp)">
+                                                                                            ➕ Add
+                                                                                        </button>
+                                                                                    }
+                                                                                    @* else
+                                                                                    {
+                                                                                        <button class="btn btn-info btn-sm" @onclick="ToggleFiltering">
+                                                                                            @(isFilteringEnabled ? "🚫 Out Filter" : "🔍 In Filter")
+                                                                                        </button>
+                                                                                    } *@
+                                                                                </HeaderContent>
+                                                                                <ChildContent Context="item">
+                                                                                    @if (allEnable)
+                                                                                    {
+                                                                                        @if (IsAflEditing(item))
+                                                                                        {
+                                                                                            <button class="btn btn-sm btn-success" @onclick="() => ConfEdingAfl(draftAfl)">
+                                                                                                💾 Accept
+                                                                                            </button>
+                                                                                            <button class="btn btn-sm btn-secondary" @onclick="() => CancEdingAfl(draftAfl)">
+                                                                                                ❎ Cancel
+                                                                                            </button>
+                                                                                        }
+                                                                                        else if (ConfirmingAflDeleteRowGuid == item.Rowguid)
+                                                                                        {
+                                                                                            @* <button class="btn btn-sm btn-outline-danger" @onclick="() => PromptAflDelete(item)">
+                                                                                                🗑️ Delete
+                                                                                            </button> *@
+                                                                                            <button class="btn btn-sm btn-success" @onclick="() => ConfirmAflDelete(item)">
+                                                                                                ✅ Confirm
+                                                                                            </button>
+                                                                                            <button class="btn btn-sm btn-secondary" @onclick="CancelAflDelete">
+                                                                                                ❌ Cancel
+                                                                                            </button>
+                                                                                        }
+                                                                                        else
+                                                                                        {
+                                                                                            <button class="btn btn-sm btn-primary me-1 @(allEnable ? "" : "disabled-action")"
+                                                                                                    disabled="@(EditingAflRowGuid != null)"
+                                                                                                    @onclick="() => PromptAflEdit(item)">
+                                                                                                ✏️ Edit
+                                                                                            </button>
+                                                                                            <button class="btn btn-sm btn-outline-danger @(allEnable ? "" : "disabled-action")"
+                                                                                                    disabled="@(EditingAflRowGuid != null)"
+                                                                                                    @onclick="() => PromptAflDelete(item)">
+                                                                                                🗑️ Delete
+                                                                                            </button>
+                                                                                        }
+                                                                                    }
+                                                                                </ChildContent>
+                                                                            </GridColumn>
+                                                                            @foreach (var ucol in LsCols.Where(uv => uv.Totyp == Ugpe && uv.Tstyp == ufl.Etyp && uv.Jenr == 1).ToList())
+                                                                                {
+                                                                                    <GridColumn TItem="Tiwafl" HeaderText="@ucol.Liba">
+                                                                                        <ChildContent Context="item">
+                                                                                        @if (EditingAflRowGuid == item.Rowguid)
+                                                                                        {
+                                                                                            @if (ucol.Sitb == 1) //table-numerique
+                                                                                            {
+                                                                                                <TabselComponent Obj=@curTiw PropertyName="@ucol.Scdrub" Ztbl="@ucol.Ztbl" tbElems="@TbElems" ParentTableValue="@ucol.Zdpd" />
+                                                                                            }
+                                                                                            else
+                                                                                            {
+                                                                                                @switch (ucol.Ztyp)
+                                                                                                {
+                                                                                                    case 1:
+                                                                                                        <StringComponent Obj=@draftAfl PropertyName="@ucol.Scdrub" Placeholder="@($" {ucol.Liba}")" />
+                                                                                                        break;
+                                                                                                    case 2:
+                                                                                                    case 3:
+                                                                                                    case 4:
+                                                                                                    case 5:
+                                                                                                        @* TextSize="@(allEnable ? Size.Small : Size.Large)" TextSize="Size.Small"  *@ 
+                                                                                                        <NumberComponent Obj=@draftAfl PropertyName="@ucol.Scdrub" Placeholder="@($" {ucol.Liba}")" Width="ControlWidth.Small" TextAlign="TextAlignment.Right" />
+                                                                                                        break;
+                                                                                                    case 6:
+                                                                                                        <BoolComponent Obj=@draftAfl PropertyName="@ucol.Scdrub" Placeholder="@($" {ucol.Liba}")" />
+                                                                                                        break;
+                                                                                                    case 7:
+                                                                                                        <DateComponent Obj=@draftAfl PropertyName="@ucol.Scdrub" Placeholder="@($" {ucol.Liba}")" />
+                                                                                                        break;
+                                                                                                    default:
+                                                                                                        <StringComponent Obj=@draftAfl PropertyName="@ucol.Scdrub" Placeholder="@($" {ucol.Liba}")" />
+                                                                                                        break;
+                                                                                                }
+                                                                                            }
+                                                                                        } else
+                                                                                        {
+                                                                                            @if (ucol.Sitb == 1) //table-numerique
+                                                                                            {
+                                                                                                <TabselComponent Obj=@item PropertyName="@ucol.Scdrub" Ztbl="@ucol.Ztbl" tbElems="@TbElems" ParentTableValue="@ucol.Zdpd" />
+                                                                                            }
+                                                                                            else
+                                                                                            {
+                                                                                                @switch (ucol.Ztyp)
+                                                                                                {
+                                                                                                    case 1:
+                                                                                                        <StringComponent Obj=@item PropertyName="@ucol.Scdrub" Placeholder="@($" {ucol.Liba}")" />
+                                                                                                        break;
+                                                                                                    case 2:
+                                                                                                    case 3:
+                                                                                                    case 4:
+                                                                                                    case 5:
+                                                                                                        <NumberComponent Obj=@item PropertyName="@ucol.Scdrub" Placeholder="@($" {ucol.Liba}")" Width="ControlWidth.Small" TextAlign="TextAlignment.Right" />
+                                                                                                        break;
+                                                                                                    case 6:
+                                                                                                        <BoolComponent Obj=@item PropertyName="@ucol.Scdrub" Placeholder="@($" {ucol.Liba}")" />
+                                                                                                        break;
+                                                                                                    case 7:
+                                                                                                        <DateComponent Obj=@item PropertyName="@ucol.Scdrub" Placeholder="@($" {ucol.Liba}")" />
+                                                                                                        break;
+                                                                                                    default:
+                                                                                                        <StringComponent Obj=@item PropertyName="@ucol.Scdrub" Placeholder="@($" {ucol.Liba}")" />
+                                                                                                        break;
+                                                                                                }
+                                                                                            }
+                                                                                        }
+                                                                                        </ChildContent>
+                                                                                    </GridColumn>
+                                                                                }
+                                                                            </GridColumns>
+                                                                        </Grid>

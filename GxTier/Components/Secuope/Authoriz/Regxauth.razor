@@ -1,0 +1,366 @@
+﻿@page "/regxauth"
+@layout AccsMenu
+
+@using System.Security.Claims
+@using System.Web
+@using BlazorBootstrap
+@using Blazored.LocalStorage
+@using GxShared.GlobModels
+@using GxTie.Services
+@using GxTie.Services
+@using GxWapi.DaModels
+@using Newtonsoft.Json
+
+@inject MyAuthStateProvider _myauthProvider
+@inject MyODataContext _gODContext
+@inject IHttpClientFactory httpfacClient
+@inject ILocalStorageService _localStorage
+@inject AdautService _dbsecManager
+@inject SessionContextService _sessionContext
+@inject RendAgres _rendAgres
+
+<PageTitle>Private Page</PageTitle>
+<h2>Acces au logiciel Gx-Solutions</h2>
+
+@if (errors == true)
+{
+    foreach (var error in errorList)
+    {
+        <div class="alert alert-danger">@error</div>
+    }
+}
+@if (success == true)
+{
+    <div class="alert alert-success">@successmsg</div>
+}
+<AuthorizeView>
+    <Authorized>
+        @if (!isLoading)
+        {
+            <div class="d-flex flex-row">
+                <label for="icuru">Utilisateur : </label>
+                <select id="icuru" @onchange="OnSelUserChanged">
+                    <option value="">Choisir utilisateur :</option>"
+                    @* @foreach (var unu in fxURAuts.ToList())
+                    {
+                        //unu.username-unu.fullname
+                        <option value="@unu.UserId">@unu.Email</option>
+                    } *@
+                </select>
+            </div>
+            <Tabs>
+                <Tab Title="Autorisations" IsActive="true">
+                    <Content>
+                    <p>Contenu de Autorisations</p>
+                    @* Roles ouvert *@
+                    <div class="container">
+                        <div class="row">
+                            <div class="col-5" style="font-style:italic;font-weight:bold">
+                                Individuel
+                            </div>
+                            <div class="row" style="font-style:italic;font-weight:bold">
+                                <div class="col-1"></div>
+                                <div class="col-1">no</div>
+                                <div class="col-5">Auth</div>
+                                <div class="col-1">lsup</div>
+                            </div>
+                            @* @foreach (var iau in _selUser.UsrAuts)
+                            {
+                                <div class="row" style="font-style:italic;font-weight:bold">
+                                    <div class="col-1"></div>
+                                    <div class="col-1">@iau.Id</div>
+                                    <div class="col-5">@iau.Liba</div>
+                                    <div class="col-1">supr</div>
+                                </div>
+                            } *@
+                        </div>
+                        <div class="row">
+                            <div class="col-5" style="font-style:italic;font-weight:bold">
+                                De groupe
+                            </div>
+                        </div>
+                        <div class="row" style="font-style:italic;font-weight:bold">
+                            <div class="col-1">no</div>
+                            <div class="col-5">Groupe</div>
+                            <div class="col-1">lsup</div>
+                            <div class="col-1">louv</div>
+                        </div>
+                            @* @foreach (var rou in _selUser.UsrRols.ToList())
+                            {
+                                <div class="row">
+                                    <div class="col-1">@rou.Rlevel</div>
+                                    <div class="col-5">@rou.Rolnom</div>
+                                    <div class="col-1">sup</div>
+                                    <div class="col-1">ouv</div>
+                                </div>
+                            <div class="row" style="font-style:italic;font-weight:bold">
+                                <div class="col-1"></div>
+                                <div class="col-1">no</div>
+                                <div class="col-5">Auth</div>
+                                <div class="col-1">lsup</div>
+                            </div>
+                                @foreach (var raut in _selURole.URauts.Where(at => at.Usrid == _selUser.UserId && at.Rolid == rou.Rolid))
+                                {
+                                <div class="row">
+                                    <div class="col-1"></div>
+                                    <div class="col-1">@raut.Alea</div>
+                                    <div class="col-5">@raut.Liba</div>
+                                    <div class="col-1">sup</div>
+                                    <div class="col-1">ouv</div>
+                                </div>
+                                }
+                            } *@
+                     </div>
+                    </Content>
+                </Tab>
+                <Tab Title="Revocations">
+                <Content>
+                    <p>Contenu de Revocations</p>
+                </Content>
+                </Tab>
+                <Tab Title="Etat Useur">
+                    <Content>
+                        <p>Situation utilisateur</p>
+                    </Content>
+                </Tab>
+            </Tabs>
+        }
+    </Authorized>
+</AuthorizeView>
+@if (isLoading == true)
+{
+    <div>@loadmsg</div>
+}
+
+@code {
+    private bool isLoading = false, errors = false, success = false, isSubmitting = false;
+    private bool siManager = false;
+    private string? _UserId = "", loadmsg = "", successmsg = "", submitmess = "";
+    public int _UorgId = 0;
+    private List<string> errorList = new List<string>();
+    private Userbag _usrBag = new Userbag();
+    private Secubag _secBag = new Secubag();
+    private Gxorga _myOrga = new Gxorga();
+    //component variables
+    private string _curUname = "", _curEmail = "";
+    private string selUname = "";
+    private bool IsChecked = false;
+    //models
+    ///private RolUsrModel globResu = new RolUsrModel();
+    private IEnumerable<Cnsaut> _fixAuts = new List<Cnsaut>();
+    //private IEnumerable<RolModel> fxRoles = new List<RolModel>();
+    private IEnumerable<Gsuaut> lsAuts = new List<Gsuaut>();
+    //private IEnumerable<UsrModel> allUsers = new List<UsrModel>();
+    //private IEnumerable<RolModel> allRoles = new List<RolModel>();
+    private IEnumerable<Accaut> fxAuts = new List<Accaut>();
+    //private IEnumerable<UsrModel> fxURAuts = new List<UsrModel>();
+
+    //private UsrModel _selUser = new UsrModel();
+    //private UsrRolModel _selURole = new UsrRolModel();
+    //private RolModel _selRole = new RolModel();
+
+    //private UsrModel _selUser = new UsrModel();
+
+    private IEnumerable<Gsuaut> ogsUsers = new List<Gsuaut>();
+    private IEnumerable<Gsuaut> ogsRoles = new List<Gsuaut>();
+
+
+    private string curUsId = "";
+    private string curRoId = "";
+    private bool OuvAut = false;
+    //private bool OuvRol = false;
+
+    //private Orole selRole = new Orole();
+
+    private ReqgnModel reqModel = new ReqgnModel();
+    private ResgnModel rspModel = new ResgnModel();
+    private List<Gpfixe> _lsFixes = new List<Gpfixe>();
+
+    //Authentication
+    private bool isAuthenticated = false;
+    private ClaimsPrincipal authUser;
+    private IEnumerable<Claim> claims = Enumerable.Empty<Claim>();
+    [CascadingParameter]
+    private Task<AuthenticationState>? AuthState { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        System.Console.WriteLine("COMMENCEMENT");
+        loadmsg = "attente...";
+        isLoading = true;
+        //verif authentication
+        var authState = await AuthState;
+        var authUser = authState.User;
+        siManager = true;
+        /*
+        if (!authUser.IsInRole("Manager")) {
+            errors = true;
+            errorList.Add("You are not Manager");
+            return;
+            }
+        */
+        //get component specific data
+        //_entityManager = await _myentProvider.GetManager();
+        siManager = true;
+        //get user data bag
+        _usrBag = await _sessionContext.GetUserbagAsync();
+        _lsFixes = _usrBag.Ufixes.ToList();
+        _secBag = await _dbsecManager.GetMySecuAsync();
+        fxAuts = _secBag.Fxauts.ToList();
+        //fxRoles = _secBag.Fxrols.ToList();
+        //fxURAuts = _secBag.FxURAs.ToList();
+        // Autorisations Gxorga
+
+        var myauts = await _gODContext.LoadFilteredAsync<Gsuaut>();
+
+        //var query = new Breeze.Sharp.EntityQuery<Gsuaut>("orgauts");
+        lsAuts = myauts.AsQueryable();
+
+        //lsAuts = await _entityManager.ExecuteQuery(query);
+        System.Console.WriteLine($"ENTREE AUTORISATIONS : {lsAuts.Count()}");
+        if (lsAuts.ToList().Count() <= 0)
+        {
+            isLoading = false;
+            return;
+        }
+        //await RameneData();
+
+        //Console.WriteLine("COMMENCEMENT fin");
+        loadmsg = "";
+        isLoading = false;
+        //StateHasChanged();
+    }
+    private void OnSelUserChanged(EventArgs args)
+    {
+        var chgeEventArgs = (ChangeEventArgs)args;
+        var usrid = chgeEventArgs.Value.ToString();
+        //_selUser = fxURAuts.Where(ur => ur.UserId == usrid).FirstOrDefault();
+        //await Task.Delay(3000);
+    }
+    private async Task OnSelRoleChanged(EventArgs args)
+    {
+        var chgeEventArgs = (ChangeEventArgs)args;
+        var rolid = chgeEventArgs.Value.ToString();
+        //_selRole = fxRoles.Where(ur => ur.Rolid == rolid).FirstOrDefault();
+        await Task.Delay(3000);
+    }
+    private async Task OnAuthChanged(string isCheckedValue, Gsuaut wUauth)
+    {
+        bool isChecked = isCheckedValue == "true";
+        if (isChecked)
+        {
+            //wUauth.Siaut = true;
+        }
+        else
+        {
+            //wUauth.Siaut = false;
+            await Task.Delay(3000);
+        }
+        //Console.WriteLine($"USER ID : {wUser.UserId},//{wUser.Sicor} Checked: {isChecked}");
+    }
+    // private async Task VaEtaChanged(string isCheckedValue, UsrModel wUser)
+    // {
+    //     bool isChecked = isCheckedValue == "true";
+    //     if (isChecked)
+    //     {
+    //         wUser.Sicor = 1;
+    //     }
+    //     else
+    //     {
+    //         wUser.Sicor = 0;
+    //         await Task.Delay(3000);
+    //     }
+    //     //Console.WriteLine($"USER ID : {wUser.UserId},//{wUser.Sicor} Checked: {isChecked}");
+    // }
+    @* private async void rendsLookup()
+    {
+        var query = EntityQuery<Gxorga>.From<Tiersp>("lookup")
+            .execute()
+            .then(querysucceeded)
+            .catch(queryfailed);
+    } *@
+    private async void OnArchivChanged(ChangeEventArgs e, string userId)
+    {
+        await Task.Delay(3000);
+    }
+    private string datformat(DateTime? inDate)
+    {
+        var strdat = inDate.Value.ToShortDateString();
+        return strdat;
+    }
+    public class UsrRolComparer:IEqualityComparer<Gsuaut>
+    {
+        public bool Equals(Gsuaut x, Gsuaut y)
+        {
+            if (ReferenceEquals(x, y)) return true;
+            if (x is null || y is null) return false;
+            return x.Usrid == y.Usrid;
+        }
+        public int GetHashCode(Gsuaut obj)
+        {
+            return obj.Usrid == null ? 0 : obj.Usrid.GetHashCode();
+        }
+    }
+    public class RolUsrComparer : IEqualityComparer<Gsuaut>
+    {
+        public bool Equals(Gsuaut x, Gsuaut y)
+        {
+            if (ReferenceEquals(x, y)) return true;
+            if (x is null || y is null) return false;
+            return x.Rolid == y.Rolid;
+        }
+        public int GetHashCode(Gsuaut obj)
+        {
+            return obj.Rolid == null ? 0 : obj.Rolid.GetHashCode();
+        }
+    }
+    // private async Task RameneData()
+    // {
+    //     errorList.Clear();
+    //     try
+    //     {
+    //         //UsersEtRoles Gxorga
+    //         reqModel.Idorg = _UorgId;
+    //         reqModel.Usrid = _UserId;
+
+
+
+    //         var jsonContent = JsonConvert.SerializeObject(reqModel);
+    //         var content = new StringContent(jsonContent, System.Text.Encoding.UTF8, "application/json");
+    //         //var response = await _apiClient.PostAsJsonAsync("lgauth/orgusers", reqModel);
+    //         var response = await _apiClient.PostAsync("lgauth/nworgusers", content);
+
+
+    //         if (response.IsSuccessStatusCode)
+    //         {
+    //             var detStr = await response.Content.ReadAsStringAsync();
+    //             //System.Console.WriteLine($"Received JSON: {detStr}");
+    //             //try
+    //             //{
+    //             // Attempt deserialization
+    //             //globResu = await response.Content.ReadFromJsonAsync<RolUsrModel>(new System.Text.Json.JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+    //             _secBag = JsonConvert.DeserializeObject<Secubag>(detStr);
+    //             if (_secBag != null)
+    //             {
+    //                 fxURAuts = _secBag.FxURAs.ToList();
+    //                 fxRoles = _secBag.Fxrols.ToList();
+    //                 var urols = fxURAuts.FirstOrDefault().UsrRols.Count();
+    //                 System.Console.WriteLine($"Tout User roles : {urols}");
+    //             }
+    //         }
+
+    //     }
+    //     catch (HttpRequestException httpEx)
+    //     {
+    //         System.Console.WriteLine($"HTTP Request Error: {httpEx.Message}");
+    //     }
+    //     catch (Exception ex)
+    //     {
+    //         System.Console.WriteLine($"An unexpected error occurred: {ex.Message}");
+    //     }
+    //     finally
+    //     {
+    //         isLoading = false; // Ensure loading state is updated regardless of success or failure
+    //     }
+    // }
+}
