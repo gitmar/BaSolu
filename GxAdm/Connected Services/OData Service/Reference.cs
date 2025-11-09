@@ -8,7 +8,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-// Generation date: 11/2/2025 8:11:03 PM
+// Generation date: 11/8/2025 3:24:11 PM
 namespace GxWapi.DaModels
 {
     /// <summary>
@@ -18443,28 +18443,6 @@ namespace GxWapi.DaModels
         [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
         private global::Microsoft.OData.Client.DataServiceQuery<global::GxWapi.DaModels.Rubfmt> _Rubfmts;
         /// <summary>
-        /// There are no comments for IdplnNavigation in the schema.
-        /// </summary>
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        [global::Microsoft.OData.Client.OriginalNameAttribute("IdplnNavigation")]
-        public virtual global::GxWapi.DaModels.PlngenSingle IdplnNavigation
-        {
-            get
-            {
-                if (!this.IsComposable)
-                {
-                    throw new global::System.NotSupportedException("The previous function is not composable.");
-                }
-                if ((this._IdplnNavigation == null))
-                {
-                    this._IdplnNavigation = new global::GxWapi.DaModels.PlngenSingle(this.Context, GetPath("IdplnNavigation"));
-                }
-                return this._IdplnNavigation;
-            }
-        }
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        private global::GxWapi.DaModels.PlngenSingle _IdplnNavigation;
-        /// <summary>
         /// There are no comments for Actsaies in the schema.
         /// </summary>
         [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
@@ -18530,6 +18508,28 @@ namespace GxWapi.DaModels
         }
         [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
         private global::Microsoft.OData.Client.DataServiceQuery<global::GxWapi.DaModels.Gscum> _Gscums;
+        /// <summary>
+        /// There are no comments for IdplnNavigation in the schema.
+        /// </summary>
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        [global::Microsoft.OData.Client.OriginalNameAttribute("IdplnNavigation")]
+        public virtual global::GxWapi.DaModels.PlngenSingle IdplnNavigation
+        {
+            get
+            {
+                if (!this.IsComposable)
+                {
+                    throw new global::System.NotSupportedException("The previous function is not composable.");
+                }
+                if ((this._IdplnNavigation == null))
+                {
+                    this._IdplnNavigation = new global::GxWapi.DaModels.PlngenSingle(this.Context, GetPath("IdplnNavigation"));
+                }
+                return this._IdplnNavigation;
+            }
+        }
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        private global::GxWapi.DaModels.PlngenSingle _IdplnNavigation;
     }
     /// <summary>
     /// There are no comments for Rubvar in the schema.
@@ -20616,30 +20616,6 @@ namespace GxWapi.DaModels
         partial void OnRubfmtsChanging(global::Microsoft.OData.Client.DataServiceCollection<global::GxWapi.DaModels.Rubfmt> value);
         partial void OnRubfmtsChanged();
         /// <summary>
-        /// There are no comments for Property IdplnNavigation in the schema.
-        /// </summary>
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        [global::Microsoft.OData.Client.OriginalNameAttribute("IdplnNavigation")]
-        [global::System.ComponentModel.DataAnnotations.RequiredAttribute(ErrorMessage = "IdplnNavigation is required.")]
-        public virtual global::GxWapi.DaModels.Plngen IdplnNavigation
-        {
-            get
-            {
-                return this._IdplnNavigation;
-            }
-            set
-            {
-                this.OnIdplnNavigationChanging(value);
-                this._IdplnNavigation = value;
-                this.OnIdplnNavigationChanged();
-                this.OnPropertyChanged("IdplnNavigation");
-            }
-        }
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        private global::GxWapi.DaModels.Plngen _IdplnNavigation;
-        partial void OnIdplnNavigationChanging(global::GxWapi.DaModels.Plngen value);
-        partial void OnIdplnNavigationChanged();
-        /// <summary>
         /// There are no comments for Property Actsaies in the schema.
         /// </summary>
         [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
@@ -20708,6 +20684,30 @@ namespace GxWapi.DaModels
         private global::Microsoft.OData.Client.DataServiceCollection<global::GxWapi.DaModels.Gscum> _Gscums = new global::Microsoft.OData.Client.DataServiceCollection<global::GxWapi.DaModels.Gscum>(null, global::Microsoft.OData.Client.TrackingMode.None);
         partial void OnGscumsChanging(global::Microsoft.OData.Client.DataServiceCollection<global::GxWapi.DaModels.Gscum> value);
         partial void OnGscumsChanged();
+        /// <summary>
+        /// There are no comments for Property IdplnNavigation in the schema.
+        /// </summary>
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        [global::Microsoft.OData.Client.OriginalNameAttribute("IdplnNavigation")]
+        [global::System.ComponentModel.DataAnnotations.RequiredAttribute(ErrorMessage = "IdplnNavigation is required.")]
+        public virtual global::GxWapi.DaModels.Plngen IdplnNavigation
+        {
+            get
+            {
+                return this._IdplnNavigation;
+            }
+            set
+            {
+                this.OnIdplnNavigationChanging(value);
+                this._IdplnNavigation = value;
+                this.OnIdplnNavigationChanged();
+                this.OnPropertyChanged("IdplnNavigation");
+            }
+        }
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        private global::GxWapi.DaModels.Plngen _IdplnNavigation;
+        partial void OnIdplnNavigationChanging(global::GxWapi.DaModels.Plngen value);
+        partial void OnIdplnNavigationChanged();
         /// <summary>
         /// This event is raised when the value of the property is changed
         /// </summary>

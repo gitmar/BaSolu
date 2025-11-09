@@ -2,6 +2,7 @@
 @layout FreeLayout
 
 @using System.Security.Claims
+@using System.Linq.Expressions
 @using BlazorBootstrap
 @using Blazored.LocalStorage
 @using GxAdm.ClieModels
@@ -23,7 +24,7 @@
 {
     <div class="text-center">
         <Spinner Color="SpinnerColor.Primary" Size="SpinnerSize.Large" />
-        <p>ASTREINTES Loading...</p>
+        <p>PARAMS/TABLES Loading...</p>
     </div>
 }
 @if(!isLoading)
@@ -42,11 +43,11 @@
                         <li><span class="separator">|</span></li>
                         <li><NavLink @onclick="() => SelMenu(2)" class="nav-item">Attributs</NavLink></li>
                         <li><span class="separator">|</span></li>
-                        <li><NavLink @onclick="() => SelMenu(3)" class="nav-item">Constantes</NavLink></li>
-                        <li><span class="separator">|</span></li>
+                        <li><NavLink @onclick="() => SelMenu(3)" class="nav-item">Documents</NavLink></li>
+                        @* <li><span class="separator">|</span></li> *@
                         @* <li><NavLink @onclick="() => SelMenu(4)" class="nav-item">Plans</NavLink></li>
                         <li><span class="separator">|</span></li> *@
-                        <li><NavLink @onclick="() => SelMenu(4)" class="nav-item">Colonnes</NavLink></li>
+                        @* <li><NavLink @onclick="() => SelMenu(4)" class="nav-item">Colonnes</NavLink></li> *@
                     </ul>
                 </div>
                 <div class="row">
@@ -77,67 +78,51 @@
                     </div>
                 </div>
                 <!-- Main Content -->
-                @if (curOrga != null && toChild != null && curODContext != null) 
-                {       @if (chxMenu == 1)
-                        {
+                @if (curOrga != null && toChild != null && curODContext != null)
+                {
+                    @if (chxMenu == 1)
+                    {
                         <Gtables @ref="mygtbl"
-                                 curOrga="@curOrga"
-                                toChild="@toChild"
-                                curODContext="@curODContext">
-                                <ChildContent>
-                                    @* <h2 class="child-box">Hello TABLES</h2> *@
-                                </ChildContent>
-                            </Gtables>
-                        }
-                        else if (chxMenu == 2)
-                        {
-                                <Gatribs @ref="mygatr"
-                                    curOrga="@curOrga"
-                                     toChild="@toChild"
-                                     curODContext="@curODContext">
-                                <ChildContent>
-                                    @* <h2 class="child-box">Hello ATTRIBUTS</h2> *@
-                                </ChildContent>
-                            </Gatribs>
-                        }
-                    else if (chxMenu == 3)
-                    {
-                        <Gcstes @ref="mygcst"
-                              curOrga="@curOrga"
-                              toChild="@toChild"
-                              curODContext="@curODContext">
-                                <ChildContent>
-                                    @* <h2 class="child-box">Hello ATTRIBUTS</h2> *@
-                                </ChildContent>
-                            </Gcstes>
-                    }
-                    @* else if (chxMenu == 4)
-                    {
-                        <Gplans @ref="mygpln"
-                                curOrga="@curOrga"
-                                toChild="@toChild"
-                                curODContext="@curODContext">
+                        curOrga="@curOrga"
+                        toChild="@toChild"
+                        curODContext="@curODContext">
                             <ChildContent>
-                                <h2 class="child-box">Hello ATTRIBUTS</h2> 
+                                @* <h2 class="child-box">Hello TABLES</h2> *@
                             </ChildContent>
-                        </Gplans>
-                    } *@
-                    else if (chxMenu == 4)
+                        </Gtables>
+                    }
+                    else if (chxMenu == 2)
                     {
-                        <Gcolons @ref="mygcol"
-                                 curOrga="@curOrga"
-                                 toChild="@toChild"
-                                 curODContext="@curODContext">
+                        <Gatribs @ref="mygatr"
+                        curOrga="@curOrga"
+                        toChild="@toChild"
+                        curODContext="@curODContext">
                             <ChildContent>
                                 @* <h2 class="child-box">Hello ATTRIBUTS</h2> *@
                             </ChildContent>
-                        </Gcolons>
+                        </Gatribs>
+                    }
+                    else if (chxMenu == 3)
+                    {
+                        <Gcstes @ref="mygcst"
+                        curOrga="@curOrga"
+                        toChild="@toChild"
+                        curODContext="@curODContext">
+                            <ChildContent>
+                                @* <h2 class="child-box">Hello ATTRIBUTS</h2> *@
+                            </ChildContent>
+                        </Gcstes>
                     }
                 }
         </div>
     </div>
 </div>
 }
+<ErrorBoundary>
+    <ErrorContent>
+        An unexpected error occured. Please try again later.
+    </ErrorContent>
+</ErrorBoundary>
 @code {
     private bool isLoading = true;
     public MyODataContext curODContext;
@@ -150,7 +135,7 @@
     private Gatribs mygatr;
     private Gcstes mygcst;
     //private Gplans mygpln;
-    private Gcolons mygcol;
+    //private Gcolons mygcol;
 
     //private OrigGgrilles mygcatr;
 
@@ -249,11 +234,9 @@
         try
         {
             curODContext = await _contextFactory.CreateAsync();
-            //var token = await _localStorage.GetItemAsync<string>("blazToken");
-            //BON var expand = "Plngens($expand=Rubvars),Plngens($expand=Rubhies),Gsgfixes";
-            //var expand = "Gsgfixes,Gsglnes,Plngens,Plngens($expand=Rubvars),Plngens($expand=Rubhies)";
-            var expand = "Gsgfixes," + "Gsglnes," + "Plngens," +
-             "Plngens($expand=Rubvars)";
+            //curOrga et Gsgfixes, Gsglnes
+            var expand = "Gsgfixes," + "Gsglnes";
+            //Expression<Func<Gxorga, bool>> ogfilter = g => g.Idorg == _usrBag.Idorg;
             var dxorgas = await curODContext.LoadFilteredAsync<Gxorga>(expand: expand);
             pisa = 3;
             curOrga = dxorgas.FirstOrDefault();
@@ -263,17 +246,15 @@
                 return;
             }
             Console.WriteLine($"orga recu {curOrga.Raison}");
-            //pisa = 4;
-            //nsole.WriteLine($"nb pln test : {curOrga.Plngens.Count()}");
             //Console.WriteLine($"nb gsgfixes : {curOrga.Gsgfixes.Count()}");
-            //Console.WriteLine($"nb gsglines : {curOrga.Gsglnes.Count()}");
-            //Console.WriteLine($"nb rub tables MENU {curOrga.Gsgfixes.Count}");
-            //var cplan = curOrga.Plngens.Where(upl => upl.Idpln == 20).FirstOrDefault();
-            //Console.WriteLine($"nb rub cur plan :  {cplan.Rubvars.Count()}");
-
+            //curOrga Plngens and rubvars
+            var expand2 = "Rubvars";
+            var dxplns = await curODContext.LoadFilteredAsync<Plngen>(expand: expand2);
+            pisa = 4;
+            //Console.WriteLine($"nb de plans :  {dxplns.Count()}");
         }catch(Exception ex)
         {
-            Console.WriteLine($"stack trace : {ex.StackTrace} place : {pisa} ex-mess : {ex.Message} and also in-mess: {ex.InnerException}");
+            Console.WriteLine($"ICI TODAY stack trace : {ex.StackTrace} place : {pisa} ex-mess : {ex.Message} and also in-mess: {ex.InnerException}");
         }
     }
 
@@ -296,10 +277,10 @@
         // { //plans
         //     await mygpln.EdtAll();
         // }
-        if (chxMenu == 4)
-        { //colonnes
-            await mygcol.EdtAll();
-        }
+        // if (chxMenu == 4)
+        // { //colonnes
+        //     await mygcol.EdtAll();
+        // }
         MImessage = "";
         allEnable = true;
     }
@@ -322,10 +303,10 @@
         // { //plans
         //     await mygpln.CncAll();
         // }
-        if (chxMenu == 4)
-        { //colonnes
-            await mygcol.CncAll();
-        }
+        // if (chxMenu == 4)
+        // { //colonnes
+        //     await mygcol.CncAll();
+        // }
         //reload
         await LoadSTROrgaAsync();
         MImessage = "";
@@ -351,10 +332,10 @@
         // { //plan
         //     oksav = await mygpln.SaveCurEntities();
         // }
-        if (chxMenu == 4)
-        { //colonnes
-            oksav = await mygcol.SaveCurEntities();
-        }
+        // if (chxMenu == 4)
+        // { //colonnes
+        //     oksav = await mygcol.SaveCurEntities();
+        // }
         if (oksav) MImessage = "";
         allEnable = false;
     }
@@ -363,8 +344,8 @@
         chxMenu = noM;
         if (chxMenu == 1) strComp = "Tables";
         if (chxMenu == 2) strComp = "Attributs";
-        if (chxMenu == 3) strComp = "Constantes";
-        if (chxMenu == 4) strComp = "Colonnes";
+        if (chxMenu == 3) strComp = "Documents";
+        //if (chxMenu == 4) strComp = "Colonnes";
         //if (chxMenu == 5) strComp = "Colonnes";
         allEnable = false;
         StateHasChanged();

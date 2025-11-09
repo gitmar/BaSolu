@@ -312,11 +312,9 @@
         {
             curODContext = await _contextFactory.CreateAsync(); // Use factory
             //var expand = "Tiewels,Tiewels($expand=Tiwafls),Tiersps,Tiersps($expand=Tieafls),Gsglnes";
-            var expand = "Gsglnes," + "Gsesios," +
+            var expand = "Gsglnes," +
              "Tiewels," +
-             "Tiewels($expand=Tiwafls)," +
-             "Tiersps," +
-             "Tiersps($expand=Tieafls)"; 
+             "Tiewels($expand=Tiwafls)";
             var dxorgas = await curODContext.LoadFilteredAsync<Gxorga>(expand: expand);
             curOrga = dxorgas.FirstOrDefault();
             if (curOrga == null)
@@ -324,6 +322,9 @@
                 Console.WriteLine("No organization found for the current user.");
                 return;
             }
+            var expand2 = "Gsesios," + "Tiersps," +
+             "Tiersps($expand=Tieafls)";
+            var dxtiers = await curODContext.LoadFilteredAsync<Gxorga>(expand: expand2);
             //prise des colonnes //default/Ugpe = 1;
             Ugpe = 1;
             Tgpe = 6;

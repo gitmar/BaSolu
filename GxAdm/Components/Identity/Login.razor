@@ -21,7 +21,7 @@
 
 <PageTitle>Login</PageTitle>
 
-<h3>Login</h3>
+@* <h3>Login</h3> *@
 
 @if (!string.IsNullOrEmpty(@Imessage))
 {
@@ -40,8 +40,8 @@
     <ValidationSummary />
     
         <div class="mb-3">
+            <label>Institution :</label>
             <InputSelect @bind-Value="loginModel.Idorg">
-                <option value="">-- Select Organisation --</option>
                 @foreach (var orga in _orgas)
                 {
                     <option value="@orga.Idorg">@orga.Raison</option>
@@ -49,11 +49,11 @@
             </InputSelect>
         </div>
         <div class="mb-3">
-            <label>Email or Username</label>
+            <label>Email or Username :</label>
             <InputText class="form-control" @bind-Value="loginModel.UsernameOrEmail" />
         </div>
         <div class="mb-3">
-            <label>Password</label>
+            <label>Password :</label>
             <InputText class="form-control" @bind-Value="loginModel.Password" type="password" />
         </div>
         <button class="btn btn-primary" type="submit">Login</button>

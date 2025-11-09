@@ -13,6 +13,7 @@
 @inject ILocalStorageService _localStorage
 @inject IHttpClientFactory _httpfacClient
 @inject HttpClientService _cliemanager
+@inject IODataContextFactory _contextFactory
 @inject SessionContextService _sessionContext
 
 @* @inject MyODataContext _gODContext *@ 
@@ -120,6 +121,7 @@
     private string jsess = "";
     private DateTime jdate = DateTime.Now;
     private Gsesio _curSess = new Gsesio();
+    public MyODataContext _gODContext;
     // private EntityManager _entityManager;
     private Userbag _usrBag = new Userbag();
     private IEnumerable<Tiersp> LsTiers = new List<Tiersp>();
@@ -258,7 +260,7 @@
         try
         {
             var token = await _localStorage.GetItemAsync<string>("blazToken");
-            var _gODContext = new MyODataContext(new Uri("https://localhost:7095/odata"), token);
+            _gODContext = await _contextFactory.CreateAsync(); // Use factory
             var expand = "Actsaies,Actsaies($expand=Actdets)";
             var dxtiers = await _gODContext.LoadFilteredAsync<Tiersp>(expand: expand);
             // EnsTiers = dxtiers.ToList();

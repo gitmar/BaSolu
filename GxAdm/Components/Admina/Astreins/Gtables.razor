@@ -105,6 +105,13 @@ else
                                         Contenu
                                     </a>
                                 </li>
+                                <li class="nav-item" role="tab">
+                                    <a class="nav-link" id="ses" data-bs-toggle="tab"
+                                       href="#nav-sesios" role="tab" aria-controls="nav-sesios"
+                                       aria-selected="true">
+                                        Sessions
+                                    </a>
+                                </li>
                             </ul>
                             <div class="tab-content" id="tab-contenu">
                                 @if (MyDaRubrs.Any() && IMyBas != 0 && IMyGtbl != 0)
@@ -406,6 +413,10 @@ else
                                             </GridDetailView>
                                         </Grid>
                                     </div>
+                                    <!--Liste des sessions-->
+                                    <div class="row tab-pane fade" id="nav-sesios" role="tabpanel" aria-labelledby="ses">
+                                        
+                                    </div>
                                 }
                             </div>
                         </div>
@@ -652,7 +663,7 @@ else
     private Dictionary<int, bool> EdState = new Dictionary<int, bool>();
 
     //private IEnumerable<Gpvar> LsTabls = new List<Gpvar>();
-    
+
     private List<Gplan> LsPlans = new();
     private List<Gpfixe> LsFixes = new();
     private List<Gpfixe> LsDoms = new();
@@ -719,8 +730,8 @@ else
             return;
         }
         Console.WriteLine($"X2seq {curPater.Xseq} et glnesMap : {glnesMap.Count}");
-        var dpris = curOrga.Gsglnes.Where(ju => ju.Pseq == curPater.Xseq).ToList();
-        Console.WriteLine($"exist parent data {dpris.Count}");
+        //var dpris = curOrga.Gsglnes.Where(ju => ju.Pseq == curPater.Xseq).ToList();
+        //Console.WriteLine($"exist parent data {dpris.Count}");
         bool containsKey = glnesMap.ContainsKey(curPater.Xseq);
         Console.WriteLine($"glnesMap ContainsKey({curPater.Xseq}): {containsKey}");
         if (!glnesMap.TryGetValue(curPater.Xseq, out var list))
@@ -1144,7 +1155,7 @@ else
         LsDoms = toChild.LsFixes.Where(ut => ut.Gvars == 36 && ut.Itb == 4 && ut.Gp1 == 3 && ut.Elea != 0).ToList();
         //LsTabls = toChild.LsTabls.ToList();
         LsPlans = toChild.LsPlans.Where(pl => pl.Ptyp == 3).ToList();
-      
+
         _lgcdu = 3;
         var noslims = LsVars.Where(uv => uv.Idhie == 0 && uv.Gvars == 21 && uv.Itb == 1 && uv.Elea == 1);
         if (noslims.Any()) _lgcdu = noslims.FirstOrDefault().Ivala;
@@ -1210,8 +1221,9 @@ else
             //tables DATA pour liste
             if (IMyBas != 0)
             {
-                MyDaRubrs = new ObservableCollection<Gsgfix>(curOrga.Gsgfixes.Where(tb => tb.Gvars == 4 && tb.Itb == uTbc).ToList());
-                Console.WriteLine($"ICIICI: {MyDaRubrs.Count}");
+                var list = curOrga.Gsgfixes.Where(tb => tb.Gvars == 4 && tb.Itb == uTbc).ToList();
+                MyDaRubrs = new ObservableCollection<Gsgfix>(list);
+                Console.WriteLine($"ICIICI: {MyDaRubrs.Count} et {uTbc} et {curOrga.Gsgfixes.Count}");
             }
             else
             {

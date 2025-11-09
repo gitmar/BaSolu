@@ -19,12 +19,11 @@
 @inject SessionContextService _sessionContext
 @inject RendAgres _rendAgres
 
-
 @if (isLoading)
 {
     <div class="text-center">
         <Spinner Color="SpinnerColor.Primary" Size="SpinnerSize.Large" />
-        <p>ADMIN/PLANS Loading...</p>
+        <p>SCHEMAS/PLANS Loading...</p>
     </div>
 }
 @if (!isLoading)
@@ -248,12 +247,9 @@
         try
         {
             curODContext = await _contextFactory.CreateAsync();
-            //var token = await _localStorage.GetItemAsync<string>("blazToken");
-            //BON var expand = "Plngens($expand=Rubvars),Plngens($expand=Rubhies),Gsgfixes";
-            //var expand = "Gsgfixes,Gsglnes,Plngens,Plngens($expand=Rubvars),Plngens($expand=Rubhies)";
-            var expand = "Gsgfixes," + "Gsglnes," + "Plngens," +
-             "Plngens($expand=Rubvars)," +
-             "Plngens($expand=Rubhies)";
+            //curOrga et Gsgfixes, Gsglnes
+            var expand = "Gsgfixes," + "Gsglnes";
+            //Expression<Func<Gxorga, bool>> ogfilter = g => g.Idorg == _usrBag.Idorg;
             var dxorgas = await curODContext.LoadFilteredAsync<Gxorga>(expand: expand);
             pisa = 3;
             curOrga = dxorgas.FirstOrDefault();
@@ -263,6 +259,30 @@
                 return;
             }
             Console.WriteLine($"orga recu {curOrga.Raison}");
+            //Console.WriteLine($"nb gsgfixes : {curOrga.Gsgfixes.Count()}");
+            //curOrga Plngens and rubvars
+            var expand2 = "Rubvars, Rubhies";
+            var dxplns = await curODContext.LoadFilteredAsync<Plngen>(expand: expand2);
+            pisa = 4;
+            //Console.WriteLine($"nb de plans :  {dxplns.Count()}");
+
+
+            // curODContext = await _contextFactory.CreateAsync();
+            // //var token = await _localStorage.GetItemAsync<string>("blazToken");
+            // //BON var expand = "Plngens($expand=Rubvars),Plngens($expand=Rubhies),Gsgfixes";
+            // //var expand = "Gsgfixes,Gsglnes,Plngens,Plngens($expand=Rubvars),Plngens($expand=Rubhies)";
+            // var expand = "Gsgfixes," + "Gsglnes," + "Plngens," +
+            //  "Plngens($expand=Rubvars)," +
+            //  "Plngens($expand=Rubhies)";
+            // var dxorgas = await curODContext.LoadFilteredAsync<Gxorga>(expand: expand);
+            // pisa = 3;
+            // curOrga = dxorgas.FirstOrDefault();
+            // if (curOrga == null)
+            // {
+            //     Console.WriteLine("No organization found for the current user.");
+            //     return;
+            // }
+            // Console.WriteLine($"orga recu {curOrga.Raison}");
             //pisa = 4;
             //nsole.WriteLine($"nb pln test : {curOrga.Plngens.Count()}");
             //Console.WriteLine($"nb gsgfixes : {curOrga.Gsgfixes.Count()}");

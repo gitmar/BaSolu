@@ -85,13 +85,13 @@
                         </div>
                         <label>Session : </label>
                         <div class="text-center">
-                            <select id="sesId" @bind="froMenu.Usesio">
+                            <InputSelect id="sesId" @bind-Value="froMenu.Usesio">
                                 <option value="0">session?</option>
                                 @foreach (var oses in EnsSess)
                                 {
                                     <option value="@oses.Idses" @onclick="() => GetSelectedSesio(oses)">@oses.Sref</option>
                                 }
-                            </select>
+                            </InputSelect>
                         </div>
 
                         @if (!String.IsNullOrEmpty(MImessage))
@@ -323,10 +323,8 @@
         {
             curODContext = await _contextFactory.CreateAsync();
             //var expand = "Tiersps($expand=Actsaies($expand=Actdets))";
-            var expand = "Tiersps," + "Plngens," + "Gsesios," +
-                "Tiersps($expand=Actsaies($expand=Actdets))," +
-                "Plngens($expand=Rubvars($expand=Rubfmts))," +
-                "Plngens($expand=Rubhies($expand=Rubpsts))";
+            var expand = "Tiersps," + "Gsesios," +
+                "Tiersps($expand=Actsaies($expand=Actdets))";
             var dxorgas = await curODContext.LoadFilteredAsync<Gxorga>(expand: expand);
             pisa = 3;
             curOrga = dxorgas.FirstOrDefault();
@@ -335,6 +333,10 @@
                 Console.WriteLine("No organization found for the current user.");
                 return;
             }
+            var expand2 = "Plngens," +
+                "Plngens($expand=Rubvars($expand=Rubfmts))," +
+                "Plngens($expand=Rubhies($expand=Rubpsts))";
+            var dxplns = await curODContext.LoadFilteredAsync<Gxorga>(expand: expand2);
             EnsTiers = curOrga.Tiersps.ToList();
             Console.WriteLine($"orga recu {curOrga.Raison}");
             pisa = 4;

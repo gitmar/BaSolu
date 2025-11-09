@@ -75,19 +75,30 @@ builder.Services.AddHttpClient("OFFLClient", client =>
     client.DefaultRequestHeaders.Add("X-Requested-With", "Fetch");
 });
 //ODATAClient
-builder.Services.AddScoped<IODataContextFactory, ODataContextFactory>();
 builder.Services.AddHttpClient("ODataClient", client =>
 {
     var backUrl = builder.Configuration["BackendUrl"];
-    if (!backUrl.EndsWith("/"))
-    {
-        backUrl += "/";
-    }
+    if (!backUrl.EndsWith("/")) backUrl += "/";
     backUrl += "odata";
     client.BaseAddress = new Uri(backUrl);
-    //client.BaseAddress = new Uri("https://localhost:7095/odata");
-    // Add any default headers or auth here if needed
 });
+builder.Services.AddScoped<IODataContextFactory, ODataContextFactory>();
+
+
+
+//builder.Services.AddScoped<IODataContextFactory, ODataContextFactory>();
+//builder.Services.AddHttpClient("ODataClient", client =>
+//{
+//    var backUrl = builder.Configuration["BackendUrl"];
+//    if (!backUrl.EndsWith("/"))
+//    {
+//        backUrl += "/";
+//    }
+//    backUrl += "odata";
+//    client.BaseAddress = new Uri(backUrl);
+//    //client.BaseAddress = new Uri("https://localhost:7095/odata");
+//    // Add any default headers or auth here if needed
+//});
 //pouch services 
 builder.Services.AddSingleton<PouchDbService>();
 

@@ -69,15 +69,14 @@
                                     Documents
                                 </a>
                             </li>
-                            <li class="nav-item" role="tab">
+                            @* <li class="nav-item" role="tab">
                                 <a class="nav-link" id="sis" data-bs-toggle="tab"
                                    href="#nav-sesis" role="tab" aria-controls="nav-sesis"
                                    aria-selected="false">
                                     Sessions
                                 </a>
-                            </li>
+                            </li> *@
                         </ul>
-                        @* <div class="row"> *@
                             <div class="tab-content" id="tab-contenu">
                                 <!--DOCUMENTS-->
                                 <div class="tab-pane fade show active" id="nav-docus" role="tabpanel" aria-labelledby="doc">
@@ -344,9 +343,9 @@
                                 </div>
                                 <!--SESSIONS-->
                                 <div class="tab-pane" id="nav-sesis" role="tabpanel" aria-labelledby="sis">
-                                    <EditForm Context="edSesContext" Model="@curOrga">
-                                    <DataAnnotationsValidator />
-                                    <ValidationSummary />
+                            <EditForm Context="edSesContext" Model="@curOrga">
+                                <DataAnnotationsValidator />
+                                <ValidationSummary />
                                 <div class="row">
                                     <label class="col-md-6" style="font-weight:bold">Groupe Sessions :</label>
                                 </div>
@@ -355,9 +354,6 @@
                                     <div class="col-1">designation</div>
                                     <div class="col-1">methode</div> <!--auto/manu/exo-->
                                     <div class="col-1">frequence</div> <!--an/mois/jour/heure-->
-                                    @* <div class="col-1" style="min-width: 140px;">du</div> <!--auto(ymd)//manu(du au)//exo(0)-->
-                                    <div class="col-1" style="min-width: 140px;">au</div> *@
-                                    @* <div class="col-md-1">nbre</div> *@
                                     <div class="col-1 ms-1">eta</div>
                                     @if (allEnable)
                                     {
@@ -366,9 +362,9 @@
                                 </div>
                                 @foreach (var ses in @LsCtData)
                                 {
-                                <div class="row row-cols-3">
-                                    <div class="col-1 text-center">@ses.Elea</div>
-                                    <label class="col-1">@ses.Liba</label>
+                                    <div class="row row-cols-3">
+                                        <div class="col-1 text-center">@ses.Elea</div>
+                                        <label class="col-1">@ses.Liba</label>
                                         <div class="col-1">
                                             @if (EditingFixRowGuid == ses.Rowguid)
                                             {
@@ -389,14 +385,14 @@
                                                 </InputSelect>
                                             }
                                         </div>
-                                    <div class="col-1">
+                                        <div class="col-1">
                                             @if (EditingFixRowGuid == ses.Rowguid)
                                             {
                                                 <InputSelect id="ntadm" @bind-Value="draftSes.Jtyp">
-                                                @foreach (var tob in LsFixes.Where(ut => ut.Gvars == 33 && ut.Itb == 8 && ut.Gp1 == 2 && ut.Elea != 0))
-                                                {
-                                                    <option value="@tob.Elea">@tob.Liba</option>
-                                                }
+                                                    @foreach (var tob in LsFixes.Where(ut => ut.Gvars == 33 && ut.Itb == 8 && ut.Gp1 == 2 && ut.Elea != 0))
+                                                    {
+                                                        <option value="@tob.Elea">@tob.Liba</option>
+                                                    }
                                                 </InputSelect>
                                             }
                                             else
@@ -409,40 +405,18 @@
                                                 </InputSelect>
                                             }
                                         </div>
-                                        @* <div class="col-1" style="min-width: 140px;">
+                                        <div class="col-1 ms-1">
                                             @if (EditingFixRowGuid == ses.Rowguid)
                                             {
-                                                <InputDate @bind-Value="draftSes.Dval" />
+                                                <InputSelect @bind-Value="draftSes.Eta">
+                                                    <option class="jchx" value="0">?choisir</option>
+                                                    @foreach (var tob in LsFixes.Where(ut => ut.Gvars == 32 && ut.Itb == 1 && ut.Elea != 0))
+                                                    {
+                                                        <option value="@tob.Elea">@tob.Liba</option>
+                                                    }
+                                                </InputSelect>
                                             }
                                             else
-                                            {
-                                                <span>@ses.Dval?.ToString("d")</span>
-                                            }
-                                        </div>
-                                        <div class="col-1" style="min-width: 140px;">
-                                            @if (EditingFixRowGuid == ses.Rowguid)
-                                            {
-                                                <InputDate @bind-Value="draftSes.Fval" />
-                                            } else
-                                            {
-                                                <span>@ses.Fval?.ToString("d")</span>
-                                            }
-                                        </div> *@
-                                    @* <div class="col-md-1">
-                                        <InputNumber class="my-input" @bind-Value="ses.Ivala"
-                                                     style="width:60px" readonly="@(allEnable ? null: "readonly")" />
-                                    </div> *@
-                                    <div class="col-1 ms-1">
-                                        @if(EditingFixRowGuid == ses.Rowguid)
-                                        {
-                                           <InputSelect @bind-Value="draftSes.Eta">
-                                            <option class="jchx" value="0">?choisir</option>
-                                            @foreach (var tob in LsFixes.Where(ut => ut.Gvars == 32 && ut.Itb == 1 && ut.Elea != 0))
-                                            {
-                                                <option value="@tob.Elea">@tob.Liba</option>
-                                            }
-                                                </InputSelect>
-                                            } else
                                             {
                                                 <InputSelect @bind-Value="ses.Eta" disabled>
                                                     <option class="jchx" value="0">?choisir</option>
@@ -475,12 +449,11 @@
                                                 }
                                             }
                                         </div>
-                                </div>
+                                    </div>
                                 }
                             </EditForm>
                                 </div>
                             </div>
-                        @* </div> *@
                 </div>
             </EditForm>
             <!-- Modal for ADDING Doc(S/P) -->

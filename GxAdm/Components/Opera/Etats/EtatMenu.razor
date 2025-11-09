@@ -189,6 +189,7 @@
     //public List<Gpvar> LtTabls = new List<Gpvar>();
     public List<Gpvar> LsTabls = new();
     public List<Gpfixe> LsTgpes = new();
+    private HttpClient myhttpClient = new HttpClient();
     //public List<Gpvar> TbElems = new List<Gpvar>();
     //public List<Clvar> LsCols = new List<Clvar>();
     //gpe choix
@@ -246,8 +247,10 @@
         int pisa = 2;
         try
         {
+            //myhttpClient.C;
             var token = await _localStorage.GetItemAsync<string>("blazToken");
-            _gODContext = new MyODataContext(new Uri("https://localhost:7095/odata"), token);
+            
+            //_gODContext = new MyODataContext(new Uri("https://localhost:7095/odata"), token, myhttpClient);
             var expand = "Actsaies,Actsaies($expand=Actdets)";
             var dxtiers = await _gODContext.LoadFilteredAsync<Tiersp>(expand: expand);
             EnsTiers = dxtiers.ToList();

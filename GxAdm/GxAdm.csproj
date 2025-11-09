@@ -12,71 +12,40 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Components\Invita\**" />
     <Compile Remove="Components\Opera\**" />
     <Compile Remove="Components\Paccu\**" />
-    <Compile Remove="Components\Secuope\Colons\**" />
     <Compile Remove="Formulas\**" />
-    <Compile Remove="YYYFormulas\**" />
+    <Content Remove="Components\Invita\**" />
     <Content Remove="Components\Opera\**" />
     <Content Remove="Components\Paccu\**" />
-    <Content Remove="Components\Secuope\Colons\**" />
     <Content Remove="Formulas\**" />
-    <Content Remove="YYYFormulas\**" />
+    <EmbeddedResource Remove="Components\Invita\**" />
     <EmbeddedResource Remove="Components\Opera\**" />
     <EmbeddedResource Remove="Components\Paccu\**" />
-    <EmbeddedResource Remove="Components\Secuope\Colons\**" />
     <EmbeddedResource Remove="Formulas\**" />
-    <EmbeddedResource Remove="YYYFormulas\**" />
+    <None Remove="Components\Invita\**" />
     <None Remove="Components\Opera\**" />
     <None Remove="Components\Paccu\**" />
-    <None Remove="Components\Secuope\Colons\**" />
     <None Remove="Formulas\**" />
-    <None Remove="YYYFormulas\**" />
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Remove="ClieModels\CalcModel.cs" />
-    <Compile Remove="ClieModels\outModels.cs" />
-    <Compile Remove="Components\GridWrapper.razor.cs" />
     <Compile Remove="Helpers\ValidatedInput.razor.cs" />
-    <Compile Remove="oldProgram.cs" />
     <Compile Remove="Services\AdautService.cs" />
-    <Compile Remove="Services\DaLibaResolver.cs" />
-    <Compile Remove="Services\MyOGridService.cs" />
-    <Compile Remove="Services\MyRubCalc.cs" />
-    <Compile Remove="Services\OdSaieMessageHandler.cs" />
-    <Compile Remove="Services\RubCalc.cs" />
     <Compile Remove="Services\UsrdaService.cs" />
-    <Compile Remove="Services\ZZMyRubCalc.cs" />
   </ItemGroup>
 
   <ItemGroup>
-    <Content Remove="Components\Admina\ARubs\ZZZRbposts.razor" />
-    <Content Remove="Components\Admina\Astreins\Orig3Gatribs.razor" />
-    <Content Remove="Components\Admina\Astreins\Orig4Gtables.razor" />
-    <Content Remove="Components\Admina\Astreins\OrigG3Gtables.razor" />
-    <Content Remove="Components\Admina\Astreins\OrigGgrilles.razor" />
-    <Content Remove="Components\Admina\Astreins\Postbrou.razor" />
-    <Content Remove="Components\Admina\Astreins\Z3Gpostes.razor" />
-    <Content Remove="Components\Admina\Astreins\Z3OrigGrilles.razor" />
     <Content Remove="Components\Admina\EditMenu.razor" />
-    <Content Remove="Components\Admina\Ictvars\ZZPlnstands.razor" />
     <Content Remove="Components\Admina\PRubs\Brou.razor" />
-    <Content Remove="Components\Admina\PRubs\Pgcalculs.razor" />
-    <Content Remove="Components\Admina\PRubs\ZZPlnprogs.razor" />
-    <Content Remove="Components\GridWrapper.razor" />
     <Content Remove="Components\Secuope\Authoriz\Regxauth.razor" />
     <Content Remove="Components\Secuope\Authoriz\Regxcorg.razor" />
-    <Content Remove="Components\Secuope\Sessions\ASesexos.razor" />
-    <Content Remove="Components\Secuope\Sessions\ZZSAsesios.razor" />
     <Content Remove="Helpers\ValidatedInput.razor" />
-    <Content Remove="Layout\Logadm.razor" />
   </ItemGroup>
 
   <ItemGroup>
-    <None Remove="Components\Admina\Astreins\Orig4Gtables.razor.css" />
     <None Remove="Components\Admina\EditMenu.razor.css" />
-    <None Remove="Connected Services\OData Service\OData ServiceCsdl.xml" />
   </ItemGroup>
 
   <ItemGroup>
@@ -93,13 +62,13 @@
     <PackageReference Include="Microsoft.AspNetCore.Http" Version="2.3.0" />
     <PackageReference Include="Microsoft.AspNetCore.WebUtilities" Version="8.0.8" />
     <PackageReference Include="Microsoft.AspNetCore.Components.Authorization" Version="8.0.13" />
-    <PackageReference Include="Microsoft.OData.Core" Version="8.3.0" />
-    <PackageReference Include="Microsoft.OData.Edm" Version="8.3.0" />
+    <PackageReference Include="Microsoft.OData.Core" Version="8.4.2" />
+    <PackageReference Include="Microsoft.OData.Edm" Version="8.4.2" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Blazored.LocalStorage" Version="4.5.0" />
-    <PackageReference Include="Microsoft.OData.Client" Version="8.3.0" />
-    <PackageReference Include="Microsoft.Spatial" Version="8.3.0" />
+    <PackageReference Include="Microsoft.OData.Client" Version="8.4.2" />
+    <PackageReference Include="Microsoft.Spatial" Version="8.4.2" />
     <PackageReference Include="System.ComponentModel.Annotations" Version="5.0.0" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />  
     <PackageReference Include="System.Text.Json" Version="9.0.4" />

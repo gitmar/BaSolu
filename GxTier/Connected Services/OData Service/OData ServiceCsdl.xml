@@ -892,10 +892,12 @@
         <Property Name="Rowguid" Type="Edm.Guid" Nullable="false" />
         <Property Name="Obsv" Type="Edm.String" />
         <NavigationProperty Name="Rubfmts" Type="Collection(GxWapi.DaModels.Rubfmt)" />
-        <NavigationProperty Name="IdplnNavigation" Type="GxWapi.DaModels.Plngen" Nullable="false" />
         <NavigationProperty Name="Actsaies" Type="Collection(GxWapi.DaModels.Actsaie)" />
         <NavigationProperty Name="Gscpts" Type="Collection(GxWapi.DaModels.Gscpt)" />
         <NavigationProperty Name="Gscums" Type="Collection(GxWapi.DaModels.Gscum)" />
+        <NavigationProperty Name="IdplnNavigation" Type="GxWapi.DaModels.Plngen" Nullable="false">
+          <ReferentialConstraint Property="Idpln" ReferencedProperty="Idpln" />
+        </NavigationProperty>
       </EntityType>
       <EntityType Name="Rubhie">
         <Key>

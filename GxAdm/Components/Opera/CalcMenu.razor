@@ -247,12 +247,10 @@
         {
             curODContext = await _contextFactory.CreateAsync();
             //var expand = "Tiersps($expand=Actsaies($expand=Actdets))";
-            var expand = "Tiersps," + "Plngens," + "Gsesios," +
+            var expand = "Tiersps," +
                 "Tiersps($expand=Actsaies($expand=Actdets))," +
                 "Tiersps($expand=Resdons($expand=Resdets))," +
-                "Tiersps($expand=Resbros)," +
-                "Plngens($expand=Rubvars)," + //($expand=Rubfmts)
-                "Plngens($expand=Rubhies($expand=Rubpsts))";
+                "Tiersps($expand=Resbros)";
             var dxorgas = await curODContext.LoadFilteredAsync<Gxorga>(expand: expand);
             pisa = 3;
             curOrga = dxorgas.FirstOrDefault();
@@ -262,6 +260,11 @@
                 return;
             }
             Console.WriteLine($"orga recu {curOrga.Raison}");
+            var expand2 = "Gsesios," + "Plngens," +
+                "Plngens($expand=Rubvars)," + //($expand=Rubfmts)
+                "Plngens($expand=Rubhies($expand=Rubpsts))";
+            var dxplns = await curODContext.LoadFilteredAsync<Gxorga>(expand: expand2);
+
             pisa = 4;
             Console.WriteLine($"nb tiers from orga  : {pisa} et {curOrga.Tiersps.Count()}");
             var mytier = curOrga.Tiersps.FirstOrDefault();

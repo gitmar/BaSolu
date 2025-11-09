@@ -26,7 +26,7 @@ namespace GxAdm.ClieModels
         public Gsesio curExo { get; set; } = new();
         public Gsesio curSesio { get; set; } = new();
         public Rubhie curSite { get; set; } = new();
-    }
+    }   
     public class MyMenuVars()
     {
         public int Ugpe { get; set; }

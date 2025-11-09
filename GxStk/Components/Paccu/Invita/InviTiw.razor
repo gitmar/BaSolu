@@ -22,7 +22,7 @@
 @* @inject MyAuthStateProvider _authprovider *@
 @* @inject IHttpClientFactory httpfacClient *@
 @inject ILocalStorageService _localStorage
-@inject HttpClientService _httpClieService
+@inject HttpClientService _cliemanager
 @inject NavigationManager _navmanager
 @inject SessionContextService _sessionContext
 @inject RendAgres _rendAgres
@@ -289,22 +289,40 @@
         }
         _lsDivs = toChild.LsDivs.Where(uh => uh.Sidiv == 1).ToList();
         _strOrga = curOrga.Raison;
-        var usession = await _localStorage.GetItemAsync<SessionDto>("blazSessionDto");
-        if (usession != null)
+        var json = await _cliemanager.SendRequestAsync("AUTHClient", HttpMethod.Get, "usercontext/session");
+        var result = JsonConvert.DeserializeObject<SessionDto>(json);
+        if (result != null)
         {
-            _usrRoles = usession.FullRoles;
+            //Console.WriteLine($"Nb Roles : {result.Count}");
+            _usrRoles = result.FullRoles;
             //Calcul de uMax role de utilisateur +1 si admin/lui-meme
             uMxrol = _usrRoles.Max(ur => ur.Level);
             if (authUser.IsInRole("Admin"))
             {
                 uMxrol = uMxrol - 1;
             }
-            Console.WriteLine($"User a des roles {_usrRoles.Count} et {uMxrol}");
-        } else
+        }
+        else
         {
-            Imessage = "Utilisateur sans role";
+            Console.WriteLine("Nb Roles : null");
             return;
         }
+        // var usession = await _localStorage.GetItemAsync<SessionDto>("blazSessionDto");
+        // if (usession != null)
+        // {
+        //     _usrRoles = usession.FullRoles;
+        //     //Calcul de uMax role de utilisateur +1 si admin/lui-meme
+        //     uMxrol = _usrRoles.Max(ur => ur.Level);
+        //     if (authUser.IsInRole("Admin"))
+        //     {
+        //         uMxrol = uMxrol - 1;
+        //     }
+        //     Console.WriteLine($"User a des roles {_usrRoles.Count} et {uMxrol}");
+        // } else
+        // {
+        //     Imessage = "Utilisateur sans role";
+        //     return;
+        // }
         _invRoles = await _rendAgres.LoadOrgaRoles();
         _invRoles = _invRoles.Where(ur => ur.Level != 6 && ur.Level > uMxrol)
             .OrderBy(up => up.Level)  //6 cible exclu
@@ -512,7 +530,7 @@
         string infoplus = $" Nom : {usrNom }, Prenom(s) : {usrPnom} Telephone : {usrPhone}";
         _usrMail.Uinfos = infoplus;
         //envoie var response = await _logClient.PostAsJsonAsync("Lgauth/renvoiemail", usrMail);
-        var response = await _httpClieService.SendRequestAsync("AUTHClient", HttpMethod.Post, $"lgauth/sendcodemail");
+        var response = await _cliemanager.SendRequestAsync("AUTHClient", HttpMethod.Post, $"lgauth/sendcodemail");
         success = true;
         successmsg = "Succes email INVITE envoye";
         Console.WriteLine("Succes ENVOIE");

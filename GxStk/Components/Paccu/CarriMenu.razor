@@ -214,8 +214,7 @@
         {
             curODContext = await _contextFactory.CreateAsync(); // Use factory
             //var expand = "Tiewels,Tiewels($expand=Tiwafls),Tiersps,Tiersps($expand=Tieafls),Gsglnes";
-            var expand = "Gsesios," +
-             "Tiersps," +
+            var expand = "Gsesios," + "Tiersps," +
              "Tiersps($expand=Tiemvts)";
             var dxorgas = await curODContext.LoadFilteredAsync<Gxorga>(expand: expand);
             curOrga = dxorgas.FirstOrDefault();

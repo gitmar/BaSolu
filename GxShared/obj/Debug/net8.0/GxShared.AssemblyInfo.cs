@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("GxShared")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+c1b6552983f5194d748be751ded6106ef864eb25")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+749a3513336f75635f27de8bf14d6ef66e2f5a6c")]
 [assembly: System.Reflection.AssemblyProductAttribute("GxShared")]
 [assembly: System.Reflection.AssemblyTitleAttribute("GxShared")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

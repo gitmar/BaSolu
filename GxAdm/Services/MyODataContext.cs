@@ -1,4 +1,5 @@
 ﻿using System.Linq.Expressions;
+using System.Net.Http;
 using System.Net.NetworkInformation;
 using System.Reflection;
 using System.Security.Claims;
@@ -26,11 +27,13 @@ namespace GxAdm.Services
         private readonly Default.Container _aocontext;
         private readonly Uri _serviceRoot;
         private readonly ILocalStorageService _localStorage;
-        private readonly HttpClient _httpClient; public MyODataContext(Uri serviceRoot, string otoken)
+        private readonly HttpClient _httpClient;
+        public MyODataContext(Uri serviceRoot, string otoken, HttpClient httpClient)
         {
             Console.WriteLine("MyODataContext constructor called");
             var protocolVersion = ODataProtocolVersion.V4;
             _serviceRoot = serviceRoot;
+            _httpClient = httpClient;
             _aocontext = new Default.Container(_serviceRoot, protocolVersion);
             _aocontext.Format.UseJson();
             _aocontext.Configurations.RequestPipeline.OnMessageCreating = (args) =>
@@ -75,9 +78,13 @@ namespace GxAdm.Services
             int tst = 1;
             try
             {
+                //var results = await query.ExecuteAsync();
+
+                //tst = 2;
+                //return results.ToList();
                 var results = await query.ExecuteAsync();
-                tst = 2;
-                return results.ToList();
+                var list = results.ToList(); // ✅ safe after await
+                return list;
             }
             catch (InvalidOperationException ex) when (ex.Message.Contains("response payload"))
             {
@@ -120,12 +127,15 @@ namespace GxAdm.Services
 
             try
             {
-                tst = 1;
+                //tst = 1;
+                //var results = await query.ExecuteAsync();
+                //tst = 2;
+                ////Console.WriteLine($"OData query results: {results}");
+                //tst = 3;
+                //return results.ToList();
                 var results = await query.ExecuteAsync();
-                tst = 2;
-                //Console.WriteLine($"OData query results: {results}");
-                tst = 3;
-                return results.ToList();
+                var list = results.ToList(); // ✅ safe after await
+                return list;
             }
             catch (Exception ex)
             {
@@ -241,11 +251,12 @@ namespace GxAdm.Services
     {
         private readonly ILocalStorageService _localStorage;
         private readonly IConfiguration _configuration;
-
-        public ODataContextFactory(ILocalStorageService localStorage, IConfiguration configuration)
+        private readonly HttpClient _httpClient;
+        public ODataContextFactory(ILocalStorageService localStorage, IConfiguration configuration, IHttpClientFactory hCliefactory)
         {
             _localStorage = localStorage;
             _configuration = configuration;
+            _httpClient = hCliefactory.CreateClient("ODataClient");
         }
 
         public async Task<MyODataContext> CreateAsync()
@@ -260,7 +271,8 @@ namespace GxAdm.Services
             backUrl += "odata";
 
             var uri = new Uri(backUrl);
-            return new MyODataContext(uri, token);
+            //return new MyODataContext(uri, token);
+            return new MyODataContext(uri, token, _httpClient);
         }
     }
 

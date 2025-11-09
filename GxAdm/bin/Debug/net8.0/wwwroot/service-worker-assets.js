@@ -1,5 +1,5 @@
 self.assetsManifest = {
-  "version": "fUwiOuMp",
+  "version": "OpAqExEV",
   "assets": [
     {
       "hash": "sha256-PZYoNEgaeFCwYQUymW7WsgRqzauLitdguXbO6hef8+o=",
@@ -70,19 +70,19 @@ self.assetsManifest = {
       "url": "_framework/Blazored.LocalStorage.wasm"
     },
     {
-      "hash": "sha256-cKbw/K4au6xMhAqlEvgFNNaY+DCcT6v3sB41iSrQUfE=",
+      "hash": "sha256-s3F5AX3k7KKJaTSHUg9REED41UjelqbMNLU/StzQVDA=",
       "url": "_framework/GxAdm.pdb"
     },
     {
-      "hash": "sha256-dxe2C57GJ7uYL3w9Q+xEEyfQIuFFOOLi1APmAvL2nTk=",
+      "hash": "sha256-k01ZtMbtZ5rfsucl5kfUDjysePiFa+SRSz0DMpdwVew=",
       "url": "_framework/GxAdm.wasm"
     },
     {
-      "hash": "sha256-MhxezcVAsHLlFHMfvBi8PyR2cgjh7tDhdJblBfMdR7g=",
+      "hash": "sha256-fdpuWUJIFZCt37VUziQPwuI4DIVYCBoDiajPVQ7VSpE=",
       "url": "_framework/GxShared.pdb"
     },
     {
-      "hash": "sha256-NSWnKTCGLtWZZxenREe5F94bHreNSrbD84bIyyckgpE=",
+      "hash": "sha256-pmJ7ywgE4mIKhQvtkSRK+JubvpkdOpvjH9zzRBUz2h0=",
       "url": "_framework/GxShared.wasm"
     },
     {
@@ -290,19 +290,19 @@ self.assetsManifest = {
       "url": "_framework/Microsoft.Net.Http.Headers.wasm"
     },
     {
-      "hash": "sha256-FUvZajlZpjpigNpND/+AzLBLj/5LHdJTaljvUydadyQ=",
+      "hash": "sha256-ZrjRwdl3/n7E0HqABh9PnEOKceMYTvdI1g73UML0xDk=",
       "url": "_framework/Microsoft.OData.Client.wasm"
     },
     {
-      "hash": "sha256-iw2Qel7tyBRlNSpQK3Xt2nEVJ5CrLo7IJjAxhrdyXLk=",
+      "hash": "sha256-qbdgvwFerImk19oSK4E6CWNkvU3Oq8rBtr5h3qOUkEQ=",
       "url": "_framework/Microsoft.OData.Core.wasm"
     },
     {
-      "hash": "sha256-0ovIusvyrCSccG0uXcYI2Fpmsujn///2zcPqKyhyDaQ=",
+      "hash": "sha256-ra+Uj8tKhOedSRp7KGrJTZycahHELJwNQR9OoU2GQm0=",
       "url": "_framework/Microsoft.OData.Edm.wasm"
     },
     {
-      "hash": "sha256-kK6/vXJIXzdYO1aqLxfmnj+cb1eBmAMXON2OjtGyDEw=",
+      "hash": "sha256-y2lQ8Nt4z6OwvU9gdYvFRUxYiHIRWPNAIJH+g6B2boI=",
       "url": "_framework/Microsoft.Spatial.wasm"
     },
     {
@@ -1022,7 +1022,7 @@ self.assetsManifest = {
       "url": "_framework/WindowsBase.wasm"
     },
     {
-      "hash": "sha256-0dUJ/qytayzEYAQmFo9TY0b3W/8kCrZPf1NSSvnv//k=",
+      "hash": "sha256-/x5zdVZdhm0UPympT1QxXRLBZQJ9kM5x+xUOproRHIU=",
       "url": "_framework/blazor.boot.json"
     },
     {

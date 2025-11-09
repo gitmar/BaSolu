@@ -8,13 +8,11 @@
 @using System.Web
 @using BlazorBootstrap
 @using Blazored.LocalStorage
-@using GxShared.GlobModels
-@using GxShared.GlobModels.Auth
-@using GxTie.ClieModels
-@using GxTie.Services
 @using GxTie.ClieModels
 @using GxTie.Helpers
 @using GxTie.Services
+@using GxShared.GlobModels
+@using GxShared.GlobModels.Auth
 @using GxWapi.DaModels
 @using Microsoft.AspNetCore.WebUtilities
 @using Microsoft.OData.Client
@@ -24,7 +22,7 @@
 @* @inject MyAuthStateProvider _authprovider *@
 @* @inject IHttpClientFactory httpfacClient *@
 @inject ILocalStorageService _localStorage
-@inject HttpClientService _httpClieService
+@inject HttpClientService _cliemanager
 @inject NavigationManager _navmanager
 @inject SessionContextService _sessionContext
 @inject RendAgres _rendAgres
@@ -237,7 +235,7 @@
     [Parameter]
     public int? Ugpe { get; set; }
     [Parameter]
-    public Userbag _usrBag { get; set; }
+    public Userbag _tusBag { get; set; }
     [Parameter]
     public MyShareVars toChild { get; set; }
 
@@ -291,7 +289,24 @@
         }
         _lsDivs = toChild.LsDivs.Where(uh => uh.Sidiv == 1).ToList();
         _strOrga = curOrga.Raison;
-
+        var json = await _cliemanager.SendRequestAsync("AUTHClient", HttpMethod.Get, "usercontext/session");
+        var result = JsonConvert.DeserializeObject<SessionDto>(json);
+        if (result != null)
+        {
+            //Console.WriteLine($"Nb Roles : {result.Count}");
+            _usrRoles = result.FullRoles;
+            //Calcul de uMax role de utilisateur +1 si admin/lui-meme
+            uMxrol = _usrRoles.Max(ur => ur.Level);
+            if (authUser.IsInRole("Admin"))
+            {
+                uMxrol = uMxrol - 1;
+            }
+        }
+        else
+        {
+            Console.WriteLine("Nb Roles : null");
+            return;
+        }
         // var usession = await _localStorage.GetItemAsync<SessionDto>("blazSessionDto");
         // if (usession != null)
         // {
@@ -303,28 +318,20 @@
         //         uMxrol = uMxrol - 1;
         //     }
         //     Console.WriteLine($"User a des roles {_usrRoles.Count} et {uMxrol}");
-        // } 
-        //else
-        //{
-            //Imessage = "Utilisateur sans role";
-            //return;
-        //}
-        _usrRoles = toChild.Uroles.ToList();
-        //Calcul de uMax role de utilisateur +1 si admin/lui-meme
-        uMxrol = _usrRoles.Max(ur => ur.Level);
-        if (authUser.IsInRole("Admin"))
-        {
-            uMxrol = uMxrol - 1;
-        }
+        // } else
+        // {
+        //     Imessage = "Utilisateur sans role";
+        //     return;
+        // }
         _invRoles = await _rendAgres.LoadOrgaRoles();
         _invRoles = _invRoles.Where(ur => ur.Level != 6 && ur.Level > uMxrol)
             .OrderBy(up => up.Level)  //6 cible exclu
             .ToList();
-        regModel.Idorg = _usrBag.Idorg; // convert.toint16(user.findfirst("insidorg")?.value);                                                        //Console.WriteLine(usrBag.Lkorga.Idorg);
+        regModel.Idorg = _tusBag.Idorg; // convert.toint16(user.findfirst("insidorg")?.value);                                                        //Console.WriteLine(usrBag.Lkorga.Idorg);
         regModel.Raison = curOrga.Raison;
         _lsDivs = toChild.LsDivs.Where(uh => uh.Sidiv == 1).ToList();
         //valeurs initiales
-        _lsUtyps = _usrBag.Ufixes.Where(iv => iv.Gvars == 53 && iv.Itb == 2 && iv.Elea != 0).ToList();
+        _lsUtyps = _tusBag.Ufixes.Where(iv => iv.Gvars == 53 && iv.Itb == 2 && iv.Elea != 0).ToList();
         if (_lsUtyps.Count() > 0)
         {
             regModel.Utyp = 1; //cible
@@ -388,14 +395,14 @@
         if (tqrol != null) tqsrole = tqrol.Name;
 
         string strchai = "", serversite = "";
-        _usrBag = await _sessionContext.GetUserbagAsync();
-        regModel.Dequi = _usrBag.Usprof.Utyp;
+        _tusBag = await _sessionContext.GetUserbagAsync();
+        regModel.Dequi = _tusBag.Usprof.Utyp;
         regModel.Toqui = regModel.Tqirole;
         regModel.Tqsrole = tqsrole;
 
-        if (_usrBag.Usorga != null)
+        if (_tusBag.Usorga != null)
         {
-            var myOrga = _usrBag.Usorga;
+            var myOrga = _tusBag.Usorga;
             ////#x£V@-vnd¥Ω#≥±≠Ω####
             //#x£V/#x£A/#x£O = #x£V(origine=vendeur)#x£A(origine=admin)#x£O(origine=operateur)
             int CodeLength = 5; //longueur du code aleatoire
@@ -437,12 +444,12 @@
             // verifier /orga /hiera
 
             string aleaupd = stOrga + strchai;
-            string kvdmail = _usrBag.Usprof.Uemail; //email inviteur
+            string kvdmail = _tusBag.Usprof.Uemail; //email inviteur
             string kachmail = regModel.Email; //email saisi
             string kachtypt = myOrga.Torg.ToString();
             string kraison = myOrga.Raison;//myCmde.Raison;
             string kphone = regModel.Phonenumber;
-            string kpays = myOrga.Pays.ToString(); // _usrBag.Usprof.Upays;
+            string kpays = myOrga.Pays.ToString(); // _tusBag.Usprof.Upays;
             string stsite = myOrga.Stserver;
             string stdoma = myOrga.Stdom;
             string stsigle = myOrga.Sigle;
@@ -450,8 +457,8 @@
             string kcdeip = myOrga.CurIp;
             //orig=2 /invite
             var avtCode = "&icoda=xgVnCd" + "&datope=" + datope + "&orig=2"
-                        + "&dequi=" + deQui.ToString() + "&deqmail=" + kvdmail + "&deqid=" + _usrBag.Usprof.Userid + "&nodos=" + regModel.Xmatri
-                        + "&dequname=" + _usrBag.Usprof.Username + "&deqpmail=" + kvdmail + "&deqphone=" + _usrBag.Usprof.Uphone + "&deqnom=" + _usrBag.Usprof.Unom + "&deqpnom=" + _usrBag.Usprof.Upnom
+                        + "&dequi=" + deQui.ToString() + "&deqmail=" + kvdmail + "&deqid=" + _tusBag.Usprof.Userid + "&nodos=" + regModel.Xmatri
+                        + "&dequname=" + _tusBag.Usprof.Username + "&deqpmail=" + kvdmail + "&deqphone=" + _tusBag.Usprof.Uphone + "&deqnom=" + _tusBag.Usprof.Unom + "&deqpnom=" + _tusBag.Usprof.Upnom
                         + "&toqui=" + toQui.ToString() + "&toqmail=" + regModel.Email + "&phone=" + regModel.Phonenumber + "&toqid=1212441144"
                         + "&opays=" + kpays + "&toqlang=fr" + "&typtie=" + regModel.Utyp + "&dqirole=" + deQui.ToString() + "&tqirole=" + toQui.ToString()
                         + "&dqsrole=" + dqsrole + "&tqsrole=" + tqsrole + "&toqnom=" + regModel.Nom + "&toqpnoms=" + regModel.Pnom
@@ -476,7 +483,7 @@
             else
             {
                 var unapl = new Gsapl();
-                unapl.Idorg = _usrBag.Idorg;
+                unapl.Idorg = _tusBag.Idorg;
                 unapl.Atyp = 96;
                 unapl.Stcod = _codVends;
                 unapl.Email = regModel.Email;
@@ -505,7 +512,7 @@
         strBody = strBody + "<p>Vous pouvez consulter les liens ci-dessous :</p>";
         strBody = strBody + "<p>Telegram : jsduid.me.com</p>";
         strBody = strBody + "<p>Facebook : jsduid.me.com</p>";
-        _usrMail.From = _usrBag.Usprof.Uemail;
+        _usrMail.From = _tusBag.Usprof.Uemail;
         _usrMail.To = regModel.Email;
         Console.WriteLine($"from : {_usrMail.From } et {_usrMail.To}");
         if(string.IsNullOrEmpty(_usrMail.From) || string.IsNullOrEmpty(_usrMail.To))
@@ -515,7 +522,7 @@
             return;
         }
         _usrMail.Ucode = _codVends;
-        _usrMail.Uorgv = _usrBag.Idorg;
+        _usrMail.Uorgv = _tusBag.Idorg;
         string usrNom = regModel.Nom;
         string usrPnom = regModel.Pnom;
         string usrPhone = regModel.Phonenumber;
@@ -523,7 +530,7 @@
         string infoplus = $" Nom : {usrNom }, Prenom(s) : {usrPnom} Telephone : {usrPhone}";
         _usrMail.Uinfos = infoplus;
         //envoie var response = await _logClient.PostAsJsonAsync("Lgauth/renvoiemail", usrMail);
-        var response = await _httpClieService.SendRequestAsync("AUTHClient", HttpMethod.Post, $"lgauth/sendcodemail");
+        var response = await _cliemanager.SendRequestAsync("AUTHClient", HttpMethod.Post, $"lgauth/sendcodemail");
         success = true;
         successmsg = "Succes email INVITE envoye";
         Console.WriteLine("Succes ENVOIE");

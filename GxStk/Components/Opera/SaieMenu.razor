@@ -324,11 +324,20 @@
         {
             curODContext = await _contextFactory.CreateAsync();
             //var expand = "Tiersps($expand=Actsaies($expand=Actdets))";
-            var expand = "Tiersps," + "Plngens," + "Gsesios," +
-                "Tiersps($expand=Actsaies($expand=Actdets))," +
+            var expand = "Tiersps," + "Gsesios," +
+                "Tiersps($expand=Actsaies($expand=Actdets))";
+            var dxorgas = await curODContext.LoadFilteredAsync<Gxorga>(expand: expand);
+            pisa = 3;
+            curOrga = dxorgas.FirstOrDefault();
+            if (curOrga == null)
+            {
+                Console.WriteLine("No organization found for the current user.");
+                return;
+            }
+            var expand2 = "Plngens," +
                 "Plngens($expand=Rubvars($expand=Rubfmts))," +
                 "Plngens($expand=Rubhies($expand=Rubpsts))";
-            var dxorgas = await curODContext.LoadFilteredAsync<Gxorga>(expand: expand);
+            var dxplns = await curODContext.LoadFilteredAsync<Gxorga>(expand: expand2);
             pisa = 3;
             curOrga = dxorgas.FirstOrDefault();
             if (curOrga == null)

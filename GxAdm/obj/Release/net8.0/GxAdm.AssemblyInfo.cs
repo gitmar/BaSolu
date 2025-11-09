@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("GxAdm")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Release")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+74d7fe6cd8824e85f85e0fe20a059a1640be3ac1")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+749a3513336f75635f27de8bf14d6ef66e2f5a6c")]
 [assembly: System.Reflection.AssemblyProductAttribute("GxAdm")]
 [assembly: System.Reflection.AssemblyTitleAttribute("GxAdm")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

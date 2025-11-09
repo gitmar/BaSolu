@@ -1,30 +1,6 @@
 self.assetsManifest = {
-  "version": "I6d1aZpf",
+  "version": "GPTaraiP",
   "assets": [
-    {
-      "hash": "sha256-T/pr6kME0u2kGGg/ViYWhe1HvwCZUDnyflrWLVOTjS0=",
-      "url": "55bootstrap/bootstrap-icons/bootstrap-icons.css"
-    },
-    {
-      "hash": "sha256-TMYGYsQDe5V5/OAo2OI4cMgZ6ehfh/PP5VEO5VcQAgA=",
-      "url": "55bootstrap/bootstrap-icons/bootstrap-icons.json"
-    },
-    {
-      "hash": "sha256-9kPW/n5nn53j4WMRYAxe9c1rCY96Oogo/MKSVdKzPmI=",
-      "url": "55bootstrap/bootstrap-icons/bootstrap-icons.min.css"
-    },
-    {
-      "hash": "sha256-L2O9CNj25w3mIhd3+sjyd0GsRqdTtPDdgdennKEaG58=",
-      "url": "55bootstrap/bootstrap-icons/bootstrap-icons.scss"
-    },
-    {
-      "hash": "sha256-ux3pibg5cPb05U3hzZdMXLpVtzWC2l4bIlptDt8ClIM=",
-      "url": "55bootstrap/bootstrap-icons/fonts/bootstrap-icons.woff"
-    },
-    {
-      "hash": "sha256-R2rfQrQDJQmPz6izarPnaRhrtPbOaiSXU+LhqcIr+Z4=",
-      "url": "55bootstrap/bootstrap-icons/fonts/bootstrap-icons.woff2"
-    },
     {
       "hash": "sha256-AJe+8IFY3ucgNJp1O1TD9daV7oOdKUE5b69Ef4/Feoo=",
       "url": "GxTie.styles.css"
@@ -94,19 +70,19 @@ self.assetsManifest = {
       "url": "_framework/Blazored.LocalStorage.wasm"
     },
     {
-      "hash": "sha256-MhxezcVAsHLlFHMfvBi8PyR2cgjh7tDhdJblBfMdR7g=",
+      "hash": "sha256-fdpuWUJIFZCt37VUziQPwuI4DIVYCBoDiajPVQ7VSpE=",
       "url": "_framework/GxShared.pdb"
     },
     {
-      "hash": "sha256-NSWnKTCGLtWZZxenREe5F94bHreNSrbD84bIyyckgpE=",
+      "hash": "sha256-pmJ7ywgE4mIKhQvtkSRK+JubvpkdOpvjH9zzRBUz2h0=",
       "url": "_framework/GxShared.wasm"
     },
     {
-      "hash": "sha256-s5tM+q+7uH1eceoA5suBrVtr5xA5IgnX7HDO9fR4Iio=",
+      "hash": "sha256-7XAMHly6TxeSdJ6qfgjKMgGfJDOpAorjCDrr5MzFD0Q=",
       "url": "_framework/GxTie.pdb"
     },
     {
-      "hash": "sha256-2YvGYjh+LyoLvf03J47Pug7OAKmT+QFD69P/cxCiAvg=",
+      "hash": "sha256-lhzGbM4l4RoifWAACpuGKW4L2TPOBg2pVdRef5s+JXw=",
       "url": "_framework/GxTie.wasm"
     },
     {
@@ -1046,7 +1022,7 @@ self.assetsManifest = {
       "url": "_framework/WindowsBase.wasm"
     },
     {
-      "hash": "sha256-3WVCLEqxbB6X2R0NW7K8k2A90Fal6IcO65iYsL5MN78=",
+      "hash": "sha256-i1A1CQtCpI/BAZHoAw4DP6TcosLQXDFiBw12N/6qgKc=",
       "url": "_framework/blazor.boot.json"
     },
     {

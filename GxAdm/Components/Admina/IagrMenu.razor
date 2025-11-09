@@ -24,7 +24,7 @@
 {
     <div class="text-center">
         <Spinner Color="SpinnerColor.Primary" Size="SpinnerSize.Large" />
-        <p>ADMIN/APRETS Loading...</p>
+        <p>PARAMS/SCHEMAS Loading...</p>
     </div>
 }
 @if(!isLoading)
@@ -235,43 +235,67 @@
         isLoading = false;
     }
     //CRUD
-
     private async Task LoadSTROrgaAsync()
     {
-        int pisa = 2;
-        try
+        curODContext = await _contextFactory.CreateAsync(); // Use factory
+        var expand = "Tiersps," +
+            "Tiersps($expand=Actsaies,Actsaies($expand=Actdets))";
+        var dxorgas = await curODContext.LoadFilteredAsync<Gxorga>(expand: expand);
+        curOrga = dxorgas.FirstOrDefault();
+        if (curOrga == null)
         {
-            curODContext = await _contextFactory.CreateAsync(); // Use factory
-
-            //var expand = "Plngens($expand=Rubvars),Plngens($expand=Rubhies),Gsgfixes";
-            // var expand2 = "Gsgfixes," +
-            //  "Plngens," +
-            //  "Plngens($expand=Rubvars($expand=Rubfmts))," +
-            //  "Plngens($expand=Rubhies($expand=Rubpsts))";
-
-            var expand = 
-            "Plngens," +
-            "Plngens($expand=Rubvars($expand=Rubfmts))," +
-            "Plngens($expand=Rubhies($expand=Rubpsts))," +
-            "Tiersps," +
-            "Tiersps($expand=Actsaies($expand=Actdets))";
-            var dxorgas = await curODContext.LoadFilteredAsync<Gxorga>(expand: expand);
-            pisa = 3;
-            curOrga = dxorgas.FirstOrDefault();
-            if (curOrga == null)
-            {
-                Console.WriteLine("No organization found for the current user.");
-                return;
-            }
-            Console.WriteLine($"orga recu {curOrga.Raison}");
-            pisa = 4;
-            Console.WriteLine($"nb pln test : {pisa} et {curOrga.Plngens.Count()}");
+            Console.WriteLine("No organization found for the current user.");
+            return;
         }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"stack trace : {ex.StackTrace} place : {pisa} ex-mess : {ex.Message} and also in-mess: {ex.InnerException}");
-        }
+        Console.WriteLine($"orga recu {curOrga.Raison}");
+        var expand2 = "Plngens," +
+            "Plngens($expand=Rubvars,Rubvars($expand=Rubfmts))," +
+            "Plngens($expand=Rubhies,Rubhies($expand=Rubpsts))";
+        var dxplns = await curODContext.LoadFilteredAsync<Gxorga>(expand: expand2);
+        Console.WriteLine($"nb de tiers :  {curOrga.Tiersps.Count()}");
     }
+    // private async Task LoadSTROrgaAsync22()
+    // {
+    //     int pisa = 2;
+    //     try
+    //     {
+    //         curODContext = await _contextFactory.CreateAsync(); // Use factory
+
+    //         //curODContext = await _contextFactory.CreateAsync();
+    //         //curOrga et Gsgfixes, Gsglnes
+    //         //var expand = "Gsgfixes," + "Gsglnes";
+    //         //Expression<Func<Gxorga, bool>> ogfilter = g => g.Idorg == _usrBag.Idorg;
+    //         var dxorgas = await curODContext.LoadFilteredAsync<Gxorga>();
+    //         pisa = 3;
+    //         curOrga = dxorgas.FirstOrDefault();
+    //         if (curOrga == null)
+    //         {
+    //             Console.WriteLine("No organization found for the current user.");
+    //             return;
+    //         }
+    //         Console.WriteLine($"orga recu {curOrga.Raison}");
+    //         //Console.WriteLine($"nb gsgfixes : {curOrga.Gsgfixes.Count()}");
+    //         //curOrga Plngens and rubvars
+    //         var expand2 =
+    //         "Rubvars," +
+    //         "Rubvars($expand=Rubfmts)," +
+    //         "Rubhies," +
+    //         "Rubhies($expand=Rubpsts)";
+    //         var dxplns = await curODContext.LoadFilteredAsync<Plngen>(expand: expand2);
+    //         pisa = 4;
+    //         //Console.WriteLine($"nb de plans :  {dxplns.Count()}");
+    //         var expand3 = 
+    //         "Actsaies," +
+    //         "Actsaies($expand=Actdets)";
+    //         var dxtiers = await curODContext.LoadFilteredAsync<Tiersp>(expand: expand3);
+    //         pisa = 5;
+    //         Console.WriteLine($"nb de tiers :  {curOrga.Tiersps.Count()}");
+    //     }
+    //     catch (Exception ex)
+    //     {
+    //         Console.WriteLine($"stack trace : {ex.StackTrace} place : {pisa} ex-mess : {ex.Message} and also in-mess: {ex.InnerException}");
+    //     }
+    // }
     // public async Task<IEnumerable<Plngen>> LoadRubricsAsync()
     // {
     //     // int pisa = 2;

@@ -240,8 +240,7 @@
         {
             curODContext = await _contextFactory.CreateAsync(); // Use factory
             //var expand = "Plngens($expand=Gsesios)";
-            //var expand = "Plngens($expand=Gsesios), Gsgfixes, Gsglnes";
-            var expand = "Gsgfixes," + "Gsglnes," + "Plngens," + "Gsesios";
+            var expand = "Gsgfixes," + "Gsglnes";
             var dxorgas = await curODContext.LoadFilteredAsync<Gxorga>(expand: expand);
 
             pisa = 3;
@@ -252,7 +251,8 @@
                 Console.WriteLine("No organization found for the current user.");
                 return;
             }
-
+            var expand2 = "Plngens," + "Gsesios";
+            var dxplns = await curODContext.LoadFilteredAsync<Gxorga>(expand: expand2);
             Console.WriteLine($"nb. variables {curOrga.Gsgfixes.Count()}");
             Console.WriteLine($"nb. colonnes {curOrga.Gsglnes.Count()}");
             pisa = 4;
