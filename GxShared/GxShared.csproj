@@ -1,47 +1,31 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
-  <!-- Or Microsoft.NET.Sdk.Web, etc. -->
-  <PropertyGroup>
-    <TargetFramework>net8.0</TargetFramework>
-    <ImplicitUsings>enable</ImplicitUsings>
-    <Nullable>enable</Nullable>
-    <OutputType>Library</OutputType>
-  </PropertyGroup>
+﻿  <Project Sdk="Microsoft.NET.Sdk">
 
-  <ItemGroup>
-    <Compile Remove="CodeTemplates\**" />
-    <Compile Remove="DaModels\**" />
-    <Compile Remove="GlobModels\XXXFormulas\**" />
-    <EmbeddedResource Remove="CodeTemplates\**" />
-    <EmbeddedResource Remove="DaModels\**" />
-    <EmbeddedResource Remove="GlobModels\XXXFormulas\**" />
-    <None Remove="CodeTemplates\**" />
-    <None Remove="DaModels\**" />
-    <None Remove="GlobModels\XXXFormulas\**" />
-  </ItemGroup>
+    <PropertyGroup>
+      <TargetFrameworks>net8.0;net9.0</TargetFrameworks>
+      <ImplicitUsings>enable</ImplicitUsings>
+      <Nullable>enable</Nullable>
+    </PropertyGroup>
 
-  <ItemGroup>
-    <Compile Remove="Broutest.cs" />
-    <Compile Remove="GlobModels\ARTokens.cs" />
-    <Compile Remove="GlobModels\Auth\EnrichedLoginResponse.cs" />
-    <Compile Remove="GlobModels\CalcRefera.cs" />
-    <Compile Remove="GlobModels\ResCalcModel.cs" />
-    <Compile Remove="GlobModels\Session\Secubag.cs" />
-    <Compile Remove="GlobModels\Session\Ucolbag.cs" />
-    <Compile Remove="GlobModels\UogModel.cs" />
-  </ItemGroup>
+    <!-- Packages for .NET 8 -->
+    <ItemGroup Condition="'$(TargetFramework)' == 'net8.0'">
+      <PackageReference Include="Microsoft.AspNetCore.WebUtilities" Version="8.0.13" />
+      <PackageReference Include="Microsoft.JSInterop" Version="8.0.13" />
+    </ItemGroup>
 
-  <ItemGroup>
-    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="8.0.13" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="8.0.13">
-      <PrivateAssets>all</PrivateAssets>
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-    </PackageReference>
-    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
-    <PackageReference Include="System.Net.Http" Version="4.3.4" />
-  </ItemGroup>
+    <!-- Packages for .NET 9 -->
+    <ItemGroup Condition="'$(TargetFramework)' == 'net9.0'">
+      <PackageReference Include="Microsoft.AspNetCore.WebUtilities" Version="9.0.0" />
+      <PackageReference Include="Microsoft.JSInterop" Version="9.0.0" />
+    </ItemGroup>
+    <ItemGroup>
+      <Compile Remove="Sess\Secubag.cs" />
+    </ItemGroup>
 
-  <ItemGroup>
-    <Service Include="{508349b6-6b84-4df5-91f0-309beebad82d}" />
-  </ItemGroup>
+    <ItemGroup>
+      <PackageReference Include="Microsoft.IdentityModel.Tokens" Version="8.13.0" />
+      <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+    </ItemGroup>
 
-</Project>
+  </Project>
+
+

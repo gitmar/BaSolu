@@ -8,7 +8,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-// Generation date: 11/8/2025 3:25:47 PM
+// Generation date: 11/14/2025 6:43:34 AM
 namespace GxWapi.DaModels
 {
     /// <summary>
@@ -556,6 +556,29 @@ namespace GxWapi.DaModels
         private global::System.Nullable<int> _Sibjx;
         partial void OnSibjxChanging(global::System.Nullable<int> value);
         partial void OnSibjxChanged();
+        /// <summary>
+        /// There are no comments for Property Simain in the schema.
+        /// </summary>
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        [global::Microsoft.OData.Client.OriginalNameAttribute("Simain")]
+        public virtual global::System.Nullable<int> Simain
+        {
+            get
+            {
+                return this._Simain;
+            }
+            set
+            {
+                this.OnSimainChanging(value);
+                this._Simain = value;
+                this.OnSimainChanged();
+                this.OnPropertyChanged("Simain");
+            }
+        }
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        private global::System.Nullable<int> _Simain;
+        partial void OnSimainChanging(global::System.Nullable<int> value);
+        partial void OnSimainChanged();
         /// <summary>
         /// There are no comments for Property Schba in the schema.
         /// </summary>

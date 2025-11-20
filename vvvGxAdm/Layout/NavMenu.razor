@@ -1,0 +1,176 @@
+﻿@using GxAdm.Services
+@using GxShared.GlobModels
+@using BlazorBootstrap
+@using Blazored.LocalStorage
+@using System.Security.Claims
+@using GxAdm.Helpers
+@using GxAdm.Components.Identity
+
+@inject NavigationManager _navManager
+@inject ILocalStorageService _localStorage
+
+<div class="top-row navbar navbar-dark bg-success shadow-sm bg-opacity-25">
+    <a class="navbar-brand text-white fw-bold" href="">Gx-Solutions</a>
+    <span class="text-warning fw-bold">(Admin)</span>
+    @* <button class="navbar-toggler" type="button" @onclick="ToggleNavMenu">
+        <span class="navbar-toggler-icon"></span>
+    </button> *@
+</div>
+<div class="@NavMenuCssClass bg-dark vh-100" style="overflow-y: auto;">
+    <nav class="nav flex-column">
+            <NavLink class="nav-link nav-main" href="" Match="NavLinkMatch.All">
+                <i class="bi bi-house-door-fill-nav-menu" aria-hidden="true"></i> Home
+            </NavLink>
+        @* <div class="@(isOpen ? "d-none" : "")">
+            <Login OnAdmLoginChanged="HandleAdmLoginChanged" />
+        </div> *@
+        <AuthorizeView>
+            <Authorized>
+                <NavLink class="nav-link nav-main" href="aorgas">
+                        <Icon Name="IconName.Key" Size="IconSize.x5" Color="IconColor.White" /> &nbsp; Institution
+                    </NavLink>
+                <NavLink class="nav-link nav-main" @onclick="ToggleSubPara">
+                        <Icon Name="IconName.PlusSquareFill" Size="IconSize.x5" Color="IconColor.White" /> &nbsp; Parametrage
+                    </NavLink>
+                    @if (isSubParaVisible)
+                    {
+                        <nav class="nav flex-column">
+                                <NavLink class="nav-link nav-sub" href="astrmenu">
+                                    <Icon Name="IconName.CaretRightSquare" /> &nbsp; Tables
+                                </NavLink>
+                        <NavLink class="nav-link nav-sub" href="iagrmenu">
+                                    <Icon Name="IconName.CaretRightSquare" /> &nbsp; Schemas
+                                </NavLink>
+                        </nav>
+                    }
+                <NavLink class="nav-link nav-main" @onclick="ToggleSubProg">
+                        <Icon Name="IconName.PlusSquareFill" Size="IconSize.x5" Color="IconColor.White" /> &nbsp; Programmes
+                    </NavLink>
+                    @if (isSubProgVisible)
+                    {
+                        <nav class="nav flex-column">
+                        <NavLink class="nav-link nav-sub" href="prubmenu">
+                                    <Icon Name="IconName.CaretRightSquare" /> &nbsp; Plans
+                                </NavLink>
+                        <NavLink class="nav-link nav-sub" href="edtmenu">
+                                    <Icon Name="IconName.CaretRightSquare" /> &nbsp; Ecriture
+                                </NavLink>
+                        </nav>
+                    }
+                <NavLink class="nav-link nav-main" @onclick="ToggleSubSecu">
+                        <Icon Name="IconName.PlusSquareFill" Size="IconSize.x5" Color="IconColor.White" /> &nbsp; Securites
+                    </NavLink>
+                    @if (isSubSecuVisible)
+                    {
+                        <nav class="nav flex-column">
+                        <NavLink class="nav-link nav-sub" href="accsmenu">
+                                    <Icon Name="IconName.CaretRightSquare" /> &nbsp; Autorisations
+                                </NavLink>
+                        <NavLink class="nav-link nav-sub" href="donamenu">
+                                    <Icon Name="IconName.CaretRightSquare" /> &nbsp; Donnees
+                                </NavLink>
+                                <NavLink class="nav-link nav-sub" href="subitem2">
+                                    <Icon Name="IconName.CaretRightSquare" /> &nbsp; Outils
+                                </NavLink>
+                            @* <div class="nav-item px-3 py-0">
+                                <NavLink class="nav-link" href="repareg">
+                                    <Icon Name="IconName.CaretRightSquare" /> &nbsp; Rattrapage
+                                </NavLink>
+                            </div> *@
+                        <NavLink class="nav-link nav-sub" href="ownerpage">
+                            <Icon Name="IconName.CaretRightSquare" /> &nbsp; OwnerPage
+                        </NavLink>
+                            <NavLink class="nav-link nav-main text-light" href="about">
+                                <i class="bi bi-key me-2" aria-hidden="true"></i> Analyses
+                            </NavLink>
+                        </nav>
+                    }
+                    <!--bi bi-list-nested-nav-menu-->
+            </Authorized>
+        </AuthorizeView>
+        <NavLink class="nav-link nav-main" href="about">
+            <i class="bi bi-info-circle-fill me-2" aria-hidden="true"></i> About
+        </NavLink>
+    </nav>
+</div>
+<style>
+    .nav-link.active {
+        background-color: #0d6efd !important;
+        color: white !important;
+        font-weight: 600;
+        border-radius: 0.3rem;
+    }
+
+    .nav-link:hover {
+        background-color: rgba(255, 255, 255, 0.1);
+        color: #fff;
+    }
+
+    .nav-main {
+        margin-left: 1rem; /* Main items slightly indented */
+    }
+
+    .nav-sub {
+        margin-left: 2rem; /* Subitems more indented */
+    }
+</style>
+@code {
+    [CascadingParameter]
+    private Task<AuthenticationState>? AuthState { get; set; }
+
+    private bool success, errors, isSubmitting = false;
+    private string[] errorList = [];
+    private bool collapseNavMenu = false;
+    private string? NavMenuCssClass => collapseNavMenu ? "collapse" : null;
+
+    private Userbag _usrBag = new();
+    private bool isOwner = false;
+
+    private bool isSubManagVisible = false;
+    private bool isSubSecuVisible = false;
+    private bool isSubOperVisible = false;
+    private bool isSubParaVisible = false;
+    private bool isSubProgVisible = false;
+    //private void ToggleNavMenu() => collapseNavMenu = !collapseNavMenu;
+    protected override async Task OnInitializedAsync()
+    {
+        //_appState.OnChange += StateHasChanged;
+    }
+
+    public void Dispose()
+    {
+        //_appState.OnChange -= StateHasChanged;
+    }
+    private void ToggleNavMenu()
+    {
+        collapseNavMenu = !collapseNavMenu;
+    }
+    private void ToggleSubManag()
+    {
+        isSubManagVisible = !isSubManagVisible;
+    }
+    private void ToggleSubSecu()
+    {
+        isSubSecuVisible = !isSubSecuVisible;
+    }
+    private void ToggleSubOper()
+    {
+        isSubOperVisible = !isSubOperVisible;
+    }
+
+    //Admin
+    private void ToggleSubPara()
+    {
+        isSubParaVisible = !isSubParaVisible;
+    }
+    private void ToggleSubProg()
+    {
+        isSubProgVisible = !isSubProgVisible;
+    }
+    private bool Entest = false;
+
+    // protected override async Task OnAfterRenderAsync(bool firstRender)
+    // {
+    //     Entest = false;
+    // }
+ }

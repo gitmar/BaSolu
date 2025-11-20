@@ -1,0 +1,212 @@
+﻿@inherits LayoutComponentBase
+
+@using System.Text.RegularExpressions
+@using Blazored.LocalStorage
+@using GxAdm.Services
+@using GxAdm.Helpers
+@using GxShared.Services
+@using System.Security.Claims
+
+@inject IConfiguration _iconfig
+@inject HttpClient _htpClient
+@inject NavigationManager _navManager
+@inject ILocalStorageService _localStorage
+@inject SessionContextService _sessionContext
+@inject ClieAppState _appState
+@inject IJSRuntime _JsRun
+
+@if (_layoutReady)
+{
+    <div class="page-wrapper" style="display: flex; height: 100vh;">
+
+        <div class="sidebar" style="width: 250px; background: linear-gradient(180deg, rgb(5, 39, 103) 0%, #3a0647 70%);">
+            <NavMenu />
+        </div>
+
+        <div class="main-content-wrapper" style="flex: 1; display: flex; flex-direction: column;">
+
+            <div class="row" style="background-color: lightgray; padding: 10px;">
+                <AuthorizeView>
+                    <Authorized>
+                        <div class="d-flex align-items-center border-0 bg-success bg-opacity-10 px-2">
+                            <!-- Left: PrivateRoom button -->
+                            <div>
+                                <a class="nav-icon btn-like bg-success bg-opacity-25" @onclick="ToggleUserMenu" href="#">
+                                    <i>PrivateRoom</i>
+                                </a>
+                            </div>
+                            <div>
+                                <span>&nbsp;&nbsp;</span>
+                                @_appState.ogRaison
+                                <span>-</span>
+                                @_appState.usFulnom;
+                            </div>
+                            <!-- Spacer pushes everything else to the right -->
+                            <div class="ms-auto d-flex align-items-center gap-3">
+                                <label class="mb-0">Help ?</label>
+                                <div>
+                                    <span>&nbsp;</span>
+                                    @* Welcome &nbsp;<b>@context.User.Identity?.Name</b>. *@
+                                    <a href="logout">
+                                        <span class="bi bi-door-closed-fill" aria-hidden="true" style="vertical-align:middle"></span> Logout
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </Authorized>
+                    <NotAuthorized>
+                        <div class="d-flex align-items-center border-0 bg-success bg-opacity-10 px-2">
+                            <!-- Spacer pushes everything else to the right -->
+                            <div class="ms-auto d-flex align-items-center gap-3">
+                                <label class="mb-0">Help ?</label>
+                                @if (!isHelpLogin)
+                                {
+                                    <a href="login"><span class="bi bi-door-open" aria-hidden="true" style="vertical-align:middle"></span> Login</a>
+                                } else
+                                {
+                                    <a href="helplogin"><span class="bi bi-door-open" aria-hidden="true" style="vertical-align:middle"></span> Support</a>
+                                }
+
+                                
+                            </div>
+                        </div>
+                    </NotAuthorized>
+                </AuthorizeView>
+                @if (collapseUserMenu)
+                {
+                    <AuthorizeView>
+                        <Authorized>
+                            <UsrMenu />
+                        </Authorized>
+                    </AuthorizeView>
+                }
+            </div>
+            <main style="flex: 1; overflow-y: auto;">
+                <article class="content px-4">
+                    @Body
+                </article>
+            </main>
+
+            <!-- Put your "other-content" row here below main if it should appear below main -->
+            <!-- Or place it side-by-side with main using nested flex if needed -->
+        </div>
+    </div>
+}
+else
+{
+    <div class="d-flex justify-content-center align-items-center" style="height: 100vh;">
+        <span>Loading session...</span>
+    </div>
+}
+
+@code {
+    private bool _layoutReady = false, isLoading = false;
+    private bool collapseUserMenu = false, canAdminLog = false;
+    [CascadingParameter]
+    private Task<AuthenticationState>? AuthState { get; set; }
+
+    private bool isOwner = false;
+    private bool isHelpLogin = false;
+    private ClaimsPrincipal authUser;
+    private bool isAuthenticated = false;
+    [Inject] private AuthenticationStateProvider _authProvider { get; set; }
+
+    private void ToggleUserMenu()
+    {
+        collapseUserMenu = !collapseUserMenu;
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        canAdminLog = false;
+        isLoading = false;
+        await VerifAppVersion();
+
+        _appState.OnChange += StateHasChanged;
+        //_layoutReady = true;
+        var token = await _localStorage.GetItemAsync<string>("blazToken");
+        if (string.IsNullOrWhiteSpace(token))
+        {
+            Console.WriteLine("No token found — skipping session sync.");
+            _layoutReady = true;
+            return;
+        }
+        await _sessionContext.InitializeAsync();
+
+        // Wait for AuthenticationStateProvider to reflect the new token
+        //await Task.Delay(100); // Give NotifyUserAuthentication time to propagate
+
+        var authState = await AuthState;
+        authUser = authState.User;
+        isAuthenticated = authUser.Identity?.IsAuthenticated ?? false;
+
+        if (!isAuthenticated)
+        {
+            Console.WriteLine("Authentication in Main Layout ECHEC");
+        }
+        else
+        {
+            if (authUser.IsInRole("Support")) canAdminLog = true;
+            if (authUser.IsInRole("Admin"))
+            {
+                var claims = JwtHelper.DecodePayload(token);
+                var siOwner = claims.TryGetValue("Gx.IsOwner", out var uid) ? uid : 0;
+                int estOwner = Convert.ToInt16(siOwner);
+                if (estOwner == 1)
+                {
+                    canAdminLog = true;
+                }
+            }
+
+            Console.WriteLine("Authentication in Main Layout SUCCESS");
+        }
+
+        _layoutReady = true;
+        _authProvider.AuthenticationStateChanged += async task =>
+        {
+            var authState = await task;
+            authUser = authState.User;
+            isAuthenticated = authUser.Identity?.IsAuthenticated ?? false;
+            StateHasChanged();
+        };
+        isLoading = true;
+    }
+    private async Task VerifAppVersion()
+    {
+        var currentVersion = await _htpClient.GetStringAsync("version.json");
+        var storedVersion = await _JsRun.InvokeAsync<string>("localStorage.getItem", "appVersion");
+        if (storedVersion != currentVersion)
+        {
+            // Clear service worker cache
+            await _JsRun.InvokeVoidAsync("eval", @"
+            caches.keys().then(function(names) {
+                for (let name of names)
+                    caches.delete(name);
+            });
+
+            // Clear cookies
+            document.cookie.split(';').forEach(function(c) {
+                document.cookie = c.trim().split('=')[0] + '=;expires=Thu, 01 Jan 1970 00:00:00 UTC;path=/';
+            });
+
+            // Clear localStorage and sessionStorage
+            localStorage.clear();
+            sessionStorage.clear();
+
+            // Delete IndexedDB
+            indexedDB.databases().then(dbs => {
+                for (const db of dbs)
+                    indexedDB.deleteDatabase(db.name);
+            });
+
+            // Reload app
+            location.reload();
+        ");
+            await _JsRun.InvokeVoidAsync("localStorage.setItem", "appVersion", currentVersion);
+        }
+    }
+    public void Dispose()
+    {
+        _appState.OnChange -= StateHasChanged; 
+    }
+}

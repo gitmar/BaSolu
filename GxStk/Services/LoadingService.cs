@@ -1,6 +1,4 @@
-﻿using Azure.Core;
-
-namespace GxStk.Services
+﻿namespace GxStk.Services
 {
     // LoadingService.cs
     public class LoadingService

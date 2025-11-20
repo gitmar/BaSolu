@@ -8,7 +8,7 @@
 @using GxAdm.ClieModels
 @using GxAdm.Components.Admina.Astreins
 @using GxAdm.Services
-@using GxShared.GlobModels
+@using GxShared.Sess
 @using GxWapi.DaModels
 @using Microsoft.OData.Client
 @using Newtonsoft.Json
@@ -251,7 +251,7 @@
             var expand2 = "Rubvars";
             var dxplns = await curODContext.LoadFilteredAsync<Plngen>(expand: expand2);
             pisa = 4;
-            //Console.WriteLine($"nb de plans :  {dxplns.Count()}");
+            Console.WriteLine($"nb de plans :  {dxplns.Count()}");
         }catch(Exception ex)
         {
             Console.WriteLine($"ICI TODAY stack trace : {ex.StackTrace} place : {pisa} ex-mess : {ex.Message} and also in-mess: {ex.InnerException}");

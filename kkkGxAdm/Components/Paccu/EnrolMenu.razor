@@ -1,0 +1,399 @@
+﻿@page "/enrolmenu"
+@inherits FreeLayout
+
+@using System.Security.Claims
+@using BlazorBootstrap
+@using Blazored.LocalStorage
+@using GxAdm.ClieModels
+@using GxAdm.Components.Paccu.Invita
+@using GxAdm.Components.Paccu.Valida
+@using GxAdm.Components.Paccu.Inscr
+@using GxAdm.Services
+@using GxShared.GlobModels
+@using GxWapi.DaModels
+@using Microsoft.OData.Client
+@using Newtonsoft.Json
+@inject NavigationManager _navmanager
+@inject ILocalStorageService _localStorage
+@inject HttpClientService _cliemanager
+@inject IODataContextFactory _contextFactory
+@inject SessionContextService _sessionContext
+@inject RendAgres _rendAgres
+@inject IJSRuntime _jsRun
+
+<h3>EnrolMenu</h3>
+@if (isLoading)
+{
+    <LoadingIndicator></LoadingIndicator>
+}
+<div class="mag-screen-layout">
+    <div class="container" style="height: 100vh;">
+        <div class="d-flex flex-column" style="height: 100%;">
+            @if (!isLoading)
+            {
+                <!-- Top Menu -->
+                <div class="content-and-sidebar-container bg-success bg-opacity-10">
+                    <button class="navbar-brand text-left text-white bg-dark bg-opacity-75 me-2 py-0 px-1" style="height:44px;" @onclick="NavigateBack">
+                    A24soft Gx-Solutions
+                    </button>
+                    <div><span class="separator">||</span></div>
+                    <ul class="menu">
+                        <li>
+                            @if (LsRoles.Count > 0)
+                            {
+                                <InputSelect @bind-Value="Ugpe">
+                                    <option value="0">choisir</option>
+                                    @foreach (var gpe in LsGties.Where(tie => tie.Itb == 6))
+                                    {
+                                        <option value="@gpe.Elea" @onclick="() => ChxGpeTiers(gpe)">@gpe.Liba</option>
+                                    }
+                                </InputSelect>
+                            }
+                        </li>
+                        <li><span class="separator">|</span></li>
+                        <li><NavLink @onclick="() => SelMenu(1)" class="nav-item" ActiveClass="active">Integration</NavLink></li>
+                        <li><span class="separator">|</span></li>
+                        <li><NavLink @onclick="() => SelMenu(2)" class="nav-item">Accueil</NavLink></li>
+                        <li><span class="separator">|</span></li>
+                        <li><NavLink @onclick="() => SelMenu(3)" class="nav-item">Invitation</NavLink></li>
+                    </ul>
+                </div>
+                <div class="row">
+                    <div class="col-md-12 input-group align-middle">
+                        @if (Ugpe != 0)
+                        {
+                            @if (!ParentEDT)
+                            {
+                            <span class="text-uppercase text- text-success"><b>@strComp</b></span>
+                            <span class="separator">&nbsp; &nbsp;|| </span>
+                            <Button class="btn btn-sm btn-secondary btnsz"
+                                    style="@(!allEnable ? "" : "display:none;")"
+                                    @onclick="ManEditAll">
+                                Modifier
+                            </Button>
+                            } else if (ParentEDT)
+                            {
+                                <Button class="btn btn-sm btn-secondary btnsz"
+                                        @onclick="ManCnclAll">
+                                    Annuler
+                                </Button>
+                                <span class="separator">|  </span>
+                                <Button class="btn btn-sm btn-secondary btnsz"
+                                        @onclick="ManSaveAll">
+                                    Enregistrer
+                                </Button>
+                            }
+                        }
+                        @if (!String.IsNullOrEmpty(MImessage))
+                        {
+                            <span class="bg-info bg-opacity-10" style="font-style:italic;color:red">&nbsp;--> @MImessage</span>
+                        }
+                    </div>
+                </div>
+                <!-- Main Content -->
+                @if (chxMenu != 0 && toChild != null && curOrga != null && curODContext != null)
+                {
+                    @if (chxMenu == 1)
+                    {
+                        <ValdTie @ref="mygvld"
+                                 Ugpe="@Ugpe"
+                                 Tgpe="@Tgpe"
+                                 curOrga="@curOrga"
+                                 toChild="@toChild"
+                                 curODContext="@curODContext">
+                            <ChildContent>
+                                @* <h2 class="child-box">Hello INTEGRATION</h2> *@
+                            </ChildContent>
+                        </ValdTie>
+                    }
+                    else if (chxMenu == 2 && ParentOK)
+                    {
+                        @* <InscTiw @ref="mygtiw"
+                                 ParentEDT="@ParentEDT"
+                                 ParentOK="@ParentOK"
+                                 Ugpe="@Ugpe"
+                                 Tgpe="@Tgpe"
+                                 curOrga="@curOrga"
+                                 toChild="@toChild"
+                                 curODContext="@curODContext">
+                            <ChildContent>
+                                <h2 class="child-box">Hello ACCUEIL</h2>
+                            </ChildContent>
+                        </InscTiw> *@
+                    }
+                    else if (chxMenu == 3)
+                    {
+                        <InviTiw @ref="myginv"
+                                 Ugpe="@Ugpe"
+                                 Tgpe="@Tgpe"
+                                 _tusBag="@_usrBag"
+                                 curOrga="@curOrga"
+                                 toChild="@toChild">
+                            <ChildContent>
+                                @* <h2 class="child-box">Hello INVITATION</h2> *@
+                            </ChildContent>
+                        </InviTiw>
+                    }
+                }
+            }
+        </div>
+    </div>
+</div>
+@code {
+    private bool isLoading = true;
+    public MyODataContext curODContext;
+    public Gxorga curOrga = new Gxorga();
+    public MyShareVars toChild = new();
+    private bool allEnable = false;
+
+    private InscTiw mygtiw;
+    private ValdTie mygvld;
+    private InviTiw myginv;
+
+    [Inject]
+    private MyAuthStateProvider _authProvider { get; set; }
+    public Userbag _usrBag = new();
+
+    [Parameter]
+    public RenderFragment RecpTiw { get; set; }
+    [Parameter]
+    public RenderFragment InscTiw { get; set; }
+    [Parameter]
+    public RenderFragment InviTiw { get; set; } 
+
+    [CascadingParameter]
+    private Task<AuthenticationState>? AuthState { get; set; }
+
+    private ClaimsPrincipal authUser;
+    private bool isOwner = false;
+    private bool isAuthenticated = false;
+
+    // Operation VUE
+    public bool ParentOK = false; //child formulaire visible
+    public bool ParentEDT = false;
+
+    //public int _UorgId = 0;
+    public string _strOrga = "", _curSigle = "", MImessage = "", LoadLabel = "", strmeta = "", strmeta2 = "";
+
+    //entities load
+    private IEnumerable<Gxorga> _lsOrgas = new List<Gxorga>();
+    private List<Tiewel> InTwels = new List<Tiewel>();
+    private List<Tiersp> InTiers = new List<Tiersp>();
+    public IQueryable<Gsapl> InApls = Enumerable.Empty<Gsapl>().AsQueryable();
+    public IEnumerable<Tiewel> ResTiw;
+    public IEnumerable<Tiersp> ResTie;
+    public Tiewel opTwel = new();
+    public Tiersp opTier = new();
+
+    public List<Gpfixe> LsFixes = new();
+    public List<Gpfixe> LsGties = new();
+    public List<Gpdivh> LsDivs = new();
+    //public List<Rubpst> LsPsts = new();
+    public List<Gpvar> LsVars = new();
+    public List<Gsglne> LsCols = new();
+    public List<Gsglne> TbElems = new();    
+    private List<Grole> LsRoles = new();
+    //Navigation
+    private int chxMenu = 0;
+    string gpeLiba = "";
+    private string strComp = $"Integration";
+    public int Ugpe = 0, Tgpe = 0; //gpe ref1..6/tiers type6..7
+    //modal management
+    private string SidebarStyle = "width: 200px;";
+    private bool IsOpen = true;
+    private bool FirstLoadCompleted = false;
+    private bool ContentLoaded = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        //prise valeurs parent
+        isLoading = true;
+        LoadLabel = "data is loading";
+        SetLoadingState(); // 75, "Fetching data...");
+        var authState = await AuthState;
+        authUser = authState.User;
+        isAuthenticated = authUser.Identity.IsAuthenticated;
+        if (!isAuthenticated)
+        {
+            Console.WriteLine("Authentication in Enrol Utilisateur ECHEC");
+            return;
+        }
+        else
+        {
+            Console.WriteLine("Authentication in Enrol SUCCESS");
+        }
+        _usrBag = await _sessionContext.GetUserbagAsync();
+        LsVars = _usrBag.Usorga.Uvars.ToList();
+        LsDivs = await _rendAgres.LoadOrgaPostes();
+        LsRoles = await _rendAgres.LoadOrgaRoles();
+        LsFixes = _usrBag.Ufixes.ToList();
+        LsGties = _usrBag.Ufixes
+            .Where(ut => ut.Gvars == 36 && ut.Elea != 0 && ut.Elea != 9)
+            .ToList();
+        //LsDoms = _usrBag.Ufixes
+        //    .Where(ut => ut.Gvars == 36 && ut.Itb == 4 && ut.Gp1 == 3 && ut.Elea != 0)
+        //    .ToList();
+        isOwner = _usrBag.SiOwner;
+        Console.WriteLine("Authentication ENTREE");
+        await LoadTieAplAsync();
+        //_varsTous.Ugpe = 1; //initial Cible
+        toChild.authUser = authUser;
+        toChild.isAuthenticated = isAuthenticated;
+        //toChild.Usrid = _UserId;
+        //toChild.Idorg = _UorgId;
+        toChild.LsCols = LsCols;
+        toChild.TbElems = TbElems;
+        //toChild.LsSites = LsSites.ToList();
+        toChild.LsVars = LsVars.ToList();
+        toChild.LsFixes = LsFixes.ToList();
+        toChild.LsDivs = LsDivs;
+        //toChild.LsPlans = LsPlans.ToList();
+        //toChild.LsTabls = LsTabls.ToList();
+        // pita = 5;
+        Console.WriteLine("TIERS A ETE TESTE");
+        //option initiale
+        strComp = $"Integration {gpeLiba}";
+        isLoading = false;
+        ParentOK = true;
+        //await _loadingService.Hide();
+
+
+        StateHasChanged();
+        isLoading = false;
+    }
+    private async Task LoadTieAplAsync()
+    {
+        try
+        {
+            curODContext = await _contextFactory.CreateAsync(); // Use factory
+            //var expand = "Tiewels,Tiewels($expand=Tiwafls),Tiersps,Tiersps($expand=Tieafls),Gsglnes";
+            var expand = "Gsglnes," + 
+             "Tiewels," +
+             "Tiewels($expand=Tiwafls)";
+            var dxorgas = await curODContext.LoadFilteredAsync<Gxorga>(expand: expand);
+            curOrga = dxorgas.FirstOrDefault();
+            if (curOrga == null)
+            {
+                Console.WriteLine("No organization found for the current user.");
+                return;
+            }
+            var expand2 = "Gsesios," + "Tiersps," +
+             "Tiersps($expand=Tieafls)";
+            var dxtiers = await curODContext.LoadFilteredAsync<Gxorga>(expand: expand2);
+            //prise des colonnes //default/Ugpe = 1;
+            Ugpe = 1;
+            Tgpe = 6;
+            chxMenu = 1;
+            LsCols = curOrga.Gsglnes.Where(ug => ug.Otyp == 5 && ug.Dtyp == 6 && ug.Totyp == 1 && ug.Jacc == 1).ToList();
+            TbElems = curOrga.Gsglnes.Where(ug => ug.Otyp == 4 && ug.Pitb == 1).ToList();
+            Console.WriteLine($"From Enrol Menu Nb.cols :{LsCols.Count} et tbEle {TbElems.Count}");
+            Console.WriteLine($"orga recu {curOrga.Raison}");
+            Console.WriteLine($"nb ties test : {curOrga.Tiersps.Count()}");
+            Console.WriteLine($"nb tiwls test : {curOrga.Tiewels.Count()}");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"stack trace : {ex.StackTrace} ex-mess : {ex.Message} and also in-mess: {ex.InnerException}");
+        }
+    }
+    //changes des selections
+    void ChxGpeTiers(Gpfixe mygpe)
+    {
+        gpeLiba = "";
+        LsCols = curOrga.Gsglnes.Where(ug => ug.Otyp == 5 && ug.Dtyp == 6 && ug.Totyp == Ugpe && ug.Jacc == 1).ToList();
+        if (mygpe != null)
+        {
+            Ugpe = mygpe.Elea;
+            Tgpe = mygpe.Gp2;
+            gpeLiba = LsGties.Where(ut => ut.Elea == mygpe.Elea).FirstOrDefault().Liba.ToUpperInvariant();
+            StateHasChanged();
+            Console.WriteLine("PAS 2");
+        }
+        toChild.LsCols = LsCols;
+    }
+    private async Task SelMenu(int noM)
+    {
+        chxMenu = noM;
+        if (chxMenu == 1) strComp = $"Integration {gpeLiba}";
+        if (chxMenu == 2) strComp = $"Accueil  {gpeLiba}";
+        if (chxMenu == 3) strComp = $"Invitation {gpeLiba}";
+        //if (chxMenu == 5) strComp = "Colonnes";
+        allEnable = false;
+        StateHasChanged();
+        await Task.Delay(800);
+    }
+    void NavigateBack()
+    {
+        _navmanager.NavigateTo("/");
+    }
+    private async Task ManEditAll()
+    {
+        if (Ugpe == 0)
+        {
+            MImessage = "Groupe obligatoire";
+            return;
+        }
+        ParentEDT = true;
+        MImessage = "Edition en preparation...";
+        if (chxMenu == 1)
+        { //validation
+            await mygvld.EdtAll();
+        }
+        if (chxMenu == 2)
+        { //accueil
+            await mygtiw.EdtAll();
+        }
+        if (chxMenu == 3)
+        { //invitation
+            await myginv.EdtAll();
+        }
+        MImessage = "";
+        allEnable = true;
+    }
+    private async Task ManCnclAll()
+    {
+        MImessage = "annulation en cours...";
+        
+        if (chxMenu == 1)
+        { //validation
+            await mygvld.CncAll();
+        }
+        if (chxMenu == 2)
+        { //accueil
+            await mygtiw.CncCHILD();
+        }
+        if (chxMenu == 3)
+        { //invitation
+            await myginv.CncAll();
+        }
+        //reload
+        await LoadTieAplAsync();
+        MImessage = "";
+        allEnable = false;
+    }
+    private async Task ManSaveAll()
+    {
+        bool oksav = false;
+        MImessage = "enregistrement en cours...";
+        if (chxMenu == 1)
+        { //validation
+            oksav = await mygvld.SaveCurEntities();
+        }
+        if (chxMenu == 2)
+        { //accueil
+            oksav = await mygtiw.SaveCurEntities();
+        }
+        if (chxMenu == 3)
+        { //invitation
+            oksav = await myginv.SaveCurEntities();
+        }
+        if (oksav) MImessage = "";
+        allEnable = false;
+    }
+    private async Task SetLoadingState()
+    {
+        await _jsRun.InvokeVoidAsync("eval",
+        "document.documentElement.style.setProperty('--blazor-load-percentage', '100');" +
+        "document.documentElement.style.setProperty('--blazor-load-percentage-text', '\"Loading data...\"');");
+    }
+}

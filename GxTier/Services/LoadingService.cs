@@ -1,6 +1,4 @@
-﻿using Azure.Core;
-
-namespace GxTie.Services
+﻿namespace GxTie.Services
 {
     // LoadingService.cs
     public class LoadingService

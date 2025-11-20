@@ -6,8 +6,8 @@ using Blazored.LocalStorage;
 using GxAdm.Helpers;
 using GxAdm.Profile;
 
-using GxShared.GlobModels;
-using GxShared.GlobModels.Auth;
+using GxShared.Sess;
+using GxShared.Auth;
 
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.JSInterop;
@@ -23,7 +23,7 @@ namespace GxAdm.Services
         private readonly AuthenticationStateProvider _authProvider;
         private readonly IJSRuntime _jsRuntime;
         private readonly HttpClientService _apiClient;
-        public LoginResponse? LoginResponse { get; private set; }
+        public LoginResult? LoginResponse { get; private set; }
         public Userbag? Userbag { get; private set; }
         public SessionDto? CurrentSession { get; private set; }
 
@@ -42,7 +42,7 @@ namespace GxAdm.Services
         }
         public async Task InitializeAsync()
         {
-            LoginResponse = await _localStorage.GetItemAsync<LoginResponse>("blazLoginResponse");
+            LoginResponse = await _localStorage.GetItemAsync<LoginResult>("blazLoginResponse");
             Userbag = await _localStorage.GetItemAsync<Userbag>("blazUserbag");
             CurrentSession = await _localStorage.GetItemAsync<SessionDto>("blazSessionDto");
 
@@ -114,7 +114,7 @@ namespace GxAdm.Services
         //    }
         //}
 
-        public async Task PersistSessionAsync(LoginResponse login, Userbag userbag)
+        public async Task PersistSessionAsync(LoginResult login, Userbag userbag)
         {
             LoginResponse = login;
             await SetUserbagAsync(userbag); // ✅ centralizes Userbag persistence
@@ -161,7 +161,7 @@ namespace GxAdm.Services
         {
             var rtoken = await _localStorage.GetItemAsync<string>("blazRtoken");
             var response = await _apiClient.SendRequestAsync("AUTHClient", HttpMethod.Post, "lgauth/refresh", new { Rtoken = rtoken });
-            var newTokens = JsonConvert.DeserializeObject<LoginResponse>(response);
+            var newTokens = JsonConvert.DeserializeObject<LoginResult>(response);
 
             if (newTokens?.Atoken == null) return false;
 
@@ -196,7 +196,7 @@ namespace GxAdm.Services
                 try
                 {
                     Userbag = JsonConvert.DeserializeObject<Userbag>(json);
-                    //Console.Write($"Userbag got {json}");
+                    Console.Write($"Userbag got {json}");
                 }
                 catch (Exception ex)
                 {

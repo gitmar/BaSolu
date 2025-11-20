@@ -1,0 +1,280 @@
+﻿@page "/regxcorg"
+@layout AccsMenu
+
+@using System.Web
+@using System.Security.Claims
+@using GxAdm.Services
+@using Blazored.LocalStorage
+@using GxShared.GlobModels
+@using GxWapi.DaModels
+@using Newtonsoft.Json
+@using System.Net.Http
+@using System.Threading.Tasks
+
+@inject MyAuthStateProvider _myauthProvider
+@inject MyODataContext _gODContext
+@inject AdautService _dbsecManager
+@inject SessionContextService _sessionContext
+@inject RendAgres _rendAgres
+@inject IHttpClientFactory httpfacClient
+@inject ILocalStorageService _localStorage
+
+<PageTitle>Private Page</PageTitle>
+<h2>Reprise des entrees</h2>
+
+@if (errors == true)
+{
+    foreach (var error in errorList)
+    {
+        <div class="alert alert-danger">@error</div>
+    }
+}
+@if (success == true)
+{
+    <div class="alert alert-success">@successmsg</div>
+}
+<AuthorizeView>
+    <Authorized>
+        @if (!isLoading){
+    @if (siManager == true && !isLoading)
+                {
+                <div>
+                    <div class="row">
+                        <div class="col-4"></div>
+                        <div class="col-6">
+                            <button class="btn btn-sm btn-primary" type="button"
+                                    @onclick="OnRepSaving">
+                                valider les reprises
+                            </button>
+                        </div>
+                    </div>
+                    <div class="row" style="font-style:italic;font-weight:bold">
+                        <div class="col-1">No</div>
+                        <div class="col-5">Email</div>
+                        <div class="col-3">Phone</div>
+                        <div class="col-2">Date</div>
+                        <div class="col-1">Corig</div>
+                    </div>
+                    @* @foreach (var unu in fxURAuts.Where(uc => uc.SiSet == true))
+                    {
+                        <div class="row">
+                            <div class="col-1">@unu.Id</div>
+                            <div class="col-5">@unu.Email</div>
+                            <div class="col-3">@unu.Uphone</div>
+                            <div class="col-2">@datformat(unu.Datc)</div>
+                            <div class="col-1">
+                                <input type="checkbox" id="@($"cor{unu.Id}")"
+                                    @onchange="(e) => OnAnulChanged(e.Value.ToString(), unu)" />
+                            </div>
+                        </div>
+                    } *@
+                </div>
+                }
+        }
+    </Authorized>
+</AuthorizeView>
+@if (isLoading == true)
+{
+    <div>@loadmsg</div>
+}
+
+@code {
+    private bool isLoading = false, errors = false, success = false, isSubmitting = false;
+    private bool siManager = false;
+    private string? _UserId = "", loadmsg =  "", successmsg = "", submitmess = "";
+    public int _UorgId = 0;
+    private List<string> errorList = new List<string>();
+    private Userbag _usrBag = new Userbag();
+    private Secubag _secBag = new Secubag();
+    //component variables
+    private string _curUname = "", _curEmail = "";
+    private int ucor1 = 0;
+    private bool IsChecked = false;
+    //client access
+    //private BzEntityManager _entityManager;
+    private HttpClient _apiClient = new HttpClient();
+    //models
+    //private RolUsrModel globResu = new RolUsrModel();
+    //private IList<UsrModel> allUsers = new List<UsrModel>();
+    private ReqgnModel reqModel = new ReqgnModel();
+    private ResgnModel rspModel = new ResgnModel();
+    private List<Gpfixe> _lsFixes = new List<Gpfixe>();
+    private IEnumerable<Accaut> fxAuts = new List<Accaut>();
+    //private IEnumerable<RolModel> fxRoles = new List<RolModel>();
+    //private IEnumerable<UsrModel> fxURAuts = new List<UsrModel>();
+    private List<string> myUcorigs = new List<string>();
+    //Authentication
+    private bool isAuthenticated = false;
+    private ClaimsPrincipal authUser;
+    private IEnumerable<Claim> claims = Enumerable.Empty<Claim>();
+    [CascadingParameter]
+    private Task<AuthenticationState>? AuthState { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        System.Console.WriteLine("COMMENCEMENT");
+        loadmsg = "attente...";
+        isLoading = true;
+        //verif authentication
+        var authState = await AuthState;
+        var authUser = authState.User;
+        siManager = true;
+        /*
+        if (!authUser.IsInRole("Manager")) {
+            errors = true;
+            errorList.Add("You are not Manager");
+        return;
+        }
+        */
+        _usrBag = await _sessionContext.GetUserbagAsync();
+        //get user data bag
+        _lsFixes = _usrBag.Ufixes.ToList();
+        _secBag = await _dbsecManager.GetMySecuAsync();
+        fxAuts = _secBag.Fxauts.ToList();
+        //fxRoles = _secBag.Fxrols.ToList();
+        //fxURAuts = _secBag.FxURAs.ToList();
+        //System.Console.WriteLine($"Roles fixes : {fxRoles.Count()}");
+        //get component specific data
+        //_entityManager = await _entityManagerPROV.GetBzEntityManagerAsync();
+        //await RameneEntrees();
+
+        //Console.WriteLine("COMMENCEMENT fin");
+        loadmsg = "";
+        isLoading = false;
+        //StateHasChanged();
+    }
+    // private async Task RameneEntrees()
+    // {
+    //     errorList.Clear();
+    //     try
+    //     {
+    //         reqModel.Idorg = _UorgId;
+    //         reqModel.Usrid = _UserId;
+    //         var jsonContent = JsonConvert.SerializeObject(reqModel);
+    //         var content = new StringContent(jsonContent, System.Text.Encoding.UTF8, "application/json");
+    //         //var response = await _apiClient.PostAsJsonAsync("lgauth/orgusers", reqModel);
+    //         var response = await _apiClient.PostAsync("lgauth/orgusers", content);
+    //         if (response.IsSuccessStatusCode)
+    //         {
+    //             var detStr = await response.Content.ReadAsStringAsync();
+    //             //System.Console.WriteLine($"Received JSON: {detStr}");
+    //             //try
+    //             //{
+    //             // Attempt deserialization
+    //             //globResu = await response.Content.ReadFromJsonAsync<RolUsrModel>(new System.Text.Json.JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+    //             globResu = JsonConvert.DeserializeObject<RolUsrModel>(detStr);
+    //             if (globResu != null)
+    //             {
+    //                 if (globResu.UetRoles != null)
+    //                 {
+    //                     allUsers = globResu.UetRoles.ToList();
+    //                     var urols = allUsers.FirstOrDefault().UsrRols.Count();
+    //                     System.Console.WriteLine($"Tout User roles : {urols}");
+    //                 }
+    //                 //}
+    //                 //System.Console.WriteLine($"Entity: {globResu}");
+
+    //                 // Check UetRoles specifically
+    //                 // if (globResu.UetRoles == null)
+    //                 // {
+    //                 //     //System.Console.WriteLine("UetRoles is null.");
+    //                 // }
+    //                 // else if (globResu.UetRoles.Count == 0)
+    //                 // {
+    //                 //     //System.Console.WriteLine("UetRoles is empty.");
+    //                 //     //System.Console.WriteLine("Manual check confirms UetRoles is empty or missing.");
+    //                 // }
+    //                 // else
+    //                 // {
+    //                 //     foreach (var uir in globResu.UetRoles)
+    //                 //     {
+    //                 //         var roleCount = uir?.UsrRols?.Count() ?? 0;
+    //                 //         //System.Console.WriteLine($"User: {uir.Unom}, Roles Count: {roleCount}");
+    //                 //         allUsers.Add(uir); // Assuming allUsers is defined elsewhere
+    //                 //         //System.Console.WriteLine($"Nombre of Users: {allUsers.Count}");
+    //                 //         foreach (var uira in globResu.UetRoles)
+    //                 //         {
+    //                 //             var roleCount3 = uira?.UsrRols?.Count() ?? 0;
+    //                 //             //System.Console.WriteLine($"User: {uira.Unom}, Roles Count: {roleCount3}");
+    //                 //             allUsers.Add(uira); // Assuming allUsers is defined elsewhere
+    //                 //             //System.Console.WriteLine($"Nombre of Users: {allUsers.Count}");
+    //                 //         }
+    //                 //System.Console.WriteLine($"Message : {globResu.Message}");
+    //                 //System.Console.WriteLine($"Final : {globResu.Succeeded}");
+    //                 //System.Console.WriteLine($"All enreg :");
+    //                 //foreach (var item in globResu.UetRoles)
+    //                 //{
+    //                 //    //System.Console.Write(item);
+    //                 //}
+    //                 //}
+    //                 //}
+    //                 //}
+    //                 //}
+    //                 //catch (Exception ex)
+    //                 //{
+    //                 //    System.Console.Write(ex.Message);
+    //             }
+    //         }
+    //     } 
+    //     catch (Exception ex)
+    //     {
+    //         System.Console.Write(ex.Message);
+    //     }
+    // }
+    // private async Task OnAnulChanged(string isCheckedValue, UsrModel wUser)
+    // {
+    //     bool isChecked = isCheckedValue == "true";
+    //     if (isChecked)
+    //     {
+    //         wUser.Sicor = 1;
+    //     }
+    //     else
+    //     {
+    //         wUser.Sicor = 0;
+    //         await Task.Delay(3000);
+    //     }
+    //     //Console.WriteLine($"USER ID : {wUser.UserId},//{wUser.Sicor} Checked: {isChecked}");
+    // }
+    // private async Task OnCorSaving()
+    // {
+    //     myUcorigs.Clear();
+    //     foreach(var ius in allCorUsers)
+    //     {
+    //         if (ius.Sicor == 1) myUcorigs.Add(ius.UserId);
+    //     }
+    //     var parameters = new Dictionary<string, object>
+    //     {
+    //       { "lsu", myUcorigs }
+    //     };
+    //     var query = new Breeze.Sharp.EntityQuery<Tiersp>("savucorigs")
+    //         .WithParameters(parameters);
+    //     await _entityManager.ExecuteQuery(query);
+    // }
+    private async Task OnRepSaving()
+    {
+        isLoading = true;
+        myUcorigs.Clear();
+        // foreach (var ius in allUsers.Where(uc => uc.Sicor == 1))
+        // {
+        //     if (ius.SiSet == false && ius.Sicor == 1) {
+        //         myUcorigs.Add(ius.UserId);
+        //     }
+        // }
+        _apiClient = httpfacClient.CreateClient("OFFLClient");
+        ReqgnModel reqModel = new ReqgnModel();
+        reqModel.Lsusda = myUcorigs; //users Id
+        var response = await _apiClient.PostAsJsonAsync("lgauth/savucorgs", reqModel);
+        if (response.IsSuccessStatusCode)
+        {
+            success = true;
+            successmsg = "Succes, correction faite";
+            isLoading = false;
+            return;
+        }
+    }
+    private string datformat(DateTime? inDate)
+    {
+        var strdat = inDate.Value.ToShortDateString();
+        return strdat;
+    }
+}

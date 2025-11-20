@@ -1,5 +1,5 @@
 ﻿@using GxAdm.Services
-@using GxShared.GlobModels
+@using GxShared.Sess
 @using BlazorBootstrap
 @using Blazored.LocalStorage
 @using System.Security.Claims
@@ -38,8 +38,11 @@
                                 <NavLink class="nav-link nav-sub" href="astrmenu">
                                     <Icon Name="IconName.CaretRightSquare" /> &nbsp; Tables
                                 </NavLink>
-                        <NavLink class="nav-link nav-sub" href="iagrmenu">
+                                <NavLink class="nav-link nav-sub" href="iagrmenu">
                                     <Icon Name="IconName.CaretRightSquare" /> &nbsp; Schemas
+                                </NavLink>
+                                <NavLink class="nav-link nav-sub" href="invitiw">
+                                    <Icon Name="IconName.CaretRightSquare" /> &nbsp; Invitation
                                 </NavLink>
                         </nav>
                     }
@@ -69,7 +72,7 @@
                         <NavLink class="nav-link nav-sub" href="donamenu">
                                     <Icon Name="IconName.CaretRightSquare" /> &nbsp; Donnees
                                 </NavLink>
-                        <NavLink class="nav-link nav-sub" href="subitem2">
+                                <NavLink class="nav-link nav-sub" href="subitem2">
                                     <Icon Name="IconName.CaretRightSquare" /> &nbsp; Outils
                                 </NavLink>
                             @* <div class="nav-item px-3 py-0">
@@ -77,6 +80,9 @@
                                     <Icon Name="IconName.CaretRightSquare" /> &nbsp; Rattrapage
                                 </NavLink>
                             </div> *@
+                        <NavLink class="nav-link nav-sub" href="ownerpage">
+                            <Icon Name="IconName.CaretRightSquare" /> &nbsp; OwnerPage
+                        </NavLink>
                             <NavLink class="nav-link nav-main text-light" href="about">
                                 <i class="bi bi-key me-2" aria-hidden="true"></i> Analyses
                             </NavLink>
@@ -85,9 +91,6 @@
                     <!--bi bi-list-nested-nav-menu-->
             </Authorized>
         </AuthorizeView>
-        <NavLink class="nav-link nav-main" href="about">
-            <i class="bi bi-calendar3 me-2" aria-hidden="true"></i> Agendas
-        </NavLink>
         <NavLink class="nav-link nav-main" href="about">
             <i class="bi bi-info-circle-fill me-2" aria-hidden="true"></i> About
         </NavLink>
@@ -123,6 +126,7 @@
     private bool collapseNavMenu = false;
     private string? NavMenuCssClass => collapseNavMenu ? "collapse" : null;
 
+    private Userbag _usrBag = new();
     private bool isOwner = false;
 
     private bool isSubManagVisible = false;

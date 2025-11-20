@@ -5,12 +5,10 @@ using System.Security.Claims;
 
 using Blazored.LocalStorage;
 
-using GxShared.GlobModels;
+using GxShared.Sess;
 using GxWapi.DaModels;
 
 using Microsoft.AspNetCore.Components;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Http;
 using Microsoft.OData.Client;

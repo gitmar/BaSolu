@@ -8,7 +8,8 @@ using System.Text.Json;
 
 using Blazored.LocalStorage;
 
-using GxShared.GlobModels;
+using GxShared.Sess;
+using GxShared.Auth;
 
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.IdentityModel.Tokens;

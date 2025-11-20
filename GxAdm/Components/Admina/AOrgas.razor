@@ -15,7 +15,9 @@
 @using Microsoft.AspNetCore.WebUtilities
 @using Microsoft.AspNetCore.Components.Forms
 @using Microsoft.OData.Client
-@using GxShared.GlobModels
+@using GxShared.Sess
+@using GxShared.Others
+@using GxShared.Enrol
 @using GxWapi.DaModels
 @using GxAdm.ClieModels
 @using GxAdm.Services
@@ -28,7 +30,7 @@
 @inject SessionContextService _sessionContext
 @inject RendAgres _rendAgres;
 <!-- InscTiewComponent.razor -->
-<PageTitle>Institution</PageTitle>
+<PageTitle>INSTITUTION</PageTitle>
 @* <h3>AOrgas</h3> *@
 @if (isLoading)
 {
@@ -572,7 +574,7 @@
                                             <div class="row row-cols-5">
                                                 <div class="col-1 text-center">@gfx.Elea</div>
                                                 <label class="col-1 @(gfx.Etyp == 1 ? "saflprow" : "")">
-                                                    @gfx.Liba :
+                                                    @gfx.Liba
                                                 </label>
                                                 <div class="col-2 @(gfx.Etyp == 1 ? "saflprow" : "")">
                                                     <InputText @bind-Value="gfx.Sliba"
@@ -987,14 +989,14 @@
     bool isEdingCol = false;
     Gsgfix? editingAfl = null;
     bool isEdingAfl = false;
-    
+
     bool isDelingTfl = false;
     bool isGenerTfl = false;
     string mesAflSup = "", mesAflGen = "";
     //variables GLNE
     bool isEdingGlne = false;
     bool adingGlne = false;
-    
+
     //Gsglne newGlne = new();
     Gsglne? draftGlne = new();
     Gsglne? editingGlne = null;
@@ -1060,6 +1062,9 @@
                 edColContext = new EditContext(curAfl);
                 edColContext.OnFieldChanged += HandleColFieldChanged;
                 Console.WriteLine($"nb gfixes : {curOrga.Gsgfixes.Count}");
+            } else
+            {
+                Console.WriteLine("INSTITUTION NON TROUVEE");
             }
             tst = 11;
         }

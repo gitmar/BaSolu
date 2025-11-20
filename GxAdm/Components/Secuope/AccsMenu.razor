@@ -4,11 +4,10 @@
 @using System.Security.Claims
 @using BlazorBootstrap
 @using Blazored.LocalStorage
+@using GxShared.Sess
 @using GxAdm.ClieModels
-@using GxAdm.Components.Secuope.Sessions
-@using GxAdm.Components.Secuope.Authoriz
 @using GxAdm.Services
-@using GxShared.GlobModels
+@using GxAdm.Components.Secuope.Sessions
 @using GxWapi.DaModels
 @using Microsoft.OData.Client
 @using Newtonsoft.Json
@@ -23,7 +22,7 @@
 {
     <div class="text-center">
         <Spinner Color="SpinnerColor.Primary" Size="SpinnerSize.Large" />
-        <p>SECURITES/AUTORISATIONS Loading...</p>
+        <p>SESSIONS Loading...</p>
     </div>
 }
 @if (!isLoading)
@@ -38,9 +37,23 @@
                     </button>
                     <div><span class="separator">||</span></div>
                     <ul class="menu">
-                        <li><NavLink @onclick="() => SelMenu(1)" class="nav-item" ActiveClass="active">Sessions</NavLink></li>
+                        @if (curOrga.Sijet == 1)
+                        {
+                            <li><NavLink @onclick="() => SelMenu(1)" class="nav-item" ActiveClass="active">Jetons</NavLink></li>
+                            <li><span class="separator">|</span></li>
+                            <li><NavLink @onclick="() => SelMenu(2)" class="nav-item">Sessions</NavLink></li>
+                        }
+                        else
+                        {
+                            <li><NavLink @onclick="() => SelMenu(2)" class="nav-item" ActiveClass="active">Sessions</NavLink></li>
+                        }
+                        
                         <li><span class="separator">|</span></li>
-                        <li><NavLink @onclick="() => SelMenu(2)" class="nav-item">Autorisations</NavLink></li>
+                        <li><NavLink @onclick="() => SelMenu(3)" class="nav-item">Droits</NavLink></li>
+                        <li><span class="separator">|</span></li>
+                        <li><NavLink @onclick="() => SelMenu(4)" class="nav-item">Reprises</NavLink></li>
+                        <li><span class="separator">|</span></li>
+                        <li><NavLink @onclick="() => SelMenu(5)" class="nav-item">Exercices</NavLink></li>
                     </ul>
                 </div>
                 <div class="row">
@@ -73,9 +86,9 @@
                 <!-- Main Content -->
                 @if (this != null)
                 {
-                    @if (chxMenu == 1)
+                    @* @if (chxMenu == 2)
                     { //SESSIONS
-                      <ASessions @ref=mygses
+                      <AJetons @ref=mygses
                                  ChxMenu="@chxMenu"
                                  curOrga="@curOrga"
                                  toChild="@toChild"
@@ -83,20 +96,41 @@
                           <ChildContent>
                               <h2 class="child-box">Hello SESSIONS</h2>
                           </ChildContent>
-                      </ASessions>
-                      
-                    } else
+                      </AJetons>
+                    } else *@
                     @if (chxMenu == 2)
                     { //SESSIONS
-                      <Accauth @ref=mgauth
-                               ChxMenu="@chxMenu"
-                               curOrga="@curOrga"
-                               toChild="@toChild"
-                               curODContext="@curODContext">
+                      <ASessions @ref=mygses
+                        ChxMenu="@chxMenu"
+                        curOrga="@curOrga"
+                        toChild="@toChild"
+                        curODContext="@curODContext">
+                            <ChildContent>
+                                <h2 class="child-box">Hello SESSIONS</h2>
+                            </ChildContent>
+                        </ASessions>
+                    } else
+                    @if (chxMenu == 3)
+                    { //EXERCICES
+                        @*<ZZSAsesios ChxMenu="@chxMenu"
+                                    curOrga="@curOrga"
+                                    toChild="@toChild"
+                                    curODContext="@curODContext">
+                              <ChildContent>
+                                  <h2 class="child-box">Hello RECEPTION</h2>
+                              </ChildContent>
+                          </ZZSAsesios>*@
+                    } else
+                    @if (chxMenu == 4)
+                    { //EXERCICES
+                      @* <ASessions ChxMenu="@chxMenu"
+                                curOrga="@curOrga"
+                                toChild="@toChild"
+                                curODContext="@curODContext">
                           <ChildContent>
-                              <h2 class="child-box">Hello Autorisations</h2>
+                              <h2 class="child-box">Hello RECEPTION</h2>
                           </ChildContent>
-                      </Accauth>
+                      </ASessions> *@
                     }
                  }
             </div>
@@ -124,8 +158,7 @@
     public ClaimsPrincipal authUser;
     public bool isAuthenticated = false;
 
-    private ASessions mygses;
-    private Accauth mgauth;
+    private ASessions mygses; 
     //in DATA
     public List<Gsgfix> LsTables = new List<Gsgfix>();
 
@@ -164,7 +197,7 @@
     {
         isLoading = true;
         int pita = 0;
-        ////Console.WriteLine("TIERS EN TEST");
+        ////Console.WriteLine("ADMIN EN TEST");
         //MainTiw = this;
         var authState = await AuthState;
         authUser = authState.User;
@@ -195,7 +228,7 @@
         //curODContext = _curODContext;
         isLoading = false;
         //pita = 5;
-        Console.WriteLine("TIERS A ETE TESTE");
+        Console.WriteLine("ADMINS A ETE TESTE");
         isLoading = false;
     }
     //CRUD
@@ -206,7 +239,6 @@
         {
             curODContext = await _contextFactory.CreateAsync(); // Use factory
             //var expand = "Plngens($expand=Gsesios)";
-            //var expand = "Plngens($expand=Gsesios), Gsgfixes, Gsglnes";
             var expand = "Gsgfixes," + "Gsglnes";
             var dxorgas = await curODContext.LoadFilteredAsync<Gxorga>(expand: expand);
 

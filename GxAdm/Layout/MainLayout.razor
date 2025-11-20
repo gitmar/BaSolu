@@ -4,12 +4,15 @@
 @using Blazored.LocalStorage
 @using GxAdm.Services
 @using GxAdm.Helpers
+@using GxShared.Services
 @using System.Security.Claims
 
 @inject IConfiguration _iconfig
 @inject NavigationManager _navManager
 @inject ILocalStorageService _localStorage
 @inject SessionContextService _sessionContext
+@inject ClieAppState _appState
+@inject IJSRuntime _JsRun
 
 @if (_layoutReady)
 {
@@ -31,10 +34,18 @@
                                     <i>PrivateRoom</i>
                                 </a>
                             </div>
+                            <div>
+                                <span>&nbsp;&nbsp;</span>
+                                @_appState.ogRaison
+                                <span>-</span>
+                                @_appState.usFulnom;
+                            </div>
                             <!-- Spacer pushes everything else to the right -->
                             <div class="ms-auto d-flex align-items-center gap-3">
                                 <label class="mb-0">Help ?</label>
                                 <div>
+                                    <span>&nbsp;</span>
+                                    @* Welcome &nbsp;<b>@context.User.Identity?.Name</b>. *@
                                     <a href="logout">
                                         <span class="bi bi-door-closed-fill" aria-hidden="true" style="vertical-align:middle"></span> Logout
                                     </a>
@@ -47,7 +58,15 @@
                             <!-- Spacer pushes everything else to the right -->
                             <div class="ms-auto d-flex align-items-center gap-3">
                                 <label class="mb-0">Help ?</label>
-                                <a href="login"><span class="bi bi-door-open" aria-hidden="true" style="vertical-align:middle"></span> Login</a>
+                                @if (!isHelpLogin)
+                                {
+                                    <a href="login"><span class="bi bi-door-open" aria-hidden="true" style="vertical-align:middle"></span> Login</a>
+                                } else
+                                {
+                                    <a href="helplogin"><span class="bi bi-door-open" aria-hidden="true" style="vertical-align:middle"></span> Support</a>
+                                }
+
+                                
                             </div>
                         </div>
                     </NotAuthorized>
@@ -84,9 +103,14 @@ else
     private bool collapseUserMenu = false, canAdminLog = false;
     [CascadingParameter]
     private Task<AuthenticationState>? AuthState { get; set; }
+
     private bool isOwner = false;
+    private bool isHelpLogin = false;
     private ClaimsPrincipal authUser;
     private bool isAuthenticated = false;
+
+    //private HttpClient _brzClient;
+
     [Inject] private AuthenticationStateProvider _authProvider { get; set; }
 
     private void ToggleUserMenu()
@@ -98,6 +122,11 @@ else
     {
         canAdminLog = false;
         isLoading = false;
+       //_brzClient = _clieFactorer.CreateClient("DefaultClient");
+       
+        //await VerifAppVersion();
+
+        _appState.OnChange += StateHasChanged;
         //_layoutReady = true;
         var token = await _localStorage.GetItemAsync<string>("blazToken");
         if (string.IsNullOrWhiteSpace(token))
@@ -107,7 +136,7 @@ else
             return;
         }
         await _sessionContext.InitializeAsync();
-   
+
         // Wait for AuthenticationStateProvider to reflect the new token
         //await Task.Delay(100); // Give NotifyUserAuthentication time to propagate
 
@@ -138,13 +167,50 @@ else
 
         _layoutReady = true;
         _authProvider.AuthenticationStateChanged += async task =>
-    {
-        var authState = await task;
-        authUser = authState.User;
-        isAuthenticated = authUser.Identity?.IsAuthenticated ?? false;
-        StateHasChanged();
-    };
-
+        {
+            var authState = await task;
+            authUser = authState.User;
+            isAuthenticated = authUser.Identity?.IsAuthenticated ?? false;
+            StateHasChanged();
+        };
         isLoading = true;
+    }
+    // private async Task VerifAppVersion()
+    // {
+    //     var currentVersion = await _brzClient.GetStringAsync("version.json");
+    //     var storedVersion = await _JsRun.InvokeAsync<string>("localStorage.getItem", "appVersion");
+    //     if (storedVersion != currentVersion)
+    //     {
+    //         // Clear service worker cache
+    //         await _JsRun.InvokeVoidAsync("eval", @"
+    //         caches.keys().then(function(names) {
+    //             for (let name of names)
+    //                 caches.delete(name);
+    //         });
+
+    //         // Clear cookies
+    //         document.cookie.split(';').forEach(function(c) {
+    //             document.cookie = c.trim().split('=')[0] + '=;expires=Thu, 01 Jan 1970 00:00:00 UTC;path=/';
+    //         });
+
+    //         // Clear localStorage and sessionStorage
+    //         localStorage.clear();
+    //         sessionStorage.clear();
+
+    //         // Delete IndexedDB
+    //         indexedDB.databases().then(dbs => {
+    //             for (const db of dbs)
+    //                 indexedDB.deleteDatabase(db.name);
+    //         });
+
+    //         // Reload app
+    //         location.reload();
+    //     ");
+    //         await _JsRun.InvokeVoidAsync("localStorage.setItem", "appVersion", currentVersion);
+    //     }
+    // }
+    public void Dispose()
+    {
+        _appState.OnChange -= StateHasChanged; 
     }
 }

@@ -1,6 +1,7 @@
 ﻿using System.Security.Claims;
-using GxShared.GlobModels;
 using GxWapi.DaModels;
+using GxShared.Others;
+using GxShared.Sess;
 
 namespace GxAdm.ClieModels
 {

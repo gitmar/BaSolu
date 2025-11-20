@@ -1,6 +1,7 @@
 ﻿using System.Security.Claims;
 
-using GxShared.GlobModels;
+using GxShared.Sess;
+using GxShared.Others;
 
 using GxWapi.DaModels;
 

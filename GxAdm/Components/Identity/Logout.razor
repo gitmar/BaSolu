@@ -1,6 +1,7 @@
 ﻿@page "/logout"
-@using GxAdm.Services
 @using Blazored.LocalStorage
+@using GxAdm.Services
+@using GxAdm.Services
 
 @inject ILocalStorageService _localStorage
 @inject IServiceProvider _serviceProvider
@@ -9,8 +10,6 @@
 @inject SessionContextService _sessionContext
 
 <PageTitle>Logout</PageTitle>
-
-<h1>Logout</h1>
 
 <AuthorizeView>
     <Authorized>
@@ -43,7 +42,7 @@
         var puzzleSync = _serviceProvider.GetService<IPuzzleSyncService>();
         if (puzzleSync != null)
             await puzzleSync.ClearPuzzleStateAsync();
-
+        // Dispose();
         _navManager.NavigateTo("/login");
     }
 }

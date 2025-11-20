@@ -2,11 +2,7 @@
 using System.Text;
 using System.Text.Json;
 
-using Azure.Core;
-
 using Blazored.LocalStorage;
-
-using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 using Newtonsoft.Json.Linq;
 namespace GxTie.Services

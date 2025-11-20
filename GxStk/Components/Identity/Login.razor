@@ -2,8 +2,10 @@
 
 @using GxStk.Services
 @using Blazored.LocalStorage
-@using GxShared.GlobModels
-@using GxShared.GlobModels.Auth
+@using GxShared.Sess
+@using GxShared.Auth
+@using GxShared.Others
+@using GxShared.Services
 @using Newtonsoft.Json
 @using GxStk.Helpers
 @using System.Security.Claims
@@ -16,10 +18,9 @@
 @inject IHttpClientFactory _httpClientFactory
 @inject HttpClientService _clieManager
 @inject SessionContextService _sessionContext
+@inject ClieAppState _appState
 
 <PageTitle>Login</PageTitle>
-
-<h3>Login</h3>
 
 @if (!string.IsNullOrEmpty(Imessage))
 {
@@ -37,18 +38,25 @@ else
     <EditForm Model="loginModel" OnValidSubmit="HandleLoginAsync">
         <DataAnnotationsValidator />
         <ValidationSummary />
+        @if (_yaconn)
+        {
+            <div class="mb-3">
+                <label>Email or Username</label>
+                <InputText class="form-control" @bind-Value="loginModel.Username" />
+            </div>
 
-        <div class="mb-3">
-            <label>Email or Username</label>
-            <InputText class="form-control" @bind-Value="loginModel.UsernameOrEmail" />
-        </div>
-
-        <div class="mb-3">
-            <label>Password</label>
-            <InputText class="form-control" @bind-Value="loginModel.Password" type="password" />
-        </div>
-
-        <button class="btn btn-primary" type="submit">Login</button>
+            <div class="mb-3">
+                <label>Password</label>
+                <InputText class="form-control" @bind-Value="loginModel.Password" type="password" />
+            </div>
+            <button class="btn btn-primary" type="submit">Login</button>
+        }
+        else
+        {
+            <div class="nav-link text-danger">
+                <i class="bi bi-exclamation-triangle-fill me-2" aria-hidden="true">Offline</i> server indisponible
+            </div>
+        }
     </EditForm>
 }
 @code {
@@ -57,6 +65,9 @@ else
 
     private LoginModel loginModel = new();
     private string Imessage = "";
+
+    private bool _yaconn = false;
+
     private bool isLoading = false;
     private HttpClient _dftClient;
 
@@ -64,6 +75,22 @@ else
     {
         isLoading = true;
         _dftClient = _httpClientFactory.CreateClient("AUTHClient");
+        //verified connection
+        try
+        {
+            var response = await _dftClient.GetAsync("lgauth/health");
+            _yaconn = response.IsSuccessStatusCode;
+        }
+        catch (Exception ex)
+        {
+            isLoading = false;
+            return;
+        }
+        if (!_yaconn)
+        {
+            isLoading = false;
+            return;
+        }
         isLoading = false;
     }
     private async Task HandleLoginAsync()
@@ -71,7 +98,7 @@ else
         isLoading = true;
         bool yaErrors = false;
         Imessage = "";
-        if (string.IsNullOrEmpty(loginModel.UsernameOrEmail))
+        if (string.IsNullOrEmpty(loginModel.Username))
         {
             Imessage = "Email ou UserName obligatoire";
             yaErrors = true;
@@ -87,10 +114,9 @@ else
         }
         try
         {
-            loginModel.IsAdminLogin = false; //necessaire pour le login not admin
-            loginModel.Username = loginModel.UsernameOrEmail;
-            loginModel.Email = loginModel.UsernameOrEmail;
-            Console.WriteLine($"uname : {loginModel.Username} et {loginModel.Email}");
+            loginModel.IsHelpLogin = false; //necessaire pour le login not admin
+            loginModel.UsernameOrEmail = loginModel.Username;
+            //Console.WriteLine($"uname : {loginModel.Username} et {loginModel.Email}");
             var json = JsonConvert.SerializeObject(loginModel);
             var request = new HttpRequestMessage(HttpMethod.Post, "lgauth/login")
             {
@@ -100,7 +126,7 @@ else
             var response = await _dftClient.SendAsync(request);
             response.EnsureSuccessStatusCode();
             var responseContent = await response.Content.ReadAsStringAsync();
-            var result = JsonConvert.DeserializeObject<LoginResponse>(responseContent);
+            var result = JsonConvert.DeserializeObject<LoginResult>(responseContent);
 
             if (result == null || string.IsNullOrEmpty(result.Atoken))
             {
@@ -131,28 +157,7 @@ else
                 provider.NotifyUserAuthentication(user);
                 await _sessionContext.PersistSessionAsync(result, userbag); // ✅ handles everything
 
-                if (user.IsInRole("Admin") || user.IsInRole("Support"))
-                {
-                    if (user.IsInRole("Admin"))
-                    {
-                        var verifclaims = JwtHelper.DecodePayload(result.Atoken);
-                        var siOwner = verifclaims.TryGetValue("Gx.IsOwner", out var uid) ? uid : 0;
-                        int estOwner = Convert.ToInt16(siOwner);
-
-                        if (estOwner != 1)
-                        {
-                            Imessage = Imessage + " /Acces Refuse";
-                            return;
-                        }
-                        Console.WriteLine($"NAVMENU has been notified");
-                    }
-                }
-                else
-                {
-                    Imessage = Imessage + " /Acces Refuse";
-                    return;
-                }
-
+                _appState.UpdateDisplvalue(userbag.Graison, userbag.Usprof.Ufulnom);
 
                 var puzzleSyncService = _serviceProvider.GetService<IPuzzleSyncService>();
                 if (puzzleSyncService != null)

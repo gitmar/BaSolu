@@ -2,7 +2,7 @@
 
 @using GxAdm.Services
 @using GxWapi.DaModels
-@using GxShared.GlobModels
+@using GxShared.Sess
 @using Blazored.LocalStorage
 @using System.Net.Http.Headers
 @using System.Security.Claims
@@ -182,7 +182,6 @@
         _lsFixes = _usrBag.Ufixes.ToList();
         _lsPlns = _usrBag.Usorga.Uplns.Where(pl => pl.Ptyp == 5 && pl.Eta != 0).ToList();
         opuname = _usrBag.Username;
-        opnomp = _usrBag.Usprof.Ufulnom;
         opafec = _usrBag.Affecta;
         opgrad = _usrBag.Grade;
         opfonc = _usrBag.Fonctio;

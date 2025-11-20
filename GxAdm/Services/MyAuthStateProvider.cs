@@ -6,9 +6,9 @@ using System.Security.Claims;
 using System.Text;
 using System.Text.Json;
 
-using Blazored.LocalStorage;
+using GxShared.Auth;
 
-using GxShared.GlobModels;
+using Blazored.LocalStorage;
 
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.IdentityModel.Tokens;

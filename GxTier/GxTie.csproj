@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.BlazorWebAssembly">
   <PropertyGroup>
-    <TargetFramework>net8.0</TargetFramework>
+    <TargetFramework>net9.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <ServiceWorkerAssetsManifest>service-worker-assets.js</ServiceWorkerAssetsManifest>
@@ -43,6 +43,7 @@
     <Compile Remove="Components\GridWrapper.razor.cs" />
     <Compile Remove="oldProgram.cs" />
     <Compile Remove="Services\AdautService.cs" />
+    <Compile Remove="Services\AppStateServices.cs" />
     <Compile Remove="Services\DaLibaResolver.cs" />
     <Compile Remove="Services\MyOGridService.cs" />
     <Compile Remove="Services\MyRubCalc.cs" />
@@ -53,50 +54,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Content Remove="C:\Users\Lenovo USER\.nuget\packages\bootstrap\5.3.6\contentFiles\any\any\wwwroot\css\bootstrap-grid.css" />
-    <Content Remove="C:\Users\Lenovo USER\.nuget\packages\bootstrap\5.3.6\contentFiles\any\any\wwwroot\css\bootstrap-grid.css.map" />
-    <Content Remove="C:\Users\Lenovo USER\.nuget\packages\bootstrap\5.3.6\contentFiles\any\any\wwwroot\css\bootstrap-grid.min.css" />
-    <Content Remove="C:\Users\Lenovo USER\.nuget\packages\bootstrap\5.3.6\contentFiles\any\any\wwwroot\css\bootstrap-grid.min.css.map" />
-    <Content Remove="C:\Users\Lenovo USER\.nuget\packages\bootstrap\5.3.6\contentFiles\any\any\wwwroot\css\bootstrap-grid.rtl.css" />
-    <Content Remove="C:\Users\Lenovo USER\.nuget\packages\bootstrap\5.3.6\contentFiles\any\any\wwwroot\css\bootstrap-grid.rtl.css.map" />
-    <Content Remove="C:\Users\Lenovo USER\.nuget\packages\bootstrap\5.3.6\contentFiles\any\any\wwwroot\css\bootstrap-grid.rtl.min.css" />
-    <Content Remove="C:\Users\Lenovo USER\.nuget\packages\bootstrap\5.3.6\contentFiles\any\any\wwwroot\css\bootstrap-grid.rtl.min.css.map" />
-    <Content Remove="C:\Users\Lenovo USER\.nuget\packages\bootstrap\5.3.6\contentFiles\any\any\wwwroot\css\bootstrap-reboot.css" />
-    <Content Remove="C:\Users\Lenovo USER\.nuget\packages\bootstrap\5.3.6\contentFiles\any\any\wwwroot\css\bootstrap-reboot.css.map" />
-    <Content Remove="C:\Users\Lenovo USER\.nuget\packages\bootstrap\5.3.6\contentFiles\any\any\wwwroot\css\bootstrap-reboot.min.css" />
-    <Content Remove="C:\Users\Lenovo USER\.nuget\packages\bootstrap\5.3.6\contentFiles\any\any\wwwroot\css\bootstrap-reboot.min.css.map" />
-    <Content Remove="C:\Users\Lenovo USER\.nuget\packages\bootstrap\5.3.6\contentFiles\any\any\wwwroot\css\bootstrap-reboot.rtl.css" />
-    <Content Remove="C:\Users\Lenovo USER\.nuget\packages\bootstrap\5.3.6\contentFiles\any\any\wwwroot\css\bootstrap-reboot.rtl.css.map" />
-    <Content Remove="C:\Users\Lenovo USER\.nuget\packages\bootstrap\5.3.6\contentFiles\any\any\wwwroot\css\bootstrap-reboot.rtl.min.css" />
-    <Content Remove="C:\Users\Lenovo USER\.nuget\packages\bootstrap\5.3.6\contentFiles\any\any\wwwroot\css\bootstrap-reboot.rtl.min.css.map" />
-    <Content Remove="C:\Users\Lenovo USER\.nuget\packages\bootstrap\5.3.6\contentFiles\any\any\wwwroot\css\bootstrap-utilities.css" />
-    <Content Remove="C:\Users\Lenovo USER\.nuget\packages\bootstrap\5.3.6\contentFiles\any\any\wwwroot\css\bootstrap-utilities.css.map" />
-    <Content Remove="C:\Users\Lenovo USER\.nuget\packages\bootstrap\5.3.6\contentFiles\any\any\wwwroot\css\bootstrap-utilities.min.css" />
-    <Content Remove="C:\Users\Lenovo USER\.nuget\packages\bootstrap\5.3.6\contentFiles\any\any\wwwroot\css\bootstrap-utilities.min.css.map" />
-    <Content Remove="C:\Users\Lenovo USER\.nuget\packages\bootstrap\5.3.6\contentFiles\any\any\wwwroot\css\bootstrap-utilities.rtl.css" />
-    <Content Remove="C:\Users\Lenovo USER\.nuget\packages\bootstrap\5.3.6\contentFiles\any\any\wwwroot\css\bootstrap-utilities.rtl.css.map" />
-    <Content Remove="C:\Users\Lenovo USER\.nuget\packages\bootstrap\5.3.6\contentFiles\any\any\wwwroot\css\bootstrap-utilities.rtl.min.css" />
-    <Content Remove="C:\Users\Lenovo USER\.nuget\packages\bootstrap\5.3.6\contentFiles\any\any\wwwroot\css\bootstrap-utilities.rtl.min.css.map" />
-    <Content Remove="C:\Users\Lenovo USER\.nuget\packages\bootstrap\5.3.6\contentFiles\any\any\wwwroot\css\bootstrap.css" />
-    <Content Remove="C:\Users\Lenovo USER\.nuget\packages\bootstrap\5.3.6\contentFiles\any\any\wwwroot\css\bootstrap.css.map" />
-    <Content Remove="C:\Users\Lenovo USER\.nuget\packages\bootstrap\5.3.6\contentFiles\any\any\wwwroot\css\bootstrap.min.css" />
-    <Content Remove="C:\Users\Lenovo USER\.nuget\packages\bootstrap\5.3.6\contentFiles\any\any\wwwroot\css\bootstrap.min.css.map" />
-    <Content Remove="C:\Users\Lenovo USER\.nuget\packages\bootstrap\5.3.6\contentFiles\any\any\wwwroot\css\bootstrap.rtl.css" />
-    <Content Remove="C:\Users\Lenovo USER\.nuget\packages\bootstrap\5.3.6\contentFiles\any\any\wwwroot\css\bootstrap.rtl.css.map" />
-    <Content Remove="C:\Users\Lenovo USER\.nuget\packages\bootstrap\5.3.6\contentFiles\any\any\wwwroot\css\bootstrap.rtl.min.css" />
-    <Content Remove="C:\Users\Lenovo USER\.nuget\packages\bootstrap\5.3.6\contentFiles\any\any\wwwroot\css\bootstrap.rtl.min.css.map" />
-    <Content Remove="C:\Users\Lenovo USER\.nuget\packages\bootstrap\5.3.6\contentFiles\any\any\wwwroot\js\bootstrap.bundle.js" />
-    <Content Remove="C:\Users\Lenovo USER\.nuget\packages\bootstrap\5.3.6\contentFiles\any\any\wwwroot\js\bootstrap.bundle.js.map" />
-    <Content Remove="C:\Users\Lenovo USER\.nuget\packages\bootstrap\5.3.6\contentFiles\any\any\wwwroot\js\bootstrap.bundle.min.js" />
-    <Content Remove="C:\Users\Lenovo USER\.nuget\packages\bootstrap\5.3.6\contentFiles\any\any\wwwroot\js\bootstrap.bundle.min.js.map" />
-    <Content Remove="C:\Users\Lenovo USER\.nuget\packages\bootstrap\5.3.6\contentFiles\any\any\wwwroot\js\bootstrap.esm.js" />
-    <Content Remove="C:\Users\Lenovo USER\.nuget\packages\bootstrap\5.3.6\contentFiles\any\any\wwwroot\js\bootstrap.esm.js.map" />
-    <Content Remove="C:\Users\Lenovo USER\.nuget\packages\bootstrap\5.3.6\contentFiles\any\any\wwwroot\js\bootstrap.esm.min.js" />
-    <Content Remove="C:\Users\Lenovo USER\.nuget\packages\bootstrap\5.3.6\contentFiles\any\any\wwwroot\js\bootstrap.esm.min.js.map" />
-    <Content Remove="C:\Users\Lenovo USER\.nuget\packages\bootstrap\5.3.6\contentFiles\any\any\wwwroot\js\bootstrap.js" />
-    <Content Remove="C:\Users\Lenovo USER\.nuget\packages\bootstrap\5.3.6\contentFiles\any\any\wwwroot\js\bootstrap.js.map" />
-    <Content Remove="C:\Users\Lenovo USER\.nuget\packages\bootstrap\5.3.6\contentFiles\any\any\wwwroot\js\bootstrap.min.js" />
-    <Content Remove="C:\Users\Lenovo USER\.nuget\packages\bootstrap\5.3.6\contentFiles\any\any\wwwroot\js\bootstrap.min.js.map" />
     <Content Remove="Components\Identity\AdmLogin.razor" />
     <Content Remove="Components\Identity\BzmailConf.razor" />
     <Content Remove="Components\Identity\OldRegister.razor" />
@@ -117,7 +74,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Remove="Connected Services\OData Service\OData ServiceCsdl.xml" />
+    <None Remove="Formulas\Connected Services\OData Service\OData ServiceCsdl.xml" />
   </ItemGroup>
 
   <ItemGroup>
@@ -127,12 +84,14 @@
   <ItemGroup>
     <PackageReference Include="Blazor.Bootstrap" Version="3.4.0" />
     <PackageReference Include="BlazorDownloadFile" Version="2.4.0.2" />
-    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="8.0.13" />
-    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="8.0.13" PrivateAssets="all" />
-    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Authentication" Version="8.0.13" />
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="9.0.10" />
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="9.0.10" PrivateAssets="all" />
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Authentication" Version="9.0.10" />
+    <PackageReference Include="Microsoft.AspNetCore.Components.Authorization" Version="9.0.10" />
+    <PackageReference Include="Microsoft.IdentityModel.JsonWebTokens" Version="8.13.0" />
+    <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version ="8.13.0" />
+    <PackageReference Include="Microsoft.AspNetCore.WebUtilities" Version="9.0.0" />
     <PackageReference Include="Microsoft.AspNetCore.Http" Version="2.3.0" />
-    <PackageReference Include="Microsoft.AspNetCore.WebUtilities" Version="8.0.8" />
-    <PackageReference Include="Microsoft.AspNetCore.Components.Authorization" Version="8.0.13" />
     <PackageReference Include="Microsoft.OData.Core" Version="8.3.0" />
     <PackageReference Include="Microsoft.OData.Edm" Version="8.3.0" />
   </ItemGroup>

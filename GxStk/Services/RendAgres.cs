@@ -1,5 +1,6 @@
 ﻿
-using GxShared.GlobModels;
+using GxShared.Sess;
+using GxShared.Others;
 using Newtonsoft.Json;
 using GxWapi.DaModels;
 

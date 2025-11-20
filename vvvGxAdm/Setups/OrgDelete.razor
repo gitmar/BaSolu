@@ -1,0 +1,215 @@
+﻿@page "/orgdelete"
+
+@using System
+@using System.Text
+@using System.ComponentModel.DataAnnotations
+@using System.Reflection
+@using Microsoft.AspNetCore.WebUtilities
+@using Microsoft.AspNetCore.Components.Forms
+@using GxShared.GlobModels
+@using GxWapi.DaModels
+@using GxAdm.Services
+
+@inject HttpClientService _cliemanager
+@inject NavigationManager _navmanager
+@inject SessionContextService _sessionContext
+@inject IJSRuntime _jsRun
+
+<PageTitle>OrgDelete</PageTitle>
+
+<h2>Suppression Exceptionnelle Institution Complementaire</h2>
+@if (yaerrors)
+{
+    foreach (var error in errorList)
+    {
+        <div class="alert alert-danger">@error</div>
+    }
+}
+<AuthorizeView>
+    <NotAuthorized>
+        <div class="alert alert-success">You're already logged in as @request.UsernameOrEmail</div>
+    </NotAuthorized>
+</AuthorizeView>
+<EditForm Model="@request">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+    <div class="container">
+        <div class="row mb-2">
+            message :
+            @if (!string.IsNullOrEmpty(Imessage))
+            {
+                <label style="font-weight: bold; color: red; background-color: yellow;">@Imessage</label>
+            }
+        </div>
+        <div class="row mb-2">
+            <div class="col-2">
+                <label for="idorg">Organisation:</label>
+            </div>
+            <div class="col-7">
+                <InputSelect id="idorg" @bind-Value="request.Idorg" class="form-control">
+                    @foreach(var uog in LsOrgas)
+                    {
+                        <option value="@uog.Idorg" @onclick="() => SelectOrga(uog.Idorg)">@uog.Raison</option>
+                    }
+                </InputSelect>
+            </div>
+        </div>
+        <div class="row mb-2">
+            <div class="col-2">
+                <label for="idmess">Re-ecrire:</label>
+            </div>
+            <div class="col-9">
+                <label style="font-weight: bold; color: red; background-color: yellow;">
+                    JE CONFIRME LA SUPPRESSION DE @request.Raison
+                </label>
+            </div>
+        </div>
+        <div class="row mb-2">
+            <div class="col-2">
+                <label for="idmes2">Confirmation:</label>
+            </div>
+            <div class="col-9">
+                <InputText id="idmes2" @bind-Value="@confmess" class="form-control" />
+            </div>
+        </div>
+        <div class="row mb-2">
+            <div class="col-3">
+                <label><b>Email ou Pseudo</b></label>
+            </div>
+            <div class="col-5">
+                <InputText id="idmail" @bind-Value="@request.UsernameOrEmail" class="form-control" />
+            </div>
+         </div>
+        <div class="row mb-2">
+            <div class="col-3">
+                <label><b>Mot de passe</b></label>
+            </div>
+            <div class="col-3">
+                <InputText id="password" @bind-Value="@request.Password" class="form-control" />
+            </div>
+        </div>
+        <div class="row mb-2">
+            <div class="col-5">
+                <label for="sigle">Sigle: @SelOg.Sigle</label>
+            </div>
+        </div> 
+     </div>
+    <div class="row mb-2">
+        <div class="col-8">
+            <button class="btn btn-primary btn-sm" style="font-weight: bold; color: yellow;" @onclick="() => DeleteCustOrga()">
+                ➕ Des-installer Institution Complementaire
+            </button>
+        </div>
+    </div>
+    <div>
+        @if (yaerrors)
+        {
+            <label style="font-weight: bold; color: red; background-color: yellow;">Donnees insuffisantes pour supprimer Institution Complementaire</label>
+        }
+    </div>
+</EditForm>
+
+@code {
+
+    private bool isLoading = false, yaerrors = false;
+    private string successmsg = "";
+    private List<string> errorList = new();
+    private string stDoma = "";
+    //recu de Qry
+    private int iorig = 0, noerror = 0;
+    private string errmess = "";
+
+    private string Imessage = "";
+    //private HttpClient _apiClient;
+    private Userbag _usrBag = new();
+    //private HttpClient _locClient;
+
+    private string confmess = "", Raison = "", Sigle= "", Weburl= "";
+    private int SelIdorg = 0;
+    private UsrOgSetModel request = new();
+    private AdmOrga SelOg = new();
+    private List<AdmOrga> LsOrgas = new();
+    //private Gxorga curOrga = new();
+
+    private bool confirmedMessage => confmess == "CONFIRM DELETE ORGA";
+    private bool inputsOk = false;
+    private bool canDesinstallable => confirmedMessage && inputsOk;
+
+    protected override async Task OnInitializedAsync()
+    {
+        isLoading = true;
+        yaerrors = false; errorList.Clear(); successmsg = "";
+        //_apiClient = _httpFactorer.CreateClient("AUTHClient");
+
+        _usrBag = await _sessionContext.GetUserbagAsync();
+        LsOrgas = _usrBag.Allorgas.Where(og => og.Simain != 1).ToList();
+        yaerrors = false; isLoading = false;
+    }
+    private void SelectOrga(int idorg)
+    {
+        var orga = LsOrgas.FirstOrDefault(o => o.Idorg == idorg);
+        if (orga != null)
+        {
+            SelOg = orga;
+            //request.ido = orga.Idorg;
+            request.Raison = orga.Raison;
+            request.Sigle = orga.Sigle;
+            request.Weburl = orga.WebUrl;
+        }
+    }
+    private async Task DeleteCustOrga()
+    {
+        Imessage = "";
+        yaerrors = false;
+        bool yaera = false;
+        if (string.IsNullOrEmpty(request.UsernameOrEmail))
+        {
+            Imessage = Imessage + " Pseudo ou Email obligatoire";
+            yaera = true;
+        }
+        if (string.IsNullOrEmpty(request.Password) || request.Password.Length < 6)
+        {
+            Imessage = Imessage + " Mot de passe obligatoire et plus de 6 caracteres";
+            yaera = true;
+        }
+        confmess = confmess.Replace("[", "").Replace("]", "");
+        confmess = confmess.ToUpper();
+        if (string.Compare(confmess, $"JE CONFIRME LA SUPPRESSION DE {request.Raison}", StringComparison.OrdinalIgnoreCase) != 0)
+        {
+            Imessage = Imessage + " Message de confirmation incorrect";
+            yaera = true;
+        }
+        // if (string.Compare(Sigle, SelOg.Sigle, StringComparison.OrdinalIgnoreCase) == 0)
+        // {
+        //     Imessage = Imessage + " Sigle Institution pas conforme";
+        //     yaera = true;
+        // }
+        if (yaera)
+        {
+            yaerrors = true;
+            return;
+        }
+        //appel api pour delete orga
+        //request.Idorg = SelIdorg;
+        //request.UsernameOrEmail = UsernameOrEmail;
+        //request.Password = Password;
+        Console.WriteLine($"values {request.UsernameOrEmail} et {request.Password}");
+        var response = await _cliemanager.SendRequestAsync("AUTHClient", HttpMethod.Post, "usercontext/del2orga", request);
+        // _apiClient.PostAsJsonAsync("usercontext/del2orga",
+        // request).ContinueWith(async responseTask =>
+        // {
+        //     var response = await responseTask;
+            // if (response.IsSuccessStatusCode)
+            // {
+            //     Imessage = "Organisation supprimée avec succès.";
+            // }
+            // else
+            // {
+            //     var errorContent = await response.Content.ReadAsStringAsync();
+            //     Imessage = $"Erreur lors de la suppression de l'organisation: {errorContent}";
+            // }
+            StateHasChanged();
+     }
+}
+
+

@@ -1,6 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore.ChangeTracking.Internal;
-using Microsoft.JSInterop;
-
+﻿using Microsoft.JSInterop;
 using System.Threading.Tasks;
 
 namespace GxAdm.Services
@@ -17,8 +15,8 @@ namespace GxAdm.Services
             var doc = new
             {
                 _id = id,
-                name = name,
-                city = city
+                name,
+                city
             };
             await _jsRun.InvokeVoidAsync("SaveToPouchDB", doc);
         }

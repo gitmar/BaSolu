@@ -1,0 +1,212 @@
+﻿@using System.Reflection
+@using Microsoft.AspNetCore.Components
+@using Microsoft.AspNetCore.Components.Forms
+@using GxShared.GlobModels
+
+<!-- NumberComponent.razor -->
+@* style="@($"width:{Width};")" *@
+<InputNumber @bind-Value="CurrentNumber"
+             @oninput="HandleInput"
+             class="@GetCssClass()"
+             placeholder="@Placeholder" />
+<style>
+    .small-text {
+        font-size: 0.8rem;
+    }
+
+    .medium-text {
+        font-size: 1rem;
+    }
+
+    .large-text {
+        font-size: 1.2rem;
+    }
+
+    .width-small {
+        width: 100px;
+    }
+
+    .width-medium {
+        width: 150px;
+    }
+
+    .width-large {
+        width: 200px;
+    }
+
+    .width-full {
+        width: 100%;
+    }
+
+</style>
+@code {
+        [Parameter] public object Obj { get; set; }
+        [Parameter] public string PropertyName { get; set; }
+        [Parameter] public EventCallback<object> ObjChanged { get; set; }
+        [Parameter] public string Placeholder { get; set; }
+        [Parameter] public string Class { get; set; }
+        [Parameter] public string Style { get; set; }
+        [Parameter]
+        public TextAlignment TextAlign { get; set; } = TextAlignment.Right;
+        [Parameter]
+        public Size TextSize { get; set; } = Size.Medium;
+        [Parameter]
+        public ControlWidth Width { get; set; } = ControlWidth.Small;
+
+    private decimal _currentNumber;
+
+    protected override void OnInitialized() => CurrentNumber = GetCurrentValue();
+
+    protected override void OnParametersSet() => CurrentNumber = GetCurrentValue();
+
+    private async void HandleInput(ChangeEventArgs e)
+    {
+        if (decimal.TryParse(e.Value?.ToString(), out var num))
+        {
+            CurrentNumber = num;
+            await SetPropertyValue(Obj, PropertyName, CurrentNumber);
+        }
+    }
+
+    public decimal CurrentNumber
+    {
+        get => _currentNumber;
+        set => _currentNumber = value;
+    }
+
+    private decimal GetCurrentValue()
+    {
+        if (Obj != null && !string.IsNullOrEmpty(PropertyName))
+        {
+            var prop = Obj.GetType().GetProperty(PropertyName);
+            if (prop != null)
+            {
+                try
+                {
+                    return Convert.ToDecimal(prop.GetValue(Obj));
+                }
+                catch
+                {
+                    return 0m;
+                }
+            }
+        }
+        return 0m;
+    }
+
+    private async Task SetPropertyValue(object obj, string propName, decimal value)
+    {
+        var prop = obj?.GetType().GetProperty(propName);
+        if (prop != null)
+        {
+            try
+            {
+                prop.SetValue(obj, Convert.ChangeType(value, prop.PropertyType));
+                Console.WriteLine($"Number prop {propName} set to {value}");
+
+                // Notify parent of change
+                await ObjChanged.InvokeAsync(obj);
+            }
+            catch
+            {
+                // Handle type conversion errors
+            }
+        }
+    }
+    //CSS class and style
+    private string GetCssClass()
+    {
+        var widthCssClass = Width switch
+        {
+            ControlWidth.Small => "width-small",
+            ControlWidth.Medium => "width-medium",
+            ControlWidth.Large => "width-large",
+            ControlWidth.Full => "width-full",
+            _ => "width-medium"
+        };
+        var alignmentClass = TextAlign switch
+        {
+            TextAlignment.Left => "text-start",
+            TextAlignment.Center => "text-center",
+            TextAlignment.Right => "text-end",
+            TextAlignment.Justify => "text-justify",
+            _ => "text-start"
+        };
+        var sizeClass = TextSize switch
+        {
+            Size.Small => "small-text",
+            Size.Medium => "medium-text",
+            Size.Large => "large-text",
+            _ => "medium-text"
+        };
+
+        // Combine widthCssClass with other classes
+        return $"{widthCssClass} {alignmentClass} {sizeClass}";
+    }
+
+}
+
+
+@* @code {
+    [Parameter] public object Obj { get; set; }
+    [Parameter] public string PropertyName { get; set; }
+    [Parameter] public string Placeholder { get; set; }
+
+    private decimal _currentNumber;
+
+    protected override void OnInitialized() => CurrentNumber = GetCurrentValue();
+    protected override void OnParametersSet() => CurrentNumber = GetCurrentValue();
+
+    private void HandleInput(ChangeEventArgs e)
+    {
+        if (decimal.TryParse(e.Value?.ToString(), out var num))
+        {
+            CurrentNumber = num;
+            SetPropertyValue(Obj, PropertyName, CurrentNumber);
+        }
+    }
+
+    public decimal CurrentNumber
+    {
+        get => _currentNumber;
+        set => _currentNumber = value;
+    }
+
+    private decimal GetCurrentValue()
+    {
+        if (Obj != null && !string.IsNullOrEmpty(PropertyName))
+        {
+            var prop = Obj.GetType().GetProperty(PropertyName);
+            if (prop != null)
+            {
+                try
+                {
+                    return Convert.ToDecimal(prop.GetValue(Obj));
+                }
+                catch
+                {
+                    return 0m;
+                }
+            }
+        }
+        return 0m;
+    }
+
+    private void SetPropertyValue(object obj, string propName, decimal value)
+    {
+        var prop = obj?.GetType().GetProperty(propName);
+        if (prop != null)
+        {
+            try
+            {
+                prop.SetValue(obj, Convert.ChangeType(value, prop.PropertyType));
+                Console.WriteLine($"Number prop {propName} set to {value}");
+            }
+            catch
+            {
+                // Handle type conversion errors
+            }
+        }
+    }
+} *@
+

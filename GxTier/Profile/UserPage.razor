@@ -1,11 +1,13 @@
 ﻿@page "/user-page"
 @using System.Security.Claims
-@using GxShared.GlobModels
+@using GxShared.Sess
+@using GxShared.Others
 @using GxTie.Services
 
 @inject IHttpClientFactory httpfacClient
 @inject MyAuthStateProvider _myauthProvider
 @inject NavigationManager _navmanager
+@inject SessionContextService _sessionContext
 
 <PageTitle>Private Page</PageTitle>
 
@@ -30,60 +32,6 @@
 }
 <AuthorizeView>
     <Authorized>
-        @if (isOwner == 1 && isSet != 1)
-        {
-            <h2>Installation Organisation</h2>
-            @if (isSubmitting == false)
-            {
-                @if (isDrap != -1)
-                {
-                    <div class="d-flex flex-row">
-                        <div>
-                            <button class="btn btn-primary" @onclick="vaInstaller">
-                                Installer
-                            </button>
-                        </div>
-                    </div>
-                }
-                @if (isDrap == -1) //Orga echoue en installation
-                {
-                    <div class="d-flex flex-row">
-                        <p>Votre installation semble avoit echoue. </p>
-                        <p>Vous pouver annuler et reprendre a partir de. </p>
-                        <p>Invite a installer le logiciel @_UorgId du courrier de votre boite e-mail </p>
-                    </div>
-                    <div class="d-flex flex-row">
-                        <div>
-                            <button class="btn btn-danger" @onclick="vaAnnuler">
-                                Annuler
-                            </button>
-                        </div>
-                    </div>
-                }
-            } else
-            {
-                <p>@submitmess</p>
-            }
-        }
-        @if (isOwner != 1 && isSet != 1)
-        {
-            <h2>Enregistrement a @_UorgId</h2>
-            @if (isSubmitting == false)
-            {
-                <div class="d-flex flex-row">
-                    <p>Votre enregistrement peut etre incomplet. </p>
-                    <p>Vous pouver annuler et reprendre a partir de. </p>
-                    <p>Invite a rejoindre @_UorgId du courrier de votre boite e-mail </p>
-                </div>
-                <div class="d-flex flex-row">
-                    <div>
-                        <button class="btn btn-danger" @onclick="vaAnnuler">
-                            Annuler
-                        </button>
-                    </div>
-                </div>
-            }
-        }
         <h2>Attributs</h2>
         @if (_claims.Any())
         {
@@ -94,7 +42,8 @@
                 }
             </ul>
         }
-        @if (isSet == 1){
+        @if (isSet == 1)
+        {
             //mot de passe oublie
             <h2>Mot de passe</h2>
             <div>
@@ -114,10 +63,36 @@
             </div>
             <button type="button" class="btn btn-primary" @onclick="vaNwPassword">Demander</button>
         }
+            @if (isSubmitting == false)
+            {
+                
+            } else
+            {
+                <p>@submitmess</p>
+            }
+            @*mot de passe oublie *@
+            <h2>Mot de passe</h2>
+            <div>
+                <label for="oldpass">Ancien Mot de passe:</label>
+                <InputText id="oldpass" @bind-Value="APassword" required
+                           placeholder="Enter his-her nom" />
+            </div>
+            <div>
+                <label for="nwpass">Nouveau Mot de passe:</label>
+                <InputText id="nwpass" name="tiepnomInput" @bind-Value="NPassword" required
+                           placeholder="Enter his-her prenom" />
+            </div>
+            <div>
+                <label for="nwpassconf">Confirm nouveau Mot de passe:</label>
+                <InputText id="flhpnom" name="tiepnomInput" @bind-Value="NPassconfirm" required
+                           placeholder="Enter his-her prenom" />
+            </div>
+            <button type="button" class="btn btn-primary" @onclick="vaNwPassword">Demander</button>
     </Authorized>
 </AuthorizeView>
 
 @code {
+    private bool isLoading = false;
     private bool isSubmitting = false, errors = false, success = false;
     private string successmsg = "", submitmess="";
     private List<string> errorList = new List<string>();
@@ -126,33 +101,44 @@
     private string _UserId = "", _curUname = "", _curEmail = "";
     private string APassword = "", NPassword = "", NPassconfirm = "";
     private int _UorgId = 0;
-    private int isOwner = 0, isSet = 0, isDrap = 0;
+    private int isSet = 0, isDrap = 0;
+    private Userbag _usrBag = new Userbag();
+
     private ResgnModel rspModel = new ResgnModel();
-    private IEnumerable<Claim> _claims = Enumerable.Empty<Claim>();
+
     private HttpClient _apiClient;
 
     [CascadingParameter]
     private Task<AuthenticationState>? AuthState { get; set; }
+    public bool isOwner = false;
+    public ClaimsPrincipal authUser;
+    public bool isAuthenticated = false;
+    private IEnumerable<Claim> _claims = Enumerable.Empty<Claim>();
 
+    //private int xiqmax = 2, xothogs = 2;
     protected override async Task OnInitializedAsync()
     {
+        isLoading = true;
+        var authState = await AuthState;
+        authUser = authState.User;
+        isAuthenticated = authUser.Identity.IsAuthenticated;
+        if (!isAuthenticated)
+        {
+            Console.WriteLine("Authentication in Astreintes Utilisateur ECHEC");
+            return;
+        }
+        else
+        {
+            Console.WriteLine("Authentication in Astreintes SUCCESS");
+        }
+        _usrBag = await _sessionContext.GetUserbagAsync();
         if (AuthState == null)
         {
             return;
         }
-        _apiClient = httpfacClient.CreateClient("BZEClient");
+
         peutSortir = false;
-        //_logClient = httpfacClient.CreateClient("LGClient");
-        //invite
-        //isMade = false;
-        //isSent = false;
-        //_myCatal = await _getLocalData.RendClieTbls();
-        // if (_myCatal != null)
-        // {
-        //     Console.WriteLine($"Catalogue charge {_myCatal.regions.First().Liba}");
-        // }
-        var authState = await AuthState;
-        var authUser = authState.User;
+
         _claims = authUser.Claims;
         _UserId = authUser.FindFirst(ClaimTypes.NameIdentifier)?.Value;
         Console.WriteLine($"User PRIS : {_UserId}");
@@ -160,7 +146,8 @@
         Console.WriteLine($"UserName PRIS {_curUname}");
         _curEmail = authUser.FindFirst(ClaimTypes.Email)?.Value;
         var uoan = _claims.FirstOrDefault(c => c.Type == "Gx.IsOwner")?.Value;
-        isOwner = Convert.ToInt16(uoan);
+        isOwner = false;
+        if (uoan == "1") isOwner = true;
         //usUsrid = authUser?.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
         uoan = _claims.FirstOrDefault(c => c.Type == "Gx.SiSet")?.Value;
         isSet = Convert.ToInt16(uoan);
@@ -168,104 +155,13 @@
         isDrap = Convert.ToInt16(uoan);
         uoan = _claims.FirstOrDefault(c => c.Type == "Gx.Orgid")?.Value;
         _UorgId = Convert.ToInt16(uoan);
+
+        
         //await GetPrivData();
 
         StateHasChanged();
         Console.WriteLine($"orgid : {_UorgId} isOwner : {isOwner} isSet : {isSet}");
-    }
-    private async Task vaInstaller()
-    {
-        isSubmitting = true;
-        peutSortir = false;
-        try
-        {   
-            submitmess = "installing...";
-            //var aisi = await _localStorage.GetItemAsStringAsync("blazToken");
-            //Console.WriteLine($"blazToken : {aisi}");
-            var reqModel = new RegiscorModel();
-            reqModel.Idorg = _UorgId;
-            reqModel.Usrid = _UserId;
-            reqModel.Orig = 1; //interne 
-            var response = await _apiClient.PostAsJsonAsync("lgauth/creorga", reqModel);
-            if (response.IsSuccessStatusCode)
-            {
-                rspModel = await response.Content.ReadFromJsonAsync<ResgnModel>();
-                if (rspModel != null)
-                {
-                    if (rspModel.siDrap == -1)
-                    {
-                        //isSet = 0;
-                        isDrap = -1;
-                        successmsg = "Installation organisation echoue";
-                        submitmess = "annuler et recommencer";
-                        errors = true;
-                        success = false;
-                    } else
-                    {
-                        isSet = 1;
-                        successmsg = "Organization installed";
-                        submitmess = "termine";
-                        errors = false;
-                        success = true;
-                        peutSortir = true;
-                    }
-                }
-            }
-            else
-            {
-                var result = await response.Content.ReadFromJsonAsync<ResgnModel>();
-                if (result != null)
-                {
-                    var mymess = "Failed to install organization." + result.Message;
-                    errorList.Add(mymess);
-                    if (result.siDrap == -1)
-                    {
-                        //isSet = 0;
-                        isDrap = -1;
-                        errorList.Add("annuler et recommencer Register depuis votre boite Email");
-                        success = false;
-                    }
-
-                } else
-                {
-                    errorList.Add("Failed to install organization.");
-                }
-                errors = true;
-            }
-            isSubmitting = false;
-            StateHasChanged();
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"Echec installation : {ex.Message}");
-        }
-    }
-    private async Task vaAnnuler()
-    {
-        isSubmitting = true;
-        peutSortir = false;
-        try
-        {
-            submitmess = "removing installation...";
-            var reqModel = new RegiscorModel();
-            reqModel.Idorg = _UorgId;
-            reqModel.Usrid = _UserId;
-            reqModel.Orig = 1; //interne
-            var response = await _apiClient.PostAsJsonAsync("lgauth/anuorga", reqModel);
-            if (response.IsSuccessStatusCode)
-            {
-                Console.WriteLine("EST ENTRE DANS LOGIN");
-                successmsg = "Organisation installation annulee.";
-                submitmess = "Veuillez reprendre installationo";
-                errors = false;
-                success = true;
-                peutSortir = true;
-            }
-            StateHasChanged();
-        } catch (Exception ex){
-            Console.WriteLine($"Echec annulation : {ex.Message}");
-        }
-    }
+    } 
     private async Task vaReload()
     {//logout
         await _myauthProvider.NotifyUserLogout();

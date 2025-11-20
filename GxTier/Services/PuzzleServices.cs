@@ -3,7 +3,8 @@ using System.Security.Claims;
 
 using Blazored.LocalStorage;
 
-using GxShared.GlobModels;
+using GxShared.Sess;
+using GxShared.Auth;
 
 using Microsoft.AspNetCore.Components.Authorization;
 
@@ -72,7 +73,7 @@ namespace GxTie.Services
                 await _localStorage.SetItemAsync("blazExp", loginResult.Adexp);
                 await _localStorage.SetItemAsync("blazRtoken", loginResult.Rtoken);
                 await _localStorage.SetItemAsync("blazUserid", loginResult.Userid);
-                await _localStorage.SetItemAsync("blazOrgid", loginResult.Uorgid);
+                await _localStorage.SetItemAsync("blazOrgid", loginResult.LgOrgid);
 
                 var claims = _authProvider.ParseClaimsFromJwt(loginResult.Atoken);
                 var user = new ClaimsPrincipal(new ClaimsIdentity(claims, "jwt"));
@@ -146,6 +147,22 @@ namespace GxTie.Services
             //_puzzleState = null;
             //_sessionMetadata = null;
             await _localStorage.RemoveItemAsync("puzzleState");
+        }
+        public async Task<bool> IsBackendOnlineAsync()
+        {
+            try
+            {
+                Console.WriteLine("Checking backend health...");
+                var _dftClient = _httpClientFactory.CreateClient("AUTHClient");
+                _dftClient.Timeout = TimeSpan.FromSeconds(3); // Optional: prevent long hangs
+                var response = await _dftClient.GetAsync("lgauth/health");
+                return response.IsSuccessStatusCode;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Backend check failed: {ex.Message}");
+                return false;
+            }
         }
         public class SessionContext
         {

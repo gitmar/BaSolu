@@ -1,14 +1,9 @@
 ﻿using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
-
-using Azure.Core;
-
 using Blazored.LocalStorage;
-
-using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
-
 using Newtonsoft.Json.Linq;
+
 namespace GxStk.Services
 {
     public class HttpClientService

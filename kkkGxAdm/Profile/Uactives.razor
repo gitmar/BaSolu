@@ -1,0 +1,361 @@
+﻿@page "/uactives"
+
+@using GxAdm.Services
+@using GxWapi.DaModels
+@using GxShared.GlobModels
+@using Blazored.LocalStorage
+@using System.Net.Http.Headers
+@using System.Security.Claims
+@using Newtonsoft.Json
+@using System.Text.Json
+
+@inject MyAuthStateProvider _authprovider
+@inject ILocalStorageService _localStorage
+@inject IHttpClientFactory _httpfacClient
+@inject HttpClientService _cliemanager
+@inject IODataContextFactory _contextFactory
+@inject SessionContextService _sessionContext
+
+@* @inject MyODataContext _gODContext *@ 
+@inject NavigationManager _navmanager
+
+<h3>RESUME ACTIVITES </h3>
+<!--user profile-->
+<div class="d-flex flex-row">
+    <label for="jdat">Date du jour : </label>
+    <div class="text-left" id="jdat">@jdate</div>
+</div>
+<div class="d-flex flex-row">
+    @* <label for="typses">Type de session :</label>
+    <InputSelect id="typses" @bind-Value="IMySess">
+        @foreach (var tob in _lsFixes.Where(ut => ut.Gvars == 33 && ut.Itb == 7 && ut.Gp1 == 2 && ut.Elea != 0).ToList())
+        {
+            <option value="@tob.Elea">@tob.Liba</option>
+        }
+    </InputSelect> *@
+    @* <select id="typses" @bind="IMySess" @bind:after="choisirSession">
+        @foreach (var kses in _lsSess.ToList())
+        {
+            <option value="@kses.Idses">@kses.Liba</option>
+        }
+    </select> *@
+    @* <label for="pgrses">Programme :</label>
+    <select id="pgrses" @bind="pgrtyp" @bind:after="choisirSession">
+        @foreach (var kpln in _lsPlns.Where(pl => pl.Ptyp == 5 && pl.Elea != 0))
+        {
+            <option value="@kpln.Idpln">@kpln.Liba</option>
+        }
+    </select> *@
+</div>
+@* <div class="d-flex flex-row">
+    <label for="jses">Session en cours : </label>
+    <label class="text-left" id="jses">@_curSess.Speri</label>
+</div> *@
+<div class="d-flex flex-row">
+    @* <div class="p-2 flex-column">
+        <div>
+            <label>Cloturer session en cours</label>
+        </div>
+        <div class="d-flex flex-row">
+            <label for="outses">Session : </label>
+            <InputText id="outses" bind="@ouvaction" placeholder="aammjjjj"></InputText>
+        </div>
+        <div>
+            <button class="btn btn-sm btn-primary">Cloturer session en cours</button>
+        </div>
+        <!--si non sessions non ouvertes-->
+        <div>
+            <label>Ouvrir futur session</label>
+        </div>
+        <div class="d-flex flex-row">
+            <label for="inses">Session : </label>
+             <InputText id="inses" bind="@ouvaction" placeholder="aammjjjj"></InputText>
+        </div>
+        <div>
+            <button class="btn btn-sm btn-primary">Ouvrir futur session</button>
+        </div>
+        <!--si session en cours non ouverte-->
+        <div>
+            <label>Annuler ouverture-cloture session</label>
+        </div>
+        <div class="d-flex flex-row">
+            <label for="delses">Session : </label>
+            <InputText id="delses" bind="@anuaction" placeholder="aammjjjj"></InputText> 
+        </div>
+        <div>
+            <button class="btn btn-sm btn-primary">Annuler session</button>
+        </div>
+    </div> *@
+    <div class="p-2 flex-column">
+        <div class="d-flex flex-row">
+            <div>no</div>
+            <div>reference</div>
+            <div>date</div>
+            <div>etat</div>
+            <div>action</div>
+        </div>
+        <div>
+            @foreach (var sesu in _lsSess)
+            {
+                <div>@sesu.Dseq</div>
+                <div>@sesu.Speri</div>
+                <div>@sesu.Ideb</div>
+                <div>@sesu.Sicur</div>
+                <div>@ouvaction</div>
+            }
+        </div>
+    </div>
+</div>
+<div class="d-flex flex-row">
+    <EditForm Context="invform" Model="_usrBag">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+    </EditForm>
+</div>
+<!--saisie -->
+<!-- -S/Rubriques+ formats valeur(montant) -->
+<!--Accept ind/global -->
+
+@code {
+    private bool allEnable = false;
+    private string jsess = "";
+    private DateTime jdate = DateTime.Now;
+    private Gsesio _curSess = new Gsesio();
+    public MyODataContext _gODContext;
+    // private EntityManager _entityManager;
+    private Userbag _usrBag = new Userbag();
+    private IEnumerable<Tiersp> LsTiers = new List<Tiersp>();
+    public IEnumerable<Tiewel> ResTiw;
+    public IEnumerable<Tiersp> ResTie;
+    public Tiewel opTwel = new();
+    public Tiersp opTier = new();
+    private IEnumerable<Gsesio> _lsSess = new List<Gsesio>();
+    private List<Gpfixe> _lsFixes = new List<Gpfixe>();
+    private List<Gplan> _lsPlns = new List<Gplan>();
+    private DateTime _sesDat;
+    private string ouvaction = "";
+    private string cloaction = "";
+    private string anuaction = "";
+    private int IMySess = 0, pgrtyp = 0;
+
+
+    private bool isValid = false, isLoading = false;
+    private bool success, errors, isSubmitting = false;
+    private string[] errorList = [];
+    private string rolInv = "", userName = "", isatmsg = "";
+
+    //private SaieModel saieModel = new SaieModel();
+
+    private string opuname = "", opnomp = "";
+    private int opfonc = 0, opgrad = 0, opafec = 0;
+    private string kmessage = "";
+    private string _errorMessage = "";
+
+    //Authentication
+    private bool isAuthenticated = false;
+    private ClaimsPrincipal authUser;
+    private IEnumerable<Claim> claims = Enumerable.Empty<Claim>();
+    [CascadingParameter]
+    private Task<AuthenticationState>? AuthState { get; set; }
+    public string _UserId = "";
+    public int _UorgId = 0;
+    public int _SesId = 0;
+
+    protected override async Task OnInitializedAsync()
+    {
+        Console.WriteLine("Chargement des donnees");
+        var authState = await AuthState;
+        authUser = authState.User;
+        isAuthenticated = authUser.Identity.IsAuthenticated;
+        if (!isAuthenticated)
+        {
+            Console.WriteLine("Authentication in Enrol Utilisateur ECHEC");
+            return;
+        }
+        else
+        {
+            Console.WriteLine("Authentication in Enrol SUCCESS");
+        }
+        _usrBag = await _sessionContext.GetUserbagAsync();
+        //LsVars = _usrBag.Usorga.Uvars.ToList();
+        //arrivee parametres dans _usrBag
+        _lsFixes = _usrBag.Ufixes.ToList();
+        _lsPlns = _usrBag.Usorga.Uplns.Where(pl => pl.Ptyp == 5 && pl.Eta != 0).ToList();
+        opuname = _usrBag.Username;
+        opafec = _usrBag.Affecta;
+        opgrad = _usrBag.Grade;
+        opfonc = _usrBag.Fonctio;
+        await LoadSessionsAsync();
+    }
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            kmessage = "welcome";
+            //_curmact.
+            //await RemplirSaieModel(1);
+        }
+    }
+    private async void ValoadAsync(){
+        isLoading = true;
+        Console.WriteLine("COMMENCE 1");
+        try{
+            //test
+            // var query = Breeze.Sharp.EntityQuery
+            //     .From<Gxorga>("getorga");
+            // var results = await _entityManager.ExecuteApiRequestAsync(query);
+            // var lsOrgas = results.ToList(); // Convert to list if needed
+            // foreach(var unorg in lsOrgas)
+            // {
+            //     Console.WriteLine($"un org : No. : {unorg.Idorg} libelle :{unorg.Liba} raison : {unorg.Raison}");
+            // }
+            // Console.WriteLine($"ens orgas {lsOrgas.Count()}");
+            //prise des tiers
+            //var query = Breeze.Sharp.EntityQuery
+            //    .From<Tiersp>("tiersaie");
+            ///var results = await _entityManager.ExecuteApiRequestAsync(query);
+            //_lsTiers = results.ToList(); // Convert to list if needed
+            //foreach (var untie in _lsTiers)
+            //{
+            //    Console.WriteLine($"un tie : Mle. : {untie.Smatri} nom :{untie.Nom} prenoms : {untie.Pnom}");
+            //}
+            //Console.WriteLine($"ens tiers {_lsTiers.Count()}");
+            //controle metadata
+        }
+        catch (Exception ex)
+        {
+            _errorMessage = $"An error occurred: {ex.Message}";
+        }
+        isLoading = false;
+    } 
+    private Plngen GetSelectedPln(int ipln)
+    {
+        return null;
+    }
+    private async Task choisirSession(){
+        // if (sestyp != 0 && pgrtyp != 0)
+        // {
+        //     _curSess = _lsSess.Where(le => le.Sotyp == sestyp && le.Idpln == pgrtyp).FirstOrDefault();
+        // } else
+        // {
+        //     _curSess = new Gsesio();
+        // }
+    }
+    private async Task ValidSaieAsync()
+    {
+        try
+        {
+            //await _entityManager.SaveChanges(); // Specify type argument here
+        }
+        catch (Exception ex)
+        {
+            // Handle error (e.g., show error message)
+        }
+    }
+
+    private async Task LoadTiesAsync()
+    {
+        int tst = 1;
+        try
+        {
+            var token = await _localStorage.GetItemAsync<string>("blazToken");
+            _gODContext = await _contextFactory.CreateAsync(); // Use factory
+            var expand = "Actsaies,Actsaies($expand=Actdets)";
+            var dxtiers = await _gODContext.LoadFilteredAsync<Tiersp>(expand: expand);
+            // EnsTiers = dxtiers.ToList();
+            // //test tiers
+            // var mytier = EnsTiers.FirstOrDefault();
+            // if (mytier != null)
+            // {
+            //     Console.WriteLine($"nom tiers : {mytier.Nom } et {mytier.Pnom}");
+            // }
+            // else
+            // {
+            //     Console.WriteLine($"probleme chargement Tiers");
+            // }
+            //var mytierps = await _gODContext.LoadData<Tiersp>();
+            tst = 3;
+            ResTie = dxtiers;
+            if (ResTie == null || !ResTie.Any())
+            {
+                // Handle empty case
+                return;
+            }
+            tst = 4;
+            LsTiers = ResTie.AsQueryable();
+            tst = 5;
+            opTier = LsTiers.FirstOrDefault();
+            Console.WriteLine($"2INTIE 222 {tst} et {LsTiers.Count()}");
+        }
+        catch (Exception ex)
+        {
+            //strmeta = _entityManager.strmeta;
+            Console.WriteLine($"2Probleme EntityManagment : {tst} et {ex.Message}");
+        }
+        Console.WriteLine("2SORTIE");
+    }
+
+    private async Task LoadSessionsAsync()
+    {
+        try
+        {
+            DateTime baseDate = DateTime.Now;
+            DateTime previousDate = baseDate.AddDays(-400);
+            int pisa = 1;
+            Console.WriteLine($"En prenant le SAIEBAG");
+            var strcall = await _cliemanager.SendRequestAsync("AUTHClient", HttpMethod.Get, "lgauth/usrsesio");
+            //Console.WriteLine($"21RECU DE LOGIN {strcall}");
+            pisa = 2;
+            var logResu = JsonConvert.DeserializeObject<List<Gsesio>>(strcall);
+            //logResu = await response.Content.ReadFromJsonAsync<LoginResult>();
+            pisa = 3;
+            if (logResu != null)
+            {
+                pisa = 4;
+                _lsSess = logResu.ToList();
+
+                _curSess = logResu.FirstOrDefault();
+                pisa = 5;
+                Console.WriteLine($"Orga de SaieSess : {_curSess.Liba}");
+            }
+            else
+            {
+                pisa = 6;
+                Console.WriteLine("SaieSess absent");
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Saiebag call failed : // {ex.Message}");
+        }
+        isLoading = false;
+    }
+    // private async Task GetLastSessions()
+    // { //actualiser
+    //     DateTime baseDate = DateTime.Now;
+    //     DateTime previousDate = baseDate.AddDays(-400);
+    //     try{
+    //         var token = await _localStorage.GetItemAsync<string>("blazToken");
+    //         _gODContext = new MyODataContext(new Uri("https://localhost:7095/odata"), token);
+    //         //var expand = "Actsaies,Actsaies($expand=Actdets)";
+    //         //var dxtiers = await _gODContext.LoadFilteredAsync<Tiersp>(expand: expand);
+    //         var mysess = await _gODContext.LoadData<Gsesio>();
+    //         _lsSess = mysess.ToList();
+    //         //Console.WriteLine()
+    //         // var query2 = Breeze.Sharp.EntityQuery
+    //         //         .From<Gsesio>("usrsesio");
+    //         //.OrderByDescending(uo => uo.Datses)
+    //                 //.TakeLast(100);
+    //             //.Where(ud => ud.Datses > previousDate && ud.Eta == 1);
+    //         //.WithParameter("jlim", 500);
+    //         //_lsSess = await _entityManager.ExecuteQuery(query);
+    //     }catch(Exception ex)
+    //     {
+    //         Console.WriteLine($"Erreur loading DATA {ex.Message } + {ex.InnerException.Data}");
+    //     }
+    //     if (_lsSess != null)
+    //     {
+    //         Console.WriteLine($"TEST Current Session loading {_lsSess.Count()}");
+    //     }
+    // }
+}

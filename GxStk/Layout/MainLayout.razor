@@ -4,12 +4,15 @@
 @using Blazored.LocalStorage
 @using GxStk.Services
 @using GxStk.Helpers
+@using GxShared.Services
 @using System.Security.Claims
 
 @inject IConfiguration _iconfig
 @inject NavigationManager _navManager
 @inject ILocalStorageService _localStorage
 @inject SessionContextService _sessionContext
+@inject ClieAppState _appState
+@inject IJSRuntime _JsRun
 
 @if (_layoutReady)
 {
@@ -31,11 +34,18 @@
                                     <i>PrivateRoom</i>
                                 </a>
                             </div>
+                            <div>
+                                <span>&nbsp;&nbsp;</span>
+                                @_appState.ogRaison
+                                <span>-</span>
+                                @_appState.usFulnom;
+                            </div>
                             <!-- Spacer pushes everything else to the right -->
                             <div class="ms-auto d-flex align-items-center gap-3">
                                 <label class="mb-0">Help ?</label>
                                 <div>
-                                    Welcome &nbsp;<b>@context.User.Identity?.Name</b>.
+                                    <span>&nbsp;</span>
+                                    @* Welcome &nbsp;<b>@context.User.Identity?.Name</b>. *@
                                     <a href="logout">
                                         <span class="bi bi-door-closed-fill" aria-hidden="true" style="vertical-align:middle"></span> Logout
                                     </a>
@@ -82,7 +92,7 @@ else
 
 @code {
     private bool _layoutReady = false, isLoading = false;
-    private bool collapseUserMenu = false, canAdminLog = false;
+    private bool collapseUserMenu = false, canStkLog = false;
     [CascadingParameter]
     private Task<AuthenticationState>? AuthState { get; set; }
     private bool isOwner = false;
@@ -97,7 +107,7 @@ else
 
     protected override async Task OnInitializedAsync()
     {
-        canAdminLog = false;
+        canStkLog = false;
         isLoading = false;
         //_layoutReady = true;
         var token = await _localStorage.GetItemAsync<string>("blazToken");
@@ -122,7 +132,7 @@ else
         }
         else
         {
-            if (authUser.IsInRole("Support")) canAdminLog = true;
+            if (authUser.IsInRole("Support")) canStkLog = true;
             if (authUser.IsInRole("Admin"))
             {
                 var claims = JwtHelper.DecodePayload(token);
@@ -130,7 +140,7 @@ else
                 int estOwner = Convert.ToInt16(siOwner);
                 if (estOwner == 1)
                 {
-                    canAdminLog = true;
+                    canStkLog = true;
                 }
             }
 
@@ -145,8 +155,10 @@ else
         isAuthenticated = authUser.Identity?.IsAuthenticated ?? false;
         StateHasChanged();
     };
-
-
         isLoading = true;
+    }
+    public void Dispose()
+    {
+        _appState.OnChange -= StateHasChanged;
     }
 }

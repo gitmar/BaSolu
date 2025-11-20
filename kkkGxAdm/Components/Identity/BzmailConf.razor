@@ -1,0 +1,141 @@
+﻿@page "/bzmailconf"
+
+@using GxShared.GlobModels
+
+@inject HttpClient Http
+@inject NavigationManager _navManager
+@inject IHttpClientFactory httpfacClient
+
+<h3>Email Confirmation</h3>
+<p>id:@_UserId</p>
+<p>code:@_InCode</p>
+@if (isLoading)
+{
+    <div>verifying(PATIENCE!...)</div>
+}
+else if (isSuccess)
+{
+    <div class="alert alert-success">@successMessage</div>
+}
+else
+{
+    <div class="alert alert-danger">@errorMessage</div>
+}
+
+@if (!isSuccess)
+{
+    <div class="btn btn-group">
+        @if (!maybeResend)
+        {
+            <button class="btn btn-primary" @onclick="Confirmer">
+                Confirmer
+            </button>
+        }
+        else
+        {
+            <div>...ou...</div>
+            <button class="btn btn-primary" @onclick="Renvoyer">
+                Renvoyer le mail
+            </button>
+        }
+    </div>
+}
+
+@code {
+    private bool isLoading = false, isSuccess = false, maybeResend = false;
+    private string errorMessage = "", successMessage = "";
+    private string _UserId = "", _InCode = "";
+
+    private HttpClient _logClient;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _logClient = httpfacClient.CreateClient("OFFLClient");
+        isLoading = false;
+        maybeResend = false;
+        var uri = _navManager.ToAbsoluteUri(_navManager.Uri);
+        var receivUri = Uri.UnescapeDataString(uri.Query);
+        var queryParams = System.Web.HttpUtility.ParseQueryString(receivUri);
+        //var userId = queryParams["userId"];
+        //var intoken = queryParams["code"];
+        _UserId  = queryParams["userId"];
+        _InCode = queryParams["code"];
+        Console.WriteLine($"MAIL A ENVOYER : user: {_UserId} code {_InCode}");
+    }
+    private async void Confirmer()
+    {
+        isLoading = true;
+        //var uri = _navManager.ToAbsoluteUri(_navManager.Uri);
+        //var receivUri = Uri.UnescapeDataString(uri.Query);
+        //var queryParams = System.Web.HttpUtility.ParseQueryString(receivUri);
+        //var userId = queryParams["userId"];
+        //var intoken = queryParams["code"];
+        //Console.WriteLine($"Nagivation : {uri} received : {receivUri} mail:{myemail}");
+        if (!string.IsNullOrEmpty(_UserId) && !string.IsNullOrEmpty(_InCode))
+        {
+            var usrMail = new UsrMail();
+            usrMail.Typg = 2; //resend
+            usrMail.UserId = _UserId;
+            usrMail.Ucode = _InCode;
+            var response = await _logClient.PostAsJsonAsync("lgauth/mailconfirm", usrMail);
+            if (response.IsSuccessStatusCode)
+            {
+                successMessage = await response.Content.ReadAsStringAsync();
+                isSuccess = true;
+                maybeResend = false;
+            }
+            else
+            {
+                errorMessage = await response.Content.ReadAsStringAsync();
+                isSuccess = false;
+                maybeResend = true;
+            }          
+        }
+        else
+        {
+            isSuccess = false;
+            errorMessage = "Invalid confirmation link.";
+        }
+        isLoading = false;
+        StateHasChanged();
+    }
+    private async void Renvoyer()
+    {
+        isLoading = true;
+        var baseAddress = _navManager.BaseUri.TrimEnd('/');
+        var uri = _navManager.ToAbsoluteUri(_navManager.Uri);
+        var receivUri = Uri.UnescapeDataString(uri.Query);
+        var queryParams = System.Web.HttpUtility.ParseQueryString(receivUri);
+        _UserId = queryParams["userId"];
+        _InCode = queryParams["code"];
+        Console.WriteLine($"Nagivation : {uri} user : {_UserId} code: {_InCode}");
+        //var encodedCode = Uri.UnescapeDataString(incode);
+        if (!string.IsNullOrEmpty(_UserId) && !string.IsNullOrEmpty(_InCode))
+        {
+            var usrMail = new UsrMail();
+            //usrMail.Id = 1;
+            usrMail.Typg = 2; //renvoie
+            usrMail.UserId = _UserId;
+            usrMail.Ucode = _InCode;
+            //usrMail.Idorg = 
+            usrMail.BlzAddress = baseAddress;
+            //usrMail.Invmail = 
+            var response = await _logClient.PostAsJsonAsync("Lgauth/renvoiemail", usrMail);
+            if (response.IsSuccessStatusCode)
+            {
+                isSuccess = true;
+                successMessage = "Email re-sent successfully.";
+            }
+            else
+            {
+                isSuccess = false;
+                errorMessage = "Failed to re-sent email.";
+            }
+        } else {
+            isSuccess = false;
+            errorMessage = "Invalid confirmation link.";
+        }
+        isLoading = false;
+        StateHasChanged();
+    }   
+}

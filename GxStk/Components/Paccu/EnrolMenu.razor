@@ -9,7 +9,8 @@
 @using GxStk.Components.Paccu.Valida
 @using GxStk.Components.Paccu.Inscr
 @using GxStk.Services
-@using GxShared.GlobModels
+@using GxShared.Sess
+@using GxShared.Others
 @using GxWapi.DaModels
 @using Microsoft.OData.Client
 @using Newtonsoft.Json
@@ -21,7 +22,6 @@
 @inject RendAgres _rendAgres
 @inject IJSRuntime _jsRun
 
-<h3>EnrolMenu</h3>
 @if (isLoading)
 {
     <div class="text-center">

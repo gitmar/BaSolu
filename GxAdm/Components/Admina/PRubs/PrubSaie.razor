@@ -15,7 +15,7 @@
 @using Blazored.LocalStorage
 @using GxAdm.ClieModels
 @using GxAdm.Services
-@using GxShared.GlobModels
+@using GxShared.Sess
 @using GxWapi.DaModels
 @using Microsoft.AspNetCore.Components.Forms
 @using Microsoft.AspNetCore.WebUtilities
@@ -753,7 +753,7 @@ else
                     <div class="row">
                         @if (!String.IsNullOrEmpty(Kmessage))
                         {
-                            <span class="bg-info bg-opacity-10" style="font-style:italic;color:red">&nbsp;--> @Jmessage</span>
+                            <span class="bg-info bg-opacity-10" style="font-style:italic;color:red">&nbsp;--> @Kmessage</span>
                         }
                     </div>
                     <div class="p-0">

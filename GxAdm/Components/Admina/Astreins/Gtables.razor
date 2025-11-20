@@ -15,7 +15,7 @@
 @using Blazored.LocalStorage
 @using GxAdm.ClieModels
 @using GxAdm.Services
-@using GxShared.GlobModels
+@using GxShared.Sess
 @using GxWapi.DaModels
 @using Microsoft.AspNetCore.Components.Forms
 @using Microsoft.AspNetCore.WebUtilities
@@ -687,8 +687,8 @@ else
     private bool IsFixAdding(Gsgfix item) => AddingFixRowGuid == item.Rowguid;
     private Guid? ConfirmingFixDeleteRowGuid;
     Dictionary<int, Gsgfix> fxparentMapByPseq = new();
-    private Dictionary<int, ObservableCollection<Gsgfix>> gfixsMap = new();
-    private Dictionary<int, ObservableCollection<Gsglne>> glnesMap = new();
+    private Dictionary<int, List<Gsgfix>> gfixsMap = new();
+    private Dictionary<int, List<Gsglne>> glnesMap = new();
     //fils-editing/adding/deleting
     private bool isChlValid = false;
     private Gsglne nwChild = new();
@@ -702,16 +702,24 @@ else
     private bool IsLneEditing(Gsglne item) => EditingLneRowGuid == item.Rowguid;
 
     //pere
-    private ObservableCollection<Gsgfix> PaterRows => gfixsMap.TryGetValue(curOrga.Idorg, out var rows)
-    ? new ObservableCollection<Gsgfix>(rows)
-    : new ObservableCollection<Gsgfix>();
+    private ICollection<Gsgfix> PaterRows => gfixsMap.TryGetValue(curOrga.Idorg, out var rows)
+    ? new List<Gsgfix>(rows)
+    : new List<Gsgfix>();
+    // private ObservableCollection<Gsgfix> PaterRows => gfixsMap.TryGetValue(curOrga.Idorg, out var rows)
+    // ? new ObservableCollection<Gsgfix>(rows)
+    // : new ObservableCollection<Gsgfix>();
     //fils
-    private ObservableCollection<Gsglne> ChildRows => glnesMap.TryGetValue(curPater.Xseq, out var rows)
-    ? new ObservableCollection<Gsglne>(rows)
-    : new ObservableCollection<Gsglne>();
+    private ICollection<Gsglne> ChildRows => glnesMap.TryGetValue(curPater.Xseq, out var rows)
+    ? new List<Gsglne>(rows)
+    : new List<Gsglne>();
+    // private ObservableCollection<Gsglne> ChildRows => glnesMap.TryGetValue(curPater.Xseq, out var rows)
+    // ? new ObservableCollection<Gsglne>(rows)
+    // : new ObservableCollection<Gsglne>();
     //data
-    public ObservableCollection<Gsgfix> MyDaRubrs { get; set; } = new();
-    public ObservableCollection<Gsglne> MyDaChilds { get; set; } = new();
+    public ICollection<Gsgfix> MyDaRubrs { get; set; } = new List<Gsgfix>();
+    public ICollection<Gsglne> MyDaChilds { get; set; } = new List<Gsglne>();
+    // public ObservableCollection<Gsgfix> MyDaRubrs { get; set; } = new();
+    // public ObservableCollection<Gsglne> MyDaChilds { get; set; } = new();
     //variables Man
     Gsgfix draftMan = new();
     Gsgfix? editingMan = null;
@@ -787,7 +795,7 @@ else
         // Make sure the gfixsMap has an entry for this parent
         if (!gfixsMap.ContainsKey(parentId))
         {
-            gfixsMap[parentId] = new ObservableCollection<Gsgfix>();
+            gfixsMap[parentId] = new List<Gsgfix>(); //ObservableCollection<Gsgfix>();
         }
         var existingGsgfixs = curOrga.Gsgfixes.Where(ln => ln.Idorg == parentId) ?? new DataServiceCollection<Gsgfix>();
         var mapGsgfixs = gfixsMap[parentId];
@@ -814,7 +822,7 @@ else
         // Make sure the glnesMap has an entry for this parent
         if (!glnesMap.ContainsKey(parentId))
         {
-            glnesMap[parentId] = new ObservableCollection<Gsglne>();
+            glnesMap[parentId] = new List<Gsglne>();
         }
         var existingGsglnes = curOrga.Gsglnes.Where(ln => ln.Pseq == parentId) ?? new DataServiceCollection<Gsglne>();
         var mapGsglnes = glnesMap[parentId];
@@ -881,7 +889,7 @@ else
             // Make sure glnesMap has the parent key initialized
             if (!gfixsMap.ContainsKey(parentId))
             {
-                gfixsMap[parentId] = new ObservableCollection<Gsgfix>();
+                gfixsMap[parentId] = new List<Gsgfix>();
             }
             // Add only if the poste with same Rowguid not already present
             if (!gfixsMap[parentId].Any(p => p.Rowguid == mygf.Rowguid))
@@ -912,7 +920,7 @@ else
             // Make sure glnesMap has the parent key initialized
             if (!glnesMap.ContainsKey(parentId))
             {
-                glnesMap[parentId] = new ObservableCollection<Gsglne>();
+                glnesMap[parentId] = new List<Gsglne>();
             }
             // Add only if the poste with same Rowguid not already present
             if (!glnesMap[parentId].Any(p => p.Rowguid == aglne.Rowguid))
@@ -1159,10 +1167,10 @@ else
         _lgcdu = 3;
         var noslims = LsVars.Where(uv => uv.Idhie == 0 && uv.Gvars == 21 && uv.Itb == 1 && uv.Elea == 1);
         if (noslims.Any()) _lgcdu = noslims.FirstOrDefault().Ivala;
-        MyDaRubrs = new();
+        MyDaRubrs = new List<Gsgfix>();
         await LoadTablsAsync();
         _navmanager.LocationChanged += OnLocationChanged;
-        Imessage = "Donnees Grilles chargees";
+        Imessage = "Donnees Tables chargees";
         isLoading = false;
     }
 
@@ -1170,12 +1178,12 @@ else
     {
         gfixsMap.Clear();
         glnesMap.Clear();
-        MyDaRubrs = new ObservableCollection<Gsgfix>();
-        gfixsMap[curOrga.Idorg] = new ObservableCollection<Gsgfix>(curOrga.Gsgfixes.Where(uf => uf.Gvars == 4 && uf.Elea != 0));
+        MyDaRubrs = new List<Gsgfix>(); // ObservableCollection<Gsgfix>();
+        gfixsMap[curOrga.Idorg] = curOrga.Gsgfixes.Where(uf => uf.Gvars == 4 && uf.Elea != 0).ToList(); //new ObservableCollection<Gsgfix>(curOrga.Gsgfixes.Where(uf => uf.Gvars == 4 && uf.Elea != 0));
         foreach (var uta in curOrga.Gsgfixes.Where(uv => uv.Gvars == 4 && uv.Elea != 0))
         {
             List<Gsglne> tbcols = curOrga.Gsglnes.Where(ln => ln.Otyp == 4 && ln.Pseq == uta.Xseq).ToList();
-            glnesMap[uta.Xseq] = new ObservableCollection<Gsglne>(tbcols);
+            glnesMap[uta.Xseq] = tbcols; //new ObservableCollection<Gsglne>(tbcols);
             //Console.WriteLine($"Parent Xseq: {uta.Xseq}, Children count: {tbcols.Count}");
         }
     }
@@ -1228,7 +1236,7 @@ else
             else
             {
                 Console.WriteLine("Rubriques tables vide");
-                MyDaRubrs = new();
+                MyDaRubrs = new List<Gsgfix>();
             }
             Console.WriteLine($"Rubriques attendues nb : {curOrga.Gsglnes.Count}");
         }

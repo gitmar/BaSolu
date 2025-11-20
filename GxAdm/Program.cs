@@ -1,10 +1,14 @@
-﻿using System.Net.Http.Headers;
+﻿using GxAdm;
+using System.Net.Http.Headers;
 using BlazorDownloadFile;
 using Blazored.LocalStorage;
-using GxAdm;
-using GxAdm.ClieModels;
 using GxAdm.Services;
-using GxShared.GlobModels;
+using GxAdm.Helpers;
+using GxAdm.ClieModels;
+
+using GxShared.Services;
+using GxShared.Sess;
+
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
@@ -43,7 +47,7 @@ builder.Services.AddScoped<IPuzzleSyncService, PuzzleSyncService>();
 //builder.Services.AddScoped<Usaibag>();
 builder.Services.AddScoped<MyShareVars>();
 builder.Services.AddScoped<RendAgres>();
-builder.Services.AddScoped<AppState>();
+builder.Services.AddScoped<ClieAppState>();
 builder.Services.AddScoped<SessionContextService>();
 builder.Services.AddScoped<SessionContextClient>();
 
@@ -75,30 +79,13 @@ builder.Services.AddHttpClient("OFFLClient", client =>
     client.DefaultRequestHeaders.Add("X-Requested-With", "Fetch");
 });
 //ODATAClient
+builder.Services.AddScoped<IODataContextFactory, ODataContextFactory>();
 builder.Services.AddHttpClient("ODataClient", client =>
 {
-    var backUrl = builder.Configuration["BackendUrl"];
-    if (!backUrl.EndsWith("/")) backUrl += "/";
-    backUrl += "odata";
-    client.BaseAddress = new Uri(backUrl);
+    client.BaseAddress = new Uri("https://localhost:7095/odata");
+    // Add any default headers or auth here if needed
 });
-builder.Services.AddScoped<IODataContextFactory, ODataContextFactory>();
-
-
-
-//builder.Services.AddScoped<IODataContextFactory, ODataContextFactory>();
-//builder.Services.AddHttpClient("ODataClient", client =>
-//{
-//    var backUrl = builder.Configuration["BackendUrl"];
-//    if (!backUrl.EndsWith("/"))
-//    {
-//        backUrl += "/";
-//    }
-//    backUrl += "odata";
-//    client.BaseAddress = new Uri(backUrl);
-//    //client.BaseAddress = new Uri("https://localhost:7095/odata");
-//    // Add any default headers or auth here if needed
-//});
+builder.Services.AddScoped<LinkSerialiser>();
 //pouch services 
 builder.Services.AddSingleton<PouchDbService>();
 
@@ -107,12 +94,18 @@ builder.Services.AddHttpClient("DefaultClient", client =>
     client.BaseAddress = new Uri(builder.HostEnvironment.BaseAddress);
     client.DefaultRequestHeaders.Add("Accept", "application/json");
 });
+builder.Services.AddScoped<TblJsonRender>();
 // Build the host
 var host = builder.Build();
-// --- Ensure the database and table exist ---
-
+// Get webApi is online or not
+var localStorage = host.Services.GetRequiredService<ILocalStorageService>();
+var authProvider = host.Services.GetRequiredService<MyAuthStateProvider>();
+// Clear local storage and notify logout
+await localStorage.ClearAsync(); // or remove specific items
+await authProvider.NotifyUserLogout();
 // Run the application
 await host.RunAsync();
+
 public class ApiSettings
 {
     public string BackendUrl { get; set; } = string.Empty;
@@ -122,6 +115,4 @@ public class ApiSettings
     public string ApiUrl22 { get; set; } = string.Empty;
     public string FrontendUrl22 { get; set; } = string.Empty;
 }
-
-
 
