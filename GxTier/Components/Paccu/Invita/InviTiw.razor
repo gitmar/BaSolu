@@ -422,7 +422,8 @@
             int toQui = regModel.Toqui;
             Console.WriteLine($"dequi '{deQui} et toqui : {toQui}");
             string? stOrga = myOrga.Idorg.ToString();
-            string? typdom = myOrga.Dom.ToString();
+            string? tidom = myOrga.Idoma.ToString();
+            string? tjdom = myOrga.Jdoma.ToString();
             string? tyorg = myOrga.Torg.ToString();
             string datope = "";
             strchai = DateTime.Now.Year.ToString().Trim();
@@ -453,8 +454,8 @@
             string kraison = myOrga.Raison;//myCmde.Raison;
             string kphone = regModel.Phonenumber;
             string kpays = myOrga.Pays.ToString(); // _tusBag.Usprof.Upays;
-            string stsite = myOrga.Stserver;
-            string stdoma = myOrga.Stdom;
+            string stsite = myOrga.Weburl;
+            string stdoma = myOrga.Sidom;
             string stsigle = myOrga.Sigle;
             string achtypu = regModel.Utyp.ToString();
             string kcdeip = myOrga.CurIp;
@@ -466,7 +467,7 @@
                         + "&opays=" + kpays + "&toqlang=fr" + "&typtie=" + regModel.Utyp + "&dqirole=" + deQui.ToString() + "&tqirole=" + toQui.ToString()
                         + "&dqsrole=" + dqsrole + "&tqsrole=" + tqsrole + "&toqnom=" + regModel.Nom + "&toqpnoms=" + regModel.Pnom
                         + "&methp=1" + "&stsigle=" + stsigle + "&isowner=1"
-                        + "&tydoma=" + typdom + "&stdoma=" + stdoma + "&datcde=" + DateTime.Now
+                        + "&tydoma=" + tidom + "&stdoma=" + stdoma + "&datcde=" + DateTime.Now
                         + "&tysite=1" + "&stsite=" + stsite
                         + "&ivorga=" + stOrga + "&straison=" + kraison + "&hiera=" + regModel.Idhie + "@ipost" + regModel.Idpst
                         + "&nbalea=" + aleaupd;

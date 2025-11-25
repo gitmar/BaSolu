@@ -23,12 +23,11 @@
 @inject RendAgres _rendAgres
 @inject IJSRuntime _jsRun
 
-<h3>EnrolMenu</h3>
 @if (isLoading)
 {
     <div class="text-center">
         <Spinner Color="SpinnerColor.Primary" Size="SpinnerSize.Large" />
-        <p>ENROLLEMENT Loading...</p>
+        <p>RH/ENROLLEMENT Loading...</p>
     </div>
 }
 <div class="mag-screen-layout">
@@ -286,7 +285,7 @@
         toChild.isAuthenticated = isAuthenticated;
         //toChild.Usrid = _UserId;
         //toChild.Idorg = _UorgId;
-        toChild.Uroles = Uroles;
+        //toChild.Uroles = Uroles;
         toChild.LsCols = LsCols;
         toChild.TbElems = TbElems;
         //toChild.LsSites = LsSites.ToList();

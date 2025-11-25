@@ -30,5 +30,13 @@ namespace GxShared.Auth
         public string UOgSigle { get; set; } = string.Empty;
         public ICollection<AdmOrga> Admorgas { get; set; } = new List<AdmOrga>();
     }
-    
+    public class AdmOrga
+    {
+        public int Idorg { get; set; } = 0;
+        public string Raison { get; set; } = string.Empty;
+        public string Sigle { get; set; } = string.Empty;
+        public int Simain { get; set; } = 0;
+        public string WebUrl { get; set; } = string.Empty;
+        public int Usog { get; set; } = 0;
+    }
 }

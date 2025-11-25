@@ -9,12 +9,14 @@
 @inject NavigationManager _navManager
 @inject ILocalStorageService _localStorage
 
-<div class="top-row navbar navbar-dark bg-success shadow-sm bg-opacity-25">
+<div class="top-row mb-0 navbar navbar-dark bg-success shadow-sm bg-opacity-25">
     <a class="navbar-brand text-white fw-bold" href="">Gx-Solutions</a>
-    <span class="text-warning fw-bold">(Admin)</span>
-    @* <button class="navbar-toggler" type="button" @onclick="ToggleNavMenu">
+    <button class="navbar-toggler" type="button" @onclick="ToggleNavMenu">
         <span class="navbar-toggler-icon"></span>
-    </button> *@
+    </button>
+</div>
+<div class="row text-center mt-0">
+    <span class="text-warning fw-bold">(Admin)</span>
 </div>
 <div class="@NavMenuCssClass bg-dark vh-100" style="overflow-y: auto;">
     <nav class="nav flex-column">

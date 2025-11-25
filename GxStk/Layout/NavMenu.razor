@@ -5,12 +5,14 @@
 
 @inject NavigationManager _navManager
 
-<div class="top-row navbar navbar-dark bg-success shadow-sm bg-opacity-25">
+<div class="top-row mb-0 navbar navbar-dark bg-success shadow-sm bg-opacity-25">
     <a class="navbar-brand text-white fw-bold" href="">Gx-Solutions</a>
-    <span class="text-warning fw-bold">(Stock)</span>
-    @* <button class="navbar-toggler" type="button" @onclick="ToggleNavMenu">
+    <button class="navbar-toggler" type="button" @onclick="ToggleNavMenu">
         <span class="navbar-toggler-icon"></span>
-    </button> *@
+    </button>
+</div>
+<div class="row text-center mt-0">
+    <span class="text-warning fw-bold">(Stock)</span>
 </div>
 
 <div class="@NavMenuCssClass bg-dark vh-100" style="overflow-y: auto;">
@@ -18,13 +20,10 @@
         <NavLink class="nav-link nav-main text-light small" href="" Match="NavLinkMatch.All">
             <span class="bi bi-house-door-fill-nav-menu" aria-hidden="true"></span> Home
          </NavLink>
-        @* <div class="@(isOpen ? "d-none" : "")">
-            <Login OnAdmLoginChanged="HandleAdmLoginChanged" />
-        </div> *@
         <AuthorizeView>
             <Authorized>
                 <NavLink class="nav-link nav-main text-light small" @onclick="ToggleSubManag">
-                    <Icon Name="IconName.PlusSquareFill" Size="IconSize.x5" Color="IconColor.White" /> &nbsp; Gestion
+                    <Icon Name="IconName.PlusSquareFill" Size="IconSize.x5" Color="IconColor.White" /> &nbsp; GStock
                 </NavLink>
                 @if (isSubManagVisible)
                 {

@@ -312,7 +312,7 @@
                 var baseAddress = _navmanager.BaseUri.TrimEnd('/');
                 //?????
                 uogModel.FbackUrl = baseAddress;
-                var response = await _logClient.PostAsJsonAsync("regis/startstdtregis", uogModel, CancellationToken.None);
+                var response = await _logClient.PostAsJsonAsync("regis/stdtregis", uogModel, CancellationToken.None);
                 if (response.IsSuccessStatusCode)
                 {
                     var usrdata = await response.Content.ReadFromJsonAsync<LoginResult>();

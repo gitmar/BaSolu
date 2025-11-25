@@ -85,6 +85,7 @@ builder.Services.AddHttpClient("ODataClient", client =>
     client.BaseAddress = new Uri("https://localhost:7095/odata");
     // Add any default headers or auth here if needed
 });
+builder.Services.AddScoped<TblJsonRender>();
 builder.Services.AddScoped<LinkSerialiser>();
 //pouch services 
 builder.Services.AddSingleton<PouchDbService>();
@@ -94,7 +95,6 @@ builder.Services.AddHttpClient("DefaultClient", client =>
     client.BaseAddress = new Uri(builder.HostEnvironment.BaseAddress);
     client.DefaultRequestHeaders.Add("Accept", "application/json");
 });
-builder.Services.AddScoped<TblJsonRender>();
 // Build the host
 var host = builder.Build();
 // Get webApi is online or not

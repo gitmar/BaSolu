@@ -29,10 +29,10 @@
 @inject IODataContextFactory _contextFactory
 @inject SessionContextService _sessionContext
 @inject RendAgres _rendAgres;
-<!-- InscTiewComponent.razor -->
+
 <PageTitle>INSTITUTION</PageTitle>
 @* <h3>AOrgas</h3> *@
-@if (isLoading)
+@if (edOrgContext == null)
 {
     <div class="text-center">
         <Spinner Color="SpinnerColor.Primary" Size="SpinnerSize.Large" />
@@ -45,7 +45,7 @@
 <div>
     @Ierror
 </div>
-@if (!isLoading)
+@if (edOrgContext != null)
 {
     <AuthorizeView Context="authContext">
     <Authorized>
@@ -64,11 +64,14 @@
                     }
                 </div>
             </div>
-                <div class="container-fluid-fixed-top">
+            <div class="container-fluid-fixed-top">
+                <EditForm EditContext="edOrgContext">
+                    <DataAnnotationsValidator />
+                    <ValidationSummary />
                     <div class="row align-items-center">
                         <div class="col-auto">
                             <label style="font-weight:bold"> Package :&nbsp;</label>
-                            <label style="font-weight:bold;font-size:larger">@curOrga.Stdom</label>
+                            <label style="font-weight:bold;font-size:larger">@curOrga.Sidom</label>
                         </div>
                     </div>
                     <div class="row align-items-center">
@@ -109,9 +112,6 @@
                             </InputSelect>
                         </div>
                     </div>
-                <EditForm EditContext="edOrgContext">
-                    <DataAnnotationsValidator />
-                    <ValidationSummary />
                     <div class="row">
                         <lu class="nav nav- flex-nowrap" id="cltabs" role="tablist">
                             <li class="nav-item" role="tab">
@@ -233,7 +233,7 @@
                                         <tr>
                                             <td>Siteweb:</td>
                                             <td class="text-right">
-                                                <InputText class="my-input" id="ogsite" @bind-Value="curOrga.Siteweb"
+                                                <InputText class="my-input" id="ogsite" @bind-Value="curOrga.Weburl"
                                                            style="font-weight:bold" readonly="@(allEnable ? null : "readonly")" placeholder="Enter SITEWEB" />
                                             </td>
                                         </tr>
@@ -332,13 +332,11 @@
                                                 {
                                                     <div class="col-md-1 text-center">
                                                         format
-
                                                     </div>
                                                 }
                                             </span>
                                         </div>
                                         @foreach (var scol in curOrga.Gsgfixes.Where(utl => (utl.Gvars == 21) && (utl.Itb == 1 || utl.Itb == 2 || utl.Itb == 3) && utl.Elea != 0))
-                                        @* @foreach (var scol in curOrga.Gsgfixes.Where(utl => (utl.Gvars == 21 && utl.Elea != 0) && (utl.Itb == 1 || utl.Itb == 2 || utl.Itb == 3))) *@
                                         {
                                             if (scol.Itb == Rubtto)
                                             {
@@ -424,7 +422,26 @@
                                     <div class="col-md-2">libelle</div>
                                     <div class="col-md-1">notif.</div>
                                 </div>
-                                <div class="row row-cols-3">
+                                @foreach (var gfx in curOrga.Gsgfixes.Where(uf => uf.Gvars == 3 && uf.Itb == 4 && uf.Elea != 0).OrderBy(uo => uo.Elea))
+                                {
+                                    <div class="row row-cols-3">
+                                        <div class="col-md-1 text-center">1</div>
+                                        <label class="col-md-1">@gfx.Liba:</label>
+                                        <div class="col-md-2">
+                                            <InputText @bind-Value="gfx.Sliba"
+                                                       readonly="@(allEnable ? null : "readonly")" />
+                                        </div>
+                                        <div class="col-md-1">
+                                            <InputSelect id="ntclie" @bind-Value="gfx.Ityp" disabled="@(!allEnable)">
+                                                @foreach (var tob in LsFixes.Where(ut => ut.Gvars == 31 && ut.Itb == 4 && ut.Gp1 == 1))
+                                                {
+                                                    <option value="@tob.Elea">@tob.Liba</option>
+                                                }
+                                            </InputSelect>
+                                        </div>
+                                    </div>
+                                }
+                                @* <div class="row row-cols-3">
                                     <div class="col-md-1 text-center">1</div>
                                     <label class="col-md-1">Operateur:</label>
                                     <div class="col-md-2">
@@ -487,7 +504,7 @@
                                             }
                                         </InputSelect>
                                     </div>
-                                </div>
+                                </div> *@
                             </div>
                             <!--Filiations-->
                             <div class="tab-pane fade" id="nav-filis" role="tabpanel" aria-labelledby="fil">
@@ -664,19 +681,6 @@
                                                     @item.Sliba
                                                 </ChildContent>
                                             </GridColumn>
-                                            @* <GridColumn TItem="Gsgfix" HeaderText="Exist?">
-                                                <ChildContent Context="item">
-                                                    <div class="col-1 @(item.Etyp == 1 ? "saflprow" : "")">
-                                                        <InputSelect @bind-Value="item.Ityp" style="width:auto" disabled>
-                                                            <option class="ichx" value="0">?exist</option>
-                                                            @foreach (var tob in LsFixes.Where(ut => ut.Gvars == 31 && ut.Itb == 2 && ut.Gp1 == 1))
-                                                            {
-                                                                <option value="@tob.Elea">@tob.Liba</option>
-                                                            }
-                                                        </InputSelect>
-                                                    </div>
-                                                </ChildContent>
-                                            </GridColumn> *@
                                             <GridColumn TItem="Gsgfix" HeaderText="Avis">
                                                 <ChildContent Context="item">
                                                     <div class="col-1 @(item.Etyp == 1 ? "saflprow" : "")">
@@ -713,9 +717,6 @@
                                         </GridColumns>
                                         @if (icOpening == false)
                                         {
-                                        @* <EditForm EditContext="edColContext">
-                                            <DataAnnotationsValidator />
-                                            <ValidationSummary /> *@
                                         <GridDetailView TItem="Gsgfix" Context="item">
                                             <Grid TItem="Gsglne"
                                                   Data="@curAfl.draftCols.ToList()"
@@ -829,7 +830,6 @@
                                                 </GridColumns>
                                             </Grid>
                                         </GridDetailView>
-                                        @* </EditForm> *@
                                         } else
                                         {
                                             <label>columns loading...</label>
@@ -839,7 +839,7 @@
                         </div>
                     </div>
                 </EditForm>
-                </div>
+            </div>
     </Authorized>
 </AuthorizeView>
 }
@@ -935,14 +935,7 @@
 
     public Gxorga curOrga = new Gxorga();
     private EditContext edOrgContext;
-    private EditContext edColContext;
-
-    // private Dictionary<Gsgfix, EditContext> edLimContexts = new();
-
-    // private Dictionary<Gsgfix, EditContext> edDcsContexts = new();
-    // private Dictionary<Gsgfix, EditContext> edDcpContexts = new();
-    // private Dictionary<Gsglne, EditContext> edColContexts = new();
-
+    
     public string Title { get; set; }
     private string tbTitle = "Cible";
     public string _UserId = "";
@@ -1003,8 +996,6 @@
     private bool isGlneFilteringEnabled = false;
     private string savOliba = "", savOabg = "";
     private int? savYrng = 0, savJacc = 0, savJenr = 0, savEta = 0;
-    //private bool isDisabled = true;
-    //private bool isModified = false;
     //private string DisabledClass => isDisabled ? "disabled" : "";
 
     protected override async Task OnInitializedAsync()
@@ -1041,10 +1032,10 @@
         isOwner = _usrBag.SiOwner;
         _invRoles = await _rendAgres.LoadOrgaRoles();
         Console.WriteLine($"Roles disponibles : {_invRoles.Count}, Owner: {isOwner}");
-        await LoadOrgaAsync(); // ✅ Still relevant if editing Gxorga
+        //await LoadOrgaAsync(); // ✅ Still relevant if editing Gxorga
         isLoading = false;
     }
-    private async Task LoadOrgaAsync()
+    protected override async Task OnParametersSetAsync()
     {
         int tst = 21;
         try
@@ -1059,8 +1050,6 @@
                 Console.WriteLine("curOrga charge");
                 edOrgContext = new EditContext(curOrga);
                 edOrgContext.OnFieldChanged += HandleFieldChanged;
-                edColContext = new EditContext(curAfl);
-                edColContext.OnFieldChanged += HandleColFieldChanged;
                 Console.WriteLine($"nb gfixes : {curOrga.Gsgfixes.Count}");
             } else
             {
@@ -1681,7 +1670,7 @@
         }
         myafil.Xgen1 = 0;
         mesAflGen = "";
-        _navmanager.NavigateTo("/");
+        NavigateBack();
     }
 
     //manage SAVING
@@ -1693,10 +1682,10 @@
     }
     public async Task CncAll()
     { //reload
-        await LoadOrgaAsync();
         isOrgEditing = false;
         isColEditing = false;
         allEnable = false;
+        NavigateBack();
     }
     public async Task SavAll()
     {
@@ -1737,12 +1726,6 @@
     private void HandleFieldChanged(object sender, FieldChangedEventArgs e)
     {
         if (!isOrgEditing) isOrgEditing = true;
-        Console.WriteLine($"Field edited: {e.FieldIdentifier.FieldName}");
-        // Place your logic here when a field is edited
-    }
-    private void HandleColFieldChanged(object sender, FieldChangedEventArgs e)
-    {
-        if (!isColEditing) isColEditing = true;
         Console.WriteLine($"Field edited: {e.FieldIdentifier.FieldName}");
         // Place your logic here when a field is edited
     }

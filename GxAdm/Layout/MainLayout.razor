@@ -3,7 +3,7 @@
 @using System.Text.RegularExpressions
 @using Blazored.LocalStorage
 @using GxAdm.Services
-@using GxAdm.Helpers
+@using GxShared.Helpers
 @using GxShared.Services
 @using System.Security.Claims
 
@@ -18,7 +18,7 @@
 {
     <div class="page-wrapper" style="display: flex; height: 100vh;">
 
-        <div class="sidebar" style="width: 250px; background: linear-gradient(180deg, rgb(5, 39, 103) 0%, #3a0647 70%);">
+        <div class="sidebar" style="max-width: 200px; background: linear-gradient(180deg, rgb(5, 39, 103) 0%, #3a0647 70%);">
             <NavMenu />
         </div>
 
@@ -27,22 +27,22 @@
             <div class="row" style="background-color: lightgray; padding: 10px;">
                 <AuthorizeView>
                     <Authorized>
-                        <div class="d-flex align-items-center border-0 bg-success bg-opacity-10 px-2">
-                            <!-- Left: PrivateRoom button -->
+                        <div class="flex-row">
                             <div>
                                 <a class="nav-icon btn-like bg-success bg-opacity-25" @onclick="ToggleUserMenu" href="#">
                                     <i>PrivateRoom</i>
                                 </a>
                             </div>
-                            <div>
-                                <span>&nbsp;&nbsp;</span>
-                                @_appState.ogRaison
-                                <span>-</span>
-                                @_appState.usFulnom;
-                            </div>
+                            <span>&nbsp;</span>
+                            <div class="truncated-text">@_appState.ogRaison</div>
+                            <span>&nbsp;</span>
+                            <div class="truncated-text">@_appState.usFulnom</div>
                             <!-- Spacer pushes everything else to the right -->
-                            <div class="ms-auto d-flex align-items-center gap-3">
-                                <label class="mb-0">Help ?</label>
+                            <div class="ms-auto d-flex align-items-center truncated-text">
+                                <label class="mb-0">
+                                    &nbsp;
+                                    Help<span class=""> ?</span>
+                                </label>
                                 <div>
                                     <span>&nbsp;</span>
                                     @* Welcome &nbsp;<b>@context.User.Identity?.Name</b>. *@
@@ -65,8 +65,6 @@
                                 {
                                     <a href="helplogin"><span class="bi bi-door-open" aria-hidden="true" style="vertical-align:middle"></span> Support</a>
                                 }
-
-                                
                             </div>
                         </div>
                     </NotAuthorized>
@@ -97,7 +95,24 @@ else
         <span>Loading session...</span>
     </div>
 }
+<style>
+    .flex-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        max-width: 100%;
+        overflow-x: hidden;
+    }
 
+    .truncated-text {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        flex: 1 1 auto;
+        max-width: 30vw; /* relative to viewport */
+        font-size: clamp(0.8rem, 1vw, 1.2rem); /* adaptive but readable */
+    }
+</style>
 @code {
     private bool _layoutReady = false, isLoading = false;
     private bool collapseUserMenu = false, canAdminLog = false;

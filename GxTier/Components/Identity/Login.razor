@@ -41,14 +41,30 @@ else
         {
             <div class="mb-3">
                 <label>Email or Username</label>
-                <InputText class="form-control" @bind-Value="loginModel.Username" />
+                <InputText class="form-control" @bind-Value="loginModel.UsernameOrEmail" />
             </div>
 
             <div class="mb-3">
                 <label>Password</label>
                 <InputText class="form-control" @bind-Value="loginModel.Password" type="password" />
             </div>
-            <button class="btn btn-primary" type="submit">Login</button>
+            <button class="btn btn-primary w-100" type="submit" disabled="@isBusy">
+                @if (isBusy)
+                {
+                    <span>Connecting...</span>
+                }
+                else
+                {
+                    <span>Login</span>
+                }
+            </button>
+
+            @if (!string.IsNullOrEmpty(Error))
+            {
+                <div class="alert alert-danger mt-3">@Error</div>
+            }
+
+            @* <button class="btn btn-primary" type="submit">Login</button> *@
         }
         else
         {
@@ -64,6 +80,9 @@ else
 
     private LoginModel loginModel = new();
     private string Imessage = "";
+
+    private bool isBusy = false;
+    private string? Error;
 
     private bool _yaconn = false;
 
@@ -95,9 +114,11 @@ else
     private async Task HandleLoginAsync()
     {
         isLoading = true;
+        Error = null;
+        isBusy = true;
         bool yaErrors = false;
         Imessage = "";
-        if (string.IsNullOrEmpty(loginModel.Username))
+        if (string.IsNullOrEmpty(loginModel.UsernameOrEmail))
         {
             Imessage = "Email ou UserName obligatoire";
             yaErrors = true;
@@ -109,13 +130,15 @@ else
         }
         if (yaErrors)
         {
+            isBusy = false;
+            isLoading = false;
             return;
         }
         try
         {
             //_appState.IsTieLoggedIn = false;
             loginModel.IsHelpLogin = false; //necessaire pour le login not admin
-            loginModel.UsernameOrEmail = loginModel.Username;
+            //.UsernameOrEmail = loginModel.Username;
             //Console.WriteLine($"uname : {loginModel.Username} et {loginModel.Email}");
             var json = JsonConvert.SerializeObject(loginModel);
             var request = new HttpRequestMessage(HttpMethod.Post, "lgauth/login")
@@ -127,10 +150,13 @@ else
             response.EnsureSuccessStatusCode();
             var responseContent = await response.Content.ReadAsStringAsync();
             var result = JsonConvert.DeserializeObject<LoginResult>(responseContent);
-
+            isBusy = false;
             if (result == null || string.IsNullOrEmpty(result.Atoken))
             {
-                Imessage = Imessage + " /Invalid login response.";
+                isBusy = false;
+                Error = "Login failed. Check credentials.";
+                Imessage = Imessage + " Invalid login response.";
+                isLoading = false;
                 return;
             }
 
@@ -150,6 +176,9 @@ else
                 var userbag = JsonConvert.DeserializeObject<Userbag>(userbagResponse);
                 if (userbag == null || !userbag.Succeeded)
                 {
+                    isBusy = false;
+                    Error = "Login failed. Check credentials.";
+                    isLoading = false;
                     Imessage = Imessage + " /Failed to load user context.";
                     return;
                 }
@@ -177,6 +206,8 @@ else
         }
         catch (Exception ex)
         {
+            Error = "Login failed. Check credentials.";
+            isBusy = false;
             Imessage = $"Login failed: {ex.Message}";
         }
         isLoading = false;

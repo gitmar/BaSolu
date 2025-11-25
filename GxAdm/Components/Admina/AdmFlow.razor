@@ -1,0 +1,373 @@
+﻿@page "/admflow"
+@using System
+@using System.ComponentModel.DataAnnotations
+@using System.Reflection
+@using System.Text
+@using System.Text.Json
+@using GxAdm.Services
+@using GxAdm.Helpers
+@using GxWapi.DaModels
+@using GxShared.Session
+@using GxShared.Services
+@using GxShared.Others
+@using Microsoft.AspNetCore.Components.Forms
+@using Microsoft.AspNetCore.WebUtilities
+
+<h3>Notifications Sites</h3>
+
+@inject IHttpClientFactory _httpFactorer
+@inject NavigationManager _navmanager
+@inject TblJsonRender _tableService
+@inject LinkSerialiser _linkSerialiser
+@inject IJSRuntime _jsRun
+
+<PageTitle>Client Commande</PageTitle>
+
+<h2 class="mb-3 text-primary">Suivi de commande</h2>
+
+<div class="col-3">
+    <label id="oorga">Organisation : @_invModel.Raison</label>
+</div>
+@if (string.IsNullOrEmpty(Imessage))
+{
+    <div class="row mb-2">
+        message :
+        <label style="font-weight: bold; color: red; background-color: yellow;">@Imessage</label>
+    </div>
+}
+@* <EditForm Model="@_invModel">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+  <div class="container"> *@
+<Tabs>
+    <Tab Title="Notifications">
+        <Content>
+            <div class="row mb-2">
+                <div class="col-11">
+                    <label>@Imessage</label>
+                </div>
+            </div>
+
+        </Content>
+    </Tab>
+    <Tab Title="Suivi">
+        <Content>
+            <div class="row mb-2">
+                <div class="col-11">
+                    <label>@Imessage</label>
+                </div>
+            </div>
+            <div class="row mb-2">
+                <Grid TItem="Usjour"
+                      Data="@LsJours"
+                      AllowRowClick="true"
+                      AllowPaging="true"
+                      Responsive="true">
+                    <GridColumns>
+                        <GridColumn TItem="Usjour" HeaderText="Ref.">
+                            <ChildContent Context="item">
+                                <div @key="item.Idjour">@item.Idjour</div>
+                            </ChildContent>
+                        </GridColumn>
+                        <GridColumn TItem="Usjour" HeaderText="Username">
+                            <ChildContent Context="item">
+                                @item.Uname
+                            </ChildContent>
+                        </GridColumn>
+                        <GridColumn TItem="Usjour" HeaderText="Username">
+                            <ChildContent Context="item">
+                                @item.Tachw
+                            </ChildContent>
+                        </GridColumn>
+                        <GridColumn TItem="Usjour" HeaderText="Debut">
+                            <ChildContent Context="item">
+                                @item.Ddep
+                            </ChildContent>
+                        </GridColumn>
+                        <GridColumn TItem="Usjour" HeaderText="Fin">
+                            <ChildContent Context="item">
+                                @item.Dfin
+                            </ChildContent>
+                        </GridColumn>
+                        <GridColumn TItem="Usjour" HeaderText="Eta">
+                            <ChildContent Context="item">
+
+                            </ChildContent>
+                        </GridColumn>
+                    </GridColumns>
+                </Grid>
+            </div>
+        </Content>
+    </Tab>
+</Tabs>
+ 
+@code {
+    [Parameter]
+    [SupplyParameterFromQuery]
+    public string cdlink { get; set; }
+
+    private bool isLoading = false, yaerrors = false;
+    private string successmsg = "", Imessage = "";
+
+    private HttpClient _apiClient;
+
+    //private Customer _curCustomer = new();
+    private UsrOgSetModel _invModel = new();
+    private Usjour _curJour = new();
+
+    private List<Usjour> LsJours = new();
+
+    private string? generatedLink;
+
+    // protected override async Task OnInitializedAsync()
+    // {
+
+
+
+    //     isLoading = true;
+    //     yaerrors = false; successmsg = "";
+    //     if (!string.IsNullOrEmpty(cdlink))
+    //     {
+    //         var _LinkSerialiser = new LinkSerialiser(_jsRun);
+    //         _invModel = _LinkSerialiser.DecodeAndDeserialize<UsrOgSetModel>(cdlink);
+    //         if (!string.IsNullOrEmpty(_invModel.Oidstr))
+    //         {
+    //             _invModel.Password = "";
+    //             _invModel.ConfirmPassword = "";
+    //         }
+    //         //tests
+    //         Console.WriteLine($"Order Id  : {_invModel.Id}");
+    //         Console.WriteLine($"Oidstr  : {_invModel.Oidstr}");
+    //     }
+    //     //Batteries.Init();
+    //     _apiClient = _httpFactorer.CreateClient("wApiClient");
+    //     yaerrors = false; isLoading = false;
+    // }
+    protected override async Task OnParametersSetAsync()
+    {
+        isLoading = true; yaerrors = false;
+        successmsg = "";
+        if (string.IsNullOrEmpty(cdlink))
+        {
+            successmsg = "parametres vides";
+            return;
+        }
+        _invModel = _linkSerialiser.DecodeAndDeserialize<UsrOgSetModel>(cdlink);
+        if (!string.IsNullOrEmpty(_invModel.Oidstr))
+        {
+            _invModel.Password = "";
+            _invModel.ConfirmPassword = "";
+        }
+        //tests
+        Console.WriteLine($"Journal Id  : {_invModel.Id}");
+        Console.WriteLine($"Journal str  : {_invModel.Oidstr}");
+        if (_invModel.Orig == 1)
+        { //ordert flow
+            LsJours = await _apiClient.GetFromJsonAsync<List<Usjour>>("orders/rendall");
+            if (LsJours.Any())
+            {
+                Console.WriteLine($"nb Jours : {LsJours.Count}");
+                _curJour = LsJours.FirstOrDefault(uo => uo.Idjour == _invModel.Ordid);
+                if (_curJour != null)
+                { //0Draft2register3set5notif9arcv
+                    //_curJour.Step = _invModel.Ostep;
+                    var response = await _apiClient.PutAsJsonAsync($"orders/{_curJour.Idjour}", _curJour);
+                    switch (_invModel.Ostep)
+                    {
+                        case 0:
+                            Imessage = "Nofification... IS DRAFT";
+                            break;
+                        case 2:
+                            Imessage = "Nofification... IS REGISTERED";
+                            break;
+                        case 3:
+                            Imessage = "Nofification... IS INSTALLED";
+                            break;
+                        case 5:
+                            Imessage = "Nofification... IS NOTIFIED";
+                            break;
+                        case 9:
+                            Imessage = "Nofification... IS ARCHIVED";
+                            break;
+                        default:
+                            Imessage = "Nofification... IS INCONNUE";
+                            break;
+                    }
+                }
+            }
+        }
+        // if (_invModel.Orig == 2)
+        // { //orga setup
+        //     LsJours = await _apiClient.GetFromJsonAsync<List<Order>>("orders/rendall");
+        //     if (LsJours.Any())
+        //     {
+        //         Console.WriteLine($"nb Orders : {LsJours.Count}");
+        //         _curJour = LsJours.FirstOrDefault(uo => uo.Id == _invModel.Ordid);
+        //         if (_curJour != null)
+        //         { //0Draft2register3set5notif9arcv
+        //             _curJour. = _invModel.Ostep;
+        //             var response = await _apiClient.PutAsJsonAsync($"orders/{_curOrder.Id}", _curOrder);
+        //             switch (_invModel.OStep)
+        //             {
+        //                 case 0:
+        //                     Imessage = "Nofification... IS DRAFT";
+        //                     break;
+        //                 case 2:
+        //                     Imessage = "Nofification... IS REGISTERED";
+        //                     break;
+        //                 case 3:
+        //                     Imessage = "Nofification... IS INSTALLED";
+        //                     break;
+        //                 case 5:
+        //                     Imessage = "Nofification... IS NOTIFIED";
+        //                     break;
+        //                 case 9:
+        //                     Imessage = "Nofification... IS ARCHIVED";
+        //                     break;
+        //                 default:
+        //                     Imessage = "Nofification... IS INCONNUE";
+        //                     break;
+        //             }
+        //         }
+        //     }
+        // }
+    }
+
+    // //NOTIFIED
+    // private async Task VaNotifier(int oid, int notif)
+    // {
+    //     //get order
+
+    //     korder.Step = notif;
+    //     //update order
+
+    //     //display
+    // }
+    // private async Task CopyToClipboard() =>
+    //     await _jsRun.InvokeVoidAsync("navigator.clipboard.writeText", generatedLink);
+
+    // private async Task DownloadQrCode() =>
+    //     await _jsRun.InvokeVoidAsync("downloadQrCanvas");
+
+    // private async Task SaveToDatabase()
+    // {
+    //     PeutEnvoyerMail = false;
+    //     isLoading = true;
+    //     int it1 = 0;
+    //     try
+    //     {
+    //         //customer
+    //         _curCustomer.Email = _invModel.Email;
+    //         _curCustomer.Nom = _invModel.Nom;
+    //         _curCustomer.Pnom = _invModel.Pnom;
+    //         it1 = 1;
+    //         _curCustomer.Idstr = await GenerateCustomerStrKey(); //generate str key
+    //         _curCustomer.Role = _invModel.Srole;
+    //         _curCustomer.Phonenumber = _invModel.Phonenumber;
+    //         _curCustomer.Phon2 = _invModel.Phon2;
+    //         _curCustomer.Ipays = _invModel.Ipays;
+    //         _curCustomer.Ilang = _invModel.Ilang;
+    //         //order
+    //         it1 = 2;
+    //         var myregios = _myCatal.Regions.Where(uc => uc.Elea == _invModel.Iwurl).FirstOrDefault();
+    //         if (myregios == null)
+    //         {
+    //             Imessage = "Region absente";
+    //             return;
+    //         }
+    //         it1 = 3;
+    //         _curCustomer.Weburl = myregios.Liba;
+    //         it1 = 4;
+    //         int rng = 0;
+    //         var inordas = LsOrders
+    //             .Where(cd => cd.Idclie == _curCustomer.Id);
+    //         if (inordas.Any())
+    //         {
+    //             rng = inordas.Max(o => o.Orang);
+    //         }
+    //         rng = rng + 1;
+    //         _curOrder.Orang = rng;
+    //         it1 = 5;
+    //         _curOrder.OIdstr = await GenerateOrderStrKey(rng); //generate str key
+    //         //_curOrder.Doma = _invModel.Idoma;
+    //         _curOrder.Oidorg = _invModel.Idorg;
+    //         //_curOrder.Raison = _invModel.Raison;
+    //         //_curOrder.Sigle = _invModel.Sigle;
+    //         _curOrder.Olang = _invModel.Olang;
+    //         _curOrder.Step = 1;
+    //         it1 = 6;
+    //         var cliesExist = LsCustomers.Where(uc => string.Compare(uc.UsernameOrEmail, _curCustomer.UsernameOrEmail) == 0
+    //           || string.Compare(uc.Phonenumber, _curCustomer.Phonenumber) == 0).ToList();
+    //         if (cliesExist.Any())
+    //         {
+    //             Imessage = "Client existe deja";
+    //             return;
+    //         }
+    //         it1 = 7;
+    //         // Await the async call to get the Custormer Id
+    //         var respcust = await _apiClient.PostAsJsonAsync("customers/crecustomer", _curCustomer);
+    //         // Then the Order
+    //         _curOrder.Idclie = _curCustomer.Id;
+    //         it1 = 8;
+    //         var respordo = await _apiClient.PostAsJsonAsync<Order>("orders/creorder", _curOrder);
+    //         Imessage = "Client et commandes enregistres";
+    //         it1 = 9;
+    //         PeutEnvoyerMail = true;
+    //         isLoading = false;
+    //     }
+    //     catch (Exception ex)
+    //     {
+    //         // Handle or log error
+    //         Imessage = $"Probleme sur enregistrement : {ex.Message} et {it1}";
+    //         PeutEnvoyerMail = false;
+    //     }
+    // }
+    // private async Task SendEmailAsync()
+    // {
+    //     //var qrBase64 = await JS.InvokeAsync<string>("getQrBase64");
+    //     var emailReq = new InviteEmailRequest
+    //     {
+    //         To = _invModel.Email,
+    //         Subject = "Enregistrement sur le siteWeb",
+    //         //Message = $"Hello, vyou’ve been invited. Click below to register:\n\n{generatedLink}",
+    //         Message = $"Hello, cliquez sur le lien ci-dessous pour le faire:\n\n{generatedLink}",
+    //         InviteLink = generatedLink!,
+    //         //QrBase64 = qrBase64
+    //     };
+    //     var response = await _apiClient.PostAsJsonAsync("email/sendemail", emailReq);
+    //     if (response.IsSuccessStatusCode)
+    //         await _jsRun.InvokeVoidAsync("alert", "✅ Email sent successfully!");
+    //     else
+    //         await _jsRun.InvokeVoidAsync("alert", "❌ Failed to send email!");
+    // }
+    // private async Task<string> GenerateCustomerStrKey()
+    // {
+    //     // Take the first 4 characters of the customer's name (pad with underscores if less)
+    //     string prefix = (_curCustomer.Pnom.Length >= 4)
+    //         ? _curCustomer.Pnom.Substring(0, 4)
+    //         : _curCustomer.Pnom.PadRight(4, '_');
+    //     var now = DateTime.Now;
+    //     int rang = 1001;
+    //     if (LsCustomers.Any())
+    //     {
+    //         var lastCustomer = LsCustomers
+    //             .OrderBy(c => c.Idstr)
+    //             .LastOrDefault();
+    //         // Format: prefix + yyyy1xxx1 (year, rang all zero-padded)
+    //         if (lastCustomer != null) rang = Convert.ToInt32("10000" + lastCustomer.Id + 1);
+    //     }
+    //     string result = $"{prefix}{now:yyyy}{rang}";
+    //     return result;
+    // }
+    // private async Task<string> GenerateOrderStrKey(int rng)
+    // {
+    //     // Take the first 4 characters of the customer's name (pad with underscores if less)
+    //     string prefix = (_curCustomer.Pnom.Length >= 4)
+    //         ? _curCustomer.Pnom.Substring(0, 4)
+    //         : _curCustomer.Pnom.PadRight(4, '_');
+    //     var now = DateTime.Now;
+    //     // Format: prefix + yyyyMMddHHmm (year, month, day, hour, minute, all zero-padded)
+    //     string result = $"{prefix}{now:yyyyMMddHHmm}_{rng}";
+    //     return result;
+    // }
+}

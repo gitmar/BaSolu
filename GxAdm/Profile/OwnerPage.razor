@@ -1,6 +1,7 @@
 ﻿@page "/ownerpage"
 
 @using GxAdm.Profile
+@using GxAdm.Components.Admina
 
 <h3>OwnerPage</h3>
 <Tabs>
@@ -9,14 +10,9 @@
             <UserPage />
         </Content>
     </Tab>
-    <Tab Title="Creation" Icon="people-circle">
+    <Tab Title="Journal" Icon="people-circle">
         <Content>
-            <OrgCreate />
-        </Content>
-    </Tab>
-    <Tab Title="Suppression" Icon="people-circle">
-        <Content>
-            <OrgDelete />
+            <AdmFlow />
         </Content>
     </Tab>
 </Tabs>

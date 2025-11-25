@@ -16,7 +16,6 @@
 @using GxShared.Regis
 @using GxShared.Services
 @using GxShared.Helpers
-@* @using GxAdm.ClieModels *@
 @using GxWapi.DaModels
 @using Microsoft.AspNetCore.WebUtilities
 @using Microsoft.OData.Client
@@ -43,9 +42,10 @@
 </div>
 @if (isLoading)
 {
-    <Progress class="progress mb-3">
-        <ProgressBar Width="100" Label="Persos/Invite Loading..." Type="ProgressType.StripedAndAnimated" Color="ProgressColor.Primary" />
-    </Progress>
+    <div class="text-center">
+        <Spinner Color="SpinnerColor.Primary" Size="SpinnerSize.Large" />
+        <p>PARAMS/INVITE Loading...</p>
+    </div>
 } 
 else
 {
@@ -97,15 +97,6 @@ else
                                     <InputText id="tiedos" @bind-Value="_invModel.Xmatri" required
                                                placeholder="Enter his-her dossier" />
                                 </div>
-                                @* <div>
-                <label for="Ugroupe">En qualite de:</label>
-                <select id="Ugroupe" @onchange="OnGpeChanged">
-                    @foreach (var gpe in _lsUtyps)
-                    {
-                        <option value="@gpe.Elea">@gpe.Liba</option>
-                    }
-                </select>
-            </div> *@
                                 <div>
                                     <label for="tienom">Nom:</label>
                                     <InputText id="tienom" @bind-Value="_invModel.Nom" required
@@ -326,7 +317,6 @@ else
     private List<Grole> LsRoles = new();
     private List<Grole> _invRoles = new();
     private List<Grole> _usrRoles = new();
-    private ICollection<Gpfixe> _lsUtyps = new List<Gpfixe>();
     private string gpeLiba = "";
     public List<Gpfixe> LsGties = new();
 
@@ -460,7 +450,7 @@ else
         var gxadmUrl = UrlParser.ReplaceWithSubdomain(inpUrl, "gxadm"); // → https://gxadm.a24soft.com
         _invModel.Idorg = curOrga.Idorg;
         _invModel.Orig = 2; //from invite
-        _invModel.HlpWurl = curOrga.Stsite;
+        _invModel.HlpWurl = curOrga.Hlpwurl;
         _invModel.Utyp = Ugpe;
         _invModel.Weburl = gxadmUrl;
         generatedLink = _linkSerialiser.EncodeAndSerialize(_invModel);
@@ -496,7 +486,7 @@ else
         //lien a envoyer par CxApi mailer
         InviteEmailRequest mailReq = new();
         mailReq.InviteLink = fullUrl;
-        mailReq.SenderEmail = curOrga.Supemail;
+        mailReq.SenderEmail = curOrga.Hlpwurl;
         //mailReq.Email = _invModel.Email;
         mailReq.UserName = _invModel.Username;
         mailReq.Message = "Veuillez cliquer le lien pour joindre le webSite de votre logiciel";

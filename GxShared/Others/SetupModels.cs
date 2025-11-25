@@ -31,16 +31,16 @@ namespace GxShared.Others
         public int Ilang { get; set; } = 0;
         public int Olang { get; set; } = 0;
         public int Imethp { get; set; } = 0;
-        public int Idoma { get; set; } = 0;
-        public int Gdoma { get; set; } = 0;
         public int Iqmax { get; set; } = 1;
         public int Ishare { get; set; } = 0;
         public int Iwurl { get; set; } = 0;
         public string? Weburl { get; set; }
         public int Irole { get; set; } = 0;
-        public int Gdom { get; set; } = 0;
         public string Srole { get; set; } = string.Empty; // pour verification
-        public string Sdoma { get; set; } = string.Empty; // pour verification
+        public int Idoma { get; set; } = 0;
+        public string Sidom { get; set; } = string.Empty; // pour verification
+        public int Jdoma { get; set; } = 0;
+        public string Sjdom { get; set; } = string.Empty; // pour verification
         public string Scible { get; set; } = string.Empty; // pour verification
         public int Utyp { get; set; } = 0; //correspd a tietypn1agent2operat3client
         public int Dequi { get; set; } = 0;
@@ -56,20 +56,19 @@ namespace GxShared.Others
         public string FbackUrl { get; set; } = string.Empty;
         public int ErrCode { get; set; } = 0;
         public string ErrMessage { get; set; } = string.Empty;
-        public int Eta { get; set; } = 0;
         public string Uadr1 { get; set; } = string.Empty;
-        //public string Infoplus { get; set; } = string.Empty;  // id invite si invite non integre
-        public int Cdeid { get; set; } = 0; //replique Id
         public int Ordid { get; set; } = 0;
+        public int Clieid { get; set; } = 0;
+        public int Agtid { get; set; } = 0;
         public string Oidstr { get; set; } = string.Empty;
         public int Ostep { get; set; } = 0;
-        public int Isite { get; set; } = 0;
         public int Iprovi { get; set; } = 0;
         public int Iville { get; set; } = 0;
         public int Sidown { get; set; } = 0;
         public int Simain { get; set; } = 0;
         public bool SiSupport { get; set; } = false;
         public string CodInvit { get; set; } = string.Empty;
+        public int Eta { get; set; } = 0;
         public string Obsv { get; set; } = string.Empty;
     }
     public class UsrCredsModel

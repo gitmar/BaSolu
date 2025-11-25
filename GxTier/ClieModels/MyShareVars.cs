@@ -1,9 +1,6 @@
 ﻿using System.Security.Claims;
-
-using GxShared.Sess;
-using GxShared.Others;
-
 using GxWapi.DaModels;
+using GxShared.Sess;
 
 namespace GxTie.ClieModels
 {
@@ -16,7 +13,6 @@ namespace GxTie.ClieModels
         public int Ugpe { get; set; } = 0;
         public List<Gpfixe> LsFixes { get; set; } = new();
         public List<Gpvar> LsVars { get; set; } = new();
-        public List<Grole> Uroles { get; set; } = new();
         public List<Gplan> LsPlans { get; set; } = new();
         public List<Gpvar> LsTabls { get; set; } = new();
         public List<Gpdivh> LsDivs { get; set; } = new();
@@ -30,7 +26,7 @@ namespace GxTie.ClieModels
         public Gsesio curExo { get; set; } = new();
         public Gsesio curSesio { get; set; } = new();
         public Rubhie curSite { get; set; } = new();
-    }
+    }   
     public class MyMenuVars()
     {
         public int Ugpe { get; set; }

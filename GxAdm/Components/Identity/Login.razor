@@ -42,13 +42,28 @@ else
             {
                 <div class="mb-3">
                     <label>Email or Username :</label>
-                    <InputText class="form-control" @bind-Value="loginModel.Username" />
+                    <InputText class="form-control" @bind-Value="loginModel.UsernameOrEmail" />
                 </div>
                 <div class="mb-3">
                     <label>Password :</label>
                     <InputText class="form-control" @bind-Value="loginModel.Password" type="password" />
                 </div>
-                <button class="btn btn-primary" type="submit">Login</button>
+                <button class="btn btn-primary w-100" type="submit" disabled="@isBusy">
+                    @if (isBusy)
+                    {
+                        <span>Connecting...</span>
+                    }
+                    else
+                    {
+                        <span>Login</span>
+                    }
+                </button>
+
+                @if (!string.IsNullOrEmpty(Error))
+                {
+                    <div class="alert alert-danger mt-3">@Error</div>
+                }
+                @* <button class="btn btn-primary" type="submit">Login</button> *@
             }
             else
             {
@@ -92,12 +107,15 @@ else
     private LoginResult _logresult = new();
     private string Imessage = "";
 
+    private bool isBusy = false;
+    private string? Error;
+
     private bool canSupportLoad = false;
     private bool inAccepting = false;
     private bool _yaconn = false;
 
     private HttpClient _dftClient;
-    
+
     private Userbag _usrBag = new();
     private List<AdmOrga> _orgas = new();
     private string? _selectedOrgaId;
@@ -127,9 +145,11 @@ else
     private async Task HandleLoginAsync()
     {
         isLoading = true;
+        Error = null;
+        isBusy = true;
         bool yaErrors = false;
         Imessage = "";
-        if (string.IsNullOrEmpty(loginModel.Username))
+        if (string.IsNullOrEmpty(loginModel.UsernameOrEmail))
         {
             Imessage = "Email ou UserName obligatoire";
             yaErrors = true;
@@ -141,13 +161,14 @@ else
         }
         if (yaErrors)
         {
+            isBusy = false;
             isLoading = false;
             return;
         }
         try
         {
             loginModel.IsHelpLogin = false;
-            loginModel.UsernameOrEmail = loginModel.Username;
+            //loginModel.UsernameOrEmail = loginModel.Username;
             //loginModel.Idorg = 0; selection
             //Console.WriteLine($"uname : {loginModel.Username} et {loginModel.Email}");
             var json = JsonConvert.SerializeObject(loginModel);
@@ -155,14 +176,16 @@ else
             {
                 Content = new StringContent(json, Encoding.UTF8, "application/json")
             };
-
             var response = await _dftClient.SendAsync(request);
             response.EnsureSuccessStatusCode();
             var responseContent = await response.Content.ReadAsStringAsync();
+            isBusy = false;
             _logresult = JsonConvert.DeserializeObject<LoginResult>(responseContent);
 
             if (_logresult == null || string.IsNullOrEmpty(_logresult.Atoken))
             {
+                isBusy = false;
+                Error = "Login failed. Check credentials.";
                 Imessage = Imessage + " Invalid login response.";
                 isLoading = false;
                 return;
@@ -172,11 +195,14 @@ else
                 _orgas = _logresult.AllOrgas.ToList();
                 canSupportLoad = true;
                 isLoading = false;
+                isBusy = false;
                 Imessage = "";
                 return;
             }
             if (!_logresult.SiAdmin && !_logresult.SiSupport)
             {
+                isBusy = false;
+                Error = "Login failed. Check credentials.";
                 Imessage = Imessage + " Acces Refuse, Vous n-etes pas Autorise";
                 return;
             }
@@ -185,6 +211,8 @@ else
         }
         catch (Exception ex)
         {
+            Error = "Login failed. Check credentials.";
+            isBusy = false;
             Imessage = $"Login failed: {ex.Message}";
         }
         isLoading = false;
@@ -192,9 +220,12 @@ else
     private async Task ReloadOrgaAsync()
     {
         isLoading = true;
+        Error = null;
+        isBusy = true;
         Imessage = "";
         if (loginModel.Idorg == 0)
         {
+            isBusy = false;
             Imessage = Imessage + " Organisation Mot de passe obligatoire";
             isLoading = false;
             return;
@@ -202,10 +233,10 @@ else
         try
         {
             loginModel.IsHelpLogin = true;
-            loginModel.UsernameOrEmail = loginModel.Username;
+            //loginModel.UsernameOrEmail = loginModel.Username;
             //Console.WriteLine($"uname : {loginModel.Username} et {loginModel.Email}");
             var json = JsonConvert.SerializeObject(loginModel);
-            var request = new HttpRequestMessage(HttpMethod.Post, "lgauth/login")
+            var request = new HttpRequestMessage(HttpMethod.Post, "lgauth/helprelogin")
             {
                 Content = new StringContent(json, Encoding.UTF8, "application/json")
             };
@@ -213,8 +244,11 @@ else
             response.EnsureSuccessStatusCode();
             var responseContent = await response.Content.ReadAsStringAsync();
             _logresult = JsonConvert.DeserializeObject<LoginResult>(responseContent);
+            isBusy = false;
             if (_logresult == null || string.IsNullOrEmpty(_logresult.Atoken))
             {
+                isBusy = false;
+                Error = "Login failed. Check credentials.";
                 Imessage = Imessage + " Invalid login response.";
                 isLoading = false;
                 return;
@@ -224,6 +258,8 @@ else
         }
         catch (Exception ex)
         {
+            Error = "Login failed. Check credentials.";
+            isBusy = false;
             Imessage = $"Login failed: {ex.Message}";
         }
         isLoading = false;

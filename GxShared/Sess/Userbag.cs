@@ -8,6 +8,7 @@ using System.Diagnostics.Contracts;
 
 using GxShared;
 using GxShared.Sess;
+using GxShared.Auth;
 using GxShared.Others;
 
 namespace GxShared.Sess
@@ -90,24 +91,26 @@ namespace GxShared.Sess
         public string Stcible { get; set; } = string.Empty;
         public int Gdtie { get; set; } = 0;
         public int Torg { get; set; } = 0;
-        public int Dom { get; set; } = 0;
+        public int Idoma { get; set; } = 0;
+        public int Jdoma { get; set; } = 0;
         public int Pays { get; set; } = 0;
-        public string Stdom { get; set; } = string.Empty;
-        public string Stserver { get; set; } = string.Empty;
+        public string Weburl { get; set; } = string.Empty;
+        public string Sidom { get; set; } = string.Empty;
+        public string Sjdom { get; set; } = string.Empty;
         public int? Schba { get; set; } = 0;
         public int? Schbg { get; set; } = 0;
         public int? Schbk { get; set; } = 0;
-        public int? Sicnjoint { get; set; } = 0;
-        public int? Siparent { get; set; } = 0;
-        public int? Sienfant { get; set; } = 0;
-        public int? Siparain { get; set; } = 0;
-        public int? Sifiheul { get; set; } = 0;
-        public int? Cnjmax { get; set; } = 0;
-        public int? Parmax { get; set; } = 0;
-        public int? Enfmax { get; set; } = 0;
-        public int? Paimax { get; set; } = 0;
+        //public int? Sicnjoint { get; set; } = 0;
+        //public int? Siparent { get; set; } = 0;
+        //public int? Sienfant { get; set; } = 0;
+        //public int? Siparain { get; set; } = 0;
+        //public int? Sifiheul { get; set; } = 0;
+        //public int? Cnjmax { get; set; } = 0;
+        //public int? Parmax { get; set; } = 0;
+        //public int? Enfmax { get; set; } = 0;
+        //public int? Paimax { get; set; } = 0;
+        //public int? Flhmax { get; set; } = 0;
         public int? Simaint { get; set; } = 0;
-        public int? Flhmax { get; set; } = 0;
         public bool Sicoordo { get; set; } = false;
         public string CurIp { get; set; } = string.Empty;
         public ICollection<Gpvar> Uvars { get; set; } = new List<Gpvar>();
@@ -195,15 +198,15 @@ namespace GxShared.Sess
         public int Tovers { get; set; } = 0;
         public int Eta { get; set; } = 0;
     }
-    public class AdmOrga
-    {
-        public int Idorg { get; set; } = 0;
-        public string Raison { get; set; } = string.Empty;
-        public string Sigle { get; set; } = string.Empty;
-        public int Simain { get; set; } = 0;
-        public string WebUrl { get; set; } = string.Empty;
-        public int Usog { get; set; } = 0;
-    }
+    //public class AdmOrga
+    //{
+    //    public int Idorg { get; set; } = 0;
+    //    public string Raison { get; set; } = string.Empty;
+    //    public string Sigle { get; set; } = string.Empty;
+    //    public int Simain { get; set; } = 0;
+    //    public string WebUrl { get; set; } = string.Empty;
+    //    public int Usog { get; set; } = 0;
+    //}
 
     //public class Gpses
     //{
