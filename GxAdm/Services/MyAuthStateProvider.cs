@@ -5,8 +5,7 @@ using System.Net.Http.Json;
 using System.Security.Claims;
 using System.Text;
 using System.Text.Json;
-
-using GxShared.Auth;
+using GxShared.Identity;
 
 using Blazored.LocalStorage;
 

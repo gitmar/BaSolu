@@ -45,8 +45,18 @@
 </div>
 @if (!isLoading)
 {
+    <div class="d-flex flex-column">
+        <div class="my-container">
+            @if (toChild != null)
+            {
+                @ChildContent
+            }
+        </div>
+    </div>
 <AuthorizeView>
     <Authorized>
+        @if (dataLoaded)
+        {
             <EditForm Context="edOrgContext" Model="@curOrga">
                 <DataAnnotationsValidator />
                 <ValidationSummary />
@@ -61,120 +71,104 @@
                     </div>
                 </div>
                 <div class="container-fluid-fixed-top">
-                   
-                        <ul class="nav nav- flex-nowrap" id="ogtabs" role="tablist">
-                            <li class="nav-item" role="tab">
-                                <a class="nav-link" id="doc" data-bs-toggle="tab"
-                                    href="#nav-docus" role="tab" aria-controls="nav-docus"
-                                    aria-selected="false">
-                                    Documents
-                                </a>
-                            </li>
-                            @* <li class="nav-item" role="tab">
-                                <a class="nav-link" id="sis" data-bs-toggle="tab"
-                                   href="#nav-sesis" role="tab" aria-controls="nav-sesis"
-                                   aria-selected="false">
-                                    Sessions
-                                </a>
-                            </li> *@
-                        </ul>
-                            <div class="tab-content" id="tab-contenu">
-                                <!--DOCUMENTS-->
-                                <div class="tab-pane fade show active" id="nav-docus" role="tabpanel" aria-labelledby="doc">
-                                        <div class="row align-items-center">
-                                            <div class="row align-items-center">
-                                                <Grid TItem="Gsgfix"
-                                                      Data="@LsDsData"
-                                                      AllowPaging="true"
-                                                      Responsive="true">
-                                                    <GridColumns>
-                                                        <GridColumn TItem="Gsgfix" HeaderText="No">
-                                                <ChildContent Context="item">
-                                                    @item.Elea
-                                                </ChildContent>
-                                                        </GridColumn>
-                                                        <GridColumn TItem="Gsgfix" HeaderText="Designation">
-                                                            <ChildContent Context="item">
-                                                    @if (EditingFixRowGuid == item.Rowguid)
-                                                                { // show draftPln inputs
-                                                                    <InputText @bind-Value="draftMan.Liba"
-                                                                         class="form-control form-control-sm" />
-                                                                }
-                                                                else
-                                                                { // show item as read-only
-                                                                    <input @bind="item.Liba" class="form-control form-control-sm" disabled />
-                                                                }
-                                                            </ChildContent>
-                                                        </GridColumn>
-                                                        <GridColumn TItem="Gsgfix" HeaderText="Abrege">
-                                                <ChildContent Context="item">
-                                                @if (EditingFixRowGuid == item.Rowguid)
-                                                    { // show draftPln inputs
-                                                      <InputText @bind-Value="draftMan.Abg"
-                                                                 class="form-control form-control-sm" />
-                                                    }
-                                                    else
-                                                    { // show item as read-only
-                                                      <input @bind="item.Abg" class="form-control form-control-sm" disabled />
-                                                    }
-                                                </ChildContent>
-                                                        </GridColumn>
-                                                        <GridColumn TItem="Gsgfix" HeaderText="Taille">
-                                                <ChildContent Context="item">
-                                                @if (EditingFixRowGuid == item.Rowguid)
-                                                    { // show draftPln inputs
-                                                      <InputNumber @bind-Value="draftMan.Ivala"
-                                                                   style="font-weight:bold; width:60px" />
-                                                    }
-                                                    else
-                                                    { // show item as read-only
-                                                      <input @bind="item.Ivala" style="font-weight:bold;width:60px" disabled />
-                                                    }
-                                                </ChildContent>
-                                                        </GridColumn>
-                                            <GridColumn TItem="Gsgfix" HeaderText="Eta">
-                                                <ChildContent Context="item">
-                                                @if (EditingFixRowGuid == item.Rowguid)
-                                                    { // show draftPln inputs
-                                                      <InputSelect @bind-Value="draftMan.Eta" class="col-md-1" style="width:auto" disabled="@selDisabled">
-                                                          <option class="ichx" value="0">?etat</option>
-                                                            @foreach (var tob in LsFixes.Where(ut => ut.Gvars == 32 && ut.Itb == 1 && ut.Elea != 0))
-                                                            {
-                                                                <option value="@tob.Elea">@tob.Liba</option>
-                                                            }
-                                                        </InputSelect>
-                                                    }
-                                                    else
-                                                    { // show item as read-only
-                                                      <select @bind="item.Eta" style="width:auto" disabled="true">
-                                                          <option class="ichx" value="0">?etat</option>
-                                                            @foreach (var tob in LsFixes.Where(ut => ut.Gvars == 32 && ut.Itb == 1 && ut.Elea != 0))
-                                                            {
-                                                                <option value="@tob.Elea">@tob.Liba</option>
-                                                            }
-                                                        </select>
-                                                    }
-                                                </ChildContent>
-                                            </GridColumn>
-                                                    <GridColumn TItem="Gsgfix" HeaderText="Actions">
-                                                            <HeaderContent>
-                                                                @if (allEnable)
+                   <Tabs>
+                        <Tab Title="Documents" Active>
+                            <Content>
+                                <div class="row align-items-center">
+                                    <div class="row align-items-center">
+                                        <Grid TItem="Gsgfix"
+                                              Data="@LsDsData"
+                                              AllowPaging="true"
+                                              Responsive="true">
+                                            <GridColumns>
+                                                <GridColumn TItem="Gsgfix" HeaderText="No">
+                                                    <ChildContent Context="item">
+                                                        @item.Elea
+                                                    </ChildContent>
+                                                </GridColumn>
+                                                <GridColumn TItem="Gsgfix" HeaderText="Designation">
+                                                    <ChildContent Context="item">
+                                                        @if (EditingFixRowGuid == item.Rowguid)
+                                                        { // show draftPln inputs
+                                                          <InputText @bind-Value="draftMan.Liba"
+                                                                     class="form-control form-control-sm" />
+                                                        }
+                                                        else
+                                                        { // show item as read-only
+                                                          <input @bind="item.Liba" class="form-control form-control-sm" disabled />
+                                                        }
+                                                    </ChildContent>
+                                                </GridColumn>
+                                                <GridColumn TItem="Gsgfix" HeaderText="Abrege">
+                                                    <ChildContent Context="item">
+                                                        @if (EditingFixRowGuid == item.Rowguid)
+                                                        { // show draftPln inputs
+                                                          <InputText @bind-Value="draftMan.Abg"
+                                                                     class="form-control form-control-sm" />
+                                                        }
+                                                        else
+                                                        { // show item as read-only
+                                                          <input @bind="item.Abg" class="form-control form-control-sm" disabled />
+                                                        }
+                                                    </ChildContent>
+                                                </GridColumn>
+                                                <GridColumn TItem="Gsgfix" HeaderText="Taille">
+                                                    <ChildContent Context="item">
+                                                        @if (EditingFixRowGuid == item.Rowguid)
+                                                        { // show draftPln inputs
+                                                          <InputNumber @bind-Value="draftMan.Ivala"
+                                                                       style="font-weight:bold; width:60px" />
+                                                        }
+                                                        else
+                                                        { // show item as read-only
+                                                          <input @bind="item.Ivala" style="font-weight:bold;width:60px" disabled />
+                                                        }
+                                                    </ChildContent>
+                                                </GridColumn>
+                                                <GridColumn TItem="Gsgfix" HeaderText="Eta">
+                                                    <ChildContent Context="item">
+                                                        @if (EditingFixRowGuid == item.Rowguid)
+                                                        { // show draftPln inputs
+                                                          <InputSelect @bind-Value="draftMan.Eta" class="col-md-1" style="width:auto" disabled="@selDisabled">
+                                                              <option class="ichx" value="0">?etat</option>
+                                                                @foreach (var tob in LsFixes.Where(ut => ut.Gvars == 32 && ut.Itb == 1 && ut.Elea != 0))
                                                                 {
-                                                                    <button class="btn btn-primary btn-sm" @onclick="() => OpenAddPater(1)">
-                                                                     ➕ Add
-                                                                    </button>
+                                                                    <option value="@tob.Elea">@tob.Liba</option>
                                                                 }
-                                                            </HeaderContent>
-                                                        <ChildContent Context="item">
+                                                            </InputSelect>
+                                                        }
+                                                        else
+                                                        { // show item as read-only
+                                                          <select @bind="item.Eta" style="width:auto" disabled="true">
+                                                              <option class="ichx" value="0">?etat</option>
+                                                                @foreach (var tob in LsFixes.Where(ut => ut.Gvars == 32 && ut.Itb == 1 && ut.Elea != 0))
+                                                                {
+                                                                    <option value="@tob.Elea">@tob.Liba</option>
+                                                                }
+                                                            </select>
+                                                        }
+                                                    </ChildContent>
+                                                </GridColumn>
+                                                <GridColumn TItem="Gsgfix" HeaderText="Actions">
+                                                    <HeaderContent>
                                                         @if (allEnable)
                                                         {
-                                                            @if (IsFixEditing(item) )
+                                                            <button class="btn btn-primary btn-sm" @onclick="() => OpenAddPater(1)">
+                                                                ➕ Add
+                                                            </button>
+                                                        }
+                                                    </HeaderContent>
+                                                    <ChildContent Context="item">
+                                                        @if (allEnable)
+                                                        {
+                                                            @if (IsFixEditing(item))
                                                             {
-                                                            <button class="btn btn-sm btn-success" @onclick="() => ConfEdingGen(draftMan, 1)"> @* SaveFixEdit(item)"> *@
+                                                                <button class="btn btn-sm btn-success" @onclick="() => ConfEdingGen(draftMan, 1)">
+                                                                    @* SaveFixEdit(item)"> *@
                                                                     💾 Save
                                                                 </button>
-                                                            <button class="btn btn-sm btn-secondary" @onclick="() => CancEdingGen(draftMan, 1)">
-                                                                @* CancelFixEdit(item) *@
+                                                                <button class="btn btn-sm btn-secondary" @onclick="() => CancEdingGen(draftMan, 1)">
+                                                                    @* CancelFixEdit(item) *@
                                                                     ❎ Cancel
                                                                 </button>
                                                             }
@@ -194,8 +188,8 @@
                                                             {
                                                                 <button class="btn btn-sm btn-primary me-1 @(allEnable ? "" : "disabled-action")"
                                                                         disabled="@(EditingFixRowGuid != null)"
-                                                                    @onclick="() => PromptGenEdit(item, 1)">
-                                                                @* BeginFixEdit(item) *@
+                                                                        @onclick="() => PromptGenEdit(item, 1)">
+                                                                    @* BeginFixEdit(item) *@
                                                                     ✏️ Edit
                                                                 </button>
 
@@ -210,99 +204,100 @@
                                                             }
                                                         }
                                                     </ChildContent>
-                                                        </GridColumn>
-                                                    </GridColumns>
-                                                </Grid>
-                                            </div>
-                                            <div class="row align-items-center">
-                                                <Grid TItem="Gsgfix"
-                                                      Data="@LsDpData"
-                                                      AllowPaging="true"
-                                                      Responsive="true">
-                                                    <GridColumns>
-                                                        <GridColumn TItem="Gsgfix" HeaderText="No">
-                                                <ChildContent Context="item">
-                                                    @item.Elea
-                                                </ChildContent>
-                                                        </GridColumn>
-                                                        <GridColumn TItem="Gsgfix" HeaderText="Designation">
-                                                <ChildContent Context="item">
-                                                    @if (EditingFixRowGuid == item.Rowguid)
-                                                    { // show draftPln inputs
-                                                      <InputText @bind-Value="draftLne.Liba"
-                                                                 class="form-control form-control-sm" />
-                                                    }
-                                                    else
-                                                    { // show item as read-only
-                                                      <input @bind="item.Liba" class="form-control form-control-sm" disabled />
-                                                    }
-                                                </ChildContent>
-                                                        </GridColumn>
-                                                        <GridColumn TItem="Gsgfix" HeaderText="Abrege">
-                                                            <ChildContent Context="item">
-                                                    @if (EditingFixRowGuid == item.Rowguid)
-                                                    { // show draftPln inputs
-                                                      <InputText @bind-Value="draftLne.Abg"
-                                                                 class="form-control form-control-sm" />
-                                                    }
-                                                    else
-                                                    { // show item as read-only
-                                                      <input @bind="item.Abg" class="form-control form-control-sm" disabled />
-                                                    }
-                                                            </ChildContent>
-                                                        </GridColumn>
-                                                        <GridColumn TItem="Gsgfix" HeaderText="Destinataire">
-                                                            <ChildContent Context="item">
-                                                    @if (EditingFixRowGuid == item.Rowguid)
-                                                                { // show draftPln inputs
-                                                                    <InputSelect id="ntcnt" @bind-Value="draftLne.Totyp">
-                                                                        @foreach (var tob in LsFixes.Where(ut => ut.Gvars == 53 && ut.Itb == 2 && ut.Elea != 0))
-                                                                        {
-                                                                            <option value="@tob.Elea">@tob.Liba</option>
-                                                                        }
-                                                        </InputSelect>
-                                                    } else
-                                                    {
-                                                        <InputSelect id="ntcnt" @bind-Value="item.Totyp" disabled>
-                                                            @foreach (var tob in LsFixes.Where(ut => ut.Gvars == 53 && ut.Itb == 2 && ut.Elea != 0))
-                                                            {
-                                                                <option value="@tob.Elea">@tob.Liba</option>
-                                                            }
-                                                        </InputSelect>
-                                                    }
-                                                </ChildContent>
-                                                        </GridColumn>
-                                                        <GridColumn TItem="Gsgfix" HeaderText="Taille">
-                                                <ChildContent Context="item">
-                                                    @if (EditingFixRowGuid == item.Rowguid)
-                                                    { // show draftPln inputs
-                                                      <InputNumber @bind-Value="draftLne.Ivala"
-                                                                   style="font-weight:bold; width:60px" />
-                                                    }
-                                                    else
-                                                    {
-                                                      <input @bind="item.Ivala" style="font-weight:bold;width:60px" disabled />
-                                                    }
-                                                </ChildContent>
-                                                        </GridColumn>
-                                                        <GridColumn TItem="Gsgfix" HeaderText="Actions">
-                                                                <HeaderContent>
+                                                </GridColumn>
+                                            </GridColumns>
+                                        </Grid>
+                                    </div>
+                                    <div class="row align-items-center">
+                                        <Grid TItem="Gsgfix"
+                                              Data="@LsDpData"
+                                              AllowPaging="true"
+                                              Responsive="true">
+                                            <GridColumns>
+                                                <GridColumn TItem="Gsgfix" HeaderText="No">
+                                                    <ChildContent Context="item">
+                                                        @item.Elea
+                                                    </ChildContent>
+                                                </GridColumn>
+                                                <GridColumn TItem="Gsgfix" HeaderText="Designation">
+                                                    <ChildContent Context="item">
+                                                        @if (EditingFixRowGuid == item.Rowguid)
+                                                        { // show draftPln inputs
+                                                          <InputText @bind-Value="draftLne.Liba"
+                                                                     class="form-control form-control-sm" />
+                                                        }
+                                                        else
+                                                        { // show item as read-only
+                                                          <input @bind="item.Liba" class="form-control form-control-sm" disabled />
+                                                        }
+                                                    </ChildContent>
+                                                </GridColumn>
+                                                <GridColumn TItem="Gsgfix" HeaderText="Abrege">
+                                                    <ChildContent Context="item">
+                                                        @if (EditingFixRowGuid == item.Rowguid)
+                                                        { // show draftPln inputs
+                                                          <InputText @bind-Value="draftLne.Abg"
+                                                                     class="form-control form-control-sm" />
+                                                        }
+                                                        else
+                                                        { // show item as read-only
+                                                          <input @bind="item.Abg" class="form-control form-control-sm" disabled />
+                                                        }
+                                                    </ChildContent>
+                                                </GridColumn>
+                                                <GridColumn TItem="Gsgfix" HeaderText="Destinataire">
+                                                    <ChildContent Context="item">
+                                                        @if (EditingFixRowGuid == item.Rowguid)
+                                                        { // show draftPln inputs
+                                                          <InputSelect id="ntcnt" @bind-Value="draftLne.Totyp">
+                                                                @foreach (var tob in LsFixes.Where(ut => ut.Gvars == 53 && ut.Itb == 2 && ut.Elea != 0))
+                                                                {
+                                                                    <option value="@tob.Elea">@tob.Liba</option>
+                                                                }
+                                                            </InputSelect>
+                                                        }
+                                                        else
+                                                        {
+                                                            <InputSelect id="ntcnt" @bind-Value="item.Totyp" disabled>
+                                                                @foreach (var tob in LsFixes.Where(ut => ut.Gvars == 53 && ut.Itb == 2 && ut.Elea != 0))
+                                                                {
+                                                                    <option value="@tob.Elea">@tob.Liba</option>
+                                                                }
+                                                            </InputSelect>
+                                                        }
+                                                    </ChildContent>
+                                                </GridColumn>
+                                                <GridColumn TItem="Gsgfix" HeaderText="Taille">
+                                                    <ChildContent Context="item">
+                                                        @if (EditingFixRowGuid == item.Rowguid)
+                                                        { // show draftPln inputs
+                                                          <InputNumber @bind-Value="draftLne.Ivala"
+                                                                       style="font-weight:bold; width:60px" />
+                                                        }
+                                                        else
+                                                        {
+                                                            <input @bind="item.Ivala" style="font-weight:bold;width:60px" disabled />
+                                                        }
+                                                    </ChildContent>
+                                                </GridColumn>
+                                                <GridColumn TItem="Gsgfix" HeaderText="Actions">
+                                                    <HeaderContent>
                                                         @if (allEnable)
                                                         {
                                                             <button class="btn btn-primary btn-sm" @onclick="() => OpenAddPater(2)">
                                                                 ➕ Add
                                                             </button>
                                                         }
-                                                            </HeaderContent>
+                                                    </HeaderContent>
                                                     <ChildContent Context="item">
                                                         @if (allEnable)
                                                         {
                                                             @if (IsFixEditing(item))
                                                             {
-                                                            <button class="btn btn-sm btn-success" @onclick="() => ConfEdingGen(draftLne, 2)">
+                                                                <button class="btn btn-sm btn-success" @onclick="() => ConfEdingGen(draftLne, 2)">
                                                                     💾 Save
                                                                 </button>
-                                                            <button class="btn btn-sm btn-secondary" @onclick="() => CancEdingGen(draftLne, 2)">
+                                                                <button class="btn btn-sm btn-secondary" @onclick="() => CancEdingGen(draftLne, 2)">
                                                                     ❎ Cancel
                                                                 </button>
                                                             }
@@ -322,7 +317,7 @@
                                                             {
                                                                 <button class="btn btn-sm btn-primary me-1 @(allEnable ? "" : "disabled-action")"
                                                                         disabled="@(EditingFixRowGuid != null)"
-                                                                    @onclick="() => PromptGenEdit(item, 2)">
+                                                                        @onclick="() => PromptGenEdit(item, 2)">
                                                                     ✏️ Edit
                                                                 </button>
                                                                 @if (item.Eaut != 9)
@@ -336,125 +331,123 @@
                                                             }
                                                         }
                                                     </ChildContent>
-                                                        </GridColumn>
-                                                    </GridColumns>
-                                                </Grid>
+                                                </GridColumn>
+                                            </GridColumns>
+                                        </Grid>
+                                    </div>
+                                </div>
+                            </Content>
+                        </Tab>
+                        <Tab Title="Sessions">
+                            <Content>
+                                <div class="row">
+                                        <label class="col-md-6" style="font-weight:bold">Groupe Sessions :</label>
+                                    </div>
+                                <div class="row row-cols-3" style="font-style :italic;font-weight:bold">
+                                        <div class="col-1 text-center">no</div>
+                                        <div class="col-1">designation</div>
+                                        <div class="col-1">methode</div> <!--auto/manu/exo-->
+                                        <div class="col-1">frequence</div> <!--an/mois/jour/heure-->
+                                        <div class="col-1 ms-1">eta</div>
+                                        @if (allEnable)
+                                        {
+                                            <div class="col-2">Actions</div>
+                                        }
+                                    </div>
+                                    @foreach (var ses in @LsCtData)
+                                    {
+                                        <div class="row row-cols-3">
+                                            <div class="col-1 text-center">@ses.Elea</div>
+                                            <label class="col-1">@ses.Liba</label>
+                                            <div class="col-1">
+                                                @if (EditingFixRowGuid == ses.Rowguid)
+                                                {
+                                                    <InputSelect id="ntadm" @bind-Value="draftSes.Ityp">
+                                                        @foreach (var tob in LsFixes.Where(ut => ut.Gvars == 33 && ut.Itb == 8 && ut.Gp1 == 1 && ut.Elea != 0))
+                                                        {
+                                                            <option value="@tob.Elea">@tob.Liba</option>
+                                                        }
+                                                    </InputSelect>
+                                                }
+                                                else
+                                                {
+                                                    <InputSelect id="ntadm" @bind-Value="ses.Ityp" disabled>
+                                                        @foreach (var tob in LsFixes.Where(ut => ut.Gvars == 33 && ut.Itb == 8 && ut.Gp1 == 1 && ut.Elea != 0))
+                                                        {
+                                                            <option value="@tob.Elea">@tob.Liba</option>
+                                                        }
+                                                    </InputSelect>
+                                                }
+                                            </div>
+                                            <div class="col-1">
+                                                @if (EditingFixRowGuid == ses.Rowguid)
+                                                {
+                                                    <InputSelect id="ntadm" @bind-Value="draftSes.Jtyp">
+                                                        @foreach (var tob in LsFixes.Where(ut => ut.Gvars == 33 && ut.Itb == 8 && ut.Gp1 == 2 && ut.Elea != 0))
+                                                        {
+                                                            <option value="@tob.Elea">@tob.Liba</option>
+                                                        }
+                                                    </InputSelect>
+                                                }
+                                                else
+                                                {
+                                                    <InputSelect id="ntadm" @bind-Value="ses.Jtyp" disabled>
+                                                        @foreach (var tob in LsFixes.Where(ut => ut.Gvars == 33 && ut.Itb == 8 && ut.Gp1 == 2 && ut.Elea != 0))
+                                                        {
+                                                            <option value="@tob.Elea">@tob.Liba</option>
+                                                        }
+                                                    </InputSelect>
+                                                }
+                                            </div>
+                                            <div class="col-1 ms-1">
+                                                @if (EditingFixRowGuid == ses.Rowguid)
+                                                {
+                                                    <InputSelect @bind-Value="draftSes.Eta">
+                                                        <option class="jchx" value="0">?choisir</option>
+                                                        @foreach (var tob in LsFixes.Where(ut => ut.Gvars == 32 && ut.Itb == 1 && ut.Elea != 0))
+                                                        {
+                                                            <option value="@tob.Elea">@tob.Liba</option>
+                                                        }
+                                                    </InputSelect>
+                                                }
+                                                else
+                                                {
+                                                    <InputSelect @bind-Value="ses.Eta" disabled>
+                                                        <option class="jchx" value="0">?choisir</option>
+                                                        @foreach (var tob in LsFixes.Where(ut => ut.Gvars == 32 && ut.Itb == 1 && ut.Elea != 0))
+                                                        {
+                                                            <option value="@tob.Elea">@tob.Liba</option>
+                                                        }
+                                                    </InputSelect>
+                                                }
+                                            </div>
+                                            <div class="col-2 d-flex align-items-center justify-content-between">
+                                                @if (allEnable)
+                                                {
+                                                    <button class="btn btn-sm btn-primary d-flex align-items-center gap-1 me-1 @(allEnable ? "" : "disabled-action")"
+                                                            disabled="@(EditingFixRowGuid != null)"
+                                                            @onclick="() => PromptGenEdit(ses, 3)">
+                                                        <span>✏️</span>
+                                                        <span>Edit</span>
+                                                    </button>
+                                                    @if (IsFixEditing(ses))
+                                                    {
+                                                        <button class="btn btn-sm btn-success d-flex align-items-center gap-1 me-1" @onclick="() => ConfEdingGen(draftSes, 3)">
+                                                            <span>💾</span>
+                                                            <span>Save</span>
+                                                        </button>
+                                                        <button class="btn btn-sm btn-secondary d-flex align-items-center gap-1 me-1" @onclick="() => CancEdingGen(draftSes, 3)">
+                                                            <span>❎</span>
+                                                            <span>Cancel</span>
+                                                        </button>
+                                                    }
+                                                }
                                             </div>
                                         </div>
-                                </div>
-                                <!--SESSIONS-->
-                                <div class="tab-pane" id="nav-sesis" role="tabpanel" aria-labelledby="sis">
-                            <EditForm Context="edSesContext" Model="@curOrga">
-                                <DataAnnotationsValidator />
-                                <ValidationSummary />
-                                <div class="row">
-                                    <label class="col-md-6" style="font-weight:bold">Groupe Sessions :</label>
-                                </div>
-                                <div class="row row-cols-3" style="font-style :italic;font-weight:bold">
-                                    <div class="col-1 text-center">no</div>
-                                    <div class="col-1">designation</div>
-                                    <div class="col-1">methode</div> <!--auto/manu/exo-->
-                                    <div class="col-1">frequence</div> <!--an/mois/jour/heure-->
-                                    <div class="col-1 ms-1">eta</div>
-                                    @if (allEnable)
-                                    {
-                                        <div class="col-2">Actions</div>
                                     }
-                                </div>
-                                @foreach (var ses in @LsCtData)
-                                {
-                                    <div class="row row-cols-3">
-                                        <div class="col-1 text-center">@ses.Elea</div>
-                                        <label class="col-1">@ses.Liba</label>
-                                        <div class="col-1">
-                                            @if (EditingFixRowGuid == ses.Rowguid)
-                                            {
-                                                <InputSelect id="ntadm" @bind-Value="draftSes.Ityp">
-                                                    @foreach (var tob in LsFixes.Where(ut => ut.Gvars == 33 && ut.Itb == 8 && ut.Gp1 == 1 && ut.Elea != 0))
-                                                    {
-                                                        <option value="@tob.Elea">@tob.Liba</option>
-                                                    }
-                                                </InputSelect>
-                                            }
-                                            else
-                                            {
-                                                <InputSelect id="ntadm" @bind-Value="ses.Ityp" disabled>
-                                                    @foreach (var tob in LsFixes.Where(ut => ut.Gvars == 33 && ut.Itb == 8 && ut.Gp1 == 1 && ut.Elea != 0))
-                                                    {
-                                                        <option value="@tob.Elea">@tob.Liba</option>
-                                                    }
-                                                </InputSelect>
-                                            }
-                                        </div>
-                                        <div class="col-1">
-                                            @if (EditingFixRowGuid == ses.Rowguid)
-                                            {
-                                                <InputSelect id="ntadm" @bind-Value="draftSes.Jtyp">
-                                                    @foreach (var tob in LsFixes.Where(ut => ut.Gvars == 33 && ut.Itb == 8 && ut.Gp1 == 2 && ut.Elea != 0))
-                                                    {
-                                                        <option value="@tob.Elea">@tob.Liba</option>
-                                                    }
-                                                </InputSelect>
-                                            }
-                                            else
-                                            {
-                                                <InputSelect id="ntadm" @bind-Value="ses.Jtyp" disabled>
-                                                    @foreach (var tob in LsFixes.Where(ut => ut.Gvars == 33 && ut.Itb == 8 && ut.Gp1 == 2 && ut.Elea != 0))
-                                                    {
-                                                        <option value="@tob.Elea">@tob.Liba</option>
-                                                    }
-                                                </InputSelect>
-                                            }
-                                        </div>
-                                        <div class="col-1 ms-1">
-                                            @if (EditingFixRowGuid == ses.Rowguid)
-                                            {
-                                                <InputSelect @bind-Value="draftSes.Eta">
-                                                    <option class="jchx" value="0">?choisir</option>
-                                                    @foreach (var tob in LsFixes.Where(ut => ut.Gvars == 32 && ut.Itb == 1 && ut.Elea != 0))
-                                                    {
-                                                        <option value="@tob.Elea">@tob.Liba</option>
-                                                    }
-                                                </InputSelect>
-                                            }
-                                            else
-                                            {
-                                                <InputSelect @bind-Value="ses.Eta" disabled>
-                                                    <option class="jchx" value="0">?choisir</option>
-                                                    @foreach (var tob in LsFixes.Where(ut => ut.Gvars == 32 && ut.Itb == 1 && ut.Elea != 0))
-                                                    {
-                                                        <option value="@tob.Elea">@tob.Liba</option>
-                                                    }
-                                                </InputSelect>
-                                            }
-                                        </div>
-                                        <div class="col-2 d-flex align-items-center justify-content-between">
-                                            @if (allEnable)
-                                            {
-                                                <button class="btn btn-sm btn-primary d-flex align-items-center gap-1 me-1 @(allEnable ? "" : "disabled-action")"
-                                                        disabled="@(EditingFixRowGuid != null)"
-                                                        @onclick="() => PromptGenEdit(ses, 3)">
-                                                    <span>✏️</span>
-                                                    <span>Edit</span>
-                                                </button>
-                                                @if (IsFixEditing(ses))
-                                                {
-                                                    <button class="btn btn-sm btn-success d-flex align-items-center gap-1 me-1" @onclick="() => ConfEdingGen(draftSes, 3)">
-                                                        <span>💾</span>
-                                                        <span>Save</span>
-                                                    </button>
-                                                    <button class="btn btn-sm btn-secondary d-flex align-items-center gap-1 me-1" @onclick="() => CancEdingGen(draftSes, 3)">
-                                                        <span>❎</span>
-                                                        <span>Cancel</span>
-                                                    </button>
-                                                }
-                                            }
-                                        </div>
-                                    </div>
-                                }
-                            </EditForm>
-                                </div>
-                            </div>
+                            </Content>
+                        </Tab>
+                   </Tabs>
                 </div>
             </EditForm>
             <!-- Modal for ADDING Doc(S/P) -->
@@ -544,90 +537,14 @@
                     <Button class="btn btn-secondary" @onclick="ClosePmodal">Cancel</Button>
                 </FooterTemplate>
             </Modal>
+        }
     </Authorized>
 </AuthorizeView>
 }
-<style>
-    .my-input::placeholder {
-        font-family: 'Courier New', Courrier, monospace;
-        font-size: 12px;
-        font-weight: normal;
-        font-style: italic;
-        color: #ff6600;
-    }
-    .padding-0 {
-        padding-right: 0;
-        padding-left: 0;
-    }
-
-    .table {
-        border: 1px yellow;
-        font-size: 15px;
-        border-collapse: collapse;
-        border-spacing: 0;
-    }
-
-        .table tr {
-            height: 40px;
-            padding: 0px;
-            margin-top: -5px;
-            border-left: 1px solid;
-            border-bottom: 1px solid;
-        }
-
-        .table thead tr {
-            height: 30px;
-            font-weight: bold;
-            font-style: italic;
-        }
-
-    .chkinput {
-        vertical-align: middle;
-        position: relative;
-        bottom: 1px;
-    }
-
-    .chklabel {
-        display: block;
-    }
-
-    .input-group-text {
-        background-color: transparent;
-        border: none;
-        cursor: pointer;
-    }
-
-    .row-cols-7 > * {
-        flex: 0 0 auto;
-        width: 14.2857142857%; /* 100/7 */
-    }
-
-    .row-cols-8 > * {
-        flex: 0 0 auto;
-        width: 12.25%; /* 100/8 */
-    }
-
-    .btnhz {
-        display: flex;
-        justify-content: center;
-    }
-
-    .btsml {
-        size: 15px;
-        font-size: xx-small;
-    }
-
-    .btzi {
-        display: inline-block;
-    }
-
-    .ermes {
-        color: rgb(255, 127, 127);
-    }
-</style>
 
 @code {
     private bool isLoading = true;
+    private bool dataLoaded = false;
     private bool allEnable = false;
 
     [CascadingParameter]
@@ -746,12 +663,12 @@
         //_lgcdu = 3;
         //var noslims = LsVars.Where(uv => uv.Idhie == 0 && uv.Gvars == 21 && uv.Itb == 1 && uv.Elea == 1);
         //if (noslims.Any()) _lgcdu = noslims.FirstOrDefault().Ivala;
-        await ChargeParentData();
+        //await ChargeParentData();
         _navmanager.LocationChanged += OnLocationChanged;
         Console.WriteLine("Authentication ENTREE");
         isLoading = false;
     }
-    private async Task ChargeParentData()
+    protected override async Task OnParametersSetAsync()
     {
         if (curOrga != null)
         {
@@ -764,6 +681,7 @@
             Console.WriteLine($"nb pieces : {LsDpData.Count}");
             edSesContext = new EditContext(curOrga);
             edSesContext.OnFieldChanged += HandleFieldChanged;
+            dataLoaded = true;
         }
     }
     //manage SAVING

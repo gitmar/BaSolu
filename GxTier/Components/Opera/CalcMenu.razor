@@ -1,5 +1,6 @@
 ﻿@page "/calcmenu"
-@inherits FreeLayout
+@inherits LayoutComponentBase
+@layout FreeLayout
 
 @using System.Security.Claims
 @using BlazorBootstrap
@@ -33,33 +34,18 @@
 </div>
 @if (!isLoading)
 {
-    <div class="mag-screen-layout">
-        <div class="container" style="height: 100vh;">
+    
+
+    <div class="gx-screen-layout">
+        <div class="container gx-parent-container" style="height: 100vh;">
             <div class="d-flex flex-column" style="height: 100%;">
-                <!-- Top Menu -->
-                <div class="content-and-sidebar-container bg-success bg-opacity-10">
-                    <button class="navbar-brand text-left text-white bg-dark bg-opacity-75 me-2 py-0 px-1" style="height:44px;" @onclick="NavigateBack">
-                        A24soft Gx-Solutions
-                    </button>
-                    <div><span class="separator">||</span></div>
-                    <ul class="menu">
-                        <li>
-                            @if (_invRoles.Count > 0)
-                            {
-                                <select class="gpet" id="Ugroupe" @onchange="OnGpeChanged">
-                                    @foreach (var gpe in LsGties)
-                                    {
-                                        <option value="@gpe.Elea">@gpe.Liba</option>
-                                    }
-                                </select>
-                            }
-                        </li>
-                        <li><span class="separator">|</span></li>
-                        <li><NavLink @onclick="() => SelMenu(1)" class="nav-item" ActiveClass="active">Calculs</NavLink></li>
-                        <li><span class="separator">|</span></li>
-                        <li><NavLink @onclick="() => SelMenu(2)" class="nav-item">Validation</NavLink></li>
-                    </ul>
-                </div>
+                <GxNavMenu BrandText="A24soft Gx-Solutions"
+                           MenuItems="@MenuItems"
+                           YaGroup="true"
+                           Groups="@Groupes"
+                           MenuSelected="@SelMenu"
+                           GroupSelected="@SelGpe" />
+               
                 <div class="row">
                     <div class="col-md-12 input-group align-middle">
                         <span class="text-uppercase text- text-success"><b>@strComp</b></span>
@@ -94,15 +80,16 @@
                 <div class="row">
                     <label>==========</label>
                 </div>
+
                 <!-- Main Content //a integer froMenu -->
                 @if (chxMenu != 0 && curOrga != null && toChild != null && curODContext != null)
                 {
                     @if (chxMenu == 1)
                     {
                         <CalcResLnes @ref="mygcalc"
-                                  curOrga="@curOrga"
-                                  toChild="@toChild"
-                                  curODContext="@curODContext">
+                                     curOrga="@curOrga"
+                                     toChild="@toChild"
+                                     curODContext="@curODContext">
                             <ChildContent>
                                 @* <h2 class="child-box">Hello GRILLES</h2> *@
                             </ChildContent>
@@ -121,13 +108,6 @@
         </div>
     </div>
 }
-<style>
-    .gpet {
-        font-style: italic;
-        font-size: 25px;
-        font-weight: bold;
-    }
-</style>
 @code {
     private bool isLoading = true;
     public MyODataContext curODContext;
@@ -161,6 +141,15 @@
     public string _strOrga = "", _curSigle = "", strmeta = "", strmeta2 = "";
     private int Ugpe = 0;
     private string gpeLiba = "";
+
+    //menus
+    public List<GxNavMenu.MenuItem> MenuItems = new()
+    {
+        new GxNavMenu.MenuItem { Id = 1, Label = "Calcul", Icon = "bi bi-box-arrow-in-down" },
+        new GxNavMenu.MenuItem { Id = 2, Label = "Validation", Icon = "bi bi-house-door" },
+        //new MenuItem { Id = 4, Label = "Mutation", Icon = "bi bi-arrow-repeat" },
+    };
+    public List<GxNavMenu.GroupItem> Groupes = new();
 
     //entities load
     private IEnumerable<Gxorga> _lsOrgas = new List<Gxorga>();
@@ -222,6 +211,11 @@
         if (LsGties.Count() > 0)
         {
             ////gpeLiba = LsGties.Where(ut => ut.Elea == 1).FirstOrDefault().Liba.ToUpperInvariant();
+        }
+        Groupes.Clear();
+        foreach (var gr in LsGties.Where(gr => gr.Itb == 6))
+        {
+            Groupes.Add(new GxNavMenu.GroupItem { Id = gr.Elea, Name = gr.Liba });
         }
         //Console.WriteLine($"inv roles : {_invRoles.Count()}");
         _invRoles = await _rendAgres.LoadOrgaRoles();
@@ -440,15 +434,15 @@
             //}
         }
     }
-    private async Task SelMenu(int noM)
-    {
-        chxMenu = noM;
-        if (chxMenu == 1) strComp = "Calculs";
-        if (chxMenu == 2) strComp = "Validations";
-        allEnable = false;
-        StateHasChanged();
-        await Task.Delay(800);
-    }
+    // private async Task SelMenu(int noM)
+    // {
+    //     chxMenu = noM;
+    //     if (chxMenu == 1) strComp = "Calculs";
+    //     if (chxMenu == 2) strComp = "Validations";
+    //     allEnable = false;
+    //     StateHasChanged();
+    //     await Task.Delay(800);
+    // }
     // private void GetSelectedProg(Gplan bropln)
     // {
     //     Console.WriteLine($"ICI PROGRAMMES : {EnsProgs.Count()}");
@@ -502,7 +496,30 @@
             StateHasChanged();
         }
     }
-
+    private async Task SelMenu(int noM)
+    {
+        chxMenu = noM;
+        if (chxMenu == 1) strComp = $"Calcul {gpeLiba}";
+        if (chxMenu == 2) strComp = $"Validation {gpeLiba}";
+        //if (chxMenu == 3) strComp = $"Invitation {gpeLiba}";
+        //if (chxMenu == 5) strComp = "Colonnes";
+        allEnable = false;
+        StateHasChanged();
+        await Task.Delay(1);
+    }
+    private async Task SelGpe(int noG)
+    {
+        gpeLiba = "";
+        if (noG == 0) return;
+        var mygpe = LsGties.Where(gt => gt.Itb == 6 && gt.Elea == noG).FirstOrDefault();
+        //LsCols = curOrga.Gsglnes.Where(ug => ug.Otyp == 5 && ug.Dtyp == 6 && ug.Totyp == Ugpe && ug.Jacc == 1).ToList();
+        Ugpe = noG;
+        //Tgpe = mygpe.Gp2;
+        gpeLiba = LsGties.Where(ut => ut.Elea == mygpe.Elea).FirstOrDefault().Liba.ToUpperInvariant();
+        StateHasChanged();
+        Console.WriteLine("PAS 2");
+        await Task.Delay(1);
+    }
     void NavigateBack()
     {
         _navmanager.NavigateTo("/");

@@ -15,7 +15,6 @@
 @using GxTie.Components.Opera
 @using GxTie.Services
 @using GxTie.Components.Opera.RtOpe
-@using GxTie.Helpers
 @using GxWapi.DaModels
 
 @inject MyAuthStateProvider _authprovider
@@ -249,10 +248,10 @@ else
     //[Parameter]
     //public MyMenuVars froMenu { get; set; }
 
-    [CascadingParameter(Name = "SaiePage")]
-    public SaieMenu Mainsaie { get; set; }
-    [CascadingParameter]
-    public MyODataContext _gODContext { get; set; }    //Authentication
+    // [CascadingParameter(Name = "SaieLayout")]
+    // public SaieLayout Mainsaie { get; set; }
+    //[Parameter]
+    //public MyODataContext _gODContext { get; set; }    //Authentication
 
     //private EditContext _saiEdtContext;
 

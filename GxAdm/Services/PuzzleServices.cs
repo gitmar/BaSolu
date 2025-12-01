@@ -1,10 +1,10 @@
 ﻿using System.Net.Http.Json;
+using System.Net.NetworkInformation;
 using System.Security.Claims;
 
 using Blazored.LocalStorage;
-
+using GxShared.Identity;
 using GxShared.Sess;
-using GxShared.Auth;
 
 using Microsoft.AspNetCore.Components.Authorization;
 

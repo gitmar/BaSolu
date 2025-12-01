@@ -41,7 +41,6 @@
     <Compile Remove="ClieModels\CalcModel.cs" />
     <Compile Remove="ClieModels\outModels.cs" />
     <Compile Remove="Components\GridWrapper.razor.cs" />
-    <Compile Remove="Helpers\JtwHelpers.cs" />
     <Compile Remove="oldProgram.cs" />
     <Compile Remove="Services\AdautService.cs" />
     <Compile Remove="Services\AppStateServices.cs" />
@@ -55,6 +54,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Content Remove="Components\Admina\Astreins\Gcstes.razor" />
     <Content Remove="Components\Admina\Astreins\Postbrou.razor" />
     <Content Remove="Components\Admina\EditMenu.razor" />
     <Content Remove="Components\Admina\PRubs\Brou.razor" />
@@ -125,6 +125,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\Gx.Components\Gx.Components.csproj" />
     <ProjectReference Include="..\GxShared\GxShared.csproj" />
   </ItemGroup>
 

@@ -1,4 +1,5 @@
 ﻿@page "/arubmenu"
+@inherits LayoutComponentBase
 @layout FreeLayout
 
 @using System.Security.Claims
@@ -11,6 +12,7 @@
 @using GxShared.Sess
 @using Microsoft.OData.Client
 @using Newtonsoft.Json
+@using Gx.Components
 
 @inject NavigationManager _navmanager
 @inject ILocalStorageService _localStorage
@@ -28,25 +30,16 @@
 }
 @if (!isLoading)
 {
-    <div class="mag-screen-layout">
-        <div class="container" style="height: 100vh;">
+    <div class="gx-screen-layout">
+        <div class="container gx-parent-container" style="height: 100vh;">
             <div class="d-flex flex-column" style="height: 100%;">
                 <!-- Top Menu -->
-                <div class="content-and-sidebar-container bg-success bg-opacity-10">
-                    <button class="navbar-brand text-left text-white bg-dark bg-opacity-75 me-2 py-0 px-1" style="height:44px;" @onclick="NavigateBack">
-                        A24soft Gx-Solutions
-                    </button>
-                    <div><span class="separator">||</span></div>
-                    <ul class="menu">
-                        <li><NavLink @onclick="() => SelMenu(1)" class="nav-item" ActiveClass="active">Grilles</NavLink></li>
-                        <li><span class="separator">|</span></li>
-                        <li><NavLink @onclick="() => SelMenu(2)" class="nav-item">Echeanchier</NavLink></li>
-                        <li><span class="separator">|</span></li>
-                        <li><NavLink @onclick="() => SelMenu(3)" class="nav-item">Organigramme</NavLink></li>
-                        <li><span class="separator">||</span></li>
-                        <li><NavLink @onclick="() => SelMenu(4)" class="nav-item">Schemas</NavLink></li>
-                     </ul>
-                </div>
+                <GxNavMenu BrandText="A24soft Gx-Solutions"
+                                       MenuItems="@MenuItems"
+                                       YaGroup="false"
+                                       Groups="@Groupes"
+                                       MenuSelected="@SelMenu"
+                                       GroupSelected="@SelGpe" />
                 <div class="row">
                     <div class="col-md-12 input-group align-middle">
                         <span class="text-uppercase text- text-success"><b>@strComp</b></span>
@@ -110,6 +103,12 @@
                             </ChildContent>
                         </Rubposts>
                     }
+                    else if (chxMenu == 4)
+                    { //schemas rubriques
+                      <AstrMenu @ref="myrmenu">
+
+                      </AstrMenu>
+                    }
                 }
             </div>
         </div>
@@ -126,6 +125,7 @@
     private Rubgrils myrgrd;
     private Rubechs myrech;
     private Rubposts myrpst;
+    private AstrMenu myrmenu;
 
     [CascadingParameter]
     private Task<AuthenticationState>? AuthState { get; set; }
@@ -154,6 +154,17 @@
     //Navigation
     private int chxMenu = 1;
     private string strComp = "Plan GRILLE";
+    //menus
+    public List<GxNavMenu.MenuItem> MenuItems = new()
+    {
+        new GxNavMenu.MenuItem { Id = 1, Label = "Grille", Icon = "bi bi-box-arrow-in-down" },
+        new GxNavMenu.MenuItem { Id = 2, Label = "Echeancier", Icon = "bi bi-house-door" },
+        new GxNavMenu.MenuItem { Id = 3, Label = "Organigramme", Icon = "bi bi-house-door" },
+        new GxNavMenu.MenuItem { Id = 4, Label = "Saisies", Icon = "bi bi-house-door" },
+        //new MenuItem { Id = 4, Label = "Mutation", Icon = "bi bi-arrow-repeat" },
+    };
+    public List<GxNavMenu.GroupItem> Groupes = new();
+
     //modal management
     private string SidebarStyle = "width: 200px;";
     private bool IsOpen = true;
@@ -315,21 +326,21 @@
         MImessage = "";
         allEnable = false;
     }
-    private async Task SelMenu(int noM)
-    {
-        chxMenu = noM;
-        if (chxMenu == 4) 
-        {
-            strComp = "Schemas";
-            _navmanager.NavigateTo("/iagrmenu");
-        }
-        if (chxMenu == 1) strComp = "Plan GRILLE";
-        if (chxMenu == 2) strComp = "Plan ECHEANCIER";
-        if (chxMenu == 3) strComp = "Plan ORGANIGRAMME";
-        allEnable = false;
-        StateHasChanged();
-        await Task.Delay(800);
-    }
+    // private async Task SelMenu(int noM)
+    // {
+    //     chxMenu = noM;
+    //     if (chxMenu == 4) 
+    //     {
+    //         strComp = "Schemas";
+    //         _navmanager.NavigateTo("/iagrmenu");
+    //     }
+    //     if (chxMenu == 1) strComp = "Plan GRILLE";
+    //     if (chxMenu == 2) strComp = "Plan ECHEANCIER";
+    //     if (chxMenu == 3) strComp = "Plan ORGANIGRAMME";
+    //     allEnable = false;
+    //     StateHasChanged();
+    //     await Task.Delay(800);
+    // }
     private async Task LoadOrgaPostes()
     {
         //FmtPsts
@@ -348,6 +359,31 @@
         }
         //Pdom 6tiers Patr1baseadm
         LsDivs = LsDivs.Where(ud => ud.Pdom == 6 && ud.Patr == 1).ToList();
+    }
+    private async Task SelMenu(int noM)
+    {
+        chxMenu = noM;
+        if (chxMenu == 1) strComp = $"Plan GRILLE";
+        if (chxMenu == 2) strComp = $"Plan ECHEANCIER";
+        if (chxMenu == 3) strComp = $"Plan ORGANIGRAMME";
+        if (chxMenu == 4) strComp = $"SAISIES";
+        //if (chxMenu == 5) strComp = "Colonnes";
+        allEnable = false;
+        StateHasChanged();
+        await Task.Delay(1);
+    }
+    private async Task SelGpe(int noG)
+    {
+        //gpeLiba = "";
+        //if (noG == 0) return;
+        //var mygpe = LsGties.Where(gt => gt.Itb == 6 && gt.Elea == noG).FirstOrDefault();
+        //LsCols = curOrga.Gsglnes.Where(ug => ug.Otyp == 5 && ug.Dtyp == 6 && ug.Totyp == Ugpe && ug.Jacc == 1).ToList();
+        //Ugpe = noG;
+        //Tgpe = mygpe.Gp2;
+        //gpeLiba = LsGties.Where(ut => ut.Elea == mygpe.Elea).FirstOrDefault().Liba.ToUpperInvariant();
+        StateHasChanged();
+        Console.WriteLine("PAS 2");
+        await Task.Delay(1);
     }
     void NavigateBack()
     {

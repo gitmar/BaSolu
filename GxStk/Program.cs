@@ -5,7 +5,7 @@ using GxStk;
 using GxStk.ClieModels;
 using GxStk.Services;
 using GxShared.Sess;
-using GxShared.Services;
+using GxShared.Helpers;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;

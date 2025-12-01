@@ -7,7 +7,7 @@ using GxAdm.Helpers;
 using GxAdm.Profile;
 
 using GxShared.Sess;
-using GxShared.Auth;
+using GxShared.Identity;
 
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.JSInterop;

@@ -9,115 +9,174 @@
 @inject NavigationManager _navManager
 @inject ILocalStorageService _localStorage
 
-<div class="top-row mb-0 navbar navbar-dark bg-success shadow-sm bg-opacity-25">
-    <a class="navbar-brand text-white fw-bold" href="">Gx-Solutions</a>
-    <button class="navbar-toggler" type="button" @onclick="ToggleNavMenu">
+<div class="top-row mb-0 navbar navbar-dark bg-success shadow-sm bg-opacity-25 mt-0 navbar-slim">
+    <a class="navbar-brand text-white fw-bold" href="">
+        <i class="bi bi-gear-fill me-1"></i> Gx-Solutions <span class="text-warning fw-bold">(Admin)</span>
+    </a>
+    <button class="navbar-toggler btn btn-sm" type="button" @onclick="ToggleNavMenu">
         <span class="navbar-toggler-icon"></span>
     </button>
 </div>
-<div class="row text-center mt-0">
-    <span class="text-warning fw-bold">(Admin)</span>
-</div>
+
 <div class="@NavMenuCssClass bg-dark vh-100" style="overflow-y: auto;">
     <nav class="nav flex-column">
-            <NavLink class="nav-link nav-main" href="" Match="NavLinkMatch.All">
-                <i class="bi bi-house-door-fill-nav-menu" aria-hidden="true"></i> Home
-            </NavLink>
-        @* <div class="@(isOpen ? "d-none" : "")">
-            <Login OnAdmLoginChanged="HandleAdmLoginChanged" />
-        </div> *@
+
+        <!-- HOME -->
+        <NavLink class="nav-link nav-main text-light small" href="" Match="NavLinkMatch.All">
+            <i class="bi bi-house-door-fill me-2"></i> Home
+        </NavLink>
+        <NavLink class="nav-link nav-main text-light small" href="testmenu" Match="NavLinkMatch.All">
+            <i class="bi bi-house-door-fill me-2"></i> TestMenu
+        </NavLink>
         <AuthorizeView>
             <Authorized>
-                <NavLink class="nav-link nav-main" href="aorgas">
-                        <Icon Name="IconName.Key" Size="IconSize.x5" Color="IconColor.White" /> &nbsp; Institution
-                    </NavLink>
-                <NavLink class="nav-link nav-main" @onclick="ToggleSubPara">
-                        <Icon Name="IconName.PlusSquareFill" Size="IconSize.x5" Color="IconColor.White" /> &nbsp; Parametrage
-                    </NavLink>
-                    @if (isSubParaVisible)
-                    {
-                        <nav class="nav flex-column">
-                                <NavLink class="nav-link nav-sub" href="astrmenu">
-                                    <Icon Name="IconName.CaretRightSquare" /> &nbsp; Tables
-                                </NavLink>
-                                <NavLink class="nav-link nav-sub" href="iagrmenu">
-                                    <Icon Name="IconName.CaretRightSquare" /> &nbsp; Schemas
-                                </NavLink>
-                                <NavLink class="nav-link nav-sub" href="invitiw">
-                                    <Icon Name="IconName.CaretRightSquare" /> &nbsp; Invitation
-                                </NavLink>
-                        </nav>
-                    }
-                <NavLink class="nav-link nav-main" @onclick="ToggleSubProg">
-                        <Icon Name="IconName.PlusSquareFill" Size="IconSize.x5" Color="IconColor.White" /> &nbsp; Programmes
-                    </NavLink>
-                    @if (isSubProgVisible)
-                    {
-                        <nav class="nav flex-column">
-                        <NavLink class="nav-link nav-sub" href="prubmenu">
-                                    <Icon Name="IconName.CaretRightSquare" /> &nbsp; Plans
-                                </NavLink>
-                        <NavLink class="nav-link nav-sub" href="edtmenu">
-                                    <Icon Name="IconName.CaretRightSquare" /> &nbsp; Ecriture
-                                </NavLink>
-                        </nav>
-                    }
-                <NavLink class="nav-link nav-main" @onclick="ToggleSubSecu">
-                        <Icon Name="IconName.PlusSquareFill" Size="IconSize.x5" Color="IconColor.White" /> &nbsp; Securites
-                    </NavLink>
-                    @if (isSubSecuVisible)
-                    {
-                        <nav class="nav flex-column">
-                        <NavLink class="nav-link nav-sub" href="accsmenu">
-                                    <Icon Name="IconName.CaretRightSquare" /> &nbsp; Autorisations
-                                </NavLink>
-                        <NavLink class="nav-link nav-sub" href="donamenu">
-                                    <Icon Name="IconName.CaretRightSquare" /> &nbsp; Donnees
-                                </NavLink>
-                                <NavLink class="nav-link nav-sub" href="subitem2">
-                                    <Icon Name="IconName.CaretRightSquare" /> &nbsp; Outils
-                                </NavLink>
-                            @* <div class="nav-item px-3 py-0">
-                                <NavLink class="nav-link" href="repareg">
-                                    <Icon Name="IconName.CaretRightSquare" /> &nbsp; Rattrapage
-                                </NavLink>
-                            </div> *@
-                        <NavLink class="nav-link nav-sub" href="ownerpage">
-                            <Icon Name="IconName.CaretRightSquare" /> &nbsp; OwnerPage
+
+                <!-- INSTITUTION -->
+                <NavLink class="nav-link nav-main text-light small" href="aorgas">
+                    <i class="bi bi-building-gear me-2"></i> Institution
+                </NavLink>
+
+                <!-- PARAMETRAGE -->
+                <NavLink class="nav-link nav-main text-light small" @onclick="ToggleSubPara">
+                    <i class="bi bi-sliders2-vertical me-2"></i> Paramétrage
+                </NavLink>
+
+                <div class="submenu @(isSubParaVisible ? "open" : "")">
+                    <nav class="nav flex-column">
+
+                        <NavLink class="nav-link nav-sub text-light small ps-4" href="astrmenu">
+                            <i class="bi bi-table me-2"></i> Tables
                         </NavLink>
-                            <NavLink class="nav-link nav-main text-light" href="about">
-                                <i class="bi bi-key me-2" aria-hidden="true"></i> Analyses
-                            </NavLink>
-                        </nav>
-                    }
-                    <!--bi bi-list-nested-nav-menu-->
+
+                        <NavLink class="nav-link nav-sub text-light small ps-4" href="iagrmenu">
+                            <i class="bi bi-diagram-3-fill me-2"></i> Astreintes
+                        </NavLink>
+
+                        <NavLink class="nav-link nav-sub text-light small ps-4" href="invitiw">
+                            <i class="bi bi-envelope-plus me-2"></i> Invitation
+                        </NavLink>
+
+                    </nav>
+                </div>
+
+                <!-- PROGRAMMES -->
+                <NavLink class="nav-link nav-main text-light small" @onclick="ToggleSubProg">
+                    <i class="bi bi-journal-code me-2"></i> Programmes
+                </NavLink>
+
+                <div class="submenu @(isSubProgVisible ? "open" : "")">
+                    <nav class="nav flex-column">
+
+                        <NavLink class="nav-link nav-sub text-light small ps-4" href="prubmenu">
+                            <i class="bi bi-pin-map-fill me-2"></i> Plans
+                        </NavLink>
+
+                        <NavLink class="nav-link nav-sub text-light small ps-4" href="edtmenu">
+                            <i class="bi bi-pencil-square me-2"></i> Écriture
+                        </NavLink>
+
+                    </nav>
+                </div>
+
+                <!-- SECURITES -->
+                <NavLink class="nav-link nav-main text-light small" @onclick="ToggleSubSecu">
+                    <i class="bi bi-shield-lock-fill me-2"></i> Sécurités
+                </NavLink>
+
+                <div class="submenu @(isSubSecuVisible ? "open" : "")">
+                    <nav class="nav flex-column">
+
+                        <NavLink class="nav-link nav-sub text-light small ps-4" href="accsmenu">
+                            <i class="bi bi-unlock-fill me-2"></i> Autorisations
+                        </NavLink>
+
+                        <NavLink class="nav-link nav-sub text-light small ps-4" href="donamenu">
+                            <i class="bi bi-database-fill-gear me-2"></i> Données
+                        </NavLink>
+
+                        <NavLink class="nav-link nav-sub text-light small ps-4" href="subitem2">
+                            <i class="bi bi-tools me-2"></i> Outils
+                        </NavLink>
+
+                        <NavLink class="nav-link nav-sub text-light small ps-4" href="ownerpage">
+                            <i class="bi bi-person-badge-fill me-2"></i> Owner Page
+                        </NavLink>
+
+                    </nav>
+                </div>
+
+                <!-- ANALYSES -->
+                <NavLink class="nav-link nav-main text-light" href="analyses">
+                    <i class="bi bi-graph-up-arrow me-2"></i> Analyses
+                </NavLink>
+
             </Authorized>
         </AuthorizeView>
-        <NavLink class="nav-link nav-main" href="about">
-            <i class="bi bi-info-circle-fill me-2" aria-hidden="true"></i> About
+
+        <!-- ABOUT -->
+        <NavLink class="nav-link nav-main text-light" href="about">
+            <i class="bi bi-info-circle-fill me-2"></i> About
         </NavLink>
+
     </nav>
 </div>
+
 <style>
-    .nav-link.active {
-        background-color: #0d6efd !important;
-        color: white !important;
-        font-weight: 600;
-        border-radius: 0.3rem;
+    .top-row.navbar {
+        padding-left: 0 !important;
+        padding-right: 0 !important;
+        --bs-navbar-padding-y: 0.25rem; /* reduce vertical padding */
     }
 
-    .nav-link:hover {
-        background-color: rgba(255, 255, 255, 0.1);
-        color: #fff;
+    .top-row .navbar-brand {
+        margin-left: 0 !important;
+        padding-left: 0 !important;
+        font-size: 0.9rem; /* smaller text */
+        line-height: 1.2; /* tighter line spacing */
     }
 
-    .nav-main {
-        margin-left: 1rem; /* Main items slightly indented */
+    /* ========== SUBMENU ANIMATION ========== */
+    .submenu {
+        max-height: 0;
+        overflow: hidden;
+        opacity: 0;
+        transition: max-height 0.35s ease-out, opacity 0.25s ease-out, padding-left 0.3s ease-out;
+        padding-left: 0rem;
     }
 
+        /* When open, expand submenu */
+        .submenu.open {
+            max-height: 500px; /* Enough for many items */
+            opacity: 1;
+            padding-left: 0.5rem;
+        }
+
+    /* Style submenu links */
     .nav-sub {
-        margin-left: 2rem; /* Subitems more indented */
+        padding-left: 1.5rem !important;
+        transition: padding-left 0.25s ease;
     }
+
+        /* Hover effect on submenu items */
+        .nav-sub:hover {
+            padding-left: 1.7rem !important;
+            background-color: rgba(255, 255, 255, 0.08);
+            border-radius: 4px;
+        }
+
+    /* ========== ARROW ANIMATION (optional) ========== */
+    /* Place an arrow icon inside main menu items if needed */
+    .nav-main .arrow {
+        transition: transform 0.3s ease;
+        font-size: 0.8rem;
+    }
+
+    /* Rotate arrow when submenu is open */
+    .submenu.open ~ .nav-main .arrow,
+    .nav-main.open .arrow {
+        transform: rotate(90deg);
+    }
+
 </style>
 @code {
     [CascadingParameter]

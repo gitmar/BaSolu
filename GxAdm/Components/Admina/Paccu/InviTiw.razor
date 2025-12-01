@@ -11,10 +11,7 @@
 @using GxAdm.Services
 @using GxShared.Sess
 @using GxShared.Others
-@using GxShared.Auth
-@using GxShared.Enrol
-@using GxShared.Regis
-@using GxShared.Services
+@using GxShared.Identity
 @using GxShared.Helpers
 @using GxWapi.DaModels
 @using Microsoft.AspNetCore.WebUtilities
@@ -53,6 +50,30 @@ else
         @if (!isLoading)
         {
             <!-- Top Menu -->
+                <div class="innermenu-container d-flex align-items-center justify-content-start">
+                    <!-- Brand -->
+                    <button class="navbar-brand text-white d-flex align-items-center me-4"
+                            style="height:44px;" @onclick="() => NavigateBack()">
+                        <i class="bi bi-grid-3x3-gap-fill me-2"></i>
+                        A24soft Gx-Solutions
+                    </button>
+
+                    <!-- Nav Items -->
+                    <ul class="menu nav nav-pills d-flex align-items-center">
+                    <li>
+                        @if (_invRoles.Count > 0)
+                        {
+                            <InputSelect @bind-Value="Ugpe">
+                                <option value="0">choisir</option>
+                                @foreach (var gpe in LsGties.Where(tie => tie.Itb == 6))
+                                {
+                                    <option value="@gpe.Elea" @onclick="() => ChxGpeTiers(gpe)">@gpe.Liba</option>
+                                }
+                            </InputSelect>
+                        }
+                    </li>
+                </ul>
+            @* <!-- Top Menu -->
             <div class="content-and-sidebar-container bg-success bg-opacity-10">
                 <button class="navbar-brand text-left text-white bg-dark bg-opacity-75 me-2 py-0 px-1" style="height:44px;" @onclick="NavigateBack">
                     A24soft Gx-Solutions
@@ -72,7 +93,8 @@ else
                         }
                     </li>
                     <li><span class="separator">|</span></li>
-                </ul>
+                </ul> *@
+
             </div>
         }
     </div>   

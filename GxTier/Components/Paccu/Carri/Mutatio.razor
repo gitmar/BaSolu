@@ -16,9 +16,7 @@
 @using GxShared.Sess
 @using GxTie.ClieModels
 @using GxTie.Services
-@using GxTie.ClieModels
 @using GxTie.Components.Paccu.RtPer
-@using GxTie.Services
 @using GxWapi.DaModels
 @using Microsoft.AspNetCore.Components.Forms
 @using Microsoft.AspNetCore.WebUtilities
@@ -46,7 +44,7 @@
                 @* <span class="text-uppercase text- text-success"><b>@strComp</b></span> *@
                 @if (!allEnable)
                 {
-                    <span class="separator">&nbsp; &nbsp;|| </span>
+                    @* <span class="separator">&nbsp; &nbsp;|| </span> *@
                     <Button class="btn btn-sm btn-secondary btnsz"
                             style="@(!allEnable ? "" : "display:none;")"
                             @onclick="EdtAll">

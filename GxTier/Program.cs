@@ -3,7 +3,7 @@ using BlazorDownloadFile;
 using Blazored.LocalStorage;
 using GxTie;
 using GxShared.Sess;
-using GxShared.Services;
+using GxShared.Helpers;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;

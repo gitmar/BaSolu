@@ -8,8 +8,8 @@ using System.Diagnostics.Contracts;
 
 using GxShared;
 using GxShared.Sess;
-using GxShared.Auth;
 using GxShared.Others;
+using GxShared.Identity;
 
 namespace GxShared.Sess
 {

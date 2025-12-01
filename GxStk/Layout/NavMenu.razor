@@ -5,93 +5,149 @@
 
 @inject NavigationManager _navManager
 
-<div class="top-row mb-0 navbar navbar-dark bg-success shadow-sm bg-opacity-25">
-    <a class="navbar-brand text-white fw-bold" href="">Gx-Solutions</a>
-    <button class="navbar-toggler" type="button" @onclick="ToggleNavMenu">
+<div class="top-row mb-0 navbar navbar-dark bg-success shadow-sm bg-opacity-25 mt-0 navbar-slim">
+    <a class="navbar-brand text-white fw-bold" href="">
+        <i class="bi bi-gear-fill me-1"></i> Gx-Solutions <span class="text-warning fw-bold">(Stock)</span>
+    </a>
+    <button class="navbar-toggler btn btn-sm" type="button" @onclick="ToggleNavMenu">
         <span class="navbar-toggler-icon"></span>
     </button>
-</div>
-<div class="row text-center mt-0">
-    <span class="text-warning fw-bold">(Stock)</span>
 </div>
 
 <div class="@NavMenuCssClass bg-dark vh-100" style="overflow-y: auto;">
     <nav class="nav flex-column">
+
+        <!-- HOME -->
         <NavLink class="nav-link nav-main text-light small" href="" Match="NavLinkMatch.All">
-            <span class="bi bi-house-door-fill-nav-menu" aria-hidden="true"></span> Home
-         </NavLink>
+            <i class="bi bi-house-door-fill me-2"></i> Home
+        </NavLink>
+
         <AuthorizeView>
             <Authorized>
+
+                <!-- GStock -->
                 <NavLink class="nav-link nav-main text-light small" @onclick="ToggleSubManag">
-                    <Icon Name="IconName.PlusSquareFill" Size="IconSize.x5" Color="IconColor.White" /> &nbsp; GStock
+                    <i class="bi bi-boxes me-2"></i> GStock
                 </NavLink>
-                @if (isSubManagVisible)
-                {
+
+                <div class="submenu @(isSubManagVisible ? "open" : "")">
                     <nav class="nav flex-column">
-                            <NavLink class="nav-link nav-sub text-light small" href="enrolmenu">
-                                <Icon Name="IconName.CaretRightSquare" /> &nbsp; Reception
-                            </NavLink>
+                        <NavLink class="nav-link nav-sub text-light small" href="enrolmenu">
+                            <i class="bi bi-arrow-down-square me-2"></i> Reception
+                        </NavLink>
+
                         <NavLink class="nav-link nav-sub text-light small" href="carrimenu">
-                                <Icon Name="IconName.CaretRightSquare" /> &nbsp; Mouvement
-                            </NavLink>
+                            <i class="bi bi-arrow-left-right me-2"></i> Mouvement
+                        </NavLink>
+
                         <NavLink class="nav-link nav-sub text-light small" href="subitem3">
-                                <Icon Name="IconName.CaretRightSquare" /> &nbsp; Editions
-                            </NavLink>
+                            <i class="bi bi-file-earmark-text me-2"></i> Editions
+                        </NavLink>
                     </nav>
-                }
+                </div>
+
+                <!-- OPERATIONS -->
                 <NavLink class="nav-link nav-main text-light small" @onclick="ToggleSubOper">
-                        <Icon Name="IconName.PlusSquareFill" Size="IconSize.x5" Color="IconColor.White" /> &nbsp; Operations
-                    </NavLink>
-                @if (isSubOperVisible)
-                {
-                    <nav class="nav flex-column">
-                        <NavLink class="nav-link nav-sub text-light small" href="saieactlnes">
-                                <Icon Name="IconName.CaretRightSquare" /> &nbsp; Achats
-                            </NavLink>
-                        <NavLink class="nav-link nav-sub text-light small" href="saieactlnes">
-                                <Icon Name="IconName.CaretRightSquare" /> &nbsp; Ventes
-                            </NavLink>
-                        <NavLink class="nav-link nav-sub text-light small" href="calcreslnes">
-                                <Icon Name="IconName.CaretRightSquare" /> &nbsp; Calculs
-                            </NavLink>
-                        <NavLink class="nav-link nav-sub text-light small" href="subitem3">
-                                <Icon Name="IconName.CaretRightSquare" /> &nbsp; Editions
-                            </NavLink>
-                    </nav>
-                }
-                <NavLink class="nav-link nav-main text-light" href="about">
-                    <i class="bi bi-key me-2" aria-hidden="true"></i> Analyses
+                    <i class="bi bi-clipboard-data-fill me-2"></i> Operations
                 </NavLink>
+
+                <div class="submenu @(isSubOperVisible ? "open" : "")">
+                    <nav class="nav flex-column">
+
+                        <NavLink class="nav-link nav-sub text-light small" href="saieactlnes">
+                            <i class="bi bi-cart-plus me-2"></i> Achats
+                        </NavLink>
+
+                        <NavLink class="nav-link nav-sub text-light small" href="saieactlnes">
+                            <i class="bi bi-cart-check me-2"></i> Ventes
+                        </NavLink>
+
+                        <NavLink class="nav-link nav-sub text-light small" href="calcreslnes">
+                            <i class="bi bi-calculator me-2"></i> Calculs
+                        </NavLink>
+
+                        <NavLink class="nav-link nav-sub text-light small" href="subitem3">
+                            <i class="bi bi-file-earmark-text me-2"></i> Editions
+                        </NavLink>
+
+                    </nav>
+                </div>
+
+                <!-- Analyses -->
+                <NavLink class="nav-link nav-main text-light" href="about">
+                    <i class="bi bi-bar-chart-line-fill me-2"></i> Analyses
+                </NavLink>
+
             </Authorized>
         </AuthorizeView>
+
+        <!-- Agendas -->
         <NavLink class="nav-link nav-main text-light" href="about">
-            <i class="bi bi-calendar3 me-2" aria-hidden="true"></i> Agendas
+            <i class="bi bi-calendar3 me-2"></i> Agendas
         </NavLink>
+
+        <!-- About -->
         <NavLink class="nav-link nav-main text-light" href="about">
-            <i class="bi bi-info-circle-fill me-2" aria-hidden="true"></i> About
+            <i class="bi bi-info-circle-fill me-2"></i> About
         </NavLink>
     </nav>
 </div>
+
 <style>
-    .nav-link.active {
-        background-color: #0d6efd !important;
-        color: white !important;
-        font-weight: 600;
-        border-radius: 0.3rem;
+    .top-row.navbar {
+        padding-left: 0 !important;
+        padding-right: 0 !important;
+        --bs-navbar-padding-y: 0.25rem; /* reduce vertical padding */
     }
 
-    .nav-link:hover {
-        background-color: rgba(255, 255, 255, 0.1);
-        color: #fff;
+    .top-row .navbar-brand {
+        margin-left: 0 !important;
+        padding-left: 0 !important;
+        font-size: 0.9rem; /* smaller text */
+        line-height: 1.2; /* tighter line spacing */
+    }
+    /* ========== SUBMENU ANIMATION ========== */
+    .submenu {
+        max-height: 0;
+        overflow: hidden;
+        opacity: 0;
+        transition: max-height 0.35s ease-out, opacity 0.25s ease-out, padding-left 0.3s ease-out;
+        padding-left: 0rem;
     }
 
-    .nav-main {
-        margin-left: 1rem; /* Main items slightly indented */
-    }
+        /* When open, expand submenu */
+        .submenu.open {
+            max-height: 500px; /* Enough for many items */
+            opacity: 1;
+            padding-left: 0.5rem;
+        }
 
+    /* Style submenu links */
     .nav-sub {
-        margin-left: 2rem; /* Subitems more indented */
+        padding-left: 1.5rem !important;
+        transition: padding-left 0.25s ease;
     }
+
+        /* Hover effect on submenu items */
+        .nav-sub:hover {
+            padding-left: 1.7rem !important;
+            background-color: rgba(255, 255, 255, 0.08);
+            border-radius: 4px;
+        }
+
+    /* ========== ARROW ANIMATION (optional) ========== */
+    /* Place an arrow icon inside main menu items if needed */
+    .nav-main .arrow {
+        transition: transform 0.3s ease;
+        font-size: 0.8rem;
+    }
+
+    /* Rotate arrow when submenu is open */
+    .submenu.open ~ .nav-main .arrow,
+    .nav-main.open .arrow {
+        transform: rotate(90deg);
+    }
+
 </style>
 @code {
     [CascadingParameter]

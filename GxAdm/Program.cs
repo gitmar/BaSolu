@@ -3,10 +3,8 @@ using System.Net.Http.Headers;
 using BlazorDownloadFile;
 using Blazored.LocalStorage;
 using GxAdm.Services;
-using GxAdm.Helpers;
 using GxAdm.ClieModels;
-
-using GxShared.Services;
+using GxShared.Helpers;
 using GxShared.Sess;
 
 using Microsoft.AspNetCore.Components.Authorization;

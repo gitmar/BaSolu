@@ -1,5 +1,6 @@
 ﻿@page "/editmenu"
-@inherits FreeLayout
+@inherits LayoutComponentBase
+@layout FreeLayout
 
 @using Microsoft.OData.Client
 @using System.Security.Claims
@@ -20,55 +21,56 @@
 
 @if (isLoading)
 {
-    <Progress class="progress mb-3">
-        <ProgressBar Width="30" Label="Loading..." Type="ProgressType.StripedAndAnimated" Color="ProgressColor.Primary" />
-    </Progress>
+<Progress class="progress mb-3">
+    <ProgressBar Width="30" Label="Loading..." Type="ProgressType.StripedAndAnimated" Color="ProgressColor.Primary" />
+</Progress>
 }
 @if (!isLoading)
 {
-    <div class="mag-screen-layout">
-        <div class="container" style="height: 100vh;">
-            <div class="d-flex flex-column" style="height: 100%;">
-                <!-- Top Menu -->
-                <div class="content-and-sidebar-container bg-success bg-opacity-10">
-                    <button class="navbar-brand text-left text-white bg-dark bg-opacity-75 me-2 py-0 px-1" style="height:44px;" @onclick="NavigateBack">
-                        A24soft Gx-Solutions
-                    </button>
-                    <div><span class="separator">||</span></div>
-                    <ul class="menu">
-                        <li><NavLink @onclick="() => SelMenu(1)" class="nav-item" ActiveClass="active">Fiches</NavLink></li>
-                        <li><span class="separator">|</span></li>
-                        <li><NavLink @onclick="() => SelMenu(2)" class="nav-item">Listes</NavLink></li>
-                    </ul>
-                </div>
-                <!-- Main Content -->
-                @if (this != null)
-                {
-                    <CascadingValue Value="this" Name="EditPage">
-                        @* <CascadingValue Value="@_gODContext"> *@
-                            @if (chxMenu == 1)
-                            {
-                                <Plnprogs>
-                                    <ChildContent>
-                                        <h2 class="child-box">Hello FICHES</h2>
-                                    </ChildContent>
-                                </Plnprogs>
-                            }
-                            else if (chxMenu == 2)
-                            {
-                                @* LISTES
-                                    <Pgcalculs>
-                                    <ChildContent>
-                                        <h2 class="child-box">Hello CALCULS</h2>
-                                    </ChildContent>
-                                </Pgcalculs> *@
-                            }
-                        @* </CascadingValue> *@
-                    </CascadingValue>
-                }
-            </div>
+<div class="gx-screen-layout">
+    <div class="container gx-parent-container" style="height: 100vh;">
+        <!-- Top Menu -->
+        <div class="content-and-sidebar-container bg-success bg-opacity-10">
+            <button class="navbar-brand text-left text-white bg-dark bg-opacity-75 me-2 py-0 px-1" style="height:44px;" @onclick="NavigateBack">
+                A24soft Gx-Solutions
+            </button>
+            <div><span class="separator">||</span></div>
+            <ul class="menu">
+                <li><NavLink @onclick="() => SelMenu(1)" class="nav-item" ActiveClass="active">Fiches</NavLink></li>
+                <li><span class="separator">|</span></li>
+                <li><NavLink @onclick="() => SelMenu(2)" class="nav-item">Listes</NavLink></li>
+            </ul>
         </div>
+        <!-- Main Content -->
+        @if (this != null)
+        {
+        <CascadingValue Value="this" Name="EditPage">
+            @* <CascadingValue Value="@_gODContext">
+                *@
+                @if (chxMenu == 1)
+                {
+                <Plnprogs>
+                    <ChildContent>
+                        <h2 class="child-box">Hello FICHES</h2>
+                    </ChildContent>
+                </Plnprogs>
+                }
+                else if (chxMenu == 2)
+                {
+                @* LISTES
+                <Pgcalculs>
+                    <ChildContent>
+                        <h2 class="child-box">Hello CALCULS</h2>
+                    </ChildContent>
+                </Pgcalculs> *@
+                }
+                @*
+            </CascadingValue> *@
+        </CascadingValue>
+        }
     </div>
+</div>
+</div>
 }
 @code {
     [Parameter]
@@ -77,7 +79,8 @@
     public RenderFragment Gtables { get; set; }
 
     [CascadingParameter]
-    private Task<AuthenticationState>? AuthState { get; set; }
+    private Task<AuthenticationState>
+    ? AuthState { get; set; }
     private bool isOwner = false;
     public ClaimsPrincipal authUser;
     public bool isAuthenticated = false;
@@ -85,218 +88,262 @@
     public int vientDe = 1;
     //Loaded Data
     //public Gxorga curOrga = new Gxorga();
-    public IQueryable<Plngen> ensPlans;
+    public IQueryable<Plngen>
+        ensPlans;
 
-    public int _UorgId = 0;
-    public string _UserId = "", _strOrga = "", _curSigle = "", strmeta = "", strmeta2 = "";
+        public int _UorgId = 0;
+        public string _UserId = "", _strOrga = "", _curSigle = "", strmeta = "", strmeta2 = "";
 
-    //entities load
-    // public IQueryable<Tiewel> LsTwels = Enumerable.Empty<Tiewel>().AsQueryable();
-    // private List<Tiewel> InTwels = new List<Tiewel>();
-    // public IQueryable<Tiersp> LsTiers = Enumerable.Empty<Tiersp>().AsQueryable();
-    // private List<Tiersp> InTiers = new List<Tiersp>();
-    // public IQueryable<Gsapl> InApls = Enumerable.Empty<Gsapl>().AsQueryable();
-    // public IEnumerable<Tiewel> ResTiw;
-    // public IEnumerable<Tiersp> ResTie;
-    // public Tiewel opTwel = new();
-    // public Tiersp opTier = new();
-    //LocModels
-    public List<Upara> Uafls = new List<Upara>();
-    //GlobModels
-    public Userbag _usrBag = new Userbag();
-    public Usaibag ColBag = new Usaibag();
-    public List<Gpfixe> LsFixes = new List<Gpfixe>();
-    // public List<Gpfixe> LsTgpes = new List<Gpfixe>();
+        //entities load
+        // public IQueryable<Tiewel>
+            LsTwels = Enumerable.Empty<Tiewel>
+                ().AsQueryable();
+                // private List<Tiewel>
+                    InTwels = new List<Tiewel>
+                        ();
+                        // public IQueryable<Tiersp>
+                            LsTiers = Enumerable.Empty<Tiersp>
+                                ().AsQueryable();
+                                // private List<Tiersp>
+                                    InTiers = new List<Tiersp>
+                                        ();
+                                        // public IQueryable<Gsapl>
+                                            InApls = Enumerable.Empty<Gsapl>
+                                                ().AsQueryable();
+                                                // public IEnumerable<Tiewel>
+                                                    ResTiw;
+                                                    // public IEnumerable<Tiersp>
+                                                        ResTie;
+                                                        // public Tiewel opTwel = new();
+                                                        // public Tiersp opTier = new();
+                                                        //LocModels
+                                                        public List<Upara>
+                                                            Uafls = new List<Upara>
+                                                                ();
+                                                                //GlobModels
+                                                                public Userbag _usrBag = new Userbag();
+                                                                public Usaibag ColBag = new Usaibag();
+                                                                public List<Gpfixe>
+                                                                    LsFixes = new List<Gpfixe>
+                                                                        ();
+                                                                        // public List<Gpfixe>
+                                                                            LsTgpes = new List<Gpfixe>
+                                                                                ();
 
-    public Gporga rfOrga = new Gporga();
-    private IEnumerable<Gxorga> _lsOrgas = new List<Gxorga>();
-    public List<Gphie> LsDivs = new List<Gphie>();
-    public List<Gpvar> LsVars = new List<Gpvar>();
-    public List<Gsgfix> LsTables = new List<Gsgfix>();
-    public List<Gpvar> LtTabls = new List<Gpvar>();
-    public List<Gpvar> LsTabls = new List<Gpvar>();
-    public List<Gpvar> TbElems = new List<Gpvar>();
-    public List<Clvar> LsCols = new List<Clvar>();
-    //gpe choix
-    //private List<MyRolTable> _inRoles = new List<MyRolTable>();
-    // private List<Apirole> _invRoles = new List<Apirole>();
-    //Navigation
-    private int chxMenu = 1;
-    // public int Ugpe = 0; //gpe type
-    // string gpeLiba = "";
-    //modal management
-    private bool isLoading = true;
-    private string SidebarStyle = "width: 200px;";
-    private bool IsOpen = true;
-    private bool FirstLoadCompleted = false;
-    private bool ContentLoaded = false;
+                                                                                public Gporga rfOrga = new Gporga();
+                                                                                private IEnumerable<Gxorga>
+                                                                                    _lsOrgas = new List<Gxorga>
+                                                                                        ();
+                                                                                        public List<Gphie>
+                                                                                            LsDivs = new List<Gphie>
+                                                                                                ();
+                                                                                                public List<Gpvar>
+                                                                                                    LsVars = new List<Gpvar>
+                                                                                                        ();
+                                                                                                        public List<Gsgfix>
+                                                                                                            LsTables = new List<Gsgfix>
+                                                                                                                ();
+                                                                                                                public List<Gpvar>
+                                                                                                                    LtTabls = new List<Gpvar>
+                                                                                                                        ();
+                                                                                                                        public List<Gpvar>
+                                                                                                                            LsTabls = new List<Gpvar>
+                                                                                                                                ();
+                                                                                                                                public List<Gpvar>
+                                                                                                                                    TbElems = new List<Gpvar>
+                                                                                                                                        ();
+                                                                                                                                        public List<Clvar>
+                                                                                                                                            LsCols = new List<Clvar>
+                                                                                                                                                ();
+                                                                                                                                                //gpe choix
+                                                                                                                                                //private List<MyRolTable>
+                                                                                                                                                    _inRoles = new List<MyRolTable>
+                                                                                                                                                        ();
+                                                                                                                                                        // private List<Apirole>
+                                                                                                                                                            _invRoles = new List<Apirole>
+                                                                                                                                                                ();
+                                                                                                                                                                //Navigation
+                                                                                                                                                                private int chxMenu = 1;
+                                                                                                                                                                // public int Ugpe = 0; //gpe type
+                                                                                                                                                                // string gpeLiba = "";
+                                                                                                                                                                //modal management
+                                                                                                                                                                private bool isLoading = true;
+                                                                                                                                                                private string SidebarStyle = "width: 200px;";
+                                                                                                                                                                private bool IsOpen = true;
+                                                                                                                                                                private bool FirstLoadCompleted = false;
+                                                                                                                                                                private bool ContentLoaded = false;
 
-    protected override async Task OnInitializedAsync()
-    {
-        isLoading = true;
-        int pita = 0;
-        try
-        {
-            ////Console.WriteLine("TIERS EN TEST");
-            //MainTiw = this;
-            var authState = await AuthState;
-            authUser = authState.User;
-            isAuthenticated = authUser.Identity.IsAuthenticated;
-            if (!isAuthenticated)
-            {
-                Console.WriteLine("Authentication ECHEC");
-                return;
-            }
-            _UserId = authUser.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            var curUname = authUser.Identity.Name; //or claims
-            _UorgId = await _localStorage.GetItemAsync<int>("blazOrgid");
-            //pita = 3;
-            if (!string.IsNullOrEmpty(_UserId) && _UorgId > 1000)
-            {
-                Console.WriteLine($"DEPART UserBag : {_UserId} / {_UorgId}");
-                _usrBag = await _dbusrManager.GetMyDataAsync(_UserId, _UorgId);
-                //pita = 4;
-                ColBag = await _usaieManager.GetMyInputAsync(_UserId, _UorgId);
-                //pita = 5;
-                isOwner = _usrBag.SiOwner;
-                rfOrga = _usrBag.Usorga;
-                Console.WriteLine($"RETOUR UserBag...{_usrBag.Ufixes.Count()}");
-                if ((!_usrBag.Ufixes.Any()) ||
-                       _usrBag.Yauser == false)
-                {
-                    Console.WriteLine("Echec Invite, recommencez.login/support...");
-                }
-                Uafls = new List<Upara>();
-                var wufl = new Upara();
-                wufl.Tfl = 2;
-                wufl.Title = "CONJOINT(ES)";
-                wufl.Uabg = "cnj";
-                wufl.Uya = _usrBag.Usorga.Sicnjoint;
-                wufl.Umax = _usrBag.Usorga.Cnjmax;
-                Uafls.Add(wufl);
-                wufl = new Upara();
-                wufl.Tfl = 3;
-                wufl.Title = "PARENT(S)";
-                wufl.Uabg = "par";
-                wufl.Uya = _usrBag.Usorga.Siparent;
-                wufl.Umax = _usrBag.Usorga.Parmax;
-                Uafls.Add(wufl);
-                wufl = new Upara();
-                wufl.Tfl = 4;
-                wufl.Title = "ENFANT(S)";
-                wufl.Uabg = "enf";
-                wufl.Uya = _usrBag.Usorga.Sienfant;
-                wufl.Umax = _usrBag.Usorga.Enfmax;
-                Uafls.Add(wufl);
-                wufl = new Upara();
-                wufl.Tfl = 5;
-                wufl.Title = "PARAIN(S)";
-                wufl.Uabg = "pai";
-                wufl.Uya = _usrBag.Usorga.Siparain;
-                wufl.Umax = _usrBag.Usorga.Paimax;
-                Uafls.Add(wufl);
-                wufl = new Upara();
-                wufl.Tfl = 6;
-                wufl.Title = "FILHEUL(S)";
-                wufl.Uabg = "flh";
-                wufl.Uya = _usrBag.Usorga.Sifiheul;
-                wufl.Umax = _usrBag.Usorga.Flhmax;
-                Uafls.Add(wufl);
+                                                                                                                                                                protected override async Task OnInitializedAsync()
+                                                                                                                                                                {
+                                                                                                                                                                isLoading = true;
+                                                                                                                                                                int pita = 0;
+                                                                                                                                                                try
+                                                                                                                                                                {
+                                                                                                                                                                ////Console.WriteLine("TIERS EN TEST");
+                                                                                                                                                                //MainTiw = this;
+                                                                                                                                                                var authState = await AuthState;
+                                                                                                                                                                authUser = authState.User;
+                                                                                                                                                                isAuthenticated = authUser.Identity.IsAuthenticated;
+                                                                                                                                                                if (!isAuthenticated)
+                                                                                                                                                                {
+                                                                                                                                                                Console.WriteLine("Authentication ECHEC");
+                                                                                                                                                                return;
+                                                                                                                                                                }
+                                                                                                                                                                _UserId = authUser.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                                                                                                                                                                var curUname = authUser.Identity.Name; //or claims
+                                                                                                                                                                _UorgId = await _localStorage.GetItemAsync<int>
+                                                                                                                                                                    ("blazOrgid");
+                                                                                                                                                                    //pita = 3;
+                                                                                                                                                                    if (!string.IsNullOrEmpty(_UserId) && _UorgId > 1000)
+                                                                                                                                                                    {
+                                                                                                                                                                    Console.WriteLine($"DEPART UserBag : {_UserId} / {_UorgId}");
+                                                                                                                                                                    _usrBag = await _dbusrManager.GetMyDataAsync(_UserId, _UorgId);
+                                                                                                                                                                    //pita = 4;
+                                                                                                                                                                    ColBag = await _usaieManager.GetMyInputAsync(_UserId, _UorgId);
+                                                                                                                                                                    //pita = 5;
+                                                                                                                                                                    isOwner = _usrBag.SiOwner;
+                                                                                                                                                                    rfOrga = _usrBag.Usorga;
+                                                                                                                                                                    Console.WriteLine($"RETOUR UserBag...{_usrBag.Ufixes.Count()}");
+                                                                                                                                                                    if ((!_usrBag.Ufixes.Any()) ||
+                                                                                                                                                                    _usrBag.Yauser == false)
+                                                                                                                                                                    {
+                                                                                                                                                                    Console.WriteLine("Echec Invite, recommencez.login/support...");
+                                                                                                                                                                    }
+                                                                                                                                                                    Uafls = new List<Upara>
+                                                                                                                                                                        ();
+                                                                                                                                                                        var wufl = new Upara();
+                                                                                                                                                                        wufl.Tfl = 2;
+                                                                                                                                                                        wufl.Title = "CONJOINT(ES)";
+                                                                                                                                                                        wufl.Uabg = "cnj";
+                                                                                                                                                                        wufl.Uya = _usrBag.Usorga.Sicnjoint;
+                                                                                                                                                                        wufl.Umax = _usrBag.Usorga.Cnjmax;
+                                                                                                                                                                        Uafls.Add(wufl);
+                                                                                                                                                                        wufl = new Upara();
+                                                                                                                                                                        wufl.Tfl = 3;
+                                                                                                                                                                        wufl.Title = "PARENT(S)";
+                                                                                                                                                                        wufl.Uabg = "par";
+                                                                                                                                                                        wufl.Uya = _usrBag.Usorga.Siparent;
+                                                                                                                                                                        wufl.Umax = _usrBag.Usorga.Parmax;
+                                                                                                                                                                        Uafls.Add(wufl);
+                                                                                                                                                                        wufl = new Upara();
+                                                                                                                                                                        wufl.Tfl = 4;
+                                                                                                                                                                        wufl.Title = "ENFANT(S)";
+                                                                                                                                                                        wufl.Uabg = "enf";
+                                                                                                                                                                        wufl.Uya = _usrBag.Usorga.Sienfant;
+                                                                                                                                                                        wufl.Umax = _usrBag.Usorga.Enfmax;
+                                                                                                                                                                        Uafls.Add(wufl);
+                                                                                                                                                                        wufl = new Upara();
+                                                                                                                                                                        wufl.Tfl = 5;
+                                                                                                                                                                        wufl.Title = "PARAIN(S)";
+                                                                                                                                                                        wufl.Uabg = "pai";
+                                                                                                                                                                        wufl.Uya = _usrBag.Usorga.Siparain;
+                                                                                                                                                                        wufl.Umax = _usrBag.Usorga.Paimax;
+                                                                                                                                                                        Uafls.Add(wufl);
+                                                                                                                                                                        wufl = new Upara();
+                                                                                                                                                                        wufl.Tfl = 6;
+                                                                                                                                                                        wufl.Title = "FILHEUL(S)";
+                                                                                                                                                                        wufl.Uabg = "flh";
+                                                                                                                                                                        wufl.Uya = _usrBag.Usorga.Sifiheul;
+                                                                                                                                                                        wufl.Umax = _usrBag.Usorga.Flhmax;
+                                                                                                                                                                        Uafls.Add(wufl);
 
-                var idplnadm = _usrBag.Usorga.Schba;
-                LsDivs = _usrBag.Usorga.Uhies.Where(uh => uh.Idpln == idplnadm && uh.Sidiv == 1).ToList();
-                LsVars = _usrBag.Usorga.Uvars.ToList();
-                LsFixes = _usrBag.Ufixes.ToList();
-                LtTabls = _usrBag.Usorga.Uvars.Where(tb => tb.Gvars == 4).ToList();
-                LsTabls = _usrBag.Usorga.Uvars.Where(tb => tb.Gvars == 5).ToList();
-                LsCols = ColBag.Ucols.Where(uv => uv.Jtyp == 1).OrderBy(uv => uv.Ydpd).ToList();
-                TbElems = _usrBag.Usorga.Uvars.Where(uv => uv.Gvars == 5 && uv.Ade == 1 && uv.Elea != 0).ToList();
-                //ensemble des roles
-                var _allRoles = _usrBag.Allroles;
-                var _usrRoles = _usrBag.Allroles.Where(ur => ur.Sicur == true).ToList();
-                int minrol = _usrBag.Usprof.Rlmin;
-                Console.WriteLine($"ON AVANCE1 : {minrol} owner: {isOwner}");
-                // _invRoles = new List<Apirole>();
-                // foreach (var unrol in _allRoles.Where(uro => uro.Level > minrol))
-                // {
-                //     _invRoles.Add(unrol);
-                // }
-                // Console.WriteLine($"inv roles : {_invRoles.Count()}");
+                                                                                                                                                                        var idplnadm = _usrBag.Usorga.Schba;
+                                                                                                                                                                        LsDivs = _usrBag.Usorga.Uhies.Where(uh => uh.Idpln == idplnadm && uh.Sidiv == 1).ToList();
+                                                                                                                                                                        LsVars = _usrBag.Usorga.Uvars.ToList();
+                                                                                                                                                                        LsFixes = _usrBag.Ufixes.ToList();
+                                                                                                                                                                        LtTabls = _usrBag.Usorga.Uvars.Where(tb => tb.Gvars == 4).ToList();
+                                                                                                                                                                        LsTabls = _usrBag.Usorga.Uvars.Where(tb => tb.Gvars == 5).ToList();
+                                                                                                                                                                        LsCols = ColBag.Ucols.Where(uv => uv.Jtyp == 1).OrderBy(uv => uv.Ydpd).ToList();
+                                                                                                                                                                        TbElems = _usrBag.Usorga.Uvars.Where(uv => uv.Gvars == 5 && uv.Ade == 1 && uv.Elea != 0).ToList();
+                                                                                                                                                                        //ensemble des roles
+                                                                                                                                                                        var _allRoles = _usrBag.Allroles;
+                                                                                                                                                                        var _usrRoles = _usrBag.Allroles.Where(ur => ur.Sicur == true).ToList();
+                                                                                                                                                                        int minrol = _usrBag.Usprof.Rlmin;
+                                                                                                                                                                        Console.WriteLine($"ON AVANCE1 : {minrol} owner: {isOwner}");
+                                                                                                                                                                        // _invRoles = new List<Apirole>
+                                                                                                                                                                            ();
+                                                                                                                                                                            // foreach (var unrol in _allRoles.Where(uro => uro.Level > minrol))
+                                                                                                                                                                            // {
+                                                                                                                                                                            //     _invRoles.Add(unrol);
+                                                                                                                                                                            // }
+                                                                                                                                                                            // Console.WriteLine($"inv roles : {_invRoles.Count()}");
 
-                // Ugpe = 1; //initial Cible
-                Console.WriteLine("Authentication ENTREE");
-                ////EnrolVue.ShowSubmenu();
-                pita = 21;
-                //await LoadROrgaAsync();
-                await LoadRubOrgaAsync();
-                //pita = 5;
-                Console.WriteLine("TIERS A ETE TESTE");
-                isLoading = false;
-                //yainfo = true; infomess = "donnees chargees";
-                //StateHasChanged();
-            }
-            else
-            {
-                ////EnrolVue.ShowSubmenu();
-                isLoading = false;
-                return;
-            }
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"8Usrbag ou Tiewel call failed : // {ex.Message}");
-        }
-    }
-    //changes des selections
+                                                                                                                                                                            // Ugpe = 1; //initial Cible
+                                                                                                                                                                            Console.WriteLine("Authentication ENTREE");
+                                                                                                                                                                            ////EnrolVue.ShowSubmenu();
+                                                                                                                                                                            pita = 21;
+                                                                                                                                                                            //await LoadROrgaAsync();
+                                                                                                                                                                            await LoadRubOrgaAsync();
+                                                                                                                                                                            //pita = 5;
+                                                                                                                                                                            Console.WriteLine("TIERS A ETE TESTE");
+                                                                                                                                                                            isLoading = false;
+                                                                                                                                                                            //yainfo = true; infomess = "donnees chargees";
+                                                                                                                                                                            //StateHasChanged();
+                                                                                                                                                                            }
+                                                                                                                                                                            else
+                                                                                                                                                                            {
+                                                                                                                                                                            ////EnrolVue.ShowSubmenu();
+                                                                                                                                                                            isLoading = false;
+                                                                                                                                                                            return;
+                                                                                                                                                                            }
+                                                                                                                                                                            }
+                                                                                                                                                                            catch (Exception ex)
+                                                                                                                                                                            {
+                                                                                                                                                                            Console.WriteLine($"8Usrbag ou Tiewel call failed : // {ex.Message}");
+                                                                                                                                                                            }
+                                                                                                                                                                            }
+                                                                                                                                                                            //changes des selections
 
-    //CRUD
-    private async Task LoadRubOrgaAsync()
-    {
-        int pisa = 2;
-        try
-        {
-            var token = await _localStorage.GetItemAsync<string>("blazToken");
-            _gODContext = new MyODataContext(new Uri("https://localhost:7095/odata"), token);
-            //var expand = "Plngens($expand=Rubvars($expand=Rubfmts),Rubhies($expand=Rubpsts),Gsgfixes)";
-            //var expand = "Plngens($expand=Rubhies),Gsgfixes";
-            //var expand = "Plngens($expand=Rubhies($expand=Rubpsts)),Gsgfixes";
-            //var expand="$expand=Plngens($expand=Rubvars($expand=Rubfmts),Rubhies($expand=Rubpsts)),Gsgfixes";
-            //var expand2 = "Plngens,Plngens($expand=Rubhies,Rubhies($expand=Rubpsts)),Gsgfixes)";
-            //var expand ="$expand=Plngens($expand=Rubhies($expand=Rubpsts))";
-            //var expand = "$expand=Plngens($expand=Rubvars($expand=Rubfmts))";
-            //var expand = "$expand=Plngens($expand=Rubvars($expand=Rubfmts),Rubhies($expand=Rubpsts)),Gsgfixes";
-            //var expand3 = "Plngens($expand=Rubvars($expand=Rubfmts),$expand=Rubhies($expand=Rubpsts))";
-            //var expand4 = "Plngens,Plngens($expand=Rubvars,Rubhies)";
-            var expand = "Rubvars($expand=Rubfmts),Rubhies($expand=Rubpsts)";
+                                                                                                                                                                            //CRUD
+                                                                                                                                                                            private async Task LoadRubOrgaAsync()
+                                                                                                                                                                            {
+                                                                                                                                                                            int pisa = 2;
+                                                                                                                                                                            try
+                                                                                                                                                                            {
+                                                                                                                                                                            var token = await _localStorage.GetItemAsync<string>
+                                                                                                                                                                                ("blazToken");
+                                                                                                                                                                                _gODContext = new MyODataContext(new Uri("https://localhost:7095/odata"), token);
+                                                                                                                                                                                //var expand = "Plngens($expand=Rubvars($expand=Rubfmts),Rubhies($expand=Rubpsts),Gsgfixes)";
+                                                                                                                                                                                //var expand = "Plngens($expand=Rubhies),Gsgfixes";
+                                                                                                                                                                                //var expand = "Plngens($expand=Rubhies($expand=Rubpsts)),Gsgfixes";
+                                                                                                                                                                                //var expand="$expand=Plngens($expand=Rubvars($expand=Rubfmts),Rubhies($expand=Rubpsts)),Gsgfixes";
+                                                                                                                                                                                //var expand2 = "Plngens,Plngens($expand=Rubhies,Rubhies($expand=Rubpsts)),Gsgfixes)";
+                                                                                                                                                                                //var expand ="$expand=Plngens($expand=Rubhies($expand=Rubpsts))";
+                                                                                                                                                                                //var expand = "$expand=Plngens($expand=Rubvars($expand=Rubfmts))";
+                                                                                                                                                                                //var expand = "$expand=Plngens($expand=Rubvars($expand=Rubfmts),Rubhies($expand=Rubpsts)),Gsgfixes";
+                                                                                                                                                                                //var expand3 = "Plngens($expand=Rubvars($expand=Rubfmts),$expand=Rubhies($expand=Rubpsts))";
+                                                                                                                                                                                //var expand4 = "Plngens,Plngens($expand=Rubvars,Rubhies)";
+                                                                                                                                                                                var expand = "Rubvars($expand=Rubfmts),Rubhies($expand=Rubpsts)";
 
-            //var expand = "$expand=Plngens($expand=Rubvars($expand=Rubfmts);Rubhies($expand=Rubpsts));Gsgfixes";
-            //var expand = "Plngens($expand=Rubhies),Gsgfixes";
-            var dxplans = await _gODContext.LoadFilteredAsync<Plngen>(expand: expand);
-            pisa = 3;
-            ensPlans = dxplans.AsQueryable();
-            if (ensPlans == null)
-            {
-                Console.WriteLine("No tiers found for the current state.");
-                return;
-            }
-            Console.WriteLine($"tiers recus {ensPlans.Count()}");
-            pisa = 4;
-            //Console.WriteLine($"nb pln test : {pisa} et {ensPlans.Count()}");
-            // Console.WriteLine($"orga recu {curOrga.Raison}");
-            // pisa = 4;
-            // Console.WriteLine($"nb pln test : {pisa} et {curOrga.Plngens.Count()}");
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"stack trace : {ex.StackTrace} place : {pisa} ex-mess : {ex.Message} and also in-mess: {ex.InnerException}");
-        }
-    }
-    // private async Task LoadOFmtsPsts()
-    // {
-    //     //FmtPsts
-    //     var indata = await _cliemanager.SendRequestAsync("AUTHClient", HttpMethod.Get, "lgauth/fmtpst");
-    //     //Console.WriteLine($"21RECU DE LOGIN {strcall}");
-    //     var inResu = JsonConvert.DeserializeObject<List<DTOfmtpst>>(indata);
+                                                                                                                                                                                //var expand = "$expand=Plngens($expand=Rubvars($expand=Rubfmts);Rubhies($expand=Rubpsts));Gsgfixes";
+                                                                                                                                                                                //var expand = "Plngens($expand=Rubhies),Gsgfixes";
+                                                                                                                                                                                var dxplans = await _gODContext.LoadFilteredAsync<Plngen>
+                                                                                                                                                                                    (expand: expand);
+                                                                                                                                                                                    pisa = 3;
+                                                                                                                                                                                    ensPlans = dxplans.AsQueryable();
+                                                                                                                                                                                    if (ensPlans == null)
+                                                                                                                                                                                    {
+                                                                                                                                                                                    Console.WriteLine("No tiers found for the current state.");
+                                                                                                                                                                                    return;
+                                                                                                                                                                                    }
+                                                                                                                                                                                    Console.WriteLine($"tiers recus {ensPlans.Count()}");
+                                                                                                                                                                                    pisa = 4;
+                                                                                                                                                                                    //Console.WriteLine($"nb pln test : {pisa} et {ensPlans.Count()}");
+                                                                                                                                                                                    // Console.WriteLine($"orga recu {curOrga.Raison}");
+                                                                                                                                                                                    // pisa = 4;
+                                                                                                                                                                                    // Console.WriteLine($"nb pln test : {pisa} et {curOrga.Plngens.Count()}");
+                                                                                                                                                                                    }
+                                                                                                                                                                                    catch (Exception ex)
+                                                                                                                                                                                    {
+                                                                                                                                                                                    Console.WriteLine($"stack trace : {ex.StackTrace} place : {pisa} ex-mess : {ex.Message} and also in-mess: {ex.InnerException}");
+                                                                                                                                                                                    }
+                                                                                                                                                                                    }
+                                                                                                                                                                                    // private async Task LoadOFmtsPsts()
+                                                                                                                                                                                    // {
+                                                                                                                                                                                    //     //FmtPsts
+                                                                                                                                                                                    //     var indata = await _cliemanager.SendRequestAsync("AUTHClient", HttpMethod.Get, "lgauth/fmtpst");
+                                                                                                                                                                                    //     //Console.WriteLine($"21RECU DE LOGIN {strcall}");
+                                                                                                                                                                                    //     var inResu = JsonConvert.DeserializeObject<List<DTOfmtpst>>(indata);
     //     if (inResu.Any())
     //     {
     //         //Attach entities to ODataContextService

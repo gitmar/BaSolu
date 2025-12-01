@@ -9,7 +9,7 @@ using System.Text.Json;
 using Blazored.LocalStorage;
 
 using GxShared.Sess;
-using GxShared.Auth;
+using GxShared.Identity;
 
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.IdentityModel.Tokens;

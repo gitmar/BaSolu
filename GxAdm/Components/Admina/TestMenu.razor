@@ -1,0 +1,45 @@
+﻿@page "/testmenu"
+
+
+
+<div class="content-and-sidebar-container">
+    <button class="navbar-brand" @onclick="NavigateBack">
+        <i class="bi bi-grid-3x3-gap-fill"></i> A24soft Gx-Solutions
+    </button>
+
+    <ul class="menu nav nav-pills">
+        <li class="nav-item">
+            <a class="nav-link @(selectedMenu == 1 ? "active" : "")"
+               @onclick="@(() => SelectMenu(1))">
+                <i class="bi bi-table"></i> Tables
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link @(selectedMenu == 2 ? "active" : "")"
+               @onclick="@(() => SelectMenu(2))">
+                <i class="bi bi-tags"></i> Attributs
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link @(selectedMenu == 3 ? "active" : "")"
+               @onclick="@(() => SelectMenu(3))">
+                <i class="bi bi-file-earmark-text"></i> Documents
+            </a>
+        </li>
+    </ul>
+</div>
+
+@code {
+    private int selectedMenu = 1;
+
+    void SelectMenu(int menuId)
+    {
+        selectedMenu = menuId;
+    }
+
+    void NavigateBack()
+    {
+        // Navigation logic here
+    }
+}
+

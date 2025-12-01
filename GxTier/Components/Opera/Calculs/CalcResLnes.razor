@@ -219,10 +219,10 @@ else
     //[Parameter]
     //public MyMenuVars froMenu { get; set; }
 
-    [CascadingParameter(Name = "SaiePage")]
-    public SaieMenu Mainsaie { get; set; }
-    [CascadingParameter]
-    public MyODataContext _gODContext { get; set; }    //Authentication
+    //[CascadingParameter(Name = "SaieLayout")]
+    //public SaieLayout Mainsaie { get; set; }
+    //[CascadingParameter]
+    //public MyODataContext _gODContext { get; set; }    //Authentication
     private bool isAuthenticated { get; set; }
     private ClaimsPrincipal authUser;
     private IEnumerable<Claim> claims = Enumerable.Empty<Claim>();

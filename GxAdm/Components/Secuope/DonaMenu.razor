@@ -1,5 +1,6 @@
 ﻿@page "/donamenu"
-@inherits FreeLayout
+@inherits LayoutComponentBase
+@layout FreeLayout
 
 @using System.Security.Claims
 @using BlazorBootstrap
@@ -27,9 +28,79 @@
 }
 @if (!isLoading)
 {
-    <div class="mag-screen-layout">
-        <div class="container" style="height: 100vh;">
+    <div class="gx-screen-layout">
+        <div class="container gx-parent-container" style="height: 100vh;">
             <div class="d-flex flex-column" style="height: 100%;">
+
+                <!-- Top Menu -->
+                <div class="innermenu-container d-flex align-items-center justify-content-start">
+                    <!-- Brand -->
+                    <button class="navbar-brand text-white d-flex align-items-center me-4"
+                            style="height:44px;" @onclick="() => NavigateBack()">
+                        <i class="bi bi-grid-3x3-gap-fill me-2"></i>
+                        A24soft Gx-Solutions
+                    </button>
+
+                    <!-- Nav Items -->
+                    <ul class="menu nav nav-pills d-flex align-items-center">
+                        <li class="nav-item">
+                            <div @onclick="() => SelMenu(1)"
+                                 class="nav-link d-flex align-items-center @(chxMenu == 1 ? "active" : "")">
+                                <i class="bi bi-table me-2"></i> Grille
+                            </div>
+                        </li>
+
+                        <li class="nav-item">
+                            <div @onclick="() => SelMenu(2)"
+                                 class="nav-link d-flex align-items-center @(chxMenu == 2 ? "active" : "")">
+                                <i class="bi bi-tags me-2"></i> Echeancier
+                            </div>
+                        </li>
+
+                        <li class="nav-item">
+                            <div @onclick="() => SelMenu(3)"
+                                 class="nav-link d-flex align-items-center @(chxMenu == 3 ? "active" : "")">
+                                <i class="bi bi-file-earmark-text me-2"></i> Postes
+                            </div>
+                        </li>
+
+                        <li class="nav-item">
+                            <div @onclick="() => SelMenu(4)"
+                                 class="nav-link d-flex align-items-center @(chxMenu == 4 ? "active" : "")">
+                                <i class="bi bi-file-earmark-text me-2"></i> Plans
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+                <div class="row">
+                    <div class="col-md-12 input-group align-middle">
+                        <span class="text-uppercase text- text-success"><b>@strComp</b></span>
+                        &nbsp;&nbsp;
+                        <span class="separator">|| </span>
+                        <Button class="btn btn-sm btn-secondary btnsz"
+                                style="@(!allEnable ? "" : "display:none;")"
+                                @onclick="EdiAll">
+                            Modifier
+                        </Button>
+                        <Button class="btn btn-sm btn-secondary btnsz"
+                                style="@(allEnable ? "" : "display:none;")"
+                                @onclick="CncAll">
+                            Annuler
+                        </Button>
+                        <span class="separator">|  </span>
+                        <Button class="btn btn-sm btn-secondary btnsz"
+                                style="@(allEnable ? "" : "display:none;")"
+                                @onclick="SavAll">
+                            Enregistrer
+                        </Button>
+                        @if (!String.IsNullOrEmpty(MImessage))
+                        {
+                            <span class="bg-info bg-opacity-10" style="font-style:italic;color:red">&nbsp;--> @MImessage</span>
+                        }
+                    </div>
+                </div>
+
+
                 <!-- Top Menu -->
                 <div class="content-and-sidebar-container bg-success bg-opacity-10">
                     <button class="navbar-brand text-left text-white bg-dark bg-opacity-75 me-2 py-0 px-1" style="height:44px;" @onclick="NavigateBack">
@@ -109,13 +180,13 @@
     public List<Gsgfix> LsTables = new List<Gsgfix>();
 
     public int _GIdTie = 0;
-    public string _strOrga = "", _curSigle = "", strmeta = "", strmeta2 = "";
+    public string _strOrga = "", _curSigle = "", strComp = "", strmeta = "", strmeta2 = "";
 
     //entities load
     private IEnumerable<Gxorga> _lsOrgas = new List<Gxorga>();
     //Gestion CRUD Entete
     public bool EnrEnable = false;
-    public string Imessage = "";
+    public string MImessage = "";
 
     //GlobModels
     public Userbag _usrBag = new Userbag();

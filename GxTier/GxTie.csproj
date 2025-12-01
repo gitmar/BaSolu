@@ -13,25 +13,25 @@
   <ItemGroup>
     <Compile Remove="Components\Admina\**" />
     <Compile Remove="Components\InAdmTest\**" />
-    <Compile Remove="Components\Secuope\Colons\**" />
+    <Compile Remove="Components\Secuope\**" />
     <Compile Remove="Formulas\**" />
     <Compile Remove="wwwroot\lib\wrbootstrap\**" />
     <Compile Remove="YYYFormulas\**" />
     <Content Remove="Components\Admina\**" />
     <Content Remove="Components\InAdmTest\**" />
-    <Content Remove="Components\Secuope\Colons\**" />
+    <Content Remove="Components\Secuope\**" />
     <Content Remove="Formulas\**" />
     <Content Remove="wwwroot\lib\wrbootstrap\**" />
     <Content Remove="YYYFormulas\**" />
     <EmbeddedResource Remove="Components\Admina\**" />
     <EmbeddedResource Remove="Components\InAdmTest\**" />
-    <EmbeddedResource Remove="Components\Secuope\Colons\**" />
+    <EmbeddedResource Remove="Components\Secuope\**" />
     <EmbeddedResource Remove="Formulas\**" />
     <EmbeddedResource Remove="wwwroot\lib\wrbootstrap\**" />
     <EmbeddedResource Remove="YYYFormulas\**" />
     <None Remove="Components\Admina\**" />
     <None Remove="Components\InAdmTest\**" />
-    <None Remove="Components\Secuope\Colons\**" />
+    <None Remove="Components\Secuope\**" />
     <None Remove="Formulas\**" />
     <None Remove="wwwroot\lib\wrbootstrap\**" />
     <None Remove="YYYFormulas\**" />
@@ -66,14 +66,13 @@
     <Content Remove="Components\GridWrapper.razor" />
     <Content Remove="Components\Opera\Saisies\ZZActSaie.razor" />
     <Content Remove="Components\Opera\ZZAsesions.razor" />
-    <Content Remove="Components\Secuope\Authoriz\Regxauth.razor" />
-    <Content Remove="Components\Secuope\Authoriz\Regxcorg.razor" />
-    <Content Remove="Components\Secuope\Sessions\ASesexos.razor" />
-    <Content Remove="Components\Secuope\Sessions\ZZSAsesios.razor" />
+    <Content Remove="Components\TestNavMenu.razor" />
+    <Content Remove="Layout\Index.cshtml" />
     <Content Remove="Layout\Logadm.razor" />
   </ItemGroup>
 
   <ItemGroup>
+    <None Remove="Components\Paccu\EnrolMenu.razor.css" />
     <None Remove="Formulas\Connected Services\OData Service\OData ServiceCsdl.xml" />
   </ItemGroup>
 
@@ -89,7 +88,7 @@
     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Authentication" Version="9.0.10" />
     <PackageReference Include="Microsoft.AspNetCore.Components.Authorization" Version="9.0.10" />
     <PackageReference Include="Microsoft.IdentityModel.JsonWebTokens" Version="8.13.0" />
-    <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version ="8.13.0" />
+    <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.13.0" />
     <PackageReference Include="Microsoft.AspNetCore.WebUtilities" Version="9.0.0" />
     <PackageReference Include="Microsoft.AspNetCore.Http" Version="2.3.0" />
     <PackageReference Include="Microsoft.OData.Core" Version="8.3.0" />
@@ -111,7 +110,6 @@
 
   <ItemGroup>
     <Folder Include="Components\Paccu\Organ\" />
-    <Folder Include="Components\Secuope\Authoriz\" />
     <Folder Include="wwwroot\_content\Blazor.Bootstrap\" />
   </ItemGroup>
 
@@ -120,6 +118,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\Gx.Components\Gx.Components.csproj" />
     <ProjectReference Include="..\GxShared\GxShared.csproj" />
   </ItemGroup>
 

@@ -1,5 +1,6 @@
 ﻿@page "/saiemenu"
-@inherits FreeLayout
+@inherits LayoutComponentBase
+@layout FreeLayout
 
 @using System.Security.Claims
 @using BlazorBootstrap
@@ -13,6 +14,9 @@
 @using GxWapi.DaModels
 @using Microsoft.OData.Client
 @using Newtonsoft.Json
+@using GxTie.Components.Paccu.Inscr
+@using GxTie.Components.Paccu.Invita
+@using GxTie.Components.Paccu.Valida
 
 @inject NavigationManager _navmanager
 @inject ILocalStorageService _localStorage
@@ -31,126 +35,109 @@
 <div>
     @* test : @froMenu.Usite *@
 </div>
+
 @if (!isLoading)
 {
-    <div class="mag-screen-layout">
-        <div class="container" style="height: 100vh;">
+    <!-- Main Layout -->
+    <div class="gx-screen-layout">
+        <div class="container gx-parent-container" style="height: 100vh;">
             <div class="d-flex flex-column" style="height: 100%;">
-                <!-- Top Menu -->
-                <div class="content-and-sidebar-container bg-success bg-opacity-10">
-                    <button class="navbar-brand text-left text-white bg-dark bg-opacity-75 me-2 py-0 px-1" style="height:44px;" @onclick="NavigateBack">
-                        A24soft Gx-Solutions
-                    </button>
-                    <div><span class="separator">||</span></div>
-                    <ul class="menu">
-                        <li>
-                            @if (_invRoles.Count > 0)
-                            {
-                                <select class="gpet" id="Ugroupe" @onchange="OnGpeChanged">
-                                    @foreach (var gpe in LsGties)
-                                    {
-                                        <option value="@gpe.Elea">@gpe.Liba</option>
-                                    }
-                                </select>
-                            }
-                        </li>
-                        <li><span class="separator">|</span></li>
-                        <li><NavLink @onclick="() => SelMenu(1)" class="nav-item" ActiveClass="active">SurSite</NavLink></li>
-                        <li><span class="separator">|</span></li>
-                        <li><NavLink @onclick="() => SelMenu(2)" class="nav-item">Online</NavLink></li>
-                        <li><span class="separator">|</span></li>
-                        <li><NavLink @onclick="() => SelMenu(3)" class="nav-item">Validation</NavLink></li>
-                        <li><span class="separator">|</span></li>
-                        <li><NavLink @onclick="() => SelMenu(4)" class="nav-item">Ordres</NavLink></li>
-                        @* @if (EnsTiers.Any())
-                        {   
-                            <li><span class="separator">|</span></li>
-                            <li><NavLink @onclick="() => SelMenu(5)" class="nav-item">Print Test11</NavLink></li>
-                            <li><span class="separator">|</span></li>
-                            <li><NavLink @onclick="() => SelMenu(6)" class="nav-item">Print Test12</NavLink></li>
-                        } *@
-                    </ul>
-                </div>
-                <div class="row">
-                    <div class="col-md-12 input-group align-middle">
-                        <span class="text-uppercase text- text-success"><b>@strComp</b></span>
-                        &nbsp;&nbsp;
-                        <label>Exercice :</label>
-                        <div class="text-center">
-                            <InputSelect id="sesId" @bind-Value="froMenu.Uexo">
+                <!-- Top Navigation Menu -->
+                <GxNavMenu BrandText="A24soft Gx-Solutions"
+                           MenuItems="@MenuItems"
+                           YaGroup="true"
+                           Groups="@Groupes"
+                           MenuSelected="@SelMenu"
+                           GroupSelected="@SelGpe" />
+                <!-- Top Menu Info -->
+                <div class="row mb-2">
+                    <div class="col-md-12 d-flex align-items-center gap-3 flex-wrap">
+                        <span class="text-uppercase text-success"><b>@strComp</b></span>
+
+                        <div class="d-flex align-items-center gap-2">
+                            <label>Exercice:</label>
+                            <InputSelect id="exoId" @bind-Value="froMenu.Uexo" class="form-select">
                                 <option value="0">exo?</option>
-                                @foreach (var oses in EnsExos)
+                                @foreach (var exo in EnsExos)
                                 {
-                                    <option value="@oses.Idses" @onclick="() => GetSelectedExos(oses)">@oses.Sref</option>
+                                    <option value="@exo.Idses">@exo.Sref</option>
                                 }
                             </InputSelect>
                         </div>
-                        <label>Session : </label>
-                        <div class="text-center">
-                            <select id="sesId" @bind="froMenu.Usesio">
+
+                        <div class="d-flex align-items-center gap-2">
+                            <label>Session:</label>
+                            <InputSelect id="sesId" @bind-Value="froMenu.Usesio" class="form-select">
                                 <option value="0">session?</option>
-                                @foreach (var oses in EnsSess)
+                                @foreach (var ses in EnsSess)
                                 {
-                                    <option value="@oses.Idses" @onclick="() => GetSelectedSesio(oses)">@oses.Sref</option>
+                                    <option value="@ses.Idses">@ses.Sref</option>
                                 }
-                            </select>
+                            </InputSelect>
                         </div>
 
-                        @if (!String.IsNullOrEmpty(MImessage))
+                        @if (!string.IsNullOrEmpty(MImessage))
                         {
-                            <span class="bg-info bg-opacity-10" style="font-style:italic;color:red">&nbsp;--> @MImessage</span>
+                            <span class="bg-info bg-opacity-10 text-danger px-2" style="font-style: italic;">
+                                &nbsp;--> @MImessage
+                            </span>
                         }
                     </div>
                 </div>
-                <div class="row">
-                    <label>==========</label>
-                </div>
-                <!-- Main Content //a integer froMenu -->
-                @if (chxMenu != 0 && curOrga != null && toChild != null && curODContext != null)
-                {
-                    @if (chxMenu == 1)
+
+                <hr />
+
+                <!-- Main Content Section -->
+                <div class="flex-fill overflow-auto">
+                    @if (chxMenu != 0 && curOrga != null && toChild != null && curODContext != null)
                     {
-                        <SaieActLnes @ref="mygsaie"
-                                  curOrga="@curOrga"
-                                  toChild="@toChild"
-                                  curODContext="@curODContext">
-                            <ChildContent>
-                                @* <h2 class="child-box">Hello GRILLES</h2> *@
-                            </ChildContent>
-                        </SaieActLnes>
-                    }
-                    else if (chxMenu == 2)
-                    {
-                        @* <OrdaLoad>
+                        @switch (chxMenu)
+                        {
+                            case 1:
+                                <SaieActLnes @ref="mygsaie"
+                                             curOrga="@curOrga"
+                                             toChild="@toChild"
+                                             curODContext="@curODContext">
+                                    <ChildContent>
+                                        <h2 class="child-box">Hello GRILLES</h2>
+                                    </ChildContent>
+                                </SaieActLnes>
+                                break;
+
+                            case 2:
+                                @* OrdaLoad component placeholder *@
+                                @* Uncomment and implement as needed *@
+                                @* 
+                                <OrdaLoad>
                                     <ChildContent>
                                         <h2 class="child-box">Hello VALIDATIONS</h2>
                                     </ChildContent>
-                                </OrdaLoad> *@
+                                </OrdaLoad> 
+                                *@
+                                break;
+
+                            case 5 when EnsTiers.Any():
+                                @* EdtSaie11 component placeholder *@
+                                @*
+                                <EdtSaie11 @ref="gedt11"
+                                           curOrga="@curOrga"
+                                           toChild="@toChild"
+                                           curODContext="@curODContext"
+                                           enstiers="@EnsTiers">
+                                    <ChildContent>
+                                        <h2 class="child-box">Liste du Personnel</h2>
+                                    </ChildContent>
+                                </EdtSaie11>
+                                *@
+                                break;
+                        }
                     }
-                    else if (chxMenu == 5 && EnsTiers.Any())
-                    {
-                        @* <EdtSaie11 @ref="gedt11"
-                                  curOrga="@curOrga"
-                                  toChild="@toChild"
-                                  curODContext="@curODContext"
-                                  enstiers="@EnsTiers">
-                            <ChildContent>
-                                <h2 class="child-box">Liste du Personnel</h2>
-                            </ChildContent>
-                        </EdtSaie11> *@
-                    }
-                }
+                </div>
             </div>
         </div>
     </div>
 }
-<style>
-    .gpet {
-        font-style:italic;
-        font-size:25px;
-        font-weight:bold;
-    }
-</style>
+
 @code {
     private bool isLoading = true;
     public MyODataContext curODContext;
@@ -223,6 +210,17 @@
     private int Ugpe = 0;
     private string gpeLiba = "";
 
+    //menus
+    public List<GxNavMenu.MenuItem> MenuItems = new()
+    {
+        new GxNavMenu.MenuItem { Id = 1, Label = "SurSite", Icon = "bi bi-box-arrow-in-down" },
+        new GxNavMenu.MenuItem { Id = 2, Label = "Online", Icon = "bi bi-house-door" },
+        new GxNavMenu.MenuItem { Id = 3, Label = "Validation", Icon = "bi bi-house-door" },
+        new GxNavMenu.MenuItem { Id = 4, Label = "Ordres", Icon = "bi bi-journal-text" },
+        //new MenuItem { Id = 4, Label = "Mutation", Icon = "bi bi-arrow-repeat" },
+    };
+    public List<GxNavMenu.GroupItem> Groupes = new();
+
     //entities load
     private IEnumerable<Gxorga> _lsOrgas = new List<Gxorga>();
 
@@ -288,7 +286,11 @@
         {
             ////gpeLiba = LsGties.Where(ut => ut.Elea == 1).FirstOrDefault().Liba.ToUpperInvariant();
         }
-
+        Groupes.Clear();
+        foreach (var gr in LsGties.Where(gr => gr.Itb == 6))
+        {
+            Groupes.Add(new GxNavMenu.GroupItem { Id = gr.Elea, Name = gr.Liba });
+        }
         _invRoles = await _rendAgres.LoadOrgaRoles();
         Console.WriteLine($"inv roles : {_invRoles.Count()}");
 
@@ -353,7 +355,7 @@
             var mytier = curOrga.Tiersps.FirstOrDefault();
             if (mytier != null)
             {
-                Console.WriteLine($"nom selected tiers : {mytier.Nom } et {mytier.Pnom}");
+                Console.WriteLine($"nom selected tiers : {mytier.Nom} et {mytier.Pnom}");
                 Console.WriteLine($"selected tiers actsaies : {mytier.Actsaies.Count()}");
             }
             else
@@ -512,7 +514,7 @@
     //         //     Console.WriteLine($"nom plans : {myprog.Liba}");
     //         // } else
     //         // {
-    //         //     Console.WriteLine($"probleme chargement Plans");   
+    //         //     Console.WriteLine($"probleme chargement Plans");
     //         // }
     //     }
     //     catch (Exception ex)
@@ -569,17 +571,17 @@
             //}
         }
     }
-    private async Task SelMenu(int noM)
-    {
-        chxMenu = noM;
-        if (chxMenu == 1) strComp = "Saisies(sursite)";
-        if (chxMenu == 2) strComp = "Saisies(online)";
-        if (chxMenu == 3) strComp = "Validations";
-        if (chxMenu == 4) strComp = "Saisies(ordres)";
-        allEnable = false;
-        StateHasChanged();
-        await Task.Delay(800);
-    }
+    // private async Task SelMenu(int noM)
+    // {
+    //     chxMenu = noM;
+    //     if (chxMenu == 1) strComp = "Saisies(sursite)";
+    //     if (chxMenu == 2) strComp = "Saisies(online)";
+    //     if (chxMenu == 3) strComp = "Validations";
+    //     if (chxMenu == 4) strComp = "Saisies(ordres)";
+    //     allEnable = false;
+    //     StateHasChanged();
+    //     await Task.Delay(800);
+    // }
     // private void GetSelectedProg(Gplan bropln)
     // {
     //     Console.WriteLine($"ICI PROGRAMMES : {EnsProgs.Count()}");
@@ -614,7 +616,7 @@
     {
         toChild.MainOptsOk = false;
         toChild.curExo = myexo;
-        if (Ugpe != 0  && froMenu.Uexo != 0 && froMenu.Usesio != 0)
+        if (Ugpe != 0 && froMenu.Uexo != 0 && froMenu.Usesio != 0)
         {
             toChild.MainOptsOk = true;
             toChild.curExo = myexo;
@@ -625,7 +627,7 @@
     void GetSelectedSesio(Gsesio mysesio)
     {
         toChild.MainOptsOk = false;
-        toChild.curSesio = mysesio ;
+        toChild.curSesio = mysesio;
         if (Ugpe != 0 && froMenu.Uexo != 0 && froMenu.Usesio != 0)
         {
             toChild.MainOptsOk = true;
@@ -633,7 +635,31 @@
             StateHasChanged();
         }
     }
-    
+    private async Task SelMenu(int noM)
+    {
+        chxMenu = noM;
+        if (chxMenu == 1) strComp = $"Saisies(sursite) {gpeLiba}";
+        if (chxMenu == 2) strComp = $"Saisies(online) {gpeLiba}";
+        if (chxMenu == 3) strComp = $"Validations {gpeLiba}";
+        if (chxMenu == 4) strComp = $"Saisies(ordres) {gpeLiba}";
+        //if (chxMenu == 5) strComp = "Colonnes";
+        allEnable = false;
+        StateHasChanged();
+        await Task.Delay(1);
+    }
+    private async Task SelGpe(int noG)
+    {
+        gpeLiba = "";
+        if (noG == 0) return;
+        var mygpe = LsGties.Where(gt => gt.Itb == 6 && gt.Elea == noG).FirstOrDefault();
+        //LsCols = curOrga.Gsglnes.Where(ug => ug.Otyp == 5 && ug.Dtyp == 6 && ug.Totyp == Ugpe && ug.Jacc == 1).ToList();
+        Ugpe = noG;
+        //Tgpe = mygpe.Gp2;
+        gpeLiba = LsGties.Where(ut => ut.Elea == mygpe.Elea).FirstOrDefault().Liba.ToUpperInvariant();
+        StateHasChanged();
+        Console.WriteLine("PAS 2");
+        await Task.Delay(1);
+    }
     void NavigateBack()
     {
         _navmanager.NavigateTo("/");

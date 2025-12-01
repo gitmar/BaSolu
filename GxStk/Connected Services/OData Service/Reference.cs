@@ -8,7 +8,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-// Generation date: 11/21/2025 4:25:54 PM
+// Generation date: 12/1/2025 4:26:05 AM
 namespace GxWapi.DaModels
 {
     /// <summary>
@@ -337,14 +337,12 @@ namespace GxWapi.DaModels
         /// </summary>
         /// <param name="idorg">Initial value of Idorg.</param>
         /// <param name="raison">Initial value of Raison.</param>
-        /// <param name="rowguid">Initial value of Rowguid.</param>
         [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        public static Gxorga CreateGxorga(int idorg, string raison, global::System.Guid rowguid)
+        public static Gxorga CreateGxorga(int idorg, string raison)
         {
             Gxorga gxorga = new Gxorga();
             gxorga.Idorg = idorg;
             gxorga.Raison = raison;
-            gxorga.Rowguid = rowguid;
             return gxorga;
         }
         /// <summary>
@@ -3339,30 +3337,6 @@ namespace GxWapi.DaModels
         private global::System.Nullable<int> _Eaut;
         partial void OnEautChanging(global::System.Nullable<int> value);
         partial void OnEautChanged();
-        /// <summary>
-        /// There are no comments for Property Rowguid in the schema.
-        /// </summary>
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        [global::Microsoft.OData.Client.OriginalNameAttribute("Rowguid")]
-        [global::System.ComponentModel.DataAnnotations.RequiredAttribute(ErrorMessage = "Rowguid is required.")]
-        public virtual global::System.Guid Rowguid
-        {
-            get
-            {
-                return this._Rowguid;
-            }
-            set
-            {
-                this.OnRowguidChanging(value);
-                this._Rowguid = value;
-                this.OnRowguidChanged();
-                this.OnPropertyChanged("Rowguid");
-            }
-        }
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        private global::System.Guid _Rowguid;
-        partial void OnRowguidChanging(global::System.Guid value);
-        partial void OnRowguidChanged();
         /// <summary>
         /// There are no comments for Property Obsv in the schema.
         /// </summary>

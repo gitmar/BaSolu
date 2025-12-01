@@ -1,12 +1,15 @@
 ﻿@page "/donamenu"
-@inherits FreeLayout
+@inherits LayoutComponentBase
+@layout FreeLayout
 
 @using System.Security.Claims
 @using BlazorBootstrap
 @using Blazored.LocalStorage
+@using GxShared.Sess
 @using GxStk.ClieModels
 @using GxStk.Services
-@using GxShared.Sess
+@using GxStk.ClieModels
+@using GxStk.Services
 @using GxWapi.DaModels
 @using Microsoft.OData.Client
 @using Newtonsoft.Json
@@ -27,9 +30,10 @@
 }
 @if (!isLoading)
 {
-    <div class="mag-screen-layout">
-        <div class="container" style="height: 100vh;">
+    <div class="gx-screen-layout">
+        <div class="container gx-parent-container" style="height: 100vh;">
             <div class="d-flex flex-column" style="height: 100%;">
+                
                 <!-- Top Menu -->
                 <div class="content-and-sidebar-container bg-success bg-opacity-10">
                     <button class="navbar-brand text-left text-white bg-dark bg-opacity-75 me-2 py-0 px-1" style="height:44px;" @onclick="NavigateBack">
@@ -140,13 +144,7 @@
         isLoading = true;
         int pita = 0;
         //pita = 5;
-        _usrBag = 
-        
-        
-        
-        
-        
-        await _sessionContext.GetUserbagAsync();
+        _usrBag = await _sessionContext.GetUserbagAsync();
         _GIdTie = _usrBag.Usorga.Gdtie;
         isOwner = _usrBag.SiOwner;
         Console.WriteLine($"RETOUR UserBag...{_usrBag.Ufixes.Count()}");
