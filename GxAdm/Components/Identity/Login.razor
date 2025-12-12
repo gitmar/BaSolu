@@ -6,7 +6,6 @@
 @using GxShared.Sess
 @using GxShared.Helpers
 @using GxShared.Identity
-@using GxAdm.Helpers
 @using GxAdm.Services
 @using Newtonsoft.Json
 
@@ -70,7 +69,7 @@ else
                 @if (!inAccepting)
                 {
                     <div class="alert alert-info">
-                        <strong>Info:</strong> Vous etes proprietaire, Veuillez choisir ou accepter @_logresult.OgRaison
+                        <strong>Info:</strong> Vous etes du Support, Veuillez choisir ou accepter @_logresult.OgRaison
                     </div>
                     <div class="mb-3">
                         <label>Institution :</label>
@@ -236,7 +235,7 @@ else
             //loginModel.UsernameOrEmail = loginModel.Username;
             //Console.WriteLine($"uname : {loginModel.Username} et {loginModel.Email}");
             var json = JsonConvert.SerializeObject(loginModel);
-            var request = new HttpRequestMessage(HttpMethod.Post, "lgauth/helprelogin")
+            var request = new HttpRequestMessage(HttpMethod.Post, "lgauth/hlprelogin")
             {
                 Content = new StringContent(json, Encoding.UTF8, "application/json")
             };

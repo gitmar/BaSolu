@@ -36,6 +36,6 @@ namespace GxShared.Others
         public string Username { get; set; } = string.Empty;
         public string Phone { get; set; } = string.Empty;
         public int Idorg { get; set; } = 0;
-        public int SiOrga { get; set; } = 0;
+        //public int SiOrga { get; set; } = 0;
     }
 }

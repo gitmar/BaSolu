@@ -1,9 +1,8 @@
-﻿using GxAdm.Helpers;
-
+﻿
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 
-namespace GxAdm.Helpers;
+namespace GxAdm.Services;
 
 public partial class ValidatedInput : ComponentBase
 {

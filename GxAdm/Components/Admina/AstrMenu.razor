@@ -138,7 +138,6 @@
 
     [CascadingParameter]
     private Task<AuthenticationState>? AuthState { get; set; }
-    public bool isOwner = false;
     public ClaimsPrincipal authUser;
     public bool isAuthenticated = false;
     //in DATA
@@ -210,7 +209,6 @@
         //    .ToList();
         var allDivs = await _rendAgres.LoadOrgaPostes();
         LsDivs = allDivs.Where(ud => ud.Pdom == 6 && ud.Patr == 1).ToList();
-        isOwner = _usrBag.SiOwner;
         LsVars = _usrBag.Usorga.Uvars.ToList();
         LsFixes = _usrBag.Ufixes.ToList();
         LsPlans = _usrBag.Usorga.Uplns.ToList();

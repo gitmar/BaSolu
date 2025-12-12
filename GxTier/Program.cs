@@ -82,6 +82,7 @@ builder.Services.AddHttpClient("ODataClient", client =>
     client.BaseAddress = new Uri("https://localhost:7095/odata");
     // Add any default headers or auth here if needed
 });
+builder.Services.AddScoped<LinkSerialiser>();
 //pouch services 
 builder.Services.AddSingleton<PouchDbService>();
 

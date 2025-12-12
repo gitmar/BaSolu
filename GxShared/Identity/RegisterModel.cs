@@ -141,22 +141,22 @@ namespace GxShared.Identity
             return ValidationResult.Success;
         }
     }
-    public class RegisterDto
-    {
-        public int Id { get; set; } = 0;
-        public int Idorg { get; set; } = 0;
-        public string Email { get; set; } = string.Empty;
-        public string Phonenumber { get; set; } = string.Empty;
-        public int Fro { get; set; } = 0;
-        public string FroAddress { get; set; } = string.Empty;
-        public string Stdoma { get; set; } = string.Empty;
-        public string Srole { get; set; } = string.Empty;
-        public int Utyp { get; set; } = 0; //correspd a tietypn1agent2operat3client
-        public string Weburl { get; set; } = string.Empty;
-        public string Uip { get; set; } = string.Empty;
-        public string Raison { get; set; } = string.Empty;
-        public string Sigle { get; set; }
-    }
+    //public class RegisterDto
+    //{
+    //    public int Id { get; set; } = 0;
+    //    public int Idorg { get; set; } = 0;
+    //    public string Email { get; set; } = string.Empty;
+    //    public string Phonenumber { get; set; } = string.Empty;
+    //    public int Fro { get; set; } = 0;
+    //    public string FroAddress { get; set; } = string.Empty;
+    //    public string Stdoma { get; set; } = string.Empty;
+    //    public string Srole { get; set; } = string.Empty;
+    //    public int Utyp { get; set; } = 0; //correspd a tietypn1agent2operat3client
+    //    public string Weburl { get; set; } = string.Empty;
+    //    public string Uip { get; set; } = string.Empty;
+    //    public string Raison { get; set; } = string.Empty;
+    //    public string Sigle { get; set; }
+    //}
 
     public class RegiscorModel
     {

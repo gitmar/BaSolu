@@ -112,7 +112,6 @@ else
     private bool collapseUserMenu = false, canTierLog = false;
     [CascadingParameter]
     private Task<AuthenticationState>? AuthState { get; set; }
-    private bool isOwner = false;
     private ClaimsPrincipal authUser;
     private bool isAuthenticated = false;
     [Inject] private AuthenticationStateProvider _authProvider { get; set; }
@@ -149,18 +148,7 @@ else
         }
         else
         {
-            if (authUser.IsInRole("Support")) canTierLog = true;
-            if (authUser.IsInRole("Admin"))
-            {
-                var claims = JwtHelper.DecodePayload(token);
-                var siOwner = claims.TryGetValue("Gx.IsOwner", out var uid) ? uid : 0;
-                int estOwner = Convert.ToInt16(siOwner);
-                if (estOwner == 1)
-                {
-                    canTierLog = true;
-                }
-            }
-
+            if (authUser.IsInRole("Support") || authUser.IsInRole("Admin")) canTierLog = true;
             Console.WriteLine("Authentication in Main Layout SUCCESS");
         }
 

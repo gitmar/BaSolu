@@ -2,7 +2,7 @@
 
 using Newtonsoft.Json;
 
-namespace GxAdm.Helpers
+namespace GxAdm.Services
 {
     public static class JwtHelper
     {

@@ -97,17 +97,16 @@
             @ChildContent
         }
     </div>
-    <AuthorizeView>
-        <Authorized Context="authtiwcontext">
-            @if (!isLoading)
-            {
-                <EditForm EditContext="edTiwContext" @key="curTiw">
-                    <DataAnnotationsValidator />
-                    <ValidationSummary />
-                    <div class="container row">
-                        @* <div>AVANT COLONNE @curTiw /@LsCols.Count /@TbElems.Count</div> *@
-                        @if (curTiw != null && TbElems.Any() && LsCols.Any())
-                        {
+    @if (!isLoading)
+    {
+        @if (curTiw != null && TbElems.Any() && LsCols.Any())
+        {
+            <AuthorizeView>
+                <Authorized Context="authtiwcontext">
+                    <EditForm EditContext="edTiwContext" @key="curTiw">
+                        <DataAnnotationsValidator />
+                        <ValidationSummary />
+                        <div class="container row">
                             <div class="row">
                                 <ul class="nav nav- flex-nowrap" id="cltabs" role="tablist">
                                     <li class="nav-item" role="tab">
@@ -147,32 +146,33 @@
                                             {
                                                 @if (AddVue)
                                                 { //
-                                                    <button class="btn btn-primary btn-sm" @onclick="() => PrepareAddTiw()">
-                                                        ➕ Add
-                                                    </button>
-                                                    <span>&nbsp;&nbsp;</span>
+                                                  <button class="btn btn-primary btn-sm" @onclick="() => PrepareAddTiw()">
+                                                      ➕ Add
+                                                  </button>
+                                                  <span>&nbsp;&nbsp;</span>
                                                 }
                                                 @if (IncludeVue)
                                                 { //sinwTiw && curTiw.Xadd1 == -1
-                                                    <span>&nbsp;&nbsp;</span>
-                                                    <button class="btn btn-sm btn-success" @onclick="() => IncludeTiw(curTiw)">
-                                                        <span class="me-1">💾</span> Inclure
-                                                    </button>
-                                                    <span>&nbsp;&nbsp;</span>
-                                                    <button class="btn btn-sm btn-secondary" @onclick="() => CancelAddTiw()">
-                                                        ❎ Annuler
-                                                    </button>
-                                                } else
+                                                  <span>&nbsp;&nbsp;</span>
+                                                  <button class="btn btn-sm btn-success" @onclick="() => IncludeTiw(curTiw)">
+                                                      <span class="me-1">💾</span> Inclure
+                                                  </button>
+                                                  <span>&nbsp;&nbsp;</span>
+                                                  <button class="btn btn-sm btn-secondary" @onclick="() => CancelAddTiw()">
+                                                      ❎ Annuler
+                                                  </button>
+                                                }
+                                                else
                                                 @if (EdtDelVue && AddingTiwRowGuid == null)
                                                 {//curTiw.Xadd1 != -2
                                                  <button class="btn btn-sm btn-warning me-1 @(EdtDelDisable ? "" : "disabled-action")"
-                                                                @onclick="() => BeginTiwEdit()">
-                                                            ✏️ Edit
-                                                        </button>
+                                                         @onclick="() => BeginTiwEdit()">
+                                                     ✏️ Edit
+                                                 </button>
                                                  <button class="btn btn-sm btn-outline-danger @(EdtDelDisable ? "" : "disabled-action")"
-                                                                @onclick="() => PromptTiwDelete()">
-                                                            🗑️ Delete
-                                                        </button>
+                                                         @onclick="() => PromptTiwDelete()">
+                                                     🗑️ Delete
+                                                 </button>
                                                 }
                                                 else if (ConfirmingTiwDeleteRowGuid == curTiw.Rowguid)
                                                 {
@@ -186,7 +186,7 @@
                                                 @if (AddingTiwRowGuid == curTiw.Rowguid || EditingTiwRowGuid == curTiw.Rowguid)
                                                 {
                                                     <span>&nbsp;&nbsp;</span>
-                                                   <button type="button" class="btn btn-lnk btn-sm btn-info bg-opacity-50" @onclick="ShowModal">piece(s)</button>
+                                                    <button type="button" class="btn btn-lnk btn-sm btn-info bg-opacity-50" @onclick="ShowModal">piece(s)</button>
                                                 }
                                             }
                                         </div>
@@ -198,41 +198,41 @@
                                                     <InputText class="standard-width" @bind-Value="curTiw.Xmatri" placeholder="no dossier" />
                                                 </div>
                                                 @foreach (var ucol in LsCols.Where(uv => uv.Totyp == Ugpe && uv.Tstyp == 1 && uv.Jacc == 1
-                                                     && uv.Elea != 3 && uv.Elea != 4).ToList())
+                                                                                    && uv.Elea != 3 && uv.Elea != 4).ToList())
                                                 {
                                                     <div class="grid-row">
                                                         <div>
-                                                        <label><b>@ucol.Liba :</b></label>
+                                                            <label><b>@ucol.Liba :</b></label>
                                                         </div>
                                                         <div>
-                                                        @if (ucol.Sitb == 1) //table-numerique
-                                                        {
-                                                                <TabselComponent Obj=@curTiw PropertyName="@ucol.Scdrub" Ztbl="@ucol.Ztbl" Title="@ucol.Liba" tbElems="@TbElems" Width="@ControlWidth.Large" ParentTableValue="@ucol.Zdpd" />
-                                                        }
-                                                        else
-                                                        {
-                                                            @switch (ucol.Ztyp)
+                                                            @if (ucol.Sitb == 1) //table-numerique
                                                             {
-                                                                case 1:
-                                                                        <StringComponent Obj=@curTiw PropertyName="@ucol.Scdrub" Width="@ControlWidth.Large" Placeholder="@($" {ucol.Liba}")" />
-                                                                    break;
-                                                                case 2:
-                                                                case 3:
-                                                                case 4:
-                                                                case 5:
-                                                                    <NumberComponent Obj=@curTiw PropertyName="@ucol.Scdrub" Placeholder="@($" {ucol.Liba}")" Width="ControlWidth.Small" TextAlign="TextAlignment.Right" />
-                                                                    break;
-                                                                case 6:
-                                                                    <BoolComponent Obj=@curTiw PropertyName="@ucol.Scdrub" Placeholder="@($" {ucol.Liba}")" />
-                                                                    break;
-                                                                case 7:
-                                                                    <DateComponent Obj=@curTiw PropertyName="@ucol.Scdrub" Placeholder="@($" {ucol.Liba}")" />
-                                                                    break;
-                                                                default:
-                                                                    <StringComponent Obj=@curTiw PropertyName="@ucol.Scdrub" Placeholder="@($" {ucol.Liba}")" />
-                                                                    break;
+                                                                <TabselComponent Obj=@curTiw PropertyName="@ucol.Scdrub" Ztbl="@ucol.Ztbl" Title="@ucol.Liba" tbElems="@TbElems" Width="@ControlWidth.Large" ParentTableValue="@ucol.Zdpd" />
                                                             }
-                                                        }
+                                                            else
+                                                            {
+                                                                @switch (ucol.Ztyp)
+                                                                {
+                                                                    case 1:
+                                                                        <StringComponent Obj=@curTiw PropertyName="@ucol.Scdrub" Width="@ControlWidth.Large" Placeholder="@($" {ucol.Liba}")" />
+                                                                        break;
+                                                                    case 2:
+                                                                    case 3:
+                                                                    case 4:
+                                                                    case 5:
+                                                                        <NumberComponent Obj=@curTiw PropertyName="@ucol.Scdrub" Placeholder="@($" {ucol.Liba}")" Width="ControlWidth.Small" TextAlign="TextAlignment.Right" />
+                                                                        break;
+                                                                    case 6:
+                                                                        <BoolComponent Obj=@curTiw PropertyName="@ucol.Scdrub" Placeholder="@($" {ucol.Liba}")" />
+                                                                        break;
+                                                                    case 7:
+                                                                        <DateComponent Obj=@curTiw PropertyName="@ucol.Scdrub" Placeholder="@($" {ucol.Liba}")" />
+                                                                        break;
+                                                                    default:
+                                                                        <StringComponent Obj=@curTiw PropertyName="@ucol.Scdrub" Placeholder="@($" {ucol.Liba}")" />
+                                                                        break;
+                                                                }
+                                                            }
                                                         </div>
                                                     </div>
                                                 }
@@ -401,99 +401,99 @@
                                     <!--Verification des candidatures-->
                                     <div class="row tab-pane fade" id="nav-verfs" role="tabpanel" aria-labelledby="vrf">
                                         <div style="max-height: 300px; overflow-y: auto;">
-                                <Grid TItem="Tiewel"
-                                      Data="@ensTiws.Where(t=>t.Jwlc < 4)"
-                                      AllowRowClick="true"
-                                      OnRowClick="OnTiwRowClick"
-                                      AllowPaging="true"
-                                      Responsive="true">
-                                            <GridColumns>
-                                                <GridColumn TItem="Tiewel" HeaderText="Accord?">
-                                                    <HeaderContent>
-                                                        <label>Verf?</label>
+                                            <Grid TItem="Tiewel"
+                                                  Data="@ensTiws.Where(t=>t.Jwlc < 4)"
+                                                  AllowRowClick="true"
+                                                  OnRowClick="OnTiwRowClick"
+                                                  AllowPaging="true"
+                                                  Responsive="true">
+                                                <GridColumns>
+                                                    <GridColumn TItem="Tiewel" HeaderText="Accord?">
+                                                        <HeaderContent>
+                                                            <label>Verf?</label>
                                                             <InputCheckbox Value="@IsGlobalT1Checked"
                                                                            ValueChanged="(bool val) => OnTAccAll(new ChangeEventArgs { Value = val }, 1)"
                                                                            ValueExpression="@(() => IsGlobalT1Checked)"
                                                                            class="form-check-input"
                                                                            disabled="@(!allEnable)">
                                                             </InputCheckbox>
-                                                     </HeaderContent>
-                                                    <ChildContent Context="item">
-                                                        <div @key="item.Rowguid"></div>
+                                                        </HeaderContent>
+                                                        <ChildContent Context="item">
+                                                            <div @key="item.Rowguid"></div>
                                                             <InputCheckbox @bind-Value="item.IsJaccChecked"
                                                                            @onchange="e => { item.Jacc = (bool)e.Value ? 1 : 0; }"
                                                                            class="form-check-input"
                                                                            disabled="@(!allEnable)">
                                                             </InputCheckbox>
-                                                    </ChildContent>
-                                                </GridColumn>
-                                                <GridColumn TItem="Tiewel" HeaderText="Rejet?">
-                                                    <HeaderContent>
-                                                         <label>Rjt?</label>
+                                                        </ChildContent>
+                                                    </GridColumn>
+                                                    <GridColumn TItem="Tiewel" HeaderText="Rejet?">
+                                                        <HeaderContent>
+                                                            <label>Rjt?</label>
                                                             <InputCheckbox Value="@IsGlobalT2Checked"
                                                                            ValueChanged="(bool val) => OnTAccAll(new ChangeEventArgs { Value = val }, 2)"
                                                                            ValueExpression="@(() => IsGlobalT2Checked)"
                                                                            class="form-check-input"
                                                                            disabled="@(!allEnable)">
                                                             </InputCheckbox>
-                                                    </HeaderContent>
-                                                    <ChildContent Context="item">
-                                                        <InputCheckbox @bind-Value="item.IsJrejChecked"
+                                                        </HeaderContent>
+                                                        <ChildContent Context="item">
+                                                            <InputCheckbox @bind-Value="item.IsJrejChecked"
                                                                            @onchange="e => { item.Jrej = (bool)e.Value ? 1 : 0; }"
                                                                            class="form-check-input"
                                                                            disabled="@(!allEnable)">
                                                             </InputCheckbox>
-                                                    </ChildContent>
-                                                </GridColumn>
-                                                <GridColumn TItem="Tiewel" HeaderText="Notif?">
-                                                    <HeaderContent>
-                                                        <label>Ntf?</label>
+                                                        </ChildContent>
+                                                    </GridColumn>
+                                                    <GridColumn TItem="Tiewel" HeaderText="Notif?">
+                                                        <HeaderContent>
+                                                            <label>Ntf?</label>
                                                             <InputCheckbox Value="@IsGlobalT3Checked"
                                                                            ValueChanged="(bool val) => OnTAccAll(new ChangeEventArgs { Value = val }, 3)"
                                                                            ValueExpression="@(() => IsGlobalT3Checked)"
                                                                            class="form-check-input"
                                                                            disabled="@(!allEnable)">
                                                             </InputCheckbox>
-                                                    </HeaderContent>
-                                                    <ChildContent Context="item">
-                                                        <InputCheckbox @bind-Value="item.IsJnotChecked"
+                                                        </HeaderContent>
+                                                        <ChildContent Context="item">
+                                                            <InputCheckbox @bind-Value="item.IsJnotChecked"
                                                                            @onchange="e => { item.Jrej = (bool)e.Value ? 1 : 0; }"
                                                                            class="form-check-input"
                                                                            disabled="@(!allEnable)">
                                                             </InputCheckbox>
-                                                    </ChildContent>
-                                                </GridColumn>
-                                                <GridColumn TItem="Tiewel" HeaderText="Dossier">
-                                                    <ChildContent Context="item">
-                                                        @item.Xmatri
-                                                    </ChildContent>
-                                                </GridColumn>
-                                                <GridColumn TItem="Tiewel" HeaderText="Nom">
-                                                    <ChildContent Context="item">
-                                                        @item.Nom
-                                                    </ChildContent>
-                                                </GridColumn>
-                                                <GridColumn TItem="Tiewel" HeaderText="Pnom">
-                                                    <ChildContent Context="item">
-                                                        @item.Pnom
-                                                    </ChildContent>
-                                                </GridColumn>
-                                                <GridColumn TItem="Tiewel" HeaderText="Actions">
-                                                    <HeaderContent>
-                                                        <!-- Accepter-->
-                                                        <!-- Rejeter-->
-                                                        <!-- Notifier-->
-                                                    </HeaderContent>
-                                                    <ChildContent Context="item">
-                                                        @if (!(curODContext.GetEntityState(item) == EntityStates.Added))
-                                                        {
-                                                            @if (curODContext.GetEntityState(item) == EntityStates.Modified)
+                                                        </ChildContent>
+                                                    </GridColumn>
+                                                    <GridColumn TItem="Tiewel" HeaderText="Dossier">
+                                                        <ChildContent Context="item">
+                                                            @item.Xmatri
+                                                        </ChildContent>
+                                                    </GridColumn>
+                                                    <GridColumn TItem="Tiewel" HeaderText="Nom">
+                                                        <ChildContent Context="item">
+                                                            @item.Nom
+                                                        </ChildContent>
+                                                    </GridColumn>
+                                                    <GridColumn TItem="Tiewel" HeaderText="Pnom">
+                                                        <ChildContent Context="item">
+                                                            @item.Pnom
+                                                        </ChildContent>
+                                                    </GridColumn>
+                                                    <GridColumn TItem="Tiewel" HeaderText="Actions">
+                                                        <HeaderContent>
+                                                            <!-- Accepter-->
+                                                            <!-- Rejeter-->
+                                                            <!-- Notifier-->
+                                                        </HeaderContent>
+                                                        <ChildContent Context="item">
+                                                            @if (!(curODContext.GetEntityState(item) == EntityStates.Added))
                                                             {
-                                                                <span>&nbsp;&nbsp;</span>
+                                                                @if (curODContext.GetEntityState(item) == EntityStates.Modified)
+                                                                {
+                                                                    <span>&nbsp;&nbsp;</span>
+                                                                }
                                                             }
-                                                        }
-                                                    </ChildContent>
-                                                </GridColumn>
+                                                        </ChildContent>
+                                                    </GridColumn>
                                                     <GridColumn TItem="Tiewel" HeaderText="Actions">
                                                         <ChildContent Context="item">
                                                             <div class="col-2">
@@ -501,18 +501,18 @@
                                                             </div>
                                                         </ChildContent>
                                                     </GridColumn>
-                                            </GridColumns>
-                                </Grid>
-                                </div>
+                                                </GridColumns>
+                                            </Grid>
                                         </div>
+                                    </div>
                                     @if (isRecptVisible)
                                     {
                                         <div class="row">
                                             <RtW11Fic @ref="myftiw"
-                                            curOrga="@curOrga"
-                                            toChild="@toChild"
-                                            curODContext="@curODContext"
-                                            curTiw="@rselTiw">
+                                                      curOrga="@curOrga"
+                                                      toChild="@toChild"
+                                                      curODContext="@curODContext"
+                                                      curTiw="@rselTiw">
                                                 <ChildContent>
                                                     @* <h2 class="child-box">Fiche d'Inscription</h2> *@
                                                 </ChildContent>
@@ -521,12 +521,14 @@
                                     }
                                 </div>
                             </div>
-                        }
-                    </div>
-                </EditForm>
-            }
-        </Authorized>
-    </AuthorizeView>
+                        </div>
+                    </EditForm>
+                </Authorized>
+            </AuthorizeView>
+        } else {
+            <p>no data available</p>
+        }
+    }
 </div>
 <style>
     .inputfl {
@@ -611,7 +613,7 @@
     [Parameter]
     public int? Ugpe { get; set; }
 
-    private EditContext edTiwContext;
+    private EditContext? edTiwContext;
 
     //tiers non integrer, non rejeter et non accepter
     public List<Tiewel> ensTiws = new();
@@ -625,9 +627,9 @@
     public List<Gpvar> TUafls = new();
     string gpeLiba = "";
     private int chxTab = 0;
-    private Tiewel curTiw = new();
-    private Tiwafl curAfl = new();
-    private Tiewel rselTiw = new();
+    private Tiewel? curTiw = new();
+    private Tiwafl? curAfl = new();
+    private Tiewel? rselTiw = new();
     private bool sinwTiw = false, sinwAfl = false;
     private int _lgcdu = 0;
     private bool IsGlobalT1Checked { get; set;} = false;
@@ -721,38 +723,60 @@
         _lgcdu = 3;
         var noslims = LsVars.Where(uv => uv.Idhie == 0 && uv.Gvars == 21 && uv.Itb == 1 && uv.Elea == 1);
         if (noslims.Any()) _lgcdu = noslims.FirstOrDefault().Ivala;
-        await LoadOrgParas();
-        await ChargeParentData();
+        //await LoadOrgParas();
+       // await ChargeParentData();
+        
         _lsDivs = toChild.LsDivs.Where(uh => uh.Sidiv == 1).ToList();
-        edTiwContext = new EditContext(curTiw);
-        edTiwContext.OnFieldChanged += HandleFieldChanged;
-        _navmanager.LocationChanged += OnLocationChanged;
-
-        isLoading = false;
-        Console.WriteLine($"Authentication ENTREE curtiw {curTiw.Nom} nbele :{TbElems.Count} et nbcols : {LsCols.Count}");
+        //Console.WriteLine($"Authentication ENTREE curtiw {curTiw.Nom} nbele :{TbElems.Count} et nbcols : {LsCols.Count}");
     }
-    private async Task LoadOrgParas()
-    {
-        // _usrBag = await _dbusrManager.GetMyDataAsync(toChild.Usrid, toChild.Idorg);
-        // //pita = 5;
-        // //isOwner = _usrBag.SiOwner;
-        // //Console.WriteLine($"RETOUR UserBag...{_usrBag.Ufixes.Count()}");
-        // if ((!_usrBag.Ufixes.Any()) ||
-        //        _usrBag.Yauser == false)
-        // {
-        //     Console.WriteLine("Echec Invite, recommencez.login/support...");
-        // }
-    }
-    private async Task ChargeParentData()
-    { //programmes
-        ensTiws = curOrga.Tiewels.Where(t=>t.Jwlc < 4).ToList();
-        curTiw = ensTiws.FirstOrDefault();
-        Console.WriteLine($"Tiers accueil recu {curTiw.Nom}/{curTiw.Pnom}");
-    }
+    // private async Task LoadOrgParas()
+    // {
+    //     // _usrBag = await _dbusrManager.GetMyDataAsync(toChild.Usrid, toChild.Idorg);
+    //     // //pita = 5;
+    //     // //Console.WriteLine($"RETOUR UserBag...{_usrBag.Ufixes.Count()}");
+    //     // if ((!_usrBag.Ufixes.Any()) ||
+    //     //        _usrBag.Yauser == false)
+    //     // {
+    //     //     Console.WriteLine("Echec Invite, recommencez.login/support...");
+    //     // }
+    // }
+    // private async Task ChargeParentData()
+    // { //programmes
+        
+    //     //Console.WriteLine($"Tiers accueil recu {curTiw?.Nom}/{curTiw?.Pnom}");
+    // }
     protected override async void OnParametersSet()
     {
         LsTgpes = LsFixes.Where(iv => iv.Gvars == 53 && iv.Itb == 2 && iv.Elea != 0).ToList(); //cible/operat...
         // = "Gpe//" + Ugpe.ToString();
+        ensTiws = curOrga.Tiewels.Where(t => t.Jwlc < 4).ToList();
+        curTiw = ensTiws.FirstOrDefault();
+        // Ensure EditContext is always initialized, even if model is null
+        if (curTiw != null)
+        {
+            ResetEditContext(curTiw);
+        }
+        else
+        {
+            // fallback dummy model
+            ResetEditContext(new Tiewel());
+        }
+
+        _navmanager.LocationChanged += OnLocationChanged;
+        // if (curTiw != null)
+        // {
+        //     edTiwContext = new EditContext(curTiw);
+        //     edTiwContext.OnFieldChanged += HandleFieldChanged;
+        // }
+        // else
+        // {
+        //     // fallback: initialize with a dummy object to avoid null reference
+        //     edTiwContext = new EditContext(new Tiewel());
+        // }
+        //_navmanager.LocationChanged += OnLocationChanged;
+        //edTiwContext = new EditContext(curTiw);
+        //edTiwContext.OnFieldChanged += HandleFieldChanged;
+        isLoading = false;
     }
     void OnTiwRowClick(GridRowEventArgs<Tiewel> args)
     {
@@ -1400,5 +1424,26 @@
             //Alert($"ECHEC Entities not SAVED");
             return false;
         }
+    }
+ 
+    private void ResetEditContext(Tiewel model)
+    {
+        // Dispose old handlers before replacing
+        if (edTiwContext != null)
+        {
+            edTiwContext.OnFieldChanged -= HandleFieldChanged;
+        }
+
+        edTiwContext = new EditContext(model);
+        edTiwContext.OnFieldChanged += HandleFieldChanged;
+    }
+    public void Dispose()
+    {
+        if (edTiwContext != null)
+        {
+            edTiwContext.OnFieldChanged -= HandleFieldChanged;
+        }
+
+        _navmanager.LocationChanged -= OnLocationChanged;
     }
 }

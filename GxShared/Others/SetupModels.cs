@@ -65,9 +65,12 @@ namespace GxShared.Others
         public int Iprovi { get; set; } = 0;
         public int Iville { get; set; } = 0;
         public int Sidown { get; set; } = 0;
-        public int Simain { get; set; } = 0;
+        //public int Simain { get; set; } = 0;
         public bool SiSupport { get; set; } = false;
+        public bool SiOwner { get; set; } = false;
         public string CodInvit { get; set; } = string.Empty;
+        public DateTime Datdu { get; set; } = DateTime.Now;
+        public DateTime Datau { get; set; } = DateTime.Now;
         public int Eta { get; set; } = 0;
         public string Obsv { get; set; } = string.Empty;
     }
@@ -79,5 +82,11 @@ namespace GxShared.Others
         public string Password { get; set; } = string.Empty;
         //generalisaition dispo apres generation order
         public string FbackUrl { get; set; } = string.Empty;
+    }
+    public class OrgaResponse
+    {
+        public int ErrCode { get; set; }
+        public string ErrMessage { get; set; }
+        public UsrOgSetModel Payload { get; set; }
     }
 }

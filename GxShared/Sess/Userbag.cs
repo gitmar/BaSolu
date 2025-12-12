@@ -31,9 +31,9 @@ namespace GxShared.Sess
         public string Gsigle { get; set; } = string.Empty;
         public int Uhieid { get; set; } = 0;
         //user attributs
-        public int SiOrga { get; set; } = 0; //Admin orga
+        public bool SiSupport { get; set; } = false; //Admin orga
         public bool Simain { get; set; } = false;
-        public bool SiOwner { get; set; } = false;
+        //public bool SiOwner { get; set; } = false;
         // ✅ Add this flag
         public bool IsPuzzleReady { get; set; } = false;
         public Gpuser Usprof { get; set; } = new Gpuser();

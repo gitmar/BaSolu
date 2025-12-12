@@ -136,7 +136,6 @@
     public RenderFragment Pschemas { get; set; }
     [CascadingParameter]
     private Task<AuthenticationState>? AuthState { get; set; }
-    public bool isOwner = false;
     public ClaimsPrincipal authUser;
     public bool isAuthenticated = false;
 
@@ -201,7 +200,6 @@
         }
         _usrBag = await _sessionContext.GetUserbagAsync();
         _GIdTie = _usrBag.Usorga.Gdtie;
-        isOwner = _usrBag.SiOwner;
         LsVars = _usrBag.Usorga.Uvars.ToList();
         LsFixes = _usrBag.Ufixes.ToList();
         LsPlans = _usrBag.Usorga.Uplns.Where(pl => pl.Ptyp == 5 || pl.Ptyp == 6).ToList();

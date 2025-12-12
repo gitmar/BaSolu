@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Globalization;
 
-namespace GxAdm.Helpers
+namespace GxAdm.Services
 {
     public class AbouAtyp
     {

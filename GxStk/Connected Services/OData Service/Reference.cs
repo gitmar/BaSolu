@@ -8,7 +8,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-// Generation date: 12/1/2025 4:26:05 AM
+// Generation date: 12/7/2025 7:04:46 AM
 namespace GxWapi.DaModels
 {
     /// <summary>
@@ -486,28 +486,28 @@ namespace GxWapi.DaModels
         partial void OnHlpidChanging(string value);
         partial void OnHlpidChanged();
         /// <summary>
-        /// There are no comments for Property Noord in the schema.
+        /// There are no comments for Property Ordid in the schema.
         /// </summary>
         [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        [global::Microsoft.OData.Client.OriginalNameAttribute("Noord")]
-        public virtual global::System.Nullable<int> Noord
+        [global::Microsoft.OData.Client.OriginalNameAttribute("Ordid")]
+        public virtual global::System.Nullable<int> Ordid
         {
             get
             {
-                return this._Noord;
+                return this._Ordid;
             }
             set
             {
-                this.OnNoordChanging(value);
-                this._Noord = value;
-                this.OnNoordChanged();
-                this.OnPropertyChanged("Noord");
+                this.OnOrdidChanging(value);
+                this._Ordid = value;
+                this.OnOrdidChanged();
+                this.OnPropertyChanged("Ordid");
             }
         }
         [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        private global::System.Nullable<int> _Noord;
-        partial void OnNoordChanging(global::System.Nullable<int> value);
-        partial void OnNoordChanged();
+        private global::System.Nullable<int> _Ordid;
+        partial void OnOrdidChanging(global::System.Nullable<int> value);
+        partial void OnOrdidChanged();
         /// <summary>
         /// There are no comments for Property Iwurl in the schema.
         /// </summary>

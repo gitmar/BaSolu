@@ -3,7 +3,6 @@
 @using BlazorBootstrap
 @using Blazored.LocalStorage
 @using System.Security.Claims
-@using GxAdm.Helpers
 @using GxAdm.Components.Identity
 
 @inject NavigationManager _navManager
@@ -52,8 +51,8 @@
                             <i class="bi bi-diagram-3-fill me-2"></i> Astreintes
                         </NavLink>
 
-                        <NavLink class="nav-link nav-sub text-light small ps-4" href="invitiw">
-                            <i class="bi bi-envelope-plus me-2"></i> Invitation
+                        <NavLink class="nav-link nav-sub text-light small ps-4" href="invoper">
+                            <i class="bi bi-envelope-plus me-2"></i> Operateurs
                         </NavLink>
 
                     </nav>
@@ -188,7 +187,6 @@
     private string? NavMenuCssClass => collapseNavMenu ? "collapse" : null;
 
     private Userbag _usrBag = new();
-    private bool isOwner = false;
 
     private bool isSubManagVisible = false;
     private bool isSubSecuVisible = false;

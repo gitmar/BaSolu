@@ -928,7 +928,6 @@
 @code {
     [CascadingParameter]
     private Task<AuthenticationState>? AuthState { get; set; }
-    private bool isOwner = false;
     private ClaimsPrincipal authUser;
     private bool isAuthenticated = false;
     public MyODataContext _gODContext;
@@ -950,7 +949,6 @@
 
     private List<MyRolTable> _inRoles = new();
     private List<Grole> _invRoles = new();
-
 
     private int curnbAfls => curOrga.Gsgfixes?.Where(x => x.Gvars == 5 && x.Totyp == selTyp).Count() ?? 0;
     private int curnbCols => curOrga.Gsglnes?.Where(x => x.Otyp == 5 && x.Dtyp == IBastyp && x.Totyp == selTyp && x.Tstyp == 1).Count() ?? 0;
@@ -1029,9 +1027,8 @@
         LsDoms = _usrBag.Ufixes
             .Where(ut => ut.Gvars == 36 && ut.Itb == 4 && ut.Gp1 == 3 && ut.Elea != 0)
             .ToList();
-        isOwner = _usrBag.SiOwner;
         _invRoles = await _rendAgres.LoadOrgaRoles();
-        Console.WriteLine($"Roles disponibles : {_invRoles.Count}, Owner: {isOwner}");
+        Console.WriteLine($"Roles disponibles : {_invRoles.Count}");
         //await LoadOrgaAsync(); // ✅ Still relevant if editing Gxorga
         isLoading = false;
     }

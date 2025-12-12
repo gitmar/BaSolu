@@ -110,7 +110,6 @@
 
     [CascadingParameter]
     private Task<AuthenticationState>? AuthState { get; set; }
-    public bool isOwner = false;
     public ClaimsPrincipal authUser;
     public bool isAuthenticated = false;
     private IEnumerable<Claim> _claims = Enumerable.Empty<Claim>();
@@ -145,22 +144,15 @@
         _curUname = authUser.Identity.Name; //or _claims
         Console.WriteLine($"UserName PRIS {_curUname}");
         _curEmail = authUser.FindFirst(ClaimTypes.Email)?.Value;
-        var uoan = _claims.FirstOrDefault(c => c.Type == "Gx.IsOwner")?.Value;
-        isOwner = false;
-        if (uoan == "1") isOwner = true;
         //usUsrid = authUser?.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
-        uoan = _claims.FirstOrDefault(c => c.Type == "Gx.SiSet")?.Value;
-        isSet = Convert.ToInt16(uoan);
-        uoan = _claims.FirstOrDefault(c => c.Type == "Gx.SiCor")?.Value;
-        isDrap = Convert.ToInt16(uoan);
-        uoan = _claims.FirstOrDefault(c => c.Type == "Gx.Orgid")?.Value;
+        var uoan = _claims.FirstOrDefault(c => c.Type == "Gx.Orgid")?.Value;
         _UorgId = Convert.ToInt16(uoan);
 
         
         //await GetPrivData();
 
         StateHasChanged();
-        Console.WriteLine($"orgid : {_UorgId} isOwner : {isOwner} isSet : {isSet}");
+        Console.WriteLine($"orgid : {_UorgId}");
     } 
     private async Task vaReload()
     {//logout

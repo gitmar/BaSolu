@@ -115,7 +115,6 @@ namespace GxAdm.Services
             // Hydrate Userbag
             _userbag.Userid = context.UserId;
             _userbag.Idorg = short.TryParse(context.OrgId, out var parsedOrg) ? parsedOrg : (short)0;
-            _userbag.SiOwner = context.Roles.Contains("Admin");
             if (_userbag.GetType().GetProperty("IsSupport") != null)
                 _userbag.GetType().GetProperty("IsSupport")?.SetValue(_userbag, context.Roles.Contains("Support"));
 

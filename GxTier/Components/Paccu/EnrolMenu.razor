@@ -43,87 +43,85 @@ else
                            MenuSelected="@SelMenu"
                            GroupSelected="@SelGpe" />
 
-    <div class="row">
-        <div class="col-md-12 input-group align-middle">
-            @if (Ugpe != 0)
-            {
-                @if (!ParentEDT)
-                {
-                    <span class="text-uppercase text- text-success"><b>@strComp</b></span>
-                    <span class="separator">&nbsp; &nbsp;|| </span>
-                    <Button class="btn btn-sm btn-secondary btnsz"
-                            style="@(!allEnable ? "" : "display:none;")"
-                            @onclick="ManEditAll">
-                        Modifier
-                    </Button>
-                }
-                else if (ParentEDT)
-                {
-                    <Button class="btn btn-sm btn-secondary btnsz"
-                            @onclick="ManCnclAll">
-                        Annuler
-                    </Button>
-                    <span class="separator">|  </span>
-                    <Button class="btn btn-sm btn-secondary btnsz"
-                            @onclick="ManSaveAll">
-                        Enregistrer
-                    </Button>
-                }
-            }
-            @if (!String.IsNullOrEmpty(MImessage))
-            {
-                <span class="bg-info bg-opacity-10" style="font-style:italic;color:red">&nbsp;--> @MImessage</span>
-            }
+                <div class="row">
+                    <div class="col-md-12 input-group align-middle">
+                        @if (Ugpe != 0)
+                        {
+                            @if (!ParentEDT)
+                            {
+                                <span class="text-uppercase text- text-success"><b>@strComp</b></span>
+                                <span class="separator">&nbsp; &nbsp;|| </span>
+                                <Button class="btn btn-sm btn-secondary btnsz"
+                                        style="@(!allEnable ? "" : "display:none;")"
+                                        @onclick="ManEditAll">
+                                    Modifier
+                                </Button>
+                            }
+                            else if (ParentEDT)
+                            {
+                                <Button class="btn btn-sm btn-secondary btnsz"
+                                        @onclick="ManCnclAll">
+                                    Annuler
+                                </Button>
+                                <span class="separator">|  </span>
+                                <Button class="btn btn-sm btn-secondary btnsz"
+                                        @onclick="ManSaveAll">
+                                    Enregistrer
+                                </Button>
+                            }
+                        }
+                        @if (!String.IsNullOrEmpty(MImessage))
+                        {
+                            <span class="bg-info bg-opacity-10" style="font-style:italic;color:red">&nbsp;--> @MImessage</span>
+                        }
+                    </div>
+                </div>
+                <!-- Main Content -->
+                <div class="row">
+                    @if (chxMenu != 0 && toChild != null && curOrga != null && curODContext != null)
+                    {
+                        @if (chxMenu == 1)
+                        {
+                            <ValdTie @ref="mygvld"
+                                     Ugpe="@Ugpe"
+                                     Tgpe="@Tgpe"
+                                     curOrga="@curOrga"
+                                     toChild="@toChild"
+                                     curODContext="@curODContext">
+                                <ChildContent>
+                                    @* <h2 class="child-box">Hello INTEGRATION</h2> *@
+                                </ChildContent>
+                            </ValdTie>
+                        }
+                        else if (chxMenu == 2 && ParentOK)
+                        {
+                            <InscTiw @ref="mygtiw"
+                                     ParentEDT="@ParentEDT"
+                                     ParentOK="@ParentOK"
+                                     Ugpe="@Ugpe"
+                                     Tgpe="@Tgpe"
+                                     curOrga="@curOrga"
+                                     toChild="@toChild"
+                                     curODContext="@curODContext">
+                                <ChildContent>
+                                    @* <h2 class="child-box">Hello ACCUEIL</h2> *@
+                                </ChildContent>
+                            </InscTiw>
+                        }
+                        else if (chxMenu == 3)
+                        {
+                            <InviTiw @ref="myginv">
+                                <ChildContent>
+                                    @* <h2 class="child-box">Hello INVITATION</h2> *@
+                                </ChildContent>
+                            </InviTiw>
+                        }
+                    }
+                    }
+                </div>
+            </div>
         </div>
     </div>
-    </div>
-    </div>
-    </div>
-    <!-- Main Content -->
-    @if (chxMenu != 0 && toChild != null && curOrga != null && curODContext != null)
-    {
-        @if (chxMenu == 1)
-        {
-            <ValdTie @ref="mygvld"
-                     Ugpe="@Ugpe"
-                     Tgpe="@Tgpe"
-                     curOrga="@curOrga"
-                     toChild="@toChild"
-                     curODContext="@curODContext">
-                <ChildContent>
-                    @* <h2 class="child-box">Hello INTEGRATION</h2> *@
-                </ChildContent>
-            </ValdTie>
-        }
-        else if (chxMenu == 2 && ParentOK)
-        {
-            <InscTiw @ref="mygtiw"
-                     ParentEDT="@ParentEDT"
-                     ParentOK="@ParentOK"
-                     Ugpe="@Ugpe"
-                     Tgpe="@Tgpe"
-                     curOrga="@curOrga"
-                     toChild="@toChild"
-                     curODContext="@curODContext">
-                <ChildContent>
-                    @* <h2 class="child-box">Hello ACCUEIL</h2> *@
-                </ChildContent>
-            </InscTiw>
-        }
-        else if (chxMenu == 3)
-        {
-            <InviTiw @ref="myginv"
-                     Ugpe="@Ugpe"
-                     Tgpe="@Tgpe"
-                     _tusBag="@_usrBag"
-                     curOrga="@curOrga"
-                     toChild="@toChild">
-                <ChildContent>
-                    @* <h2 class="child-box">Hello INVITATION</h2> *@
-                </ChildContent>
-            </InviTiw>
-        }
-    }
 }
 @code {
     private bool isLoading = true;
@@ -151,7 +149,6 @@ else
     private Task<AuthenticationState>? AuthState { get; set; }
 
     private ClaimsPrincipal authUser;
-    private bool isOwner = false;
     private bool isAuthenticated = false;
 
     // Operation VUE
@@ -162,8 +159,8 @@ else
     public List<GxNavMenu.MenuItem> MenuItems = new()
     {
         new GxNavMenu.MenuItem { Id = 1, Label = "Integration", Icon = "bi bi-box-arrow-in-down" },
-        new GxNavMenu.MenuItem { Id = 2, Label = "Accueil", Icon = "bi bi-house-door" },
-        new GxNavMenu.MenuItem { Id = 3, Label = "Invitation", Icon = "bi bi-envelope-paper" }
+        new GxNavMenu.MenuItem { Id = 2, Label = "Accueil/Site", Icon = "bi bi-house-door" },
+        new GxNavMenu.MenuItem { Id = 3, Label = "Invite/Online", Icon = "bi bi-envelope-paper" }
         //new MenuItem { Id = 4, Label = "Mutation", Icon = "bi bi-arrow-repeat" },
     };
     public List<GxNavMenu.GroupItem> Groupes = new();
@@ -237,7 +234,6 @@ else
         //LsDoms = _usrBag.Ufixes
         //    .Where(ut => ut.Gvars == 36 && ut.Itb == 4 && ut.Gp1 == 3 && ut.Elea != 0)
         //    .ToList();
-        isOwner = _usrBag.SiOwner;
         Console.WriteLine("Authentication ENTREE");
         await LoadTieAplAsync();
         //_varsTous.Ugpe = 1; //initial Cible
@@ -320,8 +316,9 @@ else
     {
         chxMenu = noM;
         if (chxMenu == 1) strComp = $"Integration {gpeLiba}";
-        if (chxMenu == 2) strComp = $"Accueil  {gpeLiba}";
-        if (chxMenu == 3) strComp = $"Invitation {gpeLiba}";
+        if (chxMenu == 2) strComp = $"Accueil/Site  {gpeLiba}";
+        if (chxMenu == 3) strComp = $"Invite/Online  {gpeLiba}";
+        //if (chxMenu == 3) strComp = $"Invitation {gpeLiba}";
         //if (chxMenu == 5) strComp = "Colonnes";
         allEnable = false;
         StateHasChanged();
@@ -358,11 +355,11 @@ else
             await mygvld.EdtAll();
         }
         if (chxMenu == 2)
-        { //accueil
+        { //accueil/site
             await mygtiw.EdtAll();
         }
         if (chxMenu == 3)
-        { //invitation
+        { //invite/online
             await myginv.EdtAll();
         }
         MImessage = "";

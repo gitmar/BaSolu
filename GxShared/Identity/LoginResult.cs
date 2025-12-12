@@ -40,11 +40,11 @@ namespace GxShared.Identity
         public string OgSigle { get; set; } = string.Empty;
         public string Url { get; set; } = string.Empty;
         public bool Yaorga { get; set; } = false;
-        public bool SiOwner { get; set; } = false;
+        //public bool SiOwner { get; set; } = false;
         public bool SiAdmin { get; set; } = false;
         public bool SiSupport { get; set; } = false;
         public int LgOrgid { get; set; } = 0;
-        public int Siorga { get; set; } = 0;
+        //public int Siorga { get; set; } = 0;
         //public bool SiCoordo { get; set; } = false;
         public List<string>? Roles { get; set; } = new List<string>();
         //public ICollection<Gtoken> Tokens { get; set;} = new List<Gtoken>();

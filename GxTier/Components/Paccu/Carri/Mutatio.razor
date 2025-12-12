@@ -432,8 +432,7 @@ else
     // private AccuAfil myafl;
 
     private string Imessage = "", Jmessage = "", Kmessage = "", stopenFich = "OuvrirRecepisse";
-    [CascadingParameter]
-    private Task<AuthenticationState>? AuthState { get; set; }
+    
     [Parameter]
     public RenderFragment ChildContent { get; set; }
     [Parameter]
@@ -451,11 +450,11 @@ else
     //private Tiersp gridTier = new Tiersp();
     //private Plngen curTier = new Plngen();
     //private List<Rubvar> LsRubs = new List<Rubvar>();
-
+    [CascadingParameter]
+    private Task<AuthenticationState>? AuthState { get; set; }
     private ClaimsPrincipal authUser;
     private bool isAuthenticated = false;
-    private bool isOwner = false;
-
+   
     private int activeTabIndex = 0;
     private RtV11Fic myftie { get; set; }
     private string plnDom = "", atrTitle = "";

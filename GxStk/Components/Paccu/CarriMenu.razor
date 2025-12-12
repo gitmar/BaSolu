@@ -99,7 +99,6 @@ else
     private Task<AuthenticationState>? AuthState { get; set; }
 
     private ClaimsPrincipal authUser;
-    private bool isOwner = false;
     private bool isAuthenticated = false;
 
     // Operation VUE
@@ -181,7 +180,6 @@ else
         //LsDoms = _usrBag.Ufixes
         //    .Where(ut => ut.Gvars == 36 && ut.Itb == 4 && ut.Gp1 == 3 && ut.Elea != 0)
         //    .ToList();
-        isOwner = _usrBag.SiOwner;
         Console.WriteLine("Authentication ENTREE");
         await LoadTieAplAsync();
         //_varsTous.Ugpe = 1; //initial Cible

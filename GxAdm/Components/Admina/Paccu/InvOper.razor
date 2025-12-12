@@ -1,4 +1,4 @@
-﻿@page "/invitiw"
+﻿@page "/invoper"
 
 @using System.ComponentModel.DataAnnotations
 @using System.Dynamic
@@ -7,7 +7,6 @@
 @using System.Web
 @using BlazorBootstrap
 @using Blazored.LocalStorage
-@using GxAdm.Helpers
 @using GxAdm.Services
 @using GxShared.Sess
 @using GxShared.Others
@@ -30,13 +29,17 @@
 @inject IJSRuntime _jsRun
 @inject RendAgres _rendAgres
 
-<PageTitle>INVITATION</PageTitle>
+<PageTitle>OPERATEURS</PageTitle>
+<h3>OPERATEURS</h3>
 @* <div>
     @strmeta
 </div> *@
-<div>
-    @Imessage
-</div>
+@if (!string.IsNullOrEmpty(Imessage))
+{
+    <div>
+        @Imessage
+    </div>
+}
 @if (isLoading)
 {
     <div class="text-center">
@@ -50,16 +53,16 @@ else
         @if (!isLoading)
         {
             <!-- Top Menu -->
-                <div class="innermenu-container d-flex align-items-center justify-content-start">
+            @* <div class="innermenu-container d-flex align-items-center justify-content-start">
                     <!-- Brand -->
                     <button class="navbar-brand text-white d-flex align-items-center me-4"
                             style="height:44px;" @onclick="() => NavigateBack()">
                         <i class="bi bi-grid-3x3-gap-fill me-2"></i>
                         A24soft Gx-Solutions
-                    </button>
+                    </button> *@
 
                     <!-- Nav Items -->
-                    <ul class="menu nav nav-pills d-flex align-items-center">
+                    @* <ul class="menu nav nav-pills d-flex align-items-center">
                     <li>
                         @if (_invRoles.Count > 0)
                         {
@@ -72,7 +75,7 @@ else
                             </InputSelect>
                         }
                     </li>
-                </ul>
+                </ul> *@
             @* <!-- Top Menu -->
             <div class="content-and-sidebar-container bg-success bg-opacity-10">
                 <button class="navbar-brand text-left text-white bg-dark bg-opacity-75 me-2 py-0 px-1" style="height:44px;" @onclick="NavigateBack">
@@ -93,9 +96,9 @@ else
                         }
                     </li>
                     <li><span class="separator">|</span></li>
-                </ul> *@
+                </ul> 
 
-            </div>
+            </div> *@
         }
     </div>   
 <div class="my-container">
@@ -108,16 +111,25 @@ else
         @if (!isLoading){
             <DataAnnotationsValidator />
             <ValidationSummary />
-            <div>
-                  <label><b>@_strOrga</b></label>
-            </div>
            <Tabs>
                   <Tab Title="Individuelle">
                       <Content>
+                                    <div>
+                                        <label for="tiev1">Validite du... :</label>
+                                        <InputDate id="tiev1" @bind-Value="_invModel.Datdu">
+                                            placeholder="du..."
+                                        </InputDate>
+                                    </div>
+                                    <div>
+                                        <label for="tiev2"> au... :</label>
+                                        <InputDate id="tiev2" @bind-Value="_invModel.Datau">
+                                            placeholder="au..."
+                                        </InputDate>
+                                    </div>
                                 <div>
-                                    <label for="Tiedos">Dossier:</label>
+                                    <label for="Tiedos">Reference:</label>
                                     <InputText id="tiedos" @bind-Value="_invModel.Xmatri" required
-                                               placeholder="Enter his-her dossier" />
+                                               placeholder="Enter call reference" />
                                 </div>
                                 <div>
                                     <label for="tienom">Nom:</label>
@@ -133,12 +145,12 @@ else
                                     <label for="TieIrole">Role:</label>
                                     @if (_invRoles.Count > 0)
                                     {
-                                        <select id="TieIrole" @bind="_invModel.Irole">
+                                        <InputSelect @bind-Value="_invModel.Irole" id="TieIrole">
                                             @foreach (var uro in _invRoles)
                                             {
                                                 <option value="@uro.Level">@uro.Name</option>
                                             }
-                                        </select>
+                                        </InputSelect>
                                     }
                                 </div>
                                 @if (_invModel.Utyp >= 3 && _invModel.Utyp <= 6)
@@ -163,13 +175,13 @@ else
                                     <label for="TypDiv">Services:</label>
                                     @if (_lsDivs.Count > 0)
                                     {
-                                        <select id="TypDiv" @bind="_invModel.Idhie">
+                                        <InputSelect @bind-Value="_invModel.Idhie" id="TypDiv">
                                             <option value="0">Aucun</option>
                                             @foreach (var divo in _lsDivs)
                                             {
                                                 <option value="@divo.Idhie">@divo.Liba</option>
                                             }
-                                        </select>
+                                        </InputSelect>
                                     }
                                     else
                                     {
@@ -180,13 +192,13 @@ else
                                     <label for="TypPst">Poste:</label>
                                     @if (_lsPsts.Count > 0)
                                     {
-                                        <select id="TypPst" @bind="_invModel.Idpst">
+                                        <InputSelect @bind-Value="_invModel.Idpst" id="TypPst">
                                             <option value="0">Aucun</option>
                                             @foreach (var divo in _lsPsts)
                                             {
                                                 <option value="@divo.Idpst">@divo.Liba</option>
                                             }
-                                        </select>
+                                        </InputSelect>
                                     }
                                     else
                                     {
@@ -203,29 +215,46 @@ else
                   </Tab>
                   <Tab Title="De groupe">
                       <Content>
+                                    <div>
+                                        <label for="tiev1">Validite du... :</label>
+                                        <InputDate id="tiev1" @bind-Value="_invModel.Datdu">
+                                            placeholder="du..."
+                                        </InputDate>
+                                    </div>
+                                    <div>
+                                        <label for="tiev2"> au... :</label>
+                                        <InputDate id="tiev2" @bind-Value="_invModel.Datau">
+                                            placeholder="au..."
+                                        </InputDate>
+                                    </div>
+                                    <div>
+                                        <label for="Tiedos">Reference:</label>
+                                        <InputText id="tiedos" @bind-Value="_invModel.Xmatri" required
+                                                   placeholder="Enter his-her dossier" />
+                                    </div>
                                 <div>
-                                    <label for="TieIrole">Role:</label>
+                                    <label for="TieBrol">Role:</label>
                                     @if (_invRoles.Count > 0)
                                     {
-                                        <select id="TieIrole" @bind="_invModel.Irole">
+                                        <InputSelect @bind-Value="_invModel.Irole" id="TieBrol">
                                             @foreach (var uro in _invRoles)
                                             {
                                                 <option value="@uro.Level">@uro.Name</option>
                                             }
-                                        </select>
+                                        </InputSelect>
                                     }
                                 </div>
                                 <div class="input-group">
-                                    <label for="TypDiv">Services:</label>
+                                    <label for="TypBDiv">Services:</label>
                                     @if (_lsDivs.Count > 0)
                                     {
-                                        <select id="TypDiv" @bind="_invModel.Idhie">
+                                        <InputSelect @bind-Value="_invModel.Idhie" id="TypBDiv">
                                             <option value="0">Aucun</option>
                                             @foreach (var divo in _lsDivs)
                                             {
                                                 <option value="@divo.Idhie">@divo.Liba</option>
                                             }
-                                        </select>
+                                        </InputSelect>
                                     }
                                     else
                                     {
@@ -308,13 +337,6 @@ else
     private Gxorga curOrga = new Gxorga();
     private UsrOgSetModel _invModel = new();
 
-    //[Parameter]
-    //public Gxorga curOrga { get; set; }
-    // [Parameter]
-    // public int? Tgpe { get; set; }
-    // [Parameter]
-    // public int? Ugpe { get; set; }
-    //[Parameter]
     public Userbag _usrBag = new();
 
     private bool success, errors, isSubmitting = false;
@@ -324,30 +346,20 @@ else
     private string rolInv = "", isatmsg = "", Imessage="";
     private bool IsGenerated = false;
     private string generatedLink = "";
-    private int Ugpe = 1;
+    //private int Ugpe = 1;
 
     private string _codVends = "";
     private bool isReadonly = true;
     private bool isDisabled = true;
 
-    //private RegisterModel _invModel = new RegisterModel();
-    //private ICollection<MyRolTable> _inRoles = new List<MyRolTable>(); 
-
-    //private UsrMail _usrMail = new UsrMail();
     //Authentication
-    private bool isOwner = false;
     private List<Grole> LsRoles = new();
     private List<Grole> _invRoles = new();
     private List<Grole> _usrRoles = new();
-    private string gpeLiba = "";
-    public List<Gpfixe> LsGties = new();
 
-    public string _strOrga = "", _curSigle = "";
     private HttpClient _apiClient;
     private HttpClient _locClient;
-    //private bool isMade, isSent;
 
-    //private Gsapl Curapl = new Gsapl();
     private IEnumerable<Gsapl> InApls = Enumerable.Empty<Gsapl>().AsQueryable();
     private Tiersp mytiers = new Tiersp();
     private List<Tiersp> lsTiers = new List<Tiersp>();
@@ -358,7 +370,7 @@ else
     {
         //prise utilisateur courant
         isLoading = true;
-        int uMxrol = 0;
+        int uMinrol = 0;
         var authState = await AuthState;
         authUser = authState.User;
         isAuthenticated = authUser.Identity.IsAuthenticated;
@@ -374,8 +386,6 @@ else
         _apiClient = _httpFactorer.CreateClient("AUTHClient");
         _locClient = _httpFactorer.CreateClient("DefaultClient");
         _usrBag = await _sessionContext.GetUserbagAsync();
-        //_usrRoles = _usrBag.Uroles.ToList();
-        //LsVars = _usrBag.Usorga.Uvars.ToList();
         _lsDivs = await _rendAgres.LoadOrgaPostes();
         var json = await _cliemanager.SendRequestAsync("AUTHClient", HttpMethod.Get, "usercontext/session");
         var result = JsonConvert.DeserializeObject<SessionDto>(json);
@@ -384,10 +394,10 @@ else
             //Console.WriteLine($"Nb Roles : {result.Count}");
             _usrRoles = result.FullRoles;
             //Calcul de uMax role de utilisateur +1 si admin/lui-meme
-            uMxrol = _usrRoles.Max(ur => ur.Level);
-            if (authUser.IsInRole("Admin"))
+            uMinrol = _usrRoles.Min(ur => ur.Level);
+            if (authUser.IsInRole("Owner"))
             {
-                uMxrol = uMxrol - 1;
+                uMinrol = uMinrol + 1; //saute en plus owner
             }
         }
         else
@@ -395,13 +405,12 @@ else
             Console.WriteLine("Nb Roles : null");
             return;
         }
-        var lsRoles = await _rendAgres.LoadOrgaRoles();
-        _invRoles = lsRoles.Where(ur => ur.Level != 6 && ur.Level > uMxrol)
-            .OrderBy(up => up.Level)  //6 cible exclu
-            .ToList();
-        //LsFixes = _usrBag.Ufixes.ToList();
-        LsGties = _usrBag.Ufixes
-            .Where(ut => ut.Gvars == 36 && ut.Elea != 0 && ut.Elea != 9)
+        //all orga roles
+        var clcRoles = await _rendAgres.LoadOrgaRoles();
+        var lsRoles = clcRoles.OrderBy(r => r.Level).ToList();
+        //saute lui-meme
+        _invRoles = lsRoles.Where(ur => ur.Level > uMinrol && (ur.Level < 10 || ur.Level > 40))
+            .OrderBy(up => up.Level)  
             .ToList();
         _invModel.Utyp = 1; //cible
         //Imessage = "Donnees Grilles chargees";
@@ -424,7 +433,6 @@ else
                 return;
             }
             //prise des colonnes //default/Ugpe = 1;
-            _strOrga = curOrga.Raison;
             _invModel.Idorg = curOrga.Idorg; // convert.toint16(user.findfirst("insidorg")?.value);                                                        //Console.WriteLine(usrBag.Lkorga.Idorg);
             _invModel.Raison = curOrga.Raison;
             //Console.WriteLine($"From Enrol Menu Nb.cols :{LsCols.Count} et tbEle {TbElems.Count}");
@@ -435,22 +443,6 @@ else
             Console.WriteLine($"stack trace : {ex.StackTrace} ex-mess : {ex.Message} and also in-mess: {ex.InnerException}");
         }
     }
-    //changes des selections
-    void ChxGpeTiers(Gpfixe mygpe)
-    {
-        gpeLiba = "";
-        //LsCols = curOrga.Gsglnes.Where(ug => ug.Otyp == 5 && ug.Dtyp == 6 && ug.Totyp == Ugpe && ug.Jacc == 1).ToList();
-        if (mygpe != null)
-        {
-            Ugpe = mygpe.Elea;
-            //Tgpe = mygpe.Gp2;
-            gpeLiba = LsGties.Where(ut => ut.Elea == mygpe.Elea).FirstOrDefault().Liba.ToUpperInvariant();
-            StateHasChanged();
-            Console.WriteLine("PAS 2");
-        }
-        //toChild.LsCols = LsCols;
-    }
-    
     private async Task GenerateEmailLink(int gpe)
     {
         bool IsVerified = false;
@@ -472,8 +464,9 @@ else
         var gxadmUrl = UrlParser.ReplaceWithSubdomain(inpUrl, "gxadm"); // → https://gxadm.a24soft.com
         _invModel.Idorg = curOrga.Idorg;
         _invModel.Orig = 2; //from invite
+        _invModel.Toqui = _invModel.Irole; 
+        _invModel.Utyp = _invModel.Irole;
         _invModel.HlpWurl = curOrga.Hlpwurl;
-        _invModel.Utyp = Ugpe;
         _invModel.Weburl = gxadmUrl;
         generatedLink = _linkSerialiser.EncodeAndSerialize(_invModel);
     }
@@ -504,7 +497,7 @@ else
         //     });
         // Build final URL with query string
         //var fullUrl = $"{gxadmUrl}/register?cdlink={Uri.EscapeDataString(cdlink)}";
-        var fullUrl = $"{_invModel.Weburl}/register?cdlink={Uri.EscapeDataString(generatedLink)}"; //&ogqryplus={Uri.EscapeDataString(ogqryplus)}";
+        var fullUrl = $"{_invModel.Weburl}/stdregis?cdlink={Uri.EscapeDataString(generatedLink)}"; //&ogqryplus={Uri.EscapeDataString(ogqryplus)}";
         //lien a envoyer par CxApi mailer
         InviteEmailRequest mailReq = new();
         mailReq.InviteLink = fullUrl;
@@ -649,7 +642,7 @@ else
     //                     + "&toqui=" + toQui.ToString() + "&toqmail=" + _invModel.Email + "&phone=" + _invModel.Phonenumber + "&toqid=1212441144"
     //                     + "&opays=" + kpays + "&toqlang=fr" + "&typtie=" + _invModel.Utyp + "&dqirole=" + deQui.ToString() + "&tqirole=" + toQui.ToString()
     //                     + "&dqsrole=" + dqsrole + "&tqsrole=" + tqsrole + "&toqnom=" + _invModel.Nom + "&toqpnoms=" + _invModel.Pnom
-    //                     + "&methp=1" + "&stsigle=" + stsigle + "&isowner=1"
+    //                     + "&methp=1" + "&stsigle=" + stsigle
     //                     + "&tydoma=" + typdom + "&stdoma=" + stdoma + "&datcde=" + DateTime.Now
     //                     + "&tysite=1" + "&stsite=" + stsite
     //                     + "&ivorga=" + stOrga + "&straison=" + kraison + "&hiera=" + _invModel.Idhie + "@ipost" + _invModel.Idpst

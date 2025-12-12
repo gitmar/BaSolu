@@ -1,0 +1,387 @@
+﻿@page "/sitesflow"
+@using System
+@using System.ComponentModel.DataAnnotations
+@using System.Reflection
+@using System.Text
+@using System.Text.Json
+@using GxAdm.Services
+@using GxShared.Identity
+@using GxShared.Others
+@using Microsoft.AspNetCore.Components.Forms
+@using Microsoft.AspNetCore.WebUtilities
+
+<PageTitle>Notif.cmdes</PageTitle>
+<h2>Notifications Commandes</h2>
+
+@inject IHttpClientFactory _httpFactorer
+@inject NavigationManager _navmanager
+@inject TblJsonRender _tableService
+@inject LinkSerialiser _linkSerialiser
+@inject IEmailRenderHelper _emailHelper
+@inject IDynamicApiClientService _dynClient
+@inject IJSRuntime _jsRun
+
+<PageTitle>Notifications Support</PageTitle>
+
+<div class="row mb-2">
+    <div class="col-10">
+        <label for="oorga">Organisation</label>
+        <label class="fw-bold" id="oorga">@_invModel.Raison</label>
+    </div>
+</div>
+
+@if (!string.IsNullOrEmpty(Imessage))
+{
+    <div class="row mb-2">
+        <span>message :</span>
+        <label style="font-weight: bold; color: red; background-color: yellow;">@Imessage</label>
+    </div>
+}
+<div class="container">
+    <div class="row mb-2">
+        <Grid TItem="Order"
+              Data="@LsOrders"
+              AllowRowClick="true"
+              AllowPaging="true"
+              Responsive="true">
+            <GridColumns>
+                <GridColumn TItem="Order" HeaderText="Ref.">
+                    <ChildContent Context="item">
+                        <div @key="item.Id">@item.OIdstr</div>
+                    </ChildContent>
+                </GridColumn>
+                <GridColumn TItem="Order" HeaderText="Website">
+                    <ChildContent Context="item">
+                        @item.Weburl
+                    </ChildContent>
+                </GridColumn>
+                <GridColumn TItem="Order" HeaderText="C?">
+                    <ChildContent Context="item">
+                        @item.CstEt2
+                    </ChildContent>
+                </GridColumn>
+                <GridColumn TItem="Order" HeaderText="O?">
+                    <ChildContent Context="item">
+                        @item.Step
+                    </ChildContent>
+                </GridColumn>
+            </GridColumns>
+        </Grid>
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    [SupplyParameterFromQuery]
+    public int Orig { get; set; }
+    [Parameter]
+    [SupplyParameterFromQuery]
+    public int ErrCode { get; set; }
+    [Parameter]
+    [SupplyParameterFromQuery]
+    public string ErrMessage { get; set; }
+    [SupplyParameterFromQuery]
+    public string? Status { get; set; }
+    [SupplyParameterFromQuery]
+    public string? Msg { get; set; }
+
+    private UsrOgSetModel _invModel = new();
+    private bool isLoading = false, yaerrors = false;
+    private string successmsg = "", Imessage = "";
+
+    private HttpClient _apiClient;
+
+    //private Order _curOrder = new();
+    //private List<Order> LsOrders = new();
+
+    private string? _generatedLink;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        isLoading = true;
+        yaerrors = false;
+        successmsg = "";
+        _invModel.Orig = Orig;
+        _invModel.ErrCode = ErrCode;
+        _invModel.ErrMessage = ErrMessage;
+        _apiClient = _httpFactorer.CreateClient("AUTHClient");
+        if (Orig == 1) //regis STD 1st ADMIN
+        {
+            if (ErrCode == 9)
+            { //success
+                // _curOrder = await RendsOrder(InOrdid);
+                // if (_curOrder != null)
+                // { //0Draft/2phys/3logi-orgaset -> dans SendEmail
+                //     _curOrder.Step = 7; //client enregistre dans son logiciel
+                //     var resorda = await _apiClient.PutAsJsonAsync($"api/orders/{_curOrder.Id}", _curOrder);
+                //     if (resorda.IsSuccessStatusCode)
+                //     {
+                //         Imessage = "Customer REGISTER successfully to its website";
+                //     }
+                //     else
+                //     {
+                //         Imessage = $"Customer FAIL TO REGISTER ({resorda.StatusCode})";
+                //         var error = await resorda.Content.ReadAsStringAsync();
+                //         Console.WriteLine($"❌ Echec de flow ({resorda.StatusCode}): {error}");
+                //     }
+                // }
+            }
+            else
+            {
+                Imessage = _invModel.ErrCode + "/" + _invModel.ErrMessage;
+            }
+        }
+        if (Orig == 2)
+        { //regis HELP /pas encore de Order
+            if (ErrCode == 9)
+            { //success
+                Imessage = "SUPPORT Enregistre avec SUCCES";
+            }
+            else
+            {
+                Imessage = ErrCode + "/" + ErrMessage;
+            }
+        }
+        if (Orig == 5)
+        { //crea ORGA /start orga
+            if (ErrCode == 9)
+            { //success
+                Console.WriteLine("ATTEINT INVITE ADMIN");
+                // _curOrder = await RendsOrder(InOrdid);
+                // if (_curOrder == null)
+                // {
+                //     Console.WriteLine("ORDER ABSENT");
+                //     Imessage = ErrCode + "/" + ErrMessage;
+                //     return;
+                // }
+                // Console.WriteLine("ATTEINT INVITE ADMIN2222");
+                // // { //0Draft/2phys/3logi-orgaset -> dans SendEmail
+
+                // Customer mycust = await RendsCustomer(_curOrder.Idclie);
+                // if (mycust == null)
+                // {
+                //     Console.WriteLine("CUSTOMER ABSENT");
+                //     Imessage = ErrCode + "/" + ErrMessage;
+                //     return;
+                // }
+                // //lien vers enregistrement par le Support
+                string gxUrl = _apiClient.BaseAddress?.ToString().TrimEnd('/');
+                var cdlinkDto = new CdlinkDto
+                {
+                    Idorg = mycust.Idorg,
+
+                    Ordid = _curOrder.Id,
+                    Custid = mycust.Id,
+                    Weburl = mycust.Weburl,
+                    Email = mycust.Email,
+                    Sendermail = mycust.HlpEmail
+                };
+
+
+                string cdlinkEncoded = _linkSerialiser.EncodeAndSerialize(cdlinkDto);
+                string inviteLink = $"{gxUrl}/clieownregister?cdlink={cdlinkEncoded}";
+
+                // //_invModel.FbackUrl = gxUrl + "sitesflow";
+                // _invModel.SiSupport = false;
+                // _invModel.SiOwner = true;
+                // //_invModel.Username = mycust.Email; //forcing
+                // Console.WriteLine($"Frontend Link : {gxUrl}");
+                // _invModel.Idorg = mycust.Idorg;
+                // //_invModel.Orig = 1; //from support
+                // _invModel.HlpWurl = mycust.HlpWurl;
+                // _invModel.HlpEmail = mycust.HlpEmail; 
+                // _invModel.Utyp = 3; //admin
+                //_invModel.Weburl = mycust?.Weburl;
+                //Enregistrement a partir du site du Vendeur
+                //string vndUrl = _apiClient.BaseAddress.ToString();
+                //vndUrl = await _emailHelper.BuildInviteUrl(vndUrl);
+                //from support website
+                //_generatedLink = _linkSerialiser.GenerateLink(_invModel, gxUrl, "clieownregister"); //endpoint
+                //string inviteMessage = _generatedLink;
+                InviteEmailRequest mailReq = new();
+                mailReq.InviteLink = inviteLink;
+                mailReq.SenderEmail = cdlinkDto.Sendermail;
+                //mailReq.Email = _invModel.Email;
+                mailReq.htmlMessage = $@"
+<html>
+  <body>
+    <p>Bonjour {mycust.Username},</p>
+    <p>Veuillez cliquer le bouton ci-dessous pour vous enregistrer sur le site :</p>
+    <p><a href='{inviteLink}'
+          style='display:inline-block;padding:10px 20px;background:#0078D7;color:#fff;text-decoration:none;border-radius:4px;'>
+          S'enregistrer
+        </a></p>
+  </body>
+</html>";
+                mailReq.UserName = mycust.Username;
+                mailReq.Message = "Veuillez cliquer le lien pour vous enregistrer sur le Site de votre logiciel";
+                mailReq.Subject = "Invite Logiciel";
+                mailReq.To = mycust.Email;
+                //envoie email a partir du SUPPORT
+                bool isSent = false; 
+                Console.WriteLine($"adresse : {_apiClient.BaseAddress.ToString()}");
+
+                var response = await _apiClient.PostAsJsonAsync("api/email/sendinvite", mailReq);
+                if (response.IsSuccessStatusCode)
+                {
+                    _curOrder.Step = 5; //orga cree/order set et client notifie
+                    isSent = true;
+                    Console.WriteLine("✅ Customer Email sent successfully!");
+                }
+                else
+                {
+                    _curOrder.Step = 4; //client non notifie
+                    var error = await response.Content.ReadAsStringAsync();
+                    Console.WriteLine($"❌ Customer Email fail to sent ({response.StatusCode}): {error}");
+                }
+                //lien email pour renvoi eventuel
+                _curOrder.OEminvit = _generatedLink;
+                var resorda = await _apiClient.PutAsJsonAsync($"api/orders/{_curOrder.Id}", _curOrder);
+                if (isSent)
+                {
+                    Imessage = "Customer Email sent successfully";
+                } else
+                {
+                    Imessage = $"Customer Email fail to sent ({response.StatusCode})";
+                }
+                if (resorda.IsSuccessStatusCode)
+                {
+                    Imessage = Imessage + " Email envoye Maj order SUCCES";
+                }
+                else
+                {
+                    Imessage = Imessage + $" ❌ Echec de flow ({resorda.StatusCode})";
+                    var error = await resorda.Content.ReadAsStringAsync();
+                    Console.WriteLine($"❌ Echec de flow ({resorda.StatusCode}): {error}");
+                }
+            }
+            else
+            {
+                Imessage = ErrCode + "/" + ErrMessage;
+            }
+        }
+        yaerrors = false;
+        isLoading = false;
+    }
+    private async Task<Order> RendsOrder(int ordId)
+    {
+        LsOrders = await _apiClient.GetFromJsonAsync<List<Order>>("api/orders/rendall");
+        if (LsOrders.Any())
+        {
+            Console.WriteLine($"nb Orders : {LsOrders.Count}");
+            Order Ordtest = LsOrders.FirstOrDefault();
+            Console.WriteLine($"1st Order : {Ordtest.Id} et inOrder : {ordId}");
+            Order myorda = LsOrders.FirstOrDefault(uo => uo.Id == ordId);
+            return myorda;
+        }
+        else
+        {
+            Imessage = "order flow incomplet, enregistrez et notifiew manuellement/Suivi-Commande";
+            return null;
+        }
+    }
+    private async Task<Customer> RendsCustomer(int custId)
+    {
+        var LsCusts = await _apiClient.GetFromJsonAsync<List<Customer>>("api/customers/rendall");
+        if (LsCusts.Any())
+        {
+            Console.WriteLine($"nb Customers : {LsCusts.Count}");
+            Customer mycusta = LsCusts.FirstOrDefault(uo => uo.Id == custId);
+            return mycusta;
+        }
+        else
+        {
+            Imessage = "order flow incomplet, enregistrez et notifiew manuellement/Suivi-Commande";
+            return null;
+        }
+    }
+    // protected override async Task OnInitializedAsync()
+    // {
+    //     isLoading = true;
+    //     yaerrors = false;
+    //     successmsg = "";
+
+    //     if (!string.IsNullOrEmpty(cdlink))
+    //     {
+    //         var _LinkSerialiser = new LinkSerialiser(_jsRun);
+    //         _invModel = _LinkSerialiser.DecodeAndDeserialize<UsrOgSetModel>(cdlink);
+
+    //         if (!string.IsNullOrEmpty(_invModel.Oidstr))
+    //         {
+    //             _invModel.Password = "";
+    //             _invModel.ConfirmPassword = "";
+    //         }
+
+    //         Console.WriteLine($"Order Id  : {_invModel.Id}");
+    //         Console.WriteLine($"Oidstr    : {_invModel.Oidstr}");
+
+    //         _apiClient = _httpFactorer.CreateClient("ApiGxClient");
+    //         _locxClient = _httpFactorer.CreateClient("LocalClient");
+    //         var _LinkSerialiser = new LinkSerialiser(_jsRun);
+    //         _invModel = _LinkSerialiser.DecodeAndDeserialize<UsrOgSetModel>(payload.Cdlink);
+
+    //         _invModel.ErrCode = payload.ErrCode;
+    //         _invModel.ErrMessage = payload.ErrMessage;
+
+    //         Console.WriteLine($"Order Id  : {_invModel.Id}");
+    //         Console.WriteLine($"Oidstr    : {_invModel.Oidstr}");
+    //         yaerrors = false;
+    //         isLoading = false;
+    //     }
+    //     else
+    //     {
+    //         Imessage = "Message recu incohérent";
+    //         return;
+    //     }
+    // }
+
+    // New helper to receive payload directly from API
+    // public async Task ReceivePayloadAsync(RedirectPayload payload)
+    // {
+    //     if (!string.IsNullOrEmpty(payload.Cdlink))
+    //     {
+    //         var _LinkSerialiser = new LinkSerialiser(_jsRun);
+    //         _invModel = _LinkSerialiser.DecodeAndDeserialize<UsrOgSetModel>(payload.Cdlink);
+
+    //         _invModel.ErrCode = payload.ErrCode;
+    //         _invModel.ErrMessage = payload.ErrMessage;
+
+    //         Console.WriteLine($"Order Id  : {_invModel.Id}");
+    //         Console.WriteLine($"Oidstr    : {_invModel.Oidstr}");
+    //     }
+    //     else
+    //     {
+    //         Imessage = "Payload recu incohérent";
+    //     }
+    // }
+
+    // protected override async Task OnInitializedAsync()
+    // {
+    //     isLoading = true;
+    //     yaerrors = false; successmsg = "";
+    //     if (!string.IsNullOrEmpty(cdlink))
+    //     {
+    //         var _LinkSerialiser = new LinkSerialiser(_jsRun);
+    //         _invModel = _LinkSerialiser.DecodeAndDeserialize<UsrOgSetModel>(cdlink);
+    //         if (!string.IsNullOrEmpty(_invModel.Oidstr))
+    //         {
+    //             _invModel.Password = "";
+    //             _invModel.ConfirmPassword = "";
+    //         }
+    //         //tests
+    //         Console.WriteLine($"Order Id  : {_invModel.Id}");
+    //         Console.WriteLine($"Oidstr  : {_invModel.Oidstr}");
+    //         _apiClient = _httpFactorer.CreateClient("ApiGxClient");
+    //         _locxClient = _httpFactorer.CreateClient("LocalClient");
+    //         yaerrors = false; isLoading = false;
+    //     } else
+    //     {
+    //         Imessage = "Message recu incherent";
+    //         return; 
+    //     }
+    // }
+    // protected override async Task OnParametersSetAsync()
+    // {
+        
+    // }
+}

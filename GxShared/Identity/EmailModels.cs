@@ -21,13 +21,15 @@ namespace GxShared.Identity
         [EmailAddress]
         public string To { get; set; } = string.Empty;
         public string SenderEmail { get; set; } = string.Empty;
+        public string Email { get; set; } = string.Empty;
         public string UserName { get; set; } = string.Empty;
         public string Subject { get; set; } = "You're invited!";
         public bool InEmailButton { get; set; } = false;
         public string Message { get; set; } = "You’ve been invited to register.";
         public string InviteLink { get; set; } = string.Empty;
-        public string? QrBase64 { get; set; }
-        public string? LogoBase64 { get; set; }
+        public string htmlMessage { get; set; } = string.Empty;
+        public string? QrBase64 { get; set; } = null;
+        public string? LogoBase64 { get; set; } = null;
         public string QrImagePath { get; set; } = string.Empty;
         public string LogoImagePath { get; set; } = string.Empty;
     }

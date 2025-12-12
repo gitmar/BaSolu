@@ -106,7 +106,6 @@
     // public RenderFragment Pschemas { get; set; }
     [CascadingParameter]
     private Task<AuthenticationState>? AuthState { get; set; }
-    public bool isOwner = false;
     public ClaimsPrincipal authUser;
     public bool isAuthenticated = false;
     //in DATA
@@ -146,7 +145,6 @@
         //pita = 5;
         _usrBag = await _sessionContext.GetUserbagAsync();
         _GIdTie = _usrBag.Usorga.Gdtie;
-        isOwner = _usrBag.SiOwner;
         Console.WriteLine($"RETOUR UserBag...{_usrBag.Ufixes.Count()}");
         if ((!_usrBag.Ufixes.Any()) ||
                _usrBag.Yauser == false)

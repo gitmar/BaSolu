@@ -254,7 +254,6 @@
 
     private UsrMail _usrMail = new UsrMail();
     //Authentication
-    private bool isOwner = false;
     private List<Grole> _invRoles = new();
     private List<Grole> _usrRoles = new();
     private ICollection<Gpfixe> _lsUtyps = new List<Gpfixe>();
@@ -463,7 +462,7 @@
                         + "&toqui=" + toQui.ToString() + "&toqmail=" + regModel.Email + "&phone=" + regModel.Phonenumber + "&toqid=1212441144"
                         + "&opays=" + kpays + "&toqlang=fr" + "&typtie=" + regModel.Utyp + "&dqirole=" + deQui.ToString() + "&tqirole=" + toQui.ToString()
                         + "&dqsrole=" + dqsrole + "&tqsrole=" + tqsrole + "&toqnom=" + regModel.Nom + "&toqpnoms=" + regModel.Pnom
-                        + "&methp=1" + "&stsigle=" + stsigle + "&isowner=1"
+                        + "&methp=1" + "&stsigle=" + stsigle
                         + "&tydoma=" + tidom + "&stdoma=" + stdoma + "&datcde=" + DateTime.Now
                         + "&tysite=1" + "&stsite=" + stsite
                         + "&ivorga=" + stOrga + "&straison=" + kraison + "&hiera=" + regModel.Idhie + "@ipost" + regModel.Idpst

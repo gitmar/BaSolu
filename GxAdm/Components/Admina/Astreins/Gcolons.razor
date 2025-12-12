@@ -741,7 +741,6 @@
 
     private ClaimsPrincipal authUser;
     private bool isAuthenticated = false;
-    private bool isOwner = false;
 
     private Dictionary<int, bool> EdState = new Dictionary<int, bool>();
 
@@ -836,7 +835,6 @@
         LsDoms = _usrBag.Ufixes
            .Where(ut => ut.Gvars == 36 && ut.Itb == 4 && ut.Gp1 == 3 && ut.Elea != 0)
            .ToList();
-        isOwner = _usrBag.SiOwner;
         //await LoadServOrgAsync();
         await ChargeParentData();
         _navmanager.LocationChanged += OnLocationChanged;

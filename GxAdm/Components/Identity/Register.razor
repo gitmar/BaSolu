@@ -23,7 +23,7 @@
 
 <h1>Register</h1>
 
-@if (errors == true)
+@if (yaerrors == true)
 {
     foreach (var error in errorList)
     {
@@ -33,16 +33,16 @@
 @* <Toast prefix="DK" position="right">
     jesuis
 </Toast> *@
-@if (success == true)
+@if (string.IsNullOrEmpty(Imessage))
 {
-    <div class="alert alert-success">@successmsg</div>
+    <div class="alert alert-success">Imessage</div>
 }
 <AuthorizeView>
     <Authorized>
-        <div class="alert alert-success">You're already logged in as @context.User.Identity?.Name.</div>
+        <div class="alert alert-success">You're already logged in as @context.User.Identity?.Name.ToString()</div>
     </Authorized>
     <NotAuthorized>
-        <EditForm Context="regform" Model="uogModel">
+        <EditForm Context="regform" Model="_invModel">
             <DataAnnotationsValidator />
             <ValidationSummary />
 
@@ -50,49 +50,50 @@
                 <label for="raison">Raison:</label>
                 @if (_siProprio)
                 {
-                    <InputText id="raison" required @bind-Value="uogModel.Raison" />
+                    <InputText id="raison" required @bind-Value="_invModel.Raison" />
                 } else
                 {
-                    <label class="bg-danger bg-opacity-10">@uogModel.Raison</label>
+                    <label class="bg-danger bg-opacity-10">@_invModel.Raison</label>
                 }
             </div>
             <div>
                 <label for="sigle">Sigle:</label>
                 @if (_siProprio)
                 {
-                    <InputText id="sigle" required @bind-Value="uogModel.Sigle" />
+                    <InputText id="sigle" required @bind-Value="_invModel.Sigle" />
                 } else
                 {
-                    <label class="bg-danger bg-opacity-10">@uogModel.Sigle</label>
+                    <label class="bg-danger bg-opacity-10">@_invModel.Sigle</label>
                 }
             </div>
 
             <div>
                 <label>-----</label>
             </div>
-            @if (success == false) {
+            @if (!isLoading) 
+            {
                 <div>
                     <label>Pseudo(caract.minus. : 6min15maxi):</label>
                 </div>
                 <div>
-                    <InputText id="ouname" required @bind-Value="uogModel.Username" />
-                    <ValidationMessage For="@(() => uogModel.Username)" />
+                    <InputText id="ouname" required @bind-Value="_invModel.Username" />
+                    <ValidationMessage For="@(() => _invModel.Username)" />
                 </div>
                 <div>
                     <label for="phone">Phonenumber:</label>
-                    <InputText id="phone" required @bind-Value="uogModel.Phonenumber" placeholder="phonenumber" />
-                    <ValidationMessage For="@(() => uogModel.Phonenumber)" />
+                    <InputText id="phone" required @bind-Value="_invModel.Phonenumber" placeholder="phonenumber" />
+                    <ValidationMessage For="@(() => _invModel.Phonenumber)" />
                 </div>
                 <div>
                     <label for="email">Email:</label>
                     @if (_siAllManager)
                     {
-                        <label class="bg-danger bg-opacity-10">@uogModel.Email</label>
+                        <label class="bg-danger bg-opacity-10">@_invModel.Email</label>
                     }
                     else
                     {
-                        <InputText id="email" @bind-Value="uogModel.Email" placeholder="email" />
-                        <ValidationMessage For="@(() => uogModel.Email)" />
+                        <InputText id="email" @bind-Value="_invModel.Email" placeholder="email" />
+                        <ValidationMessage For="@(() => _invModel.Email)" />
                     }
                 </div>
                 <div>
@@ -100,15 +101,15 @@
                 </div>
                 <div>
                     <label for="onom">Nom:</label>
-                    <InputText id="onom" required @bind-Value="uogModel.Nom" />
+                    <InputText id="onom" required @bind-Value="_invModel.Nom" />
                 </div>
                 <div>
                     <label for="opnoms">Prenom(s):</label>
-                    <InputText id="opnoms" required @bind-Value="uogModel.Pnom" />
+                    <InputText id="opnoms" required @bind-Value="_invModel.Pnom" />
                 </div>
                 <div>
                     <label for="Srole">Role:</label>
-                    <label class="bg-danger  bg-opacity-10" id="Toqsrole">@uogModel.Srole</label>
+                    <label class="bg-danger  bg-opacity-10" id="Toqsrole">@_invModel.Srole</label>
                 </div>
                 <div>
                     <label for="ppays">Pays:</label>
@@ -116,7 +117,7 @@
                     {
                         if (_myCatal.Countries != null && _myCatal.Countries.Count > 0)
                         {
-                            <select id="ppays" @bind="uogModel.Ipays" disabled>
+                            <select id="ppays" @bind="_invModel.Ipays" disabled>
                                 @foreach (var utp in _myCatal.Countries)
                                 {
                                     <option value="@utp.Elea">@utp.Liba</option>
@@ -139,7 +140,7 @@
                     {
                         if (_myCatal.Langues != null && _myCatal.Langues.Count > 0)
                         {
-                            <select id="plang" @bind="uogModel.Ilang">
+                            <select id="plang" @bind="_invModel.Ilang">
                                 @foreach (var utp in _myCatal.Langues)
                                 {
                                     <option value="@utp.Elea">@utp.Liba</option>
@@ -157,11 +158,11 @@
                 </div>
                 <div>
                     <label for="password">Password:</label>
-                    <InputText id="password" required @bind-Value="_password" />
+                    <InputText id="password" required @bind-Value="_invModel.Password" />
                 </div>
                 <div>
                     <label for="confirmpassword">Confirm Password:</label>
-                    <InputText id="confirmpassword" required  @bind-Value="_confirmPassword" />
+                    <InputText id="confirmpassword" required @bind-Value="_invModel.ConfirmPassword" />
                 </div>
                 <div>
                     @if (isLoading)
@@ -169,15 +170,12 @@
                         <p>Registring (PATIENCE!...)</p>
                     } else
                     {
-                    <div>Enregistrez-vous pour @uogModel.Sigle</div>
-                        <button class="btn btn-primary" type="submit" @onclick="DoRegisterAsync">
+                    <div>Enregistrez-vous pour @_invModel.Sigle</div>
+                        <button class="btn btn-primary" type="submit" @onclick="DoUserRegisterAsync">
                             Register
                         </button>    
                     }
                 </div>
-            }else
-            {
-                <div class="alert alert-success">@successmsg</div>
             }
         </EditForm>
     </NotAuthorized>
@@ -188,33 +186,32 @@
     [SupplyParameterFromQuery]
     public string cdlink { get; set; }
 
-    private bool isLoading = false, errors = false, success = false;
-    private string successmsg = "";
+    private bool isLoading = false, yaerrors = false;
+    private string Imessage = "";
     private List<string> errorList = new List<string>();
 
-    private string _password = "", _confirmPassword="";
     private string UserLogged = "";
     private TableSet _myCatal = new();
 
-    private UsrOgSetModel uogModel = new();
-    private HttpClient _logClient;
-    private HttpClient _dftClient;
+    private UsrOgSetModel _invModel = new();
+    private HttpClient _apiClient;
+
     private bool _siAllManager = false;
     private bool _siProprio = false;
 
     protected override async Task OnInitializedAsync()
     {
+        isLoading = true;
         var testbaseAddress = _navmanager.BaseUri.TrimEnd('/');
         Console.WriteLine($"BASEURI is {testbaseAddress}");
-        errors = false; success = false; successmsg = ""; isLoading = false;
+        yaerrors = false; Imessage = ""; isLoading = false;
         if (!string.IsNullOrEmpty(cdlink))
         {
             //var _LinkSerialiser = new LinkSerialiser(_jsRun);
-            uogModel = _linkSerialiser.DecodeAndDeserialize<UsrOgSetModel>(cdlink);
+            _invModel = _linkSerialiser.DecodeAndDeserialize<UsrOgSetModel>(cdlink);
             //tests
         }
-        _logClient = httpfacClient.CreateClient("OFFLClient");
-        _dftClient = httpfacClient.CreateClient("DefaultClient");
+        _apiClient = httpfacClient.CreateClient("AUTHClient");
         Console.Write("Zone table");
     }
     protected override async Task OnParametersSetAsync()
@@ -228,155 +225,327 @@
             Console.WriteLine($"Tables loading issue : {ex.Message}");
             // Log or handle error, e.g. show toast notification with BlazorBootstrap.Toast
         }
+        isLoading = false;
     }
-    public async Task DoRegisterAsync()
+    private async Task DoUserRegisterAsync()
     {
-        errors = false; success = false; isLoading = true;
-        //email required//owner-siset/free others
-        if (_siAllManager)
+        Console.WriteLine("TOUT est ici");
+        Imessage = "";
+        isLoading = true;
+
+        // Re‑verify inputs
+        bool isVerified = await VerifInputs();
+        if (!isVerified)
         {
-            if (string.IsNullOrWhiteSpace(uogModel.Email))
-            {
-                errors = true;
-                errorList.Add("Email is required.");
-                isLoading = false;
-                return;
-            } else
-            {
-                var normalizedEmail = uogModel.Email.ToUpperInvariant();
-                if (normalizedEmail == null)
-                {
-                    errors = true;
-                    errorList.Add("Email contains inacceptable characters.");
-                    isLoading = false;
-                    return;
-                }
-            }
-        }
-        //uogModel.Username = uogModel.Email ?? uogModel.Phonenumber;
-        //si par email ou phonenumber
-        if (string.IsNullOrWhiteSpace(_password))
-        {
-            errors = true;
-            errorList.Add("Password is required.");
-            isLoading = false;
-            return;
-        }
-        if (string.IsNullOrWhiteSpace(uogModel.Username))
-        {
-            errors = true;
-            errorList.Add("Username is required.");
-            isLoading = false;
-            return;
-        }
-        if (string.IsNullOrWhiteSpace(_confirmPassword))
-        {
-            errors = true;
-            errorList.Add("Please confirm your password.");
+            Imessage += "Echec Generation : des issues persistent..." + Imessage;
+            Console.WriteLine($"message : {Imessage}");
+            StateHasChanged();
             isLoading = false;
             return;
         }
 
-        if (_password != _confirmPassword)
+        // Prepare model
+        _invModel.SiSupport = true;
+        _invModel.Username = _invModel.HlpUname; // forcing
+        //string blzUrl = _locxClient.BaseAddress?.ToString().TrimEnd('/') + "/";
+        _invModel.FbackUrl = "";
+        //Console.WriteLine($"Frontend Link : {blzUrl}");
+        // Dynamic client - CORRECT
+        //_dynClient.SetBaseUrl(_invModel.Weburl);  // Sets per-customer base URL
+        //var client = _dynClient.GetClient();        // Gets factory client with handler
+        // Build request envelope
+        var request = new ApiRequest<UsrOgSetModel>
         {
-            errors = true;
-            errorList.Add("Passwords don't match.");
-            isLoading = false;
-            return;
-        }
-        if (string.IsNullOrWhiteSpace(uogModel.Raison))
-        {
-            errors = true;
-            errorList.Add("Raison est obligatoire.");
-            isLoading = false;
-            return;
-        }
-        uogModel.Password = _password;
-        uogModel.ConfirmPassword = _confirmPassword;
-        if (string.IsNullOrEmpty(uogModel.HlpEmail))
-        {
-            errors = true;
-            errorList.Add("Probleme a la commande Email vendeur.");
-            isLoading = false;
-            return;   
-        }
-        bool sibien = await VerifConcordances(uogModel); //IsPret
-        if (sibien)
-        {// tout Ok declenche enregistrement par Acct
-            try
-            {
-                Console.WriteLine("PARTI POUR ENREGISTREMENT");
-                //recuperer baseAddress of the blazor
-                var baseAddress = _navmanager.BaseUri.TrimEnd('/');
-                //?????
-                uogModel.FbackUrl = baseAddress;
-                var response = await _logClient.PostAsJsonAsync("regis/stdtregis", uogModel, CancellationToken.None);
-                if (response.IsSuccessStatusCode)
-                {
-                    var usrdata = await response.Content.ReadFromJsonAsync<LoginResult>();
-                    if (usrdata != null)
-                    {
-                        Console.WriteLine($"retour Email Enreg : {usrdata.Succeeded}");
-                        Console.WriteLine($"all returned userdata : {usrdata}");
-                        UserLogged = uogModel.Email;
-                        // SndmModel sdmInfo = new SndmModel();
-                        // sdmInfo.TypMail = 2;
-                        // sdmInfo.MailTo = uogModel.DeqEmail; //email inviteur
-                        // sdmInfo.MailSubject = "Achat ou Inscription";
-                        // sdmInfo.MailBody = "nouveau acheteur, un acheteur/" + uogModel.Email;
+            Action = "stdregis",   // endpoint action
+            Payload = _invModel
+        };
 
-                        //errorList = [];
-                        successmsg = "SUCCES...Consultez votre boite email pour confirmation de votre enregistrement sur le siteweb du logiciel."; 
-                        success = true; isLoading = false; errors = false;
-                        return;
-                        //_navmanager.NavigateTo("/");
-                    }
-                    else
-                    {
-                        successmsg = "";
-                        errorList.Add("31ECHEC ENREGISTREMENT!... (le mot de passe : au moins 6 caracteres, au moins un caractere en minuscule, un caractere special comme @, un caractere majuscule, un chiffre...) Re-essayez/support.");
-                        errors = true; success = false;
-                        Console.WriteLine("VERS VERS 17");
-                        isLoading = false;
-                        return;
-                    }
-                }
-                else
-                {
-                    successmsg = "";
-                    errorList.Add("32ECHEC ENREGISTREMENT!... (le mot de passe : au moins 6 caracteres, au moins un caractere en minuscule, un caractere special comme @, un caractere majuscule, un chiffre...) Re-essayez/support.");
-                    var usrdata = await response.Content.ReadFromJsonAsync<LoginResult>();
-                    if (usrdata != null)
-                    {
-                        foreach (var era in usrdata.ErrList)
-                        {
-                            errorList.Add(era);
-                        }
-                    }
-                    errors = true; success = false;
-                    Console.WriteLine($"VERS VERS 18 {errorList}");
-                    isLoading = false;
-                    return; 
-                }
-            }catch(Exception ex)
+        try
+        {
+            // Call API
+            var dto = ModelHelper.MapTo<UsrOgSetModel, RegisterDto>(_invModel);
+            var response = await _apiClient.PostAsJsonAsync("api/regis/stdregis", dto);
+
+            if (!response.IsSuccessStatusCode)
             {
-                successmsg = "";
-                errorList.Add($"Remplissage formulaire peu concordant. {ex.Message}");
-                errors = true; success = false;
-                Console.WriteLine("VERS VERS 19");
-                isLoading = false;
+                Imessage = $"Failed: {response.StatusCode}";
                 return;
             }
-        } else
-        {
-            successmsg = "";
-            errorList.Add($"3z!... Error.");
-            errors = true; success = false;
-            isLoading = false;
-            return;
+
+            var result = await response.Content.ReadFromJsonAsync<ApiResponse<RegisterDto>>(
+                new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+
+            if (result?.Payload != null)
+            {
+                // Build dictionary of query params
+                var successParams = new Dictionary<string, string?>
+                {
+                    ["status"] = "success",
+                    ["msg"] = "you've been SUCCESSFULLY registered",
+                    ["InOrdid"] = "0",
+                    ["Orig"] = "1",
+                    ["errCode"] = result.ErrCode.ToString(),
+                    ["errMessage"] = result.ErrMessage
+                };
+
+                // Build full URL with query string
+                var targetUrl = QueryHelpers.AddQueryString("sitesflow", successParams);
+
+                // Navigate
+                //_navmanager.NavigateTo(targetUrl);
+            }
+            else
+            {
+                Imessage = $"{result?.ErrCode}/{result?.ErrMessage}";
+            }
         }
-        //StateHasChanged();
+        catch (Exception ex)
+        {
+            Imessage = $"Unexpected error: {ex.Message}";
+        }
+        finally
+        {
+            isLoading = false;
+        }
     }
+    private async Task<bool> VerifInputs()
+    {
+        yaerrors = false;
+        errorList.Clear();
+        //if (_invModel.Agtid == 0)
+        //{
+        //    yaerrors = true;
+        //    errorList.Add("Agent is required.");
+        //}
+        if (string.IsNullOrWhiteSpace(_invModel.HlpEmail))
+        {
+            yaerrors = true;
+            errorList.Add("Support Email is required.");
+        }
+        else
+        {
+            var normalizedEmail = _invModel.HlpEmail.ToUpperInvariant();
+            if (normalizedEmail == null)
+            {
+                yaerrors = true;
+                errorList.Add("Email contains inacceptable characters.");
+            }
+        }
+        if (string.IsNullOrWhiteSpace(_invModel.HlpUname))
+        {
+            yaerrors = true;
+            errorList.Add("Username is required.");
+        }
+        //si par email ou phonenumber
+        if (string.IsNullOrWhiteSpace(_invModel.Password))
+        {
+            yaerrors = true;
+            errorList.Add("Password is required.");
+        }
+        if (string.IsNullOrWhiteSpace(_invModel.Nom))
+        {
+            yaerrors = true;
+            errorList.Add("Nom is required.");
+        }
+        if (string.IsNullOrWhiteSpace(_invModel.Pnom))
+        {
+            yaerrors = true;
+            errorList.Add("Pnom is required.");
+        }
+        if (_invModel.Ipays == 0)
+        {
+            yaerrors = true;
+            errorList.Add("Pays support obligatoire.");
+        }
+        if (string.IsNullOrEmpty(_invModel.Weburl))
+        {
+            yaerrors = true;
+            errorList.Add("Adresse site client obligatoire.");
+        }
+        if (string.IsNullOrWhiteSpace(_invModel.Raison))
+        {
+            yaerrors = true;
+            errorList.Add("Raison est obligatoire.");
+        }
+        if (string.IsNullOrWhiteSpace(_invModel.ConfirmPassword))
+        {
+            yaerrors = true;
+            errorList.Add("Please confirm your password.");
+        }
+        if (_invModel.Password != _invModel.ConfirmPassword)
+        {
+            yaerrors = true;
+            errorList.Add("Passwords don't match.");
+        }
+        if (!yaerrors)
+        {
+            //passage saisie a model _invModel
+            _invModel.Email = _invModel.HlpEmail;
+            _invModel.Username = _invModel.HlpUname;
+            _invModel.Phonenumber = _invModel.HlpPhone;
+            _invModel.Phon2 = _invModel.HlpPhon2;
+            //customer Weburl in _invModel.Weburl
+            return true;
+        }
+        else
+        {
+            foreach (var era in errorList)
+            {
+                Imessage = Imessage + era;
+            }
+            return false;
+        }
+    }
+
+    // public async Task DoRegisterAsync()
+    // {
+    //     errors = false; success = false; isLoading = true;
+    //     //email required//owner-siset/free others
+    //     if (_siAllManager)
+    //     {
+    //         if (string.IsNullOrWhiteSpace(uogModel.Email))
+    //         {
+    //             errors = true;
+    //             errorList.Add("Email is required.");
+    //             isLoading = false;
+    //             return;
+    //         } else
+    //         {
+    //             var normalizedEmail = uogModel.Email.ToUpperInvariant();
+    //             if (normalizedEmail == null)
+    //             {
+    //                 errors = true;
+    //                 errorList.Add("Email contains inacceptable characters.");
+    //                 isLoading = false;
+    //                 return;
+    //             }
+    //         }
+    //     }
+
+    //     //uogModel.Username = uogModel.Email ?? uogModel.Phonenumber;
+    //     //si par email ou phonenumber
+    //     if (string.IsNullOrWhiteSpace(_password))
+    //     {
+    //         errors = true;
+    //         errorList.Add("Password is required.");
+    //         isLoading = false;
+    //         return;
+    //     }
+    //     if (string.IsNullOrWhiteSpace(uogModel.Username))
+    //     {
+    //         errors = true;
+    //         errorList.Add("Username is required.");
+    //         isLoading = false;
+    //         return;
+    //     }
+    //     if (string.IsNullOrWhiteSpace(_confirmPassword))
+    //     {
+    //         errors = true;
+    //         errorList.Add("Please confirm your password.");
+    //         isLoading = false;
+    //         return;
+    //     }
+
+    //     if (_password != _confirmPassword)
+    //     {
+    //         errors = true;
+    //         errorList.Add("Passwords don't match.");
+    //         isLoading = false;
+    //         return;
+    //     }
+    //     if (string.IsNullOrWhiteSpace(uogModel.Raison))
+    //     {
+    //         errors = true;
+    //         errorList.Add("Raison est obligatoire.");
+    //         isLoading = false;
+    //         return;
+    //     }
+    //     uogModel.Password = _password;
+    //     uogModel.ConfirmPassword = _confirmPassword;
+    //     if (string.IsNullOrEmpty(uogModel.HlpEmail))
+    //     {
+    //         errors = true;
+    //         errorList.Add("Probleme a la commande Email vendeur.");
+    //         isLoading = false;
+    //         return;   
+    //     }
+    //     bool sibien = await VerifConcordances(uogModel); //IsPret
+    //     if (sibien)
+    //     {// tout Ok declenche enregistrement par Acct
+    //         try
+    //         {
+    //             Console.WriteLine("PARTI POUR ENREGISTREMENT");
+    //             //recuperer baseAddress of the blazor
+    //             var baseAddress = _navmanager.BaseUri.TrimEnd('/');
+    //             //?????
+    //             uogModel.FbackUrl = baseAddress;
+    //             var response = await _logClient.PostAsJsonAsync("regis/stdtregis", uogModel, CancellationToken.None);
+    //             if (response.IsSuccessStatusCode)
+    //             {
+    //                 var usrdata = await response.Content.ReadFromJsonAsync<LoginResult>();
+    //                 if (usrdata != null)
+    //                 {
+    //                     Console.WriteLine($"retour Email Enreg : {usrdata.Succeeded}");
+    //                     Console.WriteLine($"all returned userdata : {usrdata}");
+    //                     UserLogged = uogModel.Email;
+    //                     // SndmModel sdmInfo = new SndmModel();
+    //                     // sdmInfo.TypMail = 2;
+    //                     // sdmInfo.MailTo = uogModel.DeqEmail; //email inviteur
+    //                     // sdmInfo.MailSubject = "Achat ou Inscription";
+    //                     // sdmInfo.MailBody = "nouveau acheteur, un acheteur/" + uogModel.Email;
+
+    //                     //errorList = [];
+    //                     successmsg = "SUCCES...Consultez votre boite email pour confirmation de votre enregistrement sur le siteweb du logiciel."; 
+    //                     success = true; isLoading = false; errors = false;
+    //                     return;
+    //                     //_navmanager.NavigateTo("/");
+    //                 }
+    //                 else
+    //                 {
+    //                     successmsg = "";
+    //                     errorList.Add("31ECHEC ENREGISTREMENT!... (le mot de passe : au moins 6 caracteres, au moins un caractere en minuscule, un caractere special comme @, un caractere majuscule, un chiffre...) Re-essayez/support.");
+    //                     errors = true; success = false;
+    //                     Console.WriteLine("VERS VERS 17");
+    //                     isLoading = false;
+    //                     return;
+    //                 }
+    //             }
+    //             else
+    //             {
+    //                 successmsg = "";
+    //                 errorList.Add("32ECHEC ENREGISTREMENT!... (le mot de passe : au moins 6 caracteres, au moins un caractere en minuscule, un caractere special comme @, un caractere majuscule, un chiffre...) Re-essayez/support.");
+    //                 var usrdata = await response.Content.ReadFromJsonAsync<LoginResult>();
+    //                 if (usrdata != null)
+    //                 {
+    //                     foreach (var era in usrdata.ErrList)
+    //                     {
+    //                         errorList.Add(era);
+    //                     }
+    //                 }
+    //                 errors = true; success = false;
+    //                 Console.WriteLine($"VERS VERS 18 {errorList}");
+    //                 isLoading = false;
+    //                 return; 
+    //             }
+    //         }catch(Exception ex)
+    //         {
+    //             successmsg = "";
+    //             errorList.Add($"Remplissage formulaire peu concordant. {ex.Message}");
+    //             errors = true; success = false;
+    //             Console.WriteLine("VERS VERS 19");
+    //             isLoading = false;
+    //             return;
+    //         }
+    //     } else
+    //     {
+    //         successmsg = "";
+    //         errorList.Add($"3z!... Error.");
+    //         errors = true; success = false;
+    //         isLoading = false;
+    //         return;
+    //     }
+    //     //StateHasChanged();
+    // }
 
     // public async Task RendsQueryString()
     // {
@@ -450,14 +619,7 @@
     //             uogModel.Utyp = IntQry;
     //             int.TryParse(queryParams["tqirole"], out IntQry);
     //             uogModel.Irole = IntQry;
-    //             //uogModel.Siowner = false;
-    //             // _siProprio = false;
-    //             // int.TryParse(queryParams["isowner"], out IntQry);
-    //             // if (IntQry == 1)
-    //             // {
-    //             //     uogModel.Siowner = true;
-    //             //     _siProprio = true;
-    //             // }
+    //             
     //             int.TryParse(queryParams["tysite"], out IntQry);
     //             uogModel.Iwurl = IntQry;
 
@@ -466,14 +628,7 @@
     //             niv = 3;
     //             int.TryParse(queryParams["methp"], out IntQry);
     //             uogModel.Imethp = IntQry;
-    //             int.TryParse(queryParams["isowner"], out IntQry);
-    //             //uogModel.Siowner = false;
-    //             //uogModel.Atyp = 0;
-    //             // if (IntQry == 1)
-    //             // {
-    //             //     uogModel.Siowner = true;
-    //             //     //uogModel.Atyp = 1;
-    //             // }
+    //             
     //             int.TryParse(queryParams["hiera"], out IntQry);
     //             uogModel.Idhie = IntQry;
     //             int.TryParse(queryParams["nbalea"], out IntQry);
