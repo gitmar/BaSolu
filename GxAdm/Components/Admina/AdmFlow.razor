@@ -65,7 +65,7 @@
                     <GridColumns>
                         <GridColumn TItem="Usjour" HeaderText="Ref.">
                             <ChildContent Context="item">
-                                <div @key="item.Idjour">@item.Idjour</div>
+                                <div @key="item?.Id">@item?.Id</div>
                             </ChildContent>
                         </GridColumn>
                         <GridColumn TItem="Usjour" HeaderText="Username">
@@ -166,11 +166,11 @@
             if (LsJours.Any())
             {
                 Console.WriteLine($"nb Jours : {LsJours.Count}");
-                _curJour = LsJours.FirstOrDefault(uo => uo.Idjour == _invModel.Ordid);
+                _curJour = LsJours.FirstOrDefault(uo => uo?.Id == _invModel.Ordid);
                 if (_curJour != null)
                 { //0Draft2register3set5notif9arcv
                     //_curJour.Step = _invModel.Ostep;
-                    var response = await _apiClient.PutAsJsonAsync($"orders/{_curJour.Idjour}", _curJour);
+                    var response = await _apiClient.PutAsJsonAsync($"orders/{_curJour?.Id}", _curJour);
                     switch (_invModel.Ostep)
                     {
                         case 0:

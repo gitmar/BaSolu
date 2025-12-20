@@ -11,8 +11,10 @@ namespace GxShared.Others
         public int Id { get; set; } = 0;
         public int Orig { get; set; } = 0; //Ref Origine call
         public int Idorg { get; set; } = 0;
-        public int Idhie { get; set; } = 0;
-        public int Idpst { get; set; } = 0;
+        public int Ihie { get; set; } = 0;
+        public int Ipst { get; set; } = 0;
+        public Guid Khie { get; set; } = Guid.Empty;
+        public Guid Kpst { get; set; } = Guid.Empty;
         public string Userid { get; set; } = string.Empty;
         public string Email { get; set; } = string.Empty;
         public string Username { get; set; } = string.Empty;
@@ -20,6 +22,7 @@ namespace GxShared.Others
         public string Password { get; set; } = string.Empty;
         public string ConfirmPassword { get; set; } = string.Empty;
         public string Xmatri { get; set; } = string.Empty;
+        public string Refapl { get; set; } = string.Empty;
         public string Raison { get; set; } = string.Empty;
         public string Sigle { get; set; } = string.Empty;
         public string Nom { get; set; } = string.Empty;

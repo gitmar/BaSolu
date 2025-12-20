@@ -74,7 +74,7 @@ else
                                     <option class="jchx" value="0">?plan</option>
                                     @foreach (var upl in LsPlans)
                                     {
-                                        <option value="@upl.Idpln" @onclick="() => SelDomPlan(1)">@upl.Liba</option>
+                                        <option value="@upl.Id" @onclick="() => SelDomPlan(1)">@upl.Liba</option>
                                     }
                                 </InputSelect>
                                 <label class="fw-bold">@plnDom</label>
@@ -422,7 +422,7 @@ else
 
     private Guid? ConfirmingDeleteRowGuid;
     
-    Dictionary<int, Rubhie> rubhieMapByIdhie = new();
+    Dictionary<Guid, Rubhie> rubhieMapByIdhie = new();
 
     private bool siPstAdding = false;
     private Modal pstModal;
@@ -430,8 +430,8 @@ else
     //private Dictionary<Guid, Rubpst> _originalSnapshots = new();
     public List<Plngen> MyGPlans { get; set; } = new();
     public List<Rubhie> MyDaRubrs { get; set; } = new();   
-    private Dictionary<int, List<Rubpst>> postesMap = new();
-    private List<Rubpst> GrubNewRows => postesMap.TryGetValue(curHier.Idhie, out var rows)
+    private Dictionary<Guid, List<Rubpst>> postesMap = new();
+    private List<Rubpst> GrubNewRows => postesMap.TryGetValue(curHier.Rowguid, out var rows)
     ? new List<Rubpst>(rows)
     : new List<Rubpst>();
 
@@ -445,10 +445,10 @@ else
 
     void OnHieRowClick(GridRowEventArgs<Rubhie> args)
     {
-        Console.WriteLine($"OnHieRowClick Triggered : {args.Item.Idhie}");
+        Console.WriteLine($"OnHieRowClick Triggered : {args.Item.Id}");
         curHier = args.Item; //get gRubsMap
-        Console.WriteLine($"X1seq {curHier.Idhie}");
-        if (curHier == null || curHier.Idhie == 0)
+        Console.WriteLine($"X1seq {curHier.Id}");
+        if (curHier == null || curHier.Id == 0)
         {
             return;
         }
@@ -461,7 +461,7 @@ else
         {
             foreach (var rub in pln.Rubhies)
             {
-                rubhieMapByIdhie[rub.Idhie] = rub;
+                rubhieMapByIdhie[rub.Rowguid] = rub;
             }
         }
     }
@@ -495,7 +495,7 @@ else
             Imessage = "REFUS, Plan non choisi";
             return;
         }
-        var parentId = parent.Idhie;
+        var parentId = parent.Rowguid;
         // Make sure the postesMap has an entry for this parent
         if (!postesMap.ContainsKey(parentId))
         {
@@ -521,7 +521,7 @@ else
         return new Rubpst
         {
             Rowguid = Guid.NewGuid(),
-            Idhie = parent.Idhie,
+            Prowguid = parent.Rowguid,
             Padres = "",
             Pcdrub = parent.Scdrub,
             Idzon = nextZon,
@@ -537,7 +537,7 @@ else
     void IncludePoste( Rubpst mypst)
     {
         // Use parent Idhie as key to postesMap dictionary
-        var parentId = curHier.Idhie;
+        var parentId = curHier.Rowguid;
         if (!curODContext.IsEntityTracked(mypst)) // && YaChild)
         {
             try
@@ -555,16 +555,16 @@ else
                     postesMap[parentId] = new List<Rubpst>();
                 }
 
-                if (!postesMap[parentId].Any(p => p.Idhie == mypst.Idhie))
+                if (!postesMap[parentId].Any(p => p.Id == mypst.Id))
                 {
                     postesMap[parentId].Add(mypst);
                 }
 
                 curHier.Rubpsts.Add(mypst);
-                AddingFmtRowGuid = null;
+                AddingFmtRowGuid = Guid.Empty;
                 siPstAdding = true;
                 Imessage = "Success... Rubrique ajoutee";
-                Console.WriteLine($"Success addrelatedobject : {mypst.Idhie}");
+                Console.WriteLine($"Success addrelatedobject : {mypst.Id}");
             }
             catch (Exception ex)
             {
@@ -624,7 +624,7 @@ else
     {
         if (parent == null) return new List<Rubpst>();
 
-        if (!postesMap.TryGetValue(parent.Idhie, out var list))
+        if (!postesMap.TryGetValue(parent.Rowguid, out var list))
             return new List<Rubpst>();
 
         // Filter duplicates by Rowguid
@@ -647,7 +647,7 @@ else
     //         curODContext.Context.AttachTo("Rubpsts", item);
     //     }
     //     curODContext.UpdateObject(item); // track update
-    //     EditingFmtRowGuid = null;
+    //     EditingFmtRowGuid = Guid.Empty;
     //     _originalSnapshots.Remove(item.Rowguid);
     // }
     // private void CancelEdit(Rubhie parent, Rubpst item)
@@ -658,7 +658,7 @@ else
     //         _originalSnapshots.Remove(item.Rowguid);
     //         StateHasChanged();  // <-- Ensure UI refresh to show restored values
     //     }
-    //     EditingFmtRowGuid = null;
+    //     EditingFmtRowGuid = Guid.Empty;
     // }
     // private void RestoreValues(Rubpst target, Rubpst source)
     // {
@@ -686,7 +686,7 @@ else
         draftFmt = new Rubpst
         {
             Rowguid = myfmt.Rowguid,
-            Idhie = myfmt.Idhie,
+            Prowguid = myfmt.Prowguid,
             Padres = myfmt.Padres,
             Pcdrub = myfmt.Pcdrub,
             Idzon = myfmt.Idzon,
@@ -708,7 +708,7 @@ else
         //isEdingMan = false;
         editingFmt = null;
         draftFmt = null;
-        EditingFmtRowGuid = null;
+        EditingFmtRowGuid = Guid.Empty;
     }
     void ConfEdingFmt(Rubpst myfmt)
     {
@@ -716,7 +716,7 @@ else
         {
             // Restore all fields
             editingFmt.Rowguid = myfmt.Rowguid; //RowGuid.NewGuid(), //unique
-            editingFmt.Idhie = myfmt.Idhie;
+            editingFmt.Prowguid = myfmt.Prowguid;
             editingFmt.Padres = myfmt.Padres;
             editingFmt.Pcdrub = myfmt.Pcdrub;
             editingFmt.Idzon = myfmt.Idzon;
@@ -736,7 +736,7 @@ else
         myfmt.Xedt1 = 0;
         //isEdingMan = false;
         editingFmt = null;
-        EditingFmtRowGuid = null;
+        EditingFmtRowGuid = Guid.Empty;
     }
     private void PromptRubDelete(Rubpst item)
     {
@@ -744,15 +744,15 @@ else
     }
     private void CancelRubDelete()
     {
-        ConfirmingDeleteRowGuid = null;
+        ConfirmingDeleteRowGuid = Guid.Empty;
     }
     private void ConfirmRubDelete(Rubpst row)
     {
         var parent = curHier;
         if (parent == null)
             return;
-        Console.WriteLine($"del parent {parent.Liba} and row id : {parent.Idhie}");
-        if (!postesMap.TryGetValue(parent.Idhie, out var coll))
+        Console.WriteLine($"del parent {parent.Liba} and row id : {parent.Rowguid}");
+        if (!postesMap.TryGetValue(parent.Rowguid, out var coll))
             return;
         Console.WriteLine($"postesMap {postesMap.Count}");
         // For existing rows: mark for OData deletion and remove locally
@@ -767,7 +767,7 @@ else
         coll.Remove(row);                       // Remove for UI update
         parent.Rubpsts.Remove(row);             // Remove from tracked collection
 
-        EditingFmtRowGuid = null;
+        EditingFmtRowGuid = Guid.Empty;
         StateHasChanged(); // Notify UI about changes
     }
     protected override async Task OnInitializedAsync()
@@ -798,7 +798,7 @@ else
         if (MyGPlans.Any())
         {
             Console.WriteLine($"3nb. Plans : {MyGPlans.Count()}");
-            curPlan = MyGPlans.Where(pl => pl.Idpln == IMyPlan).FirstOrDefault();
+            curPlan = MyGPlans.Where(pl => pl.Id == IMyPlan).FirstOrDefault();
         }
 
         MyDaRubrs = new();
@@ -863,20 +863,20 @@ else
     public async Task EdtAll()
     {
         allEnable = true;
-        EditingFmtRowGuid = null;
+        EditingFmtRowGuid = Guid.Empty;
     }
     public async Task CncAll()
     { //reload to annul AddObject/UpdateObject/DeleteObjet
         Imessage = "Annulation Operations, patience...";
         allEnable = false;
-        EditingFmtRowGuid = null;
+        EditingFmtRowGuid = Guid.Empty;
         Imessage = "";
     }
     public async Task SavAll()
     {
         Imessage = "Enregistrement Operations, patience...";
         allEnable = false;
-        EditingFmtRowGuid = null;
+        EditingFmtRowGuid = Guid.Empty;
         await curODContext.SaveDataAsync();
     }
     private void SelDomPlan(int orig)
@@ -887,7 +887,7 @@ else
             plnDom = "";
             if (IMyPlan != 0 && MyGPlans.Any())
             {
-                curPlan = MyGPlans.Where(pl => pl.Idpln == IMyPlan).FirstOrDefault();
+                curPlan = MyGPlans.Where(pl => pl.Id == IMyPlan).FirstOrDefault();
                 if (curPlan != null)
                 {
                     var pdoms = LsFixes.Where(uf => uf.Gvars == 36 && uf.Itb == 1 && uf.Gp1 == 4 && uf.Elea == curPlan.Toatr).ToList();
@@ -984,7 +984,7 @@ else
         {
             Console.WriteLine("SAVED PLUS");
             curODContext.SaveDataAsync();
-            //var wrkplns = curOrga.Plngens.Where(pl => pl.Ptyp == 3 && pl.Totyp == IMyAtr && pl.Tovers == 1).ToList();
+            //var wrkplns = curOrga.Plngens.Where(pl => pl.Ptyp == 3 && pl.Totyp == IMyAtr).ToList();
             //MyDaPlans = wrkplns;
             StateHasChanged();
         }

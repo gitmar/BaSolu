@@ -112,7 +112,7 @@ else
                                     <GridColumns>
                                         <GridColumn TItem="Plngen" HeaderText="No">
                                             <ChildContent Context="item">
-                                                <span class="plnpoint">@item?.Elea</span>
+                                                <span class="plnpoint">@item?.Pseq</span>
                                             </ChildContent>
                                         </GridColumn>
                                         <GridColumn TItem="Plngen" HeaderText="Designation">
@@ -310,11 +310,11 @@ else
                                                     <ChildContent Context="item">
                                                         @if (EditingRubRowGuid == item.Rowguid)
                                                         { // show draftPln inputs
-                                                          <InputText @bind-Value="draftRub.Refa" />
+                                                          <InputText @bind-Value="draftRub.Xcod" />
                                                         }
                                                         else
                                                         { // show item as read-only
-                                                          @item.Refa
+                                                          @item.Xcod
                                                         }
                                                     </ChildContent>
                                                 </GridColumn>
@@ -429,15 +429,15 @@ else
                                                             <option class="jchx" value="0">?program</option>
                                                             @foreach (var tob in LsCtPlans) //LsFixes.Where(ut => ut.Gvars == 61 && ut.Itb == 1 & ut.Elea != 0))
                                                             {
-                                                                <option value="@tob.Idpln" @onclick="()=> SelCtProg(tob)">@tob.Liba</option>
+                                                                <option value="@tob.Id" @onclick="()=> SelCtProg(tob)">@tob.Liba</option>
                                                             }
                                                         </InputSelect>
                                                         <label class="fw-bold">Rubrique :</label>
                                                         <InputSelect @bind-Value="IMyCtrub" class="me-3" style="width:auto">
                                                             <option class="jchx" value="0">?rubrique</option>
-                                                            @foreach (var tob in curCtPlan.Rubvars.Where(uv=> uv.Idpln == IMyCtprog)) //.Where(ut => ut.Gvars == 62 && ut.Itb == 1 && ut.Elea != 0 && ut.Gp2 == IMyDom))
+                                                            @foreach (var tob in curCtPlan.Rubvars.Where(uv=> uv.Id == IMyCtprog)) //.Where(ut => ut.Gvars == 62 && ut.Itb == 1 && ut.Elea != 0 && ut.Gp2 == IMyDom))
                                                             {
-                                                                <option value="@tob.Idrub">@tob.Liba</option>
+                                                                <option value="@tob.Id">@tob.Liba</option>
                                                             }
                                                         </InputSelect>
                                                         <button class="btn btn-primary btn-sm" @onclick="() => OpenAddFmt()">
@@ -462,7 +462,7 @@ else
                                                                     <option class="jchx" value="0">?aucun</option>
                                                                     @foreach (var tob in LsCtPlans)
                                                                     {
-                                                                        <option value="@tob.Idpln">@tob.Elea-@tob.Liba</option>
+                                                                        <option value="@tob.Id">@tob.Pseq-@tob.Liba</option>
                                                                     }
                                                                 </InputSelect>
                                                             </ChildContent>
@@ -471,9 +471,9 @@ else
                                                             <ChildContent Context="ft">
                                                                 <InputSelect @bind-Value="ft.Lne" class="me-3" style="width:auto">
                                                                     <option class="jchx" value="0">?aucun</option>
-                                                                    @foreach (var tob in curCtPlan.Rubvars.Where(uv => uv.Idpln == ft.Col)) //.Where(ut => ut.Gvars == 62 && ut.Itb == 1 && ut.Elea != 0 && ut.Gp2 == IMyDom))
+                                                                    @foreach (var tob in curCtPlan.Rubvars.Where(uv => uv.Id == ft.Col)) //.Where(ut => ut.Gvars == 62 && ut.Itb == 1 && ut.Elea != 0 && ut.Gp2 == IMyDom))
                                                                     {
-                                                                        <option value="@tob.Idrub">@tob.Useq-@tob.Liba</option>
+                                                                        <option value="@tob.Id">@tob.Useq-@tob.Liba</option>
                                                                     }
                                                                 </InputSelect>
                                                             </ChildContent>
@@ -495,7 +495,7 @@ else
                                                                 else
                                                                 {
                                                                     <button class="btn btn-sm btn-outline-danger @(allEnable ? "" : "disabled-action")"
-                                                                            disabled="@(ConfirmingFmtDeleteRowGuid == null)"
+                                                                            disabled="@(ConfirmingFmtDeleteRowGuid == Guid.Empty)"
                                                                             @onclick="() => PromptFmtDelete(ft)">
                                                                         🗑️ Delete
                                                                     </button>
@@ -684,11 +684,11 @@ else
                                     <ChildContent Context="item">
                                         @if (AddingRubRowGuid == item.Rowguid)
                                         { // show draftPln inputs
-                                          <InputText @bind-Value="item.Refa" class="form-control form-control-sm" />
+                                          <InputText @bind-Value="item.Xcod" class="form-control form-control-sm" />
                                         }
                                         else
                                         { // show item as read-only
-                                          @item.Refa
+                                          @item.Xcod
                                         }
                                     </ChildContent>
                                 </GridColumn>
@@ -891,15 +891,15 @@ else
     //private Dictionary<Guid, Rubvar> _originalChlSnapshots = new();
     //Dictionary<int, Plngen> fxPChildMapByIdpln = new();
     private Dictionary<int, List<Plngen>> gPlnsMap = new();
-    private Dictionary<int, List<Rubvar>> gRubsMap = new();
-    private Dictionary<int, List<Rubfmt>> gFmtsMap = new();
+    private Dictionary<Guid, List<Rubvar>> gRubsMap = new();
+    private Dictionary<Guid, List<Rubfmt>> gFmtsMap = new();
 
-    private List<Plngen> LsCtPlans => curOrga.Plngens.Where(pl => pl.Ptyp == 5 && pl.Idpln == IMyCtprog).ToList();
+    private List<Plngen> LsCtPlans => curOrga.Plngens.Where(pl => pl.Ptyp == 5 && pl.Id == IMyCtprog).ToList();
     //private List<Plngen> LsCtRubs => curCtPlan.Rubvars;
     // //data
-    public List<Plngen> MyDaPlans => curOrga.Plngens.Where(pl => pl.Ptyp == 6 && pl.Todom == IMyDom && pl.Tovue == IMyVue && pl.Tovers == 1).ToList();
-    public List<Rubvar> MyDaRubs => curPlan.Rubvars.Where(uv => uv.Idpln == curPlan.Idpln).ToList();
-    public List<Rubfmt> MyDaFmts => curRubr.Rubfmts.Where(uf => uf.Idrub == curRubr.Idrub).ToList();
+    public List<Plngen> MyDaPlans => curOrga.Plngens.Where(pl => pl.Ptyp == 6 && pl.Todom == IMyDom && pl.Tovue == IMyVue).ToList();
+    public List<Rubvar> MyDaRubs => curPlan.Rubvars.Where(uv => uv.Prowguid == curPlan.Rowguid).ToList();
+    public List<Rubfmt> MyDaFmts => curRubr.Rubfmts.Where(uf => uf.Prowguid == curRubr.Rowguid).ToList();
     private Guid? AddingPlnRowGuid; //pmodal
     private Guid? EditingPlnRowGuid;
     private Guid? ConfirmingPlnDeleteRowGuid;
@@ -914,11 +914,11 @@ else
     ? new List<Plngen>(rows)
      : new List<Plngen>();
     // //fils
-    private List<Rubvar> GrubNewRows => gRubsMap.TryGetValue(curPlan.Idpln, out var rows)
+    private List<Rubvar> GrubNewRows => gRubsMap.TryGetValue(curPlan.Rowguid, out var rows)
     ? new List<Rubvar>(rows)
     : new List<Rubvar>();
     // //petit-fils
-    private List<Rubfmt> GfmtNewRows => gFmtsMap.TryGetValue(curRubr.Idrub, out var rows)
+    private List<Rubfmt> GfmtNewRows => gFmtsMap.TryGetValue(curRubr.Rowguid, out var rows)
     ? new List<Rubfmt>(rows)
     : new List<Rubfmt>();
 
@@ -941,10 +941,10 @@ else
     Rubfmt? editingFmt = null;
     void OnPlanRowClick(GridRowEventArgs<Plngen> args)
     {
-        Console.WriteLine($"OnPlanRowClick Triggered : {args.Item.Idpln}");
+        Console.WriteLine($"OnPlanRowClick Triggered : {args.Item.Id}");
         curPlan = args.Item; //get gRubsMap
-        Console.WriteLine($"X1seq {curPlan.Idpln}");
-        if (curPlan == null || curPlan.Idpln == 0)
+        Console.WriteLine($"X1seq {curPlan.Id}");
+        if (curPlan == null || curPlan.Id == 0)
         {
             return;
         }
@@ -952,10 +952,10 @@ else
     }
     void OnRubRowClick(GridRowEventArgs<Rubvar> args)
     {
-        Console.WriteLine($"OnRubRowClick Triggered : {args.Item.Idrub}");
+        Console.WriteLine($"OnRubRowClick Triggered : {args.Item.Id}");
         curRubr = args.Item; //get gRubsMap
-        Console.WriteLine($"X1seq {curRubr.Idrub}");
-        if (curRubr == null || curRubr.Idrub == 0)
+        Console.WriteLine($"X1seq {curRubr.Id}");
+        if (curRubr == null || curRubr.Id == 0)
         {
             return;
         }
@@ -963,7 +963,7 @@ else
     }
     // void OnFmtRowClick(GridRowEventArgs<Rubfmt> args)
     // {
-    //     Console.WriteLine($"OnFmtRowClick Triggered : {args.Item.Idrub}");
+    //     Console.WriteLine($"OnFmtRowClick Triggered : {args.Item.Id}");
     //     curFmat = args.Item; //get gRubsMap
     //     Console.WriteLine($"X1seq {curFmat.Idfdt}");
     //     if (curFmat == null || curFmat.Idfdt == 0)
@@ -991,7 +991,7 @@ else
     void OpenAddRubr()
     {
         GrubNewRows.Clear();
-        int parentKey = Convert.ToInt32(curPlan.Idpln);
+        Guid parentKey = curPlan.Rowguid;
         if (gRubsMap.ContainsKey(parentKey))
         {
             gRubsMap.Remove(parentKey); // Clear previous children for clean modal state
@@ -999,7 +999,7 @@ else
 
         PrepareAddRubr();
 
-        chlInitTitle = $"{curPlan.Elea} - {curPlan.Liba} (creation rubrique progr.)";
+        chlInitTitle = $"{curPlan.Pseq} - {curPlan.Liba} (creation rubrique progr.)";
         chlTitle = chlInitTitle;
         jrub = 0;
         rubModal.ShowAsync();
@@ -1007,7 +1007,7 @@ else
     private void OpenAddFmt()
     {
         GfmtNewRows.Clear();
-        int parentKey = Convert.ToInt32(curRubr.Idrub);
+        Guid parentKey = curRubr.Rowguid;
         if (gFmtsMap.ContainsKey(parentKey))
         {
             gFmtsMap.Remove(parentKey); // Clear previous children for clean modal state
@@ -1029,7 +1029,7 @@ else
         }
         var parentId = curOrga.Idorg;
         jpln = jpln + 1;
-        //var ptyp = curPlan.Idpln;
+        //var ptyp = curPlan.Id;
         // Make sure the gPlnsMap has an entry for this parent
         if (!gPlnsMap.ContainsKey(parentId))
         {
@@ -1039,10 +1039,10 @@ else
         var existingPlngens = curOrga.Plngens.Where(ln => ln.Idorg == parentId) ?? new DataServiceCollection<Plngen>();
         var mapPlngens = gPlnsMap[parentId];
         int maxIdzonFromParent = existingPlngens.Any()
-            ? existingPlngens.Max(r => r.Elea ?? 0)
+            ? existingPlngens.Max(r => r.Pseq ?? 0)
             : 0;
         int maxIdzonFromMap = mapPlngens.Any()
-            ? mapPlngens.Max(r => r.Elea ?? 0)
+            ? mapPlngens.Max(r => r.Pseq ?? 0)
             : 0;
         int maxIdzon = Math.Max(0, Math.Max(maxIdzonFromParent, maxIdzonFromMap));
         int nextZon = maxIdzon == 0 ? 1 : maxIdzon + 1;
@@ -1063,7 +1063,7 @@ else
     void PrepareAddRubr()
     {
         isRubCodeValid = false;
-        var parentId = curPlan.Idpln;
+        var parentId = curPlan.Rowguid;
         jrub = jrub + 1;
         // Make sure the gRubsMap has an entry for this parent
         if (!gRubsMap.ContainsKey(parentId))
@@ -1071,7 +1071,7 @@ else
             gRubsMap[parentId] = new List<Rubvar>();
         }
 
-        var existingRubvars = curPlan.Rubvars.Where(ln => ln.Idpln == parentId) ?? new DataServiceCollection<Rubvar>();
+        var existingRubvars = curPlan.Rubvars.Where(ln => ln.Prowguid == parentId) ?? new DataServiceCollection<Rubvar>();
         var mapRubvars = gRubsMap[parentId];
         int maxIdzonFromParent = existingRubvars.Any()
             ? existingRubvars.Max(r => r.Useq ?? 0)
@@ -1082,7 +1082,7 @@ else
             : 0;
         int maxIdzon = Math.Max(0, Math.Max(maxIdzonFromParent, maxIdzonFromMap));
         int nextZon = maxIdzon == 0 ? 1 : maxIdzon + 1;
-        Console.WriteLine($"current newPoste zone no : {nextZon} et parent act no : {curPlan.Idpln}");
+        Console.WriteLine($"current newPoste zone no : {nextZon} et parent act no : {curPlan.Id}");
 
         var newChl = CreateNewRubr(nextZon);
         if (newChl != null)
@@ -1100,7 +1100,7 @@ else
     void PrepareAddFmt()
     {
         //isFmtCodeValid = false;
-        var parentId = curRubr.Idrub;
+        var parentId = curRubr.Rowguid;
         jfmt = jfmt + 1;
         // Make sure the gRubsMap has an entry for this parent
         if (!gFmtsMap.ContainsKey(parentId))
@@ -1108,7 +1108,7 @@ else
             gFmtsMap[parentId] = new List<Rubfmt>();
         }
 
-        var existingRubfmts = curRubr.Rubfmts.Where(ln => ln.Idrub == parentId) ?? new DataServiceCollection<Rubfmt>();
+        var existingRubfmts = curRubr.Rubfmts.Where(ln => ln.Prowguid == parentId) ?? new DataServiceCollection<Rubfmt>();
         var mapRubfmts = gFmtsMap[parentId];
         int maxIdzonFromParent = existingRubfmts.Any()
             ? existingRubfmts.Max(r => r.Eint ?? 0)
@@ -1119,7 +1119,7 @@ else
             : 0;
         int maxIdzon = Math.Max(0, Math.Max(maxIdzonFromParent, maxIdzonFromMap));
         int nextZon = maxIdzon == 0 ? 1 : maxIdzon + 1;
-        Console.WriteLine($"current newPoste zone no : {nextZon} et parent act no : {curRubr.Idrub}");
+        Console.WriteLine($"current newPoste zone no : {nextZon} et parent act no : {curRubr.Id}");
 
         var newChl = CreateNewFmt(nextZon);
         if (newChl != null)
@@ -1152,16 +1152,14 @@ else
                     Idorg = curOrga.Idorg,
                     Ptyp = IMyGpln,
                     Todom = IMyDom,
-                    Tovers = 1,
                     Liba = "",
                     Abg = "",
                     Styp = 0,
-                    Idcent = 0,
                     Totyp = 0,
                     Tovue = IMyVue,
                     Toatr = 0,
                     Eta = 1,    
-                    Elea = 0,
+                    Pseq = 0,
                     Xadd1 = -1,
                     //Belea = nextSeq,
                 };
@@ -1181,7 +1179,7 @@ else
         {
             Rowguid = Guid.NewGuid(),
             Idorg = curPlan.Idorg,
-            Idpln = curPlan.Idpln,
+            Prowguid = curPlan.Rowguid,
             Torub = 0,
             Utyp = IMyDom, //services
             Sigrid = 0, //est grille
@@ -1190,7 +1188,7 @@ else
             Dtperi = 0, //toujours
             Liba = "",
             Abg = "",
-            Refa = "",
+            Xcod = "",
             Ddval = 0,
             Dfval = 0,
             Eaut = 0, //supprimable
@@ -1206,7 +1204,7 @@ else
         return new Rubfmt()
         {
             Rowguid = Guid.NewGuid(),
-            Idrub = curRubr.Idrub,
+            Prowguid = curRubr.Rowguid,
             Tperi = 1, //toujours
             Liba = "",
             Abg = "",
@@ -1246,7 +1244,7 @@ else
                 }
 
                 curOrga.Plngens.Add(mypln);
-                AddingPlnRowGuid = null;
+                AddingPlnRowGuid = Guid.Empty;
                 Imessage = "Success... plan ajoute";
             }
             catch (Exception ex)
@@ -1265,7 +1263,7 @@ else
     }
     void IncludeRubr(Rubvar myrub)
     {
-        var parentId = curPlan.Idpln;
+        var parentId = curPlan.Rowguid;
         //bool YaChild = IsChildValid(aglne); // Make sure this returns true if aglne is valid to add
         if (!curODContext.IsEntityTracked(myrub)) // && YaChild)
         {
@@ -1291,7 +1289,7 @@ else
                 }
                 curPlan.Rubvars.Add(myrub);
 
-                AddingRubRowGuid = null;
+                AddingRubRowGuid = Guid.Empty;
                 //siRubrAdding = true;
                 Imessage = "Success... Rubrique ajoutee";
             }
@@ -1312,7 +1310,7 @@ else
     }
     void IncludeFmat(Rubfmt myfmt)
     {
-        var parentId = curRubr.Idrub;
+        var parentId = curRubr.Rowguid;
         //bool YaChild = IsChildValid(aglne); // Make sure this returns true if aglne is valid to add
         if (!curODContext.IsEntityTracked(myfmt)) // && YaChild)
         {
@@ -1332,13 +1330,13 @@ else
                     gFmtsMap[parentId] = new List<Rubfmt>();
                 }
 
-                if (!gFmtsMap[parentId].Any(p => p.Idrub == myfmt.Idrub))
+                if (!gFmtsMap[parentId].Any(p => p.Id == myfmt.Id))
                 {
                     gFmtsMap[parentId].Add(myfmt);
                 }
                 curRubr.Rubfmts.Add(myfmt);
 
-                AddingFmtRowGuid = null;
+                AddingFmtRowGuid = Guid.Empty;
                 //siFmtAdding = true;
                 Imessage = "Success... Rubrique ajoutee";
             }
@@ -1366,18 +1364,16 @@ else
         {
             Rowguid = mypln.Rowguid,
             Idorg = mypln.Idorg,
-            Tovers = mypln.Tovers,
             Liba = mypln.Liba,
             Abg = mypln.Abg,
             Ptyp = mypln.Ptyp, //5programme
             Totyp = mypln.Totyp, //1saisie2calcul
             Styp = mypln.Styp,
-            Idcent = mypln.Idcent,
             Plsdiv = mypln.Plsdiv,
             Plsgri = mypln.Plsgri,
             Plsech = mypln.Plsech,
             //Belea = mypln.Belea,
-            Elea = mypln.Elea,
+            Pseq = mypln.Pseq,
             Eta = mypln.Eta, //
             Xadd1 = mypln.Xadd1, //newly added
             // Copy other fields as necessary
@@ -1396,7 +1392,7 @@ else
         draftRub = new Rubvar
         {
             Rowguid = myrub.Rowguid,
-            Idpln = myrub.Idpln,
+            Id = myrub.Id,
             Idorg = myrub.Idorg,
             Torub = myrub.Torub,
             Utyp = myrub.Utyp, //services
@@ -1405,7 +1401,7 @@ else
             Ustyp = myrub.Ustyp, //de base
             Dtperi = myrub.Dtperi, //toujours
             Liba = myrub.Liba,
-            Refa = myrub.Refa,
+            Xcod = myrub.Xcod,
             Abg = myrub.Abg,
             Ddval = myrub.Ddval,
             Dfval = myrub.Dfval,
@@ -1427,7 +1423,7 @@ else
         //isEdingMan = false;
         editingPln = new();
         draftPln = new();
-        EditingPlnRowGuid = null;
+        EditingPlnRowGuid = Guid.Empty;
     }
     void CancEdingRub(Rubvar myrub)
     {
@@ -1435,7 +1431,7 @@ else
         //isEdingMan = false;
         editingRub = null;
         draftRub = null;
-        EditingRubRowGuid = null;
+        EditingRubRowGuid = Guid.Empty;
     }
     void ConfEdingPln(Plngen mypln)
     {
@@ -1443,18 +1439,16 @@ else
         {
             editingPln.Rowguid = mypln.Rowguid;
             editingPln.Idorg = mypln.Idorg;
-            editingPln.Tovers = mypln.Tovers;
             editingPln.Liba = mypln.Liba;
             editingPln.Abg = mypln.Abg;
             editingPln.Ptyp = mypln.Ptyp; //5programs
             editingPln.Totyp = mypln.Totyp; //1saisie2calcul
             editingPln.Styp = mypln.Styp;
-            editingPln.Idcent = mypln.Idcent;
             editingPln.Plsdiv = mypln.Plsdiv;
             editingPln.Plsech = mypln.Plsech;
             editingPln.Plsgri = mypln.Plsgri;
             //editingPln.Belea = mypln.Belea;
-            editingPln.Elea = mypln.Elea;
+            editingPln.Pseq = mypln.Pseq;
             editingPln.Eta = mypln.Eta; //
             editingPln.Xadd1 = mypln.Xadd1; //newly added
             if (!curODContext.GetAllTrackedEntities().Any(e => e.Entity == editingPln))
@@ -1466,7 +1460,7 @@ else
         mypln.Xedt1 = 0;
         //isEdingMan = false;
         editingPln = null;
-        EditingPlnRowGuid = null;
+        EditingPlnRowGuid = Guid.Empty;
     }
     void ConfEdingRub(Rubvar myrub)
     {
@@ -1474,7 +1468,7 @@ else
         {
             editingRub.Rowguid = myrub.Rowguid;
             editingRub.Idorg = myrub.Idorg;
-            editingRub.Idpln = myrub.Idpln;
+            editingRub.Prowguid = myrub.Prowguid;
             editingRub.Torub = myrub.Torub;
             editingRub.Utyp = myrub.Utyp; //services
             editingRub.Sigrid = myrub.Sigrid; //est grille
@@ -1482,7 +1476,7 @@ else
             editingRub.Ustyp = myrub.Ustyp; //de base
             editingRub.Dtperi = myrub.Dtperi; //toujours
             editingRub.Liba = myrub.Liba;
-            editingRub.Refa = myrub.Refa;
+            editingRub.Xcod = myrub.Xcod;
             editingRub.Abg = myrub.Abg;
             editingRub.Ddval = myrub.Ddval;
             editingRub.Dfval = myrub.Dfval;
@@ -1501,7 +1495,7 @@ else
         myrub.Xedt1 = 0;
         //isEdingMan = false;
         editingRub = null;
-        EditingRubRowGuid = null;
+        EditingRubRowGuid = Guid.Empty;
     }
 
     //EDITION/DELETE - Plngen
@@ -1511,7 +1505,7 @@ else
     }
     private void CancelPlnDelete()
     {
-        ConfirmingPlnDeleteRowGuid = null;
+        ConfirmingPlnDeleteRowGuid = Guid.Empty;
     }
     private void ConfirmPlnDelete(Plngen row)
     {
@@ -1535,8 +1529,8 @@ else
         //nwrows.Remove(row);
         //MyDaPlans = nwrows;
         curOrga.Plngens.Remove(row);
-        EditingPlnRowGuid = null;
-        ConfirmingPlnDeleteRowGuid = null;
+        EditingPlnRowGuid = Guid.Empty;
+        ConfirmingPlnDeleteRowGuid = Guid.Empty;
         StateHasChanged(); // Notify UI about changes
     }
     //EDITION/DELETE - Rubvar    
@@ -1546,15 +1540,15 @@ else
     }
     private void CancelRubDelete()
     {
-        ConfirmingRubDeleteRowGuid = null;
+        ConfirmingRubDeleteRowGuid = Guid.Empty;
     }
     private void ConfirmRubDelete(Rubvar row)
     {
         var parent = curPlan;
-        Console.WriteLine($"Parent may be found : {parent.Idpln}");
+        Console.WriteLine($"Parent may be found : {parent.Id}");
         if (parent == null)
             return;
-        Console.WriteLine($"del parent {parent.Liba} and row id : {parent.Idpln}");
+        Console.WriteLine($"del parent {parent.Liba} and row id : {parent.Id}");
         Rubvar svRow = row;
         // For existing rows: mark for OData deletion and remove locally
         if (curODContext.IsEntityTracked(row))
@@ -1565,10 +1559,10 @@ else
         {
             curODContext.Detach(row); // Mark for deletion in OData context
         }
-        curRubr.Rubfmts.ToList().RemoveAll(rf => rf.Idrub == svRow.Idrub);
+        curRubr.Rubfmts.ToList().RemoveAll(rf => rf.Id == svRow.Id);
         curPlan.Rubvars.Remove(svRow);
-        EditingRubRowGuid = null;
-        ConfirmingRubDeleteRowGuid = null;
+        EditingRubRowGuid = Guid.Empty;
+        ConfirmingRubDeleteRowGuid = Guid.Empty;
         StateHasChanged(); // Notify UI about changes
     }
     //EDITION/DELETE - Rubfmt
@@ -1578,15 +1572,15 @@ else
     }
     private void CancelFmtDelete()
     {
-        ConfirmingFmtDeleteRowGuid = null;
+        ConfirmingFmtDeleteRowGuid = Guid.Empty;
     }
     private void ConfirmFmtDelete(Rubfmt row)
     {
         var parent = curRubr;
-        Console.WriteLine($"Parent may be found : {parent.Idrub}");
+        Console.WriteLine($"Parent may be found : {parent.Id}");
         if (parent == null)
             return;
-        Console.WriteLine($"del parent {parent.Liba} and row id : {parent.Idrub}");
+        Console.WriteLine($"del parent {parent.Liba} and row id : {parent.Id}");
         Rubfmt svRow = row;
         // For existing rows: mark for OData deletion and remove locally
         if (curODContext.IsEntityTracked(row))
@@ -1598,8 +1592,8 @@ else
             curODContext.Detach(row); // Mark for deletion in OData context
         }
         curRubr.Rubfmts.Remove(svRow);
-        EditingFmtRowGuid = null;
-        ConfirmingFmtDeleteRowGuid = null;
+        EditingFmtRowGuid = Guid.Empty;
+        ConfirmingFmtDeleteRowGuid = Guid.Empty;
         StateHasChanged(); // Notify UI about changes
     }
     //ADDING modals
@@ -1673,7 +1667,7 @@ else
         //Imessage = "Donnees Grilles chargees";
         _navmanager.LocationChanged += OnLocationChanged;
 
-        //EditingPlnRowGuid = null;
+        //EditingPlnRowGuid = Guid.Empty;
         isLoading = false;
     }
     private async Task ChargeParentData()
@@ -1684,11 +1678,11 @@ else
         gPlnsMap[curOrga.Idorg] = new List<Plngen>(curOrga.Plngens.Where(uf => uf.Idorg == curOrga.Idorg && uf.Ptyp == 6));
         foreach (var uta in curOrga.Plngens)
         {
-            List<Rubvar> tbcols = curPlan.Rubvars.Where(ln => ln.Idpln == uta.Idpln).ToList();
-            gRubsMap[uta.Idpln] = new List<Rubvar>(tbcols);
+            List<Rubvar> tbcols = curPlan.Rubvars.Where(ln => ln.Prowguid == uta.Rowguid).ToList();
+            gRubsMap[uta.Rowguid] = new List<Rubvar>(tbcols);
             //Console.WriteLine($"Parent Xseq: {uta.Xseq}, Children count: {tbcols.Count}");
         }
-        //var wrkplns = curOrga.Plngens.Where(pl => pl.Ptyp == 6 && pl.Totyp == IMyDom && pl.Tovers == 1).ToList();
+        //var wrkplns = curOrga.Plngens.Where(pl => pl.Ptyp == 6 && pl.Totyp == IMyDom).ToList();
         //MyDaPlans = wrkplns;
         LsDoms = LsFixes.Where(ut => ut.Gvars == 36 && ut.Itb == 4 && ut.Gp1 == 2 && ut.Elea != 0).ToList();
     }
@@ -1711,15 +1705,15 @@ else
     public async Task EdtAll()
     {
         allEnable = true;
-        EditingPlnRowGuid = null;
-        EditingRubRowGuid = null;
+        EditingPlnRowGuid = Guid.Empty;
+        EditingRubRowGuid = Guid.Empty;
     }
     public async Task CncAll()
     { //reload to annul AddObject/UpdateObject/DeleteObjet
         Imessage = "Annulation Operations, patience...";
         allEnable = false;
-        EditingPlnRowGuid = null;
-        EditingRubRowGuid = null;
+        EditingPlnRowGuid = Guid.Empty;
+        EditingRubRowGuid = Guid.Empty;
         foreach (var enty in curODContext.Context.Entities.ToList())
         {
             if (curODContext.GetEntityState(enty) == EntityStates.Added)
@@ -1732,8 +1726,8 @@ else
     public async Task SavAll()
     {
         allEnable = false;
-        EditingPlnRowGuid = null;
-        EditingRubRowGuid = null;
+        EditingPlnRowGuid = Guid.Empty;
+        EditingRubRowGuid = Guid.Empty;
         SaveCurEntities();
         StateHasChanged();
     }
@@ -1842,7 +1836,7 @@ else
             chlTitle = chlTitle + " OBLIGATOIRE code";
             ercpt = ercpt + 1;
         }
-        if (myrb.Idpln == 0)
+        if (myrb.Prowguid == Guid.Empty)
         {
             chlTitle = chlTitle + " OBLIGATOIRE programme";
             ercpt = ercpt + 1;
@@ -1910,7 +1904,7 @@ else
         {
             await curODContext.SaveDataAsync();
             Console.WriteLine("Saved SUCCESS");
-            //var wrkplns = curOrga.Plngens.Where(pl => pl.Ptyp == 3 && pl.Totyp == IMyAtr && pl.Tovers == 1).ToList();
+            //var wrkplns = curOrga.Plngens.Where(pl => pl.Ptyp == 3 && pl.Totyp == IMyAtr).ToList();
             //MyDaPlans = wrkplns;
             StateHasChanged();
             return true;

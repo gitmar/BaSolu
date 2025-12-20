@@ -178,14 +178,15 @@ namespace GxShared.Sess
     //}
     public class Gplan
     {
-        public int Idpln { get; set; } = 0;
+        public int Id { get; set; } = 0;
+        public Guid Kpln { get; set; } = Guid.Empty;
         public int Code { get; set; } = 0;
         public int Ptyp { get; set; } = 0;
         public int Xsac { get; set; } = 0;
         public int Elea { get; set; } = 0;
         public int Ele2 { get; set; } = 0;
         public int Idorg { get; set; } = 0;
-        public int Idhie { get; set; } = 0;
+        //public int Ihie { get; set; } = 0;
         public string Liba { get; set; } = string.Empty;
         public string Abg { get; set; } = string.Empty;
         public int Todom { get; set; } = 0;
@@ -195,7 +196,6 @@ namespace GxShared.Sess
         public int Totyp { get; set; } = 0;
         public int Tostyp { get; set; } = 0;
         public int Totie { get; set; } = 0;
-        public int Tovers { get; set; } = 0;
         public int Eta { get; set; } = 0;
     }
     //public class AdmOrga

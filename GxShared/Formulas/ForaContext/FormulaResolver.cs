@@ -24,7 +24,7 @@ namespace GxShared.Formulas.ForaContext
                 var scdrub = $"{prefix}{num}";
 
                 var input = context.InputData.FirstOrDefault(d =>
-                    d.Idtie == context.Idtie &&
+                    d.Ptie == context.Idtie &&
                     d.Etyp == etyp &&
                     d.Scdrub == scdrub &&
                     IsValid(d, context.SessionDate));

@@ -51,7 +51,7 @@ else
                     <option value="0">progr?</option>
                     @foreach (var pgr in LsProgs)
                     {
-                        <option value="@pgr.Idpln" @onclick="() => GetSelectedProg(pgr)">@pgr.Liba</option>
+                        <option value="@pgr.Id" @onclick="() => GetSelectedProg(pgr)">@pgr.Liba</option>
                     }
                 </InputSelect>
             </div>
@@ -61,7 +61,7 @@ else
                     <option value="0">Aucun</option>
                     @foreach (var divo in _lsDivs)
                     {
-                        <option value="@divo.Idhie" @onclick="trierTiers">@divo.Abg-@divo.Liba</option>
+                        <option value="@divo.Id" @onclick="trierTiers">@divo.Abg-@divo.Liba</option>
                     }
                 </InputSelect>
             </div>
@@ -292,8 +292,8 @@ else
     private bool CalcMarked = false;
     private bool SaveMarked = false;
     private bool autoSave = false;
-    private bool SessOpen => toChild.curExo != null && toChild.curExo.Idses != 0
-                    && toChild.curSesio != null && toChild.curSesio.Idses != 0;
+    private bool SessOpen => toChild.curExo != null && toChild.curExo.Id != 0
+                    && toChild.curSesio != null && toChild.curSesio.Id != 0;
     private bool ProgOpen => SessOpen && ImyProg != 0 && ImyDiv != 0;
     private bool SiTiers => !String.IsNullOrEmpty(IdebTier) && !String.IsNullOrEmpty(IfinTier);
     // Meme pour option 1 (tous) IDebTier et IFinTier doivent etre fournis
@@ -399,12 +399,12 @@ else
         EnsRubrs = new();
         if (EnsProgs.Any())
         {
-            curProg = EnsProgs.Where(pl => pl.Idpln == bropln.Idpln).FirstOrDefault();
+            curProg = EnsProgs.Where(pl => pl.Id == bropln.Id).FirstOrDefault();
             if (curProg != null)
             {
                 //Console.WriteLine($"ICI prog Id : {curProg.Idorg}");
                 EnsRubrs = curProg.Rubvars.ToList();
-                var curDivpln = curOrga.Plngens.Where(pl => pl.Idpln == curProg.Plsdiv).FirstOrDefault();
+                var curDivpln = curOrga.Plngens.Where(pl => pl.Id == curProg.Plsdiv).FirstOrDefault();
                 if (curDivpln != null)
                 {
                     _lsDivs = curDivpln.Rubhies.Where(ud => ud.Sidiv == 1).ToList();
@@ -424,7 +424,7 @@ else
         {
             Console.WriteLine($"TRIE Prepare : {EnsTiers.Count}");
             Imessage = "Preparation de la liste en cours";
-            PreTiers = EnsTiers.Where(t => t.Idhie == ImyDiv)
+            PreTiers = EnsTiers.Where(t => t.Ihie == ImyDiv)
                 .OrderByDescending(um => um.Smatri)
                 .ToList();
             Imessage = "Liste des tiers prete";
@@ -461,20 +461,20 @@ else
     public async Task EdtAll()
     {
         allEnable = true;
-        //EditingRowGuid = null;
+        //EditingRowGuid = Guid.Empty;
     }
     public async Task CncAll()
     { //reload to annul AddObject/UpdateObject/DeleteObjet
         Imessage = "Annulation Operations, patience...";
         allEnable = false;
-        //EditingRowGuid = null;
+        //EditingRowGuid = Guid.Empty;
         Imessage = "";
     }
     public async Task SavAll()
     {
         Imessage = "Enregistrement Operations, patience...";
         allEnable = false;
-        //EditingRowGuid = null;
+        //EditingRowGuid = Guid.Empty;
         await curODContext.SaveDataAsync();
     }
 
@@ -499,7 +499,7 @@ else
                 ProgressValue = (int)((index + 1) / (double)filteredTiers.Count * 100);
                 StateHasChanged();
             }
-            var session = new PersonEvaluationSession(tie.Idtie, DateTime.Today);
+            var session = new PersonEvaluationSession(tie.Rowguid, DateTime.Today);
             session.HydrateInputs(tie.Actsaies, tie.Resdons);
             session.LoadFormulaLines(MissionLines);
             session.Evaluate();
@@ -514,7 +514,7 @@ else
                     Opetyp = 1, // saisie
                     Sireel = curProg.Tovue,
                     Idorg = curOrga.Idorg,
-                    Idpln = curProg.Idpln,
+                    Idpln = curProg.Id,
                     Vperi = toChild.curSesio.Speri,
                     Eperi = toChild.curExo.Speri,
                     Datope = DateTime.Now,
@@ -543,7 +543,7 @@ else
                     Opetyp = 1, // saisie
                     Sireel = curProg.Tovue,
                     Idorg = curOrga.Idorg,
-                    Idpln = curProg.Idpln,
+                    Idpln = curProg.Id,
                     Vperi = toChild.curSesio.Speri,
                     Eperi = toChild.curExo.Speri,
                     Datope = DateTime.Now,

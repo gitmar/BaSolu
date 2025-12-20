@@ -153,8 +153,8 @@
                         }
                     </HeaderContent>
                     <ChildContent Context="item">
-                        <button class="btn btn-warning btn-sm @(allEnable ? "" : "disabled-action")" @onclick="() => BeginEdGses(item.Idses)">Cloturer</button>
-                        <button class="btn btn-warning btn-sm @(allEnable ? "" : "disabled-action")" @onclick="() => BeginEdGses(item.Idses)">Annuller</button>
+                        <button class="btn btn-warning btn-sm @(allEnable ? "" : "disabled-action")" @onclick="() => BeginEdGses(item.Id)">Cloturer</button>
+                        <button class="btn btn-warning btn-sm @(allEnable ? "" : "disabled-action")" @onclick="() => BeginEdGses(item.Id)">Annuller</button>
                     </ChildContent>
                 </GridColumn>
             </GridColumns>
@@ -398,20 +398,20 @@
     public async Task EdtAll()
     {
         allEnable = true;
-        //EditingRubRowGuid = null;
+        //EditingRubRowGuid = Guid.Empty;
     }
     public async Task CncAll()
     { //reload to annul AddObject/UpdateObject/DeleteObjet
         Imessage = "Annulation Operations, patience...";
         allEnable = false;
-        //EditingRubRowGuid = null;
+        //EditingRubRowGuid = Guid.Empty;
         Imessage = "";
     }
     public async Task SavAll()
     {
         Imessage = "Enregistrement Operations, patience...";
         allEnable = false;
-        //EditingRubRowGuid = null;
+        //EditingRubRowGuid = Guid.Empty;
         await curODContext.SaveDataAsync();
     }
     
@@ -685,7 +685,7 @@
 
     void BeginEdGses(int? vseq)
     {
-        int idx = DaSesios.FindIndex(x => x.Idses == vseq);
+        int idx = DaSesios.FindIndex(x => x.Id == vseq);
         if (idx < 0 || idx >= DaSesios.Count)
         {
             // Not found or collection has changed; handle gracefully

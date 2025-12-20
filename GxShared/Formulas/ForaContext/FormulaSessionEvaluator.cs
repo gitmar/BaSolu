@@ -7,7 +7,7 @@ namespace GxShared.Formulas.ForaContext
         public List<InDataLineStream> Inputs { get; set; } = new();
         public List<OutDataLineStream> Outputs { get; set; } = new();
         public DateTime SessionDate { get; set; } = DateTime.Today;
-        public long Idtie { get; set; }
+        public Guid Idtie { get; set; } = Guid.Empty;
     }
     public class FormulaSessionEvaluator
     {
@@ -22,7 +22,7 @@ namespace GxShared.Formulas.ForaContext
         {
             var context = new FormulaEvaluationContext
             {
-                Idtie = Convert.ToInt32(_session.Idtie),
+                Idtie = _session.Idtie,
                 InputData = _session.Inputs,
                 PreviousLines = _session.Lines,
                 SessionDate = _session.SessionDate
@@ -37,7 +37,7 @@ namespace GxShared.Formulas.ForaContext
 
                 _session.Outputs.Add(new OutDataLineStream
                 {
-                    Idtie = Convert.ToInt32(_session.Idtie),
+                    Ptie = _session.Idtie,
                     Scdrub = line.LineNumber,
                     Result = outcome.Result,
                     Trust = outcome.Result.Trust,

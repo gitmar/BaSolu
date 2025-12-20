@@ -180,7 +180,7 @@ namespace GxShared.Formulas.ForaContext
     }
     public class FormulaEvaluationContext
     {
-        public int Idtie { get; set; } // current person
+        public Guid Idtie { get; set; } // current person
         public List<FormulaLine> PreviousLines { get; set; } = new();
         public List<InDataLineStream> InputData { get; set; } = new();
 
@@ -194,7 +194,7 @@ namespace GxShared.Formulas.ForaContext
         public InDataLineStream? GetInputValue(string scdrub, TableType etyp)
         {
             return InputData.FirstOrDefault(d =>
-                d.Idtie == Idtie &&
+                d.Ptie == Idtie &&
                 d.Etyp == etyp &&
                 d.Scdrub == scdrub &&
                 IsValid(d));

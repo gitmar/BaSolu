@@ -313,9 +313,9 @@ else
                                                                 {
                                                                     <InputSelect @bind-Value="draftLne.Ydpd">
                                                                         <option class="jchx" value="0">?choisir</option>
-                                                                        @foreach (var utb in curOrga.Gsglnes.Where(uv => uv.Pseq == parent.Xseq && (uv.Otyp == 4) && uv.Idlne < item.Idlne))
+                                                                        @foreach (var utb in curOrga.Gsglnes.Where(uv => uv.Pseq == parent.Xseq && (uv.Otyp == 4) && uv.Id < item.Id))
                                                                         {
-                                                                            <option value="@utb.Idlne">@utb.Liba</option>
+                                                                            <option value="@utb.Id">@utb.Liba</option>
                                                                         }
                                                                     </InputSelect>
                                                                 }
@@ -323,9 +323,9 @@ else
                                                                 {
                                                                     <InputSelect @bind-Value="item.Ydpd" disabled="true">
                                                                         <option class="jchx" value="0">aucun</option>
-                                                                        @foreach (var utb in curOrga.Gsglnes.Where(uv => uv.Pseq == parent.Xseq && (uv.Otyp == 4) && uv.Idlne < item.Idlne))
+                                                                        @foreach (var utb in curOrga.Gsglnes.Where(uv => uv.Pseq == parent.Xseq && (uv.Otyp == 4) && uv.Id < item.Id))
                                                                         {
-                                                                            <option value="@utb.Idlne">@utb.Liba</option>
+                                                                            <option value="@utb.Id">@utb.Liba</option>
                                                                         }
                                                                     </InputSelect>
                                                                 }
@@ -550,9 +550,9 @@ else
                                         {
                                             <InputSelect @bind-Value="item.Ydpd">
                                                 <option class="jchx" value="0">?choisir</option>
-                                                @foreach (var utb in curOrga.Gsglnes.Where(uv => uv.Pseq == curPater.Xseq && (uv.Otyp == 4) && uv.Idlne < item.Idlne))
+                                                @foreach (var utb in curOrga.Gsglnes.Where(uv => uv.Pseq == curPater.Xseq && (uv.Otyp == 4) && uv.Id < item.Id))
                                                 {
-                                                    <option value="@utb.Idlne">@utb.Liba</option>
+                                                    <option value="@utb.Id">@utb.Liba</option>
                                                 }
                                             </InputSelect>
                                         }
@@ -560,9 +560,9 @@ else
                                         {
                                             <InputSelect @bind-Value="item.Ydpd" disabled="true">
                                                 <option class="jchx" value="0">aucun</option>
-                                                @foreach (var utb in curOrga.Gsglnes.Where(uv => uv.Pseq == curPater.Xseq && (uv.Otyp == 4) && uv.Idlne < item.Idlne))
+                                                @foreach (var utb in curOrga.Gsglnes.Where(uv => uv.Pseq == curPater.Xseq && (uv.Otyp == 4) && uv.Id < item.Id))
                                                 {
-                                                    <option value="@utb.Idlne">@utb.Liba</option>
+                                                    <option value="@utb.Id">@utb.Liba</option>
                                                 }
                                             </InputSelect>
                                         }
@@ -893,7 +893,7 @@ else
                 gfixsMap[parentId].Add(mygf);
             }
             sinwPater = false;
-            AddingFixRowGuid = null;
+            AddingFixRowGuid = Guid.Empty;
             StateHasChanged();
             Imessage = "Success... parent ajoute";
         }
@@ -924,7 +924,7 @@ else
                 glnesMap[parentId].Add(aglne);
             }
             sinwChild = false;
-            AddingRowGuid = null;
+            AddingRowGuid = Guid.Empty;
             StateHasChanged();
             Imessage = "Success... poste ajoute";
         }
@@ -1007,7 +1007,7 @@ else
         //isEdingMan = false;
         editingMan = new();
         draftMan = new();
-        EditingManRowGuid = null;
+        EditingManRowGuid = Guid.Empty;
     }
     void CancEdingLne(Gsglne myglne)
     {
@@ -1015,7 +1015,7 @@ else
         //isEdingMan = false;
         editingLne = null;
         draftLne = null;
-        EditingLneRowGuid = null;
+        EditingLneRowGuid = Guid.Empty;
     }
     void ConfEdingMan(Gsgfix myafil)
     {
@@ -1041,7 +1041,7 @@ else
         myafil.Xedt1 = 0;
         //isEdingMan = false;
         editingMan = null;
-        EditingManRowGuid = null;
+        EditingManRowGuid = Guid.Empty;
     }
     void ConfEdingLne(Gsglne myglne)
     {
@@ -1071,7 +1071,7 @@ else
         myglne.Xedt1 = 0;
         //isEdingMan = false;
         editingLne = null;
-        EditingLneRowGuid = null;
+        EditingLneRowGuid = Guid.Empty;
     }
     private void PromptDelete(Gsglne item)
     {
@@ -1079,7 +1079,7 @@ else
     }
     private void CancelDelete()
     {
-        ConfirmingDeleteRowGuid = null;
+        ConfirmingDeleteRowGuid = Guid.Empty;
     }
     private void ConfirmDelete(Gsglne row)
     {
@@ -1102,8 +1102,8 @@ else
         coll.Remove(row);                       // Remove for UI update
         curOrga.Gsglnes.Where(ln => ln.Pseq == parent.Xseq).ToList().Remove(row);             // Remove from tracked collection
 
-        EditingManRowGuid = null;
-        EditingLneRowGuid = null;
+        EditingManRowGuid = Guid.Empty;
+        EditingLneRowGuid = Guid.Empty;
         StateHasChanged(); // Notify UI about changes
     }
     private void PromptFixDelete(Gsgfix item)
@@ -1112,7 +1112,7 @@ else
     }
     private void CancelFixDelete()
     {
-        ConfirmingFixDeleteRowGuid = null;
+        ConfirmingFixDeleteRowGuid = Guid.Empty;
     }
     private void ConfirmFixDelete(Gsgfix row)
     {
@@ -1135,7 +1135,7 @@ else
         coll.Remove(row);                       // Remove for UI update
         curOrga.Gsgfixes.Where(ln => ln.Idorg == parent.Idorg).ToList().Remove(row);             // Remove from tracked collection
 
-        EditingManRowGuid = null;
+        EditingManRowGuid = Guid.Empty;
         StateHasChanged(); // Notify UI about changes
     }
 
@@ -1189,23 +1189,23 @@ else
     public async Task EdtAll()
     {
         allEnable = true;
-        EditingManRowGuid = null;
-        EditingLneRowGuid = null;
+        EditingManRowGuid = Guid.Empty;
+        EditingLneRowGuid = Guid.Empty;
     }
     public async Task CncAll()
     { //reload to annul AddObject/UpdateObject/DeleteObjet
         Imessage = "Annulation Operations, patience...";
         allEnable = false;
-        EditingManRowGuid = null;
-        EditingLneRowGuid = null;
+        EditingManRowGuid = Guid.Empty;
+        EditingLneRowGuid = Guid.Empty;
         Imessage = "";
     }
     public async Task SavAll()
     {
         Imessage = "Enregistrement Operations, patience...";
         allEnable = false;
-        EditingManRowGuid = null;
-        EditingLneRowGuid = null;
+        EditingManRowGuid = Guid.Empty;
+        EditingLneRowGuid = Guid.Empty;
         await curODContext.SaveDataAsync();
     }
     private void SelDomTabl(int orig)
@@ -1276,7 +1276,7 @@ else
         {
             await curODContext.SaveDataAsync();
             Console.WriteLine("Saved SUCCESS");
-            //var wrkplns = curOrga.Plngens.Where(pl => pl.Ptyp == 3 && pl.Totyp == IMyAtr && pl.Tovers == 1).ToList();
+            //var wrkplns = curOrga.Plngens.Where(pl => pl.Ptyp == 3 && pl.Totyp == IMyAtr).ToList();
             //MyDaPlans = wrkplns;
             StateHasChanged();
             return true;

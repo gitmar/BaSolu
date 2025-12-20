@@ -107,7 +107,7 @@
                             <InputSelect id="opoint" @bind-Value="curOrga.Jpoint" disabled="@(!allEnable)">
                                 @foreach (var tob in LsDivs)
                                 {
-                                    <option value="@tob.Idhie">@tob.Liba</option>
+                                    <option value="@tob?.Khie">@tob.Liba</option>
                                 }
                             </InputSelect>
                         </div>
@@ -1535,7 +1535,7 @@
     // private void CancelCblDelete()
     // {
     //     isDelingCbl = false;
-    //     //ConfirmingCblDeleteRowGuid = null;
+    //     //ConfirmingCblDeleteRowGuid = Guid.Empty;
     // }
     // private void PromptTflDelete(Gsgfix myafil)
     // {
@@ -1559,7 +1559,7 @@
     //     myafil.Xdel1 = 0;
     //     mesAflSup = "";
     //     isDelingTfl = false;
-    //     //ConfirmingCblDeleteRowGuid = null;
+    //     //ConfirmingCblDeleteRowGuid = Guid.Empty;
     // }
     // private async Task ConfirmAllDelete(Gsgfix myafil)
     // {

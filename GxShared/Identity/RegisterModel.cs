@@ -86,8 +86,8 @@ namespace GxShared.Identity
         public string CodInvit { get; set; } = string.Empty; // code invite
         public string Uip { get; set; } = string.Empty; //inscrit Ip
         public int Idorg { get; set; } = 0; //inscrit orga
-        public int Idhie { get; set; } = 0; //inscrit hierar
-        public int Idpst { get; set; } = 0; //inscrit poste
+        public Guid Khie { get; set; } = Guid.Empty; //inscrit hierar
+        public Guid Kpst { get; set; } = Guid.Empty; //inscrit poste
         //public string ? Straison { get; set; }
         public string Raison { get; set; } = string.Empty; //inscrit raison
         public string Insrais { get; set; } = string.Empty; //inscrit raison

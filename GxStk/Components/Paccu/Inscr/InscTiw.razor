@@ -163,7 +163,7 @@
                                                         ❎ Annuler
                                                     </button>
                                                 } else
-                                                @if (EdtDelVue && AddingTiwRowGuid == null)
+                                                @if (EdtDelVue && AddingTiwRowGuid == Guid.Empty)
                                                 {//curTiw.Xadd1 != -2
                                                  <button class="btn btn-sm btn-warning me-1 @(EdtDelDisable ? "" : "disabled-action")"
                                                                 @onclick="() => BeginTiwEdit()">
@@ -241,26 +241,26 @@
                                                 <label><b>Service :</b>:</label>
                                                 @if (_lsDivs.Count > 0)
                                                 {
-                                                    <select class="standard-width" id="TypDiv" @bind="curTiw.Idhie">
+                                                    <InputSelect class="standard-width" id="TypDiv" @bind-Value="curTiw.Id">
                                                         <option value="0">Aucun</option>
                                                         @foreach (var divo in _lsDivs)
                                                         {
-                                                            <option value="@divo.Idhie">@divo.Liba</option>
+                                                            <option value="@divo.Khie">@divo.Liba</option>
                                                         }
-                                                    </select>
+                                                    </InputSelect>
                                                 }
                                             </div>
                                             <div class="grid-row p-1">
                                                 <label><b>Poste :</b></label>
                                                 @if (_lsPsts.Count > 0)
                                                 {
-                                                    <select class="standard-width" id="TypPst" @bind="curTiw.Idpst">
+                                                    <InputSelect class="standard-width" id="TypPst" @bind-Value="curTiw.Id">
                                                         <option value="0">Aucun</option>
                                                         @foreach (var divo in _lsPsts)
                                                         {
-                                                            <option value="@divo.Idpst">@divo.Liba</option>
+                                                            <option value="@divo.Kpst">@divo.Liba</option>
                                                         }
-                                                    </select>
+                                                    </InputSelect>
                                                 }
                                             </div>
                                         </div>
@@ -307,7 +307,7 @@
                                                                         @if (allEnable)
                                                                         {
                                                                             <div class="input-group">
-                                                                                @if (EdtDelRubVue && AddingAflRowGuid == null)
+                                                                                @if (EdtDelRubVue && AddingAflRowGuid == Guid.Empty)
                                                                                 {//curTiw.Xadd1 != -2
                                                                                  <button class="btn btn-sm btn-warning me-1 @(EdtDelRubDisable ? "" : "disabled-action")"
                                                                                          @onclick="() => BeginAflEdit(dafl)">
@@ -617,7 +617,7 @@
     public List<Tiewel> ensTiws = new();
 
     private List<Gpdivh> _lsDivs = new List<Gpdivh>();
-    private List<Divpst> _lsPsts => _lsDivs.Where(dv => dv.Idhie == curTiw.Idhie).SelectMany(dp => dp.Divpsts).ToList();
+    private List<Divpst> _lsPsts => _lsDivs.Where(dv => dv.Ihie == curTiw.Idhie).SelectMany(dp => dp.Divpsts).ToList();
 
     private RtW11Fic myftiw { get; set; }
 
@@ -663,12 +663,12 @@
     [Parameter]
     public bool ParentEDT { get; set; }
 
-    private Guid? AddingTiwRowGuid = null;
-    private Guid? EditingTiwRowGuid = null;
-    private Guid? ConfirmingTiwDeleteRowGuid = null;
-    private Guid? AddingAflRowGuid = null; //pmodal
-    private Guid? EditingAflRowGuid = null;
-    private Guid? ConfirmingAflDeleteRowGuid = null;
+    private Guid? AddingTiwRowGuid = Guid.Empty;
+    private Guid? EditingTiwRowGuid = Guid.Empty;
+    private Guid? ConfirmingTiwDeleteRowGuid = Guid.Empty;
+    private Guid? AddingAflRowGuid = Guid.Empty; //pmodal
+    private Guid? EditingAflRowGuid = Guid.Empty;
+    private Guid? ConfirmingAflDeleteRowGuid = Guid.Empty;
 
     private bool AddVue => ParentOK && ParentEDT;
     private bool IncludeVue => AddVue && AddingTiwRowGuid != null;
@@ -836,7 +836,7 @@
             return new Tiwafl
             {
                 Rowguid = Guid.NewGuid(),
-                Idtie = curTiw.Idtie,
+                Prowguid = curTiw.Rowguid,
                 Ttyp = Ugpe,
                 Tyafl = mytst,
                 Irang = nextSeq,
@@ -866,7 +866,7 @@
             aglne.Xadd1 = 0;
             curODContext.AddObject<Tiewel>("Tiewels", aglne);
             sinwTiw = false;
-            AddingTiwRowGuid = null;
+            AddingTiwRowGuid = Guid.Empty;
             curOrga.Tiewels.Add(aglne);
             ensTiws.Add(aglne);
             StateHasChanged();
@@ -881,7 +881,7 @@
     }
     void IncludeAfl(Tiwafl myafl)
     {
-        var parentId = curTiw.Idtie;
+        //var parentId = curTiw.Idtie;
         //bool YaChild = IsChildValid(aglne); // Make sure this returns true if aglne is valid to add
         if (!curODContext.IsEntityTracked(myafl)) // && YaChild)
         {
@@ -900,7 +900,7 @@
                 curODContext.AddRelatedObject(curTiw, "Tiwafls", myafl);
                 //curAfl.Xadd1 = -2;
                 sinwAfl = false;
-                AddingAflRowGuid = null;
+                AddingAflRowGuid = Guid.Empty;
                 curTiw.Tiwafls.Add(myafl);
                 //siAflAdding = true;
                 Imessage = "Success... Rubrique ajoutee";
@@ -940,7 +940,7 @@
             LsTAtts.Remove(ya1Tiw);
             ensTiws.Remove(ya1Tiw);
         } 
-        AddingTiwRowGuid = null;
+        AddingTiwRowGuid = Guid.Empty;
         sinwTiw = false;
         StateHasChanged();
     }
@@ -965,7 +965,7 @@
         }
         int custp = Convert.ToInt16(curAfl.Tyafl);
         //AddStep[custp] = 0;
-        AddingAflRowGuid = null;
+        AddingAflRowGuid = Guid.Empty;
         sinwAfl = false;
         StateHasChanged();
     }
@@ -982,7 +982,7 @@
         //     _originalTiwSnapshots.Remove(curTiw.Rowguid);
         // }
         StateHasChanged();
-        EditingTiwRowGuid = null;
+        EditingTiwRowGuid = Guid.Empty;
     }
     private void PromptTiwDelete()
     {
@@ -990,7 +990,7 @@
     }
     private void CancelTiwDelete()
     {
-        ConfirmingTiwDeleteRowGuid = null;
+        ConfirmingTiwDeleteRowGuid = Guid.Empty;
     }
     private void ConfirmTiwDelete()
     {
@@ -1010,8 +1010,8 @@
         }
         //curOrga.Rubvars.ToList().RemoveAll(rf => rf.Idpln == svRow.Idpln);
         //curOrga.Plngens.Remove(svRow); // Remove from tracked collection
-        EditingTiwRowGuid = null;
-        ConfirmingTiwDeleteRowGuid = null;
+        EditingTiwRowGuid = Guid.Empty;
+        ConfirmingTiwDeleteRowGuid = Guid.Empty;
         StateHasChanged(); // Notify UI about changes
     }
     private async Task DelTiwAsync(Tiewel mytiw)
@@ -1058,7 +1058,7 @@
         //isEdingMan = false;
         editingAfl = null;
         draftAfl = null;
-        EditingAflRowGuid = null;
+        EditingAflRowGuid = Guid.Empty;
     }
     void ConfEdingAfl(Tiwafl myafl)
     {
@@ -1095,7 +1095,7 @@
 
         myafl.Xedt1 = 0;
         editingAfl = null;
-        EditingAflRowGuid = null;
+        EditingAflRowGuid = Guid.Empty;
     }
     //DELETING AFL
     private void PromptAflDelete(Tiwafl item)
@@ -1104,15 +1104,15 @@
     }
     private void CancelAflDelete()
     {
-        ConfirmingAflDeleteRowGuid = null;
+        ConfirmingAflDeleteRowGuid = Guid.Empty;
     }
     private void ConfirmAflDelete(Tiwafl row)
     {
         var parent = curTiw;
-        Console.WriteLine($"Parent may be found : {parent.Idtie}");
+        Console.WriteLine($"Parent may be found : {parent.Rowguid}");
         if (parent == null)
             return;
-        Console.WriteLine($"del parent {parent.Nom} and row id : {parent.Idtie}");
+        Console.WriteLine($"del parent {parent.Nom} and row id : {parent.Rowguid}");
         Tiwafl svRow = row;
         // For existing rows: mark for OData deletion and remove locally
         if (curODContext.IsEntityTracked(row))
@@ -1123,10 +1123,10 @@
         {
             curODContext.Detach(row); // Mark for deletion in OData context
         }
-        curTiw.Tiwafls.ToList().RemoveAll(rf => rf.Idtie == svRow.Idtie);
+        curTiw.Tiwafls.ToList().RemoveAll(rf => rf.Prowguid == svRow.Prowguid);
         curTiw.Tiwafls.Remove(svRow);
-        EditingAflRowGuid = null;
-        ConfirmingAflDeleteRowGuid = null;
+        EditingAflRowGuid = Guid.Empty;
+        ConfirmingAflDeleteRowGuid = Guid.Empty;
         StateHasChanged(); // Notify UI about changes
     }
     private async Task OuvrirFiche(int orig)
@@ -1162,7 +1162,7 @@
         var selno = Convert.ToInt16(chgeEventArgs.Value.ToString());
         if (selno > 0)
         {
-            curTiw = LsTAtts.Where(tiw => tiw.Idtie == selno).FirstOrDefault();
+            curTiw = LsTAtts.Where(tiw => tiw.Id == selno).FirstOrDefault();
         }
     }
     private void OnTAccAll(ChangeEventArgs e, int origchk)
@@ -1376,7 +1376,7 @@
                 isTiwInEditing = false;
                 Console.WriteLine("Saved SUCCESS");
             }
-            //var wrkplns = curOrga.Plngens.Where(pl => pl.Ptyp == 3 && pl.Totyp == IMyAtr && pl.Tovers == 1).ToList();
+            //var wrkplns = curOrga.Plngens.Where(pl => pl.Ptyp == 3 && pl.Totyp == IMyAtr).ToList();
             //MyDaPlans = wrkplns;
             StateHasChanged();
             return true;

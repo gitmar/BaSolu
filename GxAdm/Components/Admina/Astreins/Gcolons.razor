@@ -1026,7 +1026,7 @@
     private void CancelCblDelete()
     {
         isDelingCbl = false;
-        //ConfirmingCblDeleteRowGuid = null;
+        //ConfirmingCblDeleteRowGuid = Guid.Empty;
     }
     private void PromptTflDelete(Gsgfix myafil)
     {
@@ -1038,7 +1038,7 @@
     {
         myafil.Xdel1 = 0;
         isDelingTfl = false;
-        //ConfirmingCblDeleteRowGuid = null;
+        //ConfirmingCblDeleteRowGuid = Guid.Empty;
     }
     private async Task ConfirmAllDelete(int orig, Gsgfix myafil)
     {
@@ -1090,20 +1090,20 @@
     public async Task EdtAll()
     {
         allEnable = true;
-        //EditingRowGuid = null;
+        //EditingRowGuid = Guid.Empty;
     }
     public async Task CncAll()
     { //reload to annul AddObject/UpdateObject/DeleteObjet
         Imessage = "Annulation Operations, patience...";
         allEnable = false;
-        //EditingRowGuid = null;
+        //EditingRowGuid = Guid.Empty;
         Imessage = "";
     }
     // public async Task SavAll()
     // {
     //     Imessage = "Enregistrement Operations, patience...";
     //     allEnable = false;
-    //     //EditingRowGuid = null;
+    //     //EditingRowGuid = Guid.Empty;
     //     //await curODContext.SaveDataAsync();
     // }
     private void OnCheckboxChanged(Microsoft.AspNetCore.Components.ChangeEventArgs e, Gsgfix scol, string propertyName)
@@ -1159,7 +1159,7 @@
         {
             await curODContext.SaveDataAsync();
             Console.WriteLine("Saved SUCCESS");
-            //var wrkplns = curOrga.Plngens.Where(pl => pl.Ptyp == 3 && pl.Totyp == IMyAtr && pl.Tovers == 1).ToList();
+            //var wrkplns = curOrga.Plngens.Where(pl => pl.Ptyp == 3 && pl.Totyp == IMyAtr).ToList();
             //MyDaPlans = wrkplns;
             StateHasChanged();
             return true;

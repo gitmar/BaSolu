@@ -24,7 +24,7 @@ namespace GxShared.Formulas.ForaContext
 
                 var output = new OutDataLineStream
                 {
-                    Idtie = _context.Idtie,
+                    Ptie = _context.Idtie,
                     Scdrub = line.LineNumber,
                     Etyp = TableType.Rubvar,
                     Result = outcome.Result,

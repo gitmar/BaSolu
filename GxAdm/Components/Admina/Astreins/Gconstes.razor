@@ -696,14 +696,14 @@ else
     {
         allEnable = true;
         isDocEditing = false;
-        EditingFixRowGuid = null;
+        EditingFixRowGuid = Guid.Empty;
     }
     public async Task CncAll()
     { //reload to annul AddObject/UpdateObject/DeleteObjet
         Imessage = "Annulation Operations, patience...";
         allEnable = false;
         isDocEditing = false;
-        EditingFixRowGuid = null;
+        EditingFixRowGuid = Guid.Empty;
         Imessage = "";
     }
     void OpenAddPater(int tydoc)
@@ -805,7 +805,7 @@ else
                 gfixsMap[parentId].Add(mygf);
             }
             sinwPater = false;
-            AddingFixRowGuid = null;
+            AddingFixRowGuid = Guid.Empty;
             StateHasChanged();
             Imessage = "Success... parent ajoute";
         }
@@ -913,7 +913,7 @@ else
             editingSes = null;
             draftSes = null;
         }
-        EditingFixRowGuid = null;
+        EditingFixRowGuid = Guid.Empty;
     }
     void ConfEdingGen(Gsgfix myafil, int orig)
     {
@@ -1009,7 +1009,7 @@ else
         {
 
         }
-        EditingFixRowGuid = null;
+        EditingFixRowGuid = Guid.Empty;
     }
     private void PromptFixDelete(Gsgfix item)
     {
@@ -1017,7 +1017,7 @@ else
     }
     private void CancelFixDelete()
     {
-        ConfirmingFixDeleteRowGuid = null;
+        ConfirmingFixDeleteRowGuid = Guid.Empty;
     }
     private void ConfirmFixDelete(Gsgfix row)
     {
@@ -1041,7 +1041,7 @@ else
         coll.Remove(row);                       // Remove for UI update
         curOrga.Gsgfixes.Where(ln => ln.Idorg == parent.Idorg).ToList().Remove(row);             // Remove from tracked collection
 
-        EditingFixRowGuid = null;
+        EditingFixRowGuid = Guid.Empty;
         StateHasChanged(); // Notify UI about changes
     }
     void ClosePmodal()
@@ -1064,7 +1064,7 @@ else
                 await curODContext.SaveDataAsync();
                 Console.WriteLine("Saved SUCCESS");
             }
-            //var wrkplns = curOrga.Plngens.Where(pl => pl.Ptyp == 3 && pl.Totyp == IMyAtr && pl.Tovers == 1).ToList();
+            //var wrkplns = curOrga.Plngens.Where(pl => pl.Ptyp == 3 && pl.Totyp == IMyAtr).ToList();
             //MyDaPlans = wrkplns;
             StateHasChanged();
             return true;

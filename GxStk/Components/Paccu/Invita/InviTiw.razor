@@ -135,11 +135,11 @@
                     <label for="TypDiv">Services:</label>
                     @if (_lsDivs.Count > 0)
                     {
-                        <select id="TypDiv" @bind="regModel.Idhie">
+                        <select id="TypDiv" @bind="regModel.Khie">
                             <option value="0">Aucun</option>
                             @foreach (var divo in _lsDivs)
                             {
-                                <option value="@divo.Idhie">@divo.Liba</option>
+                                <option value="@divo.Ihie">@divo.Liba</option>
                             }
                         </select>
                     }
@@ -152,11 +152,11 @@
                     <label for="TypPst">Poste:</label>
                     @if (_lsPsts.Count > 0)
                     {
-                        <select id="TypPst" @bind="regModel.Idpst">
+                        <select id="TypPst" @bind="regModel.Kpst">
                             <option value="0">Aucun</option>
                             @foreach (var divo in _lsPsts)
                             {
-                                <option value="@divo.Idpst">@divo.Liba</option>
+                                <option value="@divo.Ipst">@divo.Liba</option>
                             }
                         </select>
                     }
@@ -267,7 +267,7 @@
     private Tiersp mytiers = new Tiersp();
     private List<Tiersp> lsTiers = new List<Tiersp>();
     private List<Gpdivh> _lsDivs = new List<Gpdivh>();
-    private List<Divpst> _lsPsts => _lsDivs.Where(dv => dv.Idhie == regModel.Idhie).SelectMany(dp => dp.Divpsts).ToList();
+    private List<Divpst> _lsPsts => _lsDivs.Where(dv => dv.Khie == regModel.Khie).SelectMany(dp => dp.Divpsts).ToList();
 
     protected override async Task OnInitializedAsync()
     {
@@ -465,7 +465,7 @@
                         + "&methp=1" + "&stsigle=" + stsigle
                         + "&tydoma=" + tidom + "&stdoma=" + stdoma + "&datcde=" + DateTime.Now
                         + "&tysite=1" + "&stsite=" + stsite
-                        + "&ivorga=" + stOrga + "&straison=" + kraison + "&hiera=" + regModel.Idhie + "@ipost" + regModel.Idpst
+                        + "&ivorga=" + stOrga + "&straison=" + kraison + "&hiera=" + regModel.Khie + "@ipost" + regModel.Kpst
                         + "&nbalea=" + aleaupd;
             var bytes = Encoding.UTF8.GetBytes(avtCode);
             var avtEncode = $"{stsite}/register?cdlnk={WebEncoders.Base64UrlEncode(bytes)}";
@@ -567,7 +567,7 @@
             //     isTiwEditing = false;
             //     Console.WriteLine("Saved SUCCESS");
             // }
-            //var wrkplns = curOrga.Plngens.Where(pl => pl.Ptyp == 3 && pl.Totyp == IMyAtr && pl.Tovers == 1).ToList();
+            //var wrkplns = curOrga.Plngens.Where(pl => pl.Ptyp == 3 && pl.Totyp == IMyAtr).ToList();
             //MyDaPlans = wrkplns;
             StateHasChanged();
             return true;

@@ -142,7 +142,7 @@ else
                                         <option value="0">session?</option>
                                         @foreach (var oses in toChild.LsSess)
                                         {
-                                            <option value="@oses.Idses">@oses.Sref</option>
+                                            <option value="@oses.Id">@oses.Sref</option>
                                         }
                                     </InputSelect>
                                 </div>
@@ -167,7 +167,7 @@ else
                                                     <option class="jchx" value="0">?div</option>
                                                     @foreach (var idv in _lsDivs.Where(dv => dv.Pdom == 6))
                                                     {
-                                                        <option value="@idv.Idhie">@idv.Liba</option>
+                                                        <option value="@idv.Khie">@idv.Liba</option>
                                                     }
                                                 </InputSelect>
                                                 @if (!allEnable)
@@ -194,7 +194,7 @@ else
                                                             }
                                                             else
                                                             {
-                                                                <span class="plnpoint">@item?.Tiesq</span>
+                                                                <span class="plnpoint">@item?.Tseq</span>
                                                             }
                                                         </ChildContent>
                                                     </GridColumn>
@@ -212,22 +212,22 @@ else
                                                     </GridColumn>
                                                     <GridColumn TItem="Tiersp" Class="col-md-2" HeaderText="ActuelDivision">
                                                         <ChildContent Context="item">
-                                                            <InputSelect class="standard-width" id="TypDiv" @bind-Value="item.Idhie" disabled>
+                                                            <InputSelect class="standard-width" id="TypDiv" @bind-Value="item.Ihie" disabled>
                                                                 <option value="0">Aucun</option>
                                                                 @foreach (var divo in _lsDivs)
                                                                 {
-                                                                    <option value="@divo.Idhie">@divo.Liba</option>
+                                                                    <option value="@divo.Khie">@divo.Liba</option>
                                                                 }
                                                             </InputSelect>
                                                         </ChildContent>
                                                     </GridColumn>
                                                     <GridColumn TItem="Tiersp" Class="col-md-1" HeaderText="ActuelPoste">
                                                         <ChildContent Context="item">
-                                                            <InputSelect class="standard-width" id="TypPst" @bind-Value="item.Idpst" disabled>
+                                                            <InputSelect class="standard-width" id="TypPst" @bind-Value="item.Ipst" disabled>
                                                                 <option value="0">Aucun</option>
-                                                                @foreach (var divo in _lsDivs.FirstOrDefault(d => d.Idhie == item.Idhie)?.Divpsts ?? Enumerable.Empty<Divpst>())
+                                                                @foreach (var divo in _lsDivs.FirstOrDefault(d => d.Ihie == item.Ihie)?.Divpsts ?? Enumerable.Empty<Divpst>())
                                                                 {
-                                                                    <option value="@divo.Idpst">@divo.Liba</option>
+                                                                    <option value="@divo.Ipst">@divo.Liba</option>
                                                                 }
                                                             </InputSelect>
                                                         </ChildContent>
@@ -240,7 +240,7 @@ else
                                                                   <option value="0">Aucun</option>
                                                                     @foreach (var divo in _lsDivs)
                                                                     {
-                                                                        <option value="@divo.Idhie">@divo.Liba</option>
+                                                                        <option value="@divo.Ihie">@divo.Liba</option>
                                                                     }
                                                                 </InputSelect>
                                                             }
@@ -250,7 +250,7 @@ else
                                                                     <option value="0">Aucun</option>
                                                                     @foreach (var divo in _lsDivs)
                                                                     {
-                                                                        <option value="@divo.Idhie">@divo.Liba</option>
+                                                                        <option value="@divo.Ihie">@divo.Liba</option>
                                                                     }
                                                                 </InputSelect>
                                                             }
@@ -262,9 +262,9 @@ else
                                                             { // show draftTiw inputs
                                                               <InputSelect class="standard-width" id="TypPst" @bind-Value="item.Nwpst">
                                                                   <option value="0">Aucun</option>
-                                                                    @foreach (var divo in _lsDivs.FirstOrDefault(d => d.Idhie == item.Idhie)?.Divpsts ?? Enumerable.Empty<Divpst>())
+                                                                    @foreach (var divo in _lsDivs.FirstOrDefault(d => d.Ihie == item.Ihie)?.Divpsts ?? Enumerable.Empty<Divpst>())
                                                                     {
-                                                                        <option value="@divo.Idpst">@divo.Liba</option>
+                                                                        <option value="@divo.Ipst">@divo.Liba</option>
                                                                     }
                                                                 </InputSelect>
                                                             }
@@ -272,9 +272,9 @@ else
                                                             {
                                                                 <InputSelect class="standard-width" id="TypPst" @bind-Value="item.Nwpst" disabled>
                                                                     <option value="0">Aucun</option>
-                                                                    @foreach (var divo in _lsDivs.FirstOrDefault(d => d.Idhie == item.Idhie)?.Divpsts ?? Enumerable.Empty<Divpst>())
+                                                                    @foreach (var divo in _lsDivs.FirstOrDefault(d => d.Ihie == item.Ihie)?.Divpsts ?? Enumerable.Empty<Divpst>())
                                                                     {
-                                                                        <option value="@divo.Idpst">@divo.Liba</option>
+                                                                        <option value="@divo.Ipst">@divo.Liba</option>
                                                                     }
                                                                 </InputSelect>
                                                             }
@@ -331,7 +331,7 @@ else
                                                     <option class="jchx" value="0">?dom</option>
                                                     @foreach (var idv in _lsDivs.Where(ud => ud.Pdom == 7))
                                                     {
-                                                        <option value="@idv.Idhie">@idv.Liba</option>
+                                                        <option value="@idv.Ihie">@idv.Liba</option>
                                                     }
                                                 </InputSelect>
                                             <label class="fw-bold">Produit :</label>
@@ -339,7 +339,7 @@ else
                                                 <option class="jchx" value="0">?prod</option>
                                                 @foreach (var ipd in LsProds)
                                                 {
-                                                    <option value="@ipd.Idpdt">@ipd.Liba</option>
+                                                    <option value="@ipd.Id">@ipd.Liba</option>
                                                 }
                                             </InputSelect>
                                             @if (!allEnable)
@@ -366,7 +366,7 @@ else
                                                             }
                                                             else
                                                             {
-                                                                <span class="plnpoint">@item?.Tiesq</span>
+                                                                <span class="plnpoint">@item?.Tseq</span>
                                                             } *@
                                                         </ChildContent>
                                                     </GridColumn>
@@ -484,7 +484,7 @@ else
     private List<Gpfixe> LsVues = new();
     private List<Gpdivh> _lsDivs = new List<Gpdivh>();
 
-    private Gpdivh _curDiv => _lsDivs.FirstOrDefault(ud => ud.Idhie == ITMyDiv);
+    private Gpdivh _curDiv => _lsDivs.FirstOrDefault(ud => ud.Ihie == ITMyDiv);
     private List<Gplan> LsPlans => toChild.LsPlans.Where(pl => pl.Ptyp == 4 && pl.Todom == ITMyDom).ToList();
     private List<Stkpdt> LsProds => curOrga.Stkpdts.ToList();
     private string atrDest = "Programmes de Saisie :";
@@ -516,16 +516,16 @@ else
     private Dictionary<int, List<Tiersp>> gTiwsMap = new();
     //Grid Data feed management Accepted (accorde, non rejeter et non integre
     public List<Tiersp> MyDaTies => curOrga.Tiersps
-        .Where(tie => tie.Hiem == 0) //stade inscr tie.Wlcstat >= 4
+        .Where(tie => tie.Ihie == 0) //stade inscr tie.Wlcstat >= 4
         .ToList();
     public List <Tiersp> MyDaTiesAtt => curOrga.Tiersps
-       .Where(tie => tie.Hiem == ITMyDiv) //non mute
+       .Where(tie => tie.Ihie == ITMyDiv) //non mute
         .ToList();
     public List<Stkart> MyDaArts => curProd.Stkarts
-        .Where(art => art.Hiem == 0) //stade inscr tie.Wlcstat >= 4
+        .Where(art => art.Ihie == 0) //stade inscr tie.Wlcstat >= 4
         .ToList();
     public List<Stkart> MyDaArtsAtt => curProd.Stkarts
-       .Where(art => art.Hiem == ITMyDiv) //non mute
+       .Where(art => art.Ihie == ITMyDiv) //non mute
         .ToList();
     // enum Scenario { None, Yaeche, Yagrill, Yaschm }
     // Scenario currentScenario =>
@@ -541,17 +541,17 @@ else
     // {
     //     Scenario.Yaeche => ITMyDom > 0
     //         ? curOrga.Plngens
-    //             .Where(pl => pl.Ptyp == IMyGpln && pl.Todom == ITMyDom && pl.Tovers == 1)
+    //             .Where(pl => pl.Ptyp == IMyGpln && pl.Todom == ITMyDom)
     //             .ToList()
     //         : new List<Plngen>(),
     //     Scenario.Yagrill => ITMyDom > 0 && IMyAtr > 0
     //         ? curOrga.Plngens
-    //             .Where(pl => pl.Ptyp == IMyGpln && pl.Todom == ITMyDom && pl.Toatr == IMyAtr && pl.Totyp == IMyGtie && pl.Tovers == 1)
+    //             .Where(pl => pl.Ptyp == IMyGpln && pl.Todom == ITMyDom && pl.Toatr == IMyAtr && pl.Totyp == IMyGtie)
     //             .ToList()
     //         : new List<Plngen>(),
     //     Scenario.Yaschm => ITMyDom > 0 && IMyVue > 0
     //         ? curOrga.Plngens
-    //             .Where(pl => pl.Ptyp == IMyGpln && pl.Todom == ITMyDom && pl.Tovue == IMyVue && pl.Tovers == 1)
+    //             .Where(pl => pl.Ptyp == IMyGpln && pl.Todom == ITMyDom && pl.Tovue == IMyVue)
     //             .ToList()
     //         : new List<Plngen>(),
     //     _ => new List<Plngen>()
@@ -629,19 +629,19 @@ else
         // foreach (var uta in curOrga.Plngens)
         // {
         //     List<Rubvar> tbcols = curTier.Rubvars.Where(ln => ln.Idpln == uta.Idpln).ToList();
-        //     gRubsMap[uta.Idpln] = new List<Rubvar>(tbcols);
+        //     gRubsMap[uta.Rowguid] = new List<Rubvar>(tbcols);
         //     //Console.WriteLine($"Parent Xseq: {uta.Xseq}, Children count: {tbcols.Count}");
         // }
-        //var wrkplns = curOrga.Plngens.Where(pl => pl.Ptyp == 5 && pl.Totyp == IMyAtr && pl.Tovers == 1).ToList();
+        //var wrkplns = curOrga.Plngens.Where(pl => pl.Ptyp == 5 && pl.Totyp == IMyAtr).ToList();
         //MyDaPlans = wrkplns;
         //LsDoms = LsFixes.Where(ut => ut.Gvars == 36 && ut.Itb == 4 && ut.Gp1 == 1 && ut.Elea != 0).ToList();
     }
     void OnTierRowClick(GridRowEventArgs<Tiersp> args)
     {
-        Console.WriteLine($"OnTierRowClick Triggered : {args.Item.Idtie}");
+        Console.WriteLine($"OnTierRowClick Triggered : {args.Item.Id}");
         curTier = args.Item; //get gRubsMap
-        Console.WriteLine($"X1seq {curTier.Idtie}");
-        if (curTier == null || curTier.Idtie == 0)
+        Console.WriteLine($"X1seq {curTier.Id}");
+        if (curTier == null || curTier.Id == 0)
         {
             return;
         }
@@ -649,10 +649,10 @@ else
     }
     void OnArtRowClick(GridRowEventArgs<Stkart> args)
     {
-        Console.WriteLine($"OnArtRowClick Triggered : {args.Item.Idart}");
+        Console.WriteLine($"OnArtRowClick Triggered : {args.Item.Id}");
         curArt = args.Item; //get gRubsMap
-        Console.WriteLine($"X1seq {curArt.Idart}");
-        if (curArt == null || curArt.Idart == 0)
+        Console.WriteLine($"X1seq {curArt.Id}");
+        if (curArt == null || curArt.Id == 0)
         {
             return;
         }
@@ -660,7 +660,7 @@ else
     }
     // void OnRubRowClick(GridRowEventArgs<Rubvar> args)
     // {
-    //     Console.WriteLine($"OnChildRowClick Triggered : {args.Item.Idrub}");
+    //     Console.WriteLine($"OnChildRowClick Triggered : {args.Item.Id}");
     //     curRubr = args.Item; //get gRubsMap
     //     Console.WriteLine($"X1seq {curRubr.Idrub}");
     //     if (curRubr == null || curRubr.Idrub == 0)
@@ -674,17 +674,17 @@ else
     public async Task EdtAll()
     {
         allEnable = true;
-        editingTiwRowGuid = null;
-        // EditingRubRowGuid = null;
-        // EditingFmtRowGuid = null;
+        editingTiwRowGuid = Guid.Empty;
+        // EditingRubRowGuid = Guid.Empty;
+        // EditingFmtRowGuid = Guid.Empty;
     }
     public async Task CncAll()
     { //reload to annul AddObject/UpdateObject/DeleteObjet
         Imessage = "Annulation Operations, patience...";
         allEnable = false;
-        editingTiwRowGuid = null;
-        // EditingRubRowGuid = null;
-        // EditingFmtRowGuid = null;
+        editingTiwRowGuid = Guid.Empty;
+        // EditingRubRowGuid = Guid.Empty;
+        // EditingFmtRowGuid = Guid.Empty;
         foreach (var enty in curODContext.Context.Entities.ToList())
         {
             if (curODContext.GetEntityState(enty) == EntityStates.Added)
@@ -698,18 +698,18 @@ else
     {
         foreach(var tie in MyDaTies)
         {
-            if (tie.Idhie != tie.Nwhie)
+            if (tie.Ihie != tie.Nwhie)
             {
                 if (tie.Nwhie != 0)
                 {
-                    tie.Idhie = tie.Nwhie;
+                    tie.Ihie = tie.Nwhie;
                 }
             }
-            if (tie.Idpst != tie.Nwpst)
+            if (tie.Ipst != tie.Nwpst)
             {
                 if (tie.Nwpst != 0)
                 {
-                    tie.Idpst = tie.Nwpst;
+                    tie.Ipst = tie.Nwpst;
                 }
             }
             //update
@@ -717,13 +717,14 @@ else
             //mark the mvt
             Tiemvt nwMvt = new();
             nwMvt.Tymvt = 1; //1mutation2affect3promo4sanct
-            nwMvt.Idtie = tie.Idtie;
-            nwMvt.Idhie = tie.Hiem; //mutation
-            nwMvt.Idpst = tie.Pstm; // mutation
+            nwMvt.Rowguid = Guid.NewGuid();
+            nwMvt.Prowguid = tie.Rowguid;
+            nwMvt.Ihie = tie.Ihie; //mutation
+            nwMvt.Ipst = tie.Ipst; // mutation
             nwMvt.Usrid = tie.Usrid;//concerne
             nwMvt.Usrope = _sessionContext?.CurrentSession?.Userid;///operator
             nwMvt.Idses = IMySes;
-            var wstses = toChild.LsSess.FirstOrDefault(us => us.Idses == IMySes);
+            var wstses = toChild.LsSess.FirstOrDefault(us => us.Id == IMySes);
             string ustses = "";
             if (wstses != null) ustses = wstses.Liba;
             nwMvt.Stses = ustses;
@@ -731,9 +732,9 @@ else
             curODContext.AddRelatedObject(tie, "Tiemvts", nwMvt);
         }
         allEnable = false;
-        editingTiwRowGuid = null;
-        // EditingRubRowGuid = null;
-        // EditingFmtRowGuid = null;
+        editingTiwRowGuid = Guid.Empty;
+        // EditingRubRowGuid = Guid.Empty;
+        // EditingFmtRowGuid = Guid.Empty;
         SaveCurEntities();
         StateHasChanged();
     }
@@ -1005,7 +1006,7 @@ else
     //         {
     //             if (ITMyDom != 0)
     //             {
-    //                 //MyDaPlans = new List<Plngen>(curOrga.Plngens.Where(pl => pl.Ptyp == 2 && pl.Todom == ITMyDom && pl.Totyp == IMyGtie && pl.Tovers == 1));
+    //                 //MyDaPlans = new List<Plngen>(curOrga.Plngens.Where(pl => pl.Ptyp == 2 && pl.Todom == ITMyDom && pl.Totyp == IMyGtie));
     //             }
     //         }
     //         else
@@ -1019,7 +1020,7 @@ else
     //         {
     //             if (IMyGtie != 0 && ITMyDom != 0)
     //             {
-    //                 //MyDaPlans = new List<Plngen>(curOrga.Plngens.Where(pl => pl.Ptyp == 2 && pl.Todom == ITMyDom && pl.Totyp == IMyGtie && pl.Tovers == 1));
+    //                 //MyDaPlans = new List<Plngen>(curOrga.Plngens.Where(pl => pl.Ptyp == 2 && pl.Todom == ITMyDom && pl.Totyp == IMyGtie));
     //             }
     //         }
     //         else
@@ -1067,7 +1068,7 @@ else
     // {
     //     if (ITMyDom != 0)
     //     {
-    //         //MyDaPlans = new List<Plngen>(curOrga.Plngens.Where(pl => pl.Ptyp == 2 && pl.Todom == ITMyDom && pl.Totyp == IMyGtie && pl.Tovers == 1));
+    //         //MyDaPlans = new List<Plngen>(curOrga.Plngens.Where(pl => pl.Ptyp == 2 && pl.Todom == ITMyDom && pl.Totyp == IMyGtie));
     //     }
     // }
     // else
@@ -1078,7 +1079,7 @@ else
     // {
     //     if (IMyGtie != 0 && ITMyDom != 0)
     //     {
-    //         //MyDaPlans = new List<Plngen>(curOrga.Plngens.Where(pl => pl.Ptyp == 2 && pl.Todom == ITMyDom && pl.Totyp == IMyGtie && pl.Tovers == 1));
+    //         //MyDaPlans = new List<Plngen>(curOrga.Plngens.Where(pl => pl.Ptyp == 2 && pl.Todom == ITMyDom && pl.Totyp == IMyGtie));
     //     }
     // }
     // else
@@ -1179,7 +1180,7 @@ else
             await curODContext.SaveDataAsync();
             Console.WriteLine("Saved SUCCESS");
             //}
-            //var wrkplns = curOrga.Plngens.Where(pl => pl.Ptyp == 3 && pl.Totyp == IMyAtr && pl.Tovers == 1).ToList();
+            //var wrkplns = curOrga.Plngens.Where(pl => pl.Ptyp == 3 && pl.Totyp == IMyAtr).ToList();
             //MyDaPlans = wrkplns;
             StateHasChanged();
             return true;

@@ -105,7 +105,7 @@ else
                                         <option value="0">tout</option>
                                         @foreach (var sit in _lsDivs)
                                         {
-                                            <option value="@sit.Idhie" @onclick="() => GetSelectedSite(sit)">@sit.Liba</option>
+                                            <option value="@sit.Khie" @onclick="() => GetSelectedSite(sit)">@sit.Liba</option>
                                         }
                                     </InputSelect>
                                 </div>
@@ -149,7 +149,7 @@ else
                                                 }
                                                 else
                                                 {
-                                                    <span class="plnpoint">@item?.Tiesq</span>
+                                                    <span class="plnpoint">@item?.Tseq</span>
                                                 }
                                             </ChildContent>
                                         </GridColumn>
@@ -307,7 +307,7 @@ else
                                         }
                                         else
                                         {
-                                            <span class="plnpoint">@item?.Tiesq</span>
+                                            <span class="plnpoint">@item?.Tseq</span>
                                         }
                                     </ChildContent>
                                 </GridColumn>
@@ -516,7 +516,7 @@ else
     private Dictionary<int, List<Tiewel>> gTiwsMap = new();
     //Grid Data feed management Accepted (accorde, non rejeter et non integre
     public List<Tiewel> MyDaTiws => curOrga.Tiewels
-        .Where(pl => pl.Jwlc >= 4 && pl.Hiem == IMySite)
+        .Where(pl => pl.Jwlc >= 4 && pl.Ihie == IMySite)
         .ToList();
 
 
@@ -534,17 +534,17 @@ else
     // {
     //     Scenario.Yaeche => IMyDom > 0
     //         ? curOrga.Plngens
-    //             .Where(pl => pl.Ptyp == IMyGpln && pl.Todom == IMyDom && pl.Tovers == 1)
+    //             .Where(pl => pl.Ptyp == IMyGpln && pl.Todom == IMyDom)
     //             .ToList()
     //         : new List<Plngen>(),
     //     Scenario.Yagrill => IMyDom > 0 && IMyAtr > 0
     //         ? curOrga.Plngens
-    //             .Where(pl => pl.Ptyp == IMyGpln && pl.Todom == IMyDom && pl.Toatr == IMyAtr && pl.Totyp == IMyGtie && pl.Tovers == 1)
+    //             .Where(pl => pl.Ptyp == IMyGpln && pl.Todom == IMyDom && pl.Toatr == IMyAtr && pl.Totyp == IMyGtie)
     //             .ToList()
     //         : new List<Plngen>(),
     //     Scenario.Yaschm => IMyDom > 0 && IMyVue > 0
     //         ? curOrga.Plngens
-    //             .Where(pl => pl.Ptyp == IMyGpln && pl.Todom == IMyDom && pl.Tovue == IMyVue && pl.Tovers == 1)
+    //             .Where(pl => pl.Ptyp == IMyGpln && pl.Todom == IMyDom && pl.Tovue == IMyVue)
     //             .ToList()
     //         : new List<Plngen>(),
     //     _ => new List<Plngen>()
@@ -596,10 +596,10 @@ else
 
     void OnTierRowClick(GridRowEventArgs<Tiewel> args)
     {
-        Console.WriteLine($"OnTierRowClick Triggered : {args.Item.Idtie}");
+        Console.WriteLine($"OnTierRowClick Triggered : {args.Item.Id}");
         curTiw = args.Item; //get gRubsMap
-        Console.WriteLine($"X1seq {curTiw.Idtie}");
-        if (curTiw == null || curTiw.Idtie == 0)
+        Console.WriteLine($"X1seq {curTiw.Id}");
+        if (curTiw == null || curTiw.Id == 0)
         {
             return;
         }
@@ -607,7 +607,7 @@ else
     }
     // void OnRubRowClick(GridRowEventArgs<Rubvar> args)
     // {
-    //     Console.WriteLine($"OnChildRowClick Triggered : {args.Item.Idrub}");
+    //     Console.WriteLine($"OnChildRowClick Triggered : {args.Item.Id}");
     //     curRubr = args.Item; //get gRubsMap
     //     Console.WriteLine($"X1seq {curRubr.Idrub}");
     //     if (curRubr == null || curRubr.Idrub == 0)
@@ -625,7 +625,7 @@ else
         {
             gTiwsMap.Remove(parentKey); // Clear previous children for clean modal state
         }
-        tiwMax = curOrga.Tiewels.Any() ? curOrga.Tiewels.Max(x => x.Tiesq) : 0;
+        tiwMax = curOrga.Tiewels.Any() ? curOrga.Tiewels.Max(x => x.Tseq) : 0;
         PrepareAddTiw();
 
         patInitTitle = $"{curOrga.Idorg} - {curOrga.Raison} (creation programme)";
@@ -690,13 +690,14 @@ else
             {
                 Rowguid = Guid.NewGuid(),
                 Idorg = curOrga.Idorg,
-                Idhie = IMySite,
+                Ihie = IMySite,
+                Ipst = 0,
                 Utyp = Ugpe,
                 Xmatri = "",
                 Nom = "",
                 Pnom = "",
                 Eta = 1,
-                Tiesq = 0,
+                Tseq = 0,
                 //Belea = nextSeq,
                 Xadd1 = -1
             };
@@ -763,7 +764,7 @@ else
     //     return new Rubfmt()
     //     {
     //         Rowguid = Guid.NewGuid(),
-    //         Idrub = curRubr.Idrub,
+    //         Prowguid = curRubr.Rowguidrub,
     //         Idzon = nextSeq,
     //         Zcdrub = nextSeq.ToString(),
     //         Liba = "",
@@ -789,7 +790,7 @@ else
         Imessage = "";
         if (!curODContext.IsEntityTracked(aglne))
         {
-            Console.WriteLine($"First enter of Include : {aglne.Idtie}");
+            Console.WriteLine($"First enter of Include : {aglne.Id}");
             aglne.Xadd1 = -2;  //fin adding to be tracked in loaded rubfmts wait for new add
             curODContext.AddObject<Tiewel>("Tiewels", aglne);
             // Make sure gRubsMap has the parent key initialized
@@ -804,7 +805,7 @@ else
             }
             //Console.WriteLine("BEFORE SAVED");
             //curODContext.SaveDataAsync();
-            addingTiwRowGuid = null;
+            addingTiwRowGuid = Guid.Empty;
             curOrga.Tiewels.Add(aglne);
             siTiwAdding = false;
             StateHasChanged();
@@ -834,11 +835,11 @@ else
     //             gRubsMap[parentId] = new List<Rubvar>();
     //         }
     //         // Add only if the poste with same Rowguid not already present
-    //         if (!gRubsMap[parentId].Any(p => p.Idpln == aglne.Idpln))
+    //         if (!gRubsMap[parentId].Any(p => p.Id == aglne.Id))
     //         {
     //             gRubsMap[parentId].Add(aglne);
     //         }
-    //         AddingRubRowGuid = null;
+    //         AddingRubRowGuid = Guid.Empty;
     //         curTiw.Rubvars.Add(aglne);
     //         siRubAdding = true;
     //         StateHasChanged();
@@ -874,7 +875,7 @@ else
     //         {
     //             gFmtsMap[parentId].Add(aglne);
     //         }
-    //         AddingFmtRowGuid = null;
+    //         AddingFmtRowGuid = Guid.Empty;
     //         curRubr.Rubfmts.Add(aglne);
     //         Console.WriteLine($"nwgsn nb : {GfmtNewRows.Count}");
     //         siFmtAdding = true;
@@ -899,13 +900,14 @@ else
         {
             Rowguid = mytiw.Rowguid,
             Idorg = mytiw.Idorg,
-            Idhie = mytiw.Idhie,
+            Ihie = mytiw.Ihie,
+            Ipst = mytiw.Ipst,
             Utyp = mytiw.Utyp,
             Xmatri = mytiw.Xmatri,
             Nom = mytiw.Nom,
             Pnom = mytiw.Pnom,
             Eta = mytiw.Eta,
-            Tiesq = mytiw.Tiesq,
+            Tseq = mytiw.Tseq,
             //Belea = mytiw.Belea,
             Xadd1 = mytiw.Xadd1, //newly added
             // Copy other fields as necessary
@@ -924,7 +926,7 @@ else
     //     draftRub = new Rubvar
     //     {
     //         Rowguid = myrub.Rowguid,
-    //         Idpln = myrub.Idpln,
+    //         Prowguid = myrub.Prowguid,
     //         Idorg = myrub.Idorg,
     //         Torub = myrub.Torub,
     //         Utyp = myrub.Utyp, //services
@@ -933,7 +935,7 @@ else
     //         Ustyp = myrub.Ustyp, //de base
     //         Tperi = myrub.Tperi, //toujours
     //         Liba = myrub.Liba,
-    //         Refa = myrub.Refa,
+    //         Refa = myrub.Xcod,
     //         Abg = myrub.Abg,
     //         Ddval = myrub.Ddval,
     //         Dfval = myrub.Dfval,
@@ -981,7 +983,7 @@ else
         //isEdingMan = false;
         editingTiw = new();
         draftTiw = new();
-        editingTiwRowGuid = null;
+        editingTiwRowGuid = Guid.Empty;
     }
     // void CancEdingRub(Rubvar myrub)
     // {
@@ -989,7 +991,7 @@ else
     //     //isEdingMan = false;
     //     editingRub = null;
     //     draftRub = null;
-    //     EditingRubRowGuid = null;
+    //     EditingRubRowGuid = Guid.Empty;
     // }
     // void CancEdingFmt(Rubfmt myfmt)
     // {
@@ -997,7 +999,7 @@ else
     //     //isEdingMan = false;
     //     editingFmt = null;
     //     draftFmt = null;
-    //     EditingFmtRowGuid = null;
+    //     EditingFmtRowGuid = Guid.Empty;
     // }
     void ConfEdingTiw(Tiewel mytiw)
     {
@@ -1005,13 +1007,14 @@ else
         {
             editingTiw.Rowguid = mytiw.Rowguid;
             editingTiw.Idorg = mytiw.Idorg;
-            editingTiw.Idhie = mytiw.Idhie;
+            editingTiw.Ihie = mytiw.Ihie;
+            editingTiw.Ipst = mytiw.Ipst;
             editingTiw.Utyp = mytiw.Utyp;
             editingTiw.Xmatri = mytiw.Xmatri;
             editingTiw.Nom = mytiw.Nom;
             editingTiw.Pnom = mytiw.Pnom;
             editingTiw.Eta = mytiw.Eta;
-            editingTiw.Tiesq = mytiw.Tiesq;
+            editingTiw.Tseq = mytiw.Tseq;
             //editingTiw.Belea = mytiw.Belea;
             editingTiw.Xadd1 = mytiw.Xadd1; //newly added
             if (!curODContext.GetAllTrackedEntities().Any(e => e.Entity == editingTiw))
@@ -1023,7 +1026,7 @@ else
         mytiw.Xedt1 = 0;
         //isEdingMan = false;
         editingTiw = null;
-        editingTiwRowGuid = null;
+        editingTiwRowGuid = Guid.Empty;
     }
     private void PromptTiwDelete(Tiewel item)
     {
@@ -1031,7 +1034,7 @@ else
     }
     private void CancelTiwDelete()
     {
-        ConfirmingTieDeleteRowGuid = null;
+        ConfirmingTieDeleteRowGuid = Guid.Empty;
     }
     private void ConfirmTiwDelete(Tiewel row)
     {
@@ -1055,8 +1058,8 @@ else
         //nwrows.Remove(row);
         //MyDaPlans = nwrows;
         curOrga.Tiewels.Remove(row); // Remove from tracked collection
-        editingTiwRowGuid = null;
-        ConfirmingTieDeleteRowGuid = null;
+        editingTiwRowGuid = Guid.Empty;
+        ConfirmingTieDeleteRowGuid = Guid.Empty;
         StateHasChanged(); // Notify UI about changes
     }
     // private void PromptRubDelete(Rubvar item)
@@ -1065,7 +1068,7 @@ else
     // }
     // private void CancelRubDelete()
     // {
-    //     ConfirmingRubDeleteRowGuid = null;
+    //     ConfirmingRubDeleteRowGuid = Guid.Empty;
     // }
     // private void ConfirmRubDelete(Rubvar row)
     // {
@@ -1086,8 +1089,8 @@ else
     //     }
     //     curRubr.Rubfmts.ToList().RemoveAll(rf => rf.Idrub == svRow.Idrub);
     //     curTiw.Rubvars.Remove(svRow);
-    //     EditingRubRowGuid = null;
-    //     ConfirmingRubDeleteRowGuid = null;
+    //     EditingRubRowGuid = Guid.Empty;
+    //     ConfirmingRubDeleteRowGuid = Guid.Empty;
     //     StateHasChanged(); // Notify UI about changes
     // }
     // private void PromptFmtDelete(Rubfmt item)
@@ -1096,7 +1099,7 @@ else
     // }
     // private void CancelFmtDelete()
     // {
-    //     ConfirmingFmtDeleteRowGuid = null;
+    //     ConfirmingFmtDeleteRowGuid = Guid.Empty;
     // }
     // private void ConfirmFmtDelete(Rubfmt row)
     // {
@@ -1115,8 +1118,8 @@ else
     //         curODContext.Detach(row); // Mark for deletion in OData context
     //     }
     //     curRubr.Rubfmts.Remove(svRow); // Remove from tracked collection
-    //     EditingFmtRowGuid = null;
-    //     ConfirmingFmtDeleteRowGuid = null;
+    //     EditingFmtRowGuid = Guid.Empty;
+    //     ConfirmingFmtDeleteRowGuid = Guid.Empty;
     //     StateHasChanged(); // Notify UI about changes
     // }
 
@@ -1211,10 +1214,10 @@ else
         // foreach (var uta in curOrga.Plngens)
         // {
         //     List<Rubvar> tbcols = curTiw.Rubvars.Where(ln => ln.Idpln == uta.Idpln).ToList();
-        //     gRubsMap[uta.Idpln] = new List<Rubvar>(tbcols);
+        //     gRubsMap[uta.Rowguid] = new List<Rubvar>(tbcols);
         //     //Console.WriteLine($"Parent Xseq: {uta.Xseq}, Children count: {tbcols.Count}");
         // }
-        //var wrkplns = curOrga.Plngens.Where(pl => pl.Ptyp == 5 && pl.Totyp == IMyAtr && pl.Tovers == 1).ToList();
+        //var wrkplns = curOrga.Plngens.Where(pl => pl.Ptyp == 5 && pl.Totyp == IMyAtr).ToList();
         //MyDaPlans = wrkplns;
         //LsDoms = LsFixes.Where(ut => ut.Gvars == 36 && ut.Itb == 4 && ut.Gp1 == 1 && ut.Elea != 0).ToList();
     }
@@ -1223,17 +1226,17 @@ else
     public async Task EdtAll()
     {
         allEnable = true;
-        editingTiwRowGuid = null;
-        // EditingRubRowGuid = null;
-        // EditingFmtRowGuid = null;
+        editingTiwRowGuid = Guid.Empty;
+        // EditingRubRowGuid = Guid.Empty;
+        // EditingFmtRowGuid = Guid.Empty;
     }
     public async Task CncAll()
     { //reload to annul AddObject/UpdateObject/DeleteObjet
         Imessage = "Annulation Operations, patience...";
         allEnable = false;
-        editingTiwRowGuid = null;
-        // EditingRubRowGuid = null;
-        // EditingFmtRowGuid = null;
+        editingTiwRowGuid = Guid.Empty;
+        // EditingRubRowGuid = Guid.Empty;
+        // EditingFmtRowGuid = Guid.Empty;
         foreach (var enty in curODContext.Context.Entities.ToList())
         {
             if (curODContext.GetEntityState(enty) == EntityStates.Added)
@@ -1246,9 +1249,9 @@ else
     public async Task SavAll()
     {
         allEnable = false;
-        editingTiwRowGuid = null;
-        // EditingRubRowGuid = null;
-        // EditingFmtRowGuid = null;
+        editingTiwRowGuid = Guid.Empty;
+        // EditingRubRowGuid = Guid.Empty;
+        // EditingFmtRowGuid = Guid.Empty;
         SaveCurEntities();
         StateHasChanged();
     }
@@ -1516,7 +1519,7 @@ else
     //         {
     //             if (IMyDom != 0)
     //             {
-    //                 //MyDaPlans = new List<Plngen>(curOrga.Plngens.Where(pl => pl.Ptyp == 2 && pl.Todom == IMyDom && pl.Totyp == IMyGtie && pl.Tovers == 1));
+    //                 //MyDaPlans = new List<Plngen>(curOrga.Plngens.Where(pl => pl.Ptyp == 2 && pl.Todom == IMyDom && pl.Totyp == IMyGtie));
     //             }
     //         }
     //         else
@@ -1530,7 +1533,7 @@ else
     //         {
     //             if (IMyGtie != 0 && IMyDom != 0)
     //             {
-    //                 //MyDaPlans = new List<Plngen>(curOrga.Plngens.Where(pl => pl.Ptyp == 2 && pl.Todom == IMyDom && pl.Totyp == IMyGtie && pl.Tovers == 1));
+    //                 //MyDaPlans = new List<Plngen>(curOrga.Plngens.Where(pl => pl.Ptyp == 2 && pl.Todom == IMyDom && pl.Totyp == IMyGtie));
     //             }
     //         }
     //         else
@@ -1578,7 +1581,7 @@ else
     // {
     //     if (IMyDom != 0)
     //     {
-    //         //MyDaPlans = new List<Plngen>(curOrga.Plngens.Where(pl => pl.Ptyp == 2 && pl.Todom == IMyDom && pl.Totyp == IMyGtie && pl.Tovers == 1));
+    //         //MyDaPlans = new List<Plngen>(curOrga.Plngens.Where(pl => pl.Ptyp == 2 && pl.Todom == IMyDom && pl.Totyp == IMyGtie));
     //     }
     // }
     // else
@@ -1589,7 +1592,7 @@ else
     // {
     //     if (IMyGtie != 0 && IMyDom != 0)
     //     {
-    //         //MyDaPlans = new List<Plngen>(curOrga.Plngens.Where(pl => pl.Ptyp == 2 && pl.Todom == IMyDom && pl.Totyp == IMyGtie && pl.Tovers == 1));
+    //         //MyDaPlans = new List<Plngen>(curOrga.Plngens.Where(pl => pl.Ptyp == 2 && pl.Todom == IMyDom && pl.Totyp == IMyGtie));
     //     }
     // }
     // else
@@ -1690,7 +1693,7 @@ else
             await curODContext.SaveDataAsync();
             Console.WriteLine("Saved SUCCESS");
             //}
-            //var wrkplns = curOrga.Plngens.Where(pl => pl.Ptyp == 3 && pl.Totyp == IMyAtr && pl.Tovers == 1).ToList();
+            //var wrkplns = curOrga.Plngens.Where(pl => pl.Ptyp == 3 && pl.Totyp == IMyAtr).ToList();
             //MyDaPlans = wrkplns;
             StateHasChanged();
             return true;

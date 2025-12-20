@@ -74,7 +74,7 @@ else
                                     <option class="jchx" value="0">?plan</option>
                                     @foreach (var upl in LsPlans)
                                     {
-                                        <option value="@upl.Idpln" @onclick="() => SelDomPlan(upl, 1)">@upl.Liba</option>
+                                        <option value="@upl.Id" @onclick="() => SelDomPlan(upl, 1)">@upl.Liba</option>
                                     }
                                 </InputSelect>
                                 <label class="fw-bold">@plnDom</label>
@@ -115,7 +115,7 @@ else
                                             <GridColumns>
                                                 <GridColumn TItem="Actdet" HeaderText="No">
                                                     <ChildContent Context="item">
-                                                        <div @key="item.Rowguid">@item.Zcdrub</div>
+                                                        <div @key="item.Rowguid">@item.Ordet</div>
                                                     </ChildContent>
                                                 </GridColumn>
                                                 <GridColumn TItem="Actdet" HeaderText="Inferieur">
@@ -251,7 +251,7 @@ else
                             <GridColumns>
                                 <GridColumn TItem="Actdet" HeaderText="No">
                                     <ChildContent Context="item">
-                                        <div @key="item.Rowguid">@item.Zcdrub</div>
+                                        <div @key="item.Rowguid">@item.Ordet</div>
                                     </ChildContent>
                                 </GridColumn>
                                 <GridColumn TItem="Actdet" HeaderText="Inferieur">
@@ -385,7 +385,7 @@ else
     //private Tiersp gridTier = new Tiersp();
     //private Rubvar curRub = new Rubvar();
     //private Actsaie curActa = new Actsaie();
-   //private Plngen curPlan = new();
+    //private Plngen curPlan = new();
     private Actsaie curActa = new();
     private List<Rubvar> LsRubs = new();
 
@@ -399,7 +399,7 @@ else
     private Dictionary<int, bool> EdState = new Dictionary<int, bool>();
 
     //private IEnumerable<Gpvar> LsTabls = new List<Gpvar>();
-    
+
     private List<Gplan> LsPlans = new List<Gplan>();
     private List<Gpfixe> LsFixes = new List<Gpfixe>();
     private List<Gpvar> LsVars = new List<Gpvar>();
@@ -427,11 +427,11 @@ else
 
     private Modal adtModal;
     private string adtTitle = "";
-    Dictionary<int, Actsaie> actsaieMapByIdact = new();
+    Dictionary<Guid, Actsaie> actsaieMapByIdact = new();
     private Dictionary<Guid, Actdet> _originalSnapshots = new();
     public List<Actsaie> MyDaActs { get; set; } = new();
-    private Dictionary<int, List<Actdet>> gActsMap = new();
-    private List<Actdet> GrubNewRows => gActsMap.TryGetValue(curActa.Idact, out var rows)
+    private Dictionary<Guid, List<Actdet>> gActsMap = new();
+    private List<Actdet> GrubNewRows => gActsMap.TryGetValue(curActa.Rowguid, out var rows)
     ? new List<Actdet>(rows)
     : new List<Actdet>();
 
@@ -446,10 +446,10 @@ else
 
     void OnActRowClick(GridRowEventArgs<Actsaie> args)
     {
-        Console.WriteLine($"OnActRowClick Triggered : {args.Item.Idact}");
+        Console.WriteLine($"OnActRowClick Triggered : {args.Item.Id}");
         curActa = args.Item; //get gRubsMap
-        Console.WriteLine($"X1seq {curActa.Idact}");
-        if (curActa == null || curActa.Idact == 0)
+        Console.WriteLine($"X1seq {curActa.Id}");
+        if (curActa == null || curActa.Id == 0)
         {
             return;
         }
@@ -460,7 +460,7 @@ else
         actsaieMapByIdact.Clear();
         foreach (var act in MyDaActs)
         {
-            actsaieMapByIdact[act.Idact] = act;
+            actsaieMapByIdact[act.Rowguid] = act;
         }
     }
     void OpenPstmodal(Actsaie myact)
@@ -494,7 +494,7 @@ else
             Imessage = "REFUS, Plan non choisi";
             return;
         }
-        var parentId = parent.Idact;
+        var parentId = parent.Rowguid;
         // Make sure the gActsMap has an entry for this parent
         if (!gActsMap.ContainsKey(parentId))
         {
@@ -502,11 +502,11 @@ else
         }
         var existingActdets = parent.Actdets ?? new DataServiceCollection<Actdet>();
         var mapActdets = gActsMap[parentId];
-        int maxIdseqFromParent = existingActdets.Any() ? (existingActdets.Max(r => r.Dseq) ?? 1) : 1;
-        int maxIdseqFromMap = mapActdets.Any() ? (mapActdets.Max(r => r.Dseq) ?? 1) : 1;
+        int maxIdseqFromParent = existingActdets.Any() ? (existingActdets.Max(r => r.Ordet) ?? 1) : 1;
+        int maxIdseqFromMap = mapActdets.Any() ? (mapActdets.Max(r => r.Ordet) ?? 1) : 1;
         int maxIdseq = Math.Max(1, Math.Max(maxIdseqFromParent, maxIdseqFromMap));
         int nextSeq = maxIdseq + 1;
-        Console.WriteLine($"current newPoste zone no : {nextSeq} et parent act no : {parent.Idact}");
+        Console.WriteLine($"current newPoste zone no : {nextSeq} et parent act no : {parent.Id}");
         var newPoste = CreateNewPoste(parent, nextSeq);
         if (newPoste != null)
         {
@@ -526,26 +526,26 @@ else
         return new Actdet
         {
             Rowguid = Guid.NewGuid(),
-            Idact = parent.Idact,
-            Idrub = parent.Idrub,
-            Idtie = parent.Idtie,
+            Prowguid = parent.Rowguid,
+            //Irub = parent.Id,
+            //Itie = parent.Id,
             Froac = 3, //de grille
             Dstr = "",
             Fstr = "",
             Ddval = DateTime.Now,
             Dfval = DateTime.Now,
             Svala = "",
-            Acdrub = parent.Scdrub, //parent scdrub
-            Dseq = nextSeq, //child seq
-            Zcdrub = nextSeq.ToString(),
-            Gcdact = $"{parent.Scdrub}Z{nextSeq.ToString()}",
+            Ordet = nextSeq, //child seq
+            Pirub = parent.Irub,
+            Pscdrub = parent.Scdrub, //parent scdrub
+            Acdrub = $"{parent.Scdrub}Z{nextSeq.ToString()}",
             Eta = 1, //1actif
             Xadd1 = -1 //newly added
         };
     }
     void IncludeAdet(Actdet myadet)
     {
-        var parentId = curActa.Idact;
+        var parentId = curActa.Rowguid;
         //bool YaChild = IsChildValid(aglne); // Make sure this returns true if aglne is valid to add
         if (!curODContext.IsEntityTracked(myadet)) // && YaChild)
         {
@@ -565,13 +565,13 @@ else
                     gActsMap[parentId] = new List<Actdet>();
                 }
 
-                if (!gActsMap[parentId].Any(p => p.Idact == myadet.Idact))
+                if (!gActsMap[parentId].Any(p => p.Id == myadet.Id))
                 {
                     gActsMap[parentId].Add(myadet);
                 }
                 curActa.Actdets.Add(myadet);
 
-                AddingAdtRowGuid = null;
+                AddingAdtRowGuid = Guid.Empty;
                 siAdtAdding = true;
                 Imessage = "Success... Rubrique ajoutee";
             }
@@ -619,7 +619,7 @@ else
     //             }
     //             curActa.Actdets.Add(myadet);
 
-    //             AddingAdtRowGuid = null;
+    //             AddingAdtRowGuid = Guid.Empty;
     //             siAdtAdding = true;
     //             Imessage = "Success... Rubrique ajoutee";
     //         }
@@ -673,7 +673,7 @@ else
     {
         if (parent == null) return new List<Actdet>();
 
-        if (!gActsMap.TryGetValue(parent.Idact, out var list))
+        if (!gActsMap.TryGetValue(parent.Rowguid, out var list))
             return new List<Actdet>();
 
         // Filter duplicates by Rowguid
@@ -693,19 +693,19 @@ else
         draftRub = new Actdet
         {
             Rowguid = myrub.Rowguid,
-            Idact = myrub.Idact,
-            Idrub = myrub.Idrub,
-            Idtie = myrub.Idtie,
+            Prowguid = myrub.Rowguid,
+            //Irub = myrub.Irub,
+            //Itie = myrub.Itie,
             Froac = myrub.Froac, //de grille
             Dstr = myrub.Dstr,
             Fstr = myrub.Fstr,
             Ddval = myrub.Ddval,
             Dfval = myrub.Dfval,
-            Svala = myrub.Svala,
             Acdrub = myrub.Acdrub, //parent scdrub
-            Dseq = myrub.Dseq, //child seq
-            Zcdrub = myrub.Zcdrub,
-            Gcdact = myrub.Gcdact,
+            Ordet = myrub.Ordet, //child seq
+            Pirub = myrub.Pirub,
+            Pscdrub = myrub.Pscdrub, //parent scdrub
+
             Eta = myrub.Eta, //1actif 
             // Copy other fields as necessary
         };
@@ -720,7 +720,7 @@ else
         //isEdingMan = false;
         editingRub = null;
         draftRub = null;
-        EditingRubRowGuid = null;
+        EditingRubRowGuid = Guid.Empty;
         siRubEditing = false;
     }
     void ConfEdingRub(Actdet myrub)
@@ -728,9 +728,9 @@ else
         if (editingRub is not null)
         {
             editingRub.Rowguid = myrub.Rowguid;
-            editingRub.Idact = myrub.Idact;
-            editingRub.Idrub = myrub.Idrub;
-            editingRub.Idtie = myrub.Idtie;
+            editingRub.Prowguid = myrub.Rowguid;
+            //editingRub.Irub = myrub.Irub;
+            //editingRub.Itie = myrub.Itie;
             editingRub.Froac = myrub.Froac; //de grille
             editingRub.Dstr = myrub.Dstr;
             editingRub.Fstr = myrub.Fstr;
@@ -738,9 +738,10 @@ else
             editingRub.Dfval = myrub.Dfval;
             editingRub.Svala = myrub.Svala;
             editingRub.Acdrub = myrub.Acdrub; //parent scdrub
-            editingRub.Dseq = myrub.Dseq; //child seq
-            editingRub.Zcdrub = myrub.Zcdrub;
-            editingRub.Gcdact = myrub.Gcdact;
+            editingRub.Ordet = myrub.Ordet; //child seq
+            editingRub.Pirub = myrub.Pirub;
+            editingRub.Pscdrub = myrub.Pscdrub; //parent scdrub
+
             editingRub.Eta = myrub.Eta; //1actif
             if (!curODContext.GetAllTrackedEntities().Any(e => e.Entity == editingRub))
             {
@@ -750,7 +751,7 @@ else
         }
         myrub.Xedt1 = 0;
         editingRub = null;
-        EditingRubRowGuid = null;
+        EditingRubRowGuid = Guid.Empty;
         siRubEditing = false;
     }
 
@@ -760,15 +761,15 @@ else
     }
     private void CancelRubDelete()
     {
-        ConfirmingDeleteRowGuid = null;
+        ConfirmingDeleteRowGuid = Guid.Empty;
     }
     private void ConfirmRubDelete(Actdet row)
     {
         var parent = curActa;
         if (parent == null)
             return;
-        Console.WriteLine($"del parent {parent.Liba} and row id : {parent.Idhie}");
-        if (!gActsMap.TryGetValue(parent.Idact, out var coll))
+        Console.WriteLine($"del parent {parent.Liba} and row id : {parent.Id}");
+        if (!gActsMap.TryGetValue(parent.Rowguid, out var coll))
             return;
         Console.WriteLine($"gActsMap {gActsMap.Count}");
         // For existing rows: mark for OData deletion and remove locally
@@ -783,7 +784,7 @@ else
         coll.Remove(row);                       // Remove for UI update
         parent.Actdets.Remove(row);             // Remove from tracked collection
 
-        EditingRubRowGuid = null;
+        EditingRubRowGuid = Guid.Empty;
         StateHasChanged(); // Notify UI about changes
     }
     protected override async Task OnInitializedAsync()
@@ -876,20 +877,20 @@ else
     public async Task EdtAll()
     {
         allEnable = true;
-        EditingRubRowGuid = null;
+        EditingRubRowGuid = Guid.Empty;
     }
     public async Task CncAll()
     { //reload to annul AddObject/UpdateObject/DeleteObjet
         Imessage = "Annulation Operations, patience...";
         allEnable = false;
-        EditingRubRowGuid = null;
+        EditingRubRowGuid = Guid.Empty;
         Imessage = "";
     }
     public async Task SavAll()
     {
         Imessage = "Enregistrement Operations, patience...";
         allEnable = false;
-        EditingRubRowGuid = null;
+        EditingRubRowGuid = Guid.Empty;
         await curODContext.SaveDataAsync();
     }
     private void SelDomPlan(Gplan mypln, int orig)
@@ -900,7 +901,7 @@ else
             plnDom = "";
             if (IMyPlan != 0) // && MyDaActs.Any())
             {
-                var inPln = curOrga.Plngens.Where(pl => pl.Idpln == mypln.Idpln).FirstOrDefault();
+                var inPln = curOrga.Plngens.Where(pl => pl.Id == mypln.Id).FirstOrDefault();
                 //parent = MyDaActs.Where(  pl => pl.Idpln == IMyPlan).FirstOrDefault();
                 if (inPln != null)
                 {
@@ -910,10 +911,10 @@ else
                         plnDom = "(" + pdoms.FirstOrDefault().Liba + ")";
                     }
                     LsRubs = inPln.Rubvars.ToList();
-                    MyDaActs = new List<Actsaie>(gridTier.Actsaies.Where(ac =>ac.Idpln == inPln.Idpln).ToList());
+                    MyDaActs = new List<Actsaie>(gridTier.Actsaies.Where(ac =>ac.Kplan == inPln.Rowguid).ToList());
                     foreach (var act in MyDaActs)
                     {
-                        var wrub = LsRubs.Where(ur => ur.Idrub == act.Idrub).FirstOrDefault();
+                        var wrub = LsRubs.Where(ur => ur.Prowguid == act.Rowguid).FirstOrDefault();
                         if (wrub != null)
                         {
                             act.Liba = wrub.Liba;
@@ -970,7 +971,7 @@ else
         {
             Console.WriteLine("SAVED PLUS");
             curODContext.SaveDataAsync();
-            //var wrkplns = curOrga.Plngens.Where(pl => pl.Ptyp == 3 && pl.Tovers == 1).ToList();
+            //var wrkplns = curOrga.Plngens.Where(pl => pl.Ptyp == 3).ToList();
             //MyDaPlans = wrkplns;
             StateHasChanged();
         }

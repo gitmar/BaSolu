@@ -188,7 +188,7 @@
         _usrBag = await _sessionContext.GetUserbagAsync();
         _GIdTie = _usrBag.Usorga.Gdtie;
         //var idplnadm = _usrBag.Usorga.Schba;
-        //LsDivs = _usrBag.Usorga.Uhies.Where(uh => uh.Idpln == idplnadm && uh.Sidiv == 1).ToList();
+        //LsDivs = _usrBag.Usorga.Uhies.Where(uh => uh.Id == idplnadm && uh.Sidiv == 1).ToList();
         // var noslims = LsVars.Where(uv => uv.Idhie == 0 && uv.Gvars == 21 && uv.Itb == 1 && uv.Elea == 1);
         // if (noslims.Any()) _lgcdu = noslims.FirstOrDefault().Ivala;
         LsVars = _usrBag.Usorga.Uvars.ToList();
@@ -298,7 +298,7 @@
             //Console.WriteLine($"nb gsgfixes : {curOrga.Gsgfixes.Count()}");
             //Console.WriteLine($"nb gsglines : {curOrga.Gsglnes.Count()}");
             //Console.WriteLine($"nb rub tables MENU {curOrga.Gsgfixes.Count}");
-            //var cplan = curOrga.Plngens.Where(upl => upl.Idpln == 20).FirstOrDefault();
+            //var cplan = curOrga.Plngens.Where(upl => upl.Id == 20).FirstOrDefault();
             //Console.WriteLine($"nb rub cur plan :  {cplan.Rubvars.Count()}");
 
         }

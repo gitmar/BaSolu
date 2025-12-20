@@ -6,8 +6,8 @@
         public string LineNumber { get; set; } = string.Empty; // e.g. "158", "158c"
         public bool IsClientOnly => LineNumber.EndsWith("c", StringComparison.OrdinalIgnoreCase);
         public string LineKey => LineNumber.TrimEnd('c'); // normalized for lookup
-        public int? Idrub { get; set; } = 0;
-        public int? Idtie { get; set; } = 0;
+        public Guid Prub { get; set; } = Guid.Empty;
+        public Guid Ptie { get; set; } = Guid.Empty;
         public string? Formula { get; set; } = string.Empty;
         public string? Valresu { get; set; } = string.Empty;
         public string? Valsaie { get; set; } = string.Empty;
@@ -32,8 +32,8 @@
         public int Id { get; set; } = 0;
         public TableType Etyp { get; set; } // 1: Actsaie, 2: Actdet, 3: Resdon, 4: Resdet, 5: Resbro, 6: Tiersp, 7: Rubvar
         public string Scdrub { get; set; } = string.Empty;
-        public int Idrub { get; set; } = 0;
-        public int Idtie { get; set; } = 0;
+        public Guid Prub { get; set; } = Guid.Empty;
+        public Guid Ptie { get; set; } = Guid.Empty;
         public LineType? Vtyp { get; set; } // 1: string, 2: int, 3: long, 4: decimal, 5: DateTime, 6: bool
         public FormulaResult? Result { get; set; }
         public DateTime? Datval { get; set; } = DateTime.MinValue;
@@ -46,8 +46,8 @@
         public int SourceFormulaId { get; set; } = 0;
         public TableType Etyp { get; set; }  // 1: Actsaie, 2: Actdet, 3: Resdon, 4: Resdet, 5: Resbro, 6: Tiersp, 7: Rubvar
         public string Scdrub { get; set; } = string.Empty;
-        public int Idrub { get; set; } = 0;
-        public int Idtie { get; set; } = 0;
+        public Guid Prub { get; set; } = Guid.Empty;
+        public Guid Ptie { get; set; } = Guid.Empty;
         public LineType? Vtyp { get; set; } // 1: string, 2: int, 3: long, 4: decimal, 5: DateTime, 6: bool
         public FormulaResult? Result { get; set; }
         public DateTime? Ddeb { get; set; } = DateTime.MinValue;
@@ -110,8 +110,8 @@
         public int Id { get; set; }
         public TableType Etyp { get; set; }
         public string Scdrub { get; set; }
-        public int Idrub { get; set; }
-        public int Idtie { get; set; }
+        public Guid Prub { get; set; } = Guid.Empty;
+        public Guid Ptie { get; set; } = Guid.Empty;
         public PeriodType? Ptyp { get; set; } // 1: always, 2: to session, 3: to exo, 4: from a to b
         public DateTime? Ddeb { get; set; } = DateTime.MinValue;
         public DateTime? Dfin { get; set; } = DateTime.MinValue;
