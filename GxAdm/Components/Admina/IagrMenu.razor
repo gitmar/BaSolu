@@ -35,11 +35,11 @@
             <div class="d-flex flex-column" style="height: 100%;">
                 <!-- Top Menu -->
                 <GxNavMenu BrandText="A24soft Gx-Solutions"
-                                       MenuItems="@MenuItems"
-                                       YaGroup="false"
-                                       Groups="@Groupes"
-                                       MenuSelected="@SelMenu"
-                                       GroupSelected="@SelGpe" />
+                           MenuItems="@MenuItems"
+                           YaGroup="false"
+                           Groups="@Groupes"
+                           MenuSelected="@_chxMenu"
+                           GroupSelected="@_chxGpe" />
                 @* <!-- Top Menu -->
                 <div class="innermenu-container d-flex align-items-center justify-content-start">
                     <!-- Brand -->
@@ -53,28 +53,28 @@
                     <ul class="menu nav nav-pills d-flex align-items-center">
                         <li class="nav-item">
                             <div @onclick="() => SelMenu(1)"
-                                 class="nav-link d-flex align-items-center @(chxMenu == 1 ? "active" : "")">
+                                 class="nav-link d-flex align-items-center @(_chxMenu == 1 ? "active" : "")">
                                 <i class="bi bi-table me-2"></i> Grille
                             </div>
                         </li>
 
                         <li class="nav-item">
                             <div @onclick="() => SelMenu(2)"
-                                 class="nav-link d-flex align-items-center @(chxMenu == 2 ? "active" : "")">
+                                 class="nav-link d-flex align-items-center @(_chxMenu == 2 ? "active" : "")">
                                 <i class="bi bi-tags me-2"></i> Echeancier
                             </div>
                         </li>
 
                         <li class="nav-item">
                             <div @onclick="() => SelMenu(3)"
-                                 class="nav-link d-flex align-items-center @(chxMenu == 3 ? "active" : "")">
+                                 class="nav-link d-flex align-items-center @(_chxMenu == 3 ? "active" : "")">
                                 <i class="bi bi-file-earmark-text me-2"></i> Postes
                             </div>
                         </li>
 
                         <li class="nav-item">
                             <div @onclick="() => SelMenu(4)"
-                                 class="nav-link d-flex align-items-center @(chxMenu == 4 ? "active" : "")">
+                                 class="nav-link d-flex align-items-center @(_chxMenu == 4 ? "active" : "")">
                                 <i class="bi bi-file-earmark-text me-2"></i> Plans
                             </div>
                         </li>
@@ -108,12 +108,12 @@
                     </div>
                 </div>
                 <!-- Main Content -->
-                @if (chxMenu != 0 && toChild != null && curOrga != null && curODContext != null)
+                @if (_chxMenu != 0 && toChild != null && curOrga != null && curODContext != null)
                 {
-                    @if (chxMenu == 1)
+                    @if (_chxMenu == 1)
                     { //grille
                         <Ictgrils @ref="myigrd"
-                                   ChxMenu="@chxMenu"
+                                   _chxMenu="@_chxMenu"
                                    curOrga="@curOrga"
                                    toChild="@toChild"
                                    curODContext="@curODContext">
@@ -122,10 +122,10 @@
                             </ChildContent>
                         </Ictgrils>
                     }
-                    else if (chxMenu == 2)
+                    else if (_chxMenu == 2)
                     { //echeancier
                         <Icteches @ref="myiech"
-                                 ChxMenu="@chxMenu"
+                                 _chxMenu="@_chxMenu"
                                  curOrga="@curOrga"
                                  toChild="@toChild"
                                  curODContext="@curODContext">
@@ -134,10 +134,10 @@
                             </ChildContent>
                         </Icteches>
                     }
-                    else if (chxMenu == 3)
+                    else if (_chxMenu == 3)
                     { //schema-postes
                         <Ictposts @ref="myipst"
-                                   ChxMenu="@chxMenu"
+                                   _chxMenu="@_chxMenu"
                                    curOrga="@curOrga"
                                    toChild="@toChild"
                                    curODContext="@curODContext">
@@ -146,7 +146,7 @@
                             </ChildContent>
                         </Ictposts>
                     }
-                    else if (chxMenu == 4)
+                    else if (_chxMenu == 4)
                     { //plan rubriques sur un autre menu
                         <ArubMenu @ref="myrmenu">
                           @* <ChildContent>
@@ -186,19 +186,18 @@
     //in DATA
     public List<Gsgfix> LsTables = new List<Gsgfix>();
 
-    public int _GIdTie = 0;
     public string _strOrga = "", _curSigle = "", MImessage ="", strmeta = "", strmeta2 = "";
 
     //menus
-    public List<GxNavMenu.MenuItem> MenuItems = new()
+    public List<GxMenuItem> MenuItems = new()
     {
-        new GxNavMenu.MenuItem { Id = 1, Label = "Saisie GRILLE", Icon = "bi bi-box-arrow-in-down" },
-        new GxNavMenu.MenuItem { Id = 2, Label = "Saisie ECHEANCIER", Icon = "bi bi-house-door" },
-        new GxNavMenu.MenuItem { Id = 3, Label = "Saisie POSTES", Icon = "bi bi-house-door" },
-        new GxNavMenu.MenuItem { Id = 4, Label = "Plans", Icon = "bi bi-house-door" },
-        //new MenuItem { Id = 4, Label = "Mutation", Icon = "bi bi-arrow-repeat" },
+        new GxMenuItem { Id = 1, Text = "Saisie GRILLE", Icon = "bi bi-box-arrow-in-down" },
+        new GxMenuItem { Id = 2, Text = "Saisie ECHEANCIER", Icon = "bi bi-house-door" },
+        new GxMenuItem { Id = 3, Text = "Saisie POSTES", Icon = "bi bi-house-door" },
+        new GxMenuItem { Id = 4, Text = "Plans", Icon = "bi bi-house-door" },
+        //new MenuItem { Id = 4, Text = "Mutation", Icon = "bi bi-arrow-repeat" },
     };
-    public List<GxNavMenu.GroupItem> Groupes = new();
+    public List<GxGroupe> Groupes = new();
 
     //entities load
     private IEnumerable<Gxorga> _lsOrgas = new List<Gxorga>();
@@ -218,7 +217,7 @@
     public List<Gpvar> LsTabls = new();
     public List<Gpvar> TbElems = new();
     //Navigation
-    private int chxMenu = 1;
+    private int _gIdTie = 0, _chxGpe = 0, _chxMenu = 1;
     private string strComp = "Saisie GRILLE";
     //modal management
     private string SidebarStyle = "width: 200px;";
@@ -242,7 +241,7 @@
             Console.WriteLine("Authentication in Astreintes SUCCESS");
         }
         _usrBag = await _sessionContext.GetUserbagAsync();
-        _GIdTie = _usrBag.Usorga.Gdtie;
+        _gIdTie = _usrBag.Usorga.Gdtie;
         //var idplnadm = _usrBag.Usorga.Schba;
         //LsDivs = _usrBag.Usorga.Uhies.Where(uh => uh.Idpln == idplnadm && uh.Sidiv == 1).ToList();
         LsVars = _usrBag.Usorga.Uvars.ToList();
@@ -351,15 +350,15 @@
     private async Task ManEditAll()
     {
         MImessage = "Edition en preparation...";
-        if (chxMenu == 1)
+        if (_chxMenu == 1)
         { //grille
             await myigrd.EdtAll();
         }
-        if (chxMenu == 2)
+        if (_chxMenu == 2)
         { //echeancier
             await myiech.EdtAll();
         }
-        if (chxMenu == 3)
+        if (_chxMenu == 3)
         { //schemas
             await myipst.EdtAll();
         }
@@ -369,15 +368,15 @@
     private async Task ManCnclAll()
     {
         MImessage = "annulation en cours...";
-        if (chxMenu == 1)
+        if (_chxMenu == 1)
         { //grille
             await myigrd.CncAll();
         }
-        if (chxMenu == 2)
+        if (_chxMenu == 2)
         { //echeancier
             await myiech.CncAll();
         }
-        if (chxMenu == 3)
+        if (_chxMenu == 3)
         { //schemas
             await myipst.CncAll();
         }
@@ -389,15 +388,15 @@
     private async Task ManSaveAll()
     {
         MImessage = "enregistrement en cours...";
-        if (chxMenu == 1)
+        if (_chxMenu == 1)
         { //grille
             await myigrd.SavAll();
         }
-        if (chxMenu == 2)
+        if (_chxMenu == 2)
         { //echeancier
             await myiech.SavAll();
         }
-        if (chxMenu == 3)
+        if (_chxMenu == 3)
         { //schemas
             await myipst.SavAll();
         }
@@ -407,18 +406,19 @@
 
     private async Task SelMenu(int noM)
     {
-        chxMenu = noM;
-        if (chxMenu == 1) strComp = $"Saisie GRILLE";
-        if (chxMenu == 2) strComp = $"Saisie ECHEANCIER";
-        if (chxMenu == 3) strComp = $"Saisie POSTES";
-        if (chxMenu == 3) strComp = $"Plans";
-        //if (chxMenu == 5) strComp = "Colonnes";
+        _chxMenu = noM;
+        if (_chxMenu == 1) strComp = $"Saisie GRILLE";
+        if (_chxMenu == 2) strComp = $"Saisie ECHEANCIER";
+        if (_chxMenu == 3) strComp = $"Saisie POSTES";
+        if (_chxMenu == 3) strComp = $"Plans";
+        //if (_chxMenu == 5) strComp = "Colonnes";
         allEnable = false;
         StateHasChanged();
         await Task.Delay(1);
     }
     private async Task SelGpe(int noG)
     {
+        _chxGpe = noG;
         //gpeLiba = "";
         //if (noG == 0) return;
         //var mygpe = LsGties.Where(gt => gt.Itb == 6 && gt.Elea == noG).FirstOrDefault();

@@ -34,11 +34,11 @@
             <div class="d-flex flex-column" style="height: 100%;">
                 <!-- Top Menu -->
                 <GxNavMenu BrandText="A24soft Gx-Solutions"
-                                       MenuItems="@MenuItems"
-                                       YaGroup="false"
-                                       Groups="@Groupes"
-                                       MenuSelected="@SelMenu"
-                                       GroupSelected="@SelGpe" />
+                           MenuItems="@MenuItems"
+                           YaGroup="false"
+                           Groups="@Groupes"
+                           MenuSelected="@_chxMenu"
+                           GroupSelected="@_chxGpe" />
                 <div class="row">
                     <div class="col-md-12 input-group align-middle">
                         <span class="text-uppercase text- text-success"><b>@strComp</b></span>
@@ -70,11 +70,11 @@
                 <!-- Main Content -->
                 @if (this != null)
                 {
-                    @if (chxMenu != 0 && toChild != null && curOrga != null && curODContext != null)
-                        @if (chxMenu == 1)
+                    @if (_chxMenu != 0 && toChild != null && curOrga != null && curODContext != null)
+                        @if (_chxMenu == 1)
                         { //SAISIES
                           <PrubSaie @ref="mygsai"
-                                    ChxMenu="@chxMenu"
+                                    ChxMenu="@_chxMenu"
                                     curOrga="@curOrga"
                                     toChild="@toChild"
                                     curODContext="@curODContext">
@@ -83,10 +83,10 @@
                               </ChildContent>
                           </PrubSaie>
                         }
-                        else if (chxMenu == 2)
+                        else if (_chxMenu == 2)
                         { //CALCULS
                           <PrubCalc @ref="mygclc" 
-                                   ChxMenu="@chxMenu"
+                                   ChxMenu="@_chxMenu"
                                    curOrga="@curOrga"
                                    toChild="@toChild"
                                    curODContext="@curODContext">
@@ -94,10 +94,10 @@
                               </ChildContent>
                           </PrubCalc>
                         }
-                        else if (chxMenu == 3)
+                        else if (_chxMenu == 3)
                         { //VENTILATIONS
                           <PrubVent @ref="mygvnt"
-                                    ChxMenu="@chxMenu"
+                                    ChxMenu="@_chxMenu"
                                     curOrga="@curOrga"
                                     toChild="@toChild"
                                     curODContext="@curODContext">
@@ -106,7 +106,7 @@
                               </ChildContent>
                           </PrubVent>
                         }
-                        else if (chxMenu == 3)
+                        else if (_chxMenu == 3)
                         { //CALCULS
                             //ref="mygclc"
                         }
@@ -142,18 +142,17 @@
     //in DATA
     public List<Gsgfix> LsTables = new List<Gsgfix>();
 
-    public int _GIdTie = 0;
     public string _strOrga = "", _curSigle = "", MImessage = "", strmeta = "", strmeta2 = "";
 
     //menus
-    public List<GxNavMenu.MenuItem> MenuItems = new()
+    public List<GxMenuItem> MenuItems = new()
     {
-        new GxNavMenu.MenuItem { Id = 1, Label = "Prog.SAISIE", Icon = "bi bi-box-arrow-in-down" },
-        new GxNavMenu.MenuItem { Id = 2, Label = "Prog.CALCUL", Icon = "bi bi-house-door" },
-        new GxNavMenu.MenuItem { Id = 3, Label = "VENTILATION", Icon = "bi bi-house-door" },
-        //new MenuItem { Id = 4, Label = "Mutation", Icon = "bi bi-arrow-repeat" },
+        new GxMenuItem { Id = 1, Text = "Prog.SAISIE", Icon = "bi bi-box-arrow-in-down" },
+        new GxMenuItem { Id = 2, Text = "Prog.CALCUL", Icon = "bi bi-house-door" },
+        new GxMenuItem { Id = 3, Text = "VENTILATION", Icon = "bi bi-house-door" },
+        //new MenuItem { Id = 4, Text = "Mutation", Icon = "bi bi-arrow-repeat" },
     };
-    public List<GxNavMenu.GroupItem> Groupes = new();
+    public List<GxGroupe> Groupes = new();
 
     //entities load
     private IEnumerable<Gxorga> _lsOrgas = new List<Gxorga>();
@@ -172,7 +171,7 @@
     //public List<Gpvar> TbElems = new();
     //public List<Clvar> LsCols = new();
     //Navigation
-    private int chxMenu = 1;
+    private int _gIdTie = 0, _chxGpe = 0, _chxMenu = 1;
     private string strComp = "Prog.SAISIE";
     //modal management
     private string SidebarStyle = "width: 200px;";
@@ -196,7 +195,7 @@
             Console.WriteLine("Authentication in Astreintes SUCCESS");
         }
         _usrBag = await _sessionContext.GetUserbagAsync();
-        _GIdTie = _usrBag.Usorga.Gdtie;
+        _gIdTie = _usrBag.Usorga.Gdtie;
         LsVars = _usrBag.Usorga.Uvars.ToList();
         LsFixes = _usrBag.Ufixes.ToList();
         LsPlans = _usrBag.Usorga.Uplns.Where(pl => pl.Ptyp == 3).ToList();
@@ -259,15 +258,15 @@
     private async Task ManEditAll()
     {
         MImessage = "Edition en preparation...";
-        if (chxMenu == 1)
+        if (_chxMenu == 1)
         { //saisies
             await mygsai.EdtAll();
         }
-        if (chxMenu == 2)
+        if (_chxMenu == 2)
         { //calculs
             await mygclc.EdtAll();
         }
-        if (chxMenu == 3)
+        if (_chxMenu == 3)
         { //ventilat
             await mygvnt.EdtAll();
         }
@@ -277,15 +276,15 @@
     private async Task ManCnclAll()
     {
         MImessage = "annulation en cours...";
-        if (chxMenu == 1)
+        if (_chxMenu == 1)
         { //saisies
             await mygsai.CncAll();
         }
-        if (chxMenu == 2)
+        if (_chxMenu == 2)
         { //calculs
             await mygclc.CncAll();
         }
-        if (chxMenu == 3)
+        if (_chxMenu == 3)
         { //ventilat
             await mygvnt.CncAll();
         }
@@ -298,15 +297,15 @@
     {
         bool oksav = false;
         MImessage = "enregistrement en cours...";
-        if (chxMenu == 1)
+        if (_chxMenu == 1)
         { //saisies
             oksav = await mygsai.SaveCurEntities();
         }
-        if (chxMenu == 2)
+        if (_chxMenu == 2)
         { //calculs
             oksav = await mygclc.SaveCurEntities();
         }
-        if (chxMenu == 3)
+        if (_chxMenu == 3)
         { //ventilats
             oksav = await mygvnt.SaveCurEntities();
         }
@@ -315,17 +314,18 @@
     }
     private async Task SelMenu(int noM)
     {
-        chxMenu = noM;
-        if (chxMenu == 1) strComp = $"Prog.SAISIE";
-        if (chxMenu == 2) strComp = $"Prog.CALCUL";
-        if (chxMenu == 3) strComp = $"VENTILATION";
-        //if (chxMenu == 5) strComp = "Colonnes";
+        _chxMenu = noM;
+        if (_chxMenu == 1) strComp = $"Prog.SAISIE";
+        if (_chxMenu == 2) strComp = $"Prog.CALCUL";
+        if (_chxMenu == 3) strComp = $"VENTILATION";
+        //if (_chxMenu == 5) strComp = "Colonnes";
         allEnable = false;
         StateHasChanged();
         await Task.Delay(1);
     }
     private async Task SelGpe(int noG)
     {
+        _chxGpe = noG;
         //gpeLiba = "";
         //if (noG == 0) return;
         //var mygpe = LsGties.Where(gt => gt.Itb == 6 && gt.Elea == noG).FirstOrDefault();

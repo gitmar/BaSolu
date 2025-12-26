@@ -45,28 +45,28 @@
                     <ul class="menu nav nav-pills d-flex align-items-center">
                         <li class="nav-item">
                             <div @onclick="() => SelMenu(1)"
-                                 class="nav-link d-flex align-items-center @(chxMenu == 1 ? "active" : "")">
+                                 class="nav-link d-flex align-items-center @(_chxMenu == 1 ? "active" : "")">
                                 <i class="bi bi-table me-2"></i> Grille
                             </div>
                         </li>
 
                         <li class="nav-item">
                             <div @onclick="() => SelMenu(2)"
-                                 class="nav-link d-flex align-items-center @(chxMenu == 2 ? "active" : "")">
+                                 class="nav-link d-flex align-items-center @(_chxMenu == 2 ? "active" : "")">
                                 <i class="bi bi-tags me-2"></i> Echeancier
                             </div>
                         </li>
 
                         <li class="nav-item">
                             <div @onclick="() => SelMenu(3)"
-                                 class="nav-link d-flex align-items-center @(chxMenu == 3 ? "active" : "")">
+                                 class="nav-link d-flex align-items-center @(_chxMenu == 3 ? "active" : "")">
                                 <i class="bi bi-file-earmark-text me-2"></i> Postes
                             </div>
                         </li>
 
                         <li class="nav-item">
                             <div @onclick="() => SelMenu(4)"
-                                 class="nav-link d-flex align-items-center @(chxMenu == 4 ? "active" : "")">
+                                 class="nav-link d-flex align-items-center @(_chxMenu == 4 ? "active" : "")">
                                 <i class="bi bi-file-earmark-text me-2"></i> Plans
                             </div>
                         </li>
@@ -118,7 +118,7 @@
                 <!-- Main Content -->
                 @if (this != null)
                 {
-                    @if (chxMenu == 1)
+                    @if (_chxMenu == 1)
                     { //SESSIONS
                       @* <SAsesios ChxMenu="@chxMenu"
                                     curOrga="@curOrga"
@@ -129,7 +129,7 @@
                               </ChildContent>
                           </SAsesios> *@
                     }
-                    else if (chxMenu == 2)
+                    else if (_chxMenu == 2)
                     { //ACCES
                       @* <Regxauth ChxMenu="@chxMenu"
                                     curOrga="@curOrga"
@@ -140,7 +140,7 @@
                               </ChildContent>
                           </Regxauth> *@
                     }
-                    else if (chxMenu == 3)
+                    else if (_chxMenu == 3)
                     { //REPRISES
                       @* <Regxcorg ChxMenu="@chxMenu"
                                     curOrga="@curOrga"
@@ -178,7 +178,6 @@
     //in DATA
     public List<Gsgfix> LsTables = new List<Gsgfix>();
 
-    public int _GIdTie = 0;
     public string _strOrga = "", _curSigle = "", strComp = "", strmeta = "", strmeta2 = "";
 
     //entities load
@@ -198,7 +197,7 @@
     public List<Gpvar> LsTabls = new List<Gpvar>();
     public List<Gpvar> TbElems = new List<Gpvar>();
     //Navigation
-    private int chxMenu = 1;
+    private int _gIdTie = 0, _chxGpe = 0, _chxMenu = 1;
     //modal management
     private string SidebarStyle = "width: 200px;";
     private bool IsOpen = true;
@@ -211,7 +210,7 @@
         int pita = 0;
         //pita = 5;
         _usrBag = await _sessionContext.GetUserbagAsync();
-        _GIdTie = _usrBag.Usorga.Gdtie;
+        _gIdTie = _usrBag.Usorga.Gdtie;
         Console.WriteLine($"RETOUR UserBag...{_usrBag.Ufixes.Count()}");
         if ((!_usrBag.Ufixes.Any()) ||
                _usrBag.Yauser == false)
@@ -219,7 +218,7 @@
             Console.WriteLine("Echec Invite, recommencez.login/support...");
         }
 
-        _GIdTie = _usrBag.Usorga.Gdtie;
+        _gIdTie = _usrBag.Usorga.Gdtie;
         LsVars = _usrBag.Usorga.Uvars.ToList();
         LsFixes = _usrBag.Ufixes.ToList();
         LsPlans = _usrBag.Usorga.Uplns.Where(pl => pl.Ptyp == 5 || pl.Ptyp == 6).ToList();
@@ -293,9 +292,9 @@
     }
     private async Task SelMenu(int noM)
     {
-        chxMenu = noM;
+        _chxMenu = noM;
         StateHasChanged();
-        Console.WriteLine($"menu choisi : {chxMenu}");
+        Console.WriteLine($"menu choisi : {_chxMenu}");
         await Task.Delay(800);
     }
     void NavigateBack()

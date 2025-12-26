@@ -45,8 +45,8 @@
                            MenuItems="@MenuItems"
                            YaGroup="true"
                            Groups="@Groupes"
-                           MenuSelected="@SelMenu"
-                           GroupSelected="@SelGpe" />
+                           MenuSelected="@_chxMenu"
+                           GroupSelected="@_chxGpe" />
 
                 <!-- Top Menu Info -->
                 <div class="row mb-2">
@@ -88,9 +88,9 @@
 
                 <!-- Main Content Section -->
                 <div class="flex-fill overflow-auto">
-                    @if (chxMenu != 0 && curOrga != null && toChild != null && curODContext != null)
+                    @if (_chxMenu != 0 && curOrga != null && toChild != null && curODContext != null)
                     {
-                        @switch (chxMenu)
+                        @switch (_chxMenu)
                         {
                             case 1:
                                 <SaieActLnes @ref="mygsaie"
@@ -210,15 +210,15 @@
     private string gpeLiba = "";
 
     //menus
-    public List<GxNavMenu.MenuItem> MenuItems = new()
+    public List<GxMenuItem> MenuItems = new()
     {
-        new GxNavMenu.MenuItem { Id = 1, Label = "SurSite", Icon = "bi bi-box-arrow-in-down" },
-        new GxNavMenu.MenuItem { Id = 2, Label = "Online", Icon = "bi bi-house-door" },
-        new GxNavMenu.MenuItem { Id = 3, Label = "Validation", Icon = "bi bi-house-door" },
-        new GxNavMenu.MenuItem { Id = 4, Label = "Ordres", Icon = "bi bi-journal-text" },
-        //new MenuItem { Id = 4, Label = "Mutation", Icon = "bi bi-arrow-repeat" },
+        new GxMenuItem { Id = 1, Text = "SurSite", Icon = "bi bi-box-arrow-in-down" },
+        new GxMenuItem { Id = 2, Text = "Online", Icon = "bi bi-house-door" },
+        new GxMenuItem { Id = 3, Text = "Validation", Icon = "bi bi-house-door" },
+        new GxMenuItem { Id = 4, Text = "Ordres", Icon = "bi bi-journal-text" },
+        //new MenuItem { Id = 4, Text = "Mutation", Icon = "bi bi-arrow-repeat" },
     };
-    public List<GxNavMenu.GroupItem> Groupes = new();
+    public List<GxGroupe> Groupes = new();
 
     //entities load
     private IEnumerable<Gxorga> _lsOrgas = new List<Gxorga>();
@@ -241,7 +241,7 @@
     //gpe choix
     private List<Grole> _invRoles = new();
     //Navigation
-    private int chxMenu = 1;
+    private int _gIdTie = 0, _chxGpe = 0, _chxMenu = 1;
     private string strComp = "Saisies(sursite)";
 
     //modal management
@@ -288,7 +288,7 @@
         Groupes.Clear();
         foreach (var gr in LsGties.Where(gr => gr.Itb == 6))
         {
-            Groupes.Add(new GxNavMenu.GroupItem { Id = gr.Elea, Name = gr.Liba });
+            Groupes.Add(new GxGroupe { Itb = gr.Itb, Elea = gr.Elea, Liba = gr.Liba });
         }
         _invRoles = await _rendAgres.LoadOrgaRoles();
         Console.WriteLine($"inv roles : {_invRoles.Count()}");
@@ -572,11 +572,11 @@
     }
     // private async Task SelMenu(int noM)
     // {
-    //     chxMenu = noM;
-    //     if (chxMenu == 1) strComp = "Saisies(sursite)";
-    //     if (chxMenu == 2) strComp = "Saisies(online)";
-    //     if (chxMenu == 3) strComp = "Validations";
-    //     if (chxMenu == 4) strComp = "Saisies(ordres)";
+    //     _chxMenu = noM;
+    //     if (_chxMenu == 1) strComp = "Saisies(sursite)";
+    //     if (_chxMenu == 2) strComp = "Saisies(online)";
+    //     if (_chxMenu == 3) strComp = "Validations";
+    //     if (_chxMenu == 4) strComp = "Saisies(ordres)";
     //     allEnable = false;
     //     StateHasChanged();
     //     await Task.Delay(800);
@@ -636,12 +636,12 @@
     }
     private async Task SelMenu(int noM)
     {
-        chxMenu = noM;
-        if (chxMenu == 1) strComp = $"Saisies(sursite) {gpeLiba}";
-        if (chxMenu == 2) strComp = $"Saisies(online) {gpeLiba}";
-        if (chxMenu == 3) strComp = $"Validations {gpeLiba}";
-        if (chxMenu == 4) strComp = $"Saisies(ordres) {gpeLiba}";
-        //if (chxMenu == 5) strComp = "Colonnes";
+        _chxMenu = noM;
+        if (_chxMenu == 1) strComp = $"Saisies(sursite) {gpeLiba}";
+        if (_chxMenu == 2) strComp = $"Saisies(online) {gpeLiba}";
+        if (_chxMenu == 3) strComp = $"Validations {gpeLiba}";
+        if (_chxMenu == 4) strComp = $"Saisies(ordres) {gpeLiba}";
+        //if (_chxMenu == 5) strComp = "Colonnes";
         allEnable = false;
         StateHasChanged();
         await Task.Delay(1);

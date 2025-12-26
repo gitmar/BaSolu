@@ -38,16 +38,16 @@ else
                            MenuItems="@MenuItems"
                            YaGroup="true"
                            Groups="@Groupes"
-                           MenuSelected="@SelMenu"
-                           GroupSelected="@SelGpe" />
+                           MenuSelected="@_chxMenu"
+                           GroupSelected="@_chxGpe" />
             </div>
         </div>
     </div>
 
     <!-- Main Content -->
-    @if (chxMenu != 0 && toChild != null && curOrga != null && curODContext != null)
+    @if (_chxMenu != 0 && toChild != null && curOrga != null && curODContext != null)
     {
-        @if (chxMenu == 1)
+        @if (_chxMenu == 1)
         {
             <Mutatio @ref="mymtie"
                      Ugpe="@Ugpe"
@@ -60,15 +60,15 @@ else
                 </ChildContent>
             </Mutatio>
         }
-        else if (chxMenu == 2 && ParentOK)
+        else if (_chxMenu == 2 && ParentOK)
         {
 
         }
-        else if (chxMenu == 3 && ParentOK)
+        else if (_chxMenu == 3 && ParentOK)
         {
 
         }
-        else if (chxMenu == 4)
+        else if (_chxMenu == 4)
         {
 
         }
@@ -106,15 +106,15 @@ else
     public bool ParentEDT = false;
 
     //menus
-    public List<GxNavMenu.MenuItem> MenuItems = new()
+    public List<GxMenuItem> MenuItems = new()
     {
-        new GxNavMenu.MenuItem { Id = 1, Label = "Mutations", Icon = "bi bi-box-arrow-in-down" },
-        new GxNavMenu.MenuItem { Id = 2, Label = "Affectations", Icon = "bi bi-house-door" },
-        new GxNavMenu.MenuItem { Id = 3, Label = "Promotions", Icon = "bi bi-envelope-paper" },
-        new GxNavMenu.MenuItem { Id = 3, Label = "Sanctions", Icon = "bi bi-envelope-paper" }
-        //new MenuItem { Id = 4, Label = "Mutation", Icon = "bi bi-arrow-repeat" },
+        new GxMenuItem { Id = 1, Text = "Mutations", Icon = "bi bi-box-arrow-in-down" },
+        new GxMenuItem { Id = 2, Text = "Affectations", Icon = "bi bi-house-door" },
+        new GxMenuItem { Id = 3, Text = "Promotions", Icon = "bi bi-envelope-paper" },
+        new GxMenuItem { Id = 3, Text = "Sanctions", Icon = "bi bi-envelope-paper" }
+        //new MenuItem { Id = 4, Text = "Mutation", Icon = "bi bi-arrow-repeat" },
     };
-    public List<GxNavMenu.GroupItem> Groupes = new();
+    public List<GxGroupe> Groupes = new();
 
     //public int _UorgId = 0;
     public string _strOrga = "", _curSigle = "", MImessage = "", LoadLabel = "", strmeta = "", strmeta2 = "";
@@ -135,7 +135,7 @@ else
     private List<Grole> LsRoles = new();
     public List<Gplan> LsPlans = new();
     //Navigation
-    private int chxMenu = 0;
+    private int _gIdTie = 0, _chxGpe = 0, _chxMenu = 0;
     string gpeLiba = "";
     private string strComp = $"Integration";
     public int Ugpe = 0, Tgpe = 0; //gpe ref1..6/tiers type6..7
@@ -175,7 +175,7 @@ else
         Groupes.Clear();
         foreach (var gr in LsGties.Where(gr => gr.Itb == 6))
         {
-            Groupes.Add(new GxNavMenu.GroupItem { Id = gr.Elea, Name = gr.Liba });
+            Groupes.Add(new GxGroupe { Itb = gr.Itb, Elea = gr.Elea, Liba = gr.Liba });
         }
         //LsDoms = _usrBag.Ufixes
         //    .Where(ut => ut.Gvars == 36 && ut.Itb == 4 && ut.Gp1 == 3 && ut.Elea != 0)
@@ -217,7 +217,7 @@ else
             }
             //prise des colonnes //default/Ugpe = 1;
             Ugpe = 1;
-            chxMenu = 1;
+            _chxMenu = 1;
             Console.WriteLine($"orga recu {curOrga.Raison}");
             Console.WriteLine($"nb ties test : {curOrga.Tiersps.Count()}");
         }
@@ -241,12 +241,12 @@ else
     }
     private async Task SelMenu(int noM)
     {
-        chxMenu = noM;
-        if (chxMenu == 1) strComp = $"Mutations {gpeLiba}";
-        if (chxMenu == 2) strComp = $"Affectations {gpeLiba}";
-        if (chxMenu == 3) strComp = $"Promotions {gpeLiba}";
-        if (chxMenu == 4) strComp = $"Sanctions {gpeLiba}";
-        //if (chxMenu == 5) strComp = "Colonnes";
+        _chxMenu = noM;
+        if (_chxMenu == 1) strComp = $"Mutations {gpeLiba}";
+        if (_chxMenu == 2) strComp = $"Affectations {gpeLiba}";
+        if (_chxMenu == 3) strComp = $"Promotions {gpeLiba}";
+        if (_chxMenu == 4) strComp = $"Sanctions {gpeLiba}";
+        //if (_chxMenu == 5) strComp = "Colonnes";
         allEnable = false;
         StateHasChanged();
         await Task.Delay(1);
@@ -277,15 +277,15 @@ else
         }
         ParentEDT = true;
         MImessage = "Edition en preparation...";
-        if (chxMenu == 1)
+        if (_chxMenu == 1)
         { //validation
             await mymtie.EdtAll();
         }
-        // if (chxMenu == 2)
+        // if (_chxMenu == 2)
         // { //accueil
         //     await mygtiw.EdtAll();
         // }
-        // if (chxMenu == 3)
+        // if (_chxMenu == 3)
         // { //invitation
         //     await myginv.EdtAll();
         // }
@@ -296,15 +296,15 @@ else
     {
         MImessage = "annulation en cours...";
 
-        if (chxMenu == 1)
+        if (_chxMenu == 1)
         { //validation
             await mymtie.CncAll();
         }
-        // if (chxMenu == 2)
+        // if (_chxMenu == 2)
         // { //accueil
         //     await mygtiw.CncCHILD();
         // }
-        // if (chxMenu == 3)
+        // if (_chxMenu == 3)
         // { //invitation
         //     await myginv.CncAll();
         // }
@@ -317,15 +317,15 @@ else
     {
         bool oksav = false;
         MImessage = "enregistrement en cours...";
-        if (chxMenu == 1)
+        if (_chxMenu == 1)
         { //validation
             oksav = await mymtie.SaveCurEntities();
         }
-        // if (chxMenu == 2)
+        // if (_chxMenu == 2)
         // { //accueil
         //     oksav = await mygtiw.SaveCurEntities();
         // }
-        // if (chxMenu == 3)
+        // if (_chxMenu == 3)
         // { //invitation
         //     oksav = await myginv.SaveCurEntities();
         // }

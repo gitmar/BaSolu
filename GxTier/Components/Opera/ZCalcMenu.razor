@@ -37,8 +37,8 @@
                MenuItems="@MenuItems"
                YaGroup="true"
                Groups="@Groupes"
-               MenuSelected="@SelMenu"
-               GroupSelected="@SelGpe" />
+               MenuSelected="@_chxMenu"
+               GroupSelected="@_chxGpe" />
 
     <div class="mag-screen-layout">
         <div class="container" style="height: 100vh;">
@@ -67,14 +67,14 @@
                         </li>
                         <li class="nav-item">
                             <div @onclick="() => SelMenu(1)"
-                                 class="nav-link d-flex align-items-center @(chxMenu == 1 ? "active" : "")">
+                                 class="nav-link d-flex align-items-center @(_chxMenu == 1 ? "active" : "")">
                                 <i class="bi bi-table me-2"></i> Calcul
                             </div>
                         </li>
 
                         <li class="nav-item">
                             <div @onclick="() => SelMenu(2)"
-                                 class="nav-link d-flex align-items-center @(chxMenu == 2 ? "active" : "")">
+                                 class="nav-link d-flex align-items-center @(_chxMenu == 2 ? "active" : "")">
                                 <i class="bi bi-tags me-2"></i> Validation
                             </div>
                         </li>
@@ -117,9 +117,9 @@
                 </div>
 
                 <!-- Main Content //a integer froMenu -->
-                @if (chxMenu != 0 && curOrga != null && toChild != null && curODContext != null)
+                @if (_chxMenu != 0 && curOrga != null && toChild != null && curODContext != null)
                 {
-                    @if (chxMenu == 1)
+                    @if (_chxMenu == 1)
                     {
                         <CalcResLnes @ref="mygcalc"
                                   curOrga="@curOrga"
@@ -130,7 +130,7 @@
                             </ChildContent>
                         </CalcResLnes>
                     }
-                    else if (chxMenu == 2)
+                    else if (_chxMenu == 2)
                     {
                         @* <OrdaLoad>
                                     <ChildContent>
@@ -177,13 +177,13 @@
     private string gpeLiba = "";
 
     //menus
-    public List<GxNavMenu.MenuItem> MenuItems = new()
+    public List<GxMenuItem> MenuItems = new()
     {
-        new GxNavMenu.MenuItem { Id = 1, Label = "Calcul", Icon = "bi bi-box-arrow-in-down" },
-        new GxNavMenu.MenuItem { Id = 2, Label = "Validation", Icon = "bi bi-house-door" },
-        //new MenuItem { Id = 4, Label = "Mutation", Icon = "bi bi-arrow-repeat" },
+        new GxMenuItem { Id = 1, Text = "Calcul", Icon = "bi bi-box-arrow-in-down" },
+        new GxMenuItem { Id = 2, Text = "Validation", Icon = "bi bi-house-door" },
+        //new MenuItem { Id = 4, Text = "Mutation", Icon = "bi bi-arrow-repeat" },
     };
-    public List<GxNavMenu.GroupItem> Groupes = new();
+    public List<GxGroupe> Groupes = new();
 
     //entities load
     private IEnumerable<Gxorga> _lsOrgas = new List<Gxorga>();
@@ -207,7 +207,7 @@
     //gpe choix
     //private List<Apirole> _invRoles = new List<Apirole>();
     //Navigation
-    private int chxMenu = 1;
+    private int _gIdTie = 0, _chxGpe = 0, _chxMenu = 1;
     private string strComp = "Calculs";
 
     //modal management
@@ -249,7 +249,7 @@
         Groupes.Clear();
         foreach (var gr in LsGties.Where(gr => gr.Itb == 6))
         {
-            Groupes.Add(new GxNavMenu.GroupItem { Id = gr.Elea, Name = gr.Liba });
+            Groupes.Add(new GxGroupe { Itb = gr.Itb, Elea = gr.Elea, Liba = gr.Liba });
         }
         //Console.WriteLine($"inv roles : {_invRoles.Count()}");
         _invRoles = await _rendAgres.LoadOrgaRoles();
@@ -470,9 +470,9 @@
     }
     // private async Task SelMenu(int noM)
     // {
-    //     chxMenu = noM;
-    //     if (chxMenu == 1) strComp = "Calculs";
-    //     if (chxMenu == 2) strComp = "Validations";
+    //     _chxMenu = noM;
+    //     if (_chxMenu == 1) strComp = "Calculs";
+    //     if (_chxMenu == 2) strComp = "Validations";
     //     allEnable = false;
     //     StateHasChanged();
     //     await Task.Delay(800);
@@ -532,11 +532,11 @@
     }
     private async Task SelMenu(int noM)
     {
-        chxMenu = noM;
-        if (chxMenu == 1) strComp = $"Calcul {gpeLiba}";
-        if (chxMenu == 2) strComp = $"Validation {gpeLiba}";
-        //if (chxMenu == 3) strComp = $"Invitation {gpeLiba}";
-        //if (chxMenu == 5) strComp = "Colonnes";
+        _chxMenu = noM;
+        if (_chxMenu == 1) strComp = $"Calcul {gpeLiba}";
+        if (_chxMenu == 2) strComp = $"Validation {gpeLiba}";
+        //if (_chxMenu == 3) strComp = $"Invitation {gpeLiba}";
+        //if (_chxMenu == 5) strComp = "Colonnes";
         allEnable = false;
         StateHasChanged();
         await Task.Delay(1);

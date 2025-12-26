@@ -51,7 +51,7 @@
                 <!-- Main Content -->
                 @if (this != null)
                 {
-                    @if (chxMenu == 1)
+                    @if (_chxMenu == 1)
                     { //SESSIONS
                       @* <SAsesios ChxMenu="@chxMenu"
                                     curOrga="@curOrga"
@@ -62,7 +62,7 @@
                               </ChildContent>
                           </SAsesios> *@
                     }
-                    else if (chxMenu == 2)
+                    else if (_chxMenu == 2)
                     { //ACCES
                       @* <Regxauth ChxMenu="@chxMenu"
                                     curOrga="@curOrga"
@@ -73,7 +73,7 @@
                               </ChildContent>
                           </Regxauth> *@
                     }
-                    else if (chxMenu == 3)
+                    else if (_chxMenu == 3)
                     { //REPRISES
                       @* <Regxcorg ChxMenu="@chxMenu"
                                     curOrga="@curOrga"
@@ -131,7 +131,7 @@
     public List<Gpvar> LsTabls = new List<Gpvar>();
     public List<Gpvar> TbElems = new List<Gpvar>();
     //Navigation
-    private int chxMenu = 1;
+    private int _gIdTie = 0, _chxGpe = 0, _chxMenu = 1;
     //modal management
     private string SidebarStyle = "width: 200px;";
     private bool IsOpen = true;
@@ -226,9 +226,9 @@
     }
     private async Task SelMenu(int noM)
     {
-        chxMenu = noM;
+        _chxMenu = noM;
         StateHasChanged();
-        Console.WriteLine($"menu choisi : {chxMenu}");
+        Console.WriteLine($"menu choisi : {_chxMenu}");
         await Task.Delay(800);
     }
     void NavigateBack()
