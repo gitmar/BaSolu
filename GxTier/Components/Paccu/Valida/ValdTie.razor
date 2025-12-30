@@ -503,7 +503,7 @@ else
     //private Guid? addingTiwRowGuid;
     //private Guid? ConfirmingTieDeleteRowGuid;
 
-    //private Dictionary<Guid, Plngen> _originalFixSnapshots = new();
+    //private Dictionary<int, Plngen> _originalFixSnapshots = new();
     //Dictionary<int, Plngen> fxpaterMapByIdpln = new();
 
     //fils-editing/adding/deleting
@@ -690,7 +690,7 @@ else
         {
             return new Tiewel()
             {
-                Rowguid = Guid.NewGuid(),
+                //Rowguid = Guid.NewGuid(),
                 Idorg = curOrga.Idorg,
                 Ihie = IMySite,
                 Utyp = Ugpe,
@@ -731,7 +731,7 @@ else
     // {
     //     return new Rubvar()
     //     {
-    //         Rowguid = Guid.NewGuid(),
+    //         //Rowguid = Guid.NewGuid(),
     //         Idorg = curTiw.Idorg,
     //         Idpln = curTiw.Idpln,
     //         Torub = 0,
@@ -764,7 +764,7 @@ else
     //     }
     //     return new Rubfmt()
     //     {
-    //         Rowguid = Guid.NewGuid(),
+    //         //Rowguid = Guid.NewGuid(),
     //         Prowguid = curRubr.Rowguidrub,
     //         Idzon = nextSeq,
     //         Zcdrub = nextSeq.ToString(),
@@ -926,7 +926,7 @@ else
     //     draftRub = new Rubvar
     //     {
     //         Rowguid = myrub.Rowguid,
-    //         Prowguid = myrub.Prowguid,
+    //         Ipln = myrub.Id,
     //         Idorg = myrub.Idorg,
     //         Torub = myrub.Torub,
     //         Utyp = myrub.Utyp, //services
@@ -1213,7 +1213,7 @@ else
         // foreach (var uta in curOrga.Plngens)
         // {
         //     List<Rubvar> tbcols = curTiw.Rubvars.Where(ln => ln.Idpln == uta.Idpln).ToList();
-        //     gRubsMap[uta.Rowguid] = new List<Rubvar>(tbcols);
+        //     gRubsMap[uta.Id] = new List<Rubvar>(tbcols);
         //     //Console.WriteLine($"Parent Xseq: {uta.Xseq}, Children count: {tbcols.Count}");
         // }
         //var wrkplns = curOrga.Plngens.Where(pl => pl.Ptyp == 5 && pl.Totyp == IMyAtr).ToList();

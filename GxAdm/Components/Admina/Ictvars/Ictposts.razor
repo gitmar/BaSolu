@@ -430,8 +430,8 @@ else
     //private Dictionary<Guid, Rubpst> _originalSnapshots = new();
     public List<Plngen> MyGPlans { get; set; } = new();
     public List<Rubhie> MyDaRubrs { get; set; } = new();   
-    private Dictionary<Guid, List<Rubpst>> postesMap = new();
-    private List<Rubpst> GrubNewRows => postesMap.TryGetValue(curHier.Rowguid, out var rows)
+    private Dictionary<int, List<Rubpst>> postesMap = new();
+    private List<Rubpst> GrubNewRows => postesMap.TryGetValue(curHier.Id, out var rows)
     ? new List<Rubpst>(rows)
     : new List<Rubpst>();
 
@@ -495,7 +495,7 @@ else
             Imessage = "REFUS, Plan non choisi";
             return;
         }
-        var parentId = parent.Rowguid;
+        var parentId = parent.Id;
         // Make sure the postesMap has an entry for this parent
         if (!postesMap.ContainsKey(parentId))
         {
@@ -520,8 +520,8 @@ else
     {
         return new Rubpst
         {
-            Rowguid = Guid.NewGuid(),
-            Prowguid = parent.Rowguid,
+            //Rowguid = Guid.NewGuid(),
+            Ihie = parent.Id,
             Padres = "",
             Pcdrub = parent.Scdrub,
             Idzon = nextZon,
@@ -537,7 +537,7 @@ else
     void IncludePoste( Rubpst mypst)
     {
         // Use parent Idhie as key to postesMap dictionary
-        var parentId = curHier.Rowguid;
+        var parentId = curHier.Id;
         if (!curODContext.IsEntityTracked(mypst)) // && YaChild)
         {
             try
@@ -624,7 +624,7 @@ else
     {
         if (parent == null) return new List<Rubpst>();
 
-        if (!postesMap.TryGetValue(parent.Rowguid, out var list))
+        if (!postesMap.TryGetValue(parent.Id, out var list))
             return new List<Rubpst>();
 
         // Filter duplicates by Rowguid
@@ -686,7 +686,7 @@ else
         draftFmt = new Rubpst
         {
             Rowguid = myfmt.Rowguid,
-            Prowguid = myfmt.Prowguid,
+            Ihie = myfmt.Ihie,
             Padres = myfmt.Padres,
             Pcdrub = myfmt.Pcdrub,
             Idzon = myfmt.Idzon,
@@ -716,7 +716,7 @@ else
         {
             // Restore all fields
             editingFmt.Rowguid = myfmt.Rowguid; //RowGuid.NewGuid(), //unique
-            editingFmt.Prowguid = myfmt.Prowguid;
+            editingFmt.Ihie = myfmt.Ihie;
             editingFmt.Padres = myfmt.Padres;
             editingFmt.Pcdrub = myfmt.Pcdrub;
             editingFmt.Idzon = myfmt.Idzon;
@@ -752,7 +752,7 @@ else
         if (parent == null)
             return;
         Console.WriteLine($"del parent {parent.Liba} and row id : {parent.Rowguid}");
-        if (!postesMap.TryGetValue(parent.Rowguid, out var coll))
+        if (!postesMap.TryGetValue(parent.Id, out var coll))
             return;
         Console.WriteLine($"postesMap {postesMap.Count}");
         // For existing rows: mark for OData deletion and remove locally

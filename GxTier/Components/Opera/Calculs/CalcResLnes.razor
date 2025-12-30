@@ -499,7 +499,7 @@ else
                 ProgressValue = (int)((index + 1) / (double)filteredTiers.Count * 100);
                 StateHasChanged();
             }
-            var session = new PersonEvaluationSession(tie.Rowguid, DateTime.Today);
+            var session = new PersonEvaluationSession(tie.Id, DateTime.Today);
             session.HydrateInputs(tie.Actsaies, tie.Resdons);
             session.LoadFormulaLines(MissionLines);
             session.Evaluate();

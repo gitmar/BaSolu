@@ -524,7 +524,7 @@ else
                 Imessage = "Le tier doit avoir un service";
                 return;
             }
-            _currentSession = new PersonEvaluationSession(_curTier.Rowguid, DateTime.Today);
+            _currentSession = new PersonEvaluationSession(_curTier.Id, DateTime.Today);
             _currentSession.HydrateInputs(_curTier.Actsaies, _curTier.Resdons);
             _currentSession.LoadFormulaLines(MissionLines);
             //can Input      
@@ -538,7 +538,7 @@ else
             _curRub = myrub;
             foreach (var tie in PreTiers)
             {
-                var session = new PersonEvaluationSession(tie.Rowguid, DateTime.Today);
+                var session = new PersonEvaluationSession(tie.Id, DateTime.Today);
                 session.HydrateInputs(tie.Actsaies, tie.Resdons);
                 session.LoadFormulaLines(MissionLines);
                 //can Input;
@@ -588,7 +588,7 @@ else
                 var lsRubs = curProg.Rubvars.ToList();
 
                 var icurActs = _curTier.Actsaies
-                    .Where(ac => ac.Prowguid == mytier.Rowguid && lsRubs.Any(r => r.Rowguid == ac.Rowguid))
+                    .Where(ac => ac.Itie == mytier.Id && lsRubs.Any(r => r.Id == ac.IrubNavigation.Id))
                     //ADJUST LATER
                     // .Where(ac =>
                     //     (ac.Tperi == 0) ||
@@ -598,7 +598,7 @@ else
                     .ToList();
                 foreach(var ac in icurActs)
                 {
-                    var icurRub = curProg.Rubvars.Where(ur => ur.Rowguid == ac.Rowguid).FirstOrDefault();
+                    var icurRub = curProg.Rubvars.Where(ur => ur.Ipln == ac.IrubNavigation.Ipln).FirstOrDefault();
                     ac.Liba = icurRub.Liba;
                     ac.Abg = icurRub.Abg;
                 }
@@ -613,7 +613,7 @@ else
                 Console.WriteLine($"AVANT RECUP ACTS : {lsTiers.Count}");
                 var icurActs = lsTiers
                     .SelectMany(tier => tier.Actsaies)
-                    .Where(ac => ac.Rowguid == myrub.Prowguid)  // Filter by selected Rubvar
+                    .Where(ac => ac.Irub == myrub.Id)  // Filter by selected Rubvar
                     //ADJUST LATER
                     // .Where(ac =>
                     //     (ac.Tperi == 0) ||
@@ -778,7 +778,7 @@ else
         // string.Compare(t.Smatri, IfinTier, StringComparison.OrdinalIgnoreCase) <= 0))
         //     {
         CalcLines.Clear();
-            var session = new PersonEvaluationSession(_curTier.Rowguid, DateTime.Today);
+            var session = new PersonEvaluationSession(_curTier.Id, DateTime.Today);
             session.HydrateInputs(_curTier.Actsaies, _curTier.Resdons);
             session.LoadFormulaLines(MissionLines);
             session.Evaluate();

@@ -112,11 +112,11 @@ else
                                             <ChildContent Context="item">
                                                 @if (item.Xadd1 == -2)
                                                 {
-                                                    <span>?@item.Pseq</span>
+                                                    <span>?@item?.Iele</span>
                                                 }
                                                 else
                                                 {
-                                                    <span class="plnpoint">@item?.Pseq</span>
+                                                    <span class="plnpoint">@item?.Iele</span>
                                                 }
                                             </ChildContent>
                                         </GridColumn>
@@ -253,11 +253,11 @@ else
                                                     <ChildContent Context="item">
                                                         @if (item.Xadd1 == -2)
                                                         {
-                                                            <span>?@item.Useq</span>
+                                                            <span>?@item?.Iele</span>
                                                         }
                                                         else
                                                         {
-                                                            <span class="plnpoint">@item?.Useq</span>
+                                                            <span class="plnpoint">@item?.Iele</span>
                                                         }
                                                     </ChildContent>
                                                 </GridColumn>
@@ -947,11 +947,11 @@ else
     private string pstrFormu = "";
 
 
-    private Dictionary<Guid, Plngen> _originalFixSnapshots = new();
+    private Dictionary<int, Plngen> _originalFixSnapshots = new();
     //Dictionary<int, Plngen> fxparentMapByPseq = new();
     private Dictionary<int, List<Plngen>> gPlnsMap = new();
-    private Dictionary<Guid, List<Rubhie>> gRubsMap = new();
-    //private Dictionary<Guid, List<Rubpst>> gFmtsMap = new();
+    private Dictionary<int, List<Rubhie>> gRubsMap = new();
+    //private Dictionary<int, List<Rubpst>> gFmtsMap = new();
     //fils-editing/adding/deleting
 
     // //data
@@ -971,7 +971,7 @@ else
     ? new List<Plngen>(rows)
      : new List<Plngen>();
     // //fils
-    private List<Rubhie> GrubNewRows => gRubsMap.TryGetValue(curPlan.Rowguid, out var rows)
+    private List<Rubhie> GrubNewRows => gRubsMap.TryGetValue(curPlan.Id, out var rows)
     ? new List<Rubhie>(rows)
     : new List<Rubhie>();
     //data
@@ -1022,7 +1022,7 @@ else
         {
             gPlnsMap.Remove(parentKey); // Clear previous children for clean modal state
         }
-        plnMax = curOrga.Plngens.Any() ? curOrga.Plngens.Max(x => x.Pseq) : 0;
+        plnMax = curOrga.Plngens.Any() ? curOrga.Plngens.Max(x => x.Iele) : 0;
         PrepareAddPlan();
 
         patInitTitle = $"{curOrga.Idorg} - {curOrga.Raison} (creation programme)";
@@ -1032,7 +1032,7 @@ else
     }
     void OpenAddRubr()
     {
-        Guid parentKey = curPlan.Rowguid;
+        int parentKey = curPlan.Id;
         if (gRubsMap.ContainsKey(parentKey))
         {
             gRubsMap.Remove(parentKey); // Clear previous children for clean modal state
@@ -1040,7 +1040,7 @@ else
 
         PrepareAddRubr();
 
-        rubTitle = $"{curPlan.Pseq} - {curPlan.Liba} (contenu table en creation)";
+        rubTitle = $"{curPlan.Iele} - {curPlan.Liba} (contenu table en creation)";
         jrub = 0;
         rubModal.ShowAsync();
     }
@@ -1084,17 +1084,17 @@ else
             Imessage = "REFUS, Groupe et/ou Base non choisi";
             return;
         }
-        var parentId = curPlan.Rowguid;
+        var parentId = curPlan.Id;
         jrub = jrub + 1;
         // Make sure the gRubsMap has an entry for this parent
         if (!gRubsMap.ContainsKey(parentId))
         {
             gRubsMap[parentId] = new List<Rubhie>();
         }
-        var existingRubhies = curPlan.Rubhies.Where(ln => ln.Prowguid == parentId) ?? new DataServiceCollection<Rubhie>();
+        var existingRubhies = curPlan.Rubhies.Where(ln => ln.Id == parentId) ?? new DataServiceCollection<Rubhie>();
         var mapRubhies = gRubsMap[parentId];
-        int maxIdzonFromParent = existingRubhies.Any() ? (existingRubhies.Max(r => r.Useq) ?? 10) : 10;
-        int maxIdzonFromMap = mapRubhies.Any() ? (mapRubhies.Max(r => r.Useq) ?? 1) : 1;
+        int maxIdzonFromParent = existingRubhies.Any() ? (existingRubhies.Max(r => r.Iele) ?? 10) : 10;
+        int maxIdzonFromMap = mapRubhies.Any() ? (mapRubhies.Max(r => r.Iele) ?? 1) : 1;
         int maxIdzon = Math.Max(10, Math.Max(maxIdzonFromParent, maxIdzonFromMap));
         int nextZon = maxIdzon + 1;
         Console.WriteLine($"current newPoste zone no : {nextZon} et parent act no : {curPlan?.Id}");
@@ -1117,7 +1117,7 @@ else
         {
             return new Plngen()
             {
-                Rowguid = Guid.NewGuid(),
+                //Rowguid = Guid.NewGuid(),
                 Idorg = curOrga.Idorg,
                 Ptyp = 4,
                 Todom = IMyDom,//1tiers2Mat
@@ -1128,7 +1128,7 @@ else
                 Abg = "",
                 Styp = 0,
                 Eta = 1,
-                Pseq = 0,
+                Iele = 0,
                 //Belea = nextSeq,
                 Xadd1 = -1
             };
@@ -1143,7 +1143,7 @@ else
     {
         return new Rubhie()
         {
-            Rowguid = Guid.NewGuid(),
+            //Rowguid = Guid.NewGuid(),
             Idorg = curOrga.Idorg,
             Id = curPlan.Id,
             Utyp = curPlan.Toatr,
@@ -1166,7 +1166,7 @@ else
             Selc = false,
             Ddval = 0,
             Dfval = 0,
-            Useq = 0,
+            Iele = 0,
             //Belea = nextSeq,
             Eta = 0,
         };
@@ -1256,7 +1256,7 @@ else
     // }
     void IncludeRubr(Rubhie aglne)
     {
-        var parentId = curPlan.Rowguid;
+        var parentId = curPlan.Id;
         //bool YaChild = IsChildValid(aglne); // Make sure this returns true if aglne is valid to add
         if (!curODContext.IsEntityTracked(aglne)) // && YaChild)
         {
@@ -1360,7 +1360,7 @@ else
             Abg = mypln.Abg,
             Styp = mypln.Styp,
             Eta = mypln.Eta,
-            Pseq = mypln.Pseq,
+            Iele = mypln.Iele,
             Plsdiv = mypln.Plsdiv,
             Plsgri = mypln.Plsgri,
             Plsech = mypln.Plsech,
@@ -1406,7 +1406,7 @@ else
             Ddval = myrub.Ddval,
             Dfval = myrub.Dfval,
             //calcul de Elea
-            Useq = myrub.Useq,
+            Iele = myrub.Iele,
             //Belea = myrub.Belea,
             Eta = myrub.Eta,
             // Copy other fields as necessary
@@ -1441,7 +1441,7 @@ else
             editingPln.Abg = mypln.Abg;
             editingPln.Styp = mypln.Styp;
             editingPln.Eta = mypln.Eta;
-            editingPln.Pseq = mypln.Pseq;
+            editingPln.Iele = mypln.Iele;
             editingPln.Plsdiv = mypln.Plsdiv;
             editingPln.Plsgri = mypln.Plsgri;
             editingPln.Plsech = mypln.Plsech;
@@ -1529,7 +1529,7 @@ else
             editingRub.Ddval = myrub.Ddval;
             editingRub.Dfval = myrub.Dfval;
             //calcul de Elea
-            editingRub.Useq = myrub.Useq;
+            editingRub.Iele = myrub.Iele;
             //editingRub.Belea = myrub.Belea;
             editingRub.Eta = myrub.Eta;
             if (!curODContext.GetAllTrackedEntities().Any(e => e.Entity == editingRub))
@@ -1559,7 +1559,7 @@ else
         if (parent == null)
             return;
         Console.WriteLine($"del parent {parent.Liba} and row id : {parent?.Id}");
-        if (!gRubsMap.TryGetValue(parent.Rowguid, out var coll))
+        if (!gRubsMap.TryGetValue(parent.Id, out var coll))
             return;
         Console.WriteLine($"gRubsMap {gRubsMap.Count}");
         // For existing rows: mark for OData deletion and remove locally

@@ -14,24 +14,28 @@
     <Compile Remove="Components\Admina\**" />
     <Compile Remove="Components\InAdmTest\**" />
     <Compile Remove="Components\Secuope\**" />
+    <Compile Remove="Connected Services\OData Service\**" />
     <Compile Remove="Formulas\**" />
     <Compile Remove="wwwroot\lib\wrbootstrap\**" />
     <Compile Remove="YYYFormulas\**" />
     <Content Remove="Components\Admina\**" />
     <Content Remove="Components\InAdmTest\**" />
     <Content Remove="Components\Secuope\**" />
+    <Content Remove="Connected Services\OData Service\**" />
     <Content Remove="Formulas\**" />
     <Content Remove="wwwroot\lib\wrbootstrap\**" />
     <Content Remove="YYYFormulas\**" />
     <EmbeddedResource Remove="Components\Admina\**" />
     <EmbeddedResource Remove="Components\InAdmTest\**" />
     <EmbeddedResource Remove="Components\Secuope\**" />
+    <EmbeddedResource Remove="Connected Services\OData Service\**" />
     <EmbeddedResource Remove="Formulas\**" />
     <EmbeddedResource Remove="wwwroot\lib\wrbootstrap\**" />
     <EmbeddedResource Remove="YYYFormulas\**" />
     <None Remove="Components\Admina\**" />
     <None Remove="Components\InAdmTest\**" />
     <None Remove="Components\Secuope\**" />
+    <None Remove="Connected Services\OData Service\**" />
     <None Remove="Formulas\**" />
     <None Remove="wwwroot\lib\wrbootstrap\**" />
     <None Remove="YYYFormulas\**" />
@@ -77,6 +81,11 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Include="Connected Services\OData Service\Reference.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="Connected Services\OData Service\ConnectedService.json" />
     <EmbeddedResource Include="Connected Services\OData Service\OData ServiceCsdl.xml" />
   </ItemGroup>
   
@@ -91,13 +100,13 @@
     <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.13.0" />
     <PackageReference Include="Microsoft.AspNetCore.WebUtilities" Version="9.0.0" />
     <PackageReference Include="Microsoft.AspNetCore.Http" Version="2.3.0" />
-    <PackageReference Include="Microsoft.OData.Core" Version="8.3.0" />
-    <PackageReference Include="Microsoft.OData.Edm" Version="8.3.0" />
+    <PackageReference Include="Microsoft.OData.Core" Version="8.4.3" />
+    <PackageReference Include="Microsoft.OData.Edm" Version="8.4.3" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Blazored.LocalStorage" Version="4.5.0" />
-    <PackageReference Include="Microsoft.OData.Client" Version="8.3.0" />
-    <PackageReference Include="Microsoft.Spatial" Version="8.3.0" />
+    <PackageReference Include="Microsoft.OData.Client" Version="8.4.3" />
+    <PackageReference Include="Microsoft.Spatial" Version="8.4.3" />
     <PackageReference Include="System.ComponentModel.Annotations" Version="5.0.0" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />  
     <PackageReference Include="System.Text.Json" Version="9.0.4" />
@@ -119,7 +128,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\GxShared\GxShared.csproj" />
-    <ProjectReference Include="..\..\GxSubMenu\Gx.Components.csproj" />
+    <ProjectReference Include="..\..\GxSmenu\Gx.Components.csproj" />
   </ItemGroup>
 
   <ProjectExtensions><VisualStudio><UserProperties /></VisualStudio></ProjectExtensions>

@@ -194,7 +194,7 @@ else
                                                             }
                                                             else
                                                             {
-                                                                <span class="plnpoint">@item?.Tseq</span>
+                                                                <span class="plnpoint">@item?.Iele</span>
                                                             }
                                                         </ChildContent>
                                                     </GridColumn>
@@ -454,7 +454,7 @@ else
 
     private ClaimsPrincipal authUser;
     private bool isAuthenticated = false;
-    
+
     private int activeTabIndex = 0;
     private RtV11Fic myftie { get; set; }
     private string plnDom = "", atrTitle = "";
@@ -501,7 +501,7 @@ else
     //private Guid? addingTiwRowGuid;
     //private Guid? ConfirmingTieDeleteRowGuid;
 
-    //private Dictionary<Guid, Plngen> _originalFixSnapshots = new();
+    //private Dictionary<int, Plngen> _originalFixSnapshots = new();
     //Dictionary<int, Plngen> fxpaterMapByIdpln = new();
 
     //fils-editing/adding/deleting
@@ -629,7 +629,7 @@ else
         // foreach (var uta in curOrga.Plngens)
         // {
         //     List<Rubvar> tbcols = curTier.Rubvars.Where(ln => ln.Idpln == uta.Idpln).ToList();
-        //     gRubsMap[uta.Rowguid] = new List<Rubvar>(tbcols);
+        //     gRubsMap[uta.Id] = new List<Rubvar>(tbcols);
         //     //Console.WriteLine($"Parent Xseq: {uta.Xseq}, Children count: {tbcols.Count}");
         // }
         //var wrkplns = curOrga.Plngens.Where(pl => pl.Ptyp == 5 && pl.Totyp == IMyAtr).ToList();
@@ -712,24 +712,34 @@ else
                     tie.Ipst = tie.Nwpst;
                 }
             }
-            //update
-            curODContext.UpdateObject(tie);
-            //mark the mvt
-            Tiemvt nwMvt = new();
-            nwMvt.Rowguid = Guid.NewGuid();
-            nwMvt.Tymvt = 1; //1mutation2affect3promo4sanct
-            nwMvt.Itie = tie.Rowguid;
-            nwMvt.Ihie = tie.Ihie; //mutation
-            nwMvt.Ipst = tie.Ipst; // mutation
-            nwMvt.Usrid = tie.Usrid;//concerne
-            nwMvt.Usrope = _sessionContext?.CurrentSession?.Userid;///operator
-            nwMvt.Idses = IMySes;
-            var wstses = toChild.LsSess.FirstOrDefault(us => us.Id == IMySes);
-            string ustses = "";
-            if (wstses != null) ustses = wstses.Liba;
-            nwMvt.Stses = ustses;
-            nwMvt.Datope = DateTime.Now;//
-            curODContext.AddRelatedObject(tie, "Tiemvts", nwMvt);
+            try
+            {
+                //update
+                curODContext.UpdateObject(tie);
+                //mark the mvt
+                var wstses = toChild.LsSess.FirstOrDefault(us => us.Id == IMySes);
+                string ustses = "";
+                if (wstses != null) ustses = wstses.Liba;
+                Console.WriteLine("In Adding");
+                Tiemvt nwMvt = new Tiemvt
+                    {
+                    //Rowguid = Guid.NewGuid(),
+                        Tymvt = 1, //1mutation2affect3promo4sanct
+                        Itie = tie.Id,
+                        Ihie = tie.Ihie, //mutation
+                        Ipst = tie.Ipst, // mutation
+                        Usrid = tie.Usrid,//concerne
+                        Usrope = _sessionContext?.CurrentSession?.Userid,///operator
+                        Idses = IMySes,
+                        Stses = ustses,
+                        Datope = DateTime.Now
+                    };
+                curODContext.AddRelatedObject(tie, "Tiemvts", nwMvt);
+           } catch(Exception ex)
+           {
+                Imessage = $"Erreur Sauvegarde Tiers/Mvts Id {tie.Id} : {ex.Message}";
+                return;
+            }
         }
         allEnable = false;
         editingTiwRowGuid = Guid.Empty;

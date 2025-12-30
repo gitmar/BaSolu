@@ -751,7 +751,7 @@ else
     {
         if (row == null || row.Pseq == 0)
             return null;
-        return fxparentMapByPseq.TryGetValue(row.Idorg, out var parent) ? parent : null;
+        return fxparentMapByPseq.TryGetValue(row.Idorg ?? 0, out var parent) ? parent : null;
     }
     void OpenAddPater()
     {
@@ -837,7 +837,7 @@ else
     {
         return new Gsgfix
         {
-            Rowguid = Guid.NewGuid(),
+            //Rowguid = Guid.NewGuid(),
             Idorg = curOrga.Idorg,
             Idhie = 0,
             Gvars = 4,
@@ -856,7 +856,7 @@ else
     {
         return new Gsglne
         {
-            Rowguid = Guid.NewGuid(),
+            //Rowguid = Guid.NewGuid(),
             Idorg = Convert.ToInt32(curPater.Idorg),
             Pseq = curPater.Xseq,
             Pvars = curPater.Gvars,

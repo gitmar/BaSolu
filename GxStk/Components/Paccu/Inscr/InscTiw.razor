@@ -807,7 +807,7 @@
             Console.WriteLine("In Adding");
             return new Tiewel
             {
-                Rowguid = Guid.NewGuid(),
+                //Rowguid = Guid.NewGuid(),
                 Idorg = curOrga.Idorg,
 
                 Utyp = Ugpe,
@@ -835,8 +835,8 @@
             Console.WriteLine("In Adding");
             return new Tiwafl
             {
-                Rowguid = Guid.NewGuid(),
-                Prowguid = curTiw.Rowguid,
+                //Rowguid = Guid.NewGuid(),
+                Itie = curTiw.Id,
                 Ttyp = Ugpe,
                 Tyafl = mytst,
                 Irang = nextSeq,
@@ -1109,10 +1109,10 @@
     private void ConfirmAflDelete(Tiwafl row)
     {
         var parent = curTiw;
-        Console.WriteLine($"Parent may be found : {parent.Rowguid}");
+        Console.WriteLine($"Parent may be found : {parent.Id}");
         if (parent == null)
             return;
-        Console.WriteLine($"del parent {parent.Nom} and row id : {parent.Rowguid}");
+        Console.WriteLine($"del parent {parent.Nom} and row id : {parent.Id}");
         Tiwafl svRow = row;
         // For existing rows: mark for OData deletion and remove locally
         if (curODContext.IsEntityTracked(row))
@@ -1123,7 +1123,7 @@
         {
             curODContext.Detach(row); // Mark for deletion in OData context
         }
-        curTiw.Tiwafls.ToList().RemoveAll(rf => rf.Prowguid == svRow.Prowguid);
+        curTiw.Tiwafls.ToList().RemoveAll(rf => rf.Id == svRow.Id);
         curTiw.Tiwafls.Remove(svRow);
         EditingAflRowGuid = Guid.Empty;
         ConfirmingAflDeleteRowGuid = Guid.Empty;

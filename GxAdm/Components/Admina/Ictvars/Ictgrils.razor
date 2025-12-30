@@ -115,7 +115,7 @@ else
                                             <GridColumns>
                                                 <GridColumn TItem="Actdet" HeaderText="No">
                                                     <ChildContent Context="item">
-                                                        <div @key="item.Rowguid">@item.Ordet</div>
+                                                        <div @key="item.Rowguid">@item.Iele</div>
                                                     </ChildContent>
                                                 </GridColumn>
                                                 <GridColumn TItem="Actdet" HeaderText="Inferieur">
@@ -251,7 +251,7 @@ else
                             <GridColumns>
                                 <GridColumn TItem="Actdet" HeaderText="No">
                                     <ChildContent Context="item">
-                                        <div @key="item.Rowguid">@item.Ordet</div>
+                                        <div @key="item.Rowguid">@item.Iele</div>
                                     </ChildContent>
                                 </GridColumn>
                                 <GridColumn TItem="Actdet" HeaderText="Inferieur">
@@ -427,11 +427,11 @@ else
 
     private Modal adtModal;
     private string adtTitle = "";
-    Dictionary<Guid, Actsaie> actsaieMapByIdact = new();
-    private Dictionary<Guid, Actdet> _originalSnapshots = new();
-    public List<Actsaie> MyDaActs { get; set; } = new();
-    private Dictionary<Guid, List<Actdet>> gActsMap = new();
-    private List<Actdet> GrubNewRows => gActsMap.TryGetValue(curActa.Rowguid, out var rows)
+    private Dictionary<int, Actsaie> actsaieMapByIdact = new();
+    private Dictionary<int, Actdet> _originalSnapshots = new();
+    private List<Actsaie> MyDaActs { get; set; } = new();
+    private Dictionary<int, List<Actdet>> gActsMap = new();
+    private List<Actdet> GrubNewRows => gActsMap.TryGetValue(curActa.Id, out var rows)
     ? new List<Actdet>(rows)
     : new List<Actdet>();
 
@@ -460,7 +460,7 @@ else
         actsaieMapByIdact.Clear();
         foreach (var act in MyDaActs)
         {
-            actsaieMapByIdact[act.Rowguid] = act;
+            actsaieMapByIdact[act.Id] = act;
         }
     }
     void OpenPstmodal(Actsaie myact)
@@ -494,7 +494,7 @@ else
             Imessage = "REFUS, Plan non choisi";
             return;
         }
-        var parentId = parent.Rowguid;
+        var parentId = parent.Id;
         // Make sure the gActsMap has an entry for this parent
         if (!gActsMap.ContainsKey(parentId))
         {
@@ -502,8 +502,8 @@ else
         }
         var existingActdets = parent.Actdets ?? new DataServiceCollection<Actdet>();
         var mapActdets = gActsMap[parentId];
-        int maxIdseqFromParent = existingActdets.Any() ? (existingActdets.Max(r => r.Ordet) ?? 1) : 1;
-        int maxIdseqFromMap = mapActdets.Any() ? (mapActdets.Max(r => r.Ordet) ?? 1) : 1;
+        int maxIdseqFromParent = existingActdets.Any() ? (existingActdets.Max(r => r.Iele) ?? 1) : 1;
+        int maxIdseqFromMap = mapActdets.Any() ? (mapActdets.Max(r => r.Iele) ?? 1) : 1;
         int maxIdseq = Math.Max(1, Math.Max(maxIdseqFromParent, maxIdseqFromMap));
         int nextSeq = maxIdseq + 1;
         Console.WriteLine($"current newPoste zone no : {nextSeq} et parent act no : {parent.Id}");
@@ -525,8 +525,8 @@ else
     {
         return new Actdet
         {
-            Rowguid = Guid.NewGuid(),
-            Prowguid = parent.Rowguid,
+            //Rowguid = Guid.NewGuid(),
+            Iact = parent.Id,
             //Irub = parent.Id,
             //Itie = parent.Id,
             Froac = 3, //de grille
@@ -535,7 +535,7 @@ else
             Ddval = DateTime.Now,
             Dfval = DateTime.Now,
             Svala = "",
-            Ordet = nextSeq, //child seq
+            Iele = nextSeq, //child seq
             Pirub = parent.Irub,
             Pscdrub = parent.Scdrub, //parent scdrub
             Acdrub = $"{parent.Scdrub}Z{nextSeq.ToString()}",
@@ -545,7 +545,7 @@ else
     }
     void IncludeAdet(Actdet myadet)
     {
-        var parentId = curActa.Rowguid;
+        var parentId = curActa.Id;
         //bool YaChild = IsChildValid(aglne); // Make sure this returns true if aglne is valid to add
         if (!curODContext.IsEntityTracked(myadet)) // && YaChild)
         {
@@ -673,7 +673,7 @@ else
     {
         if (parent == null) return new List<Actdet>();
 
-        if (!gActsMap.TryGetValue(parent.Rowguid, out var list))
+        if (!gActsMap.TryGetValue(parent.Id, out var list))
             return new List<Actdet>();
 
         // Filter duplicates by Rowguid
@@ -693,7 +693,7 @@ else
         draftRub = new Actdet
         {
             Rowguid = myrub.Rowguid,
-            Prowguid = myrub.Rowguid,
+            Iact = myrub.Id,
             //Irub = myrub.Irub,
             //Itie = myrub.Itie,
             Froac = myrub.Froac, //de grille
@@ -702,7 +702,7 @@ else
             Ddval = myrub.Ddval,
             Dfval = myrub.Dfval,
             Acdrub = myrub.Acdrub, //parent scdrub
-            Ordet = myrub.Ordet, //child seq
+            Iele = myrub.Iele, //child seq
             Pirub = myrub.Pirub,
             Pscdrub = myrub.Pscdrub, //parent scdrub
 
@@ -728,7 +728,7 @@ else
         if (editingRub is not null)
         {
             editingRub.Rowguid = myrub.Rowguid;
-            editingRub.Prowguid = myrub.Rowguid;
+            editingRub.Iact = myrub.Id;
             //editingRub.Irub = myrub.Irub;
             //editingRub.Itie = myrub.Itie;
             editingRub.Froac = myrub.Froac; //de grille
@@ -738,7 +738,7 @@ else
             editingRub.Dfval = myrub.Dfval;
             editingRub.Svala = myrub.Svala;
             editingRub.Acdrub = myrub.Acdrub; //parent scdrub
-            editingRub.Ordet = myrub.Ordet; //child seq
+            editingRub.Iele = myrub.Iele; //child seq
             editingRub.Pirub = myrub.Pirub;
             editingRub.Pscdrub = myrub.Pscdrub; //parent scdrub
 
@@ -769,7 +769,7 @@ else
         if (parent == null)
             return;
         Console.WriteLine($"del parent {parent.Liba} and row id : {parent.Id}");
-        if (!gActsMap.TryGetValue(parent.Rowguid, out var coll))
+        if (!gActsMap.TryGetValue(parent.Id, out var coll))
             return;
         Console.WriteLine($"gActsMap {gActsMap.Count}");
         // For existing rows: mark for OData deletion and remove locally
@@ -911,10 +911,10 @@ else
                         plnDom = "(" + pdoms.FirstOrDefault().Liba + ")";
                     }
                     LsRubs = inPln.Rubvars.ToList();
-                    MyDaActs = new List<Actsaie>(gridTier.Actsaies.Where(ac =>ac.Kplan == inPln.Rowguid).ToList());
+                    MyDaActs = new List<Actsaie>(gridTier.Actsaies.Where(ac =>ac.IrubNavigation.Ipln == inPln.Id).ToList());
                     foreach (var act in MyDaActs)
                     {
-                        var wrub = LsRubs.Where(ur => ur.Prowguid == act.Rowguid).FirstOrDefault();
+                        var wrub = LsRubs.Where(ur => ur.Ipln == inPln.Id).FirstOrDefault();
                         if (wrub != null)
                         {
                             act.Liba = wrub.Liba;

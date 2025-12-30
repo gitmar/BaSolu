@@ -191,10 +191,10 @@ else
                                             <ChildContent Context="item">
                                                 @if (item.Xadd1 == -2)
                                                 {
-                                                    <span>?@item?.Pseq</span>
+                                                    <span>?@item?.Iele</span>
                                                 } else
                                                 {
-                                                    <span class="plnpoint">@item?.Pseq</span>
+                                                    <span class="plnpoint">@item?.Iele</span>
                                                 }
                                             </ChildContent>
                                         </GridColumn>
@@ -548,7 +548,7 @@ else
     //private Guid? EditingPlnRowGuid;
     //private Guid? ConfirmingPlnDeleteRowGuid;
 
-    //private Dictionary<Guid, Plngen> _originalFixSnapshots = new();
+    //private Dictionary<int, Plngen> _originalFixSnapshots = new();
     //Dictionary<int, Plngen> fxpaterMapByIdpln = new();
 
     //fils-editing/adding/deleting
@@ -562,8 +562,8 @@ else
     //private Dictionary<Guid, Rubvar> _originalChlSnapshots = new();
     //Dictionary<int, Plngen> fxPChildMapByIdpln = new();
     private Dictionary<int, List<Plngen>> gPlnsMap = new();
-    // private Dictionary<Guid, List<Rubvar>> gRubsMap = new();
-    // private Dictionary<Guid, List<Rubfmt>> gFmtsMap = new();
+    // private Dictionary<int, List<Rubvar>> gRubsMap = new();
+    // private Dictionary<int, List<Rubfmt>> gFmtsMap = new();
     //petit-fils
     //private Guid? AddingFmtRowGuid; //cmodal
     //private Guid? EditingFmtRowGuid;
@@ -606,7 +606,7 @@ else
     //public List<Plngen> MyXDaPlans => curOrga.Plngens.Where(pl => pl.Ptyp == 5 && pl.Totyp == IMyAtr).ToList();
     // public List<Plngen> MyDaPlans => curOrga.Plngens.Where(pl => pl.Ptyp == IMyGpln && pl.Todom == IMyDom && pl.Toatr == IMyAtr && pl.Tovue == IMyVue).ToList();
 
-    // public List<Rubvar> MyDaRubs => curPlan.Rubvars.Where(uv => uv.Prowguid == curPlan.Rowguid).ToList();
+    // public List<Rubvar> MyDaRubs => curPlan.Rubvars.Where(uv => uv.Prowguid == curPlan.Id).ToList();
     // public List<Rubfmt> MyDaFmts => curRubr.Rubfmts.Where(uf => uf.Prowguid == curRubr.Rowguid).ToList();
 
     //Grid Data feed management
@@ -715,7 +715,7 @@ else
         {
             gPlnsMap.Remove(parentKey); // Clear previous children for clean modal state
         }
-        plnMax = curOrga.Plngens.Any() ? curOrga.Plngens.Max(x => x.Pseq) : 0;
+        plnMax = curOrga.Plngens.Any() ? curOrga.Plngens.Max(x => x.Iele) : 0;
         PrepareAddPlan();
 
         patInitTitle = $"{curOrga.Idorg} - {curOrga.Raison} (creation programme)";
@@ -769,7 +769,7 @@ else
     // void PrepareAddRubr()
     // {
     //     isRubCodeValid = false;
-    //     var parentId = curPlan.Rowguid;
+    //     var parentId = curPlan.Id;
     //     // Make sure the gRubsMap has an entry for this parent
     //     if (!gRubsMap.ContainsKey(parentId))
     //     {
@@ -779,11 +779,11 @@ else
     //     var existingRubvars = curPlan.Rubvars.Where(ln => ln.Id == parentId) ?? new DataServiceCollection<Rubvar>();
     //     var mapRubvars = gRubsMap[parentId];
     //     int maxIdzonFromParent = existingRubvars.Any()
-    //         ? existingRubvars.Max(r => r.Useq ?? 0)
+    //         ? existingRubvars.Max(r => r.Iele ?? 0)
     //         : 0;
 
     //     int maxIdzonFromMap = mapRubvars.Any()
-    //         ? mapRubvars.Max(r => r.Useq ?? 0)
+    //         ? mapRubvars.Max(r => r.Iele ?? 0)
     //         : 0;
     //     int maxIdzon = Math.Max(0, Math.Max(maxIdzonFromParent, maxIdzonFromMap));
     //     int nextZon = maxIdzon == 0 ? 1 : maxIdzon + 1;
@@ -849,7 +849,7 @@ else
         {
             var plan = new Plngen()
             {
-                Rowguid = Guid.NewGuid(),
+                //Rowguid = Guid.NewGuid(),
                 Idorg = curOrga.Idorg,
                 Ptyp = IMyGpln,
                 Todom = IMyDom,
@@ -857,7 +857,7 @@ else
                 Abg = "",
                 Styp = 0,
                 Eta = 1,
-                Pseq = 0,
+                Iele = 0,
                 Xadd1 = -1
             };
 
@@ -928,7 +928,7 @@ else
     //     {
     //         Rowguid = Guid.NewGuid(),
     //         Idorg = curPlan.Idorg,
-    //         Prowguid = curPlan.Rowguid,
+    //         Ipln = curPlan.Id,
     //         Torub = 0,
     //         Utyp = IMyAtr, //services
     //         Sigrid = 0, //est grille
@@ -1017,7 +1017,7 @@ else
     // void IncludeRubr(Rubvar aglne)
     // {
     //     // Use parent Idrub as key to gRubsMap dictionary
-    //     var parentId = curPlan.Rowguid;
+    //     var parentId = curPlan.Id;
     //     bool YaChild = false;
     //     YaChild = IsChildValid(aglne);
     //     if (!YaChild) return;
@@ -1102,7 +1102,7 @@ else
             Totyp = mypln.Totyp, //1saisie2calcul
             Styp = mypln.Styp,
             //Belea = mypln.Belea,
-            Pseq = mypln.Pseq,
+            Iele = mypln.Iele,
             Eta = mypln.Eta, //
             Xadd1 = mypln.Xadd1, //newly added
             // Copy other fields as necessary
@@ -1208,7 +1208,7 @@ else
             editingPln.Totyp = mypln.Totyp; //1saisie2calcul
             editingPln.Styp = mypln.Styp;
             //editingPln.Belea = mypln.Belea;
-            editingPln.Pseq = mypln.Pseq;
+            editingPln.Iele = mypln.Iele;
             editingPln.Eta = mypln.Eta; //
             editingPln.Xadd1 = mypln.Xadd1; //newly added
             if (!curODContext.GetAllTrackedEntities().Any(e => e.Entity == editingPln))

@@ -9,31 +9,31 @@ namespace GxTie.Components.Opera
 {
     public class PersonEvaluationSession
     {
-        public Guid Idtie { get; }
+        public int Itie { get; }
         public DateTime SessionDate { get; }
         public List<FormulaLine> FormulaLines { get; private set; } = new();
         public List<InDataLineStream> Inputs { get; private set; } = new();
         public List<OutDataLineStream> Outputs { get; private set; } = new();
-        public PersonEvaluationSession(Guid idtie, DateTime sessionDate)
+        public PersonEvaluationSession(int itie, DateTime sessionDate)
         {
-            Idtie = idtie;
+            Itie = itie;
             SessionDate = sessionDate;
         }
         public void HydrateInputs(IEnumerable<Actsaie> actsaies, IEnumerable<Resdon> resdons)
         {
-            Inputs = InputHydrator.Hydrate(Idtie, SessionDate, actsaies, resdons);
+            Inputs = InputHydrator.Hydrate(Itie, SessionDate, actsaies, resdons);
         }
 
         public void LoadFormulaLines(IEnumerable<FormulaLine> registry)
         {
-            FormulaLines = registry.Where(l => l.Ptie == Idtie).ToList();
+            FormulaLines = registry.Where(l => l.Itie == Itie).ToList();
         }
 
         public void Evaluate()
         {
             var context = new FormulaEvaluationContext
             {
-                Idtie = Idtie,
+                Itie = Itie,
                 InputData = Inputs,
                 PreviousLines = FormulaLines,
                 SessionDate = SessionDate
@@ -58,7 +58,7 @@ namespace GxTie.Components.Opera
     public static class InputHydrator
     {
         public static List<InDataLineStream> Hydrate(
-            Guid idtie,
+            int itie,
             DateTime sessionDate,
             IEnumerable<Actsaie> actsaies,
             IEnumerable<Resdon> resdons)
@@ -67,7 +67,7 @@ namespace GxTie.Components.Opera
 
             // Top-level Actsaie
             var validActsaies = actsaies
-                        .Where(a => a.Rowguid == idtie && IsValidPeriod(a.Dtperi, a.Datvalid, sessionDate))
+                        .Where(a => a.Itie == itie && IsValidPeriod(a.Dtperi, a.Datvalid, sessionDate))
                         .GroupBy(a => a.Scdrub)
                         .Select(g => g.OrderByDescending(a => a.Datvalid).First());
 
@@ -85,7 +85,7 @@ namespace GxTie.Components.Opera
 
             // Top-level Resdon
             var validResdons = resdons
-                        .Where(r => r.Rowguid == idtie && IsValidPeriod(r.Dtperi, r.Datvalid, sessionDate))
+                        .Where(r => r.Itie == itie && IsValidPeriod(r.Dtperi, r.Datvalid, sessionDate))
                         .GroupBy(r => r.Scdrub)
                         .Select(g => g.OrderByDescending(r => r.Datvalid).First());
             foreach (var r in validResdons)
@@ -105,13 +105,13 @@ namespace GxTie.Components.Opera
 
         public static bool IsValidPeriod(int? dperi, DateTimeOffset? datvalid, DateTime sessionDate)
         {
-            return dperi == 1 || datvalid.HasValue && datvalid.Value.Date == sessionDate.Date;
+            return dperi == 1 || (datvalid.HasValue && datvalid.Value.Date == sessionDate.Date);
         }
         private static InDataLineStream MapToInput(dynamic entity, TableType type)
         {
             return new InDataLineStream
             {
-                Ptie = entity.Idtie,
+                Itie = entity.Itie,
                 Scdrub = entity.Scdrub,
                 Etyp = type,
                 Datval = entity.Datval,
