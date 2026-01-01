@@ -24,7 +24,13 @@
     private void SaveParent() { /* persist logic */ }
     private void ResetParent() => Parent = new();
 
-    private void AddChild() => Parent.Children.Add(new ChildDto { Id = Guid.NewGuid(), ParentId = Parent.Id });
+    private void AddChild() => Parent.Children.Add(new ChildDto { Id = CalcChildId(), ParentId = Parent.Id });
     private void EditChild(ChildDto child) { /* handled in ChildEntityList */ }
     private void DeleteChild(ChildDto child) => Parent.Children.Remove(child);
+    private int CalcChildId()
+    {
+        int isuit = 0;
+        isuit = Parent.Children.Max(u => u.Id) + 1;
+        return isuit;
+    }
 }

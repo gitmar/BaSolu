@@ -1,7 +1,12 @@
 ﻿// Models/ParentDto.cs
 public class ParentDto
 {
-    public Guid Id { get; set; }
+    private static int _counter = 0;
+    public ParentDto()
+    {
+        Id = ++_counter;
+    }
+    public int Id { get; private set; }
     public string Name { get; set; } = string.Empty;
     public List<ChildDto> Children { get; set; } = new();
 }
@@ -9,7 +14,7 @@ public class ParentDto
 // Models/ChildDto.cs
 public class ChildDto
 {
-    public Guid Id { get; set; }
+    public int Id { get; set; }
     public string Label { get; set; } = string.Empty;
-    public Guid ParentId { get; set; }
+    public int ParentId { get; set; }
 }

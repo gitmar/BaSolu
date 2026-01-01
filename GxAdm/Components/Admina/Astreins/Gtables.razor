@@ -1225,7 +1225,8 @@ else
             //tables DATA pour liste
             if (IMyBas != 0)
             {
-                var list = curOrga.Gsgfixes.Where(tb => tb.Gvars == 4 && tb.Itb == uTbc).ToList();
+                //var list = curOrga.Gsgfixes.Where(tb => tb.Gvars == 4 && tb.Itb == uTbc).ToList();
+                var list = curOrga.Gsgfixes.Where(tb => tb.Gvars == 4).ToList();
                 MyDaRubrs = new ObservableCollection<Gsgfix>(list);
                 Console.WriteLine($"ICIICI: {MyDaRubrs.Count} et {uTbc} et {curOrga.Gsgfixes.Count}");
             }
