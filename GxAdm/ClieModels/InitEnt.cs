@@ -111,8 +111,8 @@ namespace GxWapi.DaModels
         public int Xdel1 { get; set; } = 0;
         [JsonIgnore]
         public int Xgen1 { get; set; } = 0;
-        [JsonIgnore]
-        public List<Gsglne> draftCols { get; set; } = new();
+        //[JsonIgnore]
+        //public List<Gsglne> colsxVM { get; set; } = new();
     }
     public partial class Gsglne
     {

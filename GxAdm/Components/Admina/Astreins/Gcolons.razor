@@ -486,14 +486,14 @@
                                                 <ChildContent Context="item">
                                                     @if (!isEdingTfl || item.Xedt1 != -1)
                                                     {
-                                                        <button class="btn btn-warning btn-sm @(allEnable ? "" : "disabled-action")" @onclick="() => PromptTflEdit(item)">Edit</button>
+                                                        <button class="btn btn-warning btn-sm @(allEnable ? "" : "disabled-action")" @onclick="() => EditGfix(item)">Edit</button>
                                                     }
                                                     else
                                                     {
                                                         if (isEdingTfl && item.Xedt1 == -1)
                                                         {
-                                                            <button class="btn btn-warning btn-sm @(allEnable ? "" : "disabled-action")" @onclick="() => ConfEdingTfl(item)">Confirm</button>
-                                                            <button class="btn btn-danger btn-sm @(allEnable ? "" : "disabled-action")" @onclick="() => CancEdingTfl(item)">Annul</button>
+                                                            <button class="btn btn-warning btn-sm @(allEnable ? "" : "disabled-action")" @onclick="() => ConfGfix(item)">Confirm</button>
+                                                            <button class="btn btn-danger btn-sm @(allEnable ? "" : "disabled-action")" @onclick="() => CancGfix(item)">Annul</button>
                                                         }
                                                     }
                                                 </ChildContent>
@@ -849,7 +849,7 @@
         }
     }
     //GTfl -- EDITING
-    void PromptTflEdit(Gsgfix myafil)
+    void EditGfix(Gsgfix myafil)
     {
         myafil.Xedt1 = 0;
         editingTfl = myafil;
@@ -868,14 +868,14 @@
         myafil.Xedt1 = -1;
         isEdingTfl = true;
     }
-    void CancEdingTfl(Gsgfix mytfl)
+    void CancGfix(Gsgfix mytfl)
     {
         mytfl.Xedt1 = 0;
         isEdingTfl = false;
         editingTfl = null;
         draftTfl = null;
     }
-    void ConfEdingTfl(Gsgfix mytfl)
+    void ConfGfix(Gsgfix mytfl)
     {
         if (editingTfl is not null)
         {

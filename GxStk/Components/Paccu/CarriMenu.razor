@@ -36,10 +36,13 @@ else
             <div class="d-flex flex-column" style="height: 100%;">
                 <GxNavMenu BrandText="A24soft Gx-Solutions"
                            MenuItems="@MenuItems"
-                           YaGroup="true"
+                           YaGroup="false"
                            Groups="@Groupes"
                            MenuSelected="@_chxMenu"
-                           GroupSelected="@_chxGpe" />
+                           MenuSelectedChanged="@SelMenu"
+                           GroupSelected="@_chxGpe"
+                           GroupSelectedChanged="@SelGpe"
+                           OnBack="@NavigateBack" />
             </div>
         </div>
     </div>

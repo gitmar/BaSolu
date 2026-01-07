@@ -245,7 +245,7 @@
                                                         <option value="0">Aucun</option>
                                                         @foreach (var divo in _lsDivs)
                                                         {
-                                                            <option value="@divo.Khie">@divo.Liba</option>
+                                                            <option value="@divo.Ipln">@divo.Liba</option>
                                                         }
                                                     </select>
                                                 }
@@ -254,11 +254,11 @@
                                                 <label><b>Poste :</b></label>
                                                 @if (_lsPsts.Count > 0)
                                                 {
-                                                    <select class="standard-width" id="TypPst" @bind="curTiw.Idpst">
+                                                    <select class="standard-width" id="TypPst" @bind="curTiw.Ipst">
                                                         <option value="0">Aucun</option>
                                                         @foreach (var divo in _lsPsts)
                                                         {
-                                                            <option value="@divo.Kpst">@divo.Liba</option>
+                                                            <option value="@divo.Ipst">@divo.Liba</option>
                                                         }
                                                     </select>
                                                 }
@@ -590,6 +590,10 @@
     .standard-width {
         width: 200px; /* or any fixed width like 150px, 100%, etc */
         max-width: 100%;
+    }
+
+    .fs-xs {
+        font-size: 0.65rem;
     }
 </style>
 

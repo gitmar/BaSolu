@@ -56,12 +56,7 @@
                     </button>
                     &nbsp;&nbsp;
                     <button type="button" class="btn btn-sm btn-secondary btnsz @(!allEnable ? "" : "d-none")" style="font-size: small" @onclick="() => EdtAll()">Modifier</button>
-                    <button type="button" class="btn btn-sm btn-secondary btnsz @(allEnable ? "" : "d-none")" style="font-size: small" @onclick="() => CncAll()">Annuler</button>
-                    @if (isOrgEditing)
-                    {
-                        <span>&nbsp;&nbsp;</span>
-                        <button type="button" class="btn btn-sm btn-secondary btnsz @(allEnable ? "" : "d-none")" style="font-size: small" @onclick="() => SavAll()">Enregistrer</button>
-                    }
+                    <button type="button" class="btn btn-sm btn-secondary btnsz @(allEnable ? "" : "d-none")" style="font-size: small" @onclick="() => CncAll()">Afficher</button>
                 </div>
             </div>
             <div class="container-fluid-fixed-top">
@@ -72,44 +67,6 @@
                         <div class="col-auto">
                             <label style="font-weight:bold"> Package :&nbsp;</label>
                             <label style="font-weight:bold;font-size:larger">@curOrga.Sidom</label>
-                        </div>
-                    </div>
-                    <div class="row align-items-center">
-                        <div class="col-auto">
-                            <label style="font-weight:bold">Raison sociale :&nbsp;</label>
-                            <label style="font-weight:bold">@curOrga.Raison</label>
-                        </div>
-                    </div>
-                    <div class="row align-items-center">
-                        <div class="col-auto">
-                            <label style="font-weight:bold">Nom cible :&nbsp;</label>
-                            <InputText @bind-Value="curOrga.Stcible"
-                                       style="font-weight:bold;width:150px" readonly="@(allEnable ? null : "readonly")" placeholder="agent" />
-                        </div>
-                        <div class="col-auto">
-                            <label style="font-weight:bold">Max. :&nbsp;</label>
-                            <InputNumber @bind-Value="curOrga.Ntcible"
-                                         style="font-weight:bold;width:75px" readonly="@(allEnable ? null : "readonly")" placeholder="nombre" />
-                        </div>
-                        <div class="col-auto">
-                            <label style="font-weight:bold">Jetons :&nbsp;</label>
-                            <InputSelect id="opoint" @bind-Value="curOrga.Sijet" style="font-weight:bold" disabled="@(!allEnable)">
-                                @foreach (var tob in LsFixes.Where(uf => uf.Gvars == 31 && uf.Itb == 2 && uf.Gp1 == 1).ToList())
-                                {
-                                    <option value="@tob.Elea">@tob.Liba</option>
-                                }
-                            </InputSelect>
-                        </div>
-                    </div>
-                    <div class="row align-items-center">
-                        <div class="col-auto">
-                            <label style="font-weight:bold">Noeud cible :&nbsp;</label>
-                            <InputSelect id="opoint" @bind-Value="curOrga.Jpoint" disabled="@(!allEnable)">
-                                @foreach (var tob in LsDivs)
-                                {
-                                    <option value="@tob?.Khie">@tob.Liba</option>
-                                }
-                            </InputSelect>
                         </div>
                     </div>
                     <div class="row">
@@ -146,13 +103,47 @@
                         <div class="tab-content" id="tab-contenu">
                             <!--Structure-->
                             <div class="row tab-pane fade show active" id="nav-strucs" role="tabpanel" aria-labelledby="stc">
+                                <div>
+                                    @if (isOrgEditing) {
+                                        <button class="btn btn-warning btn-sm @(allEnable ? "" : "disabled-action")" @onclick="() => ConfEdingOrg()">Confirm</button>
+                                        <button class="btn btn-danger btn-sm @(allEnable ? "" : "disabled-action")" @onclick="() => CancEdingOrg()">Annul</button>
+                                    }
+                                </div>
                                 <table class="table w-auto" style="margin-left:10px">
                                     <tbody>
+                                        <tr>
+                                            <td>Raison sociale:</td>
+                                            <td class="text-right">
+                                                <InputText class="my-input" id="ograis" @bind-Value="curOrga.Raison" required
+                                                           style="font-weight:bold" readonly="@(allEnable ? null : "readonly")" placeholder="Enter sigle" />
+                                            </td>
+                                        </tr>
                                         <tr>
                                             <td>Sigle:</td>
                                             <td class="text-right">
                                                 <InputText class="my-input" id="ogsig" @bind-Value="curOrga.Sigle" required
                                                            style="font-weight:bold" readonly="@(allEnable ? null : "readonly")" placeholder="Enter sigle" />
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>Nom Cible:</td>
+                                            <td class="text-right">
+                                                <InputText class="my-input" id="ogsigl" @bind-Value="curOrga.Stcible" required
+                                                           style="font-weight:bold" readonly="@(allEnable ? null : "readonly")" placeholder="Enter sigle" />
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>Noeud Cible:</td>
+                                            <td class="text-right">
+                                                <InputNumber class="my-input" id="ognoeud" @bind-Value="curOrga.Jpoint" required
+                                                           style="font-weight:bold" readonly="@(allEnable ? null : "readonly")" placeholder="Enter sigle" />
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>Si jeton:</td>
+                                            <td class="text-right">
+                                                <InputNumber class="my-input" id="ogjeta" @bind-Value="curOrga.Sijet" required
+                                                           style="font-weight:bold" readonly="@(allEnable ? null : "readonly")" />
                                             </td>
                                         </tr>
                                         <tr>
@@ -234,7 +225,7 @@
                                             <td>Siteweb:</td>
                                             <td class="text-right">
                                                 <InputText class="my-input" id="ogsite" @bind-Value="curOrga.Weburl"
-                                                           style="font-weight:bold" readonly="@(allEnable ? null : "readonly")" placeholder="Enter SITEWEB" />
+                                                           style="font-weight:bold" readonly placeholder="Enter SITEWEB" />
                                             </td>
                                         </tr>
                                         <tr>
@@ -335,6 +326,7 @@
                                                     </div>
                                                 }
                                             </span>
+                                            <div class="col-md-1 text-center">actions</div>
                                         </div>
                                         @foreach (var scol in curOrga.Gsgfixes.Where(utl => (utl.Gvars == 21) && (utl.Itb == 1 || utl.Itb == 2 || utl.Itb == 3) && utl.Elea != 0))
                                         {
@@ -395,7 +387,7 @@
                                                             {
                                                                 <span>
                                                                     <InputText class="my-input" @bind-Value="scol.Lgft"
-                                                                               style="font-weight:bold" readonly="@(allEnable ? null : "readonly")" />
+                                                                               style="font-weight:bold; width:100%" readonly="@(allEnable ? null : "readonly")" />
                                                                 </span>
                                                             }
                                                             @if (scol.Elea == 1 && scol.Elea == 2)
@@ -406,9 +398,19 @@
                                                             }
                                                         </span>
                                                     }
+                                                    <div class="col-md-2">
+                                                        @if (!isEdingAfl || scol.Xedt1 != -1)
+                                                        {
+                                                            <button class="btn btn-warning btn-sm @(allEnable ? "" : "disabled-action")" @onclick="() => EditGfix(scol)">Edit</button>
+                                                        }
+                                                        @if (isEdingAfl && scol.Xedt1 == -1)
+                                                        {
+                                                            <button class="btn btn-warning btn-sm @(allEnable ? "" : "disabled-action")" @onclick="() => ConfGfix(scol)">Confirm</button>
+                                                            <button class="btn btn-danger btn-sm @(allEnable ? "" : "disabled-action")" @onclick="() => CancGfix(scol)">Annul</button>
+                                                        }
+                                                    </div>
                                                 </div>
                                             }
-
                                         }
                                     </div>
                                 </div>
@@ -421,6 +423,7 @@
                                     <div class="col-md-1">avec.</div>
                                     <div class="col-md-2">libelle</div>
                                     <div class="col-md-1">notif.</div>
+                                    <div class="col-md-1">actions</div>
                                 </div>
                                 @foreach (var gfx in curOrga.Gsgfixes.Where(uf => uf.Gvars == 3 && uf.Itb == 4 && uf.Elea != 0).OrderBy(uo => uo.Elea))
                                 {
@@ -428,83 +431,30 @@
                                         <div class="col-md-1 text-center">1</div>
                                         <label class="col-md-1">@gfx.Liba:</label>
                                         <div class="col-md-2">
-                                            <InputText @bind-Value="gfx.Sliba"
+                                            <InputText @bind-Value="gfx.Sliba" style="width:100%"
                                                        readonly="@(allEnable ? null : "readonly")" />
                                         </div>
                                         <div class="col-md-1">
-                                            <InputSelect id="ntclie" @bind-Value="gfx.Ityp" disabled="@(!allEnable)">
+                                            <InputSelect id="ntclie" @bind-Value="gfx.Ityp" disabled="@(!allEnable)" style="width:100%">
                                                 @foreach (var tob in LsFixes.Where(ut => ut.Gvars == 31 && ut.Itb == 4 && ut.Gp1 == 1))
                                                 {
                                                     <option value="@tob.Elea">@tob.Liba</option>
                                                 }
                                             </InputSelect>
                                         </div>
+                                        <div class="col-md-2">
+                                            @if (!isEdingAfl || gfx.Xedt1 != -1)
+                                            {
+                                                <button class="btn btn-warning btn-sm @(allEnable ? "" : "disabled-action")" @onclick="() => EditGfix(gfx)">Edit</button>
+                                            }
+                                            @if (isEdingAfl && gfx.Xedt1 == -1)
+                                            {
+                                                <button class="btn btn-warning btn-sm @(allEnable ? "" : "disabled-action")" @onclick="() => ConfGfix(gfx)">Confirm</button>
+                                                <button class="btn btn-danger btn-sm @(allEnable ? "" : "disabled-action")" @onclick="() => CancGfix(gfx)">Annul</button>
+                                            }
+                                        </div>
                                     </div>
                                 }
-                                @* <div class="row row-cols-3">
-                                    <div class="col-md-1 text-center">1</div>
-                                    <label class="col-md-1">Operateur:</label>
-                                    <div class="col-md-2">
-                                        <InputText @bind-Value="curOrga.Stopera"
-                                                   readonly="@(allEnable ? null : "readonly")" />
-                                    </div>
-                                    <div class="col-md-1">
-                                        <InputSelect id="ntclie" @bind-Value="curOrga.Ntopera" disabled="@(!allEnable)">
-                                            @foreach (var tob in LsFixes.Where(ut => ut.Gvars == 31 && ut.Itb == 4 && ut.Gp1 == 1))
-                                            {
-                                                <option value="@tob.Elea">@tob.Liba</option>
-                                            }
-                                        </InputSelect>
-                                    </div>
-                                </div>
-                                <div class="row row-cols-3">
-                                    <div class="col-md-1 text-center">2</div>
-                                    <label class="col-md-1">Client:</label>
-                                    <div class="col-md-2">
-                                        <InputText @bind-Value="curOrga.Stclient"
-                                                   readonly="@(allEnable ? null : "readonly")" />
-                                    </div>
-                                    <div class="col-md-1">
-                                        <InputSelect id="ntclie" @bind-Value="curOrga.Ntclient" disabled="@(!allEnable)">
-                                            @foreach (var tob in LsFixes.Where(ut => ut.Gvars == 31 && ut.Itb == 4 && ut.Gp1 == 1))
-                                            {
-                                                <option value="@tob.Elea">@tob.Liba</option>
-                                            }
-                                        </InputSelect>
-                                    </div>
-                                </div>
-                                <div class="row row-cols-3">
-                                    <div class="col-md-1 text-center">3</div>
-                                    <label class="col-md-1">Fournis.:</label>
-                                    <div class="col-md-2">
-                                        <InputText @bind-Value="curOrga.Stfournis"
-                                                   readonly="@(allEnable ? null : "readonly")" />
-                                    </div>
-                                    <div class="col-md-1">
-                                        <InputSelect id="ntfour" @bind-Value="curOrga.Ntfournis" disabled="@(!allEnable)">
-                                            @foreach (var tob in LsFixes.Where(ut => ut.Gvars == 31 && ut.Itb == 4 && ut.Gp1 == 1))
-                                            {
-                                                <option value="@tob.Elea">@tob.Liba</option>
-                                            }
-                                        </InputSelect>
-                                    </div>
-                                </div>
-                                <div class="row row-cols-3">
-                                    <div class="col-md-1  text-center">4</div>
-                                    <label class="col-md-1">Parten.:</label>
-                                    <div class="col-md-2">
-                                        <InputText @bind-Value="curOrga.Stpatern"
-                                                   readonly="@(allEnable ? null : "readonly")" />
-                                    </div>
-                                    <div class="col-md-1">
-                                        <InputSelect id="ntpart" @bind-Value="curOrga.Ntpatern" disabled="@(!allEnable)">
-                                            @foreach (var tob in LsFixes.Where(ut => ut.Gvars == 31 && ut.Itb == 4 && ut.Gp1 == 1))
-                                            {
-                                                <option value="@tob.Elea">@tob.Liba</option>
-                                            }
-                                        </InputSelect>
-                                    </div>
-                                </div> *@
                             </div>
                             <!--Filiations-->
                             <div class="tab-pane fade" id="nav-filis" role="tabpanel" aria-labelledby="fil">
@@ -554,20 +504,20 @@
                                         {
                                             @if (isGenerable)
                                             {
-                                                <button class="btn btn-danger btn-sm @(allEnable ? "" : "disabled-action")" @onclick="() => PromptAllGener(curAfl)">Genr.</button>
+                                                <button class="btn btn-danger btn-sm @(allEnable ? "" : "disabled-action")" @onclick="() => PromptAllGener(curGfix)">Genr.</button>
                                             }
                                             @if (isGenerTfl)
                                             {
-                                                <button class="btn btn-sm btn-success" @onclick="() => ConfirmAllGener(curAfl)">
+                                                <button class="btn btn-sm btn-success" @onclick="() => ConfirmAllGener(curGfix)">
                                                     ✅ Confirm
                                                 </button>
-                                                <button class="btn btn-sm btn-secondary" @onclick="() => CancelAllGener(curAfl)">
+                                                <button class="btn btn-sm btn-secondary" @onclick="() => CancelAllGener(curGfix)">
                                                     ❌ Annul
                                                 </button>
                                             }
                                             @if (curnbAfls > 0 && selTyp != 1)
                                             {
-                                                <button class="btn btn-sm btn-danger" @onclick="() => PromptDeleteGener(curAfl)">
+                                                <button class="btn btn-sm btn-danger" @onclick="() => PromptDeleteGener(curGfix)">
                                                     Supr.
                                                 </button>
                                             }
@@ -618,28 +568,25 @@
                                                                  style="font-weight:bold;width:60px" readonly="@(allEnable ? null : "readonly")" />
                                                 </div>
                                                 <div class="col-1 @(gfx.Etyp == 1 ? "saflprow" : "")">
-                                                    <InputSelect id="ntnf" @bind-Value="gfx.Ntyp" disabled="@(!allEnable)">
+                                                    <InputSelect id="ntnf" @bind-Value="gfx.Ntyp" disabled="@(!allEnable)" style="width:100%">
                                                         @foreach (var tob in LsFixes.Where(ut => ut.Gvars == 31 && ut.Itb == 4 && ut.Gp1 == 1))
                                                         {
                                                             <option value="@tob.Elea">@tob.Liba</option>
                                                         }
                                                     </InputSelect>
                                                 </div>
-                                                @if (allEnable)
-                                                {
-                                                    int aflnbcols = @curOrga.Gsglnes.Where(fl => fl.Otyp == 5 && fl.Dtyp == IBastyp && fl.Totyp == selTyp && fl.Tstyp == gfx.Elea).Count();
-                                                    <div class="col-2 d-flex gap-2">
-                                                        @if (!isEdingAfl || gfx.Xedt1 != -1)
-                                                        {
-                                                            <button class="btn btn-warning btn-sm @(allEnable ? "" : "disabled-action")" @onclick="() => PromptTflEdit(gfx)">Edit</button>
-                                                        }
-                                                        @if (isEdingAfl && gfx.Xedt1 == -1)
-                                                        {
-                                                            <button class="btn btn-warning btn-sm @(allEnable ? "" : "disabled-action")" @onclick="() => ConfEdingTfl(gfx)">Confirm</button>
-                                                            <button class="btn btn-danger btn-sm @(allEnable ? "" : "disabled-action")" @onclick="() => CancEdingTfl(gfx)">Annul</button>
-                                                        }
-                                                    </div>
-                                                }
+                                                    @* int aflnbcols = @curOrga.Gsglnes.Where(fl => fl.Otyp == 5 && fl.Dtyp == IBastyp && fl.Totyp == selTyp && fl.Tstyp == gfx.Elea).Count(); *@
+                                                <div class="col-md-2 d-flex gap-2">
+                                                    @if (!isEdingAfl || gfx.Xedt1 != -1)
+                                                    {
+                                                        <button class="btn btn-warning btn-sm @(allEnable ? "" : "disabled-action")" @onclick="() => EditGfix(gfx)">Edit</button>
+                                                    }
+                                                    @if (isEdingAfl && gfx.Xedt1 == -1)
+                                                    {
+                                                        <button class="btn btn-warning btn-sm @(allEnable ? "" : "disabled-action")" @onclick="() => ConfGfix(gfx)">Confirm</button>
+                                                        <button class="btn btn-danger btn-sm @(allEnable ? "" : "disabled-action")" @onclick="() => CancGfix(gfx)">Annul</button>
+                                                    }
+                                                </div>
                                             </div>
                                         }
                                     </div>
@@ -649,7 +596,7 @@
                             <div class="tab-pane fade" id="nav-ncols" role="tabpanel" aria-labelledby="col">
                                     <div class="row form-group">
                                         <div class="btn btn-group">
-                                         <label style="font-weight:bold"> Filiation -> G.Tiers :</label>
+                                         <label style="font-weight:bold"> Filiation/Colonnes -> G.Tiers :</label>
                                         <InputSelect id="fltyp" @bind-Value="selTyp">
                                             <option value="0">choisir</option>
                                             @foreach (var tob in LsGties.ToList())
@@ -663,7 +610,7 @@
                                           Data="curOrga.Gsgfixes.Where(uf => uf.Gvars == 3 && uf.Itb == 5 && uf.Totyp == selTyp && uf.Elea != 0).OrderBy(uo=>uo.Etyp).ToList()"
                                           AllowDetailView="true"
                                           AllowRowClick="true"
-                                          OnRowClick="OnAflRowClick"
+                                          OnRowClick="OnGfixRowClick"
                                           Responsive="true">
                                         <GridColumns>
                                             <GridColumn TItem="Gsgfix" HeaderText="No">
@@ -719,7 +666,7 @@
                                         {
                                         <GridDetailView TItem="Gsgfix" Context="item">
                                             <Grid TItem="Gsglne"
-                                                  Data="@curAfl.draftCols.ToList()"
+                                                  Data="@gsgCols"
                                                   AllowFiltering="@isGlneFilteringEnabled"
                                                   AllowPaging="true"
                                                   Responsive="true">
@@ -736,20 +683,21 @@
                                                     </GridColumn>
                                                     <GridColumn TItem="Gsglne" HeaderText="Courant">
                                                         <ChildContent Context="r">
-                                                            @if (allEnable)
+                                                            @if (r.Rowguid == GlneEdRowguid)
                                                             { // show draftPln inputs
                                                               <InputText @bind-Value="r.Oliba" />
                                                             }
                                                             else
                                                             { // show item as read-only
-                                                              <label>@r.Oliba</label>
+                                                              <input @bind="r.Oliba" disabled="true"/>
+                                                              @* <span>@r.Oliba</span> *@
                                                             }
                                                         </ChildContent>
                                                     </GridColumn>
                                                     <GridColumn TItem="Gsglne" HeaderText="acc.">
                                                         <ChildContent Context="r">
                                                             <div class="col-1">
-                                                                @if (allEnable)
+                                                                @if (r.Rowguid == GlneEdRowguid)
                                                                 { // show draftPln inputs
                                                                   <input type="checkbox"
                                                                          checked="@(r.Jacc == 1)"
@@ -771,16 +719,16 @@
                                                     <GridColumn TItem="Gsglne" HeaderText="Rang">
                                                         <ChildContent Context="r">
                                                             <div class="col-1">
-                                                                @if (allEnable)
+                                                                @if (r.Rowguid == GlneEdRowguid)
                                                                 { // show draftPln inputs
                                                                   <InputNumber @bind-Value="r.Yrng"
                                                                        style="font-weight:bold;width:60px" />
                                                                 }
                                                                 else
                                                                 { // show item as read-only
-                                                                  <label style="font-weight:bold;width:60px">
+                                                                  <span style="font-weight:bold;width:60px" disabled="true">
                                                                       @r.Yrng
-                                                                  </label>
+                                                                  </span>
                                                                 }
                                                             </div>
                                                         </ChildContent>
@@ -788,7 +736,7 @@
                                                     <GridColumn TItem="Gsglne" HeaderText="Eta">
                                                         <ChildContent Context="r">
                                                             <div class="col-1">
-                                                                @if (allEnable)
+                                                                @if (r.Rowguid == GlneEdRowguid)
                                                                 { // show draftPln inputs
                                                                   <InputSelect @bind-Value="r.Eta" style="width:auto" disabled="@selDisabled">
                                                                       <option class="ichx" value="0">?etat</option>
@@ -815,14 +763,15 @@
                                                         <ChildContent Context="r">
                                                             @if (!isEdingCol || r.Xedt1 != -1)
                                                             {
-                                                                <button class="btn btn-warning btn-sm @(allEnable ? "" : "disabled-action")" @onclick="() => PromptColEdit(r)">Edit</button>
+                                                                <button class="btn btn-warning btn-sm @(allEnable ? "" : "disabled-action")" @onclick="() => EditGcol(r)">Edit</button>
                                                             }
                                                             else
                                                             {
-                                                                if (isEdingCol && r.Xedt1 == -1)
+                                                                @* if (isEdingCol && r.Xedt1 == -1) *@
+                                                                if (r.Rowguid == GlneEdRowguid)
                                                                 {
-                                                                    <button class="btn btn-warning btn-sm @(allEnable ? "" : "disabled-action")" @onclick="() => ConfEdingCol(r)">Confirm</button>
-                                                                    <button class="btn btn-danger btn-sm @(allEnable ? "" : "disabled-action")" @onclick="() => CancEdingCol(r)">Annul</button>
+                                                                    <button class="btn btn-warning btn-sm @(allEnable ? "" : "disabled-action")" @onclick="() => ConfGcol(r)">Confirm</button>
+                                                                    <button class="btn btn-danger btn-sm @(allEnable ? "" : "disabled-action")" @onclick="() => CancGcol(r)">Annul</button>
                                                                 }
                                                             }
                                                         </ChildContent>
@@ -934,7 +883,7 @@
 
     public Gxorga curOrga = new Gxorga();
     private EditContext edOrgContext;
-    
+
     public string Title { get; set; }
     private string tbTitle = "Cible";
     public string _UserId = "";
@@ -952,7 +901,7 @@
 
     private int curnbAfls => curOrga.Gsgfixes?.Where(x => x.Gvars == 5 && x.Totyp == selTyp).Count() ?? 0;
     private int curnbCols => curOrga.Gsglnes?.Where(x => x.Otyp == 5 && x.Dtyp == IBastyp && x.Totyp == selTyp && x.Tstyp == 1).Count() ?? 0;
-    private Gsgfix curAfl = new();
+
     //private MyAfilCol curGtyp = new();
     private bool isGenerable => curnbAfls == 0 && selTyp != 1;
     private bool selDisabled => allEnable ? false: true;
@@ -960,7 +909,9 @@
     private bool isLoading = false, icOpening = false;
     private bool allEnable = false;
     private bool isOrgEditing = false;
-    private bool isColEditing = false;
+    //private bool isColEditing = false;
+    //private bool isAflEditing = false;
+    //private bool isDomEditing = false;
 
     private int selTyp = 0;
     private int IBastyp = 0;
@@ -974,22 +925,33 @@
     //bool isGenerCbl = false;
 
     Gsgfix newTfl = new();
-    Gsgfix draftTfl = new();
+    //Gxorga GxorgaVM = new();
+
+
+    Gsgfix? editingAfl = null;
+    bool isEdingAfl = false;
+    bool isDelingTfl = false;
+    bool isGenerTfl = false;
 
     Gsglne? editingCol = null;
     bool isEdingCol = false;
-    Gsgfix? editingAfl = null;
-    bool isEdingAfl = false;
 
-    bool isDelingTfl = false;
-    bool isGenerTfl = false;
     string mesAflSup = "", mesAflGen = "";
-    //variables GLNE
+
+    //row GFIX
+    Gsgfix curGfix = new();
+    Guid GfixEdRowguid = Guid.Empty;
+    //Gsgfix curFixVM = new(); 
+
+    //row GLNE
+    Gsglne curGlne = new();
+    Guid GlneEdRowguid = Guid.Empty;
+    Gsglne curColVM = new();
+    List<Gsglne> gsgCols = new();
+    //Gsglne newGlne = new();
+    //Gsglne? draftGlne = new();
     bool isEdingGlne = false;
     bool adingGlne = false;
-
-    //Gsglne newGlne = new();
-    Gsglne? draftGlne = new();
     Gsglne? editingGlne = null;
     private bool isGlneFilteringEnabled = false;
     private string savOliba = "", savOabg = "";
@@ -1029,16 +991,10 @@
             .ToList();
         _invRoles = await _rendAgres.LoadOrgaRoles();
         Console.WriteLine($"Roles disponibles : {_invRoles.Count}");
-        //await LoadOrgaAsync(); // ✅ Still relevant if editing Gxorga
-        isLoading = false;
-    }
-    protected override async Task OnParametersSetAsync()
-    {
-        int tst = 21;
+        //load WebApi entities
         try
         {
             _gODContext = await _contextFactory.CreateAsync(); // Use factory
-            tst = 3;
             var expand = "Gsgfixes,Gsglnes";
             var dxorgas = await _gODContext.LoadFilteredAsync<Gxorga>(expand: expand);
             curOrga = dxorgas.FirstOrDefault();
@@ -1047,114 +1003,130 @@
                 Console.WriteLine("curOrga charge");
                 edOrgContext = new EditContext(curOrga);
                 edOrgContext.OnFieldChanged += HandleFieldChanged;
+                //gsgCols = curOrga.Gsglnes.ToList();
                 Console.WriteLine($"nb gfixes : {curOrga.Gsgfixes.Count}");
             } else
             {
                 Console.WriteLine("INSTITUTION NON TROUVEE");
             }
-            tst = 11;
         }
         catch (Exception ex)
         {
             //strmeta = _entityManager.strmeta;
-            Console.WriteLine($"1Probleme EntityManagment : {tst} et {ex.Message}");
+            Console.WriteLine($"1Probleme EntityManagment : {ex.Message}");
         }
-        Console.WriteLine("1SORTIE");
+        isLoading = false;
     }
-    void OnAflRowClick(GridRowEventArgs<Gsgfix> args)
+
+    void OnGfixRowClick(GridRowEventArgs<Gsgfix> args)
     {
         icOpening = true;
-        Console.WriteLine($"OnAflRowClick Triggered : {args.Item.Xseq}");
-        curAfl = args.Item; //get gRubsMap
-        Console.WriteLine($"X1seq {curAfl.Xseq}");
-        if (curAfl == null || curAfl.Xseq == 0)
-        {
-            return;
-        }
-        int typc = 0;
-        if (curAfl.Etyp == 7) //matiere
-        {
-            typc = 2;
-        } else //tiers 
-        { 
-            typc = 1;
-        }
-        curAfl.draftCols = new();
-        foreach(var uncol in LsFixes.Where(fx => fx.Gvars == 65 && fx.Itb == typc).OrderBy(cl => cl.Elea))
-        {
-            // --iorig -> 2 vient de gxorga/consfix
-            // --itb -> 12/13
-            // --totyp -> pour les types tiers ou xuits
-            // --pseq --> refer. element parent(niv.clef)
-            // --pele -> refer. element parent(niv.nbre
-            // --jacc -> 1si present dans accueil/inscr
-            // --jenr -> 1si present dans enrolement
-            // --eaut -> 0 supprimable
-            // --scdrub -> scdrub
-            // --rno -> 1..n refer. element interne
-            // --yrng(gp3/ydpd) -> rang colonne 1..n
-            // --ztyp(gp2/ztyp) -> type colonne 1 string, 2 number...
-            // --sitb(test?/zgpe) -> si table apres test
-            // --ztbl(gp1/zfro) --> refer. table
-            // --zdpd(gp4/xdpd) -> refer. table liee (pays/region/ville...)
-            // --ktyp(gp7/ktyp) -> integre
-            // --vtyp(tgx/mtyp) -> visibilite
-            // --inx1 -> enrolement
-            // --inx2 -> validation
-            // --scdrub --> refer.
-            int yaTb = 0;
-            if (uncol.Gp1 != 0) yaTb = 1;
-            Gsglne brouCol = new Gsglne
-            {
-                Idorg = curOrga.Idorg,
-                Pseq = uncol.Fxseq,
-                Pele = uncol.Elea,
-                Otyp = 5, //colonne affilie
-                Dtyp = 5, //6tiers7produits
-                Totyp = selTyp, //1cible2soutien3operat4client5fournis6patern7matiere9tous
-                Tstyp = uncol.Elea, //affilie
-
-                Eaut = 0, //libre
-                Scdrub = uncol.Scdrub,
-                Elea = uncol.Elea,
-                Liba = uncol.Liba,
-                Abg = uncol.Abg,
-                Ztyp = uncol.Gp2, //1 string, 2 number
-                Sitb = yaTb, //si table apres test
-                Ztbl = uncol.Gp1, //refer table
-                Zdpd = uncol.Gp4, //parent table liee
-                Ktyp = uncol.Gp7, //integre
-                //Vtyp = uncol.Mtyp,
-                //Xsiz = uncol.Isiz,
-                //Ysiz = uncol.Isiz,
-                Inx1 = 1,
-                Inx2 = 1
-            };
-            var existcol = curOrga.Gsglnes.FirstOrDefault(uc => uc.Pseq == uncol.Fxseq);
-            if (existcol != null) {
-                brouCol.Oliba = existcol.Oliba;
-                brouCol.Oabg = existcol.Oabg;
-                brouCol.Yrng = existcol.Yrng; //rang colonne
-                brouCol.Jacc = existcol.Jacc;
-                brouCol.Jenr = existcol.Jenr;
-                brouCol.Eta = existcol.Eta;
-            } else 
-            {
-                brouCol.Oliba = uncol.Liba;
-                brouCol.Oabg = uncol.Abg;
-                brouCol.Yrng = uncol.Gp3; //rang colonne
-                brouCol.Jacc = 0;
-                brouCol.Jenr = 0;
-                brouCol.Eta = 1;
-            }
-            curAfl.draftCols.Add(brouCol);
-        }
+        Console.WriteLine($"OnGfixRowClick: {args.Item.Xseq}");
+        curGfix = args.Item;
+        if (curGfix?.Xseq == 0) return;
+        int typc = curGfix.Etyp == 7 ? 2 : 1;  // g
+        gsgCols = curOrga.Gsglnes.Where(ug => ug.Otyp == 5 && ug.Totyp == curGfix.Totyp && ug.Tstyp == curGfix.Etyp).ToList();
+        // curGfix.colsxVM = LsFixes
+        //     .Where(fx => fx.Gvars == 65 && fx.Itb == typc)
+        //     .OrderBy(cl => cl.Elea)
+        //     .Select(uncol => CreateDraftCol(uncol))
+        //     .ToList();
         icOpening = false;
         StateHasChanged();
     }
-    private void SelDomGtie(Gpfixe myfix)
+    private Gsglne CreateDraftCol(dynamic uncol)  // Or type LsFixes item type
     {
-
+        //dynamic = consfix
+        int yaTb = uncol.Gp1 != 0 ? 1 : 0;
+        int ystyp = uncol.Elea; //remplace Elea
+        var brouCol = new Gsglne();
+        // //{
+        //     Idorg = curOrga.Idorg,
+        //     Pseq = uncol.Fxseq,
+        //     Pele = uncol.Elea,
+        //     Otyp = 5,
+        //     Dtyp = 5,
+        //     Totyp = selTyp,
+        //     Tstyp = uncol.Elea,
+        //     Eaut = 0,
+        //     Scdrub = uncol.Scdrub,
+        //     Elea = uncol.Elea,
+        //     Liba = uncol.Liba,
+        //     Abg = uncol.Abg,
+        //     Ztyp = uncol.Gp2,
+        //     Sitb = yaTb,
+        //     Ztbl = uncol.Gp1,
+        //     Zdpd = uncol.Gp4,
+        //     Ktyp = uncol.Gp7,
+        //     Inx1 = 1,
+        //     Inx2 = 1
+        // //};
+        var lscols = curOrga.Gsglnes.Where(uc => uc.Otyp == 5 && uc.Pseq == uncol.Fxseq && uc.Totyp == selTyp && uc.Tstyp == ystyp).ToList();
+        // Console.WriteLine($"current type : {selTyp}");
+        if (lscols.Any())
+        {
+            var existcol = lscols.FirstOrDefault();
+            brouCol.Idorg = curOrga.Idorg;
+            brouCol.Pseq = uncol.Fxseq;
+            brouCol.Pele = uncol.Elea;
+            brouCol.Otyp = 5;
+            brouCol.Dtyp = 5;
+            brouCol.Totyp = selTyp;
+            brouCol.Tstyp = uncol.Elea;
+            brouCol.Eaut = 0;
+            brouCol.Scdrub = uncol.Scdrub;
+            brouCol.Elea = ystyp;
+            //brouCol.Etyp = ystyp;
+            brouCol.Liba = uncol.Liba;
+            brouCol.Abg = uncol.Abg;
+            brouCol.Ztyp = uncol.Gp2;
+            brouCol.Sitb = yaTb;
+            brouCol.Ztbl = uncol.Gp1;
+            brouCol.Zdpd = uncol.Gp4;
+            brouCol.Ktyp = uncol.Gp7;
+            brouCol.Inx1 = 1;
+            brouCol.Inx2 = 1;
+            brouCol.Oliba = existcol.Oliba;
+            brouCol.Oabg = existcol.Oabg;
+            brouCol.Yrng = existcol.Yrng;
+            brouCol.Jacc = existcol.Jacc;
+            brouCol.Jenr = existcol.Jenr;
+            brouCol.Eta = existcol.Eta;
+            return brouCol;
+        }
+        // else
+        // {
+        //     brouCol.Oliba = uncol.Liba;
+        //     brouCol.Oabg = uncol.Abg;
+        //     brouCol.Yrng = uncol.Gp3;
+        //     brouCol.Jacc = 0;
+        //     brouCol.Jenr = 0;
+        //     brouCol.Eta = 1;
+        // }
+        return null;
+        // --iorig -> 2 vient de gxorga/consfix
+        // --itb -> 12/13
+        // --totyp -> pour les types tiers ou xuits
+        // --pseq --> refer. element parent(niv.clef)
+        // --pele -> refer. element parent(niv.nbre
+        // --jacc -> 1si present dans accueil/inscr
+        // --jenr -> 1si present dans enrolement
+        // --eaut -> 0 supprimable
+        // --scdrub -> scdrub
+        // --rno -> 1..n refer. element interne
+        // --yrng(gp3/ydpd) -> rang colonne 1..n
+        // --ztyp(gp2/ztyp) -> type colonne 1 string, 2 number...
+        // --sitb(test?/zgpe) -> si table apres test
+        // --ztbl(gp1/zfro) --> refer. table
+        // --zdpd(gp4/xdpd) -> refer. table liee (pays/region/ville...)
+        // --ktyp(gp7/ktyp) -> integre
+        // --vtyp(tgx/mtyp) -> visibilite
+        // --inx1 -> enrolement
+        // --inx2 -> validation
+        // --scdrub --> refer.
+    }
+    void SelDomGtie(Gpfixe myfix)
+    {
         //prise du type afil
         //curGtyp = new();
         // var myGAtyp = curOrga.Gsgfixes
@@ -1250,58 +1222,202 @@
         // }
         //}
     }
-    //EDITING AFL
-    void PromptTflEdit(Gsgfix myafil)
+    //EDITING Gsgfix (dom/afil/rel)
+    void EditGfix(Gsgfix myafil)
     {
-        myafil.Xedt1 = 0;
-        editingAfl = myafil;
-        draftTfl = new Gsgfix
-        {
-            Liba = myafil.Liba,
-            Sliba = myafil.Sliba,
-            Abg = myafil.Abg,
-            Ityp = myafil.Ityp,
-            Jtyp = myafil.Jtyp,
-            Mtyp = myafil.Mtyp,
-            Ntyp = myafil.Ntyp,
-            Eta = myafil.Eta,
-        };
-        //init edition
-        draftTfl.Xedt1 = -1;
-        myafil.Xedt1 = -1;
-        isEdingAfl = true;
-    }
-    void CancEdingTfl(Gsgfix mytfl)
-    {
-        mytfl.Xedt1 = 0;
-        isEdingAfl = false;
-        editingAfl = null;
-        draftTfl = null;
-    }
-    void ConfEdingTfl(Gsgfix mytfl)
-    {
-        if (editingAfl is not null)
-        {
-            editingAfl.Liba = mytfl.Liba;
-            editingAfl.Sliba = mytfl.Sliba;
-            editingAfl.Abg = mytfl.Abg;
-            editingAfl.Ityp = mytfl.Ityp;
-            editingAfl.Jtyp = mytfl.Jtyp;
-            editingAfl.Mtyp = mytfl.Mtyp;
-            editingAfl.Ntyp = mytfl.Ntyp;
-            editingAfl.Eta = mytfl.Eta;
-            if (!_gODContext.GetAllTrackedEntities().Any(e => e.Entity == editingAfl))
-            {
-                _gODContext.AttachTo("Gsgfixes", editingAfl);
-            }
-            _gODContext.UpdateObject(editingAfl);
+        myafil.Xedt1 = -1; //editing
+        curGfix = myafil;
+        if (myafil.Gvars == 21 && (myafil.Itb == 1 || myafil.Itb == 2 || myafil.Itb == 3))
+        { //lim
+            RefilGdom(myafil);
+        } else if (myafil.Gvars == 3 && myafil.Itb == 5)
+        { //afil
+            RefilGafl(myafil);
+        } else if (myafil.Gvars == 3 && myafil.Itb == 4)
+        { //relat tiers
+            RefilGrel(myafil);
+        } else {
+            return;
         }
+        curGfix.Xedt1 = -1; //editing
+        isEdingAfl = true;
+        GfixEdRowguid = myafil.Rowguid;
+    }
+    void CancGfix(Gsgfix mytfl)
+    {
+        EmptyGfix();
+
+        GfixEdRowguid = Guid.Empty;
+
+        mytfl.Xedt1 = 0;
+        isEdingAfl = false;
+        editingAfl = null;
+        curGfix = new();
+        
+    }
+    void ConfGfix(Gsgfix mytfl)
+    {
+        if (mytfl != null)
+        {
+            if (!_gODContext.GetAllTrackedEntities().Any(e => e.Entity == curGfix))
+            {
+                _gODContext.AttachTo("Gsgfixes", curGfix);
+            }
+            _gODContext.UpdateObject(curGfix);
+        }
+        GfixEdRowguid = Guid.Empty;
+
+        // if (editingAfl is not null)
+        // {
+        //     editingAfl.Liba = mytfl.Liba;
+        //     editingAfl.Sliba = mytfl.Sliba;
+        //     editingAfl.Abg = mytfl.Abg;
+        //     editingAfl.Ityp = mytfl.Ityp;
+        //     editingAfl.Jtyp = mytfl.Jtyp;
+        //     editingAfl.Mtyp = mytfl.Mtyp;
+        //     editingAfl.Ntyp = mytfl.Ntyp;
+        //     editingAfl.Eta = mytfl.Eta;
+        //     if (!_gODContext.GetAllTrackedEntities().Any(e => e.Entity == editingAfl))
+        //     {
+        //         _gODContext.AttachTo("Gsgfixes", editingAfl);
+        //     }
+        //     _gODContext.UpdateObject(editingAfl);
+        // }
         mytfl.Xedt1 = 0;
         isEdingAfl = false;
         editingAfl = null;
     }
-    //EDITING COL
-    void PromptColEdit(Gsglne mycol)
+    void EmptyGfix()
+    {
+        curGfix = new();
+    }
+    void RefilGdom(Gsgfix myfix) //dom
+    {
+        curGfix = new Gsgfix
+        {
+            Liba = myfix.Liba,
+            Sliba = myfix.Sliba,
+            Abg = myfix.Abg,
+            Ityp = myfix.Ityp,
+            Jtyp = myfix.Jtyp,
+            Mtyp = myfix.Mtyp,
+            Ntyp = myfix.Ntyp,
+            Eta = myfix.Eta,
+        };
+    }
+    void RefilGafl(Gsgfix myfix) //afil
+    {
+        curGfix = new Gsgfix
+        {
+            Liba = myfix.Liba,
+            Sliba = myfix.Sliba,
+            Abg = myfix.Abg,
+            Ityp = myfix.Ityp,
+            Jtyp = myfix.Jtyp,
+            Mtyp = myfix.Mtyp,
+            Ntyp = myfix.Ntyp,
+            Eta = myfix.Eta,
+        };
+    }
+    void RefilGrel(Gsgfix myfix) //relat tiers
+    {
+        curGfix = new Gsgfix
+        {
+            Liba = myfix.Liba,
+            Sliba = myfix.Sliba,
+            Abg = myfix.Abg,
+            Ityp = myfix.Ityp,
+            Jtyp = myfix.Jtyp,
+            Mtyp = myfix.Mtyp,
+            Ntyp = myfix.Ntyp,
+            Eta = myfix.Eta,
+        };
+    }
+    //EDITING Gsglne (colonne)
+    void EditGlne(Gsglne myclne)
+    {
+        myclne.Xedt1 = -1; //editing
+        curGlne = myclne;
+        RefilGlne(myclne);
+        curColVM.Xedt1 = -1; //editing
+        isEdingCol = true;
+        GlneEdRowguid = myclne.Rowguid;
+    }
+    void CancGlne(Gsglne myclne)
+    {
+        EmptyGlne();
+
+        GlneEdRowguid = Guid.Empty;
+
+        myclne.Xedt1 = 0;
+        isEdingCol = false;
+        editingCol = null;
+        curColVM = new();
+
+    }
+    void ConfGlne(Gsglne myclne)
+    {
+        if (myclne != null)
+        {
+            if (!_gODContext.GetAllTrackedEntities().Any(e => e.Entity == curGlne))
+            {
+                _gODContext.AttachTo("Gsglnes", curGlne);
+            }
+            _gODContext.UpdateObject(curGlne);
+        }
+        GlneEdRowguid = Guid.Empty;
+
+        // if (editingAfl is not null)
+        // {
+        //     editingAfl.Liba = mytfl.Liba;
+        //     editingAfl.Sliba = mytfl.Sliba;
+        //     editingAfl.Abg = mytfl.Abg;
+        //     editingAfl.Ityp = mytfl.Ityp;
+        //     editingAfl.Jtyp = mytfl.Jtyp;
+        //     editingAfl.Mtyp = mytfl.Mtyp;
+        //     editingAfl.Ntyp = mytfl.Ntyp;
+        //     editingAfl.Eta = mytfl.Eta;
+        //     if (!_gODContext.GetAllTrackedEntities().Any(e => e.Entity == editingAfl))
+        //     {
+        //         _gODContext.AttachTo("Gsgfixes", editingAfl);
+        //     }
+        //     _gODContext.UpdateObject(editingAfl);
+        // }
+        myclne.Xedt1 = 0;
+        isEdingCol = false;
+        editingCol = null;
+    }
+    void EmptyGlne()
+    {
+        curColVM = new();
+    }
+    void RefilGlne(Gsglne myclne)
+    {
+        curColVM = new Gsglne
+        {
+            Liba = myclne.Liba,
+            Oliba = myclne.Oliba,
+            Abg = myclne.Abg,
+            //Ityp = myclne.Ityp,
+            Jtyp = myclne.Jtyp,
+            //Mtyp = myclne.Mtyp,
+            //Ntyp = myclne.Ntyp,
+            Eta = myclne.Eta,
+        };
+    }
+
+
+    void ConfEdingOrg()
+    {
+
+    }
+    void CancEdingOrg()
+    {
+
+    }
+    //EDITING Gsglne
+
+    void EditGcol(Gsglne mycol)
     {
         mycol.Xedt1 = 0;
         editingCol = mycol;
@@ -1326,15 +1442,17 @@
         // draftTfl.Xedt1 = -1;
         mycol.Xedt1 = -1;
         isEdingCol = true;
+        GlneEdRowguid = mycol.Rowguid;
     }
-    void CancEdingCol(Gsglne mycol)
+    void CancGcol(Gsglne mycol)
     {
         mycol.Xedt1 = 0;
         isEdingCol = false;
         editingCol = null;
         //draftTfl = null;
+        GlneEdRowguid = Guid.Empty;
     }
-    void ConfEdingCol(Gsglne mycol)
+    void ConfGcol(Gsglne mycol)
     {
         if (isEdingCol)
         {
@@ -1462,6 +1580,7 @@
         }
         mycol.Xedt1 = 0;
         isEdingCol = false;
+        GlneEdRowguid = Guid.Empty;
         editingCol = null;
     }
     //EDITING LNE COL
@@ -1537,30 +1656,30 @@
     //     isDelingCbl = false;
     //     //ConfirmingCblDeleteRowGuid = Guid.Empty;
     // }
-    // private void PromptTflDelete(Gsgfix myafil)
-    // {
-    //     if (myafil.Etyp == 1)
-    //     {
-    //         mesAflSup = "AVERTISSEMENT!... Supprimer les colonnes de la cible est dangereux";
-    //         mesAflSup = mesAflSup + " ENROLER cette cible ou l-INTEGRER ne sera plus possible.";
-    //     }
-    //     else
-    //     {
-    //         mesAflSup = "AVERTISSEMENT!... Supprimer les colonnes d-un affilie";
-    //         mesAflSup = mesAflSup + " ENROLER cet affilie ou l-INTEGRER ne sera plus possible.";
-    //         mesAflSup = mesAflSup + "Il est Supprimer les colonnes des affilies inutiles";
-    //     }
-    //     myafil.Xdel1 = -1;
-    //     isDelingTfl = true;
-    //     //ConfirmingCblDeleteRowGuid = item.Rowguid;
-    // }
-    // private void CancelTflDelete(Gsgfix myafil)
-    // {
-    //     myafil.Xdel1 = 0;
-    //     mesAflSup = "";
-    //     isDelingTfl = false;
-    //     //ConfirmingCblDeleteRowGuid = Guid.Empty;
-    // }
+    private void PromptTflDelete(Gsgfix myafil)
+    {
+        if (myafil.Etyp == 1)
+        {
+            mesAflSup = "AVERTISSEMENT!... Supprimer les colonnes de la cible est dangereux";
+            mesAflSup = mesAflSup + " ENROLER cette cible ou l-INTEGRER ne sera plus possible.";
+        }
+        else
+        {
+            mesAflSup = "AVERTISSEMENT!... Supprimer les colonnes d-un affilie";
+            mesAflSup = mesAflSup + " ENROLER cet affilie ou l-INTEGRER ne sera plus possible.";
+            mesAflSup = mesAflSup + "Il est Supprimer les colonnes des affilies inutiles";
+        }
+        myafil.Xdel1 = -1;
+        isDelingTfl = true;
+        //ConfirmingCblDeleteRowGuid = item.Rowguid;
+    }
+    private void CancelTflDelete(Gsgfix myafil)
+    {
+        myafil.Xdel1 = 0;
+        mesAflSup = "";
+        isDelingTfl = false;
+        //ConfirmingCblDeleteRowGuid = Guid.Empty;
+    }
     // private async Task ConfirmAllDelete(Gsgfix myafil)
     // {
     //     int xorig = Convert.ToInt16(myafil.Etyp);
@@ -1675,24 +1794,22 @@
     {
         allEnable = true;
         isOrgEditing = false;
-        isColEditing = false;
     }
     public async Task CncAll()
     { //reload
         isOrgEditing = false;
-        isColEditing = false;
         allEnable = false;
         NavigateBack();
     }
     public async Task SavAll()
     {
-        if (isOrgEditing)
-        {
-            _gODContext.UpdateObject<Gxorga>(curOrga);
-            await _gODContext.SaveDataAsync();
-            isOrgEditing = false;
-            isColEditing = false;
-        }
+        bool hasChanges = _gODContext.Context.Entities.Any(e =>
+            e.State == EntityStates.Added ||
+            e.State == EntityStates.Modified ||
+            e.State == EntityStates.Deleted);
+        if (!hasChanges)
+            return;
+        await _gODContext.Context.SaveChangesAsync();
         allEnable = false;
     }
     private void ToggleGlneFiltering()
@@ -1722,9 +1839,23 @@
     }
     private void HandleFieldChanged(object sender, FieldChangedEventArgs e)
     {
-        if (!isOrgEditing) isOrgEditing = true;
+        //to display Confirm/Cancel
+        if (e.FieldIdentifier.Model is Gxorga) isOrgEditing = true;
+        //if (e.FieldIdentifier.Model is Gsglne) isColEditing = true;
+        //if (e.FieldIdentifier.Model is Gsgfix afl)
+        //{
+        //    //1st entry
+        //    if (afl.Gvars == 21 || afl.Gvars == 3 && afl.Itb == 4)
+        //    {
+        //        isDomEditing = true;
+        //    }
+        //    if (afl.Gvars == 3 && afl.Itb == 5)
+        //    {
+        //        isAflEditing = true;
+        //    }
+        //    Console.WriteLine($"Afl Value: {afl.Gvars}");
+        //}
         Console.WriteLine($"Field edited: {e.FieldIdentifier.FieldName}");
-        // Place your logic here when a field is edited
     }
   
     void NavigateBack()

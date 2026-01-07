@@ -37,7 +37,10 @@
                            YaGroup="false"
                            Groups="@Groupes"
                            MenuSelected="@_chxMenu"
-                           GroupSelected="@_chxGpe" />
+                           MenuSelectedChanged="@SelMenu"
+                           GroupSelected="@_chxGpe"
+                           GroupSelectedChanged="@SelGpe"
+                           OnBack="@NavigateBack" />
                 <div class="row">
                     <div class="col-md-12 input-group align-middle">
                         <span class="text-uppercase text- text-success"><b>@strComp</b></span>

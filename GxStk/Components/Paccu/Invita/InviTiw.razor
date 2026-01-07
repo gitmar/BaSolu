@@ -135,7 +135,7 @@
                     <label for="TypDiv">Services:</label>
                     @if (_lsDivs.Count > 0)
                     {
-                        <select id="TypDiv" @bind="regModel.Khie">
+                        <select id="TypDiv" @bind="regModel.Ihie">
                             <option value="0">Aucun</option>
                             @foreach (var divo in _lsDivs)
                             {
@@ -152,7 +152,7 @@
                     <label for="TypPst">Poste:</label>
                     @if (_lsPsts.Count > 0)
                     {
-                        <select id="TypPst" @bind="regModel.Kpst">
+                        <select id="TypPst" @bind="regModel.Ipst">
                             <option value="0">Aucun</option>
                             @foreach (var divo in _lsPsts)
                             {
@@ -267,7 +267,7 @@
     private Tiersp mytiers = new Tiersp();
     private List<Tiersp> lsTiers = new List<Tiersp>();
     private List<Gpdivh> _lsDivs = new List<Gpdivh>();
-    private List<Divpst> _lsPsts => _lsDivs.Where(dv => dv.Khie == regModel.Khie).SelectMany(dp => dp.Divpsts).ToList();
+    private List<Divpst> _lsPsts => _lsDivs.Where(dv => dv.Ihie == regModel.Ihie).SelectMany(dp => dp.Divpsts).ToList();
 
     protected override async Task OnInitializedAsync()
     {
@@ -465,7 +465,7 @@
                         + "&methp=1" + "&stsigle=" + stsigle
                         + "&tydoma=" + tidom + "&stdoma=" + stdoma + "&datcde=" + DateTime.Now
                         + "&tysite=1" + "&stsite=" + stsite
-                        + "&ivorga=" + stOrga + "&straison=" + kraison + "&hiera=" + regModel.Khie + "@ipost" + regModel.Kpst
+                        + "&ivorga=" + stOrga + "&straison=" + kraison + "&hiera=" + regModel.Ihie + "@ipost" + regModel.Ipst
                         + "&nbalea=" + aleaupd;
             var bytes = Encoding.UTF8.GetBytes(avtCode);
             var avtEncode = $"{stsite}/register?cdlnk={WebEncoders.Base64UrlEncode(bytes)}";

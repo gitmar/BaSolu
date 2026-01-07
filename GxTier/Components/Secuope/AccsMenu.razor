@@ -33,10 +33,13 @@
             <div class="d-flex flex-column" style="height: 100%;">
                 <GxNavMenu BrandText="A24soft Gx-Solutions"
                            MenuItems="@MenuItems"
-                           YaGroup="true"
+                           YaGroup="false"
                            Groups="@Groupes"
-                           MenuSelected="@SelMenu"
-                           GroupSelected="@SelGpe" />
+                           MenuSelected="@_chxMenu"
+                           MenuSelectedChanged="@SelMenu"
+                           GroupSelected="@_chxGpe"
+                           GroupSelectedChanged="@SelGpe"
+                           OnBack="@NavigateBack" />
 
                 <!-- Top Menu -->
                 @*<div class="content-and-sidebar-container bg-success bg-opacity-10">

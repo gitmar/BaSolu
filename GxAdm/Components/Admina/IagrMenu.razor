@@ -39,7 +39,10 @@
                            YaGroup="false"
                            Groups="@Groupes"
                            MenuSelected="@_chxMenu"
-                           GroupSelected="@_chxGpe" />
+                           MenuSelectedChanged="@SelMenu"
+                           GroupSelected="@_chxGpe"
+                           GroupSelectedChanged="@SelGpe"
+                           OnBack="@NavigateBack" />
                 @* <!-- Top Menu -->
                 <div class="innermenu-container d-flex align-items-center justify-content-start">
                     <!-- Brand -->
@@ -113,7 +116,7 @@
                     @if (_chxMenu == 1)
                     { //grille
                         <Ictgrils @ref="myigrd"
-                                   _chxMenu="@_chxMenu"
+                                   toMenu="@_chxMenu"
                                    curOrga="@curOrga"
                                    toChild="@toChild"
                                    curODContext="@curODContext">
@@ -125,7 +128,7 @@
                     else if (_chxMenu == 2)
                     { //echeancier
                         <Icteches @ref="myiech"
-                                 _chxMenu="@_chxMenu"
+                                 toMenu ="@_chxMenu"
                                  curOrga="@curOrga"
                                  toChild="@toChild"
                                  curODContext="@curODContext">
@@ -137,7 +140,7 @@
                     else if (_chxMenu == 3)
                     { //schema-postes
                         <Ictposts @ref="myipst"
-                                   _chxMenu="@_chxMenu"
+                                   toMenu="@_chxMenu"
                                    curOrga="@curOrga"
                                    toChild="@toChild"
                                    curODContext="@curODContext">
@@ -146,14 +149,14 @@
                             </ChildContent>
                         </Ictposts>
                     }
-                    else if (_chxMenu == 4)
+                    @* else if (_chxMenu == 4)
                     { //plan rubriques sur un autre menu
                         <ArubMenu @ref="myrmenu">
-                          @* <ChildContent>
+                         
 
                           </ChildContent>
- *@                      </ArubMenu>
-                    }
+                        </ArubMenu>
+                    } *@
                 }
             </div>
         </div>
@@ -194,7 +197,7 @@
         new GxMenuItem { Id = 1, Text = "Saisie GRILLE", Icon = "bi bi-box-arrow-in-down" },
         new GxMenuItem { Id = 2, Text = "Saisie ECHEANCIER", Icon = "bi bi-house-door" },
         new GxMenuItem { Id = 3, Text = "Saisie POSTES", Icon = "bi bi-house-door" },
-        new GxMenuItem { Id = 4, Text = "Plans", Icon = "bi bi-house-door" },
+        new GxMenuItem { Id = 4, Text = "APlans", Icon = "bi bi-house-door" },
         //new MenuItem { Id = 4, Text = "Mutation", Icon = "bi bi-arrow-repeat" },
     };
     public List<GxGroupe> Groupes = new();
@@ -410,7 +413,11 @@
         if (_chxMenu == 1) strComp = $"Saisie GRILLE";
         if (_chxMenu == 2) strComp = $"Saisie ECHEANCIER";
         if (_chxMenu == 3) strComp = $"Saisie POSTES";
-        if (_chxMenu == 3) strComp = $"Plans";
+        if (_chxMenu == 4)
+        {
+            _navmanager.NavigateTo("/arubmenu", replace: true);
+            strComp = $"Aplans";
+        }
         //if (_chxMenu == 5) strComp = "Colonnes";
         allEnable = false;
         StateHasChanged();

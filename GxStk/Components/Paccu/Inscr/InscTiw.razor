@@ -241,11 +241,11 @@
                                                 <label><b>Service :</b>:</label>
                                                 @if (_lsDivs.Count > 0)
                                                 {
-                                                    <InputSelect class="standard-width" id="TypDiv" @bind-Value="curTiw.Id">
+                                                    <InputSelect class="standard-width" id="TypDiv" @bind-Value="curTiw.Ihie">
                                                         <option value="0">Aucun</option>
                                                         @foreach (var divo in _lsDivs)
                                                         {
-                                                            <option value="@divo.Khie">@divo.Liba</option>
+                                                            <option value="@divo.Ihie">@divo.Liba</option>
                                                         }
                                                     </InputSelect>
                                                 }
@@ -254,11 +254,11 @@
                                                 <label><b>Poste :</b></label>
                                                 @if (_lsPsts.Count > 0)
                                                 {
-                                                    <InputSelect class="standard-width" id="TypPst" @bind-Value="curTiw.Id">
+                                                    <InputSelect class="standard-width" id="TypPst" @bind-Value="curTiw.Ipst">
                                                         <option value="0">Aucun</option>
                                                         @foreach (var divo in _lsPsts)
                                                         {
-                                                            <option value="@divo.Kpst">@divo.Liba</option>
+                                                            <option value="@divo.Ipst">@divo.Liba</option>
                                                         }
                                                     </InputSelect>
                                                 }

@@ -38,7 +38,10 @@
                            YaGroup="false"
                            Groups="@Groupes"
                            MenuSelected="@_chxMenu"
-                           GroupSelected="@_chxGpe" />
+                           MenuSelectedChanged="@SelMenu"
+                           GroupSelected="@_chxGpe"
+                           GroupSelectedChanged="@SelGpe"
+                           OnBack="@NavigateBack" />
                 <div class="row">
                     <div class="col-md-12 input-group align-middle">
                         <span class="text-uppercase text- text-success"><b>@strComp</b></span>
@@ -74,7 +77,7 @@
                         @if (_chxMenu == 1)
                         { //SAISIES
                           <PrubSaie @ref="mygsai"
-                                    ChxMenu="@_chxMenu"
+                                    toMenu="@_chxMenu"
                                     curOrga="@curOrga"
                                     toChild="@toChild"
                                     curODContext="@curODContext">
@@ -86,7 +89,7 @@
                         else if (_chxMenu == 2)
                         { //CALCULS
                           <PrubCalc @ref="mygclc" 
-                                   ChxMenu="@_chxMenu"
+                                   toMenu="@_chxMenu"
                                    curOrga="@curOrga"
                                    toChild="@toChild"
                                    curODContext="@curODContext">
@@ -97,7 +100,7 @@
                         else if (_chxMenu == 3)
                         { //VENTILATIONS
                           <PrubVent @ref="mygvnt"
-                                    ChxMenu="@_chxMenu"
+                                    toMenu="@_chxMenu"
                                     curOrga="@curOrga"
                                     toChild="@toChild"
                                     curODContext="@curODContext">

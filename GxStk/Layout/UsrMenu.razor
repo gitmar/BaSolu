@@ -1,27 +1,92 @@
 ﻿@using System.Security.Authentication
 @using System.Security.Claims
 @using Microsoft.AspNetCore.Authorization
+@using GxStk.Profile
+@using GxStk.Services
+@using GxShared.Sess
+
+@inject SessionContextService _sessionContext
 
 <div class="d-flex flex-row bg-warning bg-opacity-25 mb-3">
-    <div class="p-2">
-        <a class="active" id="myprofile" href="user-page">Profil</a>
-    </div>
-    <div class="p-2">
-        <a id="myaccount" href="">Compte</a>
-    </div>
-    @* @attribute [Authorize(Roles = "Coordo, Manager, Operat, Parain")]
-    <div class="p-2">
-        <a id="myinvite" href="invitiw">Enrollement</a>
-    </div> *@
-    @attribute [Authorize(Roles = "Coordo, Manager")]
-    <div class="p-2">
-        <a id="myprefer" href="">Preferences</a>
-    </div>
-    @attribute [Authorize(Roles = "Coordo, Manager")]
-    <div class="p-2">
-        <a id="mysessio" href="uactives">Activites</a>
-    </div>
-    @* <div class="p-2">
-        <a id="myinbox" href="usinbox">Courrier</a>
-    </div> *@
+    <Tabs>
+        <Tab title="Profil" Active="true">
+            <Content>
+                <UserPage />
+            </Content>
+        </Tab>
+        <Tab title="Compte">
+            <Content>
+
+            </Content>
+        </Tab>
+        <Tab title="Preferences">
+            <Content>
+
+            </Content>
+        </Tab>
+        <Tab title="Activites">
+            <Content>
+
+            </Content>
+        </Tab>
+        @* @if (isOwner)
+                {
+                    @if (xiqmax > 1)
+                {
+                @attribute [Authorize(Roles = "Admin")]
+                    <Tab Title="Creation">
+                        <Content>
+                            <OrgCreate></OrgCreate>
+                        </Content>
+                    </Tab>
+                }
+                    @if (xothogs > 1)
+                {
+                @attribute [Authorize(Roles = "Admin")]
+                    <Tab Title="Suppression">
+                        <Content>
+                            <OrgDelete></OrgDelete>
+                        </Content>
+                    </Tab>
+                }
+           } *@
+    </Tabs>
 </div>
+@code {
+    private bool isLoading = false;
+    [CascadingParameter]
+    private Task<AuthenticationState>? AuthState { get; set; }
+    public ClaimsPrincipal authUser;
+    public bool isAuthenticated = false;
+    private IEnumerable<Claim> _claims = Enumerable.Empty<Claim>();
+    
+    private Userbag _usrBag;
+
+    //Test
+    int xiqmax = 2, xothogs = 2;
+
+    protected override async Task OnInitializedAsync()
+    {
+        isLoading = true;
+        var authState = await AuthState;
+        authUser = authState.User;
+        isAuthenticated = authUser.Identity.IsAuthenticated;
+        if (!isAuthenticated)
+        {
+            Console.WriteLine("Authentication in Astreintes Utilisateur ECHEC");
+            return;
+        }
+        else
+        {
+            Console.WriteLine("Authentication in Astreintes SUCCESS");
+        }
+        _usrBag = await _sessionContext.GetUserbagAsync();
+        if (AuthState == null)
+        {
+            return;
+        }
+
+        _claims = authUser.Claims;
+   
+    }
+}

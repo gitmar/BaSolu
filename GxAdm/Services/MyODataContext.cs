@@ -262,7 +262,6 @@ namespace GxAdm.Services
     }
 
 
-    
 
     //public class ODataContextFactory : IODataContextFactory
     //{
@@ -281,3 +280,4 @@ namespace GxAdm.Services
     //    }
     //}
 }
+

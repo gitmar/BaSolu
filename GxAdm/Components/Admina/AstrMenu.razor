@@ -42,7 +42,10 @@
                            YaGroup="false"
                            Groups="@Groupes"
                            MenuSelected="@_chxMenu"
-                           GroupSelected="@_chxGpe" />
+                           MenuSelectedChanged="@SelMenu"
+                           GroupSelected="@_chxGpe"
+                           GroupSelectedChanged="@SelGpe"
+                           OnBack="@NavigateBack" />
 
                 <div class="row">
                     <div class="col-md-12 input-group align-middle">
@@ -108,6 +111,16 @@
                             </ChildContent>
                         </Gconstes>
                     }
+                    @* else if (_chxMenu == 4)
+                    {
+                        <ArubMenu @ref="myamenu">
+                                  curOrga="@curOrga"
+                                  toChild="@toChild"
+                                  curODContext="@curODContext">
+                            <ChildContent>
+                            </ChildContent>
+                        </ArubMenu>
+                    } *@
                 }
         </div>
     </div>
@@ -126,13 +139,14 @@
     public MyODataContext curODContext;
     public Gxorga curOrga = new Gxorga();
     public MyShareVars toChild = new MyShareVars();
+    public RenderFragment ChildContent { get; set; }
     private bool allEnable = false;
     private string MImessage = "";
 
     private Gtables mygtbl;
     private Gatribs mygatr;
     private Gconstes mygcst;
-    //private Gplans mygpln;
+    private ArubMenu myamenu;
     //private Gcolons mygcol;
 
     //private OrigGgrilles mygcatr;
@@ -383,6 +397,10 @@
         if (_chxMenu == 1) strComp = $"Tables";
         if (_chxMenu == 2) strComp = $"Attributs";
         if (_chxMenu == 3) strComp = $"Documents";
+        // if (_chxMenu == 4)
+        // {
+        //     strComp = $"Aplans";
+        // }
         //if (_chxMenu == 5) strComp = "Colonnes";
         allEnable = false;
         StateHasChanged();

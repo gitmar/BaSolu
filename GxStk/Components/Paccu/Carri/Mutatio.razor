@@ -167,7 +167,7 @@ else
                                                     <option class="jchx" value="0">?div</option>
                                                     @foreach (var idv in _lsDivs.Where(dv => dv.Pdom == 6))
                                                     {
-                                                        <option value="@idv.Khie">@idv.Liba</option>
+                                                        <option value="@idv.Ipln">@idv.Liba</option>
                                                     }
                                                 </InputSelect>
                                                 @if (!allEnable)
@@ -216,7 +216,7 @@ else
                                                                 <option value="0">Aucun</option>
                                                                 @foreach (var divo in _lsDivs)
                                                                 {
-                                                                    <option value="@divo.Khie">@divo.Liba</option>
+                                                                    <option value="@divo.Ihie">@divo.Liba</option>
                                                                 }
                                                             </InputSelect>
                                                         </ChildContent>
@@ -227,7 +227,7 @@ else
                                                                 <option value="0">Aucun</option>
                                                                 @foreach (var divo in _lsDivs.FirstOrDefault(d => d.Ihie == item.Ihie)?.Divpsts ?? Enumerable.Empty<Divpst>())
                                                                 {
-                                                                    <option value="@divo.Ihie">@divo.Liba</option>
+                                                                    <option value="@divo.Ipst">@divo.Liba</option>
                                                                 }
                                                             </InputSelect>
                                                         </ChildContent>
@@ -240,7 +240,7 @@ else
                                                                   <option value="0">Aucun</option>
                                                                     @foreach (var divo in _lsDivs)
                                                                     {
-                                                                        <option value="@divo.Khie">@divo.Liba</option>
+                                                                        <option value="@divo.Ihie">@divo.Liba</option>
                                                                     }
                                                                 </InputSelect>
                                                             }
@@ -250,7 +250,7 @@ else
                                                                     <option value="0">Aucun</option>
                                                                     @foreach (var divo in _lsDivs)
                                                                     {
-                                                                        <option value="@divo.Khie">@divo.Liba</option>
+                                                                        <option value="@divo.Ipst">@divo.Liba</option>
                                                                     }
                                                                 </InputSelect>
                                                             }
@@ -262,9 +262,9 @@ else
                                                             { // show draftTiw inputs
                                                               <InputSelect class="standard-width" id="TypPst" @bind-Value="item.Nwpst">
                                                                   <option value="0">Aucun</option>
-                                                                    @foreach (var divo in _lsDivs.FirstOrDefault(d => d.Khie == item.Rowguid)?.Divpsts ?? Enumerable.Empty<Divpst>())
+                                                                    @foreach (var divo in _lsDivs.FirstOrDefault(d => d.Ihie == item.Ihie)?.Divpsts ?? Enumerable.Empty<Divpst>())
                                                                     {
-                                                                        <option value="@divo.Kpst">@divo.Liba</option>
+                                                                        <option value="@divo.Ipst">@divo.Liba</option>
                                                                     }
                                                                 </InputSelect>
                                                             }
@@ -272,9 +272,9 @@ else
                                                             {
                                                                 <InputSelect class="standard-width" id="TypPst" @bind-Value="item.Nwpst" disabled>
                                                                     <option value="0">Aucun</option>
-                                                                    @foreach (var divo in _lsDivs.FirstOrDefault(d => d.Khie == item.Rowguid)?.Divpsts ?? Enumerable.Empty<Divpst>())
+                                                                    @foreach (var divo in _lsDivs.FirstOrDefault(d => d.Ihie == item.Ihie)?.Divpsts ?? Enumerable.Empty<Divpst>())
                                                                     {
-                                                                        <option value="@divo.Kpst">@divo.Liba</option>
+                                                                        <option value="@divo.Ipst">@divo.Liba</option>
                                                                     }
                                                                 </InputSelect>
                                                             }
@@ -331,7 +331,7 @@ else
                                                     <option class="jchx" value="0">?dom</option>
                                                     @foreach (var idv in _lsDivs.Where(ud => ud.Pdom == 7))
                                                     {
-                                                        <option value="@idv.Khie">@idv.Liba</option>
+                                                        <option value="@idv.Ipln">@idv.Liba</option>
                                                     }
                                                 </InputSelect>
                                             <label class="fw-bold">Produit :</label>
@@ -446,8 +446,6 @@ else
     public int? Tgpe { get; set; }
     [Parameter]
     public int? Ugpe { get; set; }
-    [Parameter]
-    public int ChxMenu { get; set; }
     //private Tiersp gridTier = new Tiersp();
     //private Plngen curTier = new Plngen();
     //private List<Rubvar> LsRubs = new List<Rubvar>();

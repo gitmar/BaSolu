@@ -105,7 +105,7 @@ else
                                         <option value="0">tout</option>
                                         @foreach (var sit in _lsDivs)
                                         {
-                                            <option value="@sit.Khie" @onclick="() => GetSelectedSite(sit)">@sit.Liba</option>
+                                            <option value="@sit.Ihie" @onclick="() => GetSelectedSite(sit)">@sit.Liba</option>
                                         }
                                     </InputSelect>
                                 </div>
@@ -452,8 +452,6 @@ else
     public int? Tgpe { get; set; }
     [Parameter]
     public int? Ugpe { get; set; }
-    [Parameter]
-    public int ChxMenu { get; set; }
     //private Tiersp gridTier = new Tiersp();
     //private Plngen curTiw = new Plngen();
     private List<Rubvar> LsRubs = new List<Rubvar>();

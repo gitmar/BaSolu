@@ -8,7 +8,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-// Generation date: 01-Jan-26 2:33:15 PM
+// Generation date: 07-Jan-26 1:06:15 AM
 namespace GxWapi.DaModels
 {
     /// <summary>
@@ -5673,51 +5673,28 @@ namespace GxWapi.DaModels
         partial void OnTotypChanging(global::System.Nullable<int> value);
         partial void OnTotypChanged();
         /// <summary>
-        /// There are no comments for Property T2typ in the schema.
+        /// There are no comments for Property Tstyp in the schema.
         /// </summary>
         [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        [global::Microsoft.OData.Client.OriginalNameAttribute("T2typ")]
-        public virtual global::System.Nullable<int> T2typ
+        [global::Microsoft.OData.Client.OriginalNameAttribute("Tstyp")]
+        public virtual global::System.Nullable<int> Tstyp
         {
             get
             {
-                return this._T2typ;
+                return this._Tstyp;
             }
             set
             {
-                this.OnT2typChanging(value);
-                this._T2typ = value;
-                this.OnT2typChanged();
-                this.OnPropertyChanged("T2typ");
+                this.OnTstypChanging(value);
+                this._Tstyp = value;
+                this.OnTstypChanged();
+                this.OnPropertyChanged("Tstyp");
             }
         }
         [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        private global::System.Nullable<int> _T2typ;
-        partial void OnT2typChanging(global::System.Nullable<int> value);
-        partial void OnT2typChanged();
-        /// <summary>
-        /// There are no comments for Property T3typ in the schema.
-        /// </summary>
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        [global::Microsoft.OData.Client.OriginalNameAttribute("T3typ")]
-        public virtual global::System.Nullable<int> T3typ
-        {
-            get
-            {
-                return this._T3typ;
-            }
-            set
-            {
-                this.OnT3typChanging(value);
-                this._T3typ = value;
-                this.OnT3typChanged();
-                this.OnPropertyChanged("T3typ");
-            }
-        }
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        private global::System.Nullable<int> _T3typ;
-        partial void OnT3typChanging(global::System.Nullable<int> value);
-        partial void OnT3typChanged();
+        private global::System.Nullable<int> _Tstyp;
+        partial void OnTstypChanging(global::System.Nullable<int> value);
+        partial void OnTstypChanged();
         /// <summary>
         /// There are no comments for Property Etyp in the schema.
         /// </summary>
@@ -5741,6 +5718,29 @@ namespace GxWapi.DaModels
         private global::System.Nullable<int> _Etyp;
         partial void OnEtypChanging(global::System.Nullable<int> value);
         partial void OnEtypChanged();
+        /// <summary>
+        /// There are no comments for Property T2typ in the schema.
+        /// </summary>
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        [global::Microsoft.OData.Client.OriginalNameAttribute("T2typ")]
+        public virtual global::System.Nullable<int> T2typ
+        {
+            get
+            {
+                return this._T2typ;
+            }
+            set
+            {
+                this.OnT2typChanging(value);
+                this._T2typ = value;
+                this.OnT2typChanged();
+                this.OnPropertyChanged("T2typ");
+            }
+        }
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        private global::System.Nullable<int> _T2typ;
+        partial void OnT2typChanging(global::System.Nullable<int> value);
+        partial void OnT2typChanged();
         /// <summary>
         /// There are no comments for Property Emdl in the schema.
         /// </summary>

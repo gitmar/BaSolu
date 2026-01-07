@@ -35,11 +35,14 @@ else
         <div class="container gx-parent-container" style="height: 100vh;">
             <div class="d-flex flex-column" style="height: 100%;">
                 <GxNavMenu BrandText="A24soft Gx-Solutions"
-                       MenuItems="@MenuItems"
-                       YaGroup="false"
-                       Groups="@Groupes"
-                       MenuSelected="@_chxMenu"
-                       GroupSelected="@_chxGpe" />
+                           MenuItems="@MenuItems"
+                           YaGroup="false"
+                           Groups="@Groupes"
+                           MenuSelected="@_chxMenu"
+                           MenuSelectedChanged="@SelMenu"
+                           GroupSelected="@_chxGpe"
+                           GroupSelectedChanged="@SelGpe"
+                           OnBack="@NavigateBack" />
             </div>
         </div>
     </div>

@@ -21,70 +21,66 @@
             <NavMenu />
         </div>
 
-        <div class="main-content-wrapper" style="flex: 1; display: flex; flex-direction: column;">
+        <div class="main-content-wrapper d-flex flex-column" style="flex: 1;">
 
-            <div class="row" style="background-color: lightgray; padding: 10px;">
-                <AuthorizeView>
-                    <Authorized>
-                        <div class="flex-row">
-                            <div>
-                                <a class="nav-icon btn-like bg-success bg-opacity-25" @onclick="ToggleUserMenu" href="#">
-                                    <i>PrivateRoom</i>
-                                </a>
-                            </div>
-                            <span>&nbsp;</span>
-                            <div class="truncated-text">@_appState.ogRaison</div>
-                            <span>&nbsp;</span>
-                            <div class="truncated-text">@_appState.usFulnom</div>
-                            <!-- Spacer pushes everything else to the right -->
-                            <div class="ms-auto d-flex align-items-center truncated-text">
-                                <label class="mb-0">
-                                    &nbsp;
-                                    Help<span class=""> ?</span>
-                                </label>
-                                <div>
-                                    <span>&nbsp;</span>
-                                    @* Welcome &nbsp;<b>@context.User.Identity?.Name</b>. *@
-                                    <a href="logout">
-                                        <span class="bi bi-door-closed-fill" aria-hidden="true" style="vertical-align:middle"></span> Logout
-                                    </a>
-                                </div>
-                            </div>
-                        </div>
-                    </Authorized>
-                    <NotAuthorized>
-                        <div class="d-flex align-items-center border-0 bg-success bg-opacity-10 px-2">
-                            <!-- Spacer pushes everything else to the right -->
-                            <div class="ms-auto d-flex align-items-center gap-3">
-                                <label class="mb-0">Help ?</label>
-                                @if (!isHelpLogin)
-                                {
-                                    <a href="login"><span class="bi bi-door-open" aria-hidden="true" style="vertical-align:middle"></span> Login</a>
-                                } else
-                                {
-                                    <a href="helplogin"><span class="bi bi-door-open" aria-hidden="true" style="vertical-align:middle"></span> Support</a>
-                                }
-                            </div>
-                        </div>
-                    </NotAuthorized>
-                </AuthorizeView>
-                @if (collapseUserMenu)
-                {
+            <!-- ================= TOP BAR ================= -->
+            <div class="bg-light border-bottom">
+                <!-- BAR ROW (ALWAYS RENDERS) -->
+                <div class="d-flex align-items-center px-3 py-2">
                     <AuthorizeView>
                         <Authorized>
-                            <UsrMenu />
+                            <!-- Toggle User Menu -->
+                            <a class="nav-icon fw-bold text-dark fs-10 d-flex align-items-start m-0 p-0"
+                               href="#"
+                               @onclick="ToggleUserMenu">
+                                <span>PrivateRoom</span>
+                            </a>
+                            <div class="truncated-text ms-3">@_appState.ogRaison</div>
+                            <div class="truncated-text ms-3">@_appState.usFulnom</div>
                         </Authorized>
+                        <NotAuthorized>
+                            <!-- Optional placeholder or branding -->
+                            <span class="fw-bold text-muted">Administration</span>
+                        </NotAuthorized>
                     </AuthorizeView>
-                }
+                    <!-- RIGHT SIDE (ALWAYS PRESENT) -->
+                    <div class="ms-auto d-flex align-items-center gap-3">
+                        <label class="mb-0">Help ?</label>
+                        <AuthorizeView>
+                            <Authorized>
+                                <a href="logout">
+                                    <span class="bi bi-door-closed-fill" style="vertical-align:middle"></span>
+                                    Logout
+                                </a>
+                            </Authorized>
+                            <NotAuthorized>
+                                <a href="login">
+                                    <span class="bi bi-door-open" style="vertical-align:middle"></span>
+                                    Login
+                                </a>
+                            </NotAuthorized>
+                        </AuthorizeView>
+                    </div>
+                </div>
+                <!-- USER MENU BELOW BAR -->
+                <AuthorizeView>
+                    <Authorized>
+                        @if (collapseUserMenu)
+                        {
+                            <div class="px-3 py-2 border-top bg-white">
+                                <UsrMenu />
+                            </div>
+                        }
+                    </Authorized>
+                </AuthorizeView>
             </div>
-            <main style="flex: 1; overflow-y: auto;">
+            <!-- ================= END TOP BAR ================= -->
+            <!-- ================= MAIN CONTENT ================= -->
+            <main class="flex-fill overflow-auto">
                 <article class="content px-4">
                     @Body
                 </article>
             </main>
-
-            <!-- Put your "other-content" row here below main if it should appear below main -->
-            <!-- Or place it side-by-side with main using nested flex if needed -->
         </div>
     </div>
 }
