@@ -29,6 +29,7 @@
 @inject IODataContextFactory _contextFactory
 @inject SessionContextService _sessionContext
 @inject RendAgres _rendAgres;
+@inject PendingChangesGuard _guard
 
 <PageTitle>INSTITUTION</PageTitle>
 @* <h3>AOrgas</h3> *@
@@ -56,7 +57,7 @@
                     </button>
                     &nbsp;&nbsp;
                     <button type="button" class="btn btn-sm btn-secondary btnsz @(!allEnable ? "" : "d-none")" style="font-size: small" @onclick="() => EdtAll()">Modifier</button>
-                    <button type="button" class="btn btn-sm btn-secondary btnsz @(allEnable ? "" : "d-none")" style="font-size: small" @onclick="() => CncAll()">Afficher</button>
+                    <button type="button" class="btn btn-sm btn-secondary btnsz @(allEnable ? "" : "d-none")" style="font-size: small" @onclick="() => SavAllAsync()">Confirmer</button>
                 </div>
             </div>
             <div class="container-fluid-fixed-top">
@@ -968,6 +969,11 @@
         if (!isAuthenticated)
         {
             Console.WriteLine("Authentication in Orga Utilisateur ECHEC");
+            _navmanager.RegisterLocationChangingHandler(async args =>
+            {
+                args.PreventNavigation();
+                _navmanager.NavigateTo("/login");
+            });
             return;
         }
         else
@@ -995,6 +1001,8 @@
         try
         {
             _gODContext = await _contextFactory.CreateAsync(); // Use factory
+            _guard.AttachContext(_gODContext);
+
             var expand = "Gsgfixes,Gsglnes";
             var dxorgas = await _gODContext.LoadFilteredAsync<Gxorga>(expand: expand);
             curOrga = dxorgas.FirstOrDefault();
@@ -1253,7 +1261,7 @@
         isEdingAfl = false;
         editingAfl = null;
         curGfix = new();
-        
+
     }
     void ConfGfix(Gsgfix mytfl)
     {
@@ -1456,195 +1464,65 @@
     {
         if (isEdingCol)
         {
-            var existcol = curOrga.Gsglnes.FirstOrDefault(ec => ec.Pseq == mycol.Pseq);
-            bool enAdding = false, yaeuModif = false;
-            if (existcol == null)
+            Console.WriteLine("ICI1");
+            // var existcol = curOrga.Gsglnes.FirstOrDefault(ec => ec.Id == mycol.Id);
+            // bool enAdding = false, 
+            bool yaeuModif = false;
+            // if (existcol != null)
+            // {
+            Console.WriteLine("ICI2");
+            //enAdding = true;
+            //existcol = new();
+            //existcol.Idorg = mycol.Idorg; yaeuModif = false;
+            if (string.Compare(savOliba, mycol.Oliba) != 0)
             {
-
-                enAdding = true;
-                existcol = new();
-                existcol.Idorg = mycol.Idorg; yaeuModif = false;
-                if (string.Compare(savOliba, mycol.Oliba) != 0)
-                {
-                    existcol.Oliba = mycol.Oliba;
-                    yaeuModif = true;
-                }
-                if (string.Compare(savOabg, mycol.Oabg) != 0)
-                {
-                    existcol.Oabg = mycol.Oabg;
-                    yaeuModif = true;
-                }
-                if (savYrng != mycol.Yrng)
-                {
-                    existcol.Yrng = mycol.Yrng; //rang colonne
-                    yaeuModif = true;
-                }
-                if (savJacc != mycol.Jacc)
-                {
-                    existcol.Jacc = mycol.Jacc; //rang colonne
-                    yaeuModif = true;
-                }
-                if (savJenr != mycol.Jenr)
-                {
-                    existcol.Jenr = mycol.Jenr; //rang colonne
-                    yaeuModif = true;
-                }
-                if (savEta != mycol.Eta)
-                {
-                    existcol.Eta = mycol.Eta; //rang colonne
-                    yaeuModif = true;
-                }
-                if (!yaeuModif)
-                {
-                    return;
-                }
-                existcol.Pseq = mycol.Pseq;
-                existcol.Pele = mycol.Pele;
-                existcol.Otyp = mycol.Otyp; //colonne affilie
-                existcol.Dtyp = mycol.Dtyp; //6tiers7produits
-                existcol.Totyp = mycol.Totyp; //1cible2soutien3operat4client5fournis6patern7matiere9tous
-                existcol.Tstyp = mycol.Tstyp; //affilie
-
-                existcol.Oliba = mycol.Oliba;
-                existcol.Oabg = mycol.Oabg;
-                existcol.Yrng = mycol.Yrng; //rang colonne
-                existcol.Jacc = mycol.Jacc;
-                existcol.Jenr = mycol.Jenr;
-                existcol.Eta = mycol.Eta;
-                existcol.Eaut = mycol.Eaut; //libre
-                existcol.Scdrub = mycol.Scdrub;
-                existcol.Elea = mycol.Elea;
-                existcol.Liba = mycol.Liba;
-                existcol.Abg = mycol.Abg;
-                existcol.Ztyp = mycol.Ztyp; //1 string, 2 number
-                existcol.Sitb = mycol.Sitb; //si table apres test
-                existcol.Ztbl = mycol.Ztbl; //refer table
-                existcol.Zdpd = mycol.Zdpd; //parent table liee
-                existcol.Ktyp = mycol.Ktyp; //integre
-                //Vtyp = uncol.Mtyp,
-                //Xsiz = uncol.Isiz,
-                //Ysiz = uncol.Isiz,
-                existcol.Inx1 = mycol.Inx1;
-                existcol.Inx2 = mycol.Inx2;
+                //existcol.Oliba = mycol.Oliba;
+                yaeuModif = true;
             }
-            else
+            if (string.Compare(savOabg, mycol.Oabg) != 0)
             {
-                yaeuModif = false;
-                if (string.Compare(existcol.Oliba, mycol.Oliba) != 0)
-                {
-                    existcol.Oliba = mycol.Oliba;
-                    yaeuModif = true;
-                }
-                if (string.Compare(existcol.Oabg, mycol.Oabg) != 0)
-                {
-                    existcol.Oabg = mycol.Oabg;
-                    yaeuModif = true;
-                }
-                if (existcol.Yrng != mycol.Yrng)
-                {
-                    existcol.Yrng = mycol.Yrng; //rang colonne
-                    yaeuModif = true;
-                }
-                if (existcol.Jacc != mycol.Jacc)
-                {
-                    existcol.Jacc = mycol.Jacc; //rang colonne
-                    yaeuModif = true;
-                }
-                if (existcol.Jenr != mycol.Jenr)
-                {
-                    existcol.Jenr = mycol.Jenr; //rang colonne
-                    yaeuModif = true;
-                }
-                if (existcol.Eta != mycol.Eta)
-                {
-                    existcol.Eta = mycol.Eta; //rang colonne
-                    yaeuModif = true;
-                }
-                if (!yaeuModif)
-                {
-                    return;
-                }
+                //existcol.Oabg = mycol.Oabg;
+                yaeuModif = true;
             }
-            if (!_gODContext.GetAllTrackedEntities().Any(e => e.Entity == existcol))
+            if (savYrng != mycol.Yrng)
             {
-                _gODContext.AttachTo("Gsglnes", existcol);
+                //existcol.Yrng = mycol.Yrng; //rang colonne
+                yaeuModif = true;
             }
-            if (enAdding)
+            if (savJacc != mycol.Jacc)
             {
-                _gODContext.AddRelatedObject(curOrga, "Gsglnes", existcol);
+                //existcol.Jacc = mycol.Jacc; //rang colonne
+                yaeuModif = true;
             }
-            else
+            if (savJenr != mycol.Jenr)
             {
-                _gODContext.UpdateObject(existcol);
+                //existcol.Jenr = mycol.Jenr; //rang colonne
+                yaeuModif = true;
+            }
+            if (savEta != mycol.Eta)
+            {
+                //existcol.Eta = mycol.Eta; //rang colonne
+                yaeuModif = true;
+            }
+            if (!yaeuModif)
+            {
+                return;
+            }
+            if (yaeuModif)
+            {
+                if (!_gODContext.GetAllTrackedEntities().Any(e => e.Entity == mycol))
+                {
+                    _gODContext.AttachTo("Gsglnes", mycol);
+                }
+                _gODContext.UpdateObject(mycol);
             }
         }
         mycol.Xedt1 = 0;
         isEdingCol = false;
         GlneEdRowguid = Guid.Empty;
         editingCol = null;
+        //Console.WriteLine("A ETE MODIFIE");
     }
-    //EDITING LNE COL
-    //2LNE -- EDITING (affilies)
-    // // void PromptLneEdit(Gsglne myglne)
-    // // {
-    // //     try
-    // //     {
-    // //         editingGlne = myglne;
-    // //         Console.WriteLine("PASSE2");
-    // //         draftGlne = new Gsglne
-    // //         {
-    // //             Liba = myglne.Liba,
-    // //             Oliba = myglne.Oliba,
-    // //             Abg = myglne.Abg,
-    // //             Jacc = myglne.Jacc,
-    // //             Jenr = myglne.Jenr,
-    // //             Yrng = myglne.Yrng,
-    // //             Eta = myglne.Eta,
-    // //             //Xedt1 = -1,
-    // //         };
-    // //         myglne.Xedt1 = -1;
-    // //         isEdingGlne = true;
-    // //         Console.WriteLine("PASSE3");
-    // //         //StateHasChanged();
-    // //         //editingGlne.Xedt1 = -1;
-    // //         //Console.WriteLine($"Xedt1 = {myglne.Xedt1}");
-    // //     }
-    // //     catch (Exception ex)
-    // //     {
-    // //         Console.WriteLine($"Faute : {ex.Message} et {ex.StackTrace}");
-    // //     }
-    // // }
-    // // void CancEdingLne(Gsglne myglne)
-    // // {
-    // //     myglne.Xedt1 = 0;
-    // //     isEdingGlne = false;
-    // //     editingGlne = null;
-    // //     //draftGlne = null;
-    // //     StateHasChanged();
-    // // }
-    // // void ConfEdingLne(Gsglne myglne)
-    // // { //myglne = draftGlne
-    // //     if (editingGlne is not null)
-    // //     {
-    // //         editingGlne.Liba = myglne.Liba;
-    // //         editingGlne.Oliba = myglne.Oliba;
-    // //         editingGlne.Abg = myglne.Abg;
-    // //         editingGlne.Jacc = myglne.Jacc;
-    // //         editingGlne.Jenr = myglne.Jenr;
-    // //         editingGlne.Yrng = myglne.Yrng;
-    // //         editingGlne.Eta = myglne.Eta;
-    // //         if (!_gODContext.GetAllTrackedEntities().Any(e => e.Entity == editingGlne))
-    // //         {
-    // //             _gODContext.AttachTo("Gsglnes", editingGlne);
-    // //         }
-    // //         _gODContext.UpdateObject<Gsglne>(editingGlne); // track update
-    // //     }
-    // //     myglne.Xedt1 = 0;
-    // //     isEdingGlne = false;
-    // //     editingGlne = null;
-
-    // //     StateHasChanged();
-    // // }
     //DELETING
     // private void PromptCblDelete()
     // {
@@ -1801,17 +1679,27 @@
         allEnable = false;
         NavigateBack();
     }
-    public async Task SavAll()
+    public async Task SavAllAsync()
     {
-        bool hasChanges = _gODContext.Context.Entities.Any(e =>
-            e.State == EntityStates.Added ||
-            e.State == EntityStates.Modified ||
-            e.State == EntityStates.Deleted);
-        if (!hasChanges)
-            return;
-        await _gODContext.Context.SaveChangesAsync();
-        allEnable = false;
+        await _guard.FlushAsync();
+        _navmanager.NavigateTo("/");
     }
+    public async ValueTask DisposeAsync()
+    {
+        await _guard.DisposeAsync();
+    }
+
+    // public async Task SavAll()
+    // {
+    //     bool hasChanges = _gODContext.Context.Entities.Any(e =>
+    //         e.State == EntityStates.Added ||
+    //         e.State == EntityStates.Modified ||
+    //         e.State == EntityStates.Deleted);
+    //     if (!hasChanges)
+    //         return;
+    //     await _gODContext.Context.SaveChangesAsync();
+    //     allEnable = false;
+    // }
     private void ToggleGlneFiltering()
     {
         isGlneFilteringEnabled = !isGlneFilteringEnabled;
@@ -1855,6 +1743,7 @@
         //    }
         //    Console.WriteLine($"Afl Value: {afl.Gvars}");
         //}
+        _guard.MarkDirty();
         Console.WriteLine($"Field edited: {e.FieldIdentifier.FieldName}");
     }
   
