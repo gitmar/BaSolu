@@ -2253,7 +2253,7 @@ else
     }
     private async Task ConfPlnModal()
     {
-        SaveCurEntities();
+        await SaveCurEntities();
         Imessage = "Programme(s) SAVED";
         await plnModal.HideAsync();
         allEnable = false;
@@ -2261,7 +2261,7 @@ else
     }
     private async Task ConfRubModal()
     {
-        SaveCurEntities();
+        await SaveCurEntities();
         Imessage = "Programme/Rubrique(s) SAVED";
         await rubModal.HideAsync();
         allEnable = false;
@@ -2269,7 +2269,7 @@ else
     }
     private async Task ConfFmtModal()
     {
-        SaveCurEntities();
+        await SaveCurEntities();
         Imessage = "Programme/Rubrique/format(s) SAVED";
         await fmtModal.HideAsync();
         allEnable = false;

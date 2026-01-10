@@ -533,6 +533,16 @@ else
                                         }
                                     </ChildContent>
                                 </GridColumn>
+                                <GridColumn TItem="Gsgfix">
+                                    <HeaderContent>
+                                        @if (!sinwPater)
+                                        {
+                                            <button class="btn btn-sm btn-primary d-flex align-items-center" @onclick="() => PrepareAddPater()">
+                                                <span class="me-1">+</span> Ajout
+                                            </button>
+                                        }
+                                    </HeaderContent>
+                                </GridColumn>
                                 <GridColumn TItem="Gsgfix" HeaderText="">
                                     <ChildContent Context="item">
                                         @if (allEnable)
@@ -551,7 +561,9 @@ else
                     </div>
                 </BodyTemplate>
                 <FooterTemplate>
-                    <Button class="btn btn-secondary" @onclick="ClosePlnModal">Cancel</Button>
+                    <Button class="btn btn-secondary" @onclick="AnuPModal">Annuler</Button>
+                    <Button class="btn btn-success" @onclick="ConfPModal">Confirmer</Button>
+                    @* <Button class="btn btn-secondary" @onclick="ClosePlnModal">Cancel</Button> *@
                 </FooterTemplate>
             </Modal>
         </Authorized>
@@ -762,6 +774,26 @@ else
         }
 
         sinwPater = false;
+    }
+    private async Task AnuPModal()
+    {
+        foreach (var enty in PaterRows)
+        {
+            if (curODContext.GetEntityState(enty) == EntityStates.Added)
+            {
+                curOrga.Gsgfixes.Remove(enty);
+                curODContext.Detach(enty);
+            }
+        }
+        await patModal.HideAsync();
+    }
+    private async Task ConfPModal()
+    {
+        await SaveCurEntities();
+        Imessage = "Parent(s) SAVED";
+        await patModal.HideAsync();
+        allEnable = false;
+        StateHasChanged();
     }
     void ClosePlnModal()
     { // RAZ des visions

@@ -1,8 +1,13 @@
-﻿@using System
+﻿@page "/gconstes"
+@layout AstrMenu
+
+@using System
 @using System.Security.Claims
 
 @using BlazorBootstrap
 @using Blazored.LocalStorage
+
+@using Microsoft.OData.Client
 
 @using GxAdm.Services
 @using GxWapi.DaModels
@@ -535,7 +540,9 @@ else
                         </div>
                     </BodyTemplate>
                     <FooterTemplate>
-                        <Button class="btn btn-secondary" @onclick="ClosePmodal">Cancel</Button>
+                        <Button class="btn btn-secondary" @onclick="AnuPModal">Annuler</Button>
+                        <Button class="btn btn-success" @onclick="ConfPModal">Confirmer</Button>
+                        @* <Button class="btn btn-secondary" @onclick="ClosePmodal">Cancel</Button> *@
                     </FooterTemplate>
                 </Modal>
         }
@@ -815,6 +822,26 @@ else
             Imessage = "Deja ajoute";
         }
         sinwPater = false;
+    }
+    private async Task AnuPModal()
+    {
+        foreach (var enty in PaterRows)
+        {
+            if (curODContext.GetEntityState(enty) == EntityStates.Added)
+            {
+                curOrga.Gsgfixes.Remove(enty);
+                curODContext.Detach(enty);
+            }
+        }
+        await patModal.HideAsync();
+    }
+    private async Task ConfPModal()
+    {
+        await SaveCurEntities();
+        Imessage = "Parent(s) SAVED";
+        await patModal.HideAsync();
+        allEnable = false;
+        StateHasChanged();
     }
     //GTfl -- EDITING
     void PromptGenEdit(Gsgfix myafil, int orig)

@@ -484,6 +484,16 @@ else
                                         }
                                     </ChildContent>
                                 </GridColumn>
+                                <GridColumn TItem="Gsgfix">
+                                    <HeaderContent>
+                                        @if (!sinwPater)
+                                        {
+                                            <button class="btn btn-sm btn-primary d-flex align-items-center" @onclick="() => PrepareAddPater()">
+                                                <span class="me-1">+</span> Ajout
+                                            </button>
+                                        }
+                                    </HeaderContent>
+                                </GridColumn>
                                 <GridColumn TItem="Gsgfix" HeaderText="">
                                     <ChildContent Context="item">
                                         @if (allEnable)
@@ -502,7 +512,9 @@ else
                     </div>
                 </BodyTemplate>
                 <FooterTemplate>
-                    <Button class="btn btn-secondary" @onclick="ClosePmodal">Cancel</Button>
+                    <Button class="btn btn-secondary" @onclick="AnuPModal">Annuler</Button>
+                    <Button class="btn btn-success" @onclick="ConfPModal">Confirmer</Button>
+                    @* <Button class="btn btn-secondary" @onclick="ClosePmodal">Cancel</Button> *@
                 </FooterTemplate>
             </Modal>
             <!-- Modal for ADDING Gsglne -->
@@ -592,6 +604,16 @@ else
                                         }
                                     </ChildContent>
                                 </GridColumn>
+                                <GridColumn TItem="Gsglne">
+                                    <HeaderContent>
+                                        @if (!sinwChild)
+                                        {
+                                            <button class="btn btn-sm btn-primary d-flex align-items-center" @onclick="() => PrepareAddChild()">
+                                                <span class="me-1">+</span> Ajout
+                                            </button>
+                                        }
+                                    </HeaderContent>
+                                </GridColumn>
                                 <GridColumn TItem="Gsglne" HeaderText="">
                                     <ChildContent Context="item">
                                         @if (allEnable)
@@ -610,7 +632,9 @@ else
                     </div>
                 </BodyTemplate>
                 <FooterTemplate>
-                    <Button class="btn btn-secondary" @onclick="CloseCmodal">Cancel</Button>
+                    <Button class="btn btn-secondary" @onclick="AnuCModal">Annuler</Button>
+                    <Button class="btn btn-success" @onclick="ConfCModal">Confirmer</Button>
+                    @* <Button class="btn btn-secondary" @onclick="CloseCmodal">Cancel</Button> *@
                 </FooterTemplate>
             </Modal>
         </Authorized>
@@ -774,7 +798,7 @@ else
             glnesMap.Remove(parentKey); // Clear previous children for clean modal state
         }
 
-        PrepareAddChild(curPater);
+        PrepareAddChild();
 
         chlTitle = $"{curPater.Elea} - {curPater.Liba} (contenu table en creation)";
         chlModal.ShowAsync();
@@ -806,15 +830,15 @@ else
         StateHasChanged();
         sinwPater = true;
     }
-    void PrepareAddChild(Gsgfix parent)
+    void PrepareAddChild()
     {
         isChlValid = false;
-        if (parent == null || IMyBas == 0 || IMyGtbl == 0 || !allEnable)
+        if (curPater == null || IMyBas == 0 || IMyGtbl == 0 || !allEnable)
         {
             Imessage = "REFUS, Groupe et/ou Base non choisi";
             return;
         }
-        var parentId = parent.Xseq;
+        var parentId = curPater.Xseq;
         // Make sure the glnesMap has an entry for this parent
         if (!glnesMap.ContainsKey(parentId))
         {
@@ -826,8 +850,8 @@ else
         int maxIdzonFromMap = mapGsglnes.Any() ? (mapGsglnes.Max(r => r.Elea) ?? 10) : 10;
         int maxIdzon = Math.Max(10, Math.Max(maxIdzonFromParent, maxIdzonFromMap));
         int nextZon = maxIdzon + 1;
-        Console.WriteLine($"current newPoste zone no : {nextZon} et parent act no : {parent.Xseq}");
-        var newChl = CreateNewChild(parent, nextZon);
+        Console.WriteLine($"current newPoste zone no : {nextZon} et parent act no : {curPater.Xseq}");
+        var newChl = CreateNewChild(curPater, nextZon);
         glnesMap[parentId].Insert(0, newChl);
         AddingRowGuid = newChl.Rowguid;
         StateHasChanged();
@@ -946,7 +970,46 @@ else
         chlTitle = "";
         chlModal.HideAsync();
     }
-
+    private async Task AnuPModal()
+    {
+        foreach (var enty in PaterRows)
+        {
+            if (curODContext.GetEntityState(enty) == EntityStates.Added)
+            {
+                curOrga.Gsgfixes.Remove(enty);
+                curODContext.Detach(enty);
+            }
+        }
+        await patModal.HideAsync();
+    }
+    private async Task ConfPModal()
+    {
+        await SaveCurEntities();
+        Imessage = "Parent(s) SAVED";
+        await patModal.HideAsync();
+        allEnable = false;
+        StateHasChanged();
+    }
+    private async Task AnuCModal()
+    {
+        foreach (var enty in ChildRows)
+        {
+            if (curODContext.GetEntityState(enty) == EntityStates.Added)
+            {
+                curOrga.Gsglnes.Remove(enty);
+                curODContext.Detach(enty);
+            }
+        }
+        await chlModal.HideAsync();
+    }
+    private async Task ConfCModal()
+    {
+        await SaveCurEntities();
+        Imessage = "Colonne(s) SAVED";
+        await chlModal.HideAsync();
+        allEnable = false;
+        StateHasChanged();
+    }
     //GTfl -- EDITING
     void PromptManEdit(Gsgfix myafil)
     {

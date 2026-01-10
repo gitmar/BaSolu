@@ -541,14 +541,14 @@
                                         {
                                             <div class="row row-cols-5">
                                                 <div class="col-1 text-center">@gfx.Elea</div>
-                                                <label class="col-1 @(gfx.Etyp == 1 ? "saflprow" : "")">
+                                                <label class="col-1">
                                                     @gfx.Liba
                                                 </label>
-                                                <div class="col-2 @(gfx.Etyp == 1 ? "saflprow" : "")">
+                                                <div class="col-2">
                                                     <InputText @bind-Value="gfx.Sliba"
                                                                readonly="@(allEnable ? null : "readonly")" />
                                                 </div>
-                                                <div class="col-1 @(gfx.Etyp == 1 ? "saflprow" : "")">
+                                                <div class="col-1">
                                                     <InputSelect id="ntop" @bind-Value="gfx.Ityp" disabled="@(!allEnable)">
                                                         @foreach (var tob in LsFixes.Where(ut => ut.Gvars == 31 && ut.Itb == 2))
                                                         {
@@ -556,7 +556,7 @@
                                                         }
                                                     </InputSelect>
                                                 </div>
-                                                <div class="col-1 @(gfx.Etyp == 1 ? "saflprow" : "")">
+                                                <div class="col-1">
                                                     <InputSelect id="ntav" @bind-Value="gfx.Jtyp" disabled="@(!allEnable)">
                                                         @foreach (var tob in LsFixes.Where(ut => ut.Gvars == 31 && ut.Itb == 6 && ut.Gp1 == 1))
                                                         {
@@ -564,11 +564,11 @@
                                                         }
                                                     </InputSelect>
                                                 </div>
-                                                <div class="col-1 @(gfx.Etyp == 1 ? "saflprow" : "")">
+                                                <div class="col-1">
                                                     <InputNumber class="my-input" @bind-Value="gfx.Mtyp"
                                                                  style="font-weight:bold;width:60px" readonly="@(allEnable ? null : "readonly")" />
                                                 </div>
-                                                <div class="col-1 @(gfx.Etyp == 1 ? "saflprow" : "")">
+                                                <div class="col-1">
                                                     <InputSelect id="ntnf" @bind-Value="gfx.Ntyp" disabled="@(!allEnable)" style="width:100%">
                                                         @foreach (var tob in LsFixes.Where(ut => ut.Gvars == 31 && ut.Itb == 4 && ut.Gp1 == 1))
                                                         {
@@ -619,9 +619,7 @@
                                             </GridColumn>
                                             <GridColumn TItem="Gsgfix" HeaderText="Avec">
                                                 <ChildContent Context="item">
-                                                    <div class="@(item.Etyp == 1 ? "saflprow" : "")">
-                                                        @item.Liba
-                                                    </div>
+                                                    @item.Liba
                                                 </ChildContent>
                                             </GridColumn>
                                             <GridColumn TItem="Gsgfix" HeaderText="Libelle">
@@ -631,7 +629,7 @@
                                             </GridColumn>
                                             <GridColumn TItem="Gsgfix" HeaderText="Avis">
                                                 <ChildContent Context="item">
-                                                    <div class="col-1 @(item.Etyp == 1 ? "saflprow" : "")">
+                                                    <div class="col-1">
                                                           <InputSelect @bind-Value="item.Jtyp" style="width:auto" disabled>
                                                               <option class="ichx" value="0">?avis</option>
                                                                 @foreach (var tob in LsFixes.Where(ut => ut.Gvars == 31 && ut.Itb == 6 && ut.Gp1 == 1))
@@ -644,14 +642,14 @@
                                             </GridColumn>
                                             <GridColumn TItem="Gsgfix" HeaderText="Max">
                                                 <ChildContent Context="item">
-                                                    <div class="col-1 @(item.Etyp == 1 ? "saflprow" : "")">
+                                                    <div class="col-1">
                                                         @item.Mtyp
                                                     </div>
                                                 </ChildContent>
                                             </GridColumn>
                                             <GridColumn TItem="Gsgfix" HeaderText="Notif">
                                                 <ChildContent Context="item">
-                                                    <div class="col-1 @(item.Etyp == 1 ? "saflprow" : "")">
+                                                    <div class="col-1">
                                                         <InputSelect id="ntop" @bind-Value="item.Ntyp" disabled>
                                                             <option class="ichx" value="0">?notif</option>
                                                             @foreach (var tob in LsFixes.Where(ut => ut.Gvars == 31 && ut.Itb == 4 && ut.Gp1 == 1))
@@ -870,9 +868,6 @@
         opacity: 0.5;
     }
 
-    .saflprow {
-        background-color: skyblue; /* light yellow */
-    }
 </style>
 
 @code {
@@ -1042,97 +1037,97 @@
         icOpening = false;
         StateHasChanged();
     }
-    private Gsglne CreateDraftCol(dynamic uncol)  // Or type LsFixes item type
-    {
-        //dynamic = consfix
-        int yaTb = uncol.Gp1 != 0 ? 1 : 0;
-        int ystyp = uncol.Elea; //remplace Elea
-        var brouCol = new Gsglne();
-        // //{
-        //     Idorg = curOrga.Idorg,
-        //     Pseq = uncol.Fxseq,
-        //     Pele = uncol.Elea,
-        //     Otyp = 5,
-        //     Dtyp = 5,
-        //     Totyp = selTyp,
-        //     Tstyp = uncol.Elea,
-        //     Eaut = 0,
-        //     Scdrub = uncol.Scdrub,
-        //     Elea = uncol.Elea,
-        //     Liba = uncol.Liba,
-        //     Abg = uncol.Abg,
-        //     Ztyp = uncol.Gp2,
-        //     Sitb = yaTb,
-        //     Ztbl = uncol.Gp1,
-        //     Zdpd = uncol.Gp4,
-        //     Ktyp = uncol.Gp7,
-        //     Inx1 = 1,
-        //     Inx2 = 1
-        // //};
-        var lscols = curOrga.Gsglnes.Where(uc => uc.Otyp == 5 && uc.Pseq == uncol.Fxseq && uc.Totyp == selTyp && uc.Tstyp == ystyp).ToList();
-        // Console.WriteLine($"current type : {selTyp}");
-        if (lscols.Any())
-        {
-            var existcol = lscols.FirstOrDefault();
-            brouCol.Idorg = curOrga.Idorg;
-            brouCol.Pseq = uncol.Fxseq;
-            brouCol.Pele = uncol.Elea;
-            brouCol.Otyp = 5;
-            brouCol.Dtyp = 5;
-            brouCol.Totyp = selTyp;
-            brouCol.Tstyp = uncol.Elea;
-            brouCol.Eaut = 0;
-            brouCol.Scdrub = uncol.Scdrub;
-            brouCol.Elea = ystyp;
-            //brouCol.Etyp = ystyp;
-            brouCol.Liba = uncol.Liba;
-            brouCol.Abg = uncol.Abg;
-            brouCol.Ztyp = uncol.Gp2;
-            brouCol.Sitb = yaTb;
-            brouCol.Ztbl = uncol.Gp1;
-            brouCol.Zdpd = uncol.Gp4;
-            brouCol.Ktyp = uncol.Gp7;
-            brouCol.Inx1 = 1;
-            brouCol.Inx2 = 1;
-            brouCol.Oliba = existcol.Oliba;
-            brouCol.Oabg = existcol.Oabg;
-            brouCol.Yrng = existcol.Yrng;
-            brouCol.Jacc = existcol.Jacc;
-            brouCol.Jenr = existcol.Jenr;
-            brouCol.Eta = existcol.Eta;
-            return brouCol;
-        }
-        // else
-        // {
-        //     brouCol.Oliba = uncol.Liba;
-        //     brouCol.Oabg = uncol.Abg;
-        //     brouCol.Yrng = uncol.Gp3;
-        //     brouCol.Jacc = 0;
-        //     brouCol.Jenr = 0;
-        //     brouCol.Eta = 1;
-        // }
-        return null;
-        // --iorig -> 2 vient de gxorga/consfix
-        // --itb -> 12/13
-        // --totyp -> pour les types tiers ou xuits
-        // --pseq --> refer. element parent(niv.clef)
-        // --pele -> refer. element parent(niv.nbre
-        // --jacc -> 1si present dans accueil/inscr
-        // --jenr -> 1si present dans enrolement
-        // --eaut -> 0 supprimable
-        // --scdrub -> scdrub
-        // --rno -> 1..n refer. element interne
-        // --yrng(gp3/ydpd) -> rang colonne 1..n
-        // --ztyp(gp2/ztyp) -> type colonne 1 string, 2 number...
-        // --sitb(test?/zgpe) -> si table apres test
-        // --ztbl(gp1/zfro) --> refer. table
-        // --zdpd(gp4/xdpd) -> refer. table liee (pays/region/ville...)
-        // --ktyp(gp7/ktyp) -> integre
-        // --vtyp(tgx/mtyp) -> visibilite
-        // --inx1 -> enrolement
-        // --inx2 -> validation
-        // --scdrub --> refer.
-    }
+    // private Gsglne CreateDraftCol(dynamic uncol)  // Or type LsFixes item type
+    // {
+    //     //dynamic = consfix
+    //     int yaTb = uncol.Gp1 != 0 ? 1 : 0;
+    //     int ystyp = uncol.Elea; //remplace Elea
+    //     var brouCol = new Gsglne();
+    //     // //{
+    //     //     Idorg = curOrga.Idorg,
+    //     //     Pseq = uncol.Fxseq,
+    //     //     Pele = uncol.Elea,
+    //     //     Otyp = 5,
+    //     //     Dtyp = 5,
+    //     //     Totyp = selTyp,
+    //     //     Tstyp = uncol.Elea,
+    //     //     Eaut = 0,
+    //     //     Scdrub = uncol.Scdrub,
+    //     //     Elea = uncol.Elea,
+    //     //     Liba = uncol.Liba,
+    //     //     Abg = uncol.Abg,
+    //     //     Ztyp = uncol.Gp2,
+    //     //     Sitb = yaTb,
+    //     //     Ztbl = uncol.Gp1,
+    //     //     Zdpd = uncol.Gp4,
+    //     //     Ktyp = uncol.Gp7,
+    //     //     Inx1 = 1,
+    //     //     Inx2 = 1
+    //     // //};
+    //     var lscols = curOrga.Gsglnes.Where(uc => uc.Otyp == 5 && uc.Pseq == uncol.Fxseq && uc.Totyp == selTyp && uc.Tstyp == ystyp).ToList();
+    //     // Console.WriteLine($"current type : {selTyp}");
+    //     if (lscols.Any())
+    //     {
+    //         var existcol = lscols.FirstOrDefault();
+    //         brouCol.Idorg = curOrga.Idorg;
+    //         brouCol.Pseq = uncol.Fxseq;
+    //         brouCol.Pele = uncol.Elea;
+    //         brouCol.Otyp = 5;
+    //         brouCol.Dtyp = 5;
+    //         brouCol.Totyp = selTyp;
+    //         brouCol.Tstyp = uncol.Elea;
+    //         brouCol.Eaut = 0;
+    //         brouCol.Scdrub = uncol.Scdrub;
+    //         brouCol.Elea = ystyp;
+    //         //brouCol.Etyp = ystyp;
+    //         brouCol.Liba = uncol.Liba;
+    //         brouCol.Abg = uncol.Abg;
+    //         brouCol.Ztyp = uncol.Gp2;
+    //         brouCol.Sitb = yaTb;
+    //         brouCol.Ztbl = uncol.Gp1;
+    //         brouCol.Zdpd = uncol.Gp4;
+    //         brouCol.Ktyp = uncol.Gp7;
+    //         brouCol.Inx1 = 1;
+    //         brouCol.Inx2 = 1;
+    //         brouCol.Oliba = existcol.Oliba;
+    //         brouCol.Oabg = existcol.Oabg;
+    //         brouCol.Yrng = existcol.Yrng;
+    //         brouCol.Jacc = existcol.Jacc;
+    //         brouCol.Jenr = existcol.Jenr;
+    //         brouCol.Eta = existcol.Eta;
+    //         return brouCol;
+    //     }
+    //     // else
+    //     // {
+    //     //     brouCol.Oliba = uncol.Liba;
+    //     //     brouCol.Oabg = uncol.Abg;
+    //     //     brouCol.Yrng = uncol.Gp3;
+    //     //     brouCol.Jacc = 0;
+    //     //     brouCol.Jenr = 0;
+    //     //     brouCol.Eta = 1;
+    //     // }
+    //     return null;
+    //     // --iorig -> 2 vient de gxorga/consfix
+    //     // --itb -> 12/13
+    //     // --totyp -> pour les types tiers ou xuits
+    //     // --pseq --> refer. element parent(niv.clef)
+    //     // --pele -> refer. element parent(niv.nbre
+    //     // --jacc -> 1si present dans accueil/inscr
+    //     // --jenr -> 1si present dans enrolement
+    //     // --eaut -> 0 supprimable
+    //     // --scdrub -> scdrub
+    //     // --rno -> 1..n refer. element interne
+    //     // --yrng(gp3/ydpd) -> rang colonne 1..n
+    //     // --ztyp(gp2/ztyp) -> type colonne 1 string, 2 number...
+    //     // --sitb(test?/zgpe) -> si table apres test
+    //     // --ztbl(gp1/zfro) --> refer. table
+    //     // --zdpd(gp4/xdpd) -> refer. table liee (pays/region/ville...)
+    //     // --ktyp(gp7/ktyp) -> integre
+    //     // --vtyp(tgx/mtyp) -> visibilite
+    //     // --inx1 -> enrolement
+    //     // --inx2 -> validation
+    //     // --scdrub --> refer.
+    // }
     void SelDomGtie(Gpfixe myfix)
     {
         //prise du type afil
@@ -1682,7 +1677,7 @@
     public async Task SavAllAsync()
     {
         await _guard.FlushAsync();
-        _navmanager.NavigateTo("/");
+        NavigateBack();
     }
     public async ValueTask DisposeAsync()
     {
@@ -1723,12 +1718,17 @@
                 break;
                 // Add cases for other properties as needed
         }
+        _guard.MarkDirty();
         // Optionally, trigger any additional logic or state updates here
     }
     private void HandleFieldChanged(object sender, FieldChangedEventArgs e)
     {
         //to display Confirm/Cancel
         if (e.FieldIdentifier.Model is Gxorga) isOrgEditing = true;
+        if (allEnable && (e.FieldIdentifier.Model is Gxorga || e.FieldIdentifier.Model is Gsgfix || e.FieldIdentifier.Model is Gsglne))
+        {
+            _guard.MarkDirty();
+        }
         //if (e.FieldIdentifier.Model is Gsglne) isColEditing = true;
         //if (e.FieldIdentifier.Model is Gsgfix afl)
         //{
@@ -1743,7 +1743,6 @@
         //    }
         //    Console.WriteLine($"Afl Value: {afl.Gvars}");
         //}
-        _guard.MarkDirty();
         Console.WriteLine($"Field edited: {e.FieldIdentifier.FieldName}");
     }
   
