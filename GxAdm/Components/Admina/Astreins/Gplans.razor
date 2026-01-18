@@ -1,4 +1,4 @@
-﻿@page "/gplans"
+﻿@page "/gplans" 
 @layout AstrMenu
 
 @using System
@@ -189,7 +189,7 @@ else
                                     <GridColumns>
                                         <GridColumn TItem="Plngen" HeaderText="No">
                                             <ChildContent Context="item">
-                                                @if (item.Xadd1 == -2)
+                                                @if (item.Xadd1 == -1)
                                                 {
                                                     <span>?@item?.Iele</span>
                                                 } else
@@ -346,7 +346,15 @@ else
                             <GridColumns>
                                 <GridColumn TItem="Plngen" HeaderText="No">
                                     <ChildContent Context="item">
-                                        <div @key="item.Rowguid">?@jpln</div>
+                                        <div @key="item.Rowguid"></div>
+                                        @if (item.Iele == 0)
+                                        {
+                                            <span>?@item.Iui</span>
+                                        }
+                                        else
+                                        {
+                                            @item.Iele
+                                        }
                                     </ChildContent>
                                 </GridColumn>
                                 <GridColumn TItem="Plngen" HeaderText="Designation">
@@ -489,7 +497,6 @@ else
 </style>
 @code {
     private bool isLoading = true;
-    private bool allEnable = false;
 
     private string Imessage = "", Jmessage = "", Kmessage = "";
 
@@ -503,6 +510,8 @@ else
     public Gxorga curOrga { get; set; } = new();
     [Parameter]
     public MyShareVars toChild { get; set; }
+    [Parameter]
+    public bool allEnable { get; set; }
     //private Tiersp gridTier = new Tiersp();
     //private Plngen curPlan = new Plngen();
     private List<Rubvar> LsRubs = new List<Rubvar>();
@@ -730,15 +739,15 @@ else
             return;
         }
         var parentId = curOrga.Idorg;
-        jpln = jpln + 1;
+        //jpln = jpln + 1;
         // Make sure the gPlnsMap has an entry for this parent
         if (!gPlnsMap.ContainsKey(parentId))
         {
             gPlnsMap[parentId] = new List<Plngen>();
         }
 
-        var existingPlngens = curOrga.Plngens.Where(ln => ln.Idorg == parentId) ?? new DataServiceCollection<Plngen>();
-        var mapPlngens = gPlnsMap[parentId];
+        //var existingPlngens = curOrga.Plngens.Where(ln => ln.Idorg == parentId) ?? new DataServiceCollection<Plngen>();
+        //var mapPlngens = gPlnsMap[parentId];
         // int maxIdzonFromParent = existingPlngens.Any()
         //     ? existingPlngens.Max(r => r.Elea ?? 0)
         //     : 0;
@@ -749,9 +758,16 @@ else
         // int nextZon = maxIdzon == 0 ? 1 : maxIdzon + 1;
         //Console.WriteLine($"current newPoste zone no : {nextZon} et parent act no : {parentId}");
 
-        plnMax = plnMax + 1;
-        int nextSeq = plnMax ?? 1;
-        var newPat = CreateNewPlan(nextSeq);
+        //var mapGsgfixs = gfixsMap[parentId];
+        //int maxiui = mapGsgfixs.Any() ? (mapGsgfixs.Max(r => r?.Iui) ?? 0) : 0;
+        //int nextIui = maxiui + 1;
+        var mapPlns = gPlnsMap[parentId];
+        int maxiui = mapPlns.Any()? (mapPlns.Max(r => r?.Iui) ?? 0) : 0;
+        int nextIui = maxiui + 1;
+
+        //int nextSeq = plnMax ?? 0;
+        //plnMax = plnMax + 1;
+        var newPat = CreateNewPlan(nextIui);
         if (newPat != null)
         {
             gPlnsMap[parentId].Insert(0, newPat);
@@ -848,6 +864,7 @@ else
             var plan = new Plngen()
             {
                 //Rowguid = Guid.NewGuid(),
+                Iui = nextSeq,
                 Idorg = curOrga.Idorg,
                 Ptyp = IMyGpln,
                 Todom = IMyDom,
@@ -855,7 +872,7 @@ else
                 Abg = "",
                 Styp = 0,
                 Eta = 1,
-                Iele = 0,
+                //Iele = 0,
                 Xadd1 = -1
             };
 
@@ -984,8 +1001,8 @@ else
         Imessage = "";
         if (!curODContext.IsEntityTracked(aglne))
         {
+            aglne.Xadd1 = 0;
             Console.WriteLine($"First enter of Include : {aglne.Id}");
-            aglne.Xadd1 = -2;  //fin adding to be tracked in loaded rubfmts wait for new add
             curODContext.AddObject<Plngen>("Plngens", aglne);
             // Make sure gRubsMap has the parent key initialized
             if (!gPlnsMap.ContainsKey(parentId))

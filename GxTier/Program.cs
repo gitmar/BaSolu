@@ -47,7 +47,7 @@ builder.Services.AddScoped<RendAgres>();
 builder.Services.AddScoped<ClieAppState>();
 builder.Services.AddScoped<SessionContextService>();
 builder.Services.AddScoped<SessionContextClient>();
-
+builder.Services.AddScoped<LookupService>();
 builder.Services.AddSingleton<LoadingService>();
 // Configure logging first
 builder.Logging.SetMinimumLevel(LogLevel.Information);

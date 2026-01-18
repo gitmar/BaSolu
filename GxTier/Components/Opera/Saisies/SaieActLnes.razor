@@ -227,7 +227,6 @@ else
 </style>
 @code {
     private bool isLoading = true;
-    private bool allEnable = false;
     //private bool notEnable => !allEnable;
     private bool enrEnable = false;
     private bool isEditing = false;
@@ -245,6 +244,8 @@ else
     public Gxorga curOrga { get; set; }
     [Parameter]
     public MyShareVars toChild { get; set; }
+    [Parameter]
+    public bool allEnable { get; set; }
     //[Parameter]
     //public MyMenuVars froMenu { get; set; }
 

@@ -22,9 +22,9 @@
 
 @if (isLoading)
 {
-    <Progress class="progress mb-3">
-        <ProgressBar Width="30" Label="Operas/Session Loading..." Type="ProgressType.StripedAndAnimated" Color="ProgressColor.Primary" />
-    </Progress>
+<Progress class="progress mb-3">
+    <ProgressBar Width="30" Label="Operas/Session Loading..." Type="ProgressType.StripedAndAnimated" Color="ProgressColor.Primary" />
+</Progress>
 }
 <div class="row">
     <div class="col-md-12 input-group align-middle">
@@ -35,24 +35,24 @@
         &nbsp;&nbsp;
         <span class="separator">|| </span>
         <Button class="btn btn-sm btn-secondary btnsz"
-                style="@(!allEnable ? "" : "display:none;")"
+                style="@(!allEnable ? " " : " display:none;")"
                 @onclick="EdiAll">
             Modifier
         </Button>
         <Button class="btn btn-sm btn-secondary btnsz"
-                style="@(allEnable ? "" : "display:none;")"
+                style="@(allEnable ? " " : " display:none;")"
                 @onclick="CncAll">
             Annuler
         </Button>
         <span class="separator">|  </span>
         <Button class="btn btn-sm btn-secondary btnsz"
-                style="@(allEnable ? "" : "display:none;")"
+                style="@(allEnable ? " " : " display:none;")"
                 @onclick="SavAll">
             Enregistrer
         </Button> *@
         @if (!String.IsNullOrEmpty(Imessage))
         {
-            <span class="bg-info bg-opacity-10" style="font-style:italic;color:red">&nbsp;--> @Imessage</span>
+        <span class="bg-info bg-opacity-10" style="font-style:italic;color:red">&nbsp;--> @Imessage</span>
         }
     </div>
 </div>
@@ -66,7 +66,7 @@
     <InputSelect id="typses" @bind-Value="IMyTses">
         @foreach (var tob in LsVars.Where(uv => uv.Gvars == 37 && uv.Itb == 1 && uv.Elea != 0).ToList())
         {
-            <option value="@tob.Elea" @onclick="() => SelTSesio(tob)">@tob.Liba</option>
+        <option value="@tob.Elea" @onclick="() => SelTSesio(tob)">@tob.Liba</option>
         }
     </InputSelect>
     <label style="font-weight:bold;">(@sesDom)</label>
@@ -75,97 +75,97 @@
         <option class="ichx" value="0">?etat</option>
         @foreach (var tob in _lsFixes.Where(ut => ut.Gvars == 39 && ut.Itb == 4 && ut.Elea != 0))
         {
-           <option value="@tob.Elea">@tob.Liba</option>
+        <option value="@tob.Elea">@tob.Liba</option>
         }
     </InputSelect>
 </div>
 <div class="row d-flex row-cols-5">
     @if (allEnable == true && IMyTses != 0 && IMyTeta != 0)
     {
-        @* <button class="col-md-1 padding-0 btn btn-primary btn-sm my-0" @onclick="OpenAddSesio">Creer</button> *@
-        @if (sinwAses)
-        {
-            <InputText class="col-md-2 d-inline" @bind-Value="newSes.Liba" placeholder="designation" />
-            <InputText class="col-md-1 d-inline" @bind-Value="newSes.Abg" placeholder="abrege" />
-            <InputDate class="col-md-1 d-inline" @bind-Value="newSes.Datouv" placeholder="date ouv." />
-            <InputDate class="col-md-1 d-inline" @bind-Value="newSes.Datclt" placeholder="date clot" />
-            <div class="col-md-1 btn-group">
-                <button class="btn btn-success btn-sm" @onclick="ConfirmAddRow">Ajout</button>
-                &nbsp;&nbsp;
-                <button class="btn btn-secondary btn-sm" @onclick="CancelAddRow">Annul</button>
-            </div>
-        }
+    @* <button class="col-md-1 padding-0 btn btn-primary btn-sm my-0" @onclick="OpenAddSesio">Creer</button> *@
+    @if (sinwAses)
+    {
+    <InputText class="col-md-2 d-inline" @bind-Value="newSes.Liba" placeholder="designation" />
+    <InputText class="col-md-1 d-inline" @bind-Value="newSes.Abg" placeholder="abrege" />
+    <InputDate class="col-md-1 d-inline" @bind-Value="newSes.Datouv" placeholder="date ouv." />
+    <InputDate class="col-md-1 d-inline" @bind-Value="newSes.Datclt" placeholder="date clot" />
+    <div class="col-md-1 btn-group">
+        <button class="btn btn-success btn-sm" @onclick="ConfirmAddRow">Ajout</button>
+        &nbsp;&nbsp;
+        <button class="btn btn-secondary btn-sm" @onclick="CancelAddRow">Annul</button>
+    </div>
+    }
     }
 </div>
 @if (IMyTses!= 0 && IMyTeta != 0)
 {
-    <div class="d-flex flex-row">
-        <Grid TItem="Gsesio"
-              Data="@DaSesios"
-              AllowFiltering="@isFilteringEnabled"
-              AllowPaging="true"
-              Responsive="true">
-            <GridColumns>
-                <GridColumn TItem="Gsesio" HeaderText="No">
-                    <ChildContent Context="item">@item.Dseq</ChildContent>
-                </GridColumn>
-                <GridColumn TItem="Gsesio" HeaderText="Ref">
-                    <ChildContent Context="item">@item.Sref</ChildContent>
-                </GridColumn>
-                <GridColumn TItem="Gsesio" HeaderText="Designation">
-                    <ChildContent Context="item">@item.Liba</ChildContent>
-                </GridColumn>
-                <GridColumn TItem="Gsesio" HeaderText="DateDeb">
-                    <ChildContent Context="item">
-                        <div class="text-truncate" style="width:80px">@item.Datouv</div>
-                    </ChildContent>
-                </GridColumn>
-                <GridColumn TItem="Gsesio" HeaderText="DateFin">
-                    <ChildContent Context="item">
-                        <div class="text-truncate" style="width:80px">@item.Datclt</div>
-                     </ChildContent>
-                </GridColumn>
-                <GridColumn TItem="Gsesio" HeaderText="Type">
-                    <ChildContent Context="item">@item.Styp</ChildContent>
-                </GridColumn>
-                <GridColumn TItem="Gsesio" HeaderText="Nbre">
-                    <ChildContent Context="item">@item.Nbs</ChildContent>
-                </GridColumn>
-                <GridColumn TItem="Gsesio" HeaderText="Etat">
-                    <ChildContent Context="item">
+<div class="d-flex flex-row">
+    <Grid TItem="Gsesio"
+          Data="@DaSesios"
+          AllowFiltering="@isFilteringEnabled"
+          AllowPaging="true"
+          Responsive="true">
+        <GridColumns>
+            <GridColumn TItem="Gsesio" HeaderText="No">
+                <ChildContent Context="item">@item.Dseq</ChildContent>
+            </GridColumn>
+            <GridColumn TItem="Gsesio" HeaderText="Ref">
+                <ChildContent Context="item">@item.Sref</ChildContent>
+            </GridColumn>
+            <GridColumn TItem="Gsesio" HeaderText="Designation">
+                <ChildContent Context="item">@item.Liba</ChildContent>
+            </GridColumn>
+            <GridColumn TItem="Gsesio" HeaderText="DateDeb">
+                <ChildContent Context="item">
+                    <div class="text-truncate" style="width:80px">@item.Datouv</div>
+                </ChildContent>
+            </GridColumn>
+            <GridColumn TItem="Gsesio" HeaderText="DateFin">
+                <ChildContent Context="item">
+                    <div class="text-truncate" style="width:80px">@item.Datclt</div>
+                </ChildContent>
+            </GridColumn>
+            <GridColumn TItem="Gsesio" HeaderText="Type">
+                <ChildContent Context="item">@item.Styp</ChildContent>
+            </GridColumn>
+            <GridColumn TItem="Gsesio" HeaderText="Nbre">
+                <ChildContent Context="item">@item.Nbs</ChildContent>
+            </GridColumn>
+            <GridColumn TItem="Gsesio" HeaderText="Etat">
+                <ChildContent Context="item">
 
-                        @item.Sieta
-                    </ChildContent>
-                </GridColumn>
-                <GridColumn TItem="Gsesio" HeaderText="Actions">
-                    <HeaderContent>
-                        @if (allEnable)
-                        {
-                            <button class="btn btn-primary btn-sm" @onclick="() => OpenAddSesio()">
-                                ➕ Add
-                            </button>
-                        }
-                        else
-                        {
-                            <button class="btn btn-info btn-sm" @onclick="ToggleFiltering">
-                                @(isFilteringEnabled ? "🚫 Out Filter" : "🔍 In Filter")
-                            </button>
-                        }
-                    </HeaderContent>
-                    <ChildContent Context="item">
-                        <button class="btn btn-warning btn-sm @(allEnable ? "" : "disabled-action")" @onclick="() => BeginEdGses(item.Idses)">Cloturer</button>
-                        <button class="btn btn-warning btn-sm @(allEnable ? "" : "disabled-action")" @onclick="() => BeginEdGses(item.Idses)">Annuller</button>
-                    </ChildContent>
-                </GridColumn>
-            </GridColumns>
-        </Grid>
-    </div>
+                    @item.Sieta
+                </ChildContent>
+            </GridColumn>
+            <GridColumn TItem="Gsesio" HeaderText="Actions">
+                <HeaderContent>
+                    @if (allEnable)
+                    {
+                    <button class="btn btn-primary btn-sm" @onclick="() => OpenAddSesio()">
+                        ➕ Add
+                    </button>
+                    }
+                    else
+                    {
+                    <button class="btn btn-info btn-sm" @onclick="ToggleFiltering">
+                        @(isFilteringEnabled ? "🚫 Out Filter" : "🔍 In Filter")
+                    </button>
+                    }
+                </HeaderContent>
+                <ChildContent Context="item">
+                    <button class="btn btn-warning btn-sm @(allEnable ? " " : " disabled-action")" @onclick="() => BeginEdGses(item.Idses)">Cloturer</button>
+                    <button class="btn btn-warning btn-sm @(allEnable ? " " : " disabled-action")" @onclick="() => BeginEdGses(item.Idses)">Annuller</button>
+                </ChildContent>
+            </GridColumn>
+        </GridColumns>
+    </Grid>
+</div>
 }
 <div class="d-flex flex-row">
     @if (IMyTses != 0 && IMyTeta != 0)
     {
-        <div class="p-2 flex-column">
-            <!--si session en cours ouverte-->
+    <div class="p-2 flex-column">
+        <!--si session en cours ouverte-->
         <div>
             <label>Cloturer session en cours</label>
         </div>
@@ -212,11 +212,11 @@
         <div>
             @foreach (var sesu in DaSesios)
             {
-                <div>@sesu.Dseq</div>
-                <div>@sesu.Speri</div>
-                <div>@sesu.Ideb</div>
-                <div>@sesu.Sicur</div>
-                <div>@ouvaction</div>
+            <div>@sesu.Dseq</div>
+            <div>@sesu.Speri</div>
+            <div>@sesu.Ideb</div>
+            <div>@sesu.Sicur</div>
+            <div>@ouvaction</div>
             }
         </div>
     </div>
@@ -226,7 +226,6 @@
 <!--Accept ind/global -->
 @code {
     private bool isLoading = true;
-    private bool allEnable = false;
 
     private bool isEditing = false;
     private bool Yames = false;
@@ -242,423 +241,442 @@
     public MyShareVars toChild { get; set; }
     [Parameter]
     public int ChxMenu { get; set; }
+    [Parameter]
+    public bool allEnable { get; set; }
     private string jsess = "";
     private DateTime jdate = DateTime.Now;
     private Gsesio _curSess = new Gsesio();
 
-    private List<Gsesio> DaSesios = new();
+    private List<Gsesio>
+    DaSesios = new();
 
-    private List<Gpfixe> _lsFixes = new List<Gpfixe>();
-    // private List<Gpvar> _lsVars = new List<Gpvar>();
-    private DateTime _sesDat;
-    private string ouvaction = "";
-    private string cloaction = "";
-    private string anuaction = "";
-    private int _lgcdu = 0, IMyTses = 0, IMyTeta = 0, sestyp = 0, IMyProg = 0;
-
-
-    private bool isValid = false;
-    private bool success, errors, isSubmitting = false;
-    private string[] errorList = [];
-    private string rolInv = "", userName = "", isatmsg = "", sesDom = "";
-
-    //private SaieModel saieModel = new SaieModel();
-
-    private string opuname = "", opnomp = "";
-    private int opfonc = 0, opgrad = 0, opafec = 0;
-
-    private string _errorMessage = "";
-
-    //Authentication
-    private bool isAuthenticated = false;
-    private ClaimsPrincipal authUser;
-    private IEnumerable<Claim> claims = Enumerable.Empty<Claim>();
-    [CascadingParameter]
-    private Task<AuthenticationState>? AuthState { get; set; }
-    public string _UserId = "";
-    public int _UorgId = 0;
-    public int _SesId = 0;
-
-    //variables PLANS
-    private bool isFilteringEnabled = false;
-    Modal edSModal;
-    Gsesio sesItem = new();
-    int? edSIndex = null;
-    Gsesio edSes = new();
-    bool adingSes = false;
-    private Userbag _usrBag = new Userbag();
-    //Gsjour edSDet = new();
-    //public List<Gpfixe> LsFixes = new();
-    public List<Gpfixe> LsTgpes = new();
-    public List<Gpvar> LsVars = new();
-    //liste attente de save
-    private List<MyRolTable> _inRoles = new List<MyRolTable>();
-    private List<Grole> _invRoles = new();
-    //private SndmModel envModel = new SndmModel();
-    private UsrMail _usrMail = new UsrMail();
-
-    //private Plngen curProg = new();
-    //variables modal
-    Modal editModal;
-    Gsesio editItem = new();
-    int? editIndex = null;
-    Gsesio editRow = new();
-    bool addingNew = false;
-    Gsesio newSes = new();
-
-    Modal delModal;
-    Gsesio delRow = new();
-    int? delIndex = null;
-    bool delingRow = false;
-
-    private bool sinwAses = false;
-
-    protected override async Task OnInitializedAsync()
-    {
-        isLoading = true;
-        // isAuthenticated = _varsTous.isAuthenticated;
-        // authUser = _varsTous.authUser;
-        // if (!isAuthenticated)
-        // {
-        //     Imessage = "Erreur, Utilisateur non authentifie";
-        //     return;
-        // }
-        //LsVars = _usrBag.Usorga.Uvars.ToList();
-        //_lsFixes = _usrBag.Ufixes.ToList();
-        //var idplnadm = _usrBag.Usorga.Schba;
-        //LsFixes = _usrBag.Ufixes.ToList();
-        LsVars = toChild.LsVars;
-        _lsFixes = toChild.LsFixes;
-
-        _lgcdu = 3;
-        var noslims = LsVars.Where(uv => uv.Idhie == 0 && uv.Gvars == 21 && uv.Itb == 1 && uv.Elea == 1);
-        if (noslims.Any()) _lgcdu = noslims.FirstOrDefault().Ivala;
-        Console.WriteLine("Authentication ENTREE");
-        await ChargeParentData();
-        isLoading = false;
-        Console.WriteLine($"TIERS LUE");
-    }
-    // protected override async Task OnAfterRenderAsync(bool firstRender)
-    // {
-    //     if (firstRender)
-    //     {
-    //         Imessage = "welcome";
-    //         //_curmact.
-    //         //await RemplirSaieModel(1);
-    //     }
-    // }
-    private async Task ChargeParentData()
-    {
-        isLoading = true;
-        int pita = 0;
-        ////Console.WriteLine("TIERS EN TEST");
-        //MainTiw = this;
-        var authState = await AuthState;
-        authUser = authState.User;
-        isAuthenticated = authUser.Identity.IsAuthenticated;
-        if (!isAuthenticated)
-        {
-            Console.WriteLine("Authentication ECHEC");
-            return;
-        }
-        _usrBag = await _sessionContext.GetUserbagAsync();
-        LsVars = _usrBag.Usorga.Uvars.ToList();
-        Console.WriteLine("Authentication ENTREE");  
-    }
-    // private async Task LoadSessionAsync()
-    // {
-    //     int pisa = 2;
-    //     try
-    //     {
-    //         // // curODContext = await _contextFactory.CreateAsync(); // Use factory
-    //         // // //var expand = "Plngens($expand=Gsesios)";
-    //         // // var expand = "Plngens($expand=Gsesios), Gsgfixes, Gsglnes";
-    //         // // var dxorgas = await curODContext.LoadFilteredAsync<Gxorga>(expand: expand);
-
-    //         // // pisa = 3;
-    //         // // curOrga = dxorgas.FirstOrDefault();
-
-    //         if (curOrga == null)
-    //         {
-    //             Console.WriteLine("No organization found for the current user.");
-    //             return;
-    //         }
-
-    //         Console.WriteLine($"nb. variables {curOrga.Gsgfixes.Count()}");
-    //         Console.WriteLine($"nb. colonnes {curOrga.Gsglnes.Count()}");
-    //         pisa = 4;
-    //         Console.WriteLine($"nb pln test : {pisa} et {curOrga.Plngens.Count()}");
-    //     }
-    //     catch (Exception ex)
-    //     {
-    //         Console.WriteLine($"stack trace : {ex.StackTrace} place : {pisa} ex-mess : {ex.Message} and also in-mess: {ex.InnerException}");
-    //     }
-    // }
-    //manage SAVING
-    public async Task EdtAll()
-    {
-        allEnable = true;
-        //EditingRubRowGuid = null;
-    }
-    public async Task CncAll()
-    { //reload to annul AddObject/UpdateObject/DeleteObjet
-        Imessage = "Annulation Operations, patience...";
-        allEnable = false;
-        //EditingRubRowGuid = null;
-        Imessage = "";
-    }
-    public async Task SavAll()
-    {
-        Imessage = "Enregistrement Operations, patience...";
-        allEnable = false;
-        //EditingRubRowGuid = null;
-        await curODContext.SaveDataAsync();
-    }
-    
-    async Task OpenAddSesio()
-    {
-        Imessage = "ouverture session en cours...";
-        //PrepareAddSesio();
-        await CreateNewSesio();
-
-        //patInitTitle = $"{curOrga.Idorg} - {curOrga.Raison} (creation programme)";
-        //patTitle = patInitTitle;
-        //plnModal.ShowAsync();
-        Imessage = "SUCCESS session ouverte";
-    }
-    // void OpenAddPlan()
-    // {
-    //     GplnNewRows.Clear();
-    //     int parentKey = Convert.ToInt32(curOrga.Idorg);
-    //     if (gPlnsMap.ContainsKey(parentKey))
-    //     {
-    //         gPlnsMap.Remove(parentKey); // Clear previous children for clean modal state
-    //     }
-
-    //     PrepareAddPlan();
-
-    //     patInitTitle = $"{curOrga.Idorg} - {curOrga.Raison} (creation programme)";
-    //     patTitle = patInitTitle;
-    //     plnModal.ShowAsync();
-    // }
-    private void SelTSesio(Gpvar myfx)
-    {
-        sesDom = "";
-        if (myfx != null)
-        { //saisie-calcul-analyse
-            var itLibas = _lsFixes.Where(uf => uf.Gvars == 33 && uf.Itb == 8 && uf.Gp1 == 1 && uf.Elea == myfx.Ityp).FirstOrDefault();
-            if (itLibas != null) sesDom = itLibas.Liba;
-            itLibas = _lsFixes.Where(uf => uf.Gvars == 33 && uf.Itb == 8 && uf.Gp1 == 2 && uf.Elea == myfx.Jtyp).FirstOrDefault();
-            if (itLibas != null) sesDom = sesDom + "/" + itLibas.Liba;
-            //_lsProgs = toChild.LsPlans.Where(pl => pl.Ptyp == 5 && pl.Totyp == myfx.Elea).ToList();
-            
-            //Console.WriteLine($"Type session choisi : {curProg.Liba} : {IMyProg} et {IMyTses}");
-        }
-    }
-    // private void SelProgra(Gplan vplan)
-    // {
-    //     if (vplan != null)
-    //     {
-    //         curProg = curOrga.Plngens.Where(pl => pl.Idpln == vplan.Idpln).FirstOrDefault();
-    //         if (curProg != null)
-    //         {
-    //             DaSesios = curOrga.Gsesios.ToList();
-    //         } else
-    //         {
-    //             DaSesios = new();
-    //         }
-    //     } else
-    //     {
-    //         DaSesios = new();
-    //     }
-    // }
-    
-    //Adding row
-    private async Task CreateNewSesio()
-    {
-        if (IMyTses == 0 || allEnable == false)
-        {
-            Imessage = "REFUS, Domaine/Rubrique non choisi";
-            Yames = true;
-            sinwAses = false;
-            return;
-        }
-        try
-        {
-            IMyTeta = 1; //en attente
-            if (curOrga != null)
-            {
-                addingNew = true;
-                newSes = new Gsesio();
-                newSes.Styp = IMyTses;
-                newSes.Liba = "";
-                //newSes.Abg = "";
-                newSes.Datouv = DateTime.Now;
-                //calcul de Datclt pour DateTime.Now.Add(xxx)
-                newSes.Datclt = DateTime.Now;
-
-                //calcul de Elea
-                int? jien = 0;
-                if (curOrga.Gsesios.Any())
-                {
-                    jien = curOrga.Gsesios.Max(uk => uk.Dseq);
-                }
-                jien = jien + 1;
-                newSes.Dseq = jien;
-                newSes.Sieta = 1; //attente
-                newSes.Eta = IMyTeta;
-                newSes.Xadd1 = -1;
-                sinwAses = true;
-                Console.WriteLine("Creation effectuee");
-            }
-            else
-            {
-                Imessage = "REFUS, probleme de chargement";
-                sinwAses = false;
-            }
-        }
-        catch (Exception ex)
-        {
-            sinwAses = false;
-            Imessage = ex.Message;
-        }
-    }
-    void ConfirmAddRow()
-    {
-        //si enreg valid
-        bool estbon = true;
-        string valmess = "";
-        var stlibs = newSes.Liba + newSes.Dseq;
-        if (newSes.Liba == "")
-        {
-            estbon = false;
-            valmess = valmess + "/" + "datouv";
-        }
-        // if (newAdt.Fstr == "")
-        // {
-        //     estbon = false;
-        //     valmess = valmess + "/" + "dfin";
-        // }
-        // if (newAdt.Svala == "")
-        // {
-        //     estbon = false;
-        //     valmess = valmess + "/" + "valeur";
-        // }
-        //if (newAdt.Ddval == ) valmess = valmess + "/" + "ddebut";
-        //if (newAdt.Dfval == 0) valmess = valmess + "/" + "dfin";
-        if (estbon == false)
-        {
-            Imessage = $"ECHEC, {valmess}";
-            return;
-        }
-        if (!curODContext.IsEntityTracked(newSes))
-        {
-            newSes.Xadd1 = -2;  //fin adding to be tracked in loaded rubfmts wait for new add
-            curODContext.AddObject("Gsesios", newSes);
-            DaSesios.ToList().Add(newSes);
-            Imessage = $"SUCCES, {stlibs} added";
-            StateHasChanged();
-            Imessage = "Success... Session ajoutee";
-
-        }
-        else
-        {
-            newSes.Xadd1 = 0;
-            Imessage = "Deja ajoute";
-        }
-        addingNew = false;
-        sinwAses = false;
-    }
-    void CancelAddRow()
-    {
-        //newSes.Dstr = "";
-        //newSes.Fstr = "";
-        newSes.Liba = "";
-        //newAdt.Ddval = DateTime.Now;
-        //newAdt.Dfval = DateTime.Now;
-        addingNew = false;
-        sinwAses = false;
-    }
+    private List<Gpfixe>
+        _lsFixes = new List<Gpfixe>
+            ();
+            // private List<Gpvar>
+                _lsVars = new List<Gpvar>
+                    ();
+                    private DateTime _sesDat;
+                    private string ouvaction = "";
+                    private string cloaction = "";
+                    private string anuaction = "";
+                    private int _lgcdu = 0, IMyTses = 0, IMyTeta = 0, sestyp = 0, IMyProg = 0;
 
 
-    private async void ValoadAsync()
-    {
-        isLoading = true;
-        Console.WriteLine("COMMENCE 1");
-        try
-        {
-            //test
-            // var query = Breeze.Sharp.EntityQuery
-            //     .From<Gxorga>("getorga");
-            // var results = await _entityManager.ExecuteApiRequestAsync(query);
-            // var lsOrgas = results.ToList(); // Convert to list if needed
-            // foreach(var unorg in lsOrgas)
-            // {
-            //     Console.WriteLine($"un org : No. : {unorg.Idorg} libelle :{unorg.Liba} raison : {unorg.Raison}");
-            // }
-            // Console.WriteLine($"ens orgas {lsOrgas.Count()}");
-            //prise des tiers
-            //var query = Breeze.Sharp.EntityQuery
-            //    .From<Tiersp>("tiersaie");
-            ///var results = await _entityManager.ExecuteApiRequestAsync(query);
-            //_lsTiers = results.ToList(); // Convert to list if needed
-            //foreach (var untie in _lsTiers)
-            //{
-            //    Console.WriteLine($"un tie : Mle. : {untie.Smatri} nom :{untie.Nom} prenoms : {untie.Pnom}");
-            //}
-            //Console.WriteLine($"ens tiers {_lsTiers.Count()}");
-            //controle metadata
-        }
-        catch (Exception ex)
-        {
-            _errorMessage = $"An error occurred: {ex.Message}";
-        }
-        isLoading = false;
-    }
-    private Plngen GetSelectedPln(int ipln)
-    {
-        return null;
-    }
-    private async Task choisirSession()
-    {
-        // if (sestyp != 0 && IMyProg != 0)
-        // {
-        //     _curSess = _lsSess.Where(le => le.Sotyp == sestyp && le.Idpln == IMyProg).FirstOrDefault();
-        // } else
-        // {
-        //     _curSess = new Gsesio();
-        // }
-    }
-    private async Task ValidSaieAsync()
-    {
-        try
-        {
-            //await _entityManager.SaveChanges(); // Specify type argument here
-        }
-        catch (Exception ex)
-        {
-            // Handle error (e.g., show error message)
-        }
-    }
-    
-    //FILTRES
-    private void ToggleFiltering()
-    {
-        isFilteringEnabled = !isFilteringEnabled;
-    }
+                    private bool isValid = false;
+                    private bool success, errors, isSubmitting = false;
+                    private string[] errorList = [];
+                    private string rolInv = "", userName = "", isatmsg = "", sesDom = "";
 
-    // private async Task LoadSessionsAsync()
-    // {
-    //     try
-    //     {
-    //         DateTime baseDate = DateTime.Now;
-    //         DateTime previousDate = baseDate.AddDays(-400);
-    //         int pisa = 1;
-    //         Console.WriteLine($"En prenant le SAIEBAG");
-    //         var strcall = await _cliemanager.SendRequestAsync("AUTHClient", HttpMethod.Get, "lgauth/usrsesio");
-    //         //Console.WriteLine($"21RECU DE LOGIN {strcall}");
-    //         pisa = 2;
-    //         var logResu = JsonConvert.DeserializeObject<List<Gsesio>>(strcall);
+                    //private SaieModel saieModel = new SaieModel();
+
+                    private string opuname = "", opnomp = "";
+                    private int opfonc = 0, opgrad = 0, opafec = 0;
+
+                    private string _errorMessage = "";
+
+                    //Authentication
+                    private bool isAuthenticated = false;
+                    private ClaimsPrincipal authUser;
+                    private IEnumerable<Claim>
+                        claims = Enumerable.Empty<Claim>
+                            ();
+                            [CascadingParameter]
+                            private Task<AuthenticationState>
+                                ? AuthState { get; set; }
+                                public string _UserId = "";
+                                public int _UorgId = 0;
+                                public int _SesId = 0;
+
+                                //variables PLANS
+                                private bool isFilteringEnabled = false;
+                                Modal edSModal;
+                                Gsesio sesItem = new();
+                                int? edSIndex = null;
+                                Gsesio edSes = new();
+                                bool adingSes = false;
+                                private Userbag _usrBag = new Userbag();
+                                //Gsjour edSDet = new();
+                                //public List<Gpfixe>
+                                    LsFixes = new();
+                                    public List<Gpfixe>
+                                        LsTgpes = new();
+                                        public List<Gpvar>
+                                            LsVars = new();
+                                            //liste attente de save
+                                            private List<MyRolTable>
+                                                _inRoles = new List<MyRolTable>
+                                                    ();
+                                                    private List<Grole>
+                                                        _invRoles = new();
+                                                        //private SndmModel envModel = new SndmModel();
+                                                        private UsrMail _usrMail = new UsrMail();
+
+                                                        //private Plngen curProg = new();
+                                                        //variables modal
+                                                        Modal editModal;
+                                                        Gsesio editItem = new();
+                                                        int? editIndex = null;
+                                                        Gsesio editRow = new();
+                                                        bool addingNew = false;
+                                                        Gsesio newSes = new();
+
+                                                        Modal delModal;
+                                                        Gsesio delRow = new();
+                                                        int? delIndex = null;
+                                                        bool delingRow = false;
+
+                                                        private bool sinwAses = false;
+
+                                                        protected override async Task OnInitializedAsync()
+                                                        {
+                                                        isLoading = true;
+                                                        // isAuthenticated = _varsTous.isAuthenticated;
+                                                        // authUser = _varsTous.authUser;
+                                                        // if (!isAuthenticated)
+                                                        // {
+                                                        //     Imessage = "Erreur, Utilisateur non authentifie";
+                                                        //     return;
+                                                        // }
+                                                        //LsVars = _usrBag.Usorga.Uvars.ToList();
+                                                        //_lsFixes = _usrBag.Ufixes.ToList();
+                                                        //var idplnadm = _usrBag.Usorga.Schba;
+                                                        //LsFixes = _usrBag.Ufixes.ToList();
+                                                        LsVars = toChild.LsVars;
+                                                        _lsFixes = toChild.LsFixes;
+
+                                                        _lgcdu = 3;
+                                                        var noslims = LsVars.Where(uv => uv.Idhie == 0 && uv.Gvars == 21 && uv.Itb == 1 && uv.Elea == 1);
+                                                        if (noslims.Any()) _lgcdu = noslims.FirstOrDefault().Ivala;
+                                                        Console.WriteLine("Authentication ENTREE");
+                                                        await ChargeParentData();
+                                                        isLoading = false;
+                                                        Console.WriteLine($"TIERS LUE");
+                                                        }
+                                                        // protected override async Task OnAfterRenderAsync(bool firstRender)
+                                                        // {
+                                                        //     if (firstRender)
+                                                        //     {
+                                                        //         Imessage = "welcome";
+                                                        //         //_curmact.
+                                                        //         //await RemplirSaieModel(1);
+                                                        //     }
+                                                        // }
+                                                        private async Task ChargeParentData()
+                                                        {
+                                                        isLoading = true;
+                                                        int pita = 0;
+                                                        ////Console.WriteLine("TIERS EN TEST");
+                                                        //MainTiw = this;
+                                                        var authState = await AuthState;
+                                                        authUser = authState.User;
+                                                        isAuthenticated = authUser.Identity.IsAuthenticated;
+                                                        if (!isAuthenticated)
+                                                        {
+                                                        Console.WriteLine("Authentication ECHEC");
+                                                        return;
+                                                        }
+                                                        _usrBag = await _sessionContext.GetUserbagAsync();
+                                                        LsVars = _usrBag.Usorga.Uvars.ToList();
+                                                        Console.WriteLine("Authentication ENTREE");
+                                                        }
+                                                        // private async Task LoadSessionAsync()
+                                                        // {
+                                                        //     int pisa = 2;
+                                                        //     try
+                                                        //     {
+                                                        //         // // curODContext = await _contextFactory.CreateAsync(); // Use factory
+                                                        //         // // //var expand = "Plngens($expand=Gsesios)";
+                                                        //         // // var expand = "Plngens($expand=Gsesios), Gsgfixes, Gsglnes";
+                                                        //         // // var dxorgas = await curODContext.LoadFilteredAsync<Gxorga>
+                                                            (expand: expand);
+
+                                                            //         // // pisa = 3;
+                                                            //         // // curOrga = dxorgas.FirstOrDefault();
+
+                                                            //         if (curOrga == null)
+                                                            //         {
+                                                            //             Console.WriteLine("No organization found for the current user.");
+                                                            //             return;
+                                                            //         }
+
+                                                            //         Console.WriteLine($"nb. variables {curOrga.Gsgfixes.Count()}");
+                                                            //         Console.WriteLine($"nb. colonnes {curOrga.Gsglnes.Count()}");
+                                                            //         pisa = 4;
+                                                            //         Console.WriteLine($"nb pln test : {pisa} et {curOrga.Plngens.Count()}");
+                                                            //     }
+                                                            //     catch (Exception ex)
+                                                            //     {
+                                                            //         Console.WriteLine($"stack trace : {ex.StackTrace} place : {pisa} ex-mess : {ex.Message} and also in-mess: {ex.InnerException}");
+                                                            //     }
+                                                            // }
+                                                            //manage SAVING
+                                                            public async Task EdtAll()
+                                                            {
+                                                            allEnable = true;
+                                                            //EditingRubRowGuid = null;
+                                                            }
+                                                            public async Task CncAll()
+                                                            { //reload to annul AddObject/UpdateObject/DeleteObjet
+                                                            Imessage = "Annulation Operations, patience...";
+                                                            allEnable = false;
+                                                            //EditingRubRowGuid = null;
+                                                            Imessage = "";
+                                                            }
+                                                            public async Task SavAll()
+                                                            {
+                                                            Imessage = "Enregistrement Operations, patience...";
+                                                            allEnable = false;
+                                                            //EditingRubRowGuid = null;
+                                                            await curODContext.SaveDataAsync();
+                                                            }
+
+                                                            async Task OpenAddSesio()
+                                                            {
+                                                            Imessage = "ouverture session en cours...";
+                                                            //PrepareAddSesio();
+                                                            await CreateNewSesio();
+
+                                                            //patInitTitle = $"{curOrga.Idorg} - {curOrga.Raison} (creation programme)";
+                                                            //patTitle = patInitTitle;
+                                                            //plnModal.ShowAsync();
+                                                            Imessage = "SUCCESS session ouverte";
+                                                            }
+                                                            // void OpenAddPlan()
+                                                            // {
+                                                            //     GplnNewRows.Clear();
+                                                            //     int parentKey = Convert.ToInt32(curOrga.Idorg);
+                                                            //     if (gPlnsMap.ContainsKey(parentKey))
+                                                            //     {
+                                                            //         gPlnsMap.Remove(parentKey); // Clear previous children for clean modal state
+                                                            //     }
+
+                                                            //     PrepareAddPlan();
+
+                                                            //     patInitTitle = $"{curOrga.Idorg} - {curOrga.Raison} (creation programme)";
+                                                            //     patTitle = patInitTitle;
+                                                            //     plnModal.ShowAsync();
+                                                            // }
+                                                            private void SelTSesio(Gpvar myfx)
+                                                            {
+                                                            sesDom = "";
+                                                            if (myfx != null)
+                                                            { //saisie-calcul-analyse
+                                                            var itLibas = _lsFixes.Where(uf => uf.Gvars == 33 && uf.Itb == 8 && uf.Gp1 == 1 && uf.Elea == myfx.Ityp).FirstOrDefault();
+                                                            if (itLibas != null) sesDom = itLibas.Liba;
+                                                            itLibas = _lsFixes.Where(uf => uf.Gvars == 33 && uf.Itb == 8 && uf.Gp1 == 2 && uf.Elea == myfx.Jtyp).FirstOrDefault();
+                                                            if (itLibas != null) sesDom = sesDom + "/" + itLibas.Liba;
+                                                            //_lsProgs = toChild.LsPlans.Where(pl => pl.Ptyp == 5 && pl.Totyp == myfx.Elea).ToList();
+
+                                                            //Console.WriteLine($"Type session choisi : {curProg.Liba} : {IMyProg} et {IMyTses}");
+                                                            }
+                                                            }
+                                                            // private void SelProgra(Gplan vplan)
+                                                            // {
+                                                            //     if (vplan != null)
+                                                            //     {
+                                                            //         curProg = curOrga.Plngens.Where(pl => pl.Idpln == vplan.Idpln).FirstOrDefault();
+                                                            //         if (curProg != null)
+                                                            //         {
+                                                            //             DaSesios = curOrga.Gsesios.ToList();
+                                                            //         } else
+                                                            //         {
+                                                            //             DaSesios = new();
+                                                            //         }
+                                                            //     } else
+                                                            //     {
+                                                            //         DaSesios = new();
+                                                            //     }
+                                                            // }
+
+                                                            //Adding row
+                                                            private async Task CreateNewSesio()
+                                                            {
+                                                            if (IMyTses == 0 || allEnable == false)
+                                                            {
+                                                            Imessage = "REFUS, Domaine/Rubrique non choisi";
+                                                            Yames = true;
+                                                            sinwAses = false;
+                                                            return;
+                                                            }
+                                                            try
+                                                            {
+                                                            IMyTeta = 1; //en attente
+                                                            if (curOrga != null)
+                                                            {
+                                                            addingNew = true;
+                                                            newSes = new Gsesio();
+                                                            newSes.Styp = IMyTses;
+                                                            newSes.Liba = "";
+                                                            //newSes.Abg = "";
+                                                            newSes.Datouv = DateTime.Now;
+                                                            //calcul de Datclt pour DateTime.Now.Add(xxx)
+                                                            newSes.Datclt = DateTime.Now;
+
+                                                            //calcul de Elea
+                                                            int? jien = 0;
+                                                            if (curOrga.Gsesios.Any())
+                                                            {
+                                                            jien = curOrga.Gsesios.Max(uk => uk.Dseq);
+                                                            }
+                                                            jien = jien + 1;
+                                                            newSes.Dseq = jien;
+                                                            newSes.Sieta = 1; //attente
+                                                            newSes.Eta = IMyTeta;
+                                                            newSes.Xadd1 = -1;
+                                                            sinwAses = true;
+                                                            Console.WriteLine("Creation effectuee");
+                                                            }
+                                                            else
+                                                            {
+                                                            Imessage = "REFUS, probleme de chargement";
+                                                            sinwAses = false;
+                                                            }
+                                                            }
+                                                            catch (Exception ex)
+                                                            {
+                                                            sinwAses = false;
+                                                            Imessage = ex.Message;
+                                                            }
+                                                            }
+                                                            void ConfirmAddRow()
+                                                            {
+                                                            //si enreg valid
+                                                            bool estbon = true;
+                                                            string valmess = "";
+                                                            var stlibs = newSes.Liba + newSes.Dseq;
+                                                            if (newSes.Liba == "")
+                                                            {
+                                                            estbon = false;
+                                                            valmess = valmess + "/" + "datouv";
+                                                            }
+                                                            // if (newAdt.Fstr == "")
+                                                            // {
+                                                            //     estbon = false;
+                                                            //     valmess = valmess + "/" + "dfin";
+                                                            // }
+                                                            // if (newAdt.Svala == "")
+                                                            // {
+                                                            //     estbon = false;
+                                                            //     valmess = valmess + "/" + "valeur";
+                                                            // }
+                                                            //if (newAdt.Ddval == ) valmess = valmess + "/" + "ddebut";
+                                                            //if (newAdt.Dfval == 0) valmess = valmess + "/" + "dfin";
+                                                            if (estbon == false)
+                                                            {
+                                                            Imessage = $"ECHEC, {valmess}";
+                                                            return;
+                                                            }
+                                                            if (!curODContext.IsEntityTracked(newSes))
+                                                            {
+                                                            newSes.Xadd1 = -2;  //fin adding to be tracked in loaded rubfmts wait for new add
+                                                            curODContext.AddObject("Gsesios", newSes);
+                                                            DaSesios.ToList().Add(newSes);
+                                                            Imessage = $"SUCCES, {stlibs} added";
+                                                            StateHasChanged();
+                                                            Imessage = "Success... Session ajoutee";
+
+                                                            }
+                                                            else
+                                                            {
+                                                            newSes.Xadd1 = 0;
+                                                            Imessage = "Deja ajoute";
+                                                            }
+                                                            addingNew = false;
+                                                            sinwAses = false;
+                                                            }
+                                                            void CancelAddRow()
+                                                            {
+                                                            //newSes.Dstr = "";
+                                                            //newSes.Fstr = "";
+                                                            newSes.Liba = "";
+                                                            //newAdt.Ddval = DateTime.Now;
+                                                            //newAdt.Dfval = DateTime.Now;
+                                                            addingNew = false;
+                                                            sinwAses = false;
+                                                            }
+
+
+                                                            private async void ValoadAsync()
+                                                            {
+                                                            isLoading = true;
+                                                            Console.WriteLine("COMMENCE 1");
+                                                            try
+                                                            {
+                                                            //test
+                                                            // var query = Breeze.Sharp.EntityQuery
+                                                            //     .From<Gxorga>
+                                                                ("getorga");
+                                                                // var results = await _entityManager.ExecuteApiRequestAsync(query);
+                                                                // var lsOrgas = results.ToList(); // Convert to list if needed
+                                                                // foreach(var unorg in lsOrgas)
+                                                                // {
+                                                                //     Console.WriteLine($"un org : No. : {unorg.Idorg} libelle :{unorg.Liba} raison : {unorg.Raison}");
+                                                                // }
+                                                                // Console.WriteLine($"ens orgas {lsOrgas.Count()}");
+                                                                //prise des tiers
+                                                                //var query = Breeze.Sharp.EntityQuery
+                                                                //    .From<Tiersp>
+                                                                    ("tiersaie");
+                                                                    ///var results = await _entityManager.ExecuteApiRequestAsync(query);
+                                                                    //_lsTiers = results.ToList(); // Convert to list if needed
+                                                                    //foreach (var untie in _lsTiers)
+                                                                    //{
+                                                                    //    Console.WriteLine($"un tie : Mle. : {untie.Smatri} nom :{untie.Nom} prenoms : {untie.Pnom}");
+                                                                    //}
+                                                                    //Console.WriteLine($"ens tiers {_lsTiers.Count()}");
+                                                                    //controle metadata
+                                                                    }
+                                                                    catch (Exception ex)
+                                                                    {
+                                                                    _errorMessage = $"An error occurred: {ex.Message}";
+                                                                    }
+                                                                    isLoading = false;
+                                                                    }
+                                                                    private Plngen GetSelectedPln(int ipln)
+                                                                    {
+                                                                    return null;
+                                                                    }
+                                                                    private async Task choisirSession()
+                                                                    {
+                                                                    // if (sestyp != 0 && IMyProg != 0)
+                                                                    // {
+                                                                    //     _curSess = _lsSess.Where(le => le.Sotyp == sestyp && le.Idpln == IMyProg).FirstOrDefault();
+                                                                    // } else
+                                                                    // {
+                                                                    //     _curSess = new Gsesio();
+                                                                    // }
+                                                                    }
+                                                                    private async Task ValidSaieAsync()
+                                                                    {
+                                                                    try
+                                                                    {
+                                                                    //await _entityManager.SaveChanges(); // Specify type argument here
+                                                                    }
+                                                                    catch (Exception ex)
+                                                                    {
+                                                                    // Handle error (e.g., show error message)
+                                                                    }
+                                                                    }
+
+                                                                    //FILTRES
+                                                                    private void ToggleFiltering()
+                                                                    {
+                                                                    isFilteringEnabled = !isFilteringEnabled;
+                                                                    }
+
+                                                                    // private async Task LoadSessionsAsync()
+                                                                    // {
+                                                                    //     try
+                                                                    //     {
+                                                                    //         DateTime baseDate = DateTime.Now;
+                                                                    //         DateTime previousDate = baseDate.AddDays(-400);
+                                                                    //         int pisa = 1;
+                                                                    //         Console.WriteLine($"En prenant le SAIEBAG");
+                                                                    //         var strcall = await _cliemanager.SendRequestAsync("AUTHClient", HttpMethod.Get, "lgauth/usrsesio");
+                                                                    //         //Console.WriteLine($"21RECU DE LOGIN {strcall}");
+                                                                    //         pisa = 2;
+                                                                    //         var logResu = JsonConvert.DeserializeObject<List<Gsesio>>(strcall);
     //         //logResu = await response.Content.ReadFromJsonAsync<LoginResult>();
     //         pisa = 3;
     //         if (logResu != null)

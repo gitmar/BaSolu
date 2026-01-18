@@ -36,47 +36,80 @@ else
             <div class="d-flex flex-column" style="height: 100%;">
                 <GxNavMenu BrandText="A24soft Gx-Solutions"
                            MenuItems="@MenuItems"
-                           YaGroup="false"
+                           YaGroup="true"
                            Groups="@Groupes"
                            MenuSelected="@_chxMenu"
                            MenuSelectedChanged="@SelMenu"
                            GroupSelected="@_chxGpe"
                            GroupSelectedChanged="@SelGpe"
                            OnBack="@NavigateBack" />
+
+                @* <p>Selected Menu Id: @_selectedMenuId</p>
+                <p>Selected Group Id: @_selectedGroupId</p> *@
+
+                <div class="row">
+                    <div class="col-md-12 input-group align-middle">
+                        <span class="text-uppercase text- text-success"><b>@strComp</b></span>
+                        &nbsp;&nbsp;
+                        <span class="separator">|| </span>
+                        <Button class="btn btn-sm btn-secondary btnsz"
+                                style="@(!allEnable ? "" : "display:none;")"
+                                @onclick="ManEditAll">
+                            Modifier
+                        </Button>
+                        <Button class="btn btn-sm btn-secondary btnsz"
+                                style="@(allEnable ? "" : "display:none;")"
+                                @onclick="ManCnclAll">
+                            Annuler
+                        </Button>
+                        <span class="separator">|  </span>
+                        <Button class="btn btn-sm btn-secondary btnsz"
+                                style="@(allEnable ? "" : "display:none;")"
+                                @onclick="ManSaveAll">
+                            Enregistrer
+                        </Button>
+                        @if (!String.IsNullOrEmpty(MImessage))
+                        {
+                            <span class="bg-info bg-opacity-10" style="font-style:italic;color:red">&nbsp;--> @MImessage</span>
+                        }
+                    </div>
+                </div>
+
+                <!-- Main Content -->
+                <div class="row">
+                    @if (_chxMenu != 0 && toChild != null && curOrga != null && curODContext != null)
+                    {
+                        @if (_chxMenu == 1)
+                        {
+                            <Mutatio @ref="mymtie"
+                                     Ugpe="@Ugpe"
+                                     Tgpe="@Tgpe"
+                                     curOrga="@curOrga"
+                                     toChild="@toChild"
+                                     allEnable="@allEnable"
+                                     curODContext="@curODContext">
+                                <ChildContent>
+                                    @* <h2 class="child-box">Hello INTEGRATION</h2> *@
+                                </ChildContent>
+                            </Mutatio>
+                        }
+                        else if (_chxMenu == 2 && ParentOK)
+                        {
+
+                        }
+                        else if (_chxMenu == 3 && ParentOK)
+                        {
+
+                        }
+                        else if (_chxMenu == 4)
+                        {
+
+                        }
+                    }
+                </div>
             </div>
         </div>
     </div>
-
-    <!-- Main Content -->
-    @if (_chxMenu != 0 && toChild != null && curOrga != null && curODContext != null)
-    {
-        @if (_chxMenu == 1)
-        {
-            <Mutatio @ref="mymtie"
-                     Ugpe="@Ugpe"
-                     Tgpe="@Tgpe"
-                     curOrga="@curOrga"
-                     toChild="@toChild"
-                     curODContext="@curODContext">
-                <ChildContent>
-                    @* <h2 class="child-box">Hello INTEGRATION</h2> *@
-                </ChildContent>
-            </Mutatio>
-        }
-        else if (_chxMenu == 2 && ParentOK)
-        {
-
-        }
-        else if (_chxMenu == 3 && ParentOK)
-        {
-
-        }
-        else if (_chxMenu == 4)
-        {
-
-        }
-    }
-
 }
 @code {
     private bool isLoading = true;

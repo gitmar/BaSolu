@@ -173,6 +173,7 @@
         <Property Name="Xcod" Type="Edm.String" />
         <Property Name="Plgstat" Type="Edm.String" />
         <Property Name="Ftperi" Type="Edm.String" />
+        <Property Name="Xdocu" Type="Edm.String" />
         <Property Name="Gptyp" Type="Edm.Int32" />
         <Property Name="Fpsource" Type="Edm.String" />
         <Property Name="F2source" Type="Edm.String" />
@@ -228,9 +229,10 @@
         <Property Name="Xseq" Type="Edm.Int32" Nullable="false" />
         <Property Name="Gvars" Type="Edm.Int32" Nullable="false" />
         <Property Name="Itb" Type="Edm.Int32" Nullable="false" />
-        <Property Name="Elea" Type="Edm.Int32" Nullable="false" />
-        <Property Name="Tovers" Type="Edm.Int32" />
         <Property Name="Idorg" Type="Edm.Int32" />
+        <Property Name="Elea" Type="Edm.Int32" Nullable="false" />
+        <Property Name="Jele" Type="Edm.Int32" />
+        <Property Name="Tovers" Type="Edm.Int32" />
         <Property Name="Idhie" Type="Edm.Int32" />
         <Property Name="Ztyp" Type="Edm.Int32" />
         <Property Name="Liba" Type="Edm.String" />
@@ -240,7 +242,7 @@
         <Property Name="Totyp" Type="Edm.Int32" />
         <Property Name="Tstyp" Type="Edm.Int32" />
         <Property Name="Etyp" Type="Edm.Int32" />
-        <Property Name="T2typ" Type="Edm.Int32" />
+        <Property Name="Xdocu" Type="Edm.String" />
         <Property Name="Emdl" Type="Edm.Int32" />
         <Property Name="Epai" Type="Edm.Int32" />
         <Property Name="Gtyp" Type="Edm.Int32" />
@@ -255,13 +257,14 @@
         <Property Name="Idpln" Type="Edm.Int32" />
         <Property Name="Idpgr" Type="Edm.Int32" />
         <Property Name="Iperi" Type="Edm.Int32" />
+        <Property Name="Pseq" Type="Edm.Int32" />
+        <Property Name="Ifx" Type="Edm.Int32" />
         <Property Name="Ityp" Type="Edm.Int32" />
         <Property Name="Jtyp" Type="Edm.Int32" />
         <Property Name="Ktyp" Type="Edm.Int32" />
         <Property Name="Mtyp" Type="Edm.Int32" />
         <Property Name="Ntyp" Type="Edm.Int32" />
         <Property Name="Otyp" Type="Edm.Int32" />
-        <Property Name="Pseq" Type="Edm.Int32" />
         <Property Name="Xsac" Type="Edm.Int32" />
         <Property Name="Psac" Type="Edm.Int32" />
         <Property Name="Scdrub" Type="Edm.String" />
@@ -334,7 +337,7 @@
         <Property Name="Selc" Type="Edm.Boolean" />
         <Property Name="Eta" Type="Edm.Int32" />
         <Property Name="Eaut" Type="Edm.Int32" />
-        <Property Name="Ifx" Type="Edm.Int32" />
+        <Property Name="EleaAuto" Type="Edm.Boolean" />
         <Property Name="Rowguid" Type="Edm.Guid" Nullable="false" />
         <Property Name="Obsv" Type="Edm.String" />
         <Property Name="IsProcessed" Type="Edm.Boolean" Nullable="false" />
@@ -350,18 +353,20 @@
         <Property Name="Idorg" Type="Edm.Int32" />
         <Property Name="Pseq" Type="Edm.Int32" />
         <Property Name="Elea" Type="Edm.Int32" />
+        <Property Name="Iele" Type="Edm.Int32" />
         <Property Name="Yrng" Type="Edm.Int32" />
         <Property Name="Totyp" Type="Edm.Int32" />
         <Property Name="Tstyp" Type="Edm.Int32" />
         <Property Name="Dtyp" Type="Edm.Int32" />
         <Property Name="Otyp" Type="Edm.Int32" Nullable="false" />
         <Property Name="Ztyp" Type="Edm.Int32" />
-        <Property Name="Sitb" Type="Edm.Int32" />
-        <Property Name="Ztbl" Type="Edm.Int32" />
         <Property Name="Ydpd" Type="Edm.Int32" />
         <Property Name="Pvars" Type="Edm.Int32" />
         <Property Name="Pitb" Type="Edm.Int32" />
         <Property Name="Pele" Type="Edm.Int32" />
+        <Property Name="Sitb" Type="Edm.Int32" />
+        <Property Name="Zdpd" Type="Edm.Int32" />
+        <Property Name="Ztbl" Type="Edm.Int32" />
         <Property Name="Siex1" Type="Edm.Boolean" />
         <Property Name="Siex2" Type="Edm.Boolean" />
         <Property Name="Oliba" Type="Edm.String" />
@@ -386,7 +391,6 @@
         <Property Name="Xsiz" Type="Edm.Int32" />
         <Property Name="Ysiz" Type="Edm.Int32" />
         <Property Name="Xdpd" Type="Edm.Int32" />
-        <Property Name="Zdpd" Type="Edm.Int32" />
         <Property Name="Vdpd" Type="Edm.Int32" />
         <Property Name="Svala" Type="Edm.String" />
         <Property Name="Ivala" Type="Edm.Int32" />
@@ -412,6 +416,7 @@
         <Property Name="Datc" Type="Edm.DateTimeOffset" />
         <Property Name="Eaut" Type="Edm.Int32" />
         <Property Name="Eta" Type="Edm.Int32" />
+        <Property Name="EleaAuto" Type="Edm.Boolean" />
         <Property Name="Rowguid" Type="Edm.Guid" Nullable="false" />
         <Property Name="Obsv" Type="Edm.String" />
         <NavigationProperty Name="IdorgNavigation" Type="GxWapi.DaModels.Gxorga">
@@ -593,6 +598,7 @@
         <Property Name="Idsocia2" Type="Edm.String" />
         <Property Name="Utyp" Type="Edm.Int32" />
         <Property Name="Putyp" Type="Edm.Int32" />
+        <Property Name="Ustyp" Type="Edm.Int32" />
         <Property Name="Atyp" Type="Edm.Int32" />
         <Property Name="Pxmat" Type="Edm.Int32" />
         <Property Name="Hiea" Type="Edm.Int32" />
@@ -840,7 +846,7 @@
         <Property Name="Ifval" Type="Edm.Int32" />
         <Property Name="Divala" Type="Edm.Int32" />
         <Property Name="Eint" Type="Edm.Int32" />
-        <Property Name="E2int" Type="Edm.Int32" />
+        <Property Name="Xdocu" Type="Edm.String" />
         <Property Name="Emont" Type="Edm.Decimal" Scale="variable" />
         <Property Name="E2mont" Type="Edm.Decimal" Scale="variable" />
         <Property Name="Sifin" Type="Edm.Int32" />
@@ -967,6 +973,7 @@
         <Property Name="Stfstr" Type="Edm.String" />
         <Property Name="Ddval" Type="Edm.Int32" />
         <Property Name="Dfval" Type="Edm.Int32" />
+        <Property Name="Xdocu" Type="Edm.String" />
         <Property Name="Lib2" Type="Edm.String" />
         <Property Name="Frsource" Type="Edm.String" />
         <Property Name="Rcm" Type="Edm.String" />

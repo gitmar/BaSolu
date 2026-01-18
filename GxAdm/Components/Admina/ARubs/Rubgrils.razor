@@ -115,7 +115,7 @@ else
                                 {
                                     <!--Contenu des Plans-->
                                         <Grid TItem="Plngen"
-                                              Data="@MyDaPlans"
+                                              Data="@MyDaPlans.Where(pl=>pl.Todom == IMyDom && pl.Toatr == IMyAtr && pl.Tovue == IMyVue && pl.Totyp == IMyGtie).ToList()"
                                               AllowDetailView="true"
                                               OnRowClick="@OnPlanRowClick"
                                               AllowRowClick="true"
@@ -124,9 +124,9 @@ else
                                     <GridColumns>
                                         <GridColumn TItem="Plngen" HeaderText="No">
                                             <ChildContent Context="item">
-                                                @if (item.Xadd1 == -2)
+                                                @if (item.Xadd1 == -1)
                                                 {
-                                                    <span>?@item?.Iele</span>
+                                                    <span>?@item?.Iui</span>
                                                 }
                                                 else
                                                 {
@@ -263,9 +263,9 @@ else
                                                     <GridColumns>
                                                         <GridColumn TItem="Rubvar" HeaderText="No">
                                                             <ChildContent Context="item">
-                                                                @if (item.Xadd1 == -2)
+                                                                @if (item.Xadd1 == -1)
                                                                 {
-                                                                    <span>?@item?.Iele</span>
+                                                                    <span>?@item?.Iui</span>
                                                                 }
                                                                 else
                                                                 {
@@ -387,13 +387,13 @@ else
                                                             <HeaderContent>
                                                                     @if (!siRubAdding)
                                                                     {
-                                                                        <button class="btn btn-primary btn-sm" @onclick="() => OpenAddRubr()">
+                                                                        <button class="btn btn-primary btn-sm" @onclick="() => OpenAddRubr(parent)">
                                                                             ➕ Add
                                                                         </button>
                                                                     }
                                                             </HeaderContent>
                                                             <ChildContent Context="item">
-                                                        @if (EditingRubRowGuid == item.Rowguid)
+                                                                @if (EditingRubRowGuid == item.Rowguid)
                                                                 {
                                                                     <button class="btn btn-sm btn-success" @onclick="() => ConfEdingRub(draftRub)">
                                                                         💾 Save
@@ -456,7 +456,7 @@ else
                             <GridColumns>
                                 <GridColumn TItem="Plngen" HeaderText="No">
                                     <ChildContent Context="item">
-                                        <div @key="item.Rowguid">?@jpln</div>
+                                        <div @key="item.Rowguid">@item.Iui</div>
                                     </ChildContent>
                                 </GridColumn>
                                 <GridColumn TItem="Plngen" HeaderText="Designation">
@@ -510,7 +510,7 @@ else
                                 </GridColumn>
                                 <GridColumn TItem="Plngen">
                                     <HeaderContent>
-                                        @if (!siPlanAdding)
+                                        @if (!siPlnAdding)
                                         {
                                             <button class="btn btn-sm btn-primary d-flex align-items-center" @onclick="() => PrepareAddPlan()">
                                                 <span class="me-1">+</span> Ajout
@@ -520,7 +520,7 @@ else
                                 </GridColumn>
                                 <GridColumn TItem="Plngen" HeaderText="">
                                     <ChildContent Context="item">
-                                        @if (siPlanAdding && item.Xadd1 == -1)
+                                        @if (siPlnAdding && item.Xadd1 == -1)
                                         {
                                             <button class="btn btn-sm btn-success d-flex align-items-center" @onclick="() => IncludePlan(item)">
                                                 <span class="me-1">💾</span> Inclure
@@ -533,8 +533,8 @@ else
                     </div>
                 </BodyTemplate>
                 <FooterTemplate>
-                    <Button class="btn btn-secondary" @onclick="AnuPlnModal">Annuler</Button>
-                    <Button class="btn btn-success" @onclick="ConfPlnModal">Confirmer</Button>
+                    <Button class="btn btn-secondary" @onclick="CncPlans">Annuler</Button>
+                    <Button class="btn btn-success" @onclick="AddPlans">Confirmer</Button>
                 </FooterTemplate>
             </Modal>
             <!-- Modal for ADDING Rubvar -->
@@ -555,7 +555,7 @@ else
                             <GridColumns>
                                 <GridColumn TItem="Rubvar" HeaderText="No">
                                     <ChildContent Context="item">
-                                        <div @key="item.Rowguid">@item?.Iele</div>
+                                        <div @key="item.Rowguid">@item?.Iui</div>
                                     </ChildContent>
                                 </GridColumn>
                                 <GridColumn TItem="Rubvar" HeaderText="">
@@ -682,8 +682,8 @@ else
                     </div>
                 </BodyTemplate>
                 <FooterTemplate>
-                    <Button class="btn btn-secondary" @onclick="AnuRubModal">Annuler</Button>
-                    <Button class="btn btn-success" @onclick="ConfRubModal">Confirmer</Button>
+                    <Button class="btn btn-secondary" @onclick="CncRubrs">Annuler</Button>
+                    <Button class="btn btn-success" @onclick="AddRubrs">Confirmer</Button>
                 </FooterTemplate>
             </Modal>
             <!-- Modal for FORMULE PLAN -->
@@ -713,7 +713,7 @@ else
     }
 
     .modal-wide .modal-dialog {
-        max-width: 50vw;
+        max-width: 60vw;
         width: auto;
         margin: auto;
     }
@@ -738,7 +738,6 @@ else
 </style>
 @code {
     private bool isLoading = true;
-    private bool allEnable = false;
 
     private string Imessage = "", Jmessage = "", Kmessage = "";
 
@@ -752,12 +751,14 @@ else
     public Gxorga curOrga { get; set; } = new();
     [Parameter]
     public MyShareVars toChild { get; set; }
+    [Parameter]
+    public bool allEnable { get; set; }
     //private Tiersp gridTier = new Tiersp();
     private List<Rubvar> LsRubs = new List<Rubvar>();
 
     private ClaimsPrincipal authUser;
     private bool isAuthenticated = false;
-  
+
     private string _UserId = "", plnDom = "", domDest = "", domTitle = "";
     private int _UorgId = 0;
     private Userbag _usrBag = new Userbag();
@@ -784,10 +785,10 @@ else
     private int? plnMax = 0;
     private Plngen curPlan = new();
     private Rubvar curRubr = new();
-    private bool siPlanAdding = false, siRubAdding = false;
+    private bool siPlnAdding = false, siRubAdding = false;
     private bool siPlnEditing = false, siRubEditing = false;
     private Modal plnModal, rubModal; //, fmtModal;
-    private int jpln = 0, jrub = 0;
+    //private int jpln = 0, jrub = 0;
     Modal pForuModal = new(); //plans
     private string patInitTitle = "", patTitle = "", chlTitle = ""; // fmtTitle = "";
     private string pstrFormu = "";
@@ -822,7 +823,7 @@ else
 
 
     // //data
-    public List<Plngen> MyDaPlans => curOrga.Plngens.Where(pl => pl.Ptyp == 3 && pl.Todom == IMyDom && pl.Toatr == IMyAtr && pl.Tovue == IMyVue && pl.Totyp == IMyGtie).ToList();
+    public List<Plngen> MyDaPlans = new(); //=> curOrga.Plngens.Where(pl => pl.Ptyp == 3 && pl.Todom == IMyDom && pl.Toatr == IMyAtr && pl.Tovue == IMyVue && pl.Totyp == IMyGtie).ToList();
 
     private Guid? AddingPlnRowGuid; //pmodal
     private Guid? EditingPlnRowGuid;
@@ -831,13 +832,15 @@ else
     private Guid? EditingRubRowGuid;
     private Guid? ConfirmingRubDeleteRowGuid;
     //pere
-    private List<Plngen> GplnNewRows => gPlnsMap.TryGetValue(curOrga.Idorg, out var rows)
-    ? new List<Plngen>(rows)
-    : new List<Plngen>();
+    private List<Plngen> GplnNewRows = new();
+    //private List<Plngen> GplnNewRows => gPlnsMap.TryGetValue(curOrga.Idorg, out var rows)
+    //? new List<Plngen>(rows)
+    //: new List<Plngen>();
     // //fils
-    private List<Rubvar> GrubNewRows => gRubsMap.TryGetValue(curPlan.Id, out var rows)
-    ? new List<Rubvar>(rows)
-    : new List<Rubvar>();
+    private List<Rubvar> GrubNewRows = new();
+    // private List<Rubvar> GrubNewRows => gRubsMap.TryGetValue(curPlan.Id, out var rows)
+    // ? new List<Rubvar>(rows)
+    // : new List<Rubvar>();
 
     public List<Rubvar> MyDaChilds { get; set; } = new();
 
@@ -875,7 +878,7 @@ else
 
     void OpenAddPlan()
     {
-        GplnNewRows.Clear();
+        //GplnNewRows.Clear();
         int parentKey = Convert.ToInt32(curOrga.Idorg);
         if (gPlnsMap.ContainsKey(parentKey))
         {
@@ -884,9 +887,9 @@ else
         plnMax = curOrga.Plngens.Any() ? curOrga.Plngens.Max(x => x.Iele) : 0;
         PrepareAddPlan();
 
-        patInitTitle = $"{curOrga.Idorg} - {curOrga.Raison} (creation programme)";
+        patInitTitle = $"{curOrga.Idorg} - {curOrga.Raison} (creation Aplan/schema)";
         patTitle = patInitTitle;
-        jpln = 0;
+        //jpln = 0;
         plnModal.ShowAsync();
     }
 
@@ -894,47 +897,35 @@ else
     {
         if (!allEnable)
         {
-            Imessage = "REFUS, Creation Programme indisponible";
+            Imessage = "REFUS, Creation Aplan indisponible";
             return;
         }
         var parentId = curOrga.Idorg;
-        jpln = jpln + 1;
+        //jpln = jpln + 1;
         // Make sure the gPlnsMap has an entry for this parent
         if (!gPlnsMap.ContainsKey(parentId))
         {
             gPlnsMap[parentId] = new List<Plngen>();
         }
-
-        var existingPlngens = curOrga.Plngens.Where(ln => ln.Idorg == parentId) ?? new DataServiceCollection<Plngen>();
-        var mapPlngens = gPlnsMap[parentId];
-        // int maxIdzonFromParent = existingPlngens.Any()
-        //     ? existingPlngens.Max(r => r.Elea ?? 0)
-        //     : 0;
-        // int maxIdzonFromMap = mapPlngens.Any()
-        //     ? mapPlngens.Max(r => r.Elea ?? 0)
-        //     : 0;
-        // int maxIdzon = Math.Max(0, Math.Max(maxIdzonFromParent, maxIdzonFromMap));
-        // int nextZon = maxIdzon == 0 ? 1 : maxIdzon + 1;
-        //Console.WriteLine($"current newPoste zone no : {nextZon} et parent act no : {parentId}");
-
-        plnMax = plnMax + 1;
-        int nextSeq = plnMax ?? 1;
-        var newPat = CreateNewPlan(nextSeq);
+        var mapPlns = gPlnsMap[parentId];
+        int maxiui = mapPlns.Any() ? (mapPlns.Max(r => r?.Iui) ?? 0) : 0;
+        int nextIui = maxiui + 1;
+        var newPat = CreateNewPlan(nextIui);
         if (newPat != null)
         {
             gPlnsMap[parentId].Insert(0, newPat);
             Console.WriteLine($"Actual NewRows nb {GplnNewRows.Count}");
-            GplnNewRows.Insert(0, newPat);
-            //GplnNewRows = GplnNewRows.ToList();
+            GplnNewRows = GplnNewRows.Prepend(newPat).ToList();
             Console.WriteLine($"After Insert NewRows nb {GplnNewRows.Count}");
             AddingPlnRowGuid = newPat.Rowguid;
         }
-        siPlanAdding = true;
+        siPlnAdding = true;
         StateHasChanged();
     }
 
-    void OpenAddRubr()
+    void OpenAddRubr(Plngen inPln)
     {
+        curPlan = inPln;
         int parentKey = curPlan.Id;
         if (gRubsMap.ContainsKey(parentKey))
         {
@@ -943,41 +934,45 @@ else
 
         PrepareAddRubr();
 
-        chlTitle = $"{curPlan.Iele} - {curPlan.Liba} (Grille-Plans/Rubriques en creation)";
-        jrub = 0;
+        chlTitle = $"{curPlan.Iele} - {curPlan.Liba} (Grille-APlans/Rubriques en creation)";
+        //jrub = 0;
         rubModal.ShowAsync();
     } 
     void PrepareAddRubr()
     {
         isRubCodeValid = false;
         var parentId = curPlan.Id;
-        jrub = jrub + 1;
+
+        //jrub = jrub + 1;
         // Make sure the gRubsMap has an entry for this parent
         if (!gRubsMap.ContainsKey(parentId))
         {
             gRubsMap[parentId] = new List<Rubvar>();
         }
 
-        var existingRubvars = curPlan.Rubvars.Where(ln => ln.Id == parentId) ?? new DataServiceCollection<Rubvar>();
-        var mapRubvars = gRubsMap[parentId];
-        int maxIdzonFromParent = existingRubvars.Any()
-            ? existingRubvars.Max(r => r.Iele ?? 0)
-            : 0;
+        // var existingRubvars = curPlan.Rubvars.Where(ln => ln.Id == parentId) ?? new DataServiceCollection<Rubvar>();
+        // var mapRubvars = gRubsMap[parentId];
+        // int maxIdzonFromParent = existingRubvars.Any()
+        //     ? existingRubvars.Max(r => r.Iele ?? 0)
+        //     : 0;
 
-        int maxIdzonFromMap = mapRubvars.Any()
-            ? mapRubvars.Max(r => r.Iele ?? 0)
-            : 0;
-        int maxIdzon = Math.Max(0, Math.Max(maxIdzonFromParent, maxIdzonFromMap));
-        int nextZon = maxIdzon == 0 ? 1 : maxIdzon + 1;
-        Console.WriteLine($"current newPoste zone no : {nextZon} et parent act no : {curPlan.Id}");
+        // int maxIdzonFromMap = mapRubvars.Any()
+        //     ? mapRubvars.Max(r => r.Iele ?? 0)
+        //     : 0;
+        // int maxIdzon = Math.Max(0, Math.Max(maxIdzonFromParent, maxIdzonFromMap));
+        // int nextZon = maxIdzon == 0 ? 1 : maxIdzon + 1;
 
-        var newChl = CreateNewRubr(nextZon);
+        var mapRubhies = gRubsMap[parentId];
+        int maxiui = mapRubhies.Any() ? (mapRubhies.Max(r => r?.Iui) ?? 0) : 0;
+        int nextIui = maxiui + 1;
+        Console.WriteLine($"current newPoste zone no : {nextIui} et parent act no : {curPlan.Id}");
+
+        var newChl = CreateNewRubr(nextIui);
         if (newChl != null)
         {
             gRubsMap[parentId].Insert(0, newChl);
             Console.WriteLine($"Actual NewRows nb {GrubNewRows.Count}");
-            GrubNewRows.Insert(0, newChl);
-            //GrubNewRows = GrubNewRows.ToList();
+            GrubNewRows = GrubNewRows.Prepend(newChl).ToList();
             Console.WriteLine($"After Insert NewRows nb {GrubNewRows.Count}");
             AddingRubRowGuid = newChl.Rowguid;
         }
@@ -996,6 +991,7 @@ else
             return new Plngen()
             {
                 //Rowguid = Guid.NewGuid(),
+                Iui = nextSeq,
                 Idorg = curOrga.Idorg,
                 Ptyp = 3,
                 Todom = IMyDom,
@@ -1006,7 +1002,7 @@ else
                 Abg = "",
                 Styp = 0,
                 Eta = 1,
-                Iele = 0,
+                //Iele = 0,
                 //Belea = nextSeq,
                 Xadd1 = -1
             };
@@ -1023,6 +1019,7 @@ else
         return new Rubvar()
             {
                 //Rowguid = Guid.NewGuid(),
+                Iui = nextSeq,
                 Ipln = curPlan.Id,
                 Torub = 0,
                 Utyp = curPlan.Toatr, //grille
@@ -1042,45 +1039,12 @@ else
     }
     void IncludePlan(Plngen mypln)
     {
-        //var parentId = curOrga.Idorg;
-        //bool YaChild = IsChildValid(aglne); // Make sure this returns true if aglne is valid to add
-        // if (!curODContext.IsEntityTracked(mypln)) // && YaChild)
-        // {
-        //     try
-        //     {
-        //         mypln.Xadd1 = -2;  // Mark as being added
-        //         //curODContext.AddObject("Plngens", mypln);
-        //         curODContext.AddRelatedObject(curOrga,"Plngens",mypln);
-        //         if (!gPlnsMap.ContainsKey(parentId))
-        //         {
-        //             gPlnsMap[parentId] = new List<Plngen>();
-        //         }
-        //         if (!gPlnsMap[parentId].Any(p => p.Idpln == mypln.Idpln))
-        //         {
-        //             gPlnsMap[parentId].Add(mypln);
-        //         }
-        //         curOrga.Plngens.Add(mypln);
-        //         AddingPlnRowGuid = Guid.Empty;
-        //         siPlanAdding = true;
-        //         Imessage = "Success... Rubrique ajoutee";
-        //     }
-        //     catch (Exception ex)
-        //     {
-        //         Console.WriteLine($"Erreur addrelatedobject : {ex.Message}");
-        //     }
-        //     StateHasChanged();
-        // }
-        // else
-        // {
-        //     mypln.Xadd1 = 0;
-        //     Imessage = "Deja ajoute";
-        // }
         var parentId = curOrga.Idorg;
         if (!curODContext.IsEntityTracked(mypln)) // && YaChild)
         {
             try
             {
-                mypln.Xadd1 = -2;  // Mark as being added
+                mypln.Xadd1 = -1;  // Mark as being added
 
                 //if (!curODContext.IsEntityTracked(curOrga))
                 //{
@@ -1115,8 +1079,86 @@ else
             Imessage = "Deja ajoute";
         }
         //isAdetCodeValid = false;
-        siPlanAdding = false; // Consider moving this flag reset based on your UI state management needs
+        siPlnAdding = false; // Consider moving this flag reset based on your UI state management needs
     }
+
+    // void IncludePlan(Plngen mypln)
+    // {
+    //     //var parentId = curOrga.Idorg;
+    //     //bool YaChild = IsChildValid(aglne); // Make sure this returns true if aglne is valid to add
+    //     // if (!curODContext.IsEntityTracked(mypln)) // && YaChild)
+    //     // {
+    //     //     try
+    //     //     {
+    //     //         mypln.Xadd1 = -2;  // Mark as being added
+    //     //         //curODContext.AddObject("Plngens", mypln);
+    //     //         curODContext.AddRelatedObject(curOrga,"Plngens",mypln);
+    //     //         if (!gPlnsMap.ContainsKey(parentId))
+    //     //         {
+    //     //             gPlnsMap[parentId] = new List<Plngen>();
+    //     //         }
+    //     //         if (!gPlnsMap[parentId].Any(p => p.Idpln == mypln.Idpln))
+    //     //         {
+    //     //             gPlnsMap[parentId].Add(mypln);
+    //     //         }
+    //     //         curOrga.Plngens.Add(mypln);
+    //     //         AddingPlnRowGuid = Guid.Empty;
+    //     //         siPlnAdding = true;
+    //     //         Imessage = "Success... Rubrique ajoutee";
+    //     //     }
+    //     //     catch (Exception ex)
+    //     //     {
+    //     //         Console.WriteLine($"Erreur addrelatedobject : {ex.Message}");
+    //     //     }
+    //     //     StateHasChanged();
+    //     // }
+    //     // else
+    //     // {
+    //     //     mypln.Xadd1 = 0;
+    //     //     Imessage = "Deja ajoute";
+    //     // }
+    //     var parentId = curOrga.Idorg;
+    //     if (!curODContext.IsEntityTracked(mypln)) // && YaChild)
+    //     {
+    //         try
+    //         {
+    //             mypln.Xadd1 = -1;  // Mark as being added
+
+    //             //if (!curODContext.IsEntityTracked(curOrga))
+    //             //{
+    //             //    curODContext.AttachTo("Plngens", curPlan);
+    //             //}
+
+    //             curODContext.AddRelatedObject(curOrga, "Plngens", mypln);
+
+    //             if (!gPlnsMap.ContainsKey(parentId))
+    //             {
+    //                 gPlnsMap[parentId] = new List<Plngen>();
+    //             }
+
+    //             if (!gPlnsMap[parentId].Any(p => p.Idorg == parentId))
+    //             {
+    //                 gPlnsMap[parentId].Add(mypln);
+    //             }
+
+    //             curOrga.Plngens.Add(mypln);
+    //             AddingPlnRowGuid = Guid.Empty;
+    //             Imessage = "Success... plan ajoute";
+    //         }
+    //         catch (Exception ex)
+    //         {
+    //             Console.WriteLine($"Erreur addrelatedobject : {ex.Message}");
+    //         }
+    //         StateHasChanged();
+    //     }
+    //     else
+    //     {
+    //         mypln.Xadd1 = 0;
+    //         Imessage = "Deja ajoute";
+    //     }
+    //     //isAdetCodeValid = false;
+    //     siPlnAdding = false; // Consider moving this flag reset based on your UI state management needs
+    // }
 
     // void IncludePlan(Plngen aglne)
     // {
@@ -1145,7 +1187,7 @@ else
     //         //curODContext.SaveDataAsync();
     //         AddingPlnRowGuid = Guid.Empty;
     //         curOrga.Plngens.Add(aglne);
-    //         siPlanAdding = false;
+    //         siPlnAdding = false;
     //         StateHasChanged();
     //         Imessage = "Success... programme ajoute";
     //     }
@@ -1163,7 +1205,7 @@ else
         {
             try
             {
-                aglne.Xadd1 = -2;  // Mark as being added
+                aglne.Xadd1 = -1;  // Mark as being added
 
                 if (!curODContext.IsEntityTracked(curPlan))
                 {
@@ -1221,7 +1263,7 @@ else
             Abg = mypln.Abg,
             Styp = mypln.Styp,
             Eta = mypln.Eta,
-            Iele = mypln.Iele,
+            //Iele = mypln.Iele,
             Plsdiv = mypln.Plsdiv,
             Plsgri = mypln.Plsgri,
             Plsech = mypln.Plsech,
@@ -1415,26 +1457,76 @@ else
         ConfirmingRubDeleteRowGuid = Guid.Empty;
         StateHasChanged(); // Notify UI about changes
     }
-
-    //Modals management
-    private async Task ConfPlnModal()
+    //SAVE Modals contains
+    private async void AddPlans()
     {
+        foreach (var unpln in GplnNewRows)
+        {
+            if (!curODContext.IsEntityTracked(unpln))
+            {
+                curODContext.AttachTo("Plngens", unpln);
+            }
+            curODContext.AddRelatedObject(curOrga, "Gxorgas", unpln);
+        }
+        GplnNewRows = new();
         SaveCurEntities();
-        Imessage = "Programme(s) SAVED";
+        Imessage = "Aplan/Plan(s) SAVED";
         await plnModal.HideAsync();
         allEnable = false;
-        siPlanAdding = false;
         StateHasChanged();
     }
-    private async Task ConfRubModal()
+    private async void AddRubrs()
     {
+        foreach (var unrub in GrubNewRows)
+        {
+            if (!curODContext.IsEntityTracked(unrub))
+            {
+                curODContext.AttachTo("Rubvars", unrub);
+            }
+            curODContext.AddRelatedObject(curPlan, "Plngens", unrub);
+        }
+        GrubNewRows = new();
         SaveCurEntities();
-        Imessage = "Programme/Rubrique(s) SAVED";
+        Imessage = "Aplan/Rubrique(s) SAVED";
         await rubModal.HideAsync();
         allEnable = false;
-        siRubAdding = false;
         StateHasChanged();
     }
+    private async void CncPlans()
+    {
+        GplnNewRows.Clear();
+        gPlnsMap.Clear();
+        siPlnAdding = false;
+        Imessage = "Aplan/Plan(s) CANCELLED";
+        await plnModal.HideAsync();
+    }
+    private async void CncRubrs()
+    {
+        GrubNewRows.Clear();
+        gRubsMap.Clear();
+        siRubAdding = false;
+        Imessage = "Aplan/Rubrique(s) CANCELLED";
+        await rubModal.HideAsync();
+    }
+    //Modals management
+    // private async Task ConfPlnModal()
+    // {
+    //     SaveCurEntities();
+    //     Imessage = "Programme(s) SAVED";
+    //     await plnModal.HideAsync();
+    //     allEnable = false;
+    //     siPlnAdding = false;
+    //     StateHasChanged();
+    // }
+    // private async Task ConfRubModal()
+    // {
+    //     SaveCurEntities();
+    //     Imessage = "Programme/Rubrique(s) SAVED";
+    //     await rubModal.HideAsync();
+    //     allEnable = false;
+    //     siRubAdding = false;
+    //     StateHasChanged();
+    // }
 
     void showFrplnModal(Plngen mypln)
     {
@@ -1447,44 +1539,44 @@ else
         pForuModal?.ShowAsync();
     }
 
-    private async Task AnuPlnModal()
-    {
-        // Remove newly added but unsaved Plngens from context
-        var newPlns = GplnNewRows.Where(p => p.Xadd1 == -1 || p.Xadd1 == -2).ToList();
-        foreach (var pln in newPlns)
-        {
-            if (curODContext.IsEntityTracked(pln))
-            {
-                curODContext.Detach(pln);
-            }
-            curOrga.Plngens.Remove(pln);
-        }
-        GplnNewRows.Clear();
-        Imessage = "Programme(s) ANNULE";
-        await plnModal.HideAsync();
-        allEnable = false;
-        siPlanAdding = false;
-        StateHasChanged();
-    }
-    private async Task AnuRubModal()
-    {
-        // Remove newly added but unsaved Rubvars from context
-        var newRubs = GrubNewRows.Where(r => r.Xadd1 == -1 || r.Xadd1 == -2).ToList();
-        foreach (var rub in newRubs)
-        {
-            if (curODContext.IsEntityTracked(rub))
-            {
-                curODContext.Detach(rub);
-            }
-            curPlan.Rubvars.Remove(rub);
-        }
-        GrubNewRows.Clear();
-        Imessage = "Rubrique(s) ANNULE";
-        await rubModal.HideAsync();
-        allEnable = false;
-        siRubAdding = false;
-        StateHasChanged();
-    }
+    // private async Task AnuPlnModal()
+    // {
+    //     // Remove newly added but unsaved Plngens from context
+    //     var newPlns = GplnNewRows.Where(p => p.Xadd1 == -1).ToList();
+    //     foreach (var pln in newPlns)
+    //     {
+    //         if (curODContext.IsEntityTracked(pln))
+    //         {
+    //             curODContext.Detach(pln);
+    //         }
+    //         curOrga.Plngens.Remove(pln);
+    //     }
+    //     GplnNewRows.Clear();
+    //     Imessage = "Programme(s) ANNULE";
+    //     await plnModal.HideAsync();
+    //     allEnable = false;
+    //     siPlnAdding = false;
+    //     StateHasChanged();
+    // }
+    // private async Task AnuRubModal()
+    // {
+    //     // Remove newly added but unsaved Rubvars from context
+    //     var newRubs = GrubNewRows.Where(r => r.Xadd1 == -1).ToList();
+    //     foreach (var rub in newRubs)
+    //     {
+    //         if (curODContext.IsEntityTracked(rub))
+    //         {
+    //             curODContext.Detach(rub);
+    //         }
+    //         curPlan.Rubvars.Remove(rub);
+    //     }
+    //     GrubNewRows.Clear();
+    //     Imessage = "Rubrique(s) ANNULE";
+    //     await rubModal.HideAsync();
+    //     allEnable = false;
+    //     siRubAdding = false;
+    //     StateHasChanged();
+    // }
     // private void SaveCurEntities()
     // {
     //     // Save all tracked entities in the OData context
@@ -1531,18 +1623,20 @@ else
         var noslims = LsVars.Where(uv => uv.Idhie == 0 && uv.Gvars == 21 && uv.Itb == 1 && uv.Elea == 1);
         if (noslims.Any()) _lgcdu = noslims.FirstOrDefault().Ivala;
         //MyDaPlans = new();
-        await ChargeParentData();
-        _navmanager.LocationChanged += OnLocationChanged;
-        //Imessage = "Donnees Grilles chargees";
-        isLoading = false;
-    }
-
-    private async Task ChargeParentData()
-    {
+        //await ChargeParentData();
         domDest = "Domaine";
         LsDoms = LsFixes.Where(ut => ut.Gvars == 36 && ut.Itb == 4 && ut.Gp1 == 3 && ut.Elea != 0).ToList();
         LsAtrs = LsFixes.Where(ut => ut.Gvars == 36 && ut.Itb == 1 && ut.Gp1 == 3 && ut.Elea != 0).ToList();
         LsVues = LsFixes.Where(ut => ut.Gvars == 36 && ut.Itb == 4 && ut.Gp1 == 4 && ut.Elea != 0).ToList();
+
+        GplnNewRows = curOrga.Plngens.Where(pl => pl.Ptyp == 3).ToList(); //Schemas
+        GrubNewRows = curOrga.Plngens
+            .Where(pl => pl.Ptyp == 3)
+            .SelectMany(pl => pl.Rubvars)
+            .ToList();
+        _navmanager.LocationChanged += OnLocationChanged;
+        //Imessage = "Donnees Grilles chargees";
+        isLoading = false;
     }
     //VALIDATION
     private bool IsPaterValid(Plngen mypl)

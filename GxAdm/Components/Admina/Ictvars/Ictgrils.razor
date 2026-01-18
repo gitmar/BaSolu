@@ -84,7 +84,7 @@ else
                             @if (IMyPlan != 0) //a verifier apres && IMyPlan != 0)
                             {
                                 <Grid TItem="Actsaie"
-                                      Data="@MyDaActs"
+                                      Data="@MyDaActs.Where(pl => pl.IrubNavigation.Ipln == IMyPlan).ToList()"
                                       AllowDetailView="true"
                                       AllowPaging="true"
                                       Responsive="true"
@@ -115,7 +115,16 @@ else
                                             <GridColumns>
                                                 <GridColumn TItem="Actdet" HeaderText="No">
                                                     <ChildContent Context="item">
-                                                        <div @key="item.Rowguid">@item.Iele</div>
+                                                        <div @key="item.Rowguid">
+                                                            @if (item.Xadd1 == -1)
+                                                            {
+                                                                <span>?@item?.Iui</span>
+                                                            }
+                                                            else
+                                                            {
+                                                                <span class="plnpoint">@item?.Iele</span>
+                                                            }
+                                                        </div>
                                                     </ChildContent>
                                                 </GridColumn>
                                                 <GridColumn TItem="Actdet" HeaderText="Inferieur">
@@ -158,7 +167,7 @@ else
                                                     <HeaderContent>
                                                         @if (allEnable)
                                                         {
-                                                            <button class="btn btn-primary btn-sm" @onclick="() => OpenPstmodal(curActa)">
+                                                            <button class="btn btn-primary btn-sm" @onclick="() => OpenAddGril(parent)">
                                                                 ➕ Add
                                                             </button>
                                                         }
@@ -251,7 +260,7 @@ else
                             <GridColumns>
                                 <GridColumn TItem="Actdet" HeaderText="No">
                                     <ChildContent Context="item">
-                                        <div @key="item.Rowguid">@item.Iele</div>
+                                        <div @key="item.Rowguid">@item.Iui</div>
                                     </ChildContent>
                                 </GridColumn>
                                 <GridColumn TItem="Actdet" HeaderText="Inferieur">
@@ -345,7 +354,9 @@ else
                     </div>
                 </BodyTemplate>
                 <FooterTemplate>
-                    <Button class="btn btn-secondary" @onclick="ClosePmodal">Cancel</Button>
+                    <Button class="btn btn-secondary" @onclick="CncRubrs">Annuler</Button>
+                    <Button class="btn btn-success" @onclick="AddRubrs">Confirmer</Button>
+                    @* <Button class="btn btn-secondary" @onclick="ClosePmodal">Cancel</Button> *@
                 </FooterTemplate>
             </Modal>
         </Authorized>
@@ -365,7 +376,6 @@ else
 </style>
 @code {
     private bool isLoading = true;
-    private bool allEnable = false;
 
     private string Imessage = "", Jmessage = "";
 
@@ -381,6 +391,8 @@ else
     public MyShareVars toChild { get; set; }
     [Parameter]
     public int toMenu { get; set; }
+    [Parameter]
+    public bool allEnable { get; set; }
     //private Tiersp gridTier = new Tiersp();
     //private Rubvar curRub = new Rubvar();
     //private Actsaie curActa = new Actsaie();
@@ -421,18 +433,22 @@ else
 
 
     private bool siAdtAdding = false;
-    private bool siPlnAdding = false, siRubAdding = false;
-    private bool siPlnEditing = false, siRubEditing = false;
+    //private bool siPlnAdding = false, siRubAdding = false;
+    //private bool siPlnEditing = false;
+    private bool siRubEditing = false;
 
     private Modal adtModal;
     private string adtTitle = "";
     private Dictionary<int, Actsaie> actsaieMapByIdact = new();
-    private Dictionary<int, Actdet> _originalSnapshots = new();
-    private List<Actsaie> MyDaActs { get; set; } = new();
+    //private Dictionary<int, Actdet> _originalSnapshots = new();
+
+    private List<Actsaie> MyDaActs = new();
+    private List<Actdet> GrubNewRows = new();
     private Dictionary<int, List<Actdet>> gActsMap = new();
-    private List<Actdet> GrubNewRows => gActsMap.TryGetValue(curActa.Id, out var rows)
-    ? new List<Actdet>(rows)
-    : new List<Actdet>();
+    
+    // private List<Actdet> GrubNewRows => gActsMap.TryGetValue(curActa.Id, out var rows)
+    // ? new List<Actdet>(rows)
+    // : new List<Actdet>();
 
     private bool isPstValid = false;
     //private Actdet nwPoste = new();
@@ -462,7 +478,7 @@ else
             actsaieMapByIdact[act.Id] = act;
         }
     }
-    void OpenPstmodal(Actsaie myact)
+    void OpenAddGril(Actsaie myact)
     {
         curActa = myact;
         if (!GrubNewRows.Any())
@@ -499,33 +515,46 @@ else
         {
             gActsMap[parentId] = new List<Actdet>();
         }
-        var existingActdets = parent.Actdets ?? new DataServiceCollection<Actdet>();
-        var mapActdets = gActsMap[parentId];
-        int maxIdseqFromParent = existingActdets.Any() ? (existingActdets.Max(r => r.Iele) ?? 1) : 1;
-        int maxIdseqFromMap = mapActdets.Any() ? (mapActdets.Max(r => r.Iele) ?? 1) : 1;
-        int maxIdseq = Math.Max(1, Math.Max(maxIdseqFromParent, maxIdseqFromMap));
-        int nextSeq = maxIdseq + 1;
-        Console.WriteLine($"current newPoste zone no : {nextSeq} et parent act no : {parent.Id}");
-        var newPoste = CreateNewPoste(parent, nextSeq);
-        if (newPoste != null)
-        {
-            gActsMap[parentId].Insert(0, newPoste);
-            Console.WriteLine($"Actual NewRows nb {GrubNewRows.Count}");
-            GrubNewRows.Insert(0, newPoste);
-            //GplnNewRows = GplnNewRows.ToList();
-            Console.WriteLine($"After Insert NewRows nb {GrubNewRows.Count}");
-            AddingAdtRowGuid = newPoste.Rowguid;
-        }
-        siAdtAdding = true;
+        var mapPlns = gActsMap[parentId];
+        int maxiui = mapPlns.Any() ? (mapPlns.Max(r => r?.Iui) ?? 0) : 0;
+        int nextIui = maxiui + 1;
+        Console.WriteLine($"current newPoste zone no : {nextIui} et parent act no : {parent.Id}");
+        var newChl = CreateNewPoste(nextIui);
+        gActsMap[parentId].Insert(0, newChl);
+        GrubNewRows = GrubNewRows.Prepend(newChl).ToList();
+        AddingAdtRowGuid = newChl.Rowguid;
         StateHasChanged();
+        siAdtAdding = true;
+
+
+        // var existingActdets = parent.Actdets ?? new DataServiceCollection<Actdet>();
+        // var mapActdets = gActsMap[parentId];
+        // int maxIdseqFromParent = existingActdets.Any() ? (existingActdets.Max(r => r.Iele) ?? 1) : 1;
+        // int maxIdseqFromMap = mapActdets.Any() ? (mapActdets.Max(r => r.Iele) ?? 1) : 1;
+        // int maxIdseq = Math.Max(1, Math.Max(maxIdseqFromParent, maxIdseqFromMap));
+        // int nextSeq = maxIdseq + 1;
+        // Console.WriteLine($"current newPoste zone no : {nextSeq} et parent act no : {parent.Id}");
+        // var newPoste = CreateNewPoste(parent, nextSeq);
+        // if (newPoste != null)
+        // {
+        //     gActsMap[parentId].Insert(0, newPoste);
+        //     Console.WriteLine($"Actual NewRows nb {GrubNewRows.Count}");
+        //     GrubNewRows.Insert(0, newPoste);
+        //     //GplnNewRows = GplnNewRows.ToList();
+        //     Console.WriteLine($"After Insert NewRows nb {GrubNewRows.Count}");
+        //     AddingAdtRowGuid = newPoste.Rowguid;
+        // }
+        // siAdtAdding = true;
+        // StateHasChanged();
     }
 
-    Actdet CreateNewPoste(Actsaie parent, int nextSeq)
+    Actdet CreateNewPoste(int nextSeq)
     {
         return new Actdet
         {
             //Rowguid = Guid.NewGuid(),
-            Iact = parent.Id,
+            Iui = nextSeq,
+            Iact = curActa.Id,
             //Irub = parent.Id,
             //Itie = parent.Id,
             Froac = 3, //de grille
@@ -534,10 +563,10 @@ else
             Ddval = DateTime.Now,
             Dfval = DateTime.Now,
             Svala = "",
-            Iele = nextSeq, //child seq
-            Pirub = parent.Irub,
-            Pscdrub = parent.Scdrub, //parent scdrub
-            Acdrub = $"{parent.Scdrub}Z{nextSeq.ToString()}",
+            //Iele = nextSeq, //child seq
+            Pirub = curActa.Irub,
+            Pscdrub = curActa.Scdrub, //parent scdrub
+            Acdrub = $"{curActa.Scdrub}Z{nextSeq.ToString()}",
             Eta = 1, //1actif
             Xadd1 = -1 //newly added
         };
@@ -933,6 +962,31 @@ else
         {
             Console.WriteLine($"Posts exception {ex.Message} et trace {ex.StackTrace}");
         }
+    }
+    private async void AddRubrs()
+    {
+        foreach (var unrub in GrubNewRows)
+        {
+            if (!curODContext.IsEntityTracked(unrub))
+            {
+                curODContext.AttachTo("Actdets", unrub);
+            }
+            curODContext.AddRelatedObject(curActa, "Rubvars", unrub);
+        }
+        GrubNewRows = new();
+        SaveCurEntities();
+        Imessage = "Gril/Rubrique(s) SAVED";
+        await adtModal.HideAsync();
+        allEnable = false;
+        StateHasChanged();
+    }
+    private async void CncRubrs()
+    {
+        GrubNewRows.Clear();
+        gActsMap.Clear();
+        siAdtAdding = false; // Consider moving this flag reset based on your UI state management needs
+        Imessage = "Aplan/Rubrique(s) CANCELLED";
+        await adtModal.HideAsync();
     }
     private void OnInRubPost(GridRowEventArgs<Actdet> args)
     {

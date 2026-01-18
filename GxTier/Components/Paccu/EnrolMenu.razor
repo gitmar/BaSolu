@@ -39,41 +39,43 @@ else
             <div class="d-flex flex-column" style="height: 100%;">
                 <GxNavMenu BrandText="A24soft Gx-Solutions"
                            MenuItems="@MenuItems"
-                           YaGroup="false"
+                           YaGroup="true"
                            Groups="@Groupes"
                            MenuSelected="@_chxMenu"
                            MenuSelectedChanged="@SelMenu"
-                           GroupSelected="@_chxGpe"
-                           GroupSelectedChanged="@SelGpe"
                            OnBack="@NavigateBack" />
+                           @* <GxNavMenu MenuItems="@MenuItems"
+                           Groups="@Groupes"
+                           YaGroup="true"
+                           MenuSelected="@_selectedMenuId"
+                           MenuSelectedChanged="@OnMenuChanged"
+                           GroupSelected="@_selectedGroupId"
+                           GroupSelectedChanged="@OnGroupChanged" /> *@
+
+                @* <p>Selected Menu Id: @_selectedMenuId</p>
+                <p>Selected Group Id: @_selectedGroupId</p> *@
 
                 <div class="row">
                     <div class="col-md-12 input-group align-middle">
-                        @if (Ugpe != 0)
-                        {
-                            @if (!ParentEDT)
-                            {
-                                <span class="text-uppercase text- text-success"><b>@strComp</b></span>
-                                <span class="separator">&nbsp; &nbsp;|| </span>
-                                <Button class="btn btn-sm btn-secondary btnsz"
-                                        style="@(!allEnable ? "" : "display:none;")"
-                                        @onclick="ManEditAll">
-                                    Modifier
-                                </Button>
-                            }
-                            else if (ParentEDT)
-                            {
-                                <Button class="btn btn-sm btn-secondary btnsz"
-                                        @onclick="ManCnclAll">
-                                    Annuler
-                                </Button>
-                                <span class="separator">|  </span>
-                                <Button class="btn btn-sm btn-secondary btnsz"
-                                        @onclick="ManSaveAll">
-                                    Enregistrer
-                                </Button>
-                            }
-                        }
+                        <span class="text-uppercase text- text-success"><b>@strComp</b></span>
+                        &nbsp;&nbsp;
+                        <span class="separator">|| </span>
+                        <Button class="btn btn-sm btn-secondary btnsz"
+                                style="@(!allEnable ? "" : "display:none;")"
+                                @onclick="ManEditAll">
+                            Modifier
+                        </Button>
+                        <Button class="btn btn-sm btn-secondary btnsz"
+                                style="@(allEnable ? "" : "display:none;")"
+                                @onclick="ManCnclAll">
+                            Annuler
+                        </Button>
+                        <span class="separator">|  </span>
+                        <Button class="btn btn-sm btn-secondary btnsz"
+                                style="@(allEnable ? "" : "display:none;")"
+                                @onclick="ManSaveAll">
+                            Enregistrer
+                        </Button>
                         @if (!String.IsNullOrEmpty(MImessage))
                         {
                             <span class="bg-info bg-opacity-10" style="font-style:italic;color:red">&nbsp;--> @MImessage</span>
@@ -91,6 +93,7 @@ else
                                      Tgpe="@Tgpe"
                                      curOrga="@curOrga"
                                      toChild="@toChild"
+                                     allEnable="@allEnable"
                                      curODContext="@curODContext">
                                 <ChildContent>
                                     @* <h2 class="child-box">Hello INTEGRATION</h2> *@
@@ -106,26 +109,49 @@ else
                                      Tgpe="@Tgpe"
                                      curOrga="@curOrga"
                                      toChild="@toChild"
+                                     allEnable="@allEnable"
                                      curODContext="@curODContext">
                                 <ChildContent>
                                     @* <h2 class="child-box">Hello ACCUEIL</h2> *@
                                 </ChildContent>
                             </InscTiw>
+                            @* OnChildEmptyData="@InitChildData" *@
                         }
                         else if (_chxMenu == 3)
                         {
-                            <InviTiw @ref="myginv">
+                            <InviTiw @ref="myginv"
+                                     curOrga="@curOrga"
+                                     allEnable="@allEnable"
+                                     curODContext="@curODContext">
                                 <ChildContent>
                                     @* <h2 class="child-box">Hello INVITATION</h2> *@
                                 </ChildContent>
                             </InviTiw>
                         }
+                        else if (_chxMenu == 4 && ParentOK)
+                        {
+                            <EnrolTiw @ref="myertiw"
+                                     ParentEDT="@ParentEDT"
+                                     ParentOK="@ParentOK"
+                                     Ugpe="@Ugpe"
+                                     Tgpe="@Tgpe"
+                                     OnSaved="ManSaveAll"
+                                     allEnable="@allEnable"
+                                     curOrga="@curOrga"
+                                     toChild="@toChild"
+                                     curODContext="@curODContext">
+                                <ChildContent>
+                                    @* <h2 class="child-box">Hello ACCUEIL</h2> *@
+                                </ChildContent>
+                            </EnrolTiw>
+                            @* OnChildEmptyData="@InitChildData" *@
+                        }
                     }
-                    }
-                </div>
+                 }
             </div>
         </div>
     </div>
+</div>
 }
 @code {
     private bool isLoading = true;
@@ -137,8 +163,8 @@ else
     private InscTiw mygtiw;
     private ValdTie mygvld;
     private InviTiw myginv;
+    private EnrolTiw myertiw;
 
-    [Inject]
     private MyAuthStateProvider _authProvider { get; set; }
     public Userbag _usrBag = new();
 
@@ -164,7 +190,8 @@ else
     {
         new GxMenuItem { Id = 1, Text = "Integration", Icon = "bi bi-box-arrow-in-down" },
         new GxMenuItem { Id = 2, Text = "Accueil/Site", Icon = "bi bi-house-door" },
-        new GxMenuItem { Id = 3, Text = "Invite/Online", Icon = "bi bi-envelope-paper" }
+        new GxMenuItem { Id = 3, Text = "Invite/Online", Icon = "bi bi-envelope-paper" },
+        new GxMenuItem { Id = 4, Text = "ATest", Icon = "bi bi-envelope-paper" }
         //new MenuItem { Id = 4, Text = "Mutation", Icon = "bi bi-arrow-repeat" },
     };
     public List<GxGroupe> Groupes = new();
@@ -259,7 +286,7 @@ else
         //option initiale
         strComp = $"Integration {gpeLiba}";
         isLoading = false;
-        ParentOK = true;
+        //ParentOK = false;
         //await _loadingService.Hide();
 
 
@@ -286,7 +313,7 @@ else
              "Tiersps($expand=Tieafls)";
             var dxtiers = await curODContext.LoadFilteredAsync<Gxorga>(expand: expand2);
             //prise des colonnes //default/Ugpe = 1;
-            Ugpe = 1;
+            Ugpe = 1; //cible
             Tgpe = 6;
             _chxMenu = 1;
             LsCols = curOrga.Gsglnes.Where(ug => ug.Otyp == 5 && ug.Dtyp == 6 && ug.Totyp == 1 && ug.Jacc == 1).ToList();
@@ -299,6 +326,25 @@ else
         catch (Exception ex)
         {
             Console.WriteLine($"stack trace : {ex.StackTrace} ex-mess : {ex.Message} and also in-mess: {ex.InnerException}");
+        }
+    }
+    protected override void OnParametersSet()
+    {
+        // This runs whenever ParentOK or ParentEDT are updated by the parent
+        if (ParentOK)
+        {
+            Console.WriteLine($"ParentOK triggered : {ParentOK}");
+            // Do something when ParentOK becomes true
+        }
+        if (ParentEDT)
+        {
+            Console.WriteLine($"ParentEDT triggered : {ParentEDT}");
+            // Do something when ParentEDT changes
+        }
+        if (allEnable)
+        {
+            Console.WriteLine($"allEnable triggered : {allEnable}");
+            // Do something when ParentEDT changes
         }
     }
     //changes des selections
@@ -322,6 +368,7 @@ else
         if (_chxMenu == 1) strComp = $"Integration {gpeLiba}";
         if (_chxMenu == 2) strComp = $"Accueil/Site  {gpeLiba}";
         if (_chxMenu == 3) strComp = $"Invite/Online  {gpeLiba}";
+        if (_chxMenu == 4) strComp = $"Atest  {gpeLiba}";
         //if (_chxMenu == 3) strComp = $"Invitation {gpeLiba}";
         //if (_chxMenu == 5) strComp = "Colonnes";
         allEnable = false;
@@ -341,18 +388,18 @@ else
         Console.WriteLine("PAS 2");
         await Task.Delay(1);
     }
+    async void InitChildData()
+    {
+        await ManEditAll();
+        //ParentEDT = true;
+        StateHasChanged();
+    }
     void NavigateBack()
     {
         _navmanager.NavigateTo("/");
-    }
+    }  
     private async Task ManEditAll()
     {
-        if (Ugpe == 0)
-        {
-            MImessage = "Groupe obligatoire";
-            return;
-        }
-        ParentEDT = true;
         MImessage = "Edition en preparation...";
         if (_chxMenu == 1)
         { //validation
@@ -367,12 +414,22 @@ else
             await myginv.EdtAll();
         }
         MImessage = "";
+        if (Ugpe != 0)
+        {
+            Console.WriteLine($"Ugpe exists before {Ugpe} et {ParentOK} et {ParentEDT}");
+            ParentOK = true;
+            ParentEDT = true;
+            Console.WriteLine($"Ugpe after {Ugpe} et {ParentOK} et {ParentEDT}");
+        } else
+        {
+            Console.WriteLine("Ugpe not exist");
+        }
         allEnable = true;
     }
     private async Task ManCnclAll()
     {
         MImessage = "annulation en cours...";
-        
+
         if (_chxMenu == 1)
         { //validation
             await mygvld.CncAll();
@@ -380,13 +437,15 @@ else
         if (_chxMenu == 2)
         { //accueil
             await mygtiw.CncCHILD();
+            NavigateBack();
         }
         if (_chxMenu == 3)
         { //invitation
             await myginv.CncAll();
+            NavigateBack();
         }
         //reload
-        await LoadTieAplAsync();
+        //await LoadTieAplAsync();
         MImessage = "";
         allEnable = false;
     }

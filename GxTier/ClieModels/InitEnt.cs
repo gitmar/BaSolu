@@ -118,6 +118,8 @@ namespace GxWapi.DaModels
         public int Xadd1 { get; set; } = 0;
         [JsonIgnore]
         public int Xedt1 { get; set; } = 0;
+        [JsonIgnore]
+        public List<Gsglne> Tsource { get; set; } = new();
     }
     public partial class Plngen
     {
@@ -184,6 +186,8 @@ namespace GxWapi.DaModels
             get => Jnot == 1;
             set => Jnot = value ? 1 : 0;
         }
+        [JsonIgnore]
+        public Dictionary<string, bool> FieldVisible { get; set; } = new();
     }
     public partial class Tiewel
     {
@@ -211,38 +215,8 @@ namespace GxWapi.DaModels
             get => Jnot == 1;
             set => Jnot = value ? 1 : 0;
         }
-        //[JsonIgnore]
-        //private bool isValCheck = false;
-        //[JsonIgnore]
-        //private bool isRejCheck = false;
-        //[JsonIgnore]
-        //public bool IsValCheck
-        //{
-        //    get => isValCheck;
-        //    set
-        //    {
-        //        if (value)
-        //        {
-        //            if (isRejCheck) isRejCheck = false;
-        //        }
-        //        isValCheck = value;
-        //    }
-        //}
-        //[JsonIgnore]
-        //public bool IsRejCheck
-        //{
-        //    get => isRejCheck;
-        //    set
-        //    {
-        //        if (value)
-        //        {
-        //            if (isValCheck) isValCheck = false;
-        //        }
-        //        isRejCheck = value;
-        //    }
-        //}
-        //[JsonIgnore]
-        //public bool IsNotCheck { get; set; } = false;
+        [JsonIgnore]//[NotMapped]
+        public Dictionary<string, bool> FieldVisible { get; set; } = new();
     }
     public partial class Tieafl
     {

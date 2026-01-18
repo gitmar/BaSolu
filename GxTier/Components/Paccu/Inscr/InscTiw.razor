@@ -15,7 +15,7 @@
 @using GxTie.ClieModels
 @using GxTie.Services
 @using GxTie.Components.Paccu.RtPer
-@using GxTie.Services.Mform
+@* @using GxTie.Services.Mform *@
 @using GxWapi.DaModels
 @using Microsoft.AspNetCore.Components.Forms
 @using Microsoft.AspNetCore.WebUtilities
@@ -99,7 +99,8 @@
     </div>
     @if (!isLoading)
     {
-        @if (curTiw != null && TbElems.Any() && LsCols.Any())
+        @* <span>ICI11 @curTiw?.Nom et @TbElems.Count et @LsCols.Count()</span> *@
+        @if (curTiw != null && (TbElems.Any() && LsCols.Any() || noData))
         {
             <AuthorizeView>
                 <Authorized Context="authtiwcontext">
@@ -190,6 +191,7 @@
                                                 }
                                             }
                                         </div>
+
                                         <div class="p-1 grid-container" style="max-height: 400px; overflow-y: auto;">
                                             @if (curTiw != null)
                                             {
@@ -197,6 +199,7 @@
                                                     <label><b>Dossier :</b></label>
                                                     <InputText class="standard-width" @bind-Value="curTiw.Xmatri" placeholder="no dossier" />
                                                 </div>
+
                                                 @foreach (var ucol in LsCols.Where(uv => uv.Totyp == Ugpe && uv.Tstyp == 1 && uv.Jacc == 1
                                                                                     && uv.Elea != 3 && uv.Elea != 4).ToList())
                                                 {
@@ -271,6 +274,7 @@
                                         {
                                             <!--Ityp(exist?)-->
                                             var eligibleUfls = TUafls.Where(ufl => ufl.Ityp == 1 && ufl.Etyp != 1 && ufl.Etyp != 0).ToList();
+                                            
                                             <Tabs @bind-ActiveTabIndex="activeTabIndex" EnableFadeEffect="true">
                                                 @foreach (var ufl in eligibleUfls)
                                                 {
@@ -341,6 +345,7 @@
                                                                                 }
                                                                             </div>
                                                                         }
+
                                                                         <div class="p-1 @DisabledClass" style="max-height: 400px; overflow-y: auto;">
                                                                             @foreach (var ucol in LsCols.Where(uv => uv.Totyp == Ugpe && uv.Tstyp == ufl.Etyp && uv.Jacc == 1).ToList())
                                                                             {
@@ -502,6 +507,14 @@
                                                         </ChildContent>
                                                     </GridColumn>
                                                 </GridColumns>
+                                                <GridEmptyDataTemplate TItem="Tiewel">
+                                                    @* <div class="text-center p-3">
+                                                        <p>No records available.</p>
+                                                        <button class="btn btn-primary" @onclick="() => InitializeData()">
+                                                                Initialize Data
+                                                        </button>
+                                                    </div> *@
+                                               </GridEmptyDataTemplate>
                                             </Grid>
                                         </div>
                                     </div>
@@ -526,7 +539,15 @@
                 </Authorized>
             </AuthorizeView>
         } else {
-            <p>no data available</p>
+            @if (curTiw == null && allEnable)
+            {
+                <div class="text-center p-3">
+                    <p>No records available.</p>
+                    <button class="btn btn-primary" @onclick="() => InitializeData()">
+                        Initialize Data
+                    </button>
+                </div>
+            }
         }
     }
 </div>
@@ -599,7 +620,6 @@
 
 @code {
     private bool isLoading = true;
-    private bool allEnable = false;
     private bool isRecptVisible = false;
     // private AccuAfil myafl;
 
@@ -616,6 +636,8 @@
     public int? Tgpe { get; set; }
     [Parameter]
     public int? Ugpe { get; set; }
+    [Parameter]
+    public bool allEnable { get; set; }
 
     private EditContext? edTiwContext;
 
@@ -669,6 +691,8 @@
     public bool ParentOK { get; set; }
     [Parameter]
     public bool ParentEDT { get; set; }
+    // [Parameter] 
+    // public EventCallback OnChildEmptyData { get; set; }
 
     private Guid? AddingTiwRowGuid = Guid.Empty;
     private Guid? EditingTiwRowGuid = Guid.Empty;
@@ -694,6 +718,7 @@
     private bool isModalVisible = false;
 
     //pere-editing/adding/deleting
+    private bool noData = false;
     private bool isTiwInEditing = false;
 
     private bool IsTiwAdding(Tiewel item) => AddingTiwRowGuid == item.Rowguid;
@@ -728,8 +753,8 @@
         var noslims = LsVars.Where(uv => uv.Idhie == 0 && uv.Gvars == 21 && uv.Itb == 1 && uv.Elea == 1);
         if (noslims.Any()) _lgcdu = noslims.FirstOrDefault().Ivala;
         //await LoadOrgParas();
-       // await ChargeParentData();
-        
+        // await ChargeParentData();
+
         _lsDivs = toChild.LsDivs.Where(uh => uh.Sidiv == 1).ToList();
         //Console.WriteLine($"Authentication ENTREE curtiw {curTiw.Nom} nbele :{TbElems.Count} et nbcols : {LsCols.Count}");
     }
@@ -746,7 +771,7 @@
     // }
     // private async Task ChargeParentData()
     // { //programmes
-        
+
     //     //Console.WriteLine($"Tiers accueil recu {curTiw?.Nom}/{curTiw?.Pnom}");
     // }
     protected override async void OnParametersSet()
@@ -767,7 +792,7 @@
         }
 
         _navmanager.LocationChanged += OnLocationChanged;
-        // if (curTiw != null)
+        // ifREFUS, Creation Orga indisponible (curTiw != null)
         // {
         //     edTiwContext = new EditContext(curTiw);
         //     edTiwContext.OnFieldChanged += HandleFieldChanged;
@@ -782,6 +807,34 @@
         //edTiwContext.OnFieldChanged += HandleFieldChanged;
         isLoading = false;
     }
+
+    private async Task InitializeData()
+    {
+        // Seed some sample rows
+        // if (OnChildEmptyData.HasDelegate)
+        // {
+        //     await OnChildEmptyData.InvokeAsync();
+        //Console.WriteLine($"Retour parent : {allEnable}");
+        curTiw = new();
+        curTiw.Idorg = curOrga.Idorg;
+        curTiw.Utyp = Ugpe;
+        curTiw.Nom = "Martin ESSEC";
+        curTiw.Pnom = "Simpore";
+        curTiw.Datc = DateTime.Now;
+        curTiw.Xadd1 = -1;
+        noData = true;
+        //Console.WriteLine($"1.{ParentEDT} 2.{ParentOK}");
+        //AddingTiwRowGuid = curTiw.Rowguid;
+        //sinwTiw = true;
+        Console.WriteLine("Correct");
+        StateHasChanged();
+    }
+        
+        //ensTiws.Add(new Tiewel { Jwlc = 1, /* other props */ });
+        //ensTiws.Add(new Tiewel { Jwlc = 2, /* other props */ });
+
+        // Refresh the grid
+        //StateHasChanged();
     void OnTiwRowClick(GridRowEventArgs<Tiewel> args)
     {
         Console.WriteLine($"OnTiwRowClick Triggered : {args.Item.Id}");

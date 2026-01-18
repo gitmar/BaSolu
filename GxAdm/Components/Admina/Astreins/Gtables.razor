@@ -86,7 +86,6 @@ else
                                         <option value="@utb.Gp2" @onclick="() => SelDomTabl(2)">@utb.Liba </option>
                                     }
                                 </InputSelect>
-
                             </div>
                         </div>
                         <div class="row">
@@ -126,7 +125,16 @@ else
                                               Responsive="true">
                                             <GridColumns>
                                                 <GridColumn TItem="Gsgfix" HeaderText="No">
-                                                    <ChildContent Context="item">@item.Elea</ChildContent>
+                                                    <ChildContent Context="item">
+                                                        @if (item.Elea == 0)
+                                                        {
+                                                            <span>?@item.Iui</span>
+                                                        }
+                                                        else
+                                                        {
+                                                            @item.Elea
+                                                        }
+                                                    </ChildContent>
                                                 </GridColumn>
                                                 <GridColumn TItem="Gsgfix" HeaderText="Designation">
                                                     <ChildContent Context="item">
@@ -274,13 +282,19 @@ else
                                             </GridColumns>
                                             <GridDetailView TItem="Gsgfix" Context="parent">
                                                 <Grid TItem="Gsglne"
-                                                      Data="@MyDaChilds"
+                                                      Data="@MyDaChilds.Where(uc => uc.Pseq == parent.Xseq).ToList()"
                                                       AllowPaging="true"
                                                       Responsive="true">
                                                     <GridColumns>
                                                         <GridColumn TItem="Gsglne" HeaderText="No">
                                                             <ChildContent Context="item">
-                                                                @item.Elea
+                                                                @if(item.Elea == 0)
+                                                                {
+                                                                  <span>?@item.Iui</span>  
+                                                                } else
+                                                                {
+                                                                    @item.Elea
+                                                                }
                                                             </ChildContent>
                                                         </GridColumn>
                                                         <GridColumn TItem="Gsglne" HeaderText="Designation">
@@ -359,7 +373,7 @@ else
                                                             <HeaderContent>
                                                                 @if (allEnable)
                                                                 {
-                                                                    <button class="btn btn-primary btn-sm" @onclick="() => OpenAddChild()">
+                                                                    <button class="btn btn-primary btn-sm" @onclick="() => OpenAddChild(parent)">
                                                                         ➕ Add
                                                                     </button>
                                                                 }
@@ -432,7 +446,7 @@ else
                             <GridColumns>
                                 <GridColumn TItem="Gsgfix" HeaderText="No">
                                     <ChildContent Context="item">
-                                        <div @key="item.Rowguid">@item.Elea</div>
+                                        <div @key="item.Rowguid">@item.Iui</div>
                                     </ChildContent>
                                 </GridColumn>
                                 <GridColumn TItem="Gsgfix" HeaderText="Designation">
@@ -512,8 +526,8 @@ else
                     </div>
                 </BodyTemplate>
                 <FooterTemplate>
-                    <Button class="btn btn-secondary" @onclick="AnuPModal">Annuler</Button>
-                    <Button class="btn btn-success" @onclick="ConfPModal">Confirmer</Button>
+                    <Button class="btn btn-secondary" @onclick="CncPlans">Annuler</Button>
+                    <Button class="btn btn-success" @onclick="AddPlans">Confirmer</Button>
                     @* <Button class="btn btn-secondary" @onclick="ClosePmodal">Cancel</Button> *@
                 </FooterTemplate>
             </Modal>
@@ -529,7 +543,7 @@ else
                             <GridColumns>
                                 <GridColumn TItem="Gsglne" HeaderText="No">
                                     <ChildContent Context="item">
-                                        <div @key="item.Rowguid">@item.Elea</div>
+                                        <div @key="item.Rowguid">@item.Iui</div>
                                     </ChildContent>
                                 </GridColumn>
                                 <GridColumn TItem="Gsglne" HeaderText="Designation">
@@ -632,8 +646,8 @@ else
                     </div>
                 </BodyTemplate>
                 <FooterTemplate>
-                    <Button class="btn btn-secondary" @onclick="AnuCModal">Annuler</Button>
-                    <Button class="btn btn-success" @onclick="ConfCModal">Confirmer</Button>
+                    <Button class="btn btn-secondary" @onclick="CncRubrs">Annuler</Button>
+                    <Button class="btn btn-success" @onclick="AddRubrs">Confirmer</Button>
                     @* <Button class="btn btn-secondary" @onclick="CloseCmodal">Cancel</Button> *@
                 </FooterTemplate>
             </Modal>
@@ -647,14 +661,13 @@ else
     }
 
     .modal-wide .modal-dialog {
-        max-width: 50vw;
+        max-width: 70vw;
         width: auto;
         margin: auto;
     }
 </style>
 @code {
     private bool isLoading = true;
-    private bool allEnable = false;
 
     private string Imessage = "", Jmessage = "";
 
@@ -668,6 +681,8 @@ else
     public Gxorga curOrga { get; set; } = new();
     [Parameter]
     public MyShareVars toChild { get; set; }
+    [Parameter]
+    public bool allEnable { get; set; }
 
     //private Tiersp gridTier = new Tiersp();
     private Plngen curPlan = new Plngen();
@@ -722,22 +737,24 @@ else
     private bool IsLneEditing(Gsglne item) => EditingLneRowGuid == item.Rowguid;
 
     //pere
-    private ICollection<Gsgfix> PaterRows => gfixsMap.TryGetValue(curOrga.Idorg, out var rows)
-    ? new List<Gsgfix>(rows)
-    : new List<Gsgfix>();
+    private List<Gsgfix> PaterRows = new();
+    // private List<Gsgfix> PaterRows => gfixsMap.TryGetValue(curOrga.Idorg, out var rows)
+    // ? new List<Gsgfix>(rows)
+    // : new List<Gsgfix>();
     // private ObservableCollection<Gsgfix> PaterRows => gfixsMap.TryGetValue(curOrga.Idorg, out var rows)
     // ? new ObservableCollection<Gsgfix>(rows)
     // : new ObservableCollection<Gsgfix>();
     //fils
-    private ICollection<Gsglne> ChildRows => glnesMap.TryGetValue(curPater.Xseq, out var rows)
-    ? new List<Gsglne>(rows)
-    : new List<Gsglne>();
+    private List<Gsglne> ChildRows = new();
+    // private List<Gsglne> ChildRows => glnesMap.TryGetValue(curPater.Xseq, out var rows)
+    // ? new List<Gsglne>(rows)
+    // : new List<Gsglne>();
     // private ObservableCollection<Gsglne> ChildRows => glnesMap.TryGetValue(curPater.Xseq, out var rows)
     // ? new ObservableCollection<Gsglne>(rows)
     // : new ObservableCollection<Gsglne>();
     //data
-    public ICollection<Gsgfix> MyDaRubrs { get; set; } = new List<Gsgfix>();
-    public ICollection<Gsglne> MyDaChilds { get; set; } = new List<Gsglne>();
+    public List<Gsgfix> MyDaRubrs { get; set; } = new List<Gsgfix>();
+    public List<Gsglne> MyDaChilds { get; set; } = new List<Gsglne>();
     // public ObservableCollection<Gsgfix> MyDaRubrs { get; set; } = new();
     // public ObservableCollection<Gsglne> MyDaChilds { get; set; } = new();
     //variables Man
@@ -746,11 +763,57 @@ else
     //variables Lne
     Gsglne draftLne = new();
     Gsglne? editingLne = null;
+    protected override async Task OnInitializedAsync()
+    {
+        isLoading = true;
+        if (toChild == null)
+        {
+            Console.WriteLine("TOCHILD IS NULL");
+            return;
+        }
+        isAuthenticated = toChild.isAuthenticated;
+        authUser = toChild.authUser;
+        if (!isAuthenticated)
+        {
+            Imessage = "Erreur, Utilisateur non authentifie";
+            return;
+        }
+        LsVars = toChild.LsVars;
+        LsFixes = toChild.LsFixes;
+        LsDoms = toChild.LsFixes.Where(ut => ut.Gvars == 36 && ut.Itb == 4 && ut.Gp1 == 3 && ut.Elea != 0).ToList();
+        //LsTabls = toChild.LsTabls.ToList();
+        LsPlans = toChild.LsPlans.Where(pl => pl.Ptyp == 3).ToList();
 
+        _lgcdu = 3;
+        var noslims = LsVars.Where(uv => uv.Idhie == 0 && uv.Gvars == 21 && uv.Itb == 1 && uv.Elea == 1);
+        if (noslims.Any()) _lgcdu = noslims.FirstOrDefault().Ivala;
+        //MyDaRubrs = new List<Gsgfix>();
+        //await LoadTablsAsync();
+        gfixsMap.Clear();
+        glnesMap.Clear();
+        MyDaRubrs = new List<Gsgfix>(); // ObservableCollection<Gsgfix>();
+        //gfixsMap[curOrga.Idorg] = curOrga.Gsgfixes.Where(uf => uf.Gvars == 4 && uf.Elea != 0).ToList(); //new ObservableCollection<Gsgfix>(curOrga.Gsgfixes.Where(uf => uf.Gvars == 4 && uf.Elea != 0));
+        MyDaChilds = curOrga.Gsglnes.Where(ln => ln.Otyp == 4).ToList();
+        Console.WriteLine($"elements tables{MyDaChilds.Count()}");
+        // foreach (var uta in curOrga.Gsgfixes.Where(uv => uv.Gvars == 4 && uv.Elea != 0))
+        // {
+        //     List<Gsglne> tbcols = MyDaChilds.Where(ln => ln.Pseq == uta.Xseq).ToList();
+        //     glnesMap[uta.Xseq] = tbcols; //new ObservableCollection<Gsglne>(tbcols);
+        //     //Console.WriteLine($"Parent Xseq: {uta.Xseq}, Children count: {tbcols.Count}");
+        // }
+        _navmanager.LocationChanged += OnLocationChanged;
+        Imessage = "Donnees Tables chargees";
+        isLoading = false;
+    }
+    // private async Task LoadTablsAsync()
+    // {
+
+    // }
     void OnPaterRowClick(GridRowEventArgs<Gsgfix> args)
     {
         Console.WriteLine($"OnPaterRowClick Triggered : {args.Item.Xseq}");
-        MyDaChilds = new ObservableCollection<Gsglne>();
+        //MyDaChilds = new ObservableCollection<Gsglne>();
+        //MyDaChilds = new();
         curPater = args.Item; //get glnesMap
         Console.WriteLine($"X1seq {curPater.Xseq}");
         if (curPater == null || curPater.Xseq == 0)
@@ -767,7 +830,8 @@ else
             return;
         }
         Console.WriteLine($"exist list {list.Count}");
-        MyDaChilds = new ObservableCollection<Gsglne>(list);
+        //MyDaChilds = new ObservableCollection<Gsglne>(list);
+        //MyDaChilds = list;
         Console.WriteLine($"Child elements nb {MyDaChilds.Count}");
         StateHasChanged(); 
     }
@@ -787,22 +851,31 @@ else
 
         PrepareAddPater();
 
-        patTitle = $"{curOrga.Idorg} - {curOrga.Raison} (contenu table en creation)";
+        patTitle = $"{curOrga.Idorg} - {curOrga.Raison} (table en creation)";
         patModal.ShowAsync();
     }
-    void OpenAddChild()
+    void OpenAddChild(Gsgfix maintb)
     {
-        int parentKey = Convert.ToInt32(curPater.Xseq);
-        if (glnesMap.ContainsKey(parentKey))
+        if (maintb != null)
         {
-            glnesMap.Remove(parentKey); // Clear previous children for clean modal state
+            curPater = maintb;
+            int parentKey = Convert.ToInt32(curPater.Xseq);
+            if (glnesMap.ContainsKey(parentKey))
+            {
+                glnesMap.Remove(parentKey); // Clear previous children for clean modal state
+            }
+
+            PrepareAddChild();
+
+            chlTitle = $"{curPater.Elea} - {curPater.Liba} (contenu table en creation)";
+            chlModal.ShowAsync();
         }
-
-        PrepareAddChild();
-
-        chlTitle = $"{curPater.Elea} - {curPater.Liba} (contenu table en creation)";
-        chlModal.ShowAsync();
-    } 
+        else
+        {
+            Imessage = "Parent non selectionne";
+            return;
+        }
+    }
     void PrepareAddPater()
     {
         isFixValid = false;
@@ -817,15 +890,21 @@ else
         {
             gfixsMap[parentId] = new List<Gsgfix>(); //ObservableCollection<Gsgfix>();
         }
-        var existingGsgfixs = curOrga.Gsgfixes.Where(ln => ln.Idorg == parentId) ?? new DataServiceCollection<Gsgfix>();
+        //var existingGsgfixs = curOrga.Gsgfixes.Where(ln => ln.Idorg == parentId) ?? new DataServiceCollection<Gsgfix>();
+
         var mapGsgfixs = gfixsMap[parentId];
-        int maxEleaFromParent = existingGsgfixs.Any() ? (existingGsgfixs.Max(r => r?.Elea) ?? 10) : 10;
-        int maxEleaFromMap = mapGsgfixs.Any() ? (mapGsgfixs.Max(r => r?.Elea) ?? 10) : 10;
-        int maxElea = Math.Max(10, Math.Max(maxEleaFromParent, maxEleaFromMap));
-        int nextElea = maxElea + 1;
-        Console.WriteLine($"current newPoste zone no : {nextElea} et parent act no : {curOrga.Idorg}");
-        var newPat = CreateNewPater(nextElea);
+        int maxiui = mapGsgfixs.Any()? (mapGsgfixs.Max(r => r?.Iui) ?? 0) : 0;
+        int nextIui = maxiui + 1;
+
+        //int maxEleaFromParent = existingGsgfixs.Any() ? (existingGsgfixs.Max(r => r?.Elea) ?? 10) : 10;
+        //int maxEleaFromMap = mapGsgfixs.Any() ? (mapGsgfixs.Max(r => r?.Elea) ?? 10) : 10;
+        //int maxElea = Math.Max(10, Math.Max(maxEleaFromParent, maxEleaFromMap));
+        //int nextElea = maxElea + 1;
+
+        Console.WriteLine($"current newPoste zone no : {nextIui} et parent act no : {curOrga.Idorg}");
+        var newPat = CreateNewPater(nextIui);
         gfixsMap[parentId].Insert(0, newPat);
+        PaterRows = PaterRows.Prepend(newPat).ToList();
         AddingFixRowGuid = newPat.Rowguid;
         StateHasChanged();
         sinwPater = true;
@@ -844,24 +923,34 @@ else
         {
             glnesMap[parentId] = new List<Gsglne>();
         }
-        var existingGsglnes = curOrga.Gsglnes.Where(ln => ln.Pseq == parentId) ?? new DataServiceCollection<Gsglne>();
+        //var existingGsglnes = curOrga.Gsglnes.Where(ln => ln.Pseq == parentId) ?? new DataServiceCollection<Gsglne>();
         var mapGsglnes = glnesMap[parentId];
-        int maxIdzonFromParent = existingGsglnes.Any() ? (existingGsglnes.Max(r => r.Elea) ?? 10) : 10;
-        int maxIdzonFromMap = mapGsglnes.Any() ? (mapGsglnes.Max(r => r.Elea) ?? 10) : 10;
-        int maxIdzon = Math.Max(10, Math.Max(maxIdzonFromParent, maxIdzonFromMap));
-        int nextZon = maxIdzon + 1;
-        Console.WriteLine($"current newPoste zone no : {nextZon} et parent act no : {curPater.Xseq}");
-        var newChl = CreateNewChild(curPater, nextZon);
+        int maxiui = mapGsglnes.Any() ? (mapGsglnes.Max(r => r?.Iui) ?? 0) : 0;
+        int nextIui = maxiui + 1;
+
+
+        //int maxIdzonFromParent = existingGsglnes.Any() ? (existingGsglnes.Max(r => r.Elea) ?? 10) : 10;
+        //int maxIdzonFromMap = mapGsglnes.Any() ? (mapGsglnes.Max(r => r.Elea) ?? 10) : 10;
+        //int maxIdzon = Math.Max(10, Math.Max(maxIdzonFromParent, maxIdzonFromMap));
+        //int nextZon = maxIdzon + 1;
+
+        Console.WriteLine($"current newPoste zone no : {nextIui} et parent act no : {curPater.Xseq}");
+
+        var newChl = CreateNewChild(curPater, nextIui);
+
         glnesMap[parentId].Insert(0, newChl);
+        ChildRows = ChildRows.Prepend(newChl).ToList();
         AddingRowGuid = newChl.Rowguid;
         StateHasChanged();
         sinwChild = true;
+        isChlValid = true;
     }
     Gsgfix CreateNewPater(int nextSeq)
     {
         return new Gsgfix
         {
             //Rowguid = Guid.NewGuid(),
+            Iui = nextSeq,
             Idorg = curOrga.Idorg,
             Idhie = 0,
             Gvars = 4,
@@ -870,7 +959,7 @@ else
             Dpdce = 0,
             Liba = string.Empty, // string.Empty, placeholder
             Abg = string.Empty, // string.Empty, placeholder
-            Elea = nextSeq, // or smarter index logic
+            //Elea = nextSeq, // or smarter index logic
             Eta = 1, //
             Xadd1 = -1, //newly added
             // Restore other fields as needed
@@ -879,18 +968,19 @@ else
     Gsglne CreateNewChild(Gsgfix parent, int nextSeq)
     {
         return new Gsglne
-        {
+        { 
             //Rowguid = Guid.NewGuid(),
+            Iui = nextSeq,
             Idorg = Convert.ToInt32(curPater.Idorg),
             Pseq = curPater.Xseq,
             Pvars = curPater.Gvars,
             Pitb = curPater.Itb,
             Pele = curPater.Elea,
-            Elea = nextSeq,
-            Yrng = nextSeq,
+            //Elea = nextSeq,
+            //Yrng = nextSeq,
             Otyp = 4, //contenu tables
             Gtyp = 2, //1integ2ajout
-            Ydpd = curPater.Dpdce, //si depdce
+            Ydpd = 0, //si depdce
             Liba = "",
             Abg = "",
             Eaut = 0, //supprimable
@@ -915,6 +1005,7 @@ else
             if (!gfixsMap[parentId].Any(p => p.Rowguid == mygf.Rowguid))
             {
                 gfixsMap[parentId].Add(mygf);
+                PaterRows.Insert(0, mygf);
             }
             sinwPater = false;
             AddingFixRowGuid = Guid.Empty;
@@ -935,6 +1026,7 @@ else
         var parentId = mygf.Xseq;
         if (!curODContext.IsEntityTracked(aglne) && isChlValid)
         {
+            Console.WriteLine($"element table en cours Ajout {aglne.Liba}");
             mygf.Xadd1 = 0;
             curODContext.AddObject("Gsglnes", aglne);
             // Make sure glnesMap has the parent key initialized
@@ -946,18 +1038,18 @@ else
             if (!glnesMap[parentId].Any(p => p.Rowguid == aglne.Rowguid))
             {
                 glnesMap[parentId].Add(aglne);
+                ChildRows.Insert(0, aglne);
             }
             sinwChild = false;
             AddingRowGuid = Guid.Empty;
             StateHasChanged();
-            Imessage = "Success... poste ajoute";
+            Imessage = "Success... element table ajoute";
         }
         else
         {
             mygf.Xadd1 = 0;
             Imessage = "Deja ajoute";
         }
-
         sinwChild = false;
     }
     void ClosePmodal()
@@ -970,45 +1062,94 @@ else
         chlTitle = "";
         chlModal.HideAsync();
     }
-    private async Task AnuPModal()
+    // private async Task AnuPModal()
+    // {
+    //     foreach (var enty in PaterRows)
+    //     {
+    //         if (curODContext.GetEntityState(enty) == EntityStates.Added)
+    //         {
+    //             curOrga.Gsgfixes.Remove(enty);
+    //             curODContext.Detach(enty);
+    //         }
+    //     }
+    //     await patModal.HideAsync();
+    // }
+    // private async Task ConfPModal()
+    // {
+    //     await SaveCurEntities();
+    //     Imessage = "Parent(s) SAVED";
+    //     await patModal.HideAsync();
+    //     allEnable = false;
+    //     StateHasChanged();
+    // }
+    // private async Task AnuCModal()
+    // {
+    //     foreach (var enty in ChildRows)
+    //     {
+    //         if (curODContext.GetEntityState(enty) == EntityStates.Added)
+    //         {
+    //             curOrga.Gsglnes.Remove(enty);
+    //             curODContext.Detach(enty);
+    //         }
+    //     }
+    //     await chlModal.HideAsync();
+    // }
+    // private async Task ConfCModal()
+    // {
+    //     await SaveCurEntities();
+    //     Imessage = "Colonne(s) SAVED";
+    //     await chlModal.HideAsync();
+    //     allEnable = false;
+    //     StateHasChanged();
+    // }
+    //SAVE Modals contains
+    private async void AddPlans()
     {
-        foreach (var enty in PaterRows)
+        foreach (var unpat in PaterRows)
         {
-            if (curODContext.GetEntityState(enty) == EntityStates.Added)
+            if (!curODContext.IsEntityTracked(unpat))
             {
-                curOrga.Gsgfixes.Remove(enty);
-                curODContext.Detach(enty);
+                curODContext.AttachTo("gsgfixes", unpat);
             }
+            curODContext.AddRelatedObject(curOrga, "Gxorgas", unpat);
         }
-        await patModal.HideAsync();
-    }
-    private async Task ConfPModal()
-    {
+        PaterRows = new();
         await SaveCurEntities();
         Imessage = "Parent(s) SAVED";
         await patModal.HideAsync();
         allEnable = false;
         StateHasChanged();
     }
-    private async Task AnuCModal()
+    private async void AddRubrs()
     {
-        foreach (var enty in ChildRows)
+        foreach (var uncol in ChildRows)
         {
-            if (curODContext.GetEntityState(enty) == EntityStates.Added)
+            if (!curODContext.IsEntityTracked(uncol))
             {
-                curOrga.Gsglnes.Remove(enty);
-                curODContext.Detach(enty);
+                curODContext.AttachTo("Gsglnes", uncol);
             }
+            curODContext.AddRelatedObject(curPater, "Gsgfixes", uncol);
         }
-        await chlModal.HideAsync();
-    }
-    private async Task ConfCModal()
-    {
+        ChildRows = new();
         await SaveCurEntities();
         Imessage = "Colonne(s) SAVED";
         await chlModal.HideAsync();
         allEnable = false;
         StateHasChanged();
+    }
+    private async void CncPlans()
+    {
+        PaterRows.Clear();
+        gfixsMap.Clear();
+        sinwPater = false;
+        await patModal.HideAsync();
+    }
+    private async void CncRubrs()
+    {
+        ChildRows.Clear();
+        glnesMap.Clear();
+        sinwChild = false;
+        await chlModal.HideAsync();
     }
     //GTfl -- EDITING
     void PromptManEdit(Gsgfix myafil)
@@ -1202,50 +1343,7 @@ else
         StateHasChanged(); // Notify UI about changes
     }
 
-    protected override async Task OnInitializedAsync()
-    {
-        isLoading = true;
-        if (toChild == null)
-        {
-            Console.WriteLine("TOCHILD IS NULL");
-            return;
-        }
-        isAuthenticated = toChild.isAuthenticated;
-        authUser = toChild.authUser;
-        if (!isAuthenticated)
-        {
-            Imessage = "Erreur, Utilisateur non authentifie";
-            return;
-        }
-        LsVars = toChild.LsVars;
-        LsFixes = toChild.LsFixes;
-        LsDoms = toChild.LsFixes.Where(ut => ut.Gvars == 36 && ut.Itb == 4 && ut.Gp1 == 3 && ut.Elea != 0).ToList();
-        //LsTabls = toChild.LsTabls.ToList();
-        LsPlans = toChild.LsPlans.Where(pl => pl.Ptyp == 3).ToList();
-
-        _lgcdu = 3;
-        var noslims = LsVars.Where(uv => uv.Idhie == 0 && uv.Gvars == 21 && uv.Itb == 1 && uv.Elea == 1);
-        if (noslims.Any()) _lgcdu = noslims.FirstOrDefault().Ivala;
-        MyDaRubrs = new List<Gsgfix>();
-        await LoadTablsAsync();
-        _navmanager.LocationChanged += OnLocationChanged;
-        Imessage = "Donnees Tables chargees";
-        isLoading = false;
-    }
-
-    private async Task LoadTablsAsync()
-    {
-        gfixsMap.Clear();
-        glnesMap.Clear();
-        MyDaRubrs = new List<Gsgfix>(); // ObservableCollection<Gsgfix>();
-        gfixsMap[curOrga.Idorg] = curOrga.Gsgfixes.Where(uf => uf.Gvars == 4 && uf.Elea != 0).ToList(); //new ObservableCollection<Gsgfix>(curOrga.Gsgfixes.Where(uf => uf.Gvars == 4 && uf.Elea != 0));
-        foreach (var uta in curOrga.Gsgfixes.Where(uv => uv.Gvars == 4 && uv.Elea != 0))
-        {
-            List<Gsglne> tbcols = curOrga.Gsglnes.Where(ln => ln.Otyp == 4 && ln.Pseq == uta.Xseq).ToList();
-            glnesMap[uta.Xseq] = tbcols; //new ObservableCollection<Gsglne>(tbcols);
-            //Console.WriteLine($"Parent Xseq: {uta.Xseq}, Children count: {tbcols.Count}");
-        }
-    }
+    
     //}
 
     //manage SAVING
@@ -1289,8 +1387,8 @@ else
             if (IMyBas != 0)
             {
                 //var list = curOrga.Gsgfixes.Where(tb => tb.Gvars == 4 && tb.Itb == uTbc).ToList();
-                var list = curOrga.Gsgfixes.Where(tb => tb.Gvars == 4).ToList();
-                MyDaRubrs = new ObservableCollection<Gsgfix>(list);
+                MyDaRubrs = curOrga.Gsgfixes.Where(tb => tb.Gvars == 4).ToList();
+                //MyDaRubrs = list;
                 Console.WriteLine($"ICIICI: {MyDaRubrs.Count} et {uTbc} et {curOrga.Gsgfixes.Count}");
             }
             else

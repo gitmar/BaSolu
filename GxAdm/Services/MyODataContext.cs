@@ -23,7 +23,8 @@ namespace GxAdm.Services
         private readonly Default.Container _aocontext;
         private readonly Uri _serviceRoot;
         private readonly ILocalStorageService _localStorage;
-        private readonly HttpClient _httpClient; public MyODataContext(Uri serviceRoot, string otoken)
+        private readonly HttpClient _httpClient; 
+        public MyODataContext(Uri serviceRoot, string otoken)
         {
             Console.WriteLine("MyODataContext constructor called");
             var protocolVersion = ODataProtocolVersion.V4;

@@ -288,9 +288,12 @@
     private bool isAuthenticated = false;
     [Parameter]
     public RenderFragment ChildContent { get; set; }
-
-    private MyODataContext curODContext;
-    private Gxorga curOrga = new Gxorga();
+    [Parameter]
+    public MyODataContext curODContext { get; set; } 
+    [Parameter]
+    public Gxorga curOrga { get; set; }
+    [Parameter]
+    public bool allEnable { get; set; }
     private UsrOgSetModel _invModel = new();
 
     //[Parameter]

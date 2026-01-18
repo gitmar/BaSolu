@@ -435,7 +435,6 @@ else
 </style>
 @code {
     private bool isLoading = true;
-    private bool allEnable = false;
     private bool isFicheVisible = false;
     // private AccuAfil myafl;
 
@@ -454,6 +453,8 @@ else
     public int? Tgpe { get; set; }
     [Parameter]
     public int? Ugpe { get; set; }
+    [Parameter]
+    public bool allEnable { get; set; }
     //private Tiersp gridTier = new Tiersp();
     //private Plngen curTiw = new Plngen();
     private List<Rubvar> LsRubs = new List<Rubvar>();

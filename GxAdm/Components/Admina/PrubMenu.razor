@@ -38,6 +38,7 @@
                            YaGroup="false"
                            Groups="@Groupes"
                            MenuSelected="@_chxMenu"
+                           allEnable="@allEnable"
                            MenuSelectedChanged="@SelMenu"
                            GroupSelected="@_chxGpe"
                            GroupSelectedChanged="@SelGpe"
@@ -78,6 +79,7 @@
                         { //SAISIES
                           <PrubSaie @ref="mygsai"
                                     toMenu="@_chxMenu"
+                                    allEnable="@allEnable"
                                     curOrga="@curOrga"
                                     toChild="@toChild"
                                     curODContext="@curODContext">
@@ -90,6 +92,7 @@
                         { //CALCULS
                           <PrubCalc @ref="mygclc" 
                                    toMenu="@_chxMenu"
+                                   allEnable="@allEnable"
                                    curOrga="@curOrga"
                                    toChild="@toChild"
                                    curODContext="@curODContext">
@@ -101,6 +104,7 @@
                         { //VENTILATIONS
                           <PrubVent @ref="mygvnt"
                                     toMenu="@_chxMenu"
+                                    allEnable="@allEnable"
                                     curOrga="@curOrga"
                                     toChild="@toChild"
                                     curODContext="@curODContext">

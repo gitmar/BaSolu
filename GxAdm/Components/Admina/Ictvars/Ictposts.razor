@@ -84,7 +84,7 @@ else
                             @if (IMyPlan != 0)
                             {
                                 <Grid TItem="Rubhie"
-                                      Data="@MyDaRubrs"
+                                      Data="@MyDaRubrs.Where(pl => pl.Ipln == IMyPlan).ToList()"
                                       AllowDetailView="true"
                                       AllowPaging="true"
                                       Responsive="true"
@@ -92,7 +92,7 @@ else
                                       AllowRowClick="true">
                                     <GridColumns>
                                         <GridColumn TItem="Rubhie" HeaderText="No">
-                                            <ChildContent Context="item">@item.Scdrub</ChildContent>
+                                            <ChildContent Context="item">@item.Iui/@item.Scdrub</ChildContent>
                                         </GridColumn>
                                         <GridColumn TItem="Rubhie" HeaderText="Designation">
                                             <ChildContent Context="item">@item.Liba</ChildContent>
@@ -163,7 +163,7 @@ else
                                                     <HeaderContent>
                                                         @if (allEnable)
                                                         {
-                                                            <button class="btn btn-primary btn-sm" @onclick="() => OpenPstmodal(curHier)">
+                                                            <button class="btn btn-primary btn-sm" @onclick="() => OpenAddPst(parent)">
                                                                 ➕ Add
                                                             </button>
                                                         }
@@ -355,7 +355,9 @@ else
                         </div>
                     </BodyTemplate>
                     <FooterTemplate>
-                        <Button class="btn btn-secondary" @onclick="ClosePlnModal">Cancel</Button>
+                        <Button class="btn btn-secondary" @onclick="CncRubrs">Annuler</Button>
+                        <Button class="btn btn-success" @onclick="AddRubrs">Confirmer</Button>
+                        @* <Button class="btn btn-secondary" @onclick="ClosePlnModal">Cancel</Button> *@
                     </FooterTemplate>
                 </Modal>
         </Authorized>
@@ -374,7 +376,6 @@ else
 </style>
 @code {
     private bool isLoading = true;
-    private bool allEnable = false;
 
     private string Imessage = "", Jmessage="";
 
@@ -390,6 +391,8 @@ else
     public MyShareVars toChild { get; set; }
     [Parameter]
     public int toMenu { get; set; }
+    [Parameter]
+    public bool allEnable { get; set; }
     //private Tiersp gridTier = new Tiersp();
     //private Rubvar curRub = new Rubvar();
     //private Actsaie curActa = new Actsaie();
@@ -421,19 +424,20 @@ else
     private Guid? EditingFmtRowGuid;
 
     private Guid? ConfirmingDeleteRowGuid;
-    
+
     Dictionary<Guid, Rubhie> rubhieMapByIdhie = new();
 
     private bool siPstAdding = false;
     private Modal pstModal;
     private string pstTitle = "";
     //private Dictionary<Guid, Rubpst> _originalSnapshots = new();
-    public List<Plngen> MyGPlans { get; set; } = new();
-    public List<Rubhie> MyDaRubrs { get; set; } = new();   
+    public List<Plngen> MyGPlans  = new();
+    public List<Rubhie> MyDaRubrs  = new();   
+    private List<Rubpst> GrubNewRows = new();
     private Dictionary<int, List<Rubpst>> postesMap = new();
-    private List<Rubpst> GrubNewRows => postesMap.TryGetValue(curHier.Id, out var rows)
-    ? new List<Rubpst>(rows)
-    : new List<Rubpst>();
+    // private List<Rubpst> GrubNewRows => postesMap.TryGetValue(curHier.Id, out var rows)
+    // ? new List<Rubpst>(rows)
+    // : new List<Rubpst>();
 
     private bool isPstValid = false;
     //private Rubpst nwPoste = new();
@@ -465,7 +469,7 @@ else
             }
         }
     }
-    void OpenPstmodal(Rubhie myhie)
+    void OpenAddPst(Rubhie myhie)
     {
         curHier = myhie;
         if (!GrubNewRows.Any())
@@ -501,32 +505,51 @@ else
         {
             postesMap[parentId] = new List<Rubpst>();
         }
-        var existingRubpsts = parent.Rubpsts ?? new DataServiceCollection<Rubpst>();
-        var mapRubpsts = postesMap[parentId];
-        int maxIdzonFromParent = existingRubpsts.Any() ? (existingRubpsts.Max(r => r.Idzon) ?? 10) : 10;
-        int maxIdzonFromMap = mapRubpsts.Any() ? (mapRubpsts.Max(r => r.Idzon) ?? 10) : 10;
-        int maxIdzon = Math.Max(10, Math.Max(maxIdzonFromParent, maxIdzonFromMap));
-        int nextZon = maxIdzon + 1;
-        Console.WriteLine($"current newPoste zone no : {nextZon}");
-        var newPoste = CreateNewPoste(parent, nextZon);
-        postesMap[parentId].Insert(0, newPoste);
-        AddingFmtRowGuid = newPoste.Rowguid;
-        siPstAdding = true;
+        var mapPosts = postesMap[parentId];
+        int maxiui = mapPosts.Any() ? (mapPosts.Max(r => r?.Iui) ?? 0) : 0;
+        int nextIui = maxiui + 1;
+        Console.WriteLine($"current newPoste zone no : {nextIui} et parent act no : {curPlan.Id}");
+
+        var newChl = CreateNewPoste(nextIui);
+        if (newChl != null)
+        {
+            postesMap[parentId].Insert(0, newChl);
+            Console.WriteLine($"Actual NewRows nb {GrubNewRows.Count}");
+            GrubNewRows = GrubNewRows.Prepend(newChl).ToList();
+            Console.WriteLine($"After Insert NewRows nb {GrubNewRows.Count}");
+            AddingFmtRowGuid = newChl.Rowguid;
+        }
         StateHasChanged();
+        siPstAdding = true;
+
+
+        // var existingRubpsts = parent.Rubpsts ?? new DataServiceCollection<Rubpst>();
+        // var mapRubpsts = postesMap[parentId];
+        // int maxIdzonFromParent = existingRubpsts.Any() ? (existingRubpsts.Max(r => r.Idzon) ?? 10) : 10;
+        // int maxIdzonFromMap = mapRubpsts.Any() ? (mapRubpsts.Max(r => r.Idzon) ?? 10) : 10;
+        // int maxIdzon = Math.Max(10, Math.Max(maxIdzonFromParent, maxIdzonFromMap));
+        // int nextZon = maxIdzon + 1;
+        // Console.WriteLine($"current newPoste zone no : {nextZon}");
+        // var newPoste = CreateNewPoste(parent, nextZon);
+        // postesMap[parentId].Insert(0, newPoste);
+        // AddingFmtRowGuid = newPoste.Rowguid;
+        // siPstAdding = true;
+        // StateHasChanged();
         
     }
 
-    Rubpst CreateNewPoste(Rubhie parent, int nextZon)
+    Rubpst CreateNewPoste(int nextZon)
     {
         return new Rubpst
         {
             //Rowguid = Guid.NewGuid(),
-            Ihie = parent.Id,
+            Iui = nextZon,
+            Ihie = curHier.Id,
             Padres = "",
-            Pcdrub = parent.Scdrub,
+            Pcdrub = curHier.Scdrub,
             Idzon = nextZon,
             Zcdrub = nextZon.ToString(),
-            Gcdrub = $"{parent.Scdrub}Z{nextZon}",
+            Gcdrub = $"{curHier.Scdrub}Z{nextZon}",
             Liba = "",
             Abg = "",
             Ztyp = 0,
@@ -542,7 +565,7 @@ else
         {
             try
             {
-                mypst.Xadd1 = -2;  // Mark as being added
+                mypst.Xadd1 = -1;  // Mark as being added
                 if (!curODContext.IsEntityTracked(curHier))
                 {
                     curODContext.AttachTo("Rubhies", curHier);
@@ -929,6 +952,33 @@ else
         //     MyDaPosts = new();
         // }
     //}
+
+    private async void AddRubrs()
+    {
+        foreach (var unrub in GrubNewRows)
+        {
+            if (!curODContext.IsEntityTracked(unrub))
+            {
+                curODContext.AttachTo("Rubpsts", unrub);
+            }
+            curODContext.AddRelatedObject(curHier, "Rubhies", unrub);
+        }
+        GrubNewRows = new();
+        SaveCurEntities();
+        Imessage = "Gril/Rubrique(s) SAVED";
+        await pstModal.HideAsync();
+        allEnable = false;
+        StateHasChanged();
+    }
+    private async void CncRubrs()
+    {
+        GrubNewRows.Clear();
+        postesMap.Clear();
+        siPstAdding = false; // Consider moving this flag reset based on your UI state management needs
+        Imessage = "Aplan/Rubrique(s) CANCELLED";
+        await pstModal.HideAsync();
+    }
+
     private void OnInRubPost(GridRowEventArgs<Rubpst> args)
     {
         var mypst = (Rubpst)args.Item;
