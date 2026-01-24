@@ -25,7 +25,6 @@
 @inject ILocalStorageService _localStorage
 @inject NavigationManager _navmanager
 @inject HttpClientService _cliemanager
-@inject HttpClientService cliemanager
 
 <!-- InscTiewComponent.razor -->
 <PageTitle>Tables</PageTitle>
@@ -1644,13 +1643,13 @@ else
         EditingRubRowGuid = Guid.Empty;
         Imessage = "";
     }
-    public async Task SavAll()
-    {
-        Imessage = "Enregistrement Operations, patience...";
-        allEnable = false;
-        EditingRubRowGuid = Guid.Empty;
-        await curODContext.SaveDataAsync();
-    }
+    // public async Task SavAll()
+    // {
+    //     Imessage = "Enregistrement Operations, patience...";
+    //     allEnable = false;
+    //     EditingRubRowGuid = Guid.Empty;
+    //     await curODContext.SaveDataAsync();
+    // }
     //SELECTORS
     private void SelPlanDom(int xdom)
     {
@@ -1688,7 +1687,7 @@ else
             curODContext.AddRelatedObject(curOrga, "Gxorgas", unpln);
         }
         GplnNewRows = new();
-        SaveCurEntities();
+        //SaveCurEntities();
         Imessage = "Aplan/Plan(s) SAVED";
         await plnModal.HideAsync();
         allEnable = false;
@@ -1705,7 +1704,7 @@ else
             curODContext.AddRelatedObject(curPlan, "Plngens", unrub);
         }
         GrubNewRows = new();
-        SaveCurEntities();
+        //SaveCurEntities();
         Imessage = "Aplan/Rubrique(s) SAVED";
         await rubModal.HideAsync();
         allEnable = false;
@@ -1898,22 +1897,22 @@ else
     private void OnLocationChanged(object sender, LocationChangedEventArgs e)
     {
         allEnable = false;
-        SaveCurEntities();
+        //SaveCurEntities();
     }
-    private void SaveCurEntities()
-    {
-        Console.WriteLine($"Entities SAVED");
-        try
-        {
-            Console.WriteLine("SAVED PLUS");
-            curODContext.SaveDataAsync();
-            //var wrkplns = new List<Plngen>(curOrga.Plngens.Where(pl => pl.Ptyp == 4 && pl.Todom == IMyDom && pl.Tovue == IMyVue && pl.Tovers == 1));
-            //MyDaPlans = wrkplns;
-            StateHasChanged();
-        }
-        catch (Exception ex)
-        {
-            //Alert($"ECHEC Entities not SAVED");
-        }
-    }
+    // private void SaveCurEntities()
+    // {
+    //     Console.WriteLine($"Entities SAVED");
+    //     try
+    //     {
+    //         Console.WriteLine("SAVED PLUS");
+    //         curODContext.SaveDataAsync();
+    //         //var wrkplns = new List<Plngen>(curOrga.Plngens.Where(pl => pl.Ptyp == 4 && pl.Todom == IMyDom && pl.Tovue == IMyVue && pl.Tovers == 1));
+    //         //MyDaPlans = wrkplns;
+    //         StateHasChanged();
+    //     }
+    //     catch (Exception ex)
+    //     {
+    //         //Alert($"ECHEC Entities not SAVED");
+    //     }
+    // }
 }

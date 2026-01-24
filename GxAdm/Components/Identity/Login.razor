@@ -7,6 +7,7 @@
 @using GxShared.Helpers
 @using GxShared.Identity
 @using GxAdm.Services
+@using GxWapi.DaModels
 @using Newtonsoft.Json
 
 @inject ILocalStorageService _localStorage  
@@ -95,6 +96,18 @@ else
                 <i class="bi bi-exclamation-triangle-fill me-2" aria-hidden="true">Offline</i> server indisponible
             </div>
         }
+        @if (!_yacors)
+        {    
+            <div class="nav-link text-danger">
+                <i class="bi bi-exclamation-triangle-fill me-2" aria-hidden="true">CORS Error</i> Verifier la configuration CORS du serveur
+            </div>
+        }
+        else
+        {
+            <div class="nav-link text-success">
+                <i class="bi bi-exclamation-triangle-fill me-2" aria-hidden="true">CORS Success</i>
+            </div>
+        }
     </EditForm>
 }
 @code {
@@ -112,6 +125,7 @@ else
     private bool canSupportLoad = false;
     private bool inAccepting = false;
     private bool _yaconn = false;
+    private bool _yacors = false;
 
     private HttpClient _dftClient;
 
@@ -139,6 +153,7 @@ else
             isLoading = false;
             return;
         }
+        await AtestCors();
         isLoading = false;
     }
     private async Task HandleLoginAsync()
@@ -309,6 +324,25 @@ else
             }
             inAccepting = false;
             _navManager.NavigateTo("/");
+        }
+    }
+    private async Task AtestCors()
+    {
+        //verified connection
+        try
+        {
+            var response = await _dftClient.GetAsync("atest/cors");
+            _yacors = response.IsSuccessStatusCode;
+        }
+        catch (Exception ex)
+        {
+            isLoading = false;
+            return;
+        }
+        if (!_yacors)
+        {
+            isLoading = false;
+            return;
         }
     }
 }

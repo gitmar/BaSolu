@@ -360,7 +360,7 @@ else
         _invRoles = lsRoles.Where(ur => ur.Level > uMinrol && (ur.Level < 10 || ur.Level > 40))
             .OrderBy(up => up.Level)  
             .ToList();
-        _invModel.Utyp = 1; //cible
+        _invModel.Utyp = 0; //cible
         //Imessage = "Donnees Grilles chargees";
         _navmanager.LocationChanged += OnLocationChanged;
         Console.WriteLine("Authentication ENTREE");

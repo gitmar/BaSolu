@@ -25,7 +25,6 @@
 @inject ILocalStorageService _localStorage
 @inject NavigationManager _navmanager
 @inject HttpClientService _cliemanager
-@inject HttpClientService cliemanager
 
 <!-- InscTiewComponent.razor -->
 <PageTitle>Tables</PageTitle>
@@ -205,45 +204,35 @@ else
                                                         }
                                                     </HeaderContent>
                                                     <ChildContent Context="item">
-                                                        @if (allEnable)
+                                                        @if (EdTblRowguid != item.Rowguid)
                                                         {
-                                                            @if (IsManEditing(item))
+                                                            <button class="btn btn-warning btn-sm 
+                                                                @(!isEdTbl && !isDlTbl && EdTblRowguid != item.Rowguid ? "" : "disabled-action")" 
+                                                                @onclick="() => Edit1tbl(item)">
+                                                                ✏️ Edit
+                                                            </button>
+                                                        }
+                                                        else
+                                                        {
+                                                            <button class="btn btn-sm btn-success" @onclick="() => Conf1tbl(item)">
+                                                                💾 Save
+                                                            </button>
+                                                            <button class="btn btn-sm btn-secondary" @onclick="() => Canc1tbl(item)">
+                                                                ❎ Cancel
+                                                            </button>
+                                                        }
+                                                        @if (DlTblRowguid != item.Rowguid)
+                                                        {
+                                                            @if (IMyGtbl == 2)
                                                             {
-                                                                <button class="btn btn-sm btn-success" @onclick="() => ConfEdingMan(draftMan)">
-                                                                    💾 Save
-                                                                </button>
-                                                                <button class="btn btn-sm btn-secondary" @onclick="() => CancEdingMan(draftMan)">
-                                                                    ❎ Cancel
+                                                                <button class="btn btn-sm btn-outline-danger @(!isDlTbl && !isEdTbl && DlTblRowguid != item.Rowguid ? "" : "disabled-action")"
+                                                                    @onclick="() => Dele1tbl(item)">🗑️ Delete
                                                                 </button>
                                                             }
-                                                            else if (ConfirmingFixDeleteRowGuid == item.Rowguid)
-                                                            {
-                                                                <button class="btn btn-sm btn-outline-danger" @onclick="() => PromptFixDelete(item)">
-                                                                    🗑️ Delete
-                                                                </button>
-                                                                <button class="btn btn-sm btn-success" @onclick="() => ConfirmFixDelete(item)">
-                                                                    ✅ Confirm
-                                                                </button>
-                                                                <button class="btn btn-sm btn-secondary" @onclick="CancelFixDelete">
-                                                                    ❌ Cancel
-                                                                </button>
-                                                            }
-                                                            else
-                                                            {
-                                                                <button class="btn btn-sm btn-primary me-1 @(allEnable ? "" : "disabled-action")"
-                                                                disabled="@(EditingManRowGuid != null)"
-                                                                @onclick="() => PromptManEdit(item)">
-                                                                    ✏️ Edit
-                                                                </button>
-                                                                @if (IMyGtbl == 2)
-                                                                {
-                                                                    <button class="btn btn-sm btn-outline-danger @(allEnable ? "" : "disabled-action")"
-                                                                    disabled="@(EditingManRowGuid != null)"
-                                                                    @onclick="() => PromptFixDelete(item)">
-                                                                        🗑️ Delete
-                                                                    </button>
-                                                                }
-                                                            }
+                                                        } else
+                                                        {
+                                                            <button class="btn btn-warning btn-sm @(DlTblRowguid == item.Rowguid ? "" : "disabled-action")" @onclick="() => ConfD1tbl(item)">Confirm</button>
+                                                            <button class="btn btn-danger btn-sm @(DlTblRowguid == item.Rowguid ? "" : "disabled-action")" @onclick="() => CancD1tbl(item)">Annul</button>
                                                         }
                                                     </ChildContent>
                                                 </GridColumn>
@@ -369,7 +358,7 @@ else
                                                                 }
                                                             </ChildContent>
                                                         </GridColumn>
-                                                        <GridColumn TItem="Gsglne" HeaderText="Actions" IsVisible="@(allEnable)" Filterable="false">
+                                                        <GridColumn TItem="Gsglne" HeaderText="Actions" Filterable="false">
                                                             <HeaderContent>
                                                                 @if (allEnable)
                                                                 {
@@ -379,43 +368,49 @@ else
                                                                 }
                                                             </HeaderContent>
                                                             <ChildContent Context="item">
-                                                                @if (IsLneEditing(item))
+                                                                @if (EdElmRowguid != item.Rowguid)
                                                                 {
-                                                                    <button class="btn btn-sm btn-success" @onclick="() => ConfEdingLne(draftLne)">
-                                                                        💾 Save
-                                                                    </button>
-                                                                    <button class="btn btn-sm btn-secondary" @onclick="() => CancEdingLne(draftLne)">
-                                                                        @* CancelEditFix(parent,item) *@
-                                                                        ❎ Cancel
-                                                                    </button>
-                                                                }
-                                                                else if (ConfirmingDeleteRowGuid == item.Rowguid)
-                                                                {
-                                                                    <button class="btn btn-sm btn-outline-danger" @onclick="() => PromptDelete(item)">
-                                                                        🗑️ Delete
-                                                                    </button>
-                                                                    <button class="btn btn-sm btn-success" @onclick="() => ConfirmDelete(item)">
-                                                                        ✅ Confirm
-                                                                    </button>
-                                                                    <button class="btn btn-sm btn-secondary" @onclick="CancelDelete">
-                                                                        ❌ Cancel
+                                                                    <button class="btn btn-warning btn-sm 
+                                                                        @(!isEdElm && !isDlElm && EdElmRowguid != item.Rowguid ? "" : "disabled-action")" 
+                                                                            @onclick="() => Edit2tbl(item)">
+                                                                            ✏️ Edit
                                                                     </button>
                                                                 }
                                                                 else
                                                                 {
-                                                                    <button class="btn btn-sm btn-primary me-1 @(allEnable ? "" : "disabled-action")"
-                                                                            disabled="@(EditingLneRowGuid != null)"
-                                                                            @onclick="() => PromptLneEdit(item)">
-                                                                        ✏️ Edit
-                                                                    </button>
+                                                                        <button class="btn btn-sm btn-success 
+                                                                            @(EdElmRowguid == item.Rowguid ? "" : "disabled-action")"
+                                                                            @onclick="() => Conf2tbl(item)">
+                                                                            💾 Save
+                                                                        </button>
+                                                                        <button class="btn btn-sm btn-secondary
+                                                                            @(EdElmRowguid == item.Rowguid ? "" : "disabled-action")"
+                                                                            @onclick="() => Canc2tbl(item)">
+                                                                            ❎ Cancel
+                                                                        </button>
+                                                                }
+                                                                @if (DlElmRowguid != item.Rowguid)
+                                                                {
                                                                     @if (IMyGtbl == 2)
                                                                     {
-                                                                        <button class="btn btn-sm btn-outline-danger @(allEnable ? "" : "disabled-action")"
-                                                                                disabled="@(EditingLneRowGuid != null)"
-                                                                                @onclick="() => PromptDelete(item)">
+                                                                        <button class="btn btn-sm btn-outline-danger
+                                                                            @(!isDlElm && !isEdElm && DlElmRowguid != item.Rowguid ? "" : "disabled-action")"
+                                                                                @onclick="() => Dele2tbl(item)">
                                                                             🗑️ Delete
                                                                         </button>
                                                                     }
+                                                                } else
+                                                                {
+                                                                    <button class="btn btn-warning btn-sm
+                                                                        @(DlElmRowguid == item.Rowguid ? "" : "disabled-action")"
+                                                                        @onclick="() => ConfD2tbl(item)">
+                                                                        Confirm
+                                                                    </button>
+                                                                    <button class="btn btn-danger btn-sm
+                                                                        @(DlElmRowguid == item.Rowguid ? "" : "disabled-action")"
+                                                                        @onclick="() => CancD2tbl(item)">
+                                                                        Annul
+                                                                    </button>
                                                                 }
                                                             </ChildContent>
                                                         </GridColumn>
@@ -665,6 +660,11 @@ else
         width: auto;
         margin: auto;
     }
+
+    .disabled-action {
+        pointer-events: none;
+        opacity: 0.5;
+    }
 </style>
 @code {
     private bool isLoading = true;
@@ -683,6 +683,8 @@ else
     public MyShareVars toChild { get; set; }
     [Parameter]
     public bool allEnable { get; set; }
+    [Parameter]
+    public PendingChangesGuard _guard { get; set; }
 
     //private Tiersp gridTier = new Tiersp();
     private Plngen curPlan = new Plngen();
@@ -745,6 +747,22 @@ else
     // ? new ObservableCollection<Gsgfix>(rows)
     // : new ObservableCollection<Gsgfix>();
     //fils
+
+    //Editing
+    bool isEdTbl = false;
+    Guid EdTblRowguid = Guid.Empty;
+    bool isEdElm = false;
+    Guid EdElmRowguid = Guid.Empty;
+    //Deling
+    bool isDlTbl = false;
+    Guid DlTblRowguid = Guid.Empty;
+    bool isDlElm = false;
+    Guid DlElmRowguid = Guid.Empty;
+    //TEST-TEST
+    private Dictionary<object, object> _editOriginals = new();  // Store original values
+    private HashSet<object> _editingEntities = new();           // Currently editing
+    private Gsgfix? _newRowDraft;   
+
     private List<Gsglne> ChildRows = new();
     // private List<Gsglne> ChildRows => glnesMap.TryGetValue(curPater.Xseq, out var rows)
     // ? new List<Gsglne>(rows)
@@ -839,7 +857,7 @@ else
     {
         if (row == null || row.Pseq == 0)
             return null;
-        return fxparentMapByPseq.TryGetValue(row.Idorg ?? 0, out var parent) ? parent : null;
+        return fxparentMapByPseq.TryGetValue(row?.Idorg ?? 0, out var parent) ? parent : null;
     }
     void OpenAddPater()
     {
@@ -1114,7 +1132,7 @@ else
             curODContext.AddRelatedObject(curOrga, "Gxorgas", unpat);
         }
         PaterRows = new();
-        await SaveCurEntities();
+        //await SaveCurEntities();
         Imessage = "Parent(s) SAVED";
         await patModal.HideAsync();
         allEnable = false;
@@ -1131,7 +1149,7 @@ else
             curODContext.AddRelatedObject(curPater, "Gsgfixes", uncol);
         }
         ChildRows = new();
-        await SaveCurEntities();
+        //await SaveCurEntities();
         Imessage = "Colonne(s) SAVED";
         await chlModal.HideAsync();
         allEnable = false;
@@ -1151,7 +1169,181 @@ else
         sinwChild = false;
         await chlModal.HideAsync();
     }
-    //GTfl -- EDITING
+    //EDITING Gsgfix (tbl)
+    void Edit1tbl(Gsgfix mytbl)
+    {
+
+        EdTblRowguid = mytbl.Rowguid;
+        isEdTbl = true;
+    }
+    void Conf1tbl(Gsgfix myafil)
+    {
+
+        EdTblRowguid = Guid.Empty;
+        isEdTbl = false;
+    }
+    void Canc1tbl(Gsgfix myafil)
+    {
+
+
+        EdTblRowguid = Guid.Empty;
+        isEdTbl = false;
+    }
+    //Deling Gsgfix (tbl)
+    void Dele1tbl(Gsgfix mytbl)
+    {
+
+        DlTblRowguid = mytbl.Rowguid;
+        isDlTbl = true;
+    }
+    void ConfD1tbl(Gsgfix myafil)
+    {
+
+        DlTblRowguid = Guid.Empty;
+        isDlTbl = false;
+    }
+    void CancD1tbl(Gsgfix myafil)
+    {
+
+
+        DlTblRowguid = Guid.Empty;
+        isDlTbl = false;
+    }
+    //TEST-TEST
+    // MARK 1: ADD NEW ROW
+    private void StartAddTblNew()
+    {
+        _newRowDraft = new Gsgfix
+        {
+            Xseq = 0,
+            Idorg = _usrBag.Idorg
+        };
+
+        curODContext.AddObject("Gsgfixes", _newRowDraft);  // → State=Added
+        _editingEntities.Add(_newRowDraft);           // → Edit mode
+        StateHasChanged();
+    }
+    // MARK 2: START EDIT
+    private void StartEdit(object entity)
+    {
+        _editOriginals[entity] = DeepClone(entity);  // ✅ Newtonsoft perfect clone
+        _editingEntities.Add(entity);
+        curODContext.UpdateObject(entity);
+        StateHasChanged();
+    }
+    // MARK 3: CONFIRM NEW ROW
+    private void ConfirmEdit(object entity)
+    {
+        // Already tracked by Context.AddObject/UpdateObject
+        // UI exits edit mode
+        _editingEntities.Remove(entity);
+        _editOriginals.Remove(entity);
+        StateHasChanged();
+
+        Console.WriteLine($"✅ Confirmed edit: {entity}");
+    }
+
+    // MARK 4: CANCEL EDIT (Discard Changes)
+    private void CancelEdit(object entity)
+{
+    if (_editOriginals.TryGetValue(entity, out var original))
+    {
+        // 🔥 Restore properties using Newtonsoft
+        var originalJson = JsonConvert.SerializeObject(original, _cloneSettings);
+        JsonConvert.PopulateObject(originalJson, entity, _cloneSettings);
+        // Reset state to Unchanged (no re-attach needed)
+        curODContext.Context.ChangeState(entity, EntityStates.Unchanged);
+        _editingEntities.Remove(entity);
+        StateHasChanged();
+    }
+}
+
+    
+
+    // MARK 5: CONFIRM ALL → Batch Save
+    private async Task SaveAllChanges()
+    {
+        await _guard.FlushAsync();  // → Parallel PUT all Added/Modified
+        _editOriginals.Clear();    // Clean up
+        StateHasChanged();
+    }
+
+    // MARK 6: UI HELPERS
+    private bool IsEditing(object entity) => _editingEntities.Contains(entity);
+
+    private string GetTblRowCss(object entity)
+    {
+        return entity switch
+        {
+            Gsgfix g when g.Xseq == 0 => "new-row",      // NEW row
+            _ when IsEditing(entity) => "editing-row",   // Editing
+            _ => ""                                      // Normal
+        };
+    }
+
+    private static readonly JsonSerializerSettings _cloneSettings = new()
+{
+    TypeNameHandling = TypeNameHandling.None,        // Security
+    ReferenceLoopHandling = ReferenceLoopHandling.Ignore,  // OData cycles
+    NullValueHandling = NullValueHandling.Include,   // Keep nulls
+    Formatting = Formatting.None                     // Performance
+};
+
+    private object DeepClone(object entity)
+    {
+        var settings = new JsonSerializerSettings
+        {
+            ReferenceLoopHandling = ReferenceLoopHandling.Ignore
+        };
+
+        var json = JsonConvert.SerializeObject(entity, settings);
+        return JsonConvert.DeserializeObject(json, entity.GetType(), settings)!;
+    }
+
+
+    //EDITING Gsglne (elm)
+    void Edit2tbl(Gsglne myelm)
+    {
+
+        EdElmRowguid = myelm.Rowguid;
+        isEdElm = true;
+
+        StateHasChanged();
+    }
+    void Conf2tbl(Gsglne myelm)
+    {
+
+        EdElmRowguid = Guid.Empty;
+        isEdElm = false;
+    }
+    void Canc2tbl(Gsglne myelm)
+    {
+
+
+        EdElmRowguid = Guid.Empty;
+        isEdElm = false;
+    }
+    //Deling Gsglne (tbl)
+    void Dele2tbl(Gsglne myelm)
+    {
+
+        DlElmRowguid = myelm.Rowguid;
+        isDlElm = true;
+    }
+    void ConfD2tbl(Gsglne myelm)
+    {
+
+        DlElmRowguid = Guid.Empty;
+        isDlElm = false;
+    }
+    void CancD2tbl(Gsglne myelm)
+    {
+
+
+        DlElmRowguid = Guid.Empty;
+        isDlElm = false;
+    }
+
     void PromptManEdit(Gsgfix myafil)
     {
         myafil.Xedt1 = 0;
@@ -1244,6 +1436,11 @@ else
         }
         myafil.Xedt1 = 0;
         //isEdingMan = false;
+        
+        //Editing
+        isEdTbl = false;
+        EdTblRowguid = Guid.Empty;
+        
         editingMan = null;
         EditingManRowGuid = Guid.Empty;
     }
@@ -1347,12 +1544,12 @@ else
     //}
 
     //manage SAVING
-    public async Task EdtAll()
-    {
-        allEnable = true;
-        EditingManRowGuid = Guid.Empty;
-        EditingLneRowGuid = Guid.Empty;
-    }
+    // public async Task EdtAll()
+    // {
+    //     allEnable = true;
+    //     EditingManRowGuid = Guid.Empty;
+    //     EditingLneRowGuid = Guid.Empty;
+    // }
     public async Task CncAll()
     { //reload to annul AddObject/UpdateObject/DeleteObjet
         Imessage = "Annulation Operations, patience...";
@@ -1361,14 +1558,14 @@ else
         EditingLneRowGuid = Guid.Empty;
         Imessage = "";
     }
-    public async Task SavAll()
-    {
-        Imessage = "Enregistrement Operations, patience...";
-        allEnable = false;
-        EditingManRowGuid = Guid.Empty;
-        EditingLneRowGuid = Guid.Empty;
-        await curODContext.SaveDataAsync();
-    }
+    // public async Task SavAll()
+    // {
+    //     Imessage = "Enregistrement Operations, patience...";
+    //     allEnable = false;
+    //     EditingManRowGuid = Guid.Empty;
+    //     EditingLneRowGuid = Guid.Empty;
+    //     await curODContext.SaveDataAsync();
+    // }
     private void SelDomTabl(int orig)
     {
         Console.WriteLine("Dernier Feterdah");
@@ -1386,8 +1583,7 @@ else
             //tables DATA pour liste
             if (IMyBas != 0)
             {
-                //var list = curOrga.Gsgfixes.Where(tb => tb.Gvars == 4 && tb.Itb == uTbc).ToList();
-                MyDaRubrs = curOrga.Gsgfixes.Where(tb => tb.Gvars == 4).ToList();
+                MyDaRubrs = curOrga.Gsgfixes.Where(tb => tb.Gvars == 4 && tb.Gtyp == uTbc).ToList();
                 //MyDaRubrs = list;
                 Console.WriteLine($"ICIICI: {MyDaRubrs.Count} et {uTbc} et {curOrga.Gsgfixes.Count}");
             }
@@ -1430,24 +1626,24 @@ else
     private void OnLocationChanged(object sender, LocationChangedEventArgs e)
     {
         allEnable = false;
-        bool reussi = SaveCurEntities().Result;
+        //bool reussi = SaveCurEntities().Result;
     }
-    public async Task<bool> SaveCurEntities()
-    {
-        try
-        {
-            await curODContext.SaveDataAsync();
-            Console.WriteLine("Saved SUCCESS");
-            //var wrkplns = curOrga.Plngens.Where(pl => pl.Ptyp == 3 && pl.Totyp == IMyAtr).ToList();
-            //MyDaPlans = wrkplns;
-            StateHasChanged();
-            return true;
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"Saved ISSUE {ex.Message}");
-            //Alert($"ECHEC Entities not SAVED");
-            return false;
-        }
-    }
+    // public async Task<bool> SaveCurEntities()
+    // {
+    //     try
+    //     {
+    //         await curODContext.SaveDataAsync();
+    //         Console.WriteLine("Saved SUCCESS");
+    //         //var wrkplns = curOrga.Plngens.Where(pl => pl.Ptyp == 3 && pl.Totyp == IMyAtr).ToList();
+    //         //MyDaPlans = wrkplns;
+    //         StateHasChanged();
+    //         return true;
+    //     }
+    //     catch (Exception ex)
+    //     {
+    //         Console.WriteLine($"Saved ISSUE {ex.Message}");
+    //         //Alert($"ECHEC Entities not SAVED");
+    //         return false;
+    //     }
+    // }
 }

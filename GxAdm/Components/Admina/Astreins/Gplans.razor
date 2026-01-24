@@ -1466,7 +1466,7 @@ else
     // }
     private async Task ConfPlnModal()
     {
-        SaveCurEntities();
+        //SaveCurEntities();
         Imessage = "Programme(s) SAVED";
         await plnModal.HideAsync();
         allEnable = false;
@@ -1571,7 +1571,7 @@ else
         EditingPlnRowGuid = Guid.Empty;
         // EditingRubRowGuid = Guid.Empty;
         // EditingFmtRowGuid = Guid.Empty;
-        SaveCurEntities();
+        //SaveCurEntities();
         StateHasChanged();
     }
 
@@ -1942,28 +1942,28 @@ else
     // }
     private void OnLocationChanged(object sender, LocationChangedEventArgs e)
     {
-        SaveCurEntities();
+        //SaveCurEntities();
     }
-    public async Task<bool> SaveCurEntities()
-    {
-        try
-        {
-            //if (hasbeenModified)
-            //{
-                await curODContext.SaveDataAsync();
-                Console.WriteLine("Saved SUCCESS");
-            //}
-            //var wrkplns = curOrga.Plngens.Where(pl => pl.Ptyp == 3 && pl.Totyp == IMyAtr).ToList();
-            //MyDaPlans = wrkplns;
-            StateHasChanged();
-            return true;
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"Saved ISSUE {ex.Message}");
-            //Alert($"ECHEC Entities not SAVED");
-            return false;
-        }
-    }
+    // public async Task<bool> SaveCurEntities()
+    // {
+    //     try
+    //     {
+    //         //if (hasbeenModified)
+    //         //{
+    //             await curODContext.SaveDataAsync();
+    //             Console.WriteLine("Saved SUCCESS");
+    //         //}
+    //         //var wrkplns = curOrga.Plngens.Where(pl => pl.Ptyp == 3 && pl.Totyp == IMyAtr).ToList();
+    //         //MyDaPlans = wrkplns;
+    //         StateHasChanged();
+    //         return true;
+    //     }
+    //     catch (Exception ex)
+    //     {
+    //         Console.WriteLine($"Saved ISSUE {ex.Message}");
+    //         //Alert($"ECHEC Entities not SAVED");
+    //         return false;
+    //     }
+    // }
 }
 

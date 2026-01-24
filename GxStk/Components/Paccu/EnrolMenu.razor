@@ -136,9 +136,9 @@ else
     public MyShareVars toChild = new();
     private bool allEnable = false;
 
-    private InscTiw mygtiw;
-    private ValdTie mygvld;
-    private InviTiw myginv;
+    private InscTiw mygtiw = new();
+    private ValdTie mygvld = new();
+    private InviTiw myginv = new();
 
     [Inject]
     private MyAuthStateProvider _authProvider { get; set; }

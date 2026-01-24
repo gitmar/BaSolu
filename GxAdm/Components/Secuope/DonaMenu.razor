@@ -88,11 +88,11 @@
                             Annuler
                         </Button>
                         <span class="separator">|  </span>
-                        <Button class="btn btn-sm btn-secondary btnsz"
+                        @* <Button class="btn btn-sm btn-secondary btnsz"
                                 style="@(allEnable ? "" : "display:none;")"
                                 @onclick="SavAll">
                             Enregistrer
-                        </Button>
+                        </Button> *@
                         @if (!String.IsNullOrEmpty(MImessage))
                         {
                             <span class="bg-info bg-opacity-10" style="font-style:italic;color:red">&nbsp;--> @MImessage</span>
@@ -281,15 +281,15 @@
         allEnable = false;
         EnrEnable = false;
     }
-    private async Task SavAll()
-    {
-        if (curODContext.MyChangeTracker())
-        {
-            await curODContext.SaveDataAsync();
-        }
-        allEnable = false;
-        EnrEnable = false;
-    }
+    // private async Task SavAll()
+    // {
+    //     if (curODContext.MyChangeTracker())
+    //     {
+    //         await curODContext.SaveDataAsync();
+    //     }
+    //     allEnable = false;
+    //     EnrEnable = false;
+    // }
     private async Task SelMenu(int noM)
     {
         _chxMenu = noM;

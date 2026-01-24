@@ -118,7 +118,7 @@ else
     public MyShareVars toChild = new();
     private bool allEnable = false;
 
-    private Mutatio mymtie;
+    private Mutatio mymtie = new();
 
     [Inject]
     private MyAuthStateProvider _authProvider { get; set; }
@@ -160,6 +160,7 @@ else
     private List<Tiersp> InTiers = new List<Tiersp>();
     public IQueryable<Gsapl> InApls = Enumerable.Empty<Gsapl>().AsQueryable();
     public IEnumerable<Tiersp> ResTie;
+
     public Tiewel opTwel = new();
     public Tiersp opTier = new();
 

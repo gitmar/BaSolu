@@ -99,46 +99,55 @@
                                     <div class="form-group">
                                         @if (allEnable)
                                         {
-                                            @if (AddVue)
+                                            @if (!isTiwAdding && !isTiwEdding && !isTiwDeling)
                                             { //
                                               <button class="btn btn-primary btn-sm" @onclick="() => PrepareAddTiw()">
                                                   ➕ Add
                                               </button>
                                               <span>&nbsp;&nbsp;</span>
                                             }
-                                            @if (IncludeVue)
+                                            @if (isTiwAdding)
                                             { //sinwTiw && curTiw.Xadd1 == -1
                                               <span>&nbsp;&nbsp;</span>
                                               <button class="btn btn-sm btn-success" @onclick="() => IncludeTiw(curTiw)">
                                                   <span class="me-1">💾</span> Inclure
                                               </button>
                                               <span>&nbsp;&nbsp;</span>
-                                              <button class="btn btn-sm btn-secondary" @onclick="() => CancelAddTiw()">
+                                              <button class="btn btn-sm btn-secondary" @onclick="() => CancelTiwAdding()">
                                                   ❎ Annuler
                                               </button>
                                             }
-                                            else
-                                            @if (EdtDelVue && AddingTiwRowGuid == Guid.Empty)
+                                           
+                                            @if (curTiw != null && !isTiwAdding && !isTiwEdding && !isTiwDeling)
                                             {//curTiw.Xadd1 != -2
-                                             <button class="btn btn-sm btn-warning me-1 @(EdtDelDisable ? "" : "disabled-action")"
+                                             <button class="btn btn-sm btn-warning me-1"
                                                      @onclick="() => BeginTiwEdit()">
                                                  ✏️ Edit
                                              </button>
-                                             <button class="btn btn-sm btn-outline-danger @(EdtDelDisable ? "" : "disabled-action")"
-                                                     @onclick="() => PromptTiwDelete()">
+                                             <button class="btn btn-sm btn-danger"
+                                                     @onclick="() => PromptTiwDeling()">
                                                  🗑️ Delete
                                              </button>
                                             }
-                                            else if (ConfirmingTiwDeleteRowGuid == curTiw.Rowguid)
+                                            @if (isTiwEdding)
                                             {
-                                                <button class="btn btn-sm btn-success" @onclick="() => ConfirmTiwDelete()">
+                                                <button class="btn btn-sm btn-success" @onclick="() => ConfirmTiwEdding()">
                                                     ✅ Confirm
                                                 </button>
-                                                <button class="btn btn-sm btn-secondary" @onclick="CancelTiwDelete">
+                                                <button class="btn btn-sm btn-secondary" @onclick="CancelTiwEdding">
                                                     ❌ Cancel
                                                 </button>
                                             }
-                                            @if (AddingTiwRowGuid == curTiw.Rowguid || EditingTiwRowGuid == curTiw.Rowguid)
+                                            @if (isTiwDeling)
+                                            {
+                                                <button class="btn btn-sm btn-success" @onclick="() => ConfirmTiwDeling()">
+                                                    ✅ Confirm
+                                                </button>
+                                                <button class="btn btn-sm btn-secondary" @onclick="CancelTiwDeling">
+                                                    ❌ Cancel
+                                                </button>
+                                            }
+                                            @if (isTiwAdding || isTiwEdding)
                                             {
                                                 <span>&nbsp;&nbsp;</span>
                                                 <button type="button" class="btn btn-lnk btn-sm btn-info bg-opacity-50" @onclick="ShowModal">piece(s)</button>
@@ -146,7 +155,7 @@
                                         }
                                     </div>
                                 </div>
-                                <div class="card-body">
+                                <div class="card-body @(isTiwDisabled ? "disabled-div" : "")">
                                     @foreach (var kvp in visibleJaccFields)
                                     {
                                         var prop = typeof(Tiewel).GetProperty(kvp.Key);
@@ -201,32 +210,33 @@
                                 var eligibleUfls = TUafls.Where(ufl => ufl.Ityp == 1 && ufl.Etyp != 1 && ufl.Etyp != 0).ToList();
                                 <div class="card">
                                     <div class="card-header">
-                                        @if (curOrga != null && curTiw != null && curAfl != null && toChild != null && Ugpe != 0 && _tiwaflLookups.Any())
+                                        @* @if (curOrga != null && curTiw != null && curAfl != null && toChild != null && Ugpe != 0 && _tiwaflLookups.Any())
                                         {
+                                            <span>Utyp : {@curTiw.Utyp} Jwlc {@curTiw.Jwlc}</span>
                                             if (curTiw.Utyp != 0)
                                             {
                                                 <!--pour chqe existant dans table //Etp <-> tab// -->
                                                 <div class="form-group">
-                                                    @if (AddRubVue)
+                                                    @if (!isAflAdding && (curTiw.Jwlc == 1 || curTiw.Jwlc == 2))
                                                     { //allEnable && AddStep[ufl.Etyp] != -1
-                                                      <button class="btn btn-primary btn-sm" @onclick="() => PrepareAddAfl(curTiw, curAfl.Id)">
+                                                      <button class="btn btn-primary btn-sm" @onclick="() => PrepareAddAfl(curTiw)">
                                                           ➕ Add
                                                       </button>
                                                       <span>&nbsp;&nbsp;</span>
                                                     }
-                                                    @if (IncludeRubVue)
+                                                    @if (isAflAdding)
                                                     { //allEnable && sinwAfl && AddStep[ufl.Etyp] == -1
                                                       <button class="btn btn-sm btn-success" @onclick="() => IncludeAfl(curAfl)">
                                                           <span class="me-1">💾</span> Inclure
                                                       </button>
                                                       <span>&nbsp;&nbsp;</span>
-                                                      <button class="btn btn-sm btn-secondary" @onclick="() => CancelAddAfl()">
+                                                      <button class="btn btn-sm btn-secondary" @onclick="() => CancelAflAdding()">
                                                           ❎ Annuler
                                                       </button>
                                                     }
                                                 </div>
                                             }
-                                        }
+                                        } *@
                                     </div>
                                     <div class="card-body">
                                         <Tabs @bind-ActiveTabIndex="activeTabIndex" EnableFadeEffect="true">
@@ -234,6 +244,33 @@
                                             {
                                                 var jsliba = ufl.Sliba + (ufl.Elea == 1 ? "(es)" : "(s)");
                                                 curAfl = curTiw.Tiwafls.FirstOrDefault(); @* af => af. == ufl.Id); *@
+                                                @if (curOrga != null && curTiw != null && ufl != null && toChild != null && Ugpe != 0 && _tiwaflLookups.Any())
+                                                {
+                                                    <span>Utyp : {@curTiw.Utyp} Jwlc {@curTiw.Jwlc}</span>
+                                                    if (curTiw.Utyp != 0)
+                                                    {
+                                                        <!--pour chqe existant dans table //Etp <-> tab// -->
+                                                        <div class="form-group">
+                                                            @if (!isAflAdding && (curTiw.Jwlc == 1 || curTiw.Jwlc == 2))
+                                                            { //allEnable && AddStep[ufl.Etyp] != -1
+                                                                <button class="btn btn-primary btn-sm" @onclick="() => PrepareAddAfl(curTiw, ufl.Ityp)">
+                                                                    ➕ Add
+                                                                </button>
+                                                                <span>&nbsp;&nbsp;</span>
+                                                            }
+                                                            @if (isAflAdding)
+                                                            { //allEnable && sinwAfl && AddStep[ufl.Etyp] == -1
+                                                                <button class="btn btn-sm btn-success" @onclick="() => IncludeAfl(curAfl)">
+                                                                    <span class="me-1">💾</span> Inclure
+                                                                </button>
+                                                                <span>&nbsp;&nbsp;</span>
+                                                                <button class="btn btn-sm btn-secondary" @onclick="() => CancelAflAdding()">
+                                                                    ❎ Annuler
+                                                                </button>
+                                                            }
+                                                        </div>
+                                                    }
+                                                }
                                                 <Tab Title="@jsliba">
                                                     <Content>
                                                         @foreach (var kvp in visibleJaccFields)
@@ -434,6 +471,11 @@
         pointer-events: none; /* Prevents clicking */
         opacity: 0.5; /*visual cue for disabled state */
     }
+    .disabled-div {
+        pointer-events: none;
+        opacity: 0.65;
+        cursor: not-allowed;
+    }
 
     .gpe-select {
         font-size: 24px;
@@ -570,18 +612,23 @@
     private Guid? EditingAflRowGuid = Guid.Empty;
     private Guid? ConfirmingAflDeleteRowGuid = Guid.Empty;
 
-    private bool AddVue => ParentOK && ParentEDT;
-    private bool IncludeVue => AddVue && AddingTiwRowGuid != Guid.Empty;
+    //private bool AddVue => ParentOK && ParentEDT;
+    private bool isTiwDisabled => !(isTiwAdding || isTiwEdding);
+    private bool isTiwAdding = false, isTiwEdding = false, isTiwDeling;
+
+    private bool isAflAdding = false, isAflEdding = false, isAflDeling = false;
+    //private bool IncludeVue => AddVue && AddingTiwRowGuid != Guid.Empty;
     private bool ValiderVue => (EditingTiwRowGuid != Guid.Empty || ConfirmingTiwDeleteRowGuid != Guid.Empty);
-    private bool EdtDelVue => !IncludeVue || !ValiderVue;
-    private bool EdtDelDisable => curTiw == null || !ParentEDT;
-    private bool AddRubVue => curTiw != null && ParentEDT;
-    private bool IncludeRubVue => AddRubVue && AddingAflRowGuid != Guid.Empty;
-    private bool ValiderRubVue => (EditingAflRowGuid != Guid.Empty || ConfirmingAflDeleteRowGuid != Guid.Empty);
-    private bool EdtDelRubVue => !IncludeRubVue || !ValiderRubVue;
+    //private bool EdtDelVue => !IncludeVue || !ValiderVue;
+    //private bool EdtDelDisable => curTiw == null || !ParentEDT;
+    //rubriques Afl
+    //private bool AddRubVue => curTiw != null && Addvue;
+    //private bool IncludeRubVue => AddRubVue && AddingAflRowGuid != Guid.Empty;
+    //private bool ValiderRubVue => (EditingAflRowGuid != Guid.Empty || ConfirmingAflDeleteRowGuid != Guid.Empty);
+    //private bool EdtDelRubVue => !IncludeRubVue || !ValiderRubVue;
     private bool EdtDelRubDisable => curAfl == null || !ParentEDT;
     //private bool isDisabled = true;
-    private string DisabledClass => !EdtDelVue ? "disabled" : "";
+    //private string DisabledClass => !EdtDelVue ? "disabled" : "";
 
     //modals
     private bool isModalVisible = false;
@@ -597,8 +644,8 @@
     private int activeTabIndex { get; set; } = 0;
 
 
-    private bool IsAflAdding(Tiwafl item) => AddingAflRowGuid == item.Rowguid;
-    private bool IsAflEditing(Tiwafl item) => EditingAflRowGuid == item.Rowguid;
+    //private bool IsAflAdding(Tiwafl item) => AddingAflRowGuid == item.Rowguid;
+    //private bool IsAflEditing(Tiwafl item) => EditingAflRowGuid == item.Rowguid;
 
     Tiwafl draftAfl = new();
     Tiwafl? editingAfl = null;
@@ -616,6 +663,11 @@
     protected override async Task OnInitializedAsync()
     {
         isLoading = true;
+        if (Ugpe == 0)
+        {
+            Imessage = "Groupe Obligatoire";
+            return;
+        }
         //transmis par 2
         LsVars = toChild.LsVars;
         //Ityp=1exist/Itb=6ou7/Totyp=1cible2operat3client....
@@ -628,7 +680,7 @@
         _lgcdu = 3;
         var noslims = LsVars.Where(uv => uv.Idhie == 0 && uv.Gvars == 21 && uv.Itb == 1 && uv.Elea == 1);
         if (noslims.Any()) _lgcdu = noslims.FirstOrDefault().Ivala;
-      
+
         _lsDivs = toChild.LsDivs.Where(uh => uh.Sidiv == 1).ToList();
 
         // Load ALL gsglne for this organization (single query!)
@@ -773,24 +825,6 @@
             _ => "text"
         };
     }
-
-    private async Task SaveTiewel()
-    {
-        //if (editContext.Validate())
-        //{
-            //await ApiService.UpdateTiewelAsync(curTiw);
-            //await OnSaved.InvokeAsync(curTiw);
-        //}
-    }
-
-    private void HandleSubmit()
-    {
-
-    }
-    private void Cancel()
-    {
-        // Reload original or navigate back
-    }
     // CheckBoxes
     private bool isChecked
     {
@@ -811,18 +845,20 @@
             curTiw = mytier;  //mytier;
             AddingTiwRowGuid = curTiw.Rowguid;
             sinwTiw = true;
+            isTiwAdding = true;
             StateHasChanged();
         } else
         {
             curTiw = new();
+            isTiwAdding = false;
         }
     }
-    void PrepareAddAfl(Tiewel mytier, int mySTyp)
+    void PrepareAddAfl(Tiewel mytier, int typfl)
     {
         //calc next Seq
-        Console.WriteLine($" le type : {mySTyp}");
+        //Console.WriteLine($" le type : {mySTyp}");
         int nextSeq = 1;
-        Tiwafl myafl = AddNewAflRow(mytier, mySTyp, nextSeq);
+        Tiwafl myafl = AddNewAflRow(mytier, typfl, nextSeq);
         if (myafl != null)
         {
             //curAfl = myafl;
@@ -830,6 +866,8 @@
             curTiw.Tiwafls.Add(myafl);
             AddingAflRowGuid = myafl.Rowguid;
             sinwAfl = true;
+            isAflAdding = true;
+            curAfl = myafl;
             StateHasChanged();
         }
     }
@@ -861,7 +899,7 @@
         }
         return new Tiewel();
     }
-    Tiwafl AddNewAflRow(Tiewel mytier, int mytst, int nextSeq)
+    Tiwafl AddNewAflRow(Tiewel mytier, int typfl, int nextSeq)
     {
         if (mytier == null || allEnable == false)
         {
@@ -875,9 +913,9 @@
             return new Tiwafl
             {
                 //Rowguid = Guid.NewGuid(),
-                Itie = curTiw.Id,
+                Itie = curTiw?.Id,
                 Ttyp = Ugpe,
-                Tyafl = mytst,
+                Tyafl = typfl,
                 Irang = nextSeq,
                 Nom = "Fils Martin",
                 Pnom = "Ilboudo",
@@ -903,6 +941,25 @@
         {
             curTiw.Xadd1 = -2;  //fin adding to be tracked in loaded rubfmts wait for new add
             aglne.Xadd1 = 0;
+            aglne.Utyp = Ugpe;
+            int wivalid = 0; int wjwlc = 1;
+            if (aglne.Utyp == 3) //auto tiersp/admin
+            { //auto ou Admin
+                wivalid = 9; //declench validation tiersp
+                wjwlc = 3; //integrate to tiersp in Jwcl = 1/added
+            }
+            if (curOrga.Opauto == 1 && aglne.Utyp == 5)
+            { //operateur
+                wivalid = 9; //declench validation tiersp
+                wjwlc = 1; //added
+            }
+            if (curOrga.Cbauto == 1 && aglne.Utyp == 11)
+            { //cible
+                wivalid = 9; //declench validation tiersp
+                wjwlc = 1; //added
+            }
+            aglne.Tiedcl = wivalid;
+            aglne.Jwlc = wjwlc;
             curODContext.AddObject<Tiewel>("Tiewels", aglne);
             sinwTiw = false;
             AddingTiwRowGuid = Guid.Empty;
@@ -927,12 +984,10 @@
             try
             {
                 myafl.Xadd1 = -2;  // Mark as being added
-
                 if (!curODContext.IsEntityTracked(curTiw))
                 {
                     curODContext.AttachTo("Tiewels", curTiw);
                 }
-
                 int instp = Convert.ToInt16(myafl.Tyafl);
                 //AddStep[instp] = -2;
                 //myafl.Xadd1 = -2;  //fin adding to be tracked in loaded rubfmts wait for new add
@@ -959,10 +1014,17 @@
         //isAdetCodeValid = false;
         sinwAfl = false; // Consider moving this flag reset based on your UI state management needs
     }
-    private async Task CancelAddTiw()
+    private async Task CancelTiwAdding()
     {
         if (curODContext.IsEntityTracked(curTiw))
         {
+            foreach(var ifl in curTiw.Tiwafls)
+            {
+                if (curODContext.IsEntityTracked(ifl))
+                {
+                    curODContext.Detach(ifl);
+                }
+            }
             curODContext.Detach(curTiw);
             //LsTAtts.Remove(curTiw);
             Imessage = "Annulee... Creation Personne";
@@ -981,9 +1043,12 @@
         } 
         AddingTiwRowGuid = Guid.Empty;
         sinwTiw = false;
+        isTiwAdding = false;
+        isTiwEdding = false;
+        isTiwDeling = false;
         StateHasChanged();
     }
-    private async Task CancelAddAfl()
+    private async Task CancelAflAdding()
     {
         if (curODContext.IsEntityTracked(curAfl))
         {
@@ -1006,32 +1071,111 @@
         //AddStep[custp] = 0;
         AddingAflRowGuid = Guid.Empty;
         sinwAfl = false;
+        isAflAdding = false;
+        isAflEdding = false;
+        isAflDeling = false;
         StateHasChanged();
     }
     //EDITION/DELETE - Tiewel
     void BeginTiwEdit()
     {
         EditingTiwRowGuid = curTiw.Rowguid;
+        isTiwEdding = true;
     }
-    private void CancelTiwEdit()
+    void PromptTiwEding(Tiewel mytiw)
+    {
+        // myafl.Xedt1 = 0;
+        // editingAfl = myafl;
+
+        // draftAfl = new Tiwafl();
+
+        // // List of property names to copy, e.g. from your available names
+        // var propertyNamesToCopy = new List<string>();
+        // foreach (var ucol in LsCols.Where(uv => uv.Totyp == Ugpe && uv.Tstyp == myafl.Tyafl && uv.Jacc == 1))
+        // {
+        //     string propname = ucol.Scdrub + ",";
+        //     propertyNamesToCopy.Add(ucol.Scdrub);
+        // }
+        // var type = typeof(Tiwafl);
+        // foreach (var propName in propertyNamesToCopy)
+        // {
+        //     var prop = type.GetProperty(propName);
+        //     if (prop != null && prop.CanRead && prop.CanWrite)
+        //     {
+        //         var value = prop.GetValue(myafl);
+        //         prop.SetValue(draftAfl, value);
+        //     }
+        // }
+        // //init edition
+        // myafl.Xedt1 = -1;
+        // EditingAflRowGuid = myafl.Rowguid;
+    }
+    private void CancelTiwEdding()
     {
         // if (_originalTiwSnapshots.TryGetValue(curTiw.Rowguid, out var original))
         // {
         //     RestoreTiwValues(curTiw, original);
         //     _originalTiwSnapshots.Remove(curTiw.Rowguid);
         // }
-        StateHasChanged();
         EditingTiwRowGuid = Guid.Empty;
+        isTiwEdding = false;
+        isTiwAdding = false;
+        isTiwDeling = false;
+        StateHasChanged();
     }
-    private void PromptTiwDelete()
+    void ConfirmTiwEdding()
+    {
+        // if (editingTiw != null)
+        // {
+        //     // List of property names to copy, e.g. from your available names
+        //     var propertyNamesToCopy = new List<string>();
+        //     foreach (var ucol in LsCols.Where(uv => uv.Totyp == Ugpe && uv.Tstyp == myafl.Tyafl && uv.Jacc == 1))
+        //     {
+        //         string propname = ucol.Scdrub + ",";
+        //         propertyNamesToCopy.Add(ucol.Scdrub);
+        //     }
+        //     var type = typeof(Tiwafl);
+
+        //     // Assuming you want to copy the same set of property names as before,
+        //     // or you can dynamically load those names as needed instead of hardcoding:
+
+        //     foreach (var propName in propertyNamesToCopy)
+        //     {
+        //         var prop = type.GetProperty(propName);
+        //         if (prop != null && prop.CanRead && prop.CanWrite)
+        //         {
+        //             var value = prop.GetValue(myafl);
+        //             prop.SetValue(editingAfl, value);
+        //         }
+        //     }
+
+        //     // Now attach or update in context as you do:
+        //     if (!curODContext.GetAllTrackedEntities().Any(e => e.Entity == editingAfl))
+        //         curODContext.AttachTo("Tiwelss", editingTiw);
+
+        //     curODContext.UpdateObject(editingTiw);
+        // }
+
+        // mytiw.Xedt1 = 0;
+        // editingTiw = null;
+        // EditingTiwRowGuid = Guid.Empty;
+        isTiwEdding = false;
+        isTiwAdding = false;
+        isTiwDeling = false;
+    }
+    private void PromptTiwDeling()
     {
         ConfirmingTiwDeleteRowGuid = curTiw.Rowguid;
+        isTiwDeling = true;
     }
-    private void CancelTiwDelete()
+    private void CancelTiwDeling()
     {
         ConfirmingTiwDeleteRowGuid = Guid.Empty;
+        isTiwDeling = false;
+        isTiwEdding = false;
+        isTiwAdding = false;
     }
-    private void ConfirmTiwDelete()
+    private void ConfirmTiwDeling()
     {
         var parent = curOrga;
         if (parent == null)
@@ -1051,6 +1195,9 @@
         //curOrga.Plngens.Remove(svRow); // Remove from tracked collection
         EditingTiwRowGuid = Guid.Empty;
         ConfirmingTiwDeleteRowGuid = Guid.Empty;
+        isTiwDeling = false;
+        isTiwEdding = false;
+        isTiwAdding = false;
         StateHasChanged(); // Notify UI about changes
     }
     private async Task DelTiwAsync(Tiewel mytiw)
@@ -1062,6 +1209,7 @@
     void BeginAflEdit(Tiwafl myafl)
     {
         EditingAflRowGuid = myafl.Rowguid;
+        isAflEdding = false;
     }
     void PromptAflEdit(Tiwafl myafl)
     {
@@ -1091,15 +1239,18 @@
         myafl.Xedt1 = -1;
         EditingAflRowGuid = myafl.Rowguid;
     }
-    void CancEdingAfl(Tiwafl myafl)
+    void CancelAflEding(Tiwafl myafl)
     {
         myafl.Xedt1 = 0;
         //isEdingMan = false;
         editingAfl = null;
         draftAfl = null;
         EditingAflRowGuid = Guid.Empty;
+        isAflEdding = false;
+        isAflAdding = false;
+        isAflDeling = false;
     }
-    void ConfEdingAfl(Tiwafl myafl)
+    void ConfirmAflEding(Tiwafl myafl)
     {
         if (editingAfl != null)
         {
@@ -1135,17 +1286,24 @@
         myafl.Xedt1 = 0;
         editingAfl = null;
         EditingAflRowGuid = Guid.Empty;
+        isAflEdding = false;
+        isAflAdding = false;
+        isAflDeling = false;
     }
     //DELETING AFL
     private void PromptAflDelete(Tiwafl item)
     {
         ConfirmingAflDeleteRowGuid = item.Rowguid;
+        isAflDeling = true;
     }
-    private void CancelAflDelete()
+    private void CancelAflDeling()
     {
         ConfirmingAflDeleteRowGuid = Guid.Empty;
+        isAflEdding = false;
+        isAflAdding = false;
+        isAflDeling = false;
     }
-    private void ConfirmAflDelete(Tiwafl row)
+    private void ConfirmAflDeling(Tiwafl row)
     {
         var parent = curTiw;
         Console.WriteLine($"Parent may be found : {parent.Id}");
@@ -1166,6 +1324,9 @@
         curTiw.Tiwafls.Remove(svRow);
         EditingAflRowGuid = Guid.Empty;
         ConfirmingAflDeleteRowGuid = Guid.Empty;
+        isAflEdding = false;
+        isAflAdding = false;
+        isAflDeling = false;
         StateHasChanged(); // Notify UI about changes
     }
     private async Task OuvrirFiche(int orig)
@@ -1398,23 +1559,23 @@
         Console.WriteLine($"Field edited: {e.FieldIdentifier.FieldName}");
         // Place your logic here when a field is edited
     }
-    private void OnLocationChanged(object sender, LocationChangedEventArgs e)
+    private async void OnLocationChanged(object sender, LocationChangedEventArgs e)
     {
         allEnable = false;
-        SaveCurEntities();
+        await SaveCurEntities();
     }
     public async Task<bool> SaveCurEntities()
     {
         try
         {
             //if (isTiwInEditing || myacfl.isTwAflEditing)
-            if (isTiwInEditing)
-            {
+            //if (isTiwInEditing)
+            //{
                 //curODContext.UpdateObject<Tiewel>(curTiw);
                 await curODContext.SaveDataAsync();
-                isTiwInEditing = false;
+                //isTiwInEditing = false;
                 Console.WriteLine("Saved SUCCESS");
-            }
+            //}
             //var wrkplns = curOrga.Plngens.Where(pl => pl.Ptyp == 3 && pl.Totyp == IMyAtr).ToList();
             //MyDaPlans = wrkplns;
             StateHasChanged();

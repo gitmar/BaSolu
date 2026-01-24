@@ -914,13 +914,13 @@ else
         EditingRubRowGuid = Guid.Empty;
         Imessage = "";
     }
-    public async Task SavAll()
-    {
-        Imessage = "Enregistrement Operations, patience...";
-        allEnable = false;
-        EditingRubRowGuid = Guid.Empty;
-        await curODContext.SaveDataAsync();
-    }
+    // public async Task SavAll()
+    // {
+    //     Imessage = "Enregistrement Operations, patience...";
+    //     allEnable = false;
+    //     EditingRubRowGuid = Guid.Empty;
+    //     await curODContext.SaveDataAsync();
+    // }
     private void SelDomPlan(Gplan mypln, int orig)
     {
         Console.WriteLine("Denier Feterdah");
@@ -974,7 +974,7 @@ else
             curODContext.AddRelatedObject(curActa, "Rubvars", unrub);
         }
         GrubNewRows = new();
-        SaveCurEntities();
+        //SaveCurEntities();
         Imessage = "Gril/Rubrique(s) SAVED";
         await adtModal.HideAsync();
         allEnable = false;
@@ -1015,22 +1015,22 @@ else
     private void OnLocationChanged(object sender, LocationChangedEventArgs e)
     {
         allEnable = false;
-        SaveCurEntities();
+        //SaveCurEntities();
     }
-    private void SaveCurEntities()
-    {
-        Console.WriteLine($"Entities SAVED");
-        try
-        {
-            Console.WriteLine("SAVED PLUS");
-            curODContext.SaveDataAsync();
-            //var wrkplns = curOrga.Plngens.Where(pl => pl.Ptyp == 3).ToList();
-            //MyDaPlans = wrkplns;
-            StateHasChanged();
-        }
-        catch (Exception ex)
-        {
-            //Alert($"ECHEC Entities not SAVED");
-        }
-    }
+    // private void SaveCurEntities()
+    // {
+    //     Console.WriteLine($"Entities SAVED");
+    //     try
+    //     {
+    //         Console.WriteLine("SAVED PLUS");
+    //         curODContext.SaveDataAsync();
+    //         //var wrkplns = curOrga.Plngens.Where(pl => pl.Ptyp == 3).ToList();
+    //         //MyDaPlans = wrkplns;
+    //         StateHasChanged();
+    //     }
+    //     catch (Exception ex)
+    //     {
+    //         //Alert($"ECHEC Entities not SAVED");
+    //     }
+    // }
 }

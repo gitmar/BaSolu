@@ -307,48 +307,40 @@ else
                                                             </button>
                                                         }
                                                     </HeaderContent>
-                                                    <ChildContent Context="item">
-                                                @if (allEnable)
+                                            <ChildContent Context="item">
+                                                @if (EdAtrRowguid != item.Rowguid)
                                                 {
-                                                    @if (IsManEditing(item))
+                                                    <button class="btn btn-warning btn-sm
+                                                        @(!isEdAtr && !isDlAtr && EdAtrRowguid != item.Rowguid ? "" : "disabled-action")"
+                                                        @onclick="() => Edit1atr(item)">
+                                                        ✏️ Edit
+                                                    </button>
+                                                }
+                                                else
+                                                {
+                                                    <button class="btn btn-sm btn-success" @onclick="() => Conf1atr(item)">
+                                                        💾 Save
+                                                    </button>
+                                                    <button class="btn btn-sm btn-secondary" @onclick="() => Canc1atr(item)">
+                                                        ❎ Cancel
+                                                    </button>
+                                                }
+                                                @if (DlAtrRowguid != item.Rowguid)
+                                                {
+                                                    @if (IMyGatr == 2)
                                                     {
-                                                        <button class="btn btn-sm btn-success" @onclick="() => ConfEdingMan(draftMan)">
-                                                            💾 Save
-                                                        </button>
-                                                        <button class="btn btn-sm btn-secondary" @onclick="() => CancEdingMan(draftMan)">
-                                                            ❎ Cancel
-                                                        </button>
-                                                    }
-                                                    else if (ConfirmingFixDeleteRowGuid == item.Rowguid)
-                                                    {
-                                                        <button class="btn btn-sm btn-outline-danger" @onclick="() => PromptFixDelete(item)">
+                                                        <button class="btn btn-sm btn-outline-danger @(!isDlAtr && !isEdAtr && DlAtrRowguid != item.Rowguid ? "" : "disabled-action")"
+                                                            @onclick="() => Dele1atr(item)">
                                                             🗑️ Delete
                                                         </button>
-                                                        <button class="btn btn-sm btn-success" @onclick="() => ConfirmFixDelete(item)">
-                                                            ✅ Confirm
-                                                        </button>
-                                                        <button class="btn btn-sm btn-secondary" @onclick="CancelFixDelete">
-                                                            ❌ Cancel
-                                                        </button>
-                                                    }
-                                                    else
-                                                    {
-                                                        <button class="btn btn-sm btn-primary me-1 @(allEnable ? "" : "disabled-action")"
-                                                                disabled="@(EditingManRowGuid != null)"
-                                                                @onclick="() => PromptManEdit(item)">
-                                                            ✏️ Edit
-                                                        </button>
-                                                        @if (IMyGatr == 2)
-                                                        {
-                                                            <button class="btn btn-sm btn-outline-danger @(allEnable ? "" : "disabled-action")"
-                                                                    disabled="@(EditingManRowGuid != null)"
-                                                                    @onclick="() => PromptFixDelete(item)">
-                                                                🗑️ Delete
-                                                            </button>
-                                                        }
                                                     }
                                                 }
-                                                    </ChildContent>
+                                                else
+                                                {
+                                                    <button class="btn btn-warning btn-sm @(DlAtrRowguid == item.Rowguid ? "" : "disabled-action")" @onclick="() => ConfD1atr(item)">Confirm</button>
+                                                    <button class="btn btn-danger btn-sm @(DlAtrRowguid == item.Rowguid ? "" : "disabled-action")" @onclick="() => CancD1atr(item)">Annul</button>
+                                                }
+                                            </ChildContent>
                                                 </GridColumn>
                                             </GridColumns>
                                         </Grid>
@@ -657,7 +649,13 @@ else
     // private List<Gsgfix> PaterRows => gfixsMap.TryGetValue(curOrga.Idorg, out var rows)
     // ? new List<Gsgfix>(rows)
     // : new List<Gsgfix>();
-
+    //Editing
+    bool isEdAtr = false;
+    Guid EdAtrRowguid = Guid.Empty;
+    //Deling
+    bool isDlAtr = false;
+    Guid DlAtrRowguid = Guid.Empty;
+ 
     //data
     public List<Gsgfix> MyDaAtrs { get; set; } = new();
     //variables Man
@@ -722,7 +720,7 @@ else
     {
         if (row == null || row.Pseq == 0)
             return null;
-        return fxparentMapByPseq.TryGetValue(row.Idorg ?? 0, out var parent) ? parent : null;
+        return fxparentMapByPseq.TryGetValue(row?.Idorg ?? 0, out var parent) ? parent : null;
     }
     void OpenAddPater()
     {
@@ -840,7 +838,7 @@ else
             curODContext.AddRelatedObject(curOrga, "Gxorgas", unpat);
         }
         PaterRows = new();
-        await SaveCurEntities();
+        //await SaveCurEntities();
         Imessage = "Parent(s) SAVED";
         await patModal.HideAsync();
         allEnable = false;
@@ -949,6 +947,46 @@ else
         editingMan = null;
         EditingManRowGuid = Guid.Empty;
     }
+    //EDITING Gsgfix (atr)
+    void Edit1atr(Gsgfix mytbl)
+    {
+
+        EdAtrRowguid = mytbl.Rowguid;
+        isEdAtr = true;
+    }
+    void Conf1atr(Gsgfix myafil)
+    {
+
+        EdAtrRowguid = Guid.Empty;
+        isEdAtr = false;
+    }
+    void Canc1atr(Gsgfix myafil)
+    {
+
+
+        EdAtrRowguid = Guid.Empty;
+        isEdAtr = false;
+    }
+    //Deling Gsgfix (atr)
+    void Dele1atr(Gsgfix mytbl)
+    {
+
+        DlAtrRowguid = mytbl.Rowguid;
+        isDlAtr = true;
+    }
+    void ConfD1atr(Gsgfix myafil)
+    {
+
+        DlAtrRowguid = Guid.Empty;
+        isDlAtr = false;
+    }
+    void CancD1atr(Gsgfix myafil)
+    {
+
+
+        DlAtrRowguid = Guid.Empty;
+        isDlAtr = false;
+    }
 
     private void PromptFixDelete(Gsgfix item)
     {
@@ -995,13 +1033,13 @@ else
         EditingManRowGuid = Guid.Empty;
         Imessage = "";
     }
-    public async Task SavAll()
-    {
-        Imessage = "Enregistrement Operations, patience...";
-        allEnable = false;
-        EditingManRowGuid = Guid.Empty;
-        await curODContext.SaveDataAsync();
-    }
+    // public async Task SavAll()
+    // {
+    //     Imessage = "Enregistrement Operations, patience...";
+    //     allEnable = false;
+    //     EditingManRowGuid = Guid.Empty;
+    //     await curODContext.SaveDataAsync();
+    // }
     private void SelDomTabl(int orig)
     {
         Console.WriteLine("Dernier Feterdah");
@@ -1061,24 +1099,24 @@ else
     private void OnLocationChanged(object sender, LocationChangedEventArgs e)
     {
         allEnable = false;
-        bool reussi = SaveCurEntities().Result;
+        //bool reussi = SaveCurEntities().Result;
     }
-    public async Task<bool> SaveCurEntities()
-    {
-        try
-        {
-            await curODContext.SaveDataAsync();
-            Console.WriteLine("Saved SUCCESS");
-            //var wrkplns = curOrga.Plngens.Where(pl => pl.Ptyp == 3 && pl.Totyp == IMyAtr).ToList();
-            //MyDaPlans = wrkplns;
-            StateHasChanged();
-            return true;
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"Saved ISSUE {ex.Message}");
-            //Alert($"ECHEC Entities not SAVED");
-            return false;
-        }
-    }
+    // public async Task<bool> SaveCurEntities()
+    // {
+    //     try
+    //     {
+    //         await curODContext.SaveDataAsync();
+    //         Console.WriteLine("Saved SUCCESS");
+    //         //var wrkplns = curOrga.Plngens.Where(pl => pl.Ptyp == 3 && pl.Totyp == IMyAtr).ToList();
+    //         //MyDaPlans = wrkplns;
+    //         StateHasChanged();
+    //         return true;
+    //     }
+    //     catch (Exception ex)
+    //     {
+    //         Console.WriteLine($"Saved ISSUE {ex.Message}");
+    //         //Alert($"ECHEC Entities not SAVED");
+    //         return false;
+    //     }
+    // }
 }

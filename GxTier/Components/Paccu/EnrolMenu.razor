@@ -44,13 +44,6 @@ else
                            MenuSelected="@_chxMenu"
                            MenuSelectedChanged="@SelMenu"
                            OnBack="@NavigateBack" />
-                           @* <GxNavMenu MenuItems="@MenuItems"
-                           Groups="@Groupes"
-                           YaGroup="true"
-                           MenuSelected="@_selectedMenuId"
-                           MenuSelectedChanged="@OnMenuChanged"
-                           GroupSelected="@_selectedGroupId"
-                           GroupSelectedChanged="@OnGroupChanged" /> *@
 
                 @* <p>Selected Menu Id: @_selectedMenuId</p>
                 <p>Selected Group Id: @_selectedGroupId</p> *@
@@ -86,7 +79,7 @@ else
                 <div class="row">
                     @if (_chxMenu != 0 && toChild != null && curOrga != null && curODContext != null)
                     {
-                        @if (_chxMenu == 1)
+                        @if (_chxMenu == 1 && Ugpe != 0 && Tgpe != 0)
                         {
                             <ValdTie @ref="mygvld"
                                      Ugpe="@Ugpe"
@@ -100,22 +93,22 @@ else
                                 </ChildContent>
                             </ValdTie>
                         }
-                        else if (_chxMenu == 2 && ParentOK)
+                        else if (_chxMenu == 2 && Ugpe != 0 && Tgpe != 0 && ParentOK)
                         {
-                            <InscTiw @ref="mygtiw"
-                                     ParentEDT="@ParentEDT"
-                                     ParentOK="@ParentOK"
-                                     Ugpe="@Ugpe"
-                                     Tgpe="@Tgpe"
-                                     curOrga="@curOrga"
-                                     toChild="@toChild"
-                                     allEnable="@allEnable"
-                                     curODContext="@curODContext">
+                            <EnrolTiw @ref="myetiw"
+                                      ParentEDT="@ParentEDT"
+                                      ParentOK="@ParentOK"
+                                      Ugpe="@Ugpe"
+                                      Tgpe="@Tgpe"
+                                      OnSaved="ManSaveAll"
+                                      allEnable="@allEnable"
+                                      curOrga="@curOrga"
+                                      toChild="@toChild"
+                                      curODContext="@curODContext">
                                 <ChildContent>
                                     @* <h2 class="child-box">Hello ACCUEIL</h2> *@
                                 </ChildContent>
-                            </InscTiw>
-                            @* OnChildEmptyData="@InitChildData" *@
+                            </EnrolTiw>
                         }
                         else if (_chxMenu == 3)
                         {
@@ -124,13 +117,13 @@ else
                                      allEnable="@allEnable"
                                      curODContext="@curODContext">
                                 <ChildContent>
-                                    @* <h2 class="child-box">Hello INVITATION</h2> *@
+                                    <h2 class="child-box">Hello ACCUEIL</h2>
                                 </ChildContent>
                             </InviTiw>
                         }
-                        else if (_chxMenu == 4 && ParentOK)
+                        else if (_chxMenu == 4 && Ugpe != 0 && Tgpe != 0 && ParentOK)
                         {
-                            <EnrolTiw @ref="myertiw"
+                            @* <EnrolTiw @ref="myertiw"
                                      ParentEDT="@ParentEDT"
                                      ParentOK="@ParentOK"
                                      Ugpe="@Ugpe"
@@ -141,10 +134,9 @@ else
                                      toChild="@toChild"
                                      curODContext="@curODContext">
                                 <ChildContent>
-                                    @* <h2 class="child-box">Hello ACCUEIL</h2> *@
+                                    <h2 class="child-box">Hello ACCUEIL</h2>
                                 </ChildContent>
-                            </EnrolTiw>
-                            @* OnChildEmptyData="@InitChildData" *@
+                            </EnrolTiw> *@
                         }
                     }
                  }
@@ -160,18 +152,18 @@ else
     public MyShareVars toChild = new();
     private bool allEnable = false;
 
-    private InscTiw mygtiw;
-    private ValdTie mygvld;
-    private InviTiw myginv;
-    private EnrolTiw myertiw;
+    //private EnrolTiw mygtiw;
+    private ValdTie mygvld = new();
+    private EnrolTiw myetiw = new();
+    private InviTiw myginv = new();
 
     private MyAuthStateProvider _authProvider { get; set; }
     public Userbag _usrBag = new();
 
     [Parameter]
-    public RenderFragment RecpTiw { get; set; }
+    public RenderFragment ValdTie { get; set; }
     [Parameter]
-    public RenderFragment InscTiw { get; set; }
+    public RenderFragment EnrolTiw { get; set; }
     [Parameter]
     public RenderFragment InviTiw { get; set; } 
 
@@ -191,7 +183,7 @@ else
         new GxMenuItem { Id = 1, Text = "Integration", Icon = "bi bi-box-arrow-in-down" },
         new GxMenuItem { Id = 2, Text = "Accueil/Site", Icon = "bi bi-house-door" },
         new GxMenuItem { Id = 3, Text = "Invite/Online", Icon = "bi bi-envelope-paper" },
-        new GxMenuItem { Id = 4, Text = "ATest", Icon = "bi bi-envelope-paper" }
+        //new GxMenuItem { Id = 4, Text = "ATest", Icon = "bi bi-envelope-paper" }
         //new MenuItem { Id = 4, Text = "Mutation", Icon = "bi bi-arrow-repeat" },
     };
     public List<GxGroupe> Groupes = new();
@@ -368,7 +360,7 @@ else
         if (_chxMenu == 1) strComp = $"Integration {gpeLiba}";
         if (_chxMenu == 2) strComp = $"Accueil/Site  {gpeLiba}";
         if (_chxMenu == 3) strComp = $"Invite/Online  {gpeLiba}";
-        if (_chxMenu == 4) strComp = $"Atest  {gpeLiba}";
+        //if (_chxMenu == 4) strComp = $"Atest  {gpeLiba}";
         //if (_chxMenu == 3) strComp = $"Invitation {gpeLiba}";
         //if (_chxMenu == 5) strComp = "Colonnes";
         allEnable = false;
@@ -400,6 +392,7 @@ else
     }  
     private async Task ManEditAll()
     {
+        //if 
         MImessage = "Edition en preparation...";
         if (_chxMenu == 1)
         { //validation
@@ -407,7 +400,7 @@ else
         }
         if (_chxMenu == 2)
         { //accueil/site
-            await mygtiw.EdtAll();
+            await myetiw.EdtAll();
         }
         if (_chxMenu == 3)
         { //invite/online
@@ -436,7 +429,7 @@ else
         }
         if (_chxMenu == 2)
         { //accueil
-            await mygtiw.CncCHILD();
+            await myetiw.CncCHILD();
             NavigateBack();
         }
         if (_chxMenu == 3)
@@ -459,7 +452,7 @@ else
         }
         if (_chxMenu == 2)
         { //accueil
-            oksav = await mygtiw.SaveCurEntities();
+            oksav = await myetiw.SaveCurEntities();
         }
         if (_chxMenu == 3)
         { //invitation

@@ -25,6 +25,7 @@
 @inject ILocalStorageService _localStorage
 @inject NavigationManager _navmanager
 @inject HttpClientService _cliemanager
+@inject IJSRuntime _jsRun
 
 <!-- InscTiewComponent.razor -->
 <PageTitle>Tables</PageTitle>
@@ -84,40 +85,9 @@ else
                 }
                 else
                 {
-                    <EditForm Context="invform" Model="@curOrga">
+                  <EditForm Context="invform" Model="@curOrga">
                         <DataAnnotationsValidator />
                         <ValidationSummary />
-                        @* <div class="form-group">
-                            <label class="me-2">@atrDest :</label>
-                            <span class="separator">|| </span>
-                            <Button class="btn btn-sm btn-secondary btnsz"
-                                style="@(!allEnable ? "" : "display:none;")"
-                                @onclick="EdtAll">
-                                Modifier
-                            </Button>
-                            <Button class="btn btn-sm btn-secondary btnsz"
-                                style="@(allEnable ? "" : "display:none;")"
-                                @onclick="CncAll">
-                                Annuler
-                            </Button>
-                            <span class="separator">|  </span>
-                            <Button class="btn btn-sm btn-secondary btnsz"
-                                style="@(allEnable ? "" : "display:none;")"
-                                @onclick="SavAll">
-                                Enregistrer
-                            </Button>
-                        </div> *@
-                        @* @if (!MyDaPlans.Any())
-                        { *@
-                            @* @if (allEnable)
-                            {
-                                <div class="row">
-                                    <button class="col-1 btn btn-primary btn-sm" @onclick="() => OpenAddPlan()">
-                                        ➕ Add
-                                    </button>
-                                </div>
-                            } *@
-                        @* } *@
                         <div class="row">
                             @if (!String.IsNullOrEmpty(Kmessage))
                             {
@@ -194,21 +164,21 @@ else
                                         </GridColumn>
                                         <GridColumn TItem="Plngen" HeaderText="Eta">
                                             <HeaderContent>
-                                                @if (!allEnable)
+                                                @* @if (!allEnable)
                                                 {
                                                     <button class="btn btn-info btn-sm" @onclick="TogglePlnFiltering">
                                                         @(isPlnFilteringEnabled ? "🚫 Out Filter" : "🔍 In Filter")
                                                     </button>
                                                 }
                                                 else
-                                                {
-                                                    @if (allEnable && IMyDom != 0 && IMyVue != 0)
+                                                { *@
+                                                    @if (IMyDom != 0 && IMyVue != 0)
                                                     {
-                                                        <button class="btn btn-primary btn-sm" @onclick="() => OpenAddPlan()">
+                                                        <button class="btn btn-primary btn-sm" @onclick="() => StartAddNewPlnAsync()">
                                                             ➕ Add
                                                         </button>
                                                     }
-                                                }
+                                               @*  } *@
                                             </HeaderContent>
                                             <ChildContent Context="item">
                                                 @if (EditingPlnRowGuid == item.Rowguid)
@@ -233,42 +203,20 @@ else
                                                 }
                                             </ChildContent>
                                         </GridColumn>
-                                        <GridColumn TItem="Plngen" HeaderText="actions" IsVisible="@(allEnable)" Filterable="false">
-                                           <ChildContent Context="item">
-                                                    @if (EditingPlnRowGuid == item.Rowguid)
-                                                    {
-                                                        <button class="btn btn-sm btn-success" @onclick="() => ConfEdingPln(draftPln)">
-                                                            💾 Accept
-                                                        </button>
-                                                        <button class="btn btn-sm btn-secondary" @onclick="() => CancEdingPln(draftPln)">
-                                                            ❎ Cancel
-                                                        </button>
-                                                    }
-                                                    else if (ConfirmingPlnDeleteRowGuid == item.Rowguid)
-                                                    {
-                                                        @* <button class="btn btn-sm btn-outline-danger" @onclick="() => PromptPlnDelete(item)">
-                                                            🗑️ Delete
-                                                        </button> *@
-                                                        <button class="btn btn-sm btn-success" @onclick="() => ConfirmPlnDelete(item)">
-                                                            ✅ Confirm
-                                                        </button>
-                                                        <button class="btn btn-sm btn-secondary" @onclick="CancelPlnDelete">
-                                                            ❌ Cancel
-                                                        </button>
-                                                    }
-                                                    else
-                                                    {
-                                                        <button class="btn btn-sm btn-warning me-1 @(allEnable ? "" : "disabled-action")"
-                                                                disabled="@(EditingPlnRowGuid != null)"
-                                                                @onclick="() => PromptPlnEdit(item)">
-                                                            ✏️ Edit
-                                                        </button>
-                                                        <button class="btn btn-sm btn-outline-danger @(allEnable ? "" : "disabled-action")"
-                                                                disabled="@(EditingPlnRowGuid != null)"
-                                                                @onclick="() => PromptPlnDelete(item)">
-                                                            🗑️ Delete
-                                                        </button>
-                                                    }
+                                        <GridColumn TItem="Plngen" HeaderText="actions" Filterable="false">
+                                            <ChildContent Context="item">
+                                                <!-- ✅ NO duplicate inputs here - Designation column handles it -->
+                                                @if (EditingPlnRowGuid != item.Rowguid)
+                                                {
+                                                    <button class="btn btn-warning btn-sm" @onclick="() => StartEdit(item, item.Rowguid)">
+                                                        ✏️ Edit
+                                                    </button>
+                                                }
+                                                else
+                                                {
+                                                    <button class="btn btn-success btn-sm" @onclick="() => ConfirmEdit(item)">💾 Save</button>
+                                                    <button class="btn btn-secondary btn-sm" @onclick="() => CancelEdit(item)">❎ Cancel</button>
+                                                }
                                             </ChildContent>
                                         </GridColumn>
                                     </GridColumns>
@@ -524,7 +472,7 @@ else
                                                         }
                                                     </ChildContent>
                                                 </GridColumn>
-                                                <GridColumn TItem="Rubvar" HeaderText="Actions" IsVisible="@(allEnable)" Filterable="false">
+                                                <GridColumn TItem="Rubvar" HeaderText="Actions" Filterable="false">
                                                     <ChildContent Context="item">
                                                         @if (EditingRubRowGuid == item.Rowguid)
                                                         {
@@ -766,7 +714,7 @@ else
                                 </Grid>
                             }
                         </div>
-                    </EditForm>
+                    </EditForm>  
                 }
             </div>
             <!-- Modal for ADDING Plan -->
@@ -1271,7 +1219,7 @@ else
 @code {
     private bool isLoading = true;
     private bool notallEnable => !allEnable;
-    
+
     private bool yaPgLink = false;
     private string Imessage = "", Jmessage = "", Kmessage = "";
 
@@ -1289,6 +1237,8 @@ else
     public int toMenu { get; set; }
     [Parameter]
     public bool allEnable { get; set; }
+    [Parameter]
+    public PendingChangesGuard _guard { get; set; }
     //private Tiersp gridTier = new Tiersp();
     //private Plngen curPlan = new Plngen();
     private List<Rubvar> LsRubs = new List<Rubvar>();
@@ -1318,7 +1268,7 @@ else
 
     //Global
     //private int IMyPlan = 0;
-    private int IMyGpln = 5, IMyDom = 1, IMyVue = 0;
+    private int IMyGpln = 5, IMyDom = 1, IMyVue = 1;
     //private int IMyPlsdiv = 0, IMyPlsgri = 0, IMyPlsech = 0; //saisies
 
     private string atrDest = "Programmes de Saisie :";
@@ -1372,7 +1322,7 @@ else
     public List<Rubfmt> MyDaFmts = new();
 
     private Guid? AddingPlnRowGuid; //pmodal
-    private Guid? EditingPlnRowGuid;
+    //private Guid? EditingPlnRowGuid;
     private Guid? ConfirmingPlnDeleteRowGuid;
     private Guid? AddingRubRowGuid; //cmodal
     private Guid? EditingRubRowGuid;
@@ -1380,6 +1330,29 @@ else
     private Guid? AddingFmtRowGuid; //cmodal
     private Guid? EditingFmtRowGuid;
     private Guid? ConfirmingFmtDeleteRowGuid;
+
+    private Plngen? draftPln;                          // Current editing row
+    private Guid? EditingPlnRowGuid;                   // Currently editing row ID
+    private Guid? EdPlnRowguid;                        // Selected row (your existing)
+    private bool isEdPln = false;
+    //private Dictionary<Guid, Plngen> _editOriginals = new();  // Original snapshots
+
+    //Editing
+    //bool isEdPln = false;
+    //Guid EdPlnRowguid = Guid.Empty;
+    bool isEdElm = false;
+    Guid EdElmRowguid = Guid.Empty;
+    //Deling
+    bool isDlPln = false;
+    Guid DlPlnRowguid = Guid.Empty;
+    bool isDlElm = false;
+    Guid DlElmRowguid = Guid.Empty;
+    //TEST-TEST
+    //private Dictionary<object, object> _editOriginals = new();  // Store original values
+    private Dictionary<Guid, Plngen> _editOriginals = new();
+    private HashSet<object> _editingEntities = new();           // Currently editing
+    private Plngen? _newPlnRowDraft;
+
     //pere
     private List<Plngen> GplnNewRows = new();
     // private List<Plngen> GplnNewRows => gPlnsMap.TryGetValue(curOrga.Idorg, out var rows)
@@ -1411,7 +1384,7 @@ else
 
 
     //variables Plan
-    Plngen draftPln = new();
+    //Plngen draftPln = new();
     Plngen? editingPln = null;
     //variables Rub
     Rubvar draftRub = new();
@@ -1420,16 +1393,71 @@ else
     Rubfmt draftFmt = new();
     Rubfmt? editingFmt = null;
 
-    void OnPlanRowClick(GridRowEventArgs<Plngen> args)
+    // void OnPlanRowClick(GridRowEventArgs<Plngen> args)
+    // {
+    //     Console.WriteLine($"OnPlanRowClick Triggered : {args.Item.Id}");
+    //     curPlan = args.Item; //get gRubsMap
+    //     Console.WriteLine($"X1seq {curPlan.Id}");
+    //     if (curPlan == null || curPlan.Id == 0)
+    //     {
+    //         return;
+    //     }
+    //     StateHasChanged();
+    // }
+    protected override async Task OnInitializedAsync()
     {
-        Console.WriteLine($"OnPlanRowClick Triggered : {args.Item.Id}");
-        curPlan = args.Item; //get gRubsMap
-        Console.WriteLine($"X1seq {curPlan.Id}");
-        if (curPlan == null || curPlan.Id == 0)
+        isLoading = true;
+        if (toChild == null)
         {
+            Console.WriteLine("TOCHILD IS NULL");
             return;
         }
-        StateHasChanged();
+        isAuthenticated = toChild.isAuthenticated;
+        authUser = toChild.authUser;
+        if (!isAuthenticated)
+        {
+            Imessage = "CONNEXION, Utilisateur non authentifie";
+            return;
+        }
+        LsVars = toChild.LsVars;
+        LsFixes = toChild.LsFixes;
+        LsVues = LsFixes.Where(ut => ut.Gvars == 36 && ut.Itb == 4 && ut.Gp1 == 5 && ut.Elea != 0).ToList();
+        //LsTabls = toChild.LsTabls.ToList();
+        LsPlans = toChild.LsPlans;
+        //LsSites = toChild.LsSites;
+        _lgcdu = 3;
+        var noslims = LsVars.Where(uv => uv.Idhie == 0 && uv.Gvars == 21 && uv.Itb == 1 && uv.Elea == 1);
+        if (noslims.Any()) _lgcdu = noslims.FirstOrDefault().Ivala;
+        Console.WriteLine($"lsplans {LsPlans.Count} IS NULL");
+        await ChargeParentData();
+        Console.WriteLine($"rubvars : {curOrga.Plngens.Count}");
+        _navmanager.LocationChanged += OnLocationChanged;
+
+        //EditingPlnRowGuid = Guid.Empty;
+        isLoading = false;
+    }
+    private async Task ChargeParentData()
+    {
+        atrTitle = "Saisie";
+        gPlnsMap.Clear();
+        gRubsMap.Clear();
+        gFmtsMap.Clear();
+        gPlnsMap[curOrga.Idorg] = new List<Plngen>(curOrga.Plngens.Where(uf => uf.Idorg == curOrga.Idorg && uf.Ptyp == 5));
+        foreach (var uta in curOrga.Plngens)
+        {
+            List<Rubvar> tbcols = curPlan.Rubvars.Where(ln => ln.Id == uta.Id).ToList();
+            gRubsMap[uta.Id] = new List<Rubvar>(tbcols);
+            // string stfor = uta.Fpsource;
+            // if (!string.IsNullOrEmpty(stfor))
+            // {
+            //     stfor = stfor.Substring(0, 7);
+            // }
+            // uta.Strformu = stfor;
+            //Console.WriteLine($"Parent Xseq: {uta.Xseq}, Children count: {tbcols.Count}");
+        }
+        //var wrkplns = curOrga.Plngens.Where(pl => pl.Ptyp == 5 && pl.Totyp == IMyDom).ToList();
+        //MyDaPlans = wrkplns;
+        //LsDoms = LsFixes.Where(ut => ut.Gvars == 36 && ut.Itb == 4 && ut.Gp1 == 1 && ut.Elea != 0).ToList();
     }
     void OnRubRowClick(GridRowEventArgs<Rubvar> args)
     {
@@ -1442,6 +1470,388 @@ else
         }
         StateHasChanged();
     }
+
+    //TEST-TEST/New
+
+
+
+
+
+    // MARK 5: CONFIRM ALL → Batch Save
+    private async Task SaveAllChanges()
+    {
+        await _guard.FlushAsync();  // → Parallel PUT all Added/Modified
+        _editOriginals.Clear();    // Clean up
+        StateHasChanged();
+    }
+
+    // MARK 6: UI HELPERS
+    private bool IsEditing(object entity) => _editingEntities.Contains(entity);
+
+    private string GetTblRowCss(object entity)
+    {
+        return entity switch
+        {
+            Gsgfix g when g.Xseq == 0 => "new-row",      // NEW row
+            _ when IsEditing(entity) => "editing-row",   // Editing
+            _ => ""                                      // Normal
+        };
+    }
+
+    private static readonly JsonSerializerSettings _cloneSettings = new()
+    {
+        TypeNameHandling = TypeNameHandling.None,        // Security
+        ReferenceLoopHandling = ReferenceLoopHandling.Ignore,  // OData cycles
+        NullValueHandling = NullValueHandling.Include,   // Keep nulls
+        Formatting = Formatting.None                     // Performance
+    };
+
+    private object DeepClone(object entity)
+    {
+        var settings = new JsonSerializerSettings
+        {
+            ReferenceLoopHandling = ReferenceLoopHandling.Ignore
+        };
+
+        var json = JsonConvert.SerializeObject(entity, settings);
+        return JsonConvert.DeserializeObject(json, entity.GetType(), settings)!;
+    }
+
+    //ADDING Plngen (pln)
+    //TEST-TEST
+    // MARK 1: ROW CLICK HANDLER (Grid RowClick)
+    private void OnPlanRowClick(GridRowEventArgs<Plngen> args)
+    {
+        var selectedPln = args.Item;
+        if (EditingPlnRowGuid == selectedPln.Rowguid)
+            return; // Already editing
+
+        // Store original if starting new edit
+        if (!EditingPlnRowGuid.HasValue)
+        {
+            _editOriginals[selectedPln.Rowguid] = (Plngen)DeepClone(selectedPln);
+        }
+
+        EditingPlnRowGuid = selectedPln.Rowguid;       // ← Grid highlights this row
+        draftPln = selectedPln;                        // ← Inline inputs bind here
+        EdPlnRowguid = selectedPln.Rowguid;            // ← Your existing field
+        curODContext.UpdateObject(selectedPln);        // ← OData tracking ON
+        isEdPln = true;
+        StateHasChanged();
+    }
+
+    // MARK 2: START EDIT (Button click)
+    private void StartEdit(Plngen item, Guid rowguid)
+    {
+        if (EditingPlnRowGuid.HasValue) return;  // Only one edit at a time
+        _editOriginals[rowguid] = (Plngen)DeepClone(item);
+        EditingPlnRowGuid = rowguid;
+        draftPln = item;
+        EdPlnRowguid = rowguid;
+        curODContext.UpdateObject(item);
+        isEdPln = true;
+        StateHasChanged();
+    }
+
+    // MARK 3: CONFIRM EDIT
+    private async Task ConfirmEdit(Plngen item)
+    {
+        _editOriginals.Remove(item.Rowguid);
+
+        // ✅ Save to server (optional immediate)
+        // await _guard.FlushAsync();
+
+        ResetEditState();
+
+        // ✅ BONUS: Auto-add next row after save?
+        // await StartAddPlnNewAsync();
+    }
+
+    // private void ConfirmEdit(Plngen item)
+    // {
+    //     // ✅ Guard will auto-save on navigation (UpdateObject already called)
+    //     // ✅ Optional: Immediate save
+    //     // await Guard.FlushAsync(); 
+
+    //     Console.WriteLine($"✅ SAVED: {item.Liba} (Rowguid: {item.Rowguid})");
+
+    //     // ✅ Clean up edit state
+    //     _editOriginals.Remove(item.Rowguid);
+    //     ResetEditState();
+
+    //     // ✅ Refresh grid data (optional)
+    //     // await LoadPlansAsync();
+    // }
+    // MARK 4: CANCEL EDIT (Perfect restore)
+    private void CancelEdit(Plngen item)
+    {
+        try
+        {
+            // ✅ YOUR IsEntityTracked first (null-safe)
+            if (curODContext.IsEntityTracked(item))
+            {
+                var state = curODContext.GetEntityState(item);
+
+                if (state == EntityStates.Added)
+                {
+                    curODContext.Detach(item);
+                    MyDaPlans.Remove(item);
+                    Console.WriteLine("✅ Cancelled NEW row");
+                }
+                else if (state == EntityStates.Modified)
+                {
+                    if (_editOriginals.TryGetValue(item.Rowguid, out var original))
+                    {
+                        JsonConvert.PopulateObject(
+                            JsonConvert.SerializeObject(original, _cloneSettings),
+                            item,
+                            _cloneSettings
+                        );
+                        curODContext.SetEntityState(item, EntityStates.Unchanged);  // ✅ YOUR method
+                        _editOriginals.Remove(item.Rowguid);
+                    }
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Cancel error: {ex.Message}");
+        }
+
+        ResetEditState();
+    }
+
+    // private void CancelEdit(Plngen item)
+    // {
+    //     if (_editOriginals.TryGetValue(item.Rowguid, out var original))
+    //     {
+    //         // Restore original values using Newtonsoft
+    //         var originalJson = JsonConvert.SerializeObject(original, _cloneSettings);
+    //         JsonConvert.PopulateObject(originalJson, item, _cloneSettings);
+
+    //         curODContext.Context.ChangeState(item, EntityStates.Unchanged);
+    //     }
+
+    //     ResetEditState();
+    //     Console.WriteLine($"❌ Cancelled: {item.Liba}");
+    // }
+
+    // MARK 5: RESET EDIT STATE
+    private void ResetEditState()
+    {
+        // ✅ Clear ONLY current edit
+        EditingPlnRowGuid = null;
+        draftPln = null;
+        EdPlnRowguid = null;
+        isEdPln = false;
+
+        // ✅ DON'T clear _editOriginals - Guard handles
+        StateHasChanged();
+    }
+
+    // private void ResetEditState()
+    // {
+    //     SafeClearAddedEntities();  // ✅ Uses YOUR GetAllTrackedEntities()
+
+    //     EditingPlnRowGuid = null;
+    //     draftPln = null;
+    //     EdPlnRowguid = null;
+    //     isEdPln = false;
+    //     _editOriginals.Clear();
+    //     StateHasChanged();
+    // }
+
+    // MARK 6: ADD NEW
+    //     private void StartEdit(Plngen item, Guid rowguid)
+    // {
+    //     _editOriginals[rowguid] = (Plngen)DeepClone(item);
+    //     EditingPlnRowGuid = rowguid;
+    //     draftPln = item;
+    //     EdPlnRowguid = rowguid;
+    //     curODContext.UpdateObject(item);
+    //     isEdPln = true;
+    //     StateHasChanged();
+    // }
+
+    // private void CancelEdit(Plngen item)
+    // {
+    //     if (_editOriginals.TryGetValue(item.Rowguid, out var original))
+    //     {
+    //         JsonConvert.PopulateObject(
+    //             JsonConvert.SerializeObject(original, _cloneSettings), 
+    //             item, 
+    //             _cloneSettings
+    //         );
+    //         curODContext.ChangeState(item, EntityStates.Unchanged);
+    //         _editOriginals.Remove(item.Rowguid);  // ✅ COMPILES!
+    //     }
+    //     ResetEditState();
+    // }
+    private async Task StartAddNewPlnAsync()
+    {
+        // ✅ 1. CREATE NEW ROW
+        var newPln = new Plngen
+        {
+            Rowguid = Guid.NewGuid(),
+            Idorg = _usrBag.Idorg,
+            Xadd1 = -1,
+            Liba = "",
+            Abg = "",
+            Eta = 0
+        };
+
+        // ✅ 2. OData tracking
+        curODContext.AddObject("Plngens", newPln);
+
+        // ✅ 3. ADD TO GRID (TOP)
+        MyDaPlans.Insert(0, newPln);
+
+        // ✅ 4. AUTO-START EDIT (user-ready)
+        await Task.Delay(50);  // Grid render delay
+
+        EditingPlnRowGuid = newPln.Rowguid;  // ← Enable inputs
+        draftPln = newPln;
+        EdPlnRowguid = newPln.Rowguid;
+
+        // ✅ 5. JS Focus first input (UX perfect!)
+        await _jsRun.InvokeVoidAsync("focusFirstInput");
+
+        StateHasChanged();
+        Console.WriteLine($"➕ Added + Edit ready: {newPln.Rowguid}");
+    }
+
+    // private void StartAddPlnNew()
+    // {
+    //     // ✅ CREATE NEW ROW (no editing state)
+    //     var newPln = new Plngen
+    //     {
+    //         Rowguid = Guid.NewGuid(),
+    //         Idorg = _usrBag.Idorg,
+    //         Xadd1 = -1,  // New row marker
+    //         Liba = "",   // Empty fields
+    //         Abg = "",
+    //         Eta = 0
+    //     };
+
+    //     // ✅ OData tracking
+    //     curODContext.AddObject("Plngens", newPln);
+
+    //     // ✅ ADD TO GRID DATA (top position)
+    //     MyDaPlans.Insert(0, newPln);
+
+    //     // ✅ NO EDITING STATE - appears as normal row
+    //     // EditingPlnRowGuid stays NULL
+    //     // User must click ✏️ Edit to edit
+
+    //     StateHasChanged();
+
+    //     Console.WriteLine($"➕ Added new row: {newPln.Rowguid}");
+    // }
+
+
+
+    // MARK 1: ADD NEW ROW
+    // // private void StartAddPlnNew()
+    // // {
+    // //     _newPlnRowDraft = new Plngen
+    // //     {
+    // //         Id = 0,
+    // //         Idorg = _usrBag.Idorg
+    // //     };
+
+    // //     curODContext.AddObject("Plngens", _newPlnRowDraft);  // → State=Added
+    // //     _editingEntities.Add(_newPlnRowDraft);           // → Edit mode
+    // //     StateHasChanged();
+    // // }
+    // // // MARK 2: START EDIT
+    // // private void StartEdit(object entity, Guid rguid)
+    // // {
+    // //     _editOriginals[entity] = DeepClone(entity);  // ✅ Newtonsoft perfect clone
+    // //     EdPlnRowguid = rguid;
+    // //     _editingEntities.Add(entity);
+    // //     curODContext.UpdateObject(entity);
+    // //     isEdPln = true;
+    // //     StateHasChanged();
+    // // }
+    // MARK 3: CONFIRM NEW ROW
+    // //     private void ConfirmEdit(Plngen item)
+    // // {
+    // //     // ✅ Guard will auto-save on navigation (UpdateObject already called)
+    // //     // ✅ Optional: Immediate save
+    // //     // await Guard.FlushAsync(); 
+
+    // //     Console.WriteLine($"✅ SAVED: {item.Liba} (Rowguid: {item.Rowguid})");
+
+    // //     // ✅ Clean up edit state
+    // //     _editOriginals.Remove(item.Rowguid);
+    // //     ResetEditState();
+
+    // //     // ✅ Refresh grid data (optional)
+    // //     // await LoadPlansAsync();
+    // // }
+
+    // //     // MARK 4: CANCEL EDIT (Discard Changes)
+    // //     private void CancelEdit(Plngen item)
+    // // {
+    // //     if (_editOriginals.TryGetValue(item.Rowguid, out var original))
+    // //     {
+    // //         JsonConvert.PopulateObject(
+    // //             JsonConvert.SerializeObject(original, _cloneSettings), 
+    // //             item, 
+    // //             _cloneSettings
+    // //         );
+    // //         curODContext.Context.ChangeState(item, EntityStates.Unchanged);
+    // //         _editOriginals.Remove(item.Rowguid);  // ✅ COMPILES!
+    // //     }
+    // //     ResetEditState();
+    // // }
+
+    // MARK 3: START Delete
+    private void StartDelete(object entity)
+    {
+
+    }
+    //EDITING Gsgfix (tbl)
+    void Edit1tbl(Gsgfix mytbl)
+    {
+
+        // EdTblRowguid = mytbl.Rowguid;
+        // isEdTbl = true;
+    }
+    void Conf1tbl(Gsgfix myafil)
+    {
+
+        // EdTblRowguid = Guid.Empty;
+        // isEdTbl = false;
+    }
+    void Canc1tbl(Gsgfix myafil)
+    {
+
+
+        // EdTblRowguid = Guid.Empty;
+        // isEdTbl = false;
+    }
+    //Deling Gsgfix (tbl)
+    // void Dele1tbl(Gsgfix mytbl)
+    // {
+
+    //     DlTblRowguid = mytbl.Rowguid;
+    //     isDlTbl = true;
+    // }
+    // void ConfD1tbl(Gsgfix myafil)
+    // {
+
+    //     DlTblRowguid = Guid.Empty;
+    //     isDlTbl = false;
+    // }
+    // void CancD1tbl(Gsgfix myafil)
+    // {
+
+
+    //     DlTblRowguid = Guid.Empty;
+    //     isDlTbl = false;
+    // }
+
 
     void OpenAddPlan()
     {
@@ -2351,62 +2761,6 @@ else
     //     allEnable = false;
     //     StateHasChanged();
     // }
-
-    protected override async Task OnInitializedAsync()
-    {
-        isLoading = true;
-        if (toChild == null)
-        {
-            Console.WriteLine("TOCHILD IS NULL");
-            return;
-        }
-        isAuthenticated = toChild.isAuthenticated;
-        authUser = toChild.authUser;
-        if (!isAuthenticated)
-        {
-            Imessage = "CONNEXION, Utilisateur non authentifie";
-            return;
-        }
-        LsVars = toChild.LsVars;
-        LsFixes = toChild.LsFixes;
-        LsVues = LsFixes.Where(ut => ut.Gvars == 36 && ut.Itb == 4 && ut.Gp1 == 5 && ut.Elea != 0).ToList();
-        //LsTabls = toChild.LsTabls.ToList();
-        LsPlans = toChild.LsPlans;
-        //LsSites = toChild.LsSites;
-        _lgcdu = 3;
-        var noslims = LsVars.Where(uv => uv.Idhie == 0 && uv.Gvars == 21 && uv.Itb == 1 && uv.Elea == 1);
-        if (noslims.Any()) _lgcdu = noslims.FirstOrDefault().Ivala;
-        await ChargeParentData();
-        //Imessage = "Donnees Grilles chargees";
-        _navmanager.LocationChanged += OnLocationChanged;
-
-        //EditingPlnRowGuid = Guid.Empty;
-        isLoading = false;
-    }
-    private async Task ChargeParentData()
-    {
-        atrTitle = "Saisie";
-        gPlnsMap.Clear();
-        gRubsMap.Clear();
-        gFmtsMap.Clear();
-        gPlnsMap[curOrga.Idorg] = new List<Plngen>(curOrga.Plngens.Where(uf => uf.Idorg == curOrga.Idorg && uf.Ptyp == 5));
-        foreach (var uta in curOrga.Plngens)
-        {
-            List<Rubvar> tbcols = curPlan.Rubvars.Where(ln => ln.Id == uta.Id).ToList();
-            gRubsMap[uta.Id] = new List<Rubvar>(tbcols);
-            // string stfor = uta.Fpsource;
-            // if (!string.IsNullOrEmpty(stfor))
-            // {
-            //     stfor = stfor.Substring(0, 7);
-            // }
-            // uta.Strformu = stfor;
-            //Console.WriteLine($"Parent Xseq: {uta.Xseq}, Children count: {tbcols.Count}");
-        }
-        //var wrkplns = curOrga.Plngens.Where(pl => pl.Ptyp == 5 && pl.Totyp == IMyDom).ToList();
-        //MyDaPlans = wrkplns;
-        //LsDoms = LsFixes.Where(ut => ut.Gvars == 36 && ut.Itb == 4 && ut.Gp1 == 1 && ut.Elea != 0).ToList();
-    }
-
     //manage SAVING
     public async Task EdtAll()
     {
@@ -2415,31 +2769,80 @@ else
         EditingRubRowGuid = Guid.Empty;
         EditingFmtRowGuid = Guid.Empty;
     }
-    public async Task CncAll()
-    { //reload to annul AddObject/UpdateObject/DeleteObjet
-        Imessage = "Annulation Operations, patience...";
-        allEnable = false;
-        EditingPlnRowGuid = Guid.Empty;
-        EditingRubRowGuid = Guid.Empty;
-        EditingFmtRowGuid = Guid.Empty;
-        foreach (var enty in curODContext.Context.Entities.ToList())
+    // public async Task CncAll()
+    // { //reload to annul AddObject/UpdateObject/DeleteObjet
+    //     Imessage = "Annulation Operations, patience...";
+    //     allEnable = false;
+    //     EditingPlnRowGuid = Guid.Empty;
+    //     EditingRubRowGuid = Guid.Empty;
+    //     EditingFmtRowGuid = Guid.Empty;
+    //     ClearAddedEntities();
+    //     // if (curODContext.GetEntityState(enty) == EntityStates.Added)
+    //     //     {
+    //     //         curODContext.Detach(enty);
+    //     //     }
+    //     // }
+    //     Imessage = "";
+    // }
+    // ✅ CORRECT - Use ChangeTracker.Entries()
+    // ✅ MOST LIKELY - Your custom context has these:
+    private void SafeClearAddedEntities()
+    {
+        try
         {
-            if (curODContext.GetEntityState(enty) == EntityStates.Added)
+            // ✅ YOUR METHOD - Returns EntityDescriptor collection
+            foreach (var descriptor in curODContext.GetAllTrackedEntities().ToList())
             {
-                curODContext.Detach(enty);
+                if (descriptor != null && descriptor.Entity != null)
+                {
+                    var entity = descriptor.Entity;  // ✅ Actual entity object
+                    var state = curODContext.GetEntityState(entity);
+
+                    if (state == EntityStates.Added)
+                    {
+                        curODContext.Detach(entity);
+                    }
+                }
             }
         }
-        Imessage = "";
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Clear failed: {ex.Message}");
+        }
     }
-    public async Task SavAll()
-    {
-        allEnable = false;
-        EditingPlnRowGuid = Guid.Empty;
-        EditingRubRowGuid = Guid.Empty;
-        EditingFmtRowGuid = Guid.Empty;
-        await SaveCurEntities();
-        StateHasChanged();
-    }
+
+
+    // private void ClearAddedEntities()
+    // {
+    //     try
+    //     {
+    //         // ✅ OData Client: Iterate tracked entities properly
+
+    //         foreach (var entity in curODContext.Context.Entities.ToList())
+    //         {
+    //             if (entity != null &&
+    //                 curODContext.GetEntityState(entity) == EntityStates.Added)
+    //             {
+    //                 curODContext.Detach(entity);  // ✅ Safe!
+    //             }
+    //         }
+    //     }
+    //     catch (Exception ex)
+    //     {
+    //         Console.WriteLine($"Clear added failed: {ex.Message}");
+    //     }
+    // }
+
+
+    // public async Task SavAll()
+    // {
+    //     allEnable = false;
+    //     EditingPlnRowGuid = Guid.Empty;
+    //     EditingRubRowGuid = Guid.Empty;
+    //     EditingFmtRowGuid = Guid.Empty;
+    //     await SaveCurEntities();
+    //     StateHasChanged();
+    // }
 
     bool AreRowsEqual(Rubvar row1, Rubvar row2) =>
         row1.Liba == row2.Liba && row1.Abg == row2.Abg;
@@ -2464,7 +2867,7 @@ else
             curODContext.AddRelatedObject(curOrga, "Gxorgas", unpln);
         }
         GplnNewRows = new();
-        await SaveCurEntities();
+        //await SaveCurEntities();
         Imessage = "Pplan/Plan(s) SAVED";
         await plnModal.HideAsync();
         allEnable = false;
@@ -2481,7 +2884,7 @@ else
             curODContext.AddRelatedObject(curPlan, "Plngens", unrub);
         }
         GrubNewRows = new();
-        await SaveCurEntities();
+        //await SaveCurEntities();
         Imessage = "Pplan/Rubrique(s) SAVED";
         await rubModal.HideAsync();
         allEnable = false;
@@ -2498,7 +2901,7 @@ else
             curODContext.AddRelatedObject(curRubr, "Rubvars", unrub);
         }
         GfmtNewRows = new();
-        await SaveCurEntities();
+        //await SaveCurEntities();
         Imessage = "PRubr/Formats(s) SAVED";
         await fmtModal.HideAsync();
         allEnable = false;
@@ -2728,24 +3131,25 @@ else
     }
     private void OnLocationChanged(object sender, LocationChangedEventArgs e)
     {
-        bool reussi = SaveCurEntities().Result;
+        //bool reussi = SaveCurEntities().Result;
     }
-    public async Task<bool> SaveCurEntities()
-    {
-        try
-        {
-            await curODContext.SaveDataAsync();
-            Console.WriteLine("Saved SUCCESS");
-            //var wrkplns = curOrga.Plngens.Where(pl => pl.Ptyp == 3 && pl.Totyp == IMyAtr).ToList();
-            //MyDaPlans = wrkplns;
-            StateHasChanged();
-            return true;
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"Saved ISSUE {ex.Message}");
-            //Alert($"ECHEC Entities not SAVED");
-            return false;
-        }
-    }
+    // public async Task<bool> SaveCurEntities()
+    // {
+    //     try
+    //     {
+    //         await curODContext.SaveDataAsync();
+    //         _guard.save
+    //         Console.WriteLine("Saved SUCCESS");
+    //         //var wrkplns = curOrga.Plngens.Where(pl => pl.Ptyp == 3 && pl.Totyp == IMyAtr).ToList();
+    //         //MyDaPlans = wrkplns;
+    //         StateHasChanged();
+    //         return true;
+    //     }
+    //     catch (Exception ex)
+    //     {
+    //         Console.WriteLine($"Saved ISSUE {ex.Message}");
+    //         //Alert($"ECHEC Entities not SAVED");
+    //         return false;
+    //     }
+    // }
 }

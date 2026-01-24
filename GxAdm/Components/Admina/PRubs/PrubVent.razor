@@ -1789,14 +1789,14 @@ else
         }
         Imessage = "";
     }
-    public async Task SavAll()
-    {
-        allEnable = false;
-        EditingPlnRowGuid = Guid.Empty;
-        EditingRubRowGuid = Guid.Empty;
-        await SaveCurEntities();
-        StateHasChanged();
-    }
+    // public async Task SavAll()
+    // {
+    //     allEnable = false;
+    //     EditingPlnRowGuid = Guid.Empty;
+    //     EditingRubRowGuid = Guid.Empty;
+    //     await SaveCurEntities();
+    //     StateHasChanged();
+    // }
 
     bool AreRowsEqual(Rubvar row1, Rubvar row2) =>
         row1.Liba == row2.Liba && row1.Abg == row2.Abg;
@@ -1821,7 +1821,7 @@ else
             curODContext.AddRelatedObject(curOrga, "Gxorgas", unpln);
         }
         GplnNewRows = new();
-        await SaveCurEntities();
+        //await SaveCurEntities();
         Imessage = "Pplan/Plan(s) SAVED";
         await plnModal.HideAsync();
         allEnable = false;
@@ -1838,7 +1838,7 @@ else
             curODContext.AddRelatedObject(curPlan, "Plngens", unrub);
         }
         GrubNewRows = new();
-        await SaveCurEntities();
+        //await SaveCurEntities();
         Imessage = "Pplan/Rubrique(s) SAVED";
         await rubModal.HideAsync();
         allEnable = false;
@@ -2013,24 +2013,24 @@ else
     }
     private void OnLocationChanged(object sender, LocationChangedEventArgs e)
     {
-        bool reussi = SaveCurEntities().Result;
+        //bool reussi = SaveCurEntities().Result;
     }
-    public async Task<bool> SaveCurEntities()
-    {
-        try
-        {
-            await curODContext.SaveDataAsync();
-            Console.WriteLine("Saved SUCCESS");
-            //var wrkplns = curOrga.Plngens.Where(pl => pl.Ptyp == 3 && pl.Totyp == IMyAtr).ToList();
-            //MyDaPlans = wrkplns;
-            StateHasChanged();
-            return true;
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"Saved ISSUE {ex.Message}");
-            //Alert($"ECHEC Entities not SAVED");
-            return false;
-        }
-    }
+    // public async Task<bool> SaveCurEntities()
+    // {
+    //     try
+    //     {
+    //         await curODContext.SaveDataAsync();
+    //         Console.WriteLine("Saved SUCCESS");
+    //         //var wrkplns = curOrga.Plngens.Where(pl => pl.Ptyp == 3 && pl.Totyp == IMyAtr).ToList();
+    //         //MyDaPlans = wrkplns;
+    //         StateHasChanged();
+    //         return true;
+    //     }
+    //     catch (Exception ex)
+    //     {
+    //         Console.WriteLine($"Saved ISSUE {ex.Message}");
+    //         //Alert($"ECHEC Entities not SAVED");
+    //         return false;
+    //     }
+    // }
 }

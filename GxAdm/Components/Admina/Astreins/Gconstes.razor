@@ -154,49 +154,37 @@ else
                                                             }
                                                         </HeaderContent>
                                                         <ChildContent Context="item">
-                                                            @if (allEnable)
+                                                            @if (EdDocRowguid != item.Rowguid)
                                                             {
-                                                                @if (IsFixEditing(item))
+                                                                <button class="btn btn-warning btn-sm
+                                                                            @(!isEdDoc && !isDlDoc && EdDocRowguid != item.Rowguid ? "" : "disabled-action")"
+                                                                        @onclick="() => Edit1doc(item)">
+                                                                    ✏️ Edit
+                                                                </button>
+                                                            }
+                                                            else
+                                                            {
+                                                                <button class="btn btn-sm btn-success" @onclick="() => Conf1doc(item)">
+                                                                    💾 Save
+                                                                </button>
+                                                                <button class="btn btn-sm btn-secondary" @onclick="() => Canc1doc(item)">
+                                                                    ❎ Cancel
+                                                                </button>
+                                                            }
+                                                            @if (DlDocRowguid != item.Rowguid)
+                                                            {
+                                                                @if (item.Eaut != 9)
                                                                 {
-                                                                    <button class="btn btn-sm btn-success" @onclick="() => ConfEdingGen(draftMan, 1)">
-                                                                        @* SaveFixEdit(item)"> *@
-                                                                        💾 Save
-                                                                    </button>
-                                                                    <button class="btn btn-sm btn-secondary" @onclick="() => CancEdingGen(draftMan, 1)">
-                                                                        @* CancelFixEdit(item) *@
-                                                                        ❎ Cancel
-                                                                    </button>
-                                                                }
-                                                                else if (ConfirmingFixDeleteRowGuid == item.Rowguid)
-                                                                {
-                                                                    <button class="btn btn-sm btn-outline-danger" @onclick="() => PromptFixDelete(item)">
+                                                                    <button class="btn btn-sm btn-outline-danger @(!isDlDoc && !isEdDoc && DlDocRowguid != item.Rowguid ? "" : "disabled-action")"
+                                                                            @onclick="() => Dele1doc(item)">
                                                                         🗑️ Delete
                                                                     </button>
-                                                                    <button class="btn btn-sm btn-success" @onclick="() => ConfirmFixDelete(item)">
-                                                                        ✅ Confirm
-                                                                    </button>
-                                                                    <button class="btn btn-sm btn-secondary" @onclick="CancelFixDelete">
-                                                                        ❌ Cancel
-                                                                    </button>
                                                                 }
-                                                                else
-                                                                {
-                                                                    <button class="btn btn-sm btn-primary me-1 @(allEnable ? "" : "disabled-action")"
-                                                                            disabled="@(EditingFixRowGuid != null)"
-                                                                            @onclick="() => PromptGenEdit(item, 1)">
-                                                                        @* BeginFixEdit(item) *@
-                                                                        ✏️ Edit
-                                                                    </button>
-
-                                                                    @if (item.Eaut != 9)
-                                                                    {
-                                                                        <button class="btn btn-sm btn-outline-danger @(allEnable ? "" : "disabled-action")"
-                                                                                disabled="@(EditingFixRowGuid != null)"
-                                                                                @onclick="() => PromptFixDelete(item)">
-                                                                            🗑️ Delete
-                                                                        </button>
-                                                                    }
-                                                                }
+                                                            }
+                                                            else
+                                                            {
+                                                                <button class="btn btn-warning btn-sm @(DlDocRowguid == item.Rowguid ? "" : "disabled-action")" @onclick="() => ConfD1doc(item)">Confirm</button>
+                                                                <button class="btn btn-danger btn-sm @(DlDocRowguid == item.Rowguid ? "" : "disabled-action")" @onclick="() => CancD1doc(item)">Annul</button>
                                                             }
                                                         </ChildContent>
                                                     </GridColumn>
@@ -292,6 +280,40 @@ else
                                                             }
                                                         </HeaderContent>
                                                         <ChildContent Context="item">
+                                                            @if (EdPieRowguid != item.Rowguid)
+                                                            {
+                                                                <button class="btn btn-warning btn-sm
+                                                                            @(!isEdPie && !isDlPie && EdPieRowguid != item.Rowguid ? "" : "disabled-action")"
+                                                                        @onclick="() => Edit1pie(item)">
+                                                                    ✏️ Edit
+                                                                </button>
+                                                            }
+                                                            else
+                                                            {
+                                                                <button class="btn btn-sm btn-success" @onclick="() => Conf1pie(item)">
+                                                                    💾 Save
+                                                                </button>
+                                                                <button class="btn btn-sm btn-secondary" @onclick="() => Canc1pie(item)">
+                                                                    ❎ Cancel
+                                                                </button>
+                                                            }
+                                                            @if (DlPieRowguid != item.Rowguid)
+                                                            {
+                                                                @if (item.Eaut != 9)
+                                                                {
+                                                                    <button class="btn btn-sm btn-outline-danger @(!isDlPie && !isEdPie && DlPieRowguid != item.Rowguid ? "" : "disabled-action")"
+                                                                            @onclick="() => Dele1pie(item)">
+                                                                        🗑️ Delete
+                                                                    </button>
+                                                                }
+                                                            }
+                                                            else
+                                                            {
+                                                                <button class="btn btn-warning btn-sm @(DlPieRowguid == item.Rowguid ? "" : "disabled-action")" @onclick="() => ConfD1pie(item)">Confirm</button>
+                                                                <button class="btn btn-danger btn-sm @(DlPieRowguid == item.Rowguid ? "" : "disabled-action")" @onclick="() => CancD1pie(item)">Annul</button>
+                                                            }
+                                                        </ChildContent>
+                                                        @* <ChildContent Context="item">
                                                             @if (allEnable)
                                                             {
                                                                 @if (IsFixEditing(item))
@@ -332,7 +354,7 @@ else
                                                                     }
                                                                 }
                                                             }
-                                                        </ChildContent>
+                                                        </ChildContent> *@
                                                     </GridColumn>
                                                 </GridColumns>
                                             </Grid>
@@ -592,6 +614,11 @@ else
         .ses-header-row > div {
             white-space: nowrap;
         }
+
+    .disabled-action {
+        pointer-events: none;
+        opacity: 0.5;
+    }
 </style>
 @code {
     private bool isLoading = true;
@@ -651,6 +678,16 @@ else
     // ? new List<Gsgfix>(rows)
     // : new List<Gsgfix>();
 
+    //Editing
+    bool isEdDoc = false;
+    Guid EdDocRowguid = Guid.Empty;
+    bool isEdPie = false;
+    Guid EdPieRowguid = Guid.Empty;
+    //Deling
+    bool isDlDoc = false;
+    Guid DlDocRowguid = Guid.Empty;
+    bool isDlPie = false;
+    Guid DlPieRowguid = Guid.Empty;
 
     private IEnumerable<Gxorga> LsOrgas = new List<Gxorga>();
     private List<Gsgfix> LsTbData = new();
@@ -858,12 +895,94 @@ else
     }
     private async Task ConfPModal()
     {
-        await SaveCurEntities();
+        //await SaveCurEntities();
         Imessage = "Parent(s) SAVED";
         await patModal.HideAsync();
         allEnable = false;
         StateHasChanged();
     }
+    //EDITING Gsgfix (doc)
+    void Edit1doc(Gsgfix mytbl)
+    {
+
+        EdDocRowguid = mytbl.Rowguid;
+        isEdDoc = true;
+    }
+    void Conf1doc(Gsgfix myafil)
+    {
+
+        EdDocRowguid = Guid.Empty;
+        isEdDoc = false;
+    }
+    void Canc1doc(Gsgfix myafil)
+    {
+
+
+        EdDocRowguid = Guid.Empty;
+        isEdDoc = false;
+    }
+    //Deling Gsgfix (doc)
+    void Dele1doc(Gsgfix mytbl)
+    {
+
+        DlDocRowguid = mytbl.Rowguid;
+        isDlDoc = true;
+    }
+    void ConfD1doc(Gsgfix myafil)
+    {
+
+        DlDocRowguid = Guid.Empty;
+        isDlDoc = false;
+    }
+    void CancD1doc(Gsgfix myafil)
+    {
+
+
+        DlDocRowguid = Guid.Empty;
+        isDlDoc = false;
+    }
+    //EDITING Gsgfix (pie)
+    void Edit1pie(Gsgfix mytbl)
+    {
+
+        EdPieRowguid = mytbl.Rowguid;
+        isEdPie = true;
+    }
+    void Conf1pie(Gsgfix myafil)
+    {
+
+        EdPieRowguid = Guid.Empty;
+        isEdPie = false;
+    }
+    void Canc1pie(Gsgfix myafil)
+    {
+
+
+        EdPieRowguid = Guid.Empty;
+        isEdPie = false;
+    }
+    //Deling Gsgfix (pie)
+    void Dele1pie(Gsgfix mytbl)
+    {
+
+        DlPieRowguid = mytbl.Rowguid;
+        isDlPie = true;
+    }
+    void ConfD1pie(Gsgfix myafil)
+    {
+
+        DlPieRowguid = Guid.Empty;
+        isDlPie = false;
+    }
+    void CancD1pie(Gsgfix myafil)
+    {
+
+
+        DlPieRowguid = Guid.Empty;
+        isDlPie = false;
+    }
+
+
     //GTfl -- EDITING
     void PromptGenEdit(Gsgfix myafil, int orig)
     {
@@ -1103,7 +1222,7 @@ else
             curODContext.AddRelatedObject(curOrga, "Gxorgas", unpat);
         }
         PaterRows = new();
-        await SaveCurEntities();
+        //await SaveCurEntities();
         Imessage = "Parent(s) SAVED";
         await patModal.HideAsync();
         allEnable = false;
@@ -1124,29 +1243,29 @@ else
     private void OnLocationChanged(object sender, LocationChangedEventArgs e)
     {
         allEnable = false;
-        bool reussi = SaveCurEntities().Result;
+        //bool reussi = SaveCurEntities().Result;
         Console.WriteLine($"Success... SAVED SESSIONS");
     }
-    public async Task<bool> SaveCurEntities()
-    {
-        try
-        {
-            if (hasbeenModified)
-            {
-                await curODContext.SaveDataAsync();
-                Console.WriteLine("Saved SUCCESS");
-            }
-            //var wrkplns = curOrga.Plngens.Where(pl => pl.Ptyp == 3 && pl.Totyp == IMyAtr).ToList();
-            //MyDaPlans = wrkplns;
-            StateHasChanged();
-            return true;
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"Saved ISSUE {ex.Message}");
-            //Alert($"ECHEC Entities not SAVED");
-            return false;
-        }
-    }
+    // public async Task<bool> SaveCurEntities()
+    // {
+    //     try
+    //     {
+    //         if (hasbeenModified)
+    //         {
+    //             await curODContext.SaveDataAsync();
+    //             Console.WriteLine("Saved SUCCESS");
+    //         }
+    //         //var wrkplns = curOrga.Plngens.Where(pl => pl.Ptyp == 3 && pl.Totyp == IMyAtr).ToList();
+    //         //MyDaPlans = wrkplns;
+    //         StateHasChanged();
+    //         return true;
+    //     }
+    //     catch (Exception ex)
+    //     {
+    //         Console.WriteLine($"Saved ISSUE {ex.Message}");
+    //         //Alert($"ECHEC Entities not SAVED");
+    //         return false;
+    //     }
+    // }
 }
     

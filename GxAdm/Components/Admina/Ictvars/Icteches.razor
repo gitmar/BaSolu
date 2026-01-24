@@ -25,7 +25,6 @@
 @inject ILocalStorageService _localStorage
 @inject NavigationManager _navmanager
 @inject HttpClientService _cliemanager
-@inject HttpClientService cliemanager
 
 <!-- InscTiewComponent.razor -->
 <PageTitle>Tables</PageTitle>
@@ -1147,13 +1146,13 @@ else
         EditingRubRowGuid = Guid.Empty;
         Imessage = "";
     }
-    public async Task SavAll()
-    {
-        Imessage = "Enregistrement Operations, patience...";
-        allEnable = false;
-        EditingRubRowGuid = Guid.Empty;
-        await curODContext.SaveDataAsync();
-    }
+    // public async Task SavAll()
+    // {
+    //     Imessage = "Enregistrement Operations, patience...";
+    //     allEnable = false;
+    //     EditingRubRowGuid = Guid.Empty;
+    //     await curODContext.SaveDataAsync();
+    // }
     //CRUD OPERATIONS
     //--Manage PLANS
    
@@ -1172,7 +1171,7 @@ else
             curODContext.AddRelatedObject(curPlan, "Plngens", unrub);
         }
         GrubNewRows = new();
-        SaveCurEntities();
+        //SaveCurEntities();
         Imessage = "Gril/Rubrique(s) SAVED";
         await rubModal.HideAsync();
         allEnable = false;
@@ -1236,22 +1235,22 @@ else
     private void OnLocationChanged(object sender, LocationChangedEventArgs e)
     {
         allEnable = false;
-        SaveCurEntities();
+        //SaveCurEntities();
     }
-    private void SaveCurEntities()
-    {
-        Console.WriteLine($"Entities SAVED");
-        try
-        {
-            Console.WriteLine("SAVED PLUS");
-            curODContext.SaveDataAsync();
-            //var wrkplns = curOrga.Plngens.Where(pl => pl.Ptyp == 2 && pl.Totyp == IMyAtr).ToList();
-            //MyDaPlans = wrkplns;
-            StateHasChanged();
-        }
-        catch (Exception ex)
-        {
-            //Alert($"ECHEC Entities not SAVED");
-        }
-    }
+    // private void SaveCurEntities()
+    // {
+    //     Console.WriteLine($"Entities SAVED");
+    //     try
+    //     {
+    //         Console.WriteLine("SAVED PLUS");
+    //         curODContext.SaveDataAsync();
+    //         //var wrkplns = curOrga.Plngens.Where(pl => pl.Ptyp == 2 && pl.Totyp == IMyAtr).ToList();
+    //         //MyDaPlans = wrkplns;
+    //         StateHasChanged();
+    //     }
+    //     catch (Exception ex)
+    //     {
+    //         //Alert($"ECHEC Entities not SAVED");
+    //     }
+    // }
 }
