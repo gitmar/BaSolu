@@ -1,16 +1,20 @@
-﻿using GxAdm;
-using System.Net.Http.Headers;
+﻿using System.Net.Http.Headers;
+using System.Text.Json;
+
 using BlazorDownloadFile;
+
 using Blazored.LocalStorage;
-using GxAdm.Services;
+
+using GxAdm;
 using GxAdm.ClieModels;
+using GxAdm.Services;
+
 using GxShared.Helpers;
 using GxShared.Sess;
 
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
-using Microsoft.Extensions.DependencyInjection;
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
 var backUrl = new Uri(builder.Configuration["BackendUrl"]);
@@ -83,15 +87,16 @@ builder.Services.AddHttpClient("OFFLClient", client =>
 
 builder.Services.AddScoped<PendingChangesGuard>();
 // 🔥 1. HTTP CLIENT for parallel batch saves (ROOT base address)
+// Register named OData client
 builder.Services.AddHttpClient("ODataClient", client =>
 {
     var backUrl = builder.Configuration["BackendUrl"];
-    if (!backUrl.EndsWith("/"))
-    {
-        backUrl += "/";
-    }
-    client.BaseAddress = new Uri(backUrl); // new Uri("https://localhost:7095/");  // ROOT - NOT /odata
-}).AddHttpMessageHandler<AuthDelegatingHandler>(); ;
+    if (!backUrl.EndsWith("/")) backUrl += "/";
+    backUrl += "odata/";   // ✅ Ensure /odata is part of the base address
+
+    client.BaseAddress = new Uri(backUrl);
+})
+.AddHttpMessageHandler<AuthDelegatingHandler>();
 // 🔥 2. OData Context Factory (loads token + creates context)
 builder.Services.AddScoped<IODataContextFactory, ODataContextFactory>();
 //builder.Services.AddScoped<IODataContextFactory, ODataContextFactory>();
@@ -120,10 +125,12 @@ var host = builder.Build();
 // Get webApi is online or not
 var localStorage = host.Services.GetRequiredService<ILocalStorageService>();
 var authProvider = host.Services.GetRequiredService<MyAuthStateProvider>();
-// Clear local storage and notify logout
-await localStorage.ClearAsync(); // or remove specific items
-await authProvider.NotifyUserLogout();
-// Run the application
+var reset = await localStorage.GetItemAsync<bool>("force-reset");
+if (reset)
+{
+    await localStorage.ClearAsync();
+    await authProvider.NotifyUserLogout();
+}
 await host.RunAsync();
 
 public class ApiSettings

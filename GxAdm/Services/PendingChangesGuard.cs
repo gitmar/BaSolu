@@ -1,8 +1,4 @@
-﻿using System.Linq;
-using System.Net.Http;
-using System.Net.Http.Json;
-using System.Text.Json;
-using System.Text.Json.Serialization;
+﻿using System.Reflection;
 
 using GxWapi.DaModels;
 
@@ -19,11 +15,16 @@ namespace GxAdm.Services
         private readonly NavigationManager _navManager;
         private readonly IJSRuntime _jsRuntime;
         private readonly IHttpClientFactory _httpClientFactory;
-        private IDisposable? _registration;
         private MyODataContext? _ctx;
         private bool _disposed;
         private HttpClient? _httpClient;
-
+        private bool _isUpdating = false;
+        public event Action? OnChanges;
+        // 🔥 GENERALIZED - Replaces Plngen-specific methods
+        private readonly Dictionary<Type, Func<object, bool>> _unconfirmedPredicates = new();
+        private readonly HashSet<Guid> _unconfirmedRowguids = new();
+        private readonly HashSet<object> _unconfirmedAdds = new();
+        private int _childPendingCount = 0;        
         public PendingChangesGuard(
             IODataContextFactory contextFactory,
             NavigationManager navManager,
@@ -35,232 +36,219 @@ namespace GxAdm.Services
             _jsRuntime = jsRuntime;
             _httpClientFactory = httpClientFactory;
             _httpClient = httpClientFactory.CreateClient("ODataClient");
-            _registration = _navManager.RegisterLocationChangingHandler(OnLocationChangingAsync);
         }
 
         public void AttachContext(MyODataContext ctx) => _ctx = ctx;
 
-        /// <summary>
-        /// ✅ FIXED: Lambda instead of method group
-        /// </summary>
-        public bool HasPendingChanges()
+        public bool IsUnconfirmedAdd<T>(T entity) where T : class
         {
-            return _ctx?.Context?.Entities.Any(e => IsPendingState(e.State)) ?? false;
+            return _unconfirmedPredicates.TryGetValue(typeof(T), out var predicate) && predicate(entity);
         }
-
-        /// <summary>
-        /// ✅ FIXED: .Count() → .Where().Count()
-        /// </summary>
-        public int GetPendingChangesCount()
+        // 🔥 NEW: Generic version for Rubvar + others
+        public void MarkUnconfirmedAdd<T>(T entity) where T : class
         {
-            return _ctx?.Context?.Entities.Where(e => IsPendingState(e.State)).Count() ?? 0;
+            _unconfirmedAdds.Add(entity);
+            Console.WriteLine($"🔍 Marked unconfirmed {typeof(T).Name}: {entity?.GetHashCode()}");
+            //NotifyChanges();
         }
-
-        private static bool IsPendingState(EntityStates state) =>
-            state == EntityStates.Added ||
-            state == EntityStates.Modified ||
-            state == EntityStates.Deleted;
-
-        private static bool IsUnchanged(EntityStates state) =>
-            state == EntityStates.Unchanged;
-
-        /// <summary>
-        /// 🔥 FIXED: Uses EntityDescriptor directly (no EntityEntry needed)
-        /// </summary>
-        private bool HasInvalidEntities()
+        // 🔥 NEW GENERIC METHODS - Child entities use these
+        //public void RegisterUnconfirmedPredicate<T>(Func<T, bool> isUnconfirmed) where T : class
+        //{
+        //    _unconfirmedPredicates[typeof(T)] = obj => isUnconfirmed((T)obj);
+        //    Console.WriteLine($"✅ Registered {typeof(T).Name}: Xxxx == -1");
+        //}
+        public void DiscardAllUnconfirmedAdds()
         {
-            if (_ctx?.Context == null) return false;
+            if (_ctx?.Context?.Entities == null) return;
 
-            foreach (var entityDesc in _ctx.Context.Entities)
+            // 🔥 UNIVERSAL: ALL registered predicates (Plngen/Rubvar/Rubfmt/...)
+            foreach (var kvp in _unconfirmedPredicates)
             {
-                if (!IsPendingState(entityDesc.State)) continue;
-                if (IsInvalidKey(entityDesc)) return true;
+                var entityType = kvp.Key;
+                var predicate = kvp.Value;
+
+                var unconfirmed = _ctx.Context.Entities
+                    .Where(e => e.Entity != null &&
+                               entityType.IsInstanceOfType(e.Entity) &&
+                               predicate(e.Entity))
+                    .ToList();
+
+                foreach (var entityDesc in unconfirmed)
+                {
+                    _ctx.Context.Detach(entityDesc);
+                    Console.WriteLine($"🚫 Discarded unconfirmed {entityType.Name}");
+                }
             }
-            return false;
-        }
 
-        private bool IsInvalidKey(EntityDescriptor entityDesc)
+            NotifyChanges();
+        }
+        // 🔥 Your existing methods - UNCHANGED
+        public static bool IsPendingState(EntityStates state) =>
+            state == EntityStates.Added || state == EntityStates.Modified || state == EntityStates.Deleted;
+
+        public bool HasPendingChanges() =>
+            (_ctx?.Context?.Entities.Any(e => IsPendingState(e.State)) ?? false) || _childPendingCount > 0;
+
+        public int GetPendingChangesCount() =>
+            (_ctx?.Context?.Entities.Count(e => IsPendingState(e.State)) ?? 0) + _childPendingCount;
+
+        //public bool HasConfirmedPendingChanges()
+        //{
+        //    if (_ctx?.Context == null) return _childPendingCount > 0;
+        //    //return _ctx.Context.Entities.Any(e => IsPendingState(e.State) &&
+        //    //       !(e.Entity is Plngen p && (p.Xadd1 == -1 || p.Xedt1 == -1)));
+        //    // 🔥 GENERALIZED: Use predicates instead of Plngen-specific check
+        //    return _ctx.Context.Entities.Any(e => IsPendingState(e.State) &&
+        //           !_unconfirmedPredicates.Values.Any(pred => pred(e.Entity)));
+        //}
+        //public bool HasConfirmedPendingChanges()
+        //{
+        //    if (_ctx?.Context == null) return _childPendingCount > 0;
+
+        //    // 🔥 GENERALIZED: Check ALL registered predicates
+        //    return _ctx.Context.Entities.Any(e => IsPendingState(e.State) &&
+        //           !_unconfirmedPredicates.Values.Any(pred => pred(e.Entity)));
+        //}
+        public void RegisterUnconfirmedPredicate<T>(Func<T, bool> isUnconfirmed) where T : class
         {
-            var identityStr = entityDesc.Identity.ToString() ?? "unknown";
-            return entityDesc.Entity switch
+            _unconfirmedPredicates[typeof(T)] = obj =>
             {
-                Gxorga gxorga when gxorga.Idorg == 0 => FailLog("Gxorga", identityStr, "Idorg"),
-                Gsgfix gsgfix when gsgfix.Xseq == 0 => FailLog("Gsgfix", identityStr, "Xseq"),
-                Gsglne gsglne when gsglne.Id == 0 => FailLog("Gsglne", identityStr, "Id"),
-                Tiewel tiewel when tiewel.Id == 0 => FailLog("Tiewel", identityStr, "Id"),
-                Tiersp tiersp when tiersp.Id == 0 => FailLog("Tiersp", identityStr, "Id"),
-                Plngen plngen when plngen.Id == 0 => FailLog("Plngen", identityStr, "Id"),
-                _ => false
+                if (obj is T entity)  // 🔥 SAFE CAST FIRST
+                    return isUnconfirmed(entity);
+                return false;  // Not this type → not unconfirmed
             };
+            Console.WriteLine($"✅ Registered {typeof(T).Name}: Xxxx == -1");
         }
-
-        private bool FailLog(string entityType, string identity, string pkName)
+        public bool HasConfirmedPendingChanges()
         {
-            Console.WriteLine($"🚫 INVALID {entityType}: {identity} - {pkName}=0");
-            return true;
-        }
+            if (_ctx?.Context == null) return _childPendingCount > 0;
 
-        /// <summary>
-        /// 🔥 FIXED: Explicit lambda type
-        /// </summary>
+            return _ctx.Context.Entities.Any(e =>
+            {
+                if (!IsPendingState(e.State)) return false;
+
+                // 🔥 Check ALL predicates SAFELY
+                foreach (var kvp in _unconfirmedPredicates)
+                {
+                    if (kvp.Value(e.Entity)) return false;  // Unconfirmed!
+                }
+                return true;  // Confirmed pending change
+            });
+        }
+        public void NotifyChanges() => OnChanges?.Invoke();
+
+        // 🔥 Your existing FlushAsync - ENHANCED
         public async Task FlushAsync()
         {
-            if (_ctx == null || !HasPendingChanges() || HasInvalidEntities())
+            DiscardAllUnconfirmedAdds();  // All entity types
+
+            if (!HasConfirmedPendingChanges())
             {
-                Console.WriteLine("No valid changes to flush");
+                Console.WriteLine("✅ No confirmed changes to flush");
                 return;
             }
 
-            var pendingChanges = _ctx.GetPendingChanges().ToList();
-            Console.WriteLine($"🚀 Flushing {pendingChanges.Count} changes...");
-
-            try
-            {
-                // ✅ FIXED: Explicit async lambda
-                var saveTasks = pendingChanges.Select(async entityEntry =>
-                {
-                    var success = await SaveEntityAsync(entityEntry.Entity, GetEntityKey(entityEntry.Entity));
-                    return (entityEntry, success);
-                }).ToArray();
-
-                var results = await Task.WhenAll(saveTasks);
-
-                if (results.All(r => r.success))
-                {
-                    foreach (var entityEntry in pendingChanges)
-                    {
-                        _ctx.Detach(entityEntry.Entity);
-                    }
-                    Console.WriteLine($"🎉 Saved {pendingChanges.Count} entities");
-                }
-                else
-                {
-                    throw new InvalidOperationException("Save failed");
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"💥 FlushAsync failed: {ex.Message}");
-                throw;
-            }
+            await _ctx.Context.SaveChangesAsync();
         }
-        private async Task<bool> SaveEntityAsync(object entity, object key)
+
+        // 🔥 Navigation guard - Uses HasConfirmedPendingChanges
+
+        public async Task CancelChangesAsync()
         {
-            try
+            Console.WriteLine("🗑️ CancelChangesAsync START");
+
+            // 1. Detach ALL current entities
+            DiscardAllUnconfirmedAdds();
+
+            if (_ctx?.Context != null)
             {
-                var entityTypeName = entity.GetType().Name;
-                var entitySetName = entity switch
+                var allPending = _ctx.Context.Entities
+                    .Where(e => IsPendingState(e.State))
+                    .ToList();
+
+                foreach (var entityDesc in allPending)
                 {
-                    Gxorga _ => "Gxorgas",
-                    Gsgfix _ => "Gsgfixes",
-                    Gsglne _ => "Gsglnes",
-                    Tiewel _ => "Tiewels",
-                    Tiersp _ => "Tiersps",
-                    Plngen _ => "Plngens",
-
-                    _ => throw new ArgumentException($"Unknown entity: {entityTypeName}")
-                };
-
-                var url = $"odata/{entitySetName}({key})";
-                Console.WriteLine($"💾 PUT {url}");
-
-                var response = await _httpClient!.PutAsJsonAsync(
-                    url,
-                    entity,
-                    new JsonSerializerOptions
-                    {
-                        PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-                        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
-                    });
-
-                Console.WriteLine($"📡 Response: {response.StatusCode}");
-
-                if (response.IsSuccessStatusCode)
-                {
-                    Console.WriteLine($"✅ {entityTypeName}({key}): OK");
-                    return true;
+                    _ctx.Context.Detach(entityDesc);
                 }
+            }
 
-                var errorContent = await response.Content.ReadAsStringAsync();
-                Console.WriteLine($"❌ {entityTypeName}({key}): {response.StatusCode}");
-                Console.WriteLine($"   Error: {errorContent}");
-                return false;
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"💥 Exception: {ex.Message}");
-                return false;
-            }
+            _childPendingCount = 0;
+
+            // 🔥 2. REPLACE CONTEXT - Forces fresh tracking
+            _ctx = await _contextFactory.CreateAsync();
+            AttachContext(_ctx);
+
+            NotifyChanges();
+
+            Console.WriteLine($"✅ CancelChangesAsync END - Fresh context");
         }
-        public void CancelChanges()
-        {
-            if (_ctx?.Context == null) return;
 
-            var pending = _ctx.Context.Entities
-                .Where(e => !IsUnchanged(e.State))
+        //private void NotifyChanges() => OnChanges?.Invoke();
+        public event Action<int>? OnChildPendingChanged;
+        public ValueTask DisposeAsync()  // ❌ Remove 'async'
+        {
+            Console.WriteLine("🧹 PendingChangesGuard DisposeAsync");
+
+            // Clear internal state only
+            _ctx = null;
+            _unconfirmedPredicates.Clear();
+
+            // Remove _trackedEntities.Clear() - doesn't exist
+
+            // ✅ CORRECT ValueTask return
+            return ValueTask.CompletedTask;  // NOT 'default'
+        }
+        public void DiscardUnconfirmedAdds<T>() where T : class
+        {
+            if (_ctx?.Context?.Entities == null) return;
+
+            var unconfirmed = _ctx.Context.Entities
+                .Where(e => e.Entity is T t
+                           && _unconfirmedPredicates.TryGetValue(typeof(T), out var pred)
+                           && pred(t)  // ← Xadd1 == -1 ONLY
+                           && _unconfirmedAdds.Contains(t))  // ← ALSO check MarkUnconfirmedAdd tracking
                 .ToList();
 
-            foreach (var entityDesc in pending)
+            foreach (var entityDesc in unconfirmed)
             {
-                _ctx.Detach(entityDesc.Entity);
-            }
-
-            Console.WriteLine($"✅ Cancelled {pending.Count} changes");
-        }
-
-        private object GetEntityKey(object entity)
-        {
-            return entity switch
-            {
-                Gxorga gxorga => gxorga.Idorg,
-                Gsgfix gsgfix => gsgfix.Xseq,
-                Gsglne gsglne => gsglne.Id,
-                Tiewel tiewel => tiewel.Id,
-                Tiersp tiersp => tiersp.Id,
-                Plngen plngen => plngen.Id,
-                _ => throw new ArgumentException($"Unknown entity type: {entity.GetType().Name}")
-            };
-        }
-
-        private async ValueTask OnLocationChangingAsync(LocationChangingContext context)
-        {
-            if (!HasPendingChanges()) return;
-
-            context.PreventNavigation();
-
-            var confirmed = await _jsRuntime.InvokeAsync<bool>("confirm",
-                $"There are {GetPendingChangesCount()} unsaved changes. Save before leaving?");
-
-            if (confirmed)
-            {
-                try { await FlushAsync(); }
-                catch { CancelChanges(); }
-            }
-            else
-            {
-                CancelChanges();
-            }
-
-            _navManager.NavigateTo(context.TargetLocation, forceLoad: false);
-        }
-
-        public async ValueTask DisposeAsync()
-        {
-            if (_disposed) return;
-
-            try
-            {
-                _registration?.Dispose();
-                if (HasPendingChanges()) await FlushAsync();
-            }
-            catch
-            {
-                CancelChanges();
-            }
-            finally
-            {
-                _disposed = true;
+                _ctx.Context.Detach(entityDesc);
+                Console.WriteLine($"✅ DETACHED unconfirmed {typeof(T).Name}");
+                _unconfirmedAdds.Remove((T)entityDesc.Entity);
             }
         }
     }
+
+    //public void DiscardAllUnconfirmedAdds()
+    //{
+    //    if (_ctx?.Context == null) return;
+
+    //    // 🔥 ALL unconfirmed via predicate dictionary
+    //    foreach (var kvp in _unconfirmedPredicates)
+    //    {
+    //        var entityType = kvp.Key;
+    //        var predicate = kvp.Value;
+
+    //        var unconfirmed = _ctx.Context.Entities
+    //            .Where(e => e.Entity != null &&
+    //                       entityType.IsInstanceOfType(e.Entity) &&
+    //                       predicate(e.Entity))
+    //            .ToList();
+
+    //        foreach (var entityDesc in unconfirmed)
+    //        {
+    //            _ctx.Context.Detach(entityDesc);
+    //            Console.WriteLine($"🚫 Discarded unconfirmed {entityType.Name}");
+    //        }
+    //    }
+
+    //    // Plus Plngen fallback (backward compatible)
+    //    var plngenUnconfirmed = _ctx.Context.Entities
+    //        .Where(e => e.Entity is Plngen p && (p.Xadd1 == -1 || p.Xedt1 == -1))
+    //        .ToList();
+
+    //    foreach (var entityDesc in plngenUnconfirmed)
+    //        _ctx.Context.Detach(entityDesc);
+
+    //    NotifyChanges();
+    //}
 }

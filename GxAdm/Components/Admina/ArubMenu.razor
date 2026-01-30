@@ -208,7 +208,7 @@
     }
     private void CancelAllChanges()
     {
-        _guard.CancelChanges();
+        _guard.CancelChangesAsync();
         StateHasChanged();
     }
     protected override async Task OnInitializedAsync()

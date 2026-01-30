@@ -8,7 +8,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-// Generation date: 23-Jan-26 5:36:37 PM
+// Generation date: 29-Jan-26 4:59:21 AM
 namespace GxWapi.DaModels
 {
     /// <summary>
@@ -17158,18 +17158,12 @@ namespace GxWapi.DaModels
         /// </summary>
         /// <param name="ID">Initial value of Id.</param>
         /// <param name="rowguid">Initial value of Rowguid.</param>
-        /// <param name="idorgNavigation">Initial value of IdorgNavigation.</param>
         [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        public static Gsesio CreateGsesio(int ID, global::System.Guid rowguid, global::GxWapi.DaModels.Gxorga idorgNavigation)
+        public static Gsesio CreateGsesio(int ID, global::System.Guid rowguid)
         {
             Gsesio gsesio = new Gsesio();
             gsesio.Id = ID;
             gsesio.Rowguid = rowguid;
-            if ((idorgNavigation == null))
-            {
-                throw new global::System.ArgumentNullException("idorgNavigation");
-            }
-            gsesio.IdorgNavigation = idorgNavigation;
             return gsesio;
         }
         /// <summary>
@@ -18076,7 +18070,6 @@ namespace GxWapi.DaModels
         /// </summary>
         [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
         [global::Microsoft.OData.Client.OriginalNameAttribute("IdorgNavigation")]
-        [global::System.ComponentModel.DataAnnotations.RequiredAttribute(ErrorMessage = "IdorgNavigation is required.")]
         public virtual global::GxWapi.DaModels.Gxorga IdorgNavigation
         {
             get
@@ -18174,17 +18167,11 @@ namespace GxWapi.DaModels
         /// Create a new Gsjet object.
         /// </summary>
         /// <param name="ID">Initial value of Id.</param>
-        /// <param name="idorgNavigation">Initial value of IdorgNavigation.</param>
         [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        public static Gsjet CreateGsjet(int ID, global::GxWapi.DaModels.Gxorga idorgNavigation)
+        public static Gsjet CreateGsjet(int ID)
         {
             Gsjet gsjet = new Gsjet();
             gsjet.Id = ID;
-            if ((idorgNavigation == null))
-            {
-                throw new global::System.ArgumentNullException("idorgNavigation");
-            }
-            gsjet.IdorgNavigation = idorgNavigation;
             return gsjet;
         }
         /// <summary>
@@ -18469,7 +18456,6 @@ namespace GxWapi.DaModels
         /// </summary>
         [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
         [global::Microsoft.OData.Client.OriginalNameAttribute("IdorgNavigation")]
-        [global::System.ComponentModel.DataAnnotations.RequiredAttribute(ErrorMessage = "IdorgNavigation is required.")]
         public virtual global::GxWapi.DaModels.Gxorga IdorgNavigation
         {
             get
@@ -24403,6 +24389,4220 @@ namespace GxWapi.DaModels
         }
     }
     /// <summary>
+    /// There are no comments for TieatrSingle in the schema.
+    /// </summary>
+    [global::Microsoft.OData.Client.OriginalNameAttribute("TieatrSingle")]
+    public partial class TieatrSingle : global::Microsoft.OData.Client.DataServiceQuerySingle<Tieatr>
+    {
+        /// <summary>
+        /// Initialize a new TieatrSingle object.
+        /// </summary>
+        public TieatrSingle(global::Microsoft.OData.Client.DataServiceContext context, string path)
+            : base(context, path) {}
+
+        /// <summary>
+        /// Initialize a new TieatrSingle object.
+        /// </summary>
+        public TieatrSingle(global::Microsoft.OData.Client.DataServiceContext context, string path, bool isComposable)
+            : base(context, path, isComposable) {}
+
+        /// <summary>
+        /// Initialize a new TieatrSingle object.
+        /// </summary>
+        public TieatrSingle(global::Microsoft.OData.Client.DataServiceQuerySingle<Tieatr> query)
+            : base(query) {}
+
+        /// <summary>
+        /// There are no comments for ItieNavigation in the schema.
+        /// </summary>
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        [global::Microsoft.OData.Client.OriginalNameAttribute("ItieNavigation")]
+        public virtual global::GxWapi.DaModels.TierspSingle ItieNavigation
+        {
+            get
+            {
+                if (!this.IsComposable)
+                {
+                    throw new global::System.NotSupportedException("The previous function is not composable.");
+                }
+                if ((this._ItieNavigation == null))
+                {
+                    this._ItieNavigation = new global::GxWapi.DaModels.TierspSingle(this.Context, GetPath("ItieNavigation"));
+                }
+                return this._ItieNavigation;
+            }
+        }
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        private global::GxWapi.DaModels.TierspSingle _ItieNavigation;
+    }
+    /// <summary>
+    /// There are no comments for Tieatr in the schema.
+    /// </summary>
+    /// <KeyProperties>
+    /// Id
+    /// </KeyProperties>
+    [global::Microsoft.OData.Client.Key("Id")]
+    [global::Microsoft.OData.Client.OriginalNameAttribute("Tieatr")]
+    public partial class Tieatr : global::Microsoft.OData.Client.BaseEntityType, global::System.ComponentModel.INotifyPropertyChanged
+    {
+        /// <summary>
+        /// Create a new Tieatr object.
+        /// </summary>
+        /// <param name="ID">Initial value of Id.</param>
+        /// <param name="noatr">Initial value of Noatr.</param>
+        /// <param name="rowguid">Initial value of Rowguid.</param>
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        public static Tieatr CreateTieatr(int ID, int noatr, global::System.Guid rowguid)
+        {
+            Tieatr tieatr = new Tieatr();
+            tieatr.Id = ID;
+            tieatr.Noatr = noatr;
+            tieatr.Rowguid = rowguid;
+            return tieatr;
+        }
+        /// <summary>
+        /// There are no comments for Property Id in the schema.
+        /// </summary>
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        [global::Microsoft.OData.Client.OriginalNameAttribute("Id")]
+        [global::System.ComponentModel.DataAnnotations.RequiredAttribute(ErrorMessage = "Id is required.")]
+        public virtual int Id
+        {
+            get
+            {
+                return this._Id;
+            }
+            set
+            {
+                this.OnIdChanging(value);
+                this._Id = value;
+                this.OnIdChanged();
+                this.OnPropertyChanged("Id");
+            }
+        }
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        private int _Id;
+        partial void OnIdChanging(int value);
+        partial void OnIdChanged();
+        /// <summary>
+        /// There are no comments for Property Itie in the schema.
+        /// </summary>
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        [global::Microsoft.OData.Client.OriginalNameAttribute("Itie")]
+        public virtual global::System.Nullable<int> Itie
+        {
+            get
+            {
+                return this._Itie;
+            }
+            set
+            {
+                this.OnItieChanging(value);
+                this._Itie = value;
+                this.OnItieChanged();
+                this.OnPropertyChanged("Itie");
+            }
+        }
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        private global::System.Nullable<int> _Itie;
+        partial void OnItieChanging(global::System.Nullable<int> value);
+        partial void OnItieChanged();
+        /// <summary>
+        /// There are no comments for Property Iele in the schema.
+        /// </summary>
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        [global::Microsoft.OData.Client.OriginalNameAttribute("Iele")]
+        public virtual global::System.Nullable<int> Iele
+        {
+            get
+            {
+                return this._Iele;
+            }
+            set
+            {
+                this.OnIeleChanging(value);
+                this._Iele = value;
+                this.OnIeleChanged();
+                this.OnPropertyChanged("Iele");
+            }
+        }
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        private global::System.Nullable<int> _Iele;
+        partial void OnIeleChanging(global::System.Nullable<int> value);
+        partial void OnIeleChanged();
+        /// <summary>
+        /// There are no comments for Property Idorg in the schema.
+        /// </summary>
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        [global::Microsoft.OData.Client.OriginalNameAttribute("Idorg")]
+        public virtual global::System.Nullable<int> Idorg
+        {
+            get
+            {
+                return this._Idorg;
+            }
+            set
+            {
+                this.OnIdorgChanging(value);
+                this._Idorg = value;
+                this.OnIdorgChanged();
+                this.OnPropertyChanged("Idorg");
+            }
+        }
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        private global::System.Nullable<int> _Idorg;
+        partial void OnIdorgChanging(global::System.Nullable<int> value);
+        partial void OnIdorgChanged();
+        /// <summary>
+        /// There are no comments for Property Zcdati in the schema.
+        /// </summary>
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        [global::Microsoft.OData.Client.OriginalNameAttribute("Zcdati")]
+        public virtual string Zcdati
+        {
+            get
+            {
+                return this._Zcdati;
+            }
+            set
+            {
+                this.OnZcdatiChanging(value);
+                this._Zcdati = value;
+                this.OnZcdatiChanged();
+                this.OnPropertyChanged("Zcdati");
+            }
+        }
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        private string _Zcdati;
+        partial void OnZcdatiChanging(string value);
+        partial void OnZcdatiChanged();
+        /// <summary>
+        /// There are no comments for Property Siat in the schema.
+        /// </summary>
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        [global::Microsoft.OData.Client.OriginalNameAttribute("Siat")]
+        public virtual global::System.Nullable<int> Siat
+        {
+            get
+            {
+                return this._Siat;
+            }
+            set
+            {
+                this.OnSiatChanging(value);
+                this._Siat = value;
+                this.OnSiatChanged();
+                this.OnPropertyChanged("Siat");
+            }
+        }
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        private global::System.Nullable<int> _Siat;
+        partial void OnSiatChanging(global::System.Nullable<int> value);
+        partial void OnSiatChanged();
+        /// <summary>
+        /// There are no comments for Property Sidpd in the schema.
+        /// </summary>
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        [global::Microsoft.OData.Client.OriginalNameAttribute("Sidpd")]
+        public virtual global::System.Nullable<int> Sidpd
+        {
+            get
+            {
+                return this._Sidpd;
+            }
+            set
+            {
+                this.OnSidpdChanging(value);
+                this._Sidpd = value;
+                this.OnSidpdChanged();
+                this.OnPropertyChanged("Sidpd");
+            }
+        }
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        private global::System.Nullable<int> _Sidpd;
+        partial void OnSidpdChanging(global::System.Nullable<int> value);
+        partial void OnSidpdChanged();
+        /// <summary>
+        /// There are no comments for Property Adpd in the schema.
+        /// </summary>
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        [global::Microsoft.OData.Client.OriginalNameAttribute("Adpd")]
+        public virtual global::System.Nullable<global::System.Guid> Adpd
+        {
+            get
+            {
+                return this._Adpd;
+            }
+            set
+            {
+                this.OnAdpdChanging(value);
+                this._Adpd = value;
+                this.OnAdpdChanged();
+                this.OnPropertyChanged("Adpd");
+            }
+        }
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        private global::System.Nullable<global::System.Guid> _Adpd;
+        partial void OnAdpdChanging(global::System.Nullable<global::System.Guid> value);
+        partial void OnAdpdChanged();
+        /// <summary>
+        /// There are no comments for Property Xdpd in the schema.
+        /// </summary>
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        [global::Microsoft.OData.Client.OriginalNameAttribute("Xdpd")]
+        public virtual global::System.Nullable<global::System.Guid> Xdpd
+        {
+            get
+            {
+                return this._Xdpd;
+            }
+            set
+            {
+                this.OnXdpdChanging(value);
+                this._Xdpd = value;
+                this.OnXdpdChanged();
+                this.OnPropertyChanged("Xdpd");
+            }
+        }
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        private global::System.Nullable<global::System.Guid> _Xdpd;
+        partial void OnXdpdChanging(global::System.Nullable<global::System.Guid> value);
+        partial void OnXdpdChanged();
+        /// <summary>
+        /// There are no comments for Property Ydpd in the schema.
+        /// </summary>
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        [global::Microsoft.OData.Client.OriginalNameAttribute("Ydpd")]
+        public virtual global::System.Nullable<global::System.Guid> Ydpd
+        {
+            get
+            {
+                return this._Ydpd;
+            }
+            set
+            {
+                this.OnYdpdChanging(value);
+                this._Ydpd = value;
+                this.OnYdpdChanged();
+                this.OnPropertyChanged("Ydpd");
+            }
+        }
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        private global::System.Nullable<global::System.Guid> _Ydpd;
+        partial void OnYdpdChanging(global::System.Nullable<global::System.Guid> value);
+        partial void OnYdpdChanged();
+        /// <summary>
+        /// There are no comments for Property Dpdsac in the schema.
+        /// </summary>
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        [global::Microsoft.OData.Client.OriginalNameAttribute("Dpdsac")]
+        public virtual global::System.Nullable<int> Dpdsac
+        {
+            get
+            {
+                return this._Dpdsac;
+            }
+            set
+            {
+                this.OnDpdsacChanging(value);
+                this._Dpdsac = value;
+                this.OnDpdsacChanged();
+                this.OnPropertyChanged("Dpdsac");
+            }
+        }
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        private global::System.Nullable<int> _Dpdsac;
+        partial void OnDpdsacChanging(global::System.Nullable<int> value);
+        partial void OnDpdsacChanged();
+        /// <summary>
+        /// There are no comments for Property Pnoatr in the schema.
+        /// </summary>
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        [global::Microsoft.OData.Client.OriginalNameAttribute("Pnoatr")]
+        public virtual string Pnoatr
+        {
+            get
+            {
+                return this._Pnoatr;
+            }
+            set
+            {
+                this.OnPnoatrChanging(value);
+                this._Pnoatr = value;
+                this.OnPnoatrChanged();
+                this.OnPropertyChanged("Pnoatr");
+            }
+        }
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        private string _Pnoatr;
+        partial void OnPnoatrChanging(string value);
+        partial void OnPnoatrChanged();
+        /// <summary>
+        /// There are no comments for Property Atyp in the schema.
+        /// </summary>
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        [global::Microsoft.OData.Client.OriginalNameAttribute("Atyp")]
+        public virtual global::System.Nullable<int> Atyp
+        {
+            get
+            {
+                return this._Atyp;
+            }
+            set
+            {
+                this.OnAtypChanging(value);
+                this._Atyp = value;
+                this.OnAtypChanged();
+                this.OnPropertyChanged("Atyp");
+            }
+        }
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        private global::System.Nullable<int> _Atyp;
+        partial void OnAtypChanging(global::System.Nullable<int> value);
+        partial void OnAtypChanged();
+        /// <summary>
+        /// There are no comments for Property Svala in the schema.
+        /// </summary>
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        [global::Microsoft.OData.Client.OriginalNameAttribute("Svala")]
+        public virtual string Svala
+        {
+            get
+            {
+                return this._Svala;
+            }
+            set
+            {
+                this.OnSvalaChanging(value);
+                this._Svala = value;
+                this.OnSvalaChanged();
+                this.OnPropertyChanged("Svala");
+            }
+        }
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        private string _Svala;
+        partial void OnSvalaChanging(string value);
+        partial void OnSvalaChanged();
+        /// <summary>
+        /// There are no comments for Property Ivala in the schema.
+        /// </summary>
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        [global::Microsoft.OData.Client.OriginalNameAttribute("Ivala")]
+        public virtual global::System.Nullable<int> Ivala
+        {
+            get
+            {
+                return this._Ivala;
+            }
+            set
+            {
+                this.OnIvalaChanging(value);
+                this._Ivala = value;
+                this.OnIvalaChanged();
+                this.OnPropertyChanged("Ivala");
+            }
+        }
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        private global::System.Nullable<int> _Ivala;
+        partial void OnIvalaChanging(global::System.Nullable<int> value);
+        partial void OnIvalaChanged();
+        /// <summary>
+        /// There are no comments for Property Rvala in the schema.
+        /// </summary>
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        [global::Microsoft.OData.Client.OriginalNameAttribute("Rvala")]
+        public virtual global::System.Nullable<float> Rvala
+        {
+            get
+            {
+                return this._Rvala;
+            }
+            set
+            {
+                this.OnRvalaChanging(value);
+                this._Rvala = value;
+                this.OnRvalaChanged();
+                this.OnPropertyChanged("Rvala");
+            }
+        }
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        private global::System.Nullable<float> _Rvala;
+        partial void OnRvalaChanging(global::System.Nullable<float> value);
+        partial void OnRvalaChanged();
+        /// <summary>
+        /// There are no comments for Property Bvala in the schema.
+        /// </summary>
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        [global::Microsoft.OData.Client.OriginalNameAttribute("Bvala")]
+        public virtual global::System.Nullable<bool> Bvala
+        {
+            get
+            {
+                return this._Bvala;
+            }
+            set
+            {
+                this.OnBvalaChanging(value);
+                this._Bvala = value;
+                this.OnBvalaChanged();
+                this.OnPropertyChanged("Bvala");
+            }
+        }
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        private global::System.Nullable<bool> _Bvala;
+        partial void OnBvalaChanging(global::System.Nullable<bool> value);
+        partial void OnBvalaChanged();
+        /// <summary>
+        /// There are no comments for Property Dvala in the schema.
+        /// </summary>
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        [global::Microsoft.OData.Client.OriginalNameAttribute("Dvala")]
+        public virtual global::System.Nullable<global::System.DateTimeOffset> Dvala
+        {
+            get
+            {
+                return this._Dvala;
+            }
+            set
+            {
+                this.OnDvalaChanging(value);
+                this._Dvala = value;
+                this.OnDvalaChanged();
+                this.OnPropertyChanged("Dvala");
+            }
+        }
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        private global::System.Nullable<global::System.DateTimeOffset> _Dvala;
+        partial void OnDvalaChanging(global::System.Nullable<global::System.DateTimeOffset> value);
+        partial void OnDvalaChanged();
+        /// <summary>
+        /// There are no comments for Property Ndval in the schema.
+        /// </summary>
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        [global::Microsoft.OData.Client.OriginalNameAttribute("Ndval")]
+        public virtual global::System.Nullable<int> Ndval
+        {
+            get
+            {
+                return this._Ndval;
+            }
+            set
+            {
+                this.OnNdvalChanging(value);
+                this._Ndval = value;
+                this.OnNdvalChanged();
+                this.OnPropertyChanged("Ndval");
+            }
+        }
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        private global::System.Nullable<int> _Ndval;
+        partial void OnNdvalChanging(global::System.Nullable<int> value);
+        partial void OnNdvalChanged();
+        /// <summary>
+        /// There are no comments for Property Idval in the schema.
+        /// </summary>
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        [global::Microsoft.OData.Client.OriginalNameAttribute("Idval")]
+        public virtual global::System.Nullable<int> Idval
+        {
+            get
+            {
+                return this._Idval;
+            }
+            set
+            {
+                this.OnIdvalChanging(value);
+                this._Idval = value;
+                this.OnIdvalChanged();
+                this.OnPropertyChanged("Idval");
+            }
+        }
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        private global::System.Nullable<int> _Idval;
+        partial void OnIdvalChanging(global::System.Nullable<int> value);
+        partial void OnIdvalChanged();
+        /// <summary>
+        /// There are no comments for Property Ifval in the schema.
+        /// </summary>
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        [global::Microsoft.OData.Client.OriginalNameAttribute("Ifval")]
+        public virtual global::System.Nullable<int> Ifval
+        {
+            get
+            {
+                return this._Ifval;
+            }
+            set
+            {
+                this.OnIfvalChanging(value);
+                this._Ifval = value;
+                this.OnIfvalChanged();
+                this.OnPropertyChanged("Ifval");
+            }
+        }
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        private global::System.Nullable<int> _Ifval;
+        partial void OnIfvalChanging(global::System.Nullable<int> value);
+        partial void OnIfvalChanged();
+        /// <summary>
+        /// There are no comments for Property Totyp in the schema.
+        /// </summary>
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        [global::Microsoft.OData.Client.OriginalNameAttribute("Totyp")]
+        public virtual global::System.Nullable<int> Totyp
+        {
+            get
+            {
+                return this._Totyp;
+            }
+            set
+            {
+                this.OnTotypChanging(value);
+                this._Totyp = value;
+                this.OnTotypChanged();
+                this.OnPropertyChanged("Totyp");
+            }
+        }
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        private global::System.Nullable<int> _Totyp;
+        partial void OnTotypChanging(global::System.Nullable<int> value);
+        partial void OnTotypChanged();
+        /// <summary>
+        /// There are no comments for Property Htyp in the schema.
+        /// </summary>
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        [global::Microsoft.OData.Client.OriginalNameAttribute("Htyp")]
+        public virtual global::System.Nullable<int> Htyp
+        {
+            get
+            {
+                return this._Htyp;
+            }
+            set
+            {
+                this.OnHtypChanging(value);
+                this._Htyp = value;
+                this.OnHtypChanged();
+                this.OnPropertyChanged("Htyp");
+            }
+        }
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        private global::System.Nullable<int> _Htyp;
+        partial void OnHtypChanging(global::System.Nullable<int> value);
+        partial void OnHtypChanged();
+        /// <summary>
+        /// There are no comments for Property Uraz in the schema.
+        /// </summary>
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        [global::Microsoft.OData.Client.OriginalNameAttribute("Uraz")]
+        public virtual global::System.Nullable<int> Uraz
+        {
+            get
+            {
+                return this._Uraz;
+            }
+            set
+            {
+                this.OnUrazChanging(value);
+                this._Uraz = value;
+                this.OnUrazChanged();
+                this.OnPropertyChanged("Uraz");
+            }
+        }
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        private global::System.Nullable<int> _Uraz;
+        partial void OnUrazChanging(global::System.Nullable<int> value);
+        partial void OnUrazChanged();
+        /// <summary>
+        /// There are no comments for Property Gxseq in the schema.
+        /// </summary>
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        [global::Microsoft.OData.Client.OriginalNameAttribute("Gxseq")]
+        public virtual global::System.Nullable<int> Gxseq
+        {
+            get
+            {
+                return this._Gxseq;
+            }
+            set
+            {
+                this.OnGxseqChanging(value);
+                this._Gxseq = value;
+                this.OnGxseqChanged();
+                this.OnPropertyChanged("Gxseq");
+            }
+        }
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        private global::System.Nullable<int> _Gxseq;
+        partial void OnGxseqChanging(global::System.Nullable<int> value);
+        partial void OnGxseqChanged();
+        /// <summary>
+        /// There are no comments for Property Idoc in the schema.
+        /// </summary>
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        [global::Microsoft.OData.Client.OriginalNameAttribute("Idoc")]
+        public virtual string Idoc
+        {
+            get
+            {
+                return this._Idoc;
+            }
+            set
+            {
+                this.OnIdocChanging(value);
+                this._Idoc = value;
+                this.OnIdocChanged();
+                this.OnPropertyChanged("Idoc");
+            }
+        }
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        private string _Idoc;
+        partial void OnIdocChanging(string value);
+        partial void OnIdocChanged();
+        /// <summary>
+        /// There are no comments for Property Idoca in the schema.
+        /// </summary>
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        [global::Microsoft.OData.Client.OriginalNameAttribute("Idoca")]
+        public virtual string Idoca
+        {
+            get
+            {
+                return this._Idoca;
+            }
+            set
+            {
+                this.OnIdocaChanging(value);
+                this._Idoca = value;
+                this.OnIdocaChanged();
+                this.OnPropertyChanged("Idoca");
+            }
+        }
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        private string _Idoca;
+        partial void OnIdocaChanging(string value);
+        partial void OnIdocaChanged();
+        /// <summary>
+        /// There are no comments for Property Idocb in the schema.
+        /// </summary>
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        [global::Microsoft.OData.Client.OriginalNameAttribute("Idocb")]
+        public virtual string Idocb
+        {
+            get
+            {
+                return this._Idocb;
+            }
+            set
+            {
+                this.OnIdocbChanging(value);
+                this._Idocb = value;
+                this.OnIdocbChanged();
+                this.OnPropertyChanged("Idocb");
+            }
+        }
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        private string _Idocb;
+        partial void OnIdocbChanging(string value);
+        partial void OnIdocbChanged();
+        /// <summary>
+        /// There are no comments for Property Photo in the schema.
+        /// </summary>
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        [global::Microsoft.OData.Client.OriginalNameAttribute("Photo")]
+        public virtual string Photo
+        {
+            get
+            {
+                return this._Photo;
+            }
+            set
+            {
+                this.OnPhotoChanging(value);
+                this._Photo = value;
+                this.OnPhotoChanged();
+                this.OnPropertyChanged("Photo");
+            }
+        }
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        private string _Photo;
+        partial void OnPhotoChanging(string value);
+        partial void OnPhotoChanged();
+        /// <summary>
+        /// There are no comments for Property Phot2 in the schema.
+        /// </summary>
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        [global::Microsoft.OData.Client.OriginalNameAttribute("Phot2")]
+        public virtual byte[] Phot2
+        {
+            get
+            {
+                return this._Phot2;
+            }
+            set
+            {
+                this.OnPhot2Changing(value);
+                this._Phot2 = value;
+                this.OnPhot2Changed();
+                this.OnPropertyChanged("Phot2");
+            }
+        }
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        private byte[] _Phot2;
+        partial void OnPhot2Changing(byte[] value);
+        partial void OnPhot2Changed();
+        /// <summary>
+        /// There are no comments for Property Datc in the schema.
+        /// </summary>
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        [global::Microsoft.OData.Client.OriginalNameAttribute("Datc")]
+        public virtual global::System.Nullable<global::System.DateTimeOffset> Datc
+        {
+            get
+            {
+                return this._Datc;
+            }
+            set
+            {
+                this.OnDatcChanging(value);
+                this._Datc = value;
+                this.OnDatcChanged();
+                this.OnPropertyChanged("Datc");
+            }
+        }
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        private global::System.Nullable<global::System.DateTimeOffset> _Datc;
+        partial void OnDatcChanging(global::System.Nullable<global::System.DateTimeOffset> value);
+        partial void OnDatcChanged();
+        /// <summary>
+        /// There are no comments for Property Eta in the schema.
+        /// </summary>
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        [global::Microsoft.OData.Client.OriginalNameAttribute("Eta")]
+        public virtual global::System.Nullable<int> Eta
+        {
+            get
+            {
+                return this._Eta;
+            }
+            set
+            {
+                this.OnEtaChanging(value);
+                this._Eta = value;
+                this.OnEtaChanged();
+                this.OnPropertyChanged("Eta");
+            }
+        }
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        private global::System.Nullable<int> _Eta;
+        partial void OnEtaChanging(global::System.Nullable<int> value);
+        partial void OnEtaChanged();
+        /// <summary>
+        /// There are no comments for Property Selc in the schema.
+        /// </summary>
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        [global::Microsoft.OData.Client.OriginalNameAttribute("Selc")]
+        public virtual global::System.Nullable<bool> Selc
+        {
+            get
+            {
+                return this._Selc;
+            }
+            set
+            {
+                this.OnSelcChanging(value);
+                this._Selc = value;
+                this.OnSelcChanged();
+                this.OnPropertyChanged("Selc");
+            }
+        }
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        private global::System.Nullable<bool> _Selc;
+        partial void OnSelcChanging(global::System.Nullable<bool> value);
+        partial void OnSelcChanged();
+        /// <summary>
+        /// There are no comments for Property Usrope in the schema.
+        /// </summary>
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        [global::Microsoft.OData.Client.OriginalNameAttribute("Usrope")]
+        public virtual string Usrope
+        {
+            get
+            {
+                return this._Usrope;
+            }
+            set
+            {
+                this.OnUsropeChanging(value);
+                this._Usrope = value;
+                this.OnUsropeChanged();
+                this.OnPropertyChanged("Usrope");
+            }
+        }
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        private string _Usrope;
+        partial void OnUsropeChanging(string value);
+        partial void OnUsropeChanged();
+        /// <summary>
+        /// There are no comments for Property Usrupd in the schema.
+        /// </summary>
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        [global::Microsoft.OData.Client.OriginalNameAttribute("Usrupd")]
+        public virtual string Usrupd
+        {
+            get
+            {
+                return this._Usrupd;
+            }
+            set
+            {
+                this.OnUsrupdChanging(value);
+                this._Usrupd = value;
+                this.OnUsrupdChanged();
+                this.OnPropertyChanged("Usrupd");
+            }
+        }
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        private string _Usrupd;
+        partial void OnUsrupdChanging(string value);
+        partial void OnUsrupdChanged();
+        /// <summary>
+        /// There are no comments for Property Ivalid in the schema.
+        /// </summary>
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        [global::Microsoft.OData.Client.OriginalNameAttribute("Ivalid")]
+        public virtual global::System.Nullable<int> Ivalid
+        {
+            get
+            {
+                return this._Ivalid;
+            }
+            set
+            {
+                this.OnIvalidChanging(value);
+                this._Ivalid = value;
+                this.OnIvalidChanged();
+                this.OnPropertyChanged("Ivalid");
+            }
+        }
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        private global::System.Nullable<int> _Ivalid;
+        partial void OnIvalidChanging(global::System.Nullable<int> value);
+        partial void OnIvalidChanged();
+        /// <summary>
+        /// There are no comments for Property Iclos in the schema.
+        /// </summary>
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        [global::Microsoft.OData.Client.OriginalNameAttribute("Iclos")]
+        public virtual global::System.Nullable<int> Iclos
+        {
+            get
+            {
+                return this._Iclos;
+            }
+            set
+            {
+                this.OnIclosChanging(value);
+                this._Iclos = value;
+                this.OnIclosChanged();
+                this.OnPropertyChanged("Iclos");
+            }
+        }
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        private global::System.Nullable<int> _Iclos;
+        partial void OnIclosChanging(global::System.Nullable<int> value);
+        partial void OnIclosChanged();
+        /// <summary>
+        /// There are no comments for Property Eaut in the schema.
+        /// </summary>
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        [global::Microsoft.OData.Client.OriginalNameAttribute("Eaut")]
+        public virtual global::System.Nullable<int> Eaut
+        {
+            get
+            {
+                return this._Eaut;
+            }
+            set
+            {
+                this.OnEautChanging(value);
+                this._Eaut = value;
+                this.OnEautChanged();
+                this.OnPropertyChanged("Eaut");
+            }
+        }
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        private global::System.Nullable<int> _Eaut;
+        partial void OnEautChanging(global::System.Nullable<int> value);
+        partial void OnEautChanged();
+        /// <summary>
+        /// There are no comments for Property Noatr in the schema.
+        /// </summary>
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        [global::Microsoft.OData.Client.OriginalNameAttribute("Noatr")]
+        [global::System.ComponentModel.DataAnnotations.RequiredAttribute(ErrorMessage = "Noatr is required.")]
+        public virtual int Noatr
+        {
+            get
+            {
+                return this._Noatr;
+            }
+            set
+            {
+                this.OnNoatrChanging(value);
+                this._Noatr = value;
+                this.OnNoatrChanged();
+                this.OnPropertyChanged("Noatr");
+            }
+        }
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        private int _Noatr;
+        partial void OnNoatrChanging(int value);
+        partial void OnNoatrChanged();
+        /// <summary>
+        /// There are no comments for Property Rowguid in the schema.
+        /// </summary>
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        [global::Microsoft.OData.Client.OriginalNameAttribute("Rowguid")]
+        [global::System.ComponentModel.DataAnnotations.RequiredAttribute(ErrorMessage = "Rowguid is required.")]
+        public virtual global::System.Guid Rowguid
+        {
+            get
+            {
+                return this._Rowguid;
+            }
+            set
+            {
+                this.OnRowguidChanging(value);
+                this._Rowguid = value;
+                this.OnRowguidChanged();
+                this.OnPropertyChanged("Rowguid");
+            }
+        }
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        private global::System.Guid _Rowguid;
+        partial void OnRowguidChanging(global::System.Guid value);
+        partial void OnRowguidChanged();
+        /// <summary>
+        /// There are no comments for Property Obsv in the schema.
+        /// </summary>
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        [global::Microsoft.OData.Client.OriginalNameAttribute("Obsv")]
+        public virtual string Obsv
+        {
+            get
+            {
+                return this._Obsv;
+            }
+            set
+            {
+                this.OnObsvChanging(value);
+                this._Obsv = value;
+                this.OnObsvChanged();
+                this.OnPropertyChanged("Obsv");
+            }
+        }
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        private string _Obsv;
+        partial void OnObsvChanging(string value);
+        partial void OnObsvChanged();
+        /// <summary>
+        /// There are no comments for Property ItieNavigation in the schema.
+        /// </summary>
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        [global::Microsoft.OData.Client.OriginalNameAttribute("ItieNavigation")]
+        public virtual global::GxWapi.DaModels.Tiersp ItieNavigation
+        {
+            get
+            {
+                return this._ItieNavigation;
+            }
+            set
+            {
+                this.OnItieNavigationChanging(value);
+                this._ItieNavigation = value;
+                this.OnItieNavigationChanged();
+                this.OnPropertyChanged("ItieNavigation");
+            }
+        }
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        private global::GxWapi.DaModels.Tiersp _ItieNavigation;
+        partial void OnItieNavigationChanging(global::GxWapi.DaModels.Tiersp value);
+        partial void OnItieNavigationChanged();
+        /// <summary>
+        /// This event is raised when the value of the property is changed
+        /// </summary>
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        public event global::System.ComponentModel.PropertyChangedEventHandler PropertyChanged;
+        /// <summary>
+        /// The value of the property is changed
+        /// </summary>
+        /// <param name="property">property name</param>
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        protected virtual void OnPropertyChanged(string property)
+        {
+            if ((this.PropertyChanged != null))
+            {
+                this.PropertyChanged(this, new global::System.ComponentModel.PropertyChangedEventArgs(property));
+            }
+        }
+    }
+    /// <summary>
+    /// There are no comments for TieaflSingle in the schema.
+    /// </summary>
+    [global::Microsoft.OData.Client.OriginalNameAttribute("TieaflSingle")]
+    public partial class TieaflSingle : global::Microsoft.OData.Client.DataServiceQuerySingle<Tieafl>
+    {
+        /// <summary>
+        /// Initialize a new TieaflSingle object.
+        /// </summary>
+        public TieaflSingle(global::Microsoft.OData.Client.DataServiceContext context, string path)
+            : base(context, path) {}
+
+        /// <summary>
+        /// Initialize a new TieaflSingle object.
+        /// </summary>
+        public TieaflSingle(global::Microsoft.OData.Client.DataServiceContext context, string path, bool isComposable)
+            : base(context, path, isComposable) {}
+
+        /// <summary>
+        /// Initialize a new TieaflSingle object.
+        /// </summary>
+        public TieaflSingle(global::Microsoft.OData.Client.DataServiceQuerySingle<Tieafl> query)
+            : base(query) {}
+
+        /// <summary>
+        /// There are no comments for ItieNavigation in the schema.
+        /// </summary>
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        [global::Microsoft.OData.Client.OriginalNameAttribute("ItieNavigation")]
+        public virtual global::GxWapi.DaModels.TierspSingle ItieNavigation
+        {
+            get
+            {
+                if (!this.IsComposable)
+                {
+                    throw new global::System.NotSupportedException("The previous function is not composable.");
+                }
+                if ((this._ItieNavigation == null))
+                {
+                    this._ItieNavigation = new global::GxWapi.DaModels.TierspSingle(this.Context, GetPath("ItieNavigation"));
+                }
+                return this._ItieNavigation;
+            }
+        }
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        private global::GxWapi.DaModels.TierspSingle _ItieNavigation;
+    }
+    /// <summary>
+    /// There are no comments for Tieafl in the schema.
+    /// </summary>
+    /// <KeyProperties>
+    /// Id
+    /// </KeyProperties>
+    [global::Microsoft.OData.Client.Key("Id")]
+    [global::Microsoft.OData.Client.OriginalNameAttribute("Tieafl")]
+    public partial class Tieafl : global::Microsoft.OData.Client.BaseEntityType, global::System.ComponentModel.INotifyPropertyChanged
+    {
+        /// <summary>
+        /// Create a new Tieafl object.
+        /// </summary>
+        /// <param name="ID">Initial value of Id.</param>
+        /// <param name="nom">Initial value of Nom.</param>
+        /// <param name="pnom">Initial value of Pnom.</param>
+        /// <param name="rowguid">Initial value of Rowguid.</param>
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        public static Tieafl CreateTieafl(int ID, string nom, string pnom, global::System.Guid rowguid)
+        {
+            Tieafl tieafl = new Tieafl();
+            tieafl.Id = ID;
+            tieafl.Nom = nom;
+            tieafl.Pnom = pnom;
+            tieafl.Rowguid = rowguid;
+            return tieafl;
+        }
+        /// <summary>
+        /// There are no comments for Property Id in the schema.
+        /// </summary>
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        [global::Microsoft.OData.Client.OriginalNameAttribute("Id")]
+        [global::System.ComponentModel.DataAnnotations.RequiredAttribute(ErrorMessage = "Id is required.")]
+        public virtual int Id
+        {
+            get
+            {
+                return this._Id;
+            }
+            set
+            {
+                this.OnIdChanging(value);
+                this._Id = value;
+                this.OnIdChanged();
+                this.OnPropertyChanged("Id");
+            }
+        }
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        private int _Id;
+        partial void OnIdChanging(int value);
+        partial void OnIdChanged();
+        /// <summary>
+        /// There are no comments for Property Itie in the schema.
+        /// </summary>
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        [global::Microsoft.OData.Client.OriginalNameAttribute("Itie")]
+        public virtual global::System.Nullable<int> Itie
+        {
+            get
+            {
+                return this._Itie;
+            }
+            set
+            {
+                this.OnItieChanging(value);
+                this._Itie = value;
+                this.OnItieChanged();
+                this.OnPropertyChanged("Itie");
+            }
+        }
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        private global::System.Nullable<int> _Itie;
+        partial void OnItieChanging(global::System.Nullable<int> value);
+        partial void OnItieChanged();
+        /// <summary>
+        /// There are no comments for Property Iele in the schema.
+        /// </summary>
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        [global::Microsoft.OData.Client.OriginalNameAttribute("Iele")]
+        public virtual global::System.Nullable<int> Iele
+        {
+            get
+            {
+                return this._Iele;
+            }
+            set
+            {
+                this.OnIeleChanging(value);
+                this._Iele = value;
+                this.OnIeleChanged();
+                this.OnPropertyChanged("Iele");
+            }
+        }
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        private global::System.Nullable<int> _Iele;
+        partial void OnIeleChanging(global::System.Nullable<int> value);
+        partial void OnIeleChanged();
+        /// <summary>
+        /// There are no comments for Property Idorg in the schema.
+        /// </summary>
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        [global::Microsoft.OData.Client.OriginalNameAttribute("Idorg")]
+        public virtual global::System.Nullable<int> Idorg
+        {
+            get
+            {
+                return this._Idorg;
+            }
+            set
+            {
+                this.OnIdorgChanging(value);
+                this._Idorg = value;
+                this.OnIdorgChanged();
+                this.OnPropertyChanged("Idorg");
+            }
+        }
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        private global::System.Nullable<int> _Idorg;
+        partial void OnIdorgChanging(global::System.Nullable<int> value);
+        partial void OnIdorgChanged();
+        /// <summary>
+        /// There are no comments for Property Irang in the schema.
+        /// </summary>
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        [global::Microsoft.OData.Client.OriginalNameAttribute("Irang")]
+        public virtual global::System.Nullable<int> Irang
+        {
+            get
+            {
+                return this._Irang;
+            }
+            set
+            {
+                this.OnIrangChanging(value);
+                this._Irang = value;
+                this.OnIrangChanged();
+                this.OnPropertyChanged("Irang");
+            }
+        }
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        private global::System.Nullable<int> _Irang;
+        partial void OnIrangChanging(global::System.Nullable<int> value);
+        partial void OnIrangChanged();
+        /// <summary>
+        /// There are no comments for Property Usrid in the schema.
+        /// </summary>
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        [global::Microsoft.OData.Client.OriginalNameAttribute("Usrid")]
+        public virtual string Usrid
+        {
+            get
+            {
+                return this._Usrid;
+            }
+            set
+            {
+                this.OnUsridChanging(value);
+                this._Usrid = value;
+                this.OnUsridChanged();
+                this.OnPropertyChanged("Usrid");
+            }
+        }
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        private string _Usrid;
+        partial void OnUsridChanging(string value);
+        partial void OnUsridChanged();
+        /// <summary>
+        /// There are no comments for Property Tyafl in the schema.
+        /// </summary>
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        [global::Microsoft.OData.Client.OriginalNameAttribute("Tyafl")]
+        public virtual global::System.Nullable<int> Tyafl
+        {
+            get
+            {
+                return this._Tyafl;
+            }
+            set
+            {
+                this.OnTyaflChanging(value);
+                this._Tyafl = value;
+                this.OnTyaflChanged();
+                this.OnPropertyChanged("Tyafl");
+            }
+        }
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        private global::System.Nullable<int> _Tyafl;
+        partial void OnTyaflChanging(global::System.Nullable<int> value);
+        partial void OnTyaflChanged();
+        /// <summary>
+        /// There are no comments for Property Gpafl in the schema.
+        /// </summary>
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        [global::Microsoft.OData.Client.OriginalNameAttribute("Gpafl")]
+        public virtual global::System.Nullable<int> Gpafl
+        {
+            get
+            {
+                return this._Gpafl;
+            }
+            set
+            {
+                this.OnGpaflChanging(value);
+                this._Gpafl = value;
+                this.OnGpaflChanged();
+                this.OnPropertyChanged("Gpafl");
+            }
+        }
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        private global::System.Nullable<int> _Gpafl;
+        partial void OnGpaflChanging(global::System.Nullable<int> value);
+        partial void OnGpaflChanged();
+        /// <summary>
+        /// There are no comments for Property Smatri in the schema.
+        /// </summary>
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        [global::Microsoft.OData.Client.OriginalNameAttribute("Smatri")]
+        public virtual string Smatri
+        {
+            get
+            {
+                return this._Smatri;
+            }
+            set
+            {
+                this.OnSmatriChanging(value);
+                this._Smatri = value;
+                this.OnSmatriChanged();
+                this.OnPropertyChanged("Smatri");
+            }
+        }
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        private string _Smatri;
+        partial void OnSmatriChanging(string value);
+        partial void OnSmatriChanged();
+        /// <summary>
+        /// There are no comments for Property Xmatri in the schema.
+        /// </summary>
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        [global::Microsoft.OData.Client.OriginalNameAttribute("Xmatri")]
+        public virtual string Xmatri
+        {
+            get
+            {
+                return this._Xmatri;
+            }
+            set
+            {
+                this.OnXmatriChanging(value);
+                this._Xmatri = value;
+                this.OnXmatriChanged();
+                this.OnPropertyChanged("Xmatri");
+            }
+        }
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        private string _Xmatri;
+        partial void OnXmatriChanging(string value);
+        partial void OnXmatriChanged();
+        /// <summary>
+        /// There are no comments for Property Nom in the schema.
+        /// </summary>
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        [global::Microsoft.OData.Client.OriginalNameAttribute("Nom")]
+        [global::System.ComponentModel.DataAnnotations.RequiredAttribute(ErrorMessage = "Nom is required.")]
+        public virtual string Nom
+        {
+            get
+            {
+                return this._Nom;
+            }
+            set
+            {
+                this.OnNomChanging(value);
+                this._Nom = value;
+                this.OnNomChanged();
+                this.OnPropertyChanged("Nom");
+            }
+        }
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        private string _Nom;
+        partial void OnNomChanging(string value);
+        partial void OnNomChanged();
+        /// <summary>
+        /// There are no comments for Property Nomb in the schema.
+        /// </summary>
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        [global::Microsoft.OData.Client.OriginalNameAttribute("Nomb")]
+        public virtual string Nomb
+        {
+            get
+            {
+                return this._Nomb;
+            }
+            set
+            {
+                this.OnNombChanging(value);
+                this._Nomb = value;
+                this.OnNombChanged();
+                this.OnPropertyChanged("Nomb");
+            }
+        }
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        private string _Nomb;
+        partial void OnNombChanging(string value);
+        partial void OnNombChanged();
+        /// <summary>
+        /// There are no comments for Property Pnom in the schema.
+        /// </summary>
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        [global::Microsoft.OData.Client.OriginalNameAttribute("Pnom")]
+        [global::System.ComponentModel.DataAnnotations.RequiredAttribute(ErrorMessage = "Pnom is required.")]
+        public virtual string Pnom
+        {
+            get
+            {
+                return this._Pnom;
+            }
+            set
+            {
+                this.OnPnomChanging(value);
+                this._Pnom = value;
+                this.OnPnomChanged();
+                this.OnPropertyChanged("Pnom");
+            }
+        }
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        private string _Pnom;
+        partial void OnPnomChanging(string value);
+        partial void OnPnomChanged();
+        /// <summary>
+        /// There are no comments for Property Statut in the schema.
+        /// </summary>
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        [global::Microsoft.OData.Client.OriginalNameAttribute("Statut")]
+        public virtual global::System.Nullable<int> Statut
+        {
+            get
+            {
+                return this._Statut;
+            }
+            set
+            {
+                this.OnStatutChanging(value);
+                this._Statut = value;
+                this.OnStatutChanged();
+                this.OnPropertyChanged("Statut");
+            }
+        }
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        private global::System.Nullable<int> _Statut;
+        partial void OnStatutChanging(global::System.Nullable<int> value);
+        partial void OnStatutChanged();
+        /// <summary>
+        /// There are no comments for Property Relat in the schema.
+        /// </summary>
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        [global::Microsoft.OData.Client.OriginalNameAttribute("Relat")]
+        public virtual global::System.Nullable<int> Relat
+        {
+            get
+            {
+                return this._Relat;
+            }
+            set
+            {
+                this.OnRelatChanging(value);
+                this._Relat = value;
+                this.OnRelatChanged();
+                this.OnPropertyChanged("Relat");
+            }
+        }
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        private global::System.Nullable<int> _Relat;
+        partial void OnRelatChanging(global::System.Nullable<int> value);
+        partial void OnRelatChanged();
+        /// <summary>
+        /// There are no comments for Property Sexe in the schema.
+        /// </summary>
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        [global::Microsoft.OData.Client.OriginalNameAttribute("Sexe")]
+        public virtual global::System.Nullable<int> Sexe
+        {
+            get
+            {
+                return this._Sexe;
+            }
+            set
+            {
+                this.OnSexeChanging(value);
+                this._Sexe = value;
+                this.OnSexeChanged();
+                this.OnPropertyChanged("Sexe");
+            }
+        }
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        private global::System.Nullable<int> _Sexe;
+        partial void OnSexeChanging(global::System.Nullable<int> value);
+        partial void OnSexeChanged();
+        /// <summary>
+        /// There are no comments for Property Sitmat in the schema.
+        /// </summary>
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        [global::Microsoft.OData.Client.OriginalNameAttribute("Sitmat")]
+        public virtual global::System.Nullable<int> Sitmat
+        {
+            get
+            {
+                return this._Sitmat;
+            }
+            set
+            {
+                this.OnSitmatChanging(value);
+                this._Sitmat = value;
+                this.OnSitmatChanged();
+                this.OnPropertyChanged("Sitmat");
+            }
+        }
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        private global::System.Nullable<int> _Sitmat;
+        partial void OnSitmatChanging(global::System.Nullable<int> value);
+        partial void OnSitmatChanged();
+        /// <summary>
+        /// There are no comments for Property Ifonc in the schema.
+        /// </summary>
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        [global::Microsoft.OData.Client.OriginalNameAttribute("Ifonc")]
+        public virtual global::System.Nullable<int> Ifonc
+        {
+            get
+            {
+                return this._Ifonc;
+            }
+            set
+            {
+                this.OnIfoncChanging(value);
+                this._Ifonc = value;
+                this.OnIfoncChanged();
+                this.OnPropertyChanged("Ifonc");
+            }
+        }
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        private global::System.Nullable<int> _Ifonc;
+        partial void OnIfoncChanging(global::System.Nullable<int> value);
+        partial void OnIfoncChanged();
+        /// <summary>
+        /// There are no comments for Property Igrad in the schema.
+        /// </summary>
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        [global::Microsoft.OData.Client.OriginalNameAttribute("Igrad")]
+        public virtual global::System.Nullable<int> Igrad
+        {
+            get
+            {
+                return this._Igrad;
+            }
+            set
+            {
+                this.OnIgradChanging(value);
+                this._Igrad = value;
+                this.OnIgradChanged();
+                this.OnPropertyChanged("Igrad");
+            }
+        }
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        private global::System.Nullable<int> _Igrad;
+        partial void OnIgradChanging(global::System.Nullable<int> value);
+        partial void OnIgradChanged();
+        /// <summary>
+        /// There are no comments for Property Usrname in the schema.
+        /// </summary>
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        [global::Microsoft.OData.Client.OriginalNameAttribute("Usrname")]
+        public virtual string Usrname
+        {
+            get
+            {
+                return this._Usrname;
+            }
+            set
+            {
+                this.OnUsrnameChanging(value);
+                this._Usrname = value;
+                this.OnUsrnameChanged();
+                this.OnPropertyChanged("Usrname");
+            }
+        }
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        private string _Usrname;
+        partial void OnUsrnameChanging(string value);
+        partial void OnUsrnameChanged();
+        /// <summary>
+        /// There are no comments for Property Usremail in the schema.
+        /// </summary>
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        [global::Microsoft.OData.Client.OriginalNameAttribute("Usremail")]
+        public virtual string Usremail
+        {
+            get
+            {
+                return this._Usremail;
+            }
+            set
+            {
+                this.OnUsremailChanging(value);
+                this._Usremail = value;
+                this.OnUsremailChanged();
+                this.OnPropertyChanged("Usremail");
+            }
+        }
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        private string _Usremail;
+        partial void OnUsremailChanging(string value);
+        partial void OnUsremailChanged();
+        /// <summary>
+        /// There are no comments for Property Usrphone in the schema.
+        /// </summary>
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        [global::Microsoft.OData.Client.OriginalNameAttribute("Usrphone")]
+        public virtual string Usrphone
+        {
+            get
+            {
+                return this._Usrphone;
+            }
+            set
+            {
+                this.OnUsrphoneChanging(value);
+                this._Usrphone = value;
+                this.OnUsrphoneChanged();
+                this.OnPropertyChanged("Usrphone");
+            }
+        }
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        private string _Usrphone;
+        partial void OnUsrphoneChanging(string value);
+        partial void OnUsrphoneChanged();
+        /// <summary>
+        /// There are no comments for Property Usrphon2 in the schema.
+        /// </summary>
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        [global::Microsoft.OData.Client.OriginalNameAttribute("Usrphon2")]
+        public virtual string Usrphon2
+        {
+            get
+            {
+                return this._Usrphon2;
+            }
+            set
+            {
+                this.OnUsrphon2Changing(value);
+                this._Usrphon2 = value;
+                this.OnUsrphon2Changed();
+                this.OnPropertyChanged("Usrphon2");
+            }
+        }
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        private string _Usrphon2;
+        partial void OnUsrphon2Changing(string value);
+        partial void OnUsrphon2Changed();
+        /// <summary>
+        /// There are no comments for Property Usrsocial in the schema.
+        /// </summary>
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        [global::Microsoft.OData.Client.OriginalNameAttribute("Usrsocial")]
+        public virtual string Usrsocial
+        {
+            get
+            {
+                return this._Usrsocial;
+            }
+            set
+            {
+                this.OnUsrsocialChanging(value);
+                this._Usrsocial = value;
+                this.OnUsrsocialChanged();
+                this.OnPropertyChanged("Usrsocial");
+            }
+        }
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        private string _Usrsocial;
+        partial void OnUsrsocialChanging(string value);
+        partial void OnUsrsocialChanged();
+        /// <summary>
+        /// There are no comments for Property Ihie in the schema.
+        /// </summary>
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        [global::Microsoft.OData.Client.OriginalNameAttribute("Ihie")]
+        public virtual global::System.Nullable<int> Ihie
+        {
+            get
+            {
+                return this._Ihie;
+            }
+            set
+            {
+                this.OnIhieChanging(value);
+                this._Ihie = value;
+                this.OnIhieChanged();
+                this.OnPropertyChanged("Ihie");
+            }
+        }
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        private global::System.Nullable<int> _Ihie;
+        partial void OnIhieChanging(global::System.Nullable<int> value);
+        partial void OnIhieChanged();
+        /// <summary>
+        /// There are no comments for Property Ipst in the schema.
+        /// </summary>
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        [global::Microsoft.OData.Client.OriginalNameAttribute("Ipst")]
+        public virtual global::System.Nullable<int> Ipst
+        {
+            get
+            {
+                return this._Ipst;
+            }
+            set
+            {
+                this.OnIpstChanging(value);
+                this._Ipst = value;
+                this.OnIpstChanged();
+                this.OnPropertyChanged("Ipst");
+            }
+        }
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        private global::System.Nullable<int> _Ipst;
+        partial void OnIpstChanging(global::System.Nullable<int> value);
+        partial void OnIpstChanged();
+        /// <summary>
+        /// There are no comments for Property Igeo in the schema.
+        /// </summary>
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        [global::Microsoft.OData.Client.OriginalNameAttribute("Igeo")]
+        public virtual global::System.Nullable<int> Igeo
+        {
+            get
+            {
+                return this._Igeo;
+            }
+            set
+            {
+                this.OnIgeoChanging(value);
+                this._Igeo = value;
+                this.OnIgeoChanged();
+                this.OnPropertyChanged("Igeo");
+            }
+        }
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        private global::System.Nullable<int> _Igeo;
+        partial void OnIgeoChanging(global::System.Nullable<int> value);
+        partial void OnIgeoChanged();
+        /// <summary>
+        /// There are no comments for Property Dnais in the schema.
+        /// </summary>
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        [global::Microsoft.OData.Client.OriginalNameAttribute("Dnais")]
+        public virtual global::System.Nullable<global::System.DateTimeOffset> Dnais
+        {
+            get
+            {
+                return this._Dnais;
+            }
+            set
+            {
+                this.OnDnaisChanging(value);
+                this._Dnais = value;
+                this.OnDnaisChanged();
+                this.OnPropertyChanged("Dnais");
+            }
+        }
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        private global::System.Nullable<global::System.DateTimeOffset> _Dnais;
+        partial void OnDnaisChanging(global::System.Nullable<global::System.DateTimeOffset> value);
+        partial void OnDnaisChanged();
+        /// <summary>
+        /// There are no comments for Property Demb in the schema.
+        /// </summary>
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        [global::Microsoft.OData.Client.OriginalNameAttribute("Demb")]
+        public virtual global::System.Nullable<global::System.DateTimeOffset> Demb
+        {
+            get
+            {
+                return this._Demb;
+            }
+            set
+            {
+                this.OnDembChanging(value);
+                this._Demb = value;
+                this.OnDembChanged();
+                this.OnPropertyChanged("Demb");
+            }
+        }
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        private global::System.Nullable<global::System.DateTimeOffset> _Demb;
+        partial void OnDembChanging(global::System.Nullable<global::System.DateTimeOffset> value);
+        partial void OnDembChanged();
+        /// <summary>
+        /// There are no comments for Property Dinscr in the schema.
+        /// </summary>
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        [global::Microsoft.OData.Client.OriginalNameAttribute("Dinscr")]
+        public virtual global::System.Nullable<global::System.DateTimeOffset> Dinscr
+        {
+            get
+            {
+                return this._Dinscr;
+            }
+            set
+            {
+                this.OnDinscrChanging(value);
+                this._Dinscr = value;
+                this.OnDinscrChanged();
+                this.OnPropertyChanged("Dinscr");
+            }
+        }
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        private global::System.Nullable<global::System.DateTimeOffset> _Dinscr;
+        partial void OnDinscrChanging(global::System.Nullable<global::System.DateTimeOffset> value);
+        partial void OnDinscrChanged();
+        /// <summary>
+        /// There are no comments for Property Nchge in the schema.
+        /// </summary>
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        [global::Microsoft.OData.Client.OriginalNameAttribute("Nchge")]
+        public virtual global::System.Nullable<int> Nchge
+        {
+            get
+            {
+                return this._Nchge;
+            }
+            set
+            {
+                this.OnNchgeChanging(value);
+                this._Nchge = value;
+                this.OnNchgeChanged();
+                this.OnPropertyChanged("Nchge");
+            }
+        }
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        private global::System.Nullable<int> _Nchge;
+        partial void OnNchgeChanging(global::System.Nullable<int> value);
+        partial void OnNchgeChanged();
+        /// <summary>
+        /// There are no comments for Property Nenf in the schema.
+        /// </summary>
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        [global::Microsoft.OData.Client.OriginalNameAttribute("Nenf")]
+        public virtual global::System.Nullable<int> Nenf
+        {
+            get
+            {
+                return this._Nenf;
+            }
+            set
+            {
+                this.OnNenfChanging(value);
+                this._Nenf = value;
+                this.OnNenfChanged();
+                this.OnPropertyChanged("Nenf");
+            }
+        }
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        private global::System.Nullable<int> _Nenf;
+        partial void OnNenfChanging(global::System.Nullable<int> value);
+        partial void OnNenfChanged();
+        /// <summary>
+        /// There are no comments for Property Respon in the schema.
+        /// </summary>
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        [global::Microsoft.OData.Client.OriginalNameAttribute("Respon")]
+        public virtual global::System.Nullable<int> Respon
+        {
+            get
+            {
+                return this._Respon;
+            }
+            set
+            {
+                this.OnResponChanging(value);
+                this._Respon = value;
+                this.OnResponChanged();
+                this.OnPropertyChanged("Respon");
+            }
+        }
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        private global::System.Nullable<int> _Respon;
+        partial void OnResponChanging(global::System.Nullable<int> value);
+        partial void OnResponChanged();
+        /// <summary>
+        /// There are no comments for Property Tele2 in the schema.
+        /// </summary>
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        [global::Microsoft.OData.Client.OriginalNameAttribute("Tele2")]
+        public virtual string Tele2
+        {
+            get
+            {
+                return this._Tele2;
+            }
+            set
+            {
+                this.OnTele2Changing(value);
+                this._Tele2 = value;
+                this.OnTele2Changed();
+                this.OnPropertyChanged("Tele2");
+            }
+        }
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        private string _Tele2;
+        partial void OnTele2Changing(string value);
+        partial void OnTele2Changed();
+        /// <summary>
+        /// There are no comments for Property Tele3 in the schema.
+        /// </summary>
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        [global::Microsoft.OData.Client.OriginalNameAttribute("Tele3")]
+        public virtual string Tele3
+        {
+            get
+            {
+                return this._Tele3;
+            }
+            set
+            {
+                this.OnTele3Changing(value);
+                this._Tele3 = value;
+                this.OnTele3Changed();
+                this.OnPropertyChanged("Tele3");
+            }
+        }
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        private string _Tele3;
+        partial void OnTele3Changing(string value);
+        partial void OnTele3Changed();
+        /// <summary>
+        /// There are no comments for Property Servi in the schema.
+        /// </summary>
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        [global::Microsoft.OData.Client.OriginalNameAttribute("Servi")]
+        public virtual string Servi
+        {
+            get
+            {
+                return this._Servi;
+            }
+            set
+            {
+                this.OnServiChanging(value);
+                this._Servi = value;
+                this.OnServiChanged();
+                this.OnPropertyChanged("Servi");
+            }
+        }
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        private string _Servi;
+        partial void OnServiChanging(string value);
+        partial void OnServiChanged();
+        /// <summary>
+        /// There are no comments for Property Chxp in the schema.
+        /// </summary>
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        [global::Microsoft.OData.Client.OriginalNameAttribute("Chxp")]
+        public virtual global::System.Nullable<int> Chxp
+        {
+            get
+            {
+                return this._Chxp;
+            }
+            set
+            {
+                this.OnChxpChanging(value);
+                this._Chxp = value;
+                this.OnChxpChanged();
+                this.OnPropertyChanged("Chxp");
+            }
+        }
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        private global::System.Nullable<int> _Chxp;
+        partial void OnChxpChanging(global::System.Nullable<int> value);
+        partial void OnChxpChanged();
+        /// <summary>
+        /// There are no comments for Property Chxp2 in the schema.
+        /// </summary>
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        [global::Microsoft.OData.Client.OriginalNameAttribute("Chxp2")]
+        public virtual global::System.Nullable<int> Chxp2
+        {
+            get
+            {
+                return this._Chxp2;
+            }
+            set
+            {
+                this.OnChxp2Changing(value);
+                this._Chxp2 = value;
+                this.OnChxp2Changed();
+                this.OnPropertyChanged("Chxp2");
+            }
+        }
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        private global::System.Nullable<int> _Chxp2;
+        partial void OnChxp2Changing(global::System.Nullable<int> value);
+        partial void OnChxp2Changed();
+        /// <summary>
+        /// There are no comments for Property Chxp3 in the schema.
+        /// </summary>
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        [global::Microsoft.OData.Client.OriginalNameAttribute("Chxp3")]
+        public virtual global::System.Nullable<int> Chxp3
+        {
+            get
+            {
+                return this._Chxp3;
+            }
+            set
+            {
+                this.OnChxp3Changing(value);
+                this._Chxp3 = value;
+                this.OnChxp3Changed();
+                this.OnPropertyChanged("Chxp3");
+            }
+        }
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        private global::System.Nullable<int> _Chxp3;
+        partial void OnChxp3Changing(global::System.Nullable<int> value);
+        partial void OnChxp3Changed();
+        /// <summary>
+        /// There are no comments for Property Siset in the schema.
+        /// </summary>
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        [global::Microsoft.OData.Client.OriginalNameAttribute("Siset")]
+        public virtual global::System.Nullable<int> Siset
+        {
+            get
+            {
+                return this._Siset;
+            }
+            set
+            {
+                this.OnSisetChanging(value);
+                this._Siset = value;
+                this.OnSisetChanged();
+                this.OnPropertyChanged("Siset");
+            }
+        }
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        private global::System.Nullable<int> _Siset;
+        partial void OnSisetChanging(global::System.Nullable<int> value);
+        partial void OnSisetChanged();
+        /// <summary>
+        /// There are no comments for Property Weltie in the schema.
+        /// </summary>
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        [global::Microsoft.OData.Client.OriginalNameAttribute("Weltie")]
+        public virtual global::System.Nullable<int> Weltie
+        {
+            get
+            {
+                return this._Weltie;
+            }
+            set
+            {
+                this.OnWeltieChanging(value);
+                this._Weltie = value;
+                this.OnWeltieChanged();
+                this.OnPropertyChanged("Weltie");
+            }
+        }
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        private global::System.Nullable<int> _Weltie;
+        partial void OnWeltieChanging(global::System.Nullable<int> value);
+        partial void OnWeltieChanged();
+        /// <summary>
+        /// There are no comments for Property Natio in the schema.
+        /// </summary>
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        [global::Microsoft.OData.Client.OriginalNameAttribute("Natio")]
+        public virtual global::System.Nullable<int> Natio
+        {
+            get
+            {
+                return this._Natio;
+            }
+            set
+            {
+                this.OnNatioChanging(value);
+                this._Natio = value;
+                this.OnNatioChanged();
+                this.OnPropertyChanged("Natio");
+            }
+        }
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        private global::System.Nullable<int> _Natio;
+        partial void OnNatioChanging(global::System.Nullable<int> value);
+        partial void OnNatioChanged();
+        /// <summary>
+        /// There are no comments for Property Resid in the schema.
+        /// </summary>
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        [global::Microsoft.OData.Client.OriginalNameAttribute("Resid")]
+        public virtual global::System.Nullable<int> Resid
+        {
+            get
+            {
+                return this._Resid;
+            }
+            set
+            {
+                this.OnResidChanging(value);
+                this._Resid = value;
+                this.OnResidChanged();
+                this.OnPropertyChanged("Resid");
+            }
+        }
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        private global::System.Nullable<int> _Resid;
+        partial void OnResidChanging(global::System.Nullable<int> value);
+        partial void OnResidChanged();
+        /// <summary>
+        /// There are no comments for Property Tymut in the schema.
+        /// </summary>
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        [global::Microsoft.OData.Client.OriginalNameAttribute("Tymut")]
+        public virtual global::System.Nullable<int> Tymut
+        {
+            get
+            {
+                return this._Tymut;
+            }
+            set
+            {
+                this.OnTymutChanging(value);
+                this._Tymut = value;
+                this.OnTymutChanged();
+                this.OnPropertyChanged("Tymut");
+            }
+        }
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        private global::System.Nullable<int> _Tymut;
+        partial void OnTymutChanging(global::System.Nullable<int> value);
+        partial void OnTymutChanged();
+        /// <summary>
+        /// There are no comments for Property Psmatri in the schema.
+        /// </summary>
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        [global::Microsoft.OData.Client.OriginalNameAttribute("Psmatri")]
+        public virtual string Psmatri
+        {
+            get
+            {
+                return this._Psmatri;
+            }
+            set
+            {
+                this.OnPsmatriChanging(value);
+                this._Psmatri = value;
+                this.OnPsmatriChanged();
+                this.OnPropertyChanged("Psmatri");
+            }
+        }
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        private string _Psmatri;
+        partial void OnPsmatriChanging(string value);
+        partial void OnPsmatriChanged();
+        /// <summary>
+        /// There are no comments for Property Ibank in the schema.
+        /// </summary>
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        [global::Microsoft.OData.Client.OriginalNameAttribute("Ibank")]
+        public virtual global::System.Nullable<int> Ibank
+        {
+            get
+            {
+                return this._Ibank;
+            }
+            set
+            {
+                this.OnIbankChanging(value);
+                this._Ibank = value;
+                this.OnIbankChanged();
+                this.OnPropertyChanged("Ibank");
+            }
+        }
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        private global::System.Nullable<int> _Ibank;
+        partial void OnIbankChanging(global::System.Nullable<int> value);
+        partial void OnIbankChanged();
+        /// <summary>
+        /// There are no comments for Property Icotis in the schema.
+        /// </summary>
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        [global::Microsoft.OData.Client.OriginalNameAttribute("Icotis")]
+        public virtual global::System.Nullable<int> Icotis
+        {
+            get
+            {
+                return this._Icotis;
+            }
+            set
+            {
+                this.OnIcotisChanging(value);
+                this._Icotis = value;
+                this.OnIcotisChanged();
+                this.OnPropertyChanged("Icotis");
+            }
+        }
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        private global::System.Nullable<int> _Icotis;
+        partial void OnIcotisChanging(global::System.Nullable<int> value);
+        partial void OnIcotisChanged();
+        /// <summary>
+        /// There are no comments for Property Itax in the schema.
+        /// </summary>
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        [global::Microsoft.OData.Client.OriginalNameAttribute("Itax")]
+        public virtual global::System.Nullable<int> Itax
+        {
+            get
+            {
+                return this._Itax;
+            }
+            set
+            {
+                this.OnItaxChanging(value);
+                this._Itax = value;
+                this.OnItaxChanged();
+                this.OnPropertyChanged("Itax");
+            }
+        }
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        private global::System.Nullable<int> _Itax;
+        partial void OnItaxChanging(global::System.Nullable<int> value);
+        partial void OnItaxChanged();
+        /// <summary>
+        /// There are no comments for Property Ipaid in the schema.
+        /// </summary>
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        [global::Microsoft.OData.Client.OriginalNameAttribute("Ipaid")]
+        public virtual global::System.Nullable<int> Ipaid
+        {
+            get
+            {
+                return this._Ipaid;
+            }
+            set
+            {
+                this.OnIpaidChanging(value);
+                this._Ipaid = value;
+                this.OnIpaidChanged();
+                this.OnPropertyChanged("Ipaid");
+            }
+        }
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        private global::System.Nullable<int> _Ipaid;
+        partial void OnIpaidChanging(global::System.Nullable<int> value);
+        partial void OnIpaidChanged();
+        /// <summary>
+        /// There are no comments for Property Ipays in the schema.
+        /// </summary>
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        [global::Microsoft.OData.Client.OriginalNameAttribute("Ipays")]
+        public virtual global::System.Nullable<int> Ipays
+        {
+            get
+            {
+                return this._Ipays;
+            }
+            set
+            {
+                this.OnIpaysChanging(value);
+                this._Ipays = value;
+                this.OnIpaysChanged();
+                this.OnPropertyChanged("Ipays");
+            }
+        }
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        private global::System.Nullable<int> _Ipays;
+        partial void OnIpaysChanging(global::System.Nullable<int> value);
+        partial void OnIpaysChanged();
+        /// <summary>
+        /// There are no comments for Property Iregio in the schema.
+        /// </summary>
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        [global::Microsoft.OData.Client.OriginalNameAttribute("Iregio")]
+        public virtual global::System.Nullable<int> Iregio
+        {
+            get
+            {
+                return this._Iregio;
+            }
+            set
+            {
+                this.OnIregioChanging(value);
+                this._Iregio = value;
+                this.OnIregioChanged();
+                this.OnPropertyChanged("Iregio");
+            }
+        }
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        private global::System.Nullable<int> _Iregio;
+        partial void OnIregioChanging(global::System.Nullable<int> value);
+        partial void OnIregioChanged();
+        /// <summary>
+        /// There are no comments for Property Iprovi in the schema.
+        /// </summary>
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        [global::Microsoft.OData.Client.OriginalNameAttribute("Iprovi")]
+        public virtual global::System.Nullable<int> Iprovi
+        {
+            get
+            {
+                return this._Iprovi;
+            }
+            set
+            {
+                this.OnIproviChanging(value);
+                this._Iprovi = value;
+                this.OnIproviChanged();
+                this.OnPropertyChanged("Iprovi");
+            }
+        }
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        private global::System.Nullable<int> _Iprovi;
+        partial void OnIproviChanging(global::System.Nullable<int> value);
+        partial void OnIproviChanged();
+        /// <summary>
+        /// There are no comments for Property Icity in the schema.
+        /// </summary>
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        [global::Microsoft.OData.Client.OriginalNameAttribute("Icity")]
+        public virtual global::System.Nullable<int> Icity
+        {
+            get
+            {
+                return this._Icity;
+            }
+            set
+            {
+                this.OnIcityChanging(value);
+                this._Icity = value;
+                this.OnIcityChanged();
+                this.OnPropertyChanged("Icity");
+            }
+        }
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        private global::System.Nullable<int> _Icity;
+        partial void OnIcityChanging(global::System.Nullable<int> value);
+        partial void OnIcityChanged();
+        /// <summary>
+        /// There are no comments for Property Icomu in the schema.
+        /// </summary>
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        [global::Microsoft.OData.Client.OriginalNameAttribute("Icomu")]
+        public virtual global::System.Nullable<int> Icomu
+        {
+            get
+            {
+                return this._Icomu;
+            }
+            set
+            {
+                this.OnIcomuChanging(value);
+                this._Icomu = value;
+                this.OnIcomuChanged();
+                this.OnPropertyChanged("Icomu");
+            }
+        }
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        private global::System.Nullable<int> _Icomu;
+        partial void OnIcomuChanging(global::System.Nullable<int> value);
+        partial void OnIcomuChanged();
+        /// <summary>
+        /// There are no comments for Property Iquarti in the schema.
+        /// </summary>
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        [global::Microsoft.OData.Client.OriginalNameAttribute("Iquarti")]
+        public virtual global::System.Nullable<int> Iquarti
+        {
+            get
+            {
+                return this._Iquarti;
+            }
+            set
+            {
+                this.OnIquartiChanging(value);
+                this._Iquarti = value;
+                this.OnIquartiChanged();
+                this.OnPropertyChanged("Iquarti");
+            }
+        }
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        private global::System.Nullable<int> _Iquarti;
+        partial void OnIquartiChanging(global::System.Nullable<int> value);
+        partial void OnIquartiChanged();
+        /// <summary>
+        /// There are no comments for Property Ifami in the schema.
+        /// </summary>
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        [global::Microsoft.OData.Client.OriginalNameAttribute("Ifami")]
+        public virtual global::System.Nullable<int> Ifami
+        {
+            get
+            {
+                return this._Ifami;
+            }
+            set
+            {
+                this.OnIfamiChanging(value);
+                this._Ifami = value;
+                this.OnIfamiChanged();
+                this.OnPropertyChanged("Ifami");
+            }
+        }
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        private global::System.Nullable<int> _Ifami;
+        partial void OnIfamiChanging(global::System.Nullable<int> value);
+        partial void OnIfamiChanged();
+        /// <summary>
+        /// There are no comments for Property Shie in the schema.
+        /// </summary>
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        [global::Microsoft.OData.Client.OriginalNameAttribute("Shie")]
+        public virtual string Shie
+        {
+            get
+            {
+                return this._Shie;
+            }
+            set
+            {
+                this.OnShieChanging(value);
+                this._Shie = value;
+                this.OnShieChanged();
+                this.OnPropertyChanged("Shie");
+            }
+        }
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        private string _Shie;
+        partial void OnShieChanging(string value);
+        partial void OnShieChanged();
+        /// <summary>
+        /// There are no comments for Property Sgrad in the schema.
+        /// </summary>
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        [global::Microsoft.OData.Client.OriginalNameAttribute("Sgrad")]
+        public virtual string Sgrad
+        {
+            get
+            {
+                return this._Sgrad;
+            }
+            set
+            {
+                this.OnSgradChanging(value);
+                this._Sgrad = value;
+                this.OnSgradChanged();
+                this.OnPropertyChanged("Sgrad");
+            }
+        }
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        private string _Sgrad;
+        partial void OnSgradChanging(string value);
+        partial void OnSgradChanged();
+        /// <summary>
+        /// There are no comments for Property Sbank in the schema.
+        /// </summary>
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        [global::Microsoft.OData.Client.OriginalNameAttribute("Sbank")]
+        public virtual string Sbank
+        {
+            get
+            {
+                return this._Sbank;
+            }
+            set
+            {
+                this.OnSbankChanging(value);
+                this._Sbank = value;
+                this.OnSbankChanged();
+                this.OnPropertyChanged("Sbank");
+            }
+        }
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        private string _Sbank;
+        partial void OnSbankChanging(string value);
+        partial void OnSbankChanged();
+        /// <summary>
+        /// There are no comments for Property Scotis in the schema.
+        /// </summary>
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        [global::Microsoft.OData.Client.OriginalNameAttribute("Scotis")]
+        public virtual string Scotis
+        {
+            get
+            {
+                return this._Scotis;
+            }
+            set
+            {
+                this.OnScotisChanging(value);
+                this._Scotis = value;
+                this.OnScotisChanged();
+                this.OnPropertyChanged("Scotis");
+            }
+        }
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        private string _Scotis;
+        partial void OnScotisChanging(string value);
+        partial void OnScotisChanged();
+        /// <summary>
+        /// There are no comments for Property Stax in the schema.
+        /// </summary>
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        [global::Microsoft.OData.Client.OriginalNameAttribute("Stax")]
+        public virtual string Stax
+        {
+            get
+            {
+                return this._Stax;
+            }
+            set
+            {
+                this.OnStaxChanging(value);
+                this._Stax = value;
+                this.OnStaxChanged();
+                this.OnPropertyChanged("Stax");
+            }
+        }
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        private string _Stax;
+        partial void OnStaxChanging(string value);
+        partial void OnStaxChanged();
+        /// <summary>
+        /// There are no comments for Property Spaid in the schema.
+        /// </summary>
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        [global::Microsoft.OData.Client.OriginalNameAttribute("Spaid")]
+        public virtual string Spaid
+        {
+            get
+            {
+                return this._Spaid;
+            }
+            set
+            {
+                this.OnSpaidChanging(value);
+                this._Spaid = value;
+                this.OnSpaidChanged();
+                this.OnPropertyChanged("Spaid");
+            }
+        }
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        private string _Spaid;
+        partial void OnSpaidChanging(string value);
+        partial void OnSpaidChanged();
+        /// <summary>
+        /// There are no comments for Property Spays in the schema.
+        /// </summary>
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        [global::Microsoft.OData.Client.OriginalNameAttribute("Spays")]
+        public virtual string Spays
+        {
+            get
+            {
+                return this._Spays;
+            }
+            set
+            {
+                this.OnSpaysChanging(value);
+                this._Spays = value;
+                this.OnSpaysChanged();
+                this.OnPropertyChanged("Spays");
+            }
+        }
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        private string _Spays;
+        partial void OnSpaysChanging(string value);
+        partial void OnSpaysChanged();
+        /// <summary>
+        /// There are no comments for Property Sregio in the schema.
+        /// </summary>
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        [global::Microsoft.OData.Client.OriginalNameAttribute("Sregio")]
+        public virtual string Sregio
+        {
+            get
+            {
+                return this._Sregio;
+            }
+            set
+            {
+                this.OnSregioChanging(value);
+                this._Sregio = value;
+                this.OnSregioChanged();
+                this.OnPropertyChanged("Sregio");
+            }
+        }
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        private string _Sregio;
+        partial void OnSregioChanging(string value);
+        partial void OnSregioChanged();
+        /// <summary>
+        /// There are no comments for Property Sprovi in the schema.
+        /// </summary>
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        [global::Microsoft.OData.Client.OriginalNameAttribute("Sprovi")]
+        public virtual string Sprovi
+        {
+            get
+            {
+                return this._Sprovi;
+            }
+            set
+            {
+                this.OnSproviChanging(value);
+                this._Sprovi = value;
+                this.OnSproviChanged();
+                this.OnPropertyChanged("Sprovi");
+            }
+        }
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        private string _Sprovi;
+        partial void OnSproviChanging(string value);
+        partial void OnSproviChanged();
+        /// <summary>
+        /// There are no comments for Property Scity in the schema.
+        /// </summary>
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        [global::Microsoft.OData.Client.OriginalNameAttribute("Scity")]
+        public virtual string Scity
+        {
+            get
+            {
+                return this._Scity;
+            }
+            set
+            {
+                this.OnScityChanging(value);
+                this._Scity = value;
+                this.OnScityChanged();
+                this.OnPropertyChanged("Scity");
+            }
+        }
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        private string _Scity;
+        partial void OnScityChanging(string value);
+        partial void OnScityChanged();
+        /// <summary>
+        /// There are no comments for Property Scomu in the schema.
+        /// </summary>
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        [global::Microsoft.OData.Client.OriginalNameAttribute("Scomu")]
+        public virtual string Scomu
+        {
+            get
+            {
+                return this._Scomu;
+            }
+            set
+            {
+                this.OnScomuChanging(value);
+                this._Scomu = value;
+                this.OnScomuChanged();
+                this.OnPropertyChanged("Scomu");
+            }
+        }
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        private string _Scomu;
+        partial void OnScomuChanging(string value);
+        partial void OnScomuChanged();
+        /// <summary>
+        /// There are no comments for Property Squarti in the schema.
+        /// </summary>
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        [global::Microsoft.OData.Client.OriginalNameAttribute("Squarti")]
+        public virtual string Squarti
+        {
+            get
+            {
+                return this._Squarti;
+            }
+            set
+            {
+                this.OnSquartiChanging(value);
+                this._Squarti = value;
+                this.OnSquartiChanged();
+                this.OnPropertyChanged("Squarti");
+            }
+        }
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        private string _Squarti;
+        partial void OnSquartiChanging(string value);
+        partial void OnSquartiChanged();
+        /// <summary>
+        /// There are no comments for Property Sfami in the schema.
+        /// </summary>
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        [global::Microsoft.OData.Client.OriginalNameAttribute("Sfami")]
+        public virtual string Sfami
+        {
+            get
+            {
+                return this._Sfami;
+            }
+            set
+            {
+                this.OnSfamiChanging(value);
+                this._Sfami = value;
+                this.OnSfamiChanged();
+                this.OnPropertyChanged("Sfami");
+            }
+        }
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        private string _Sfami;
+        partial void OnSfamiChanging(string value);
+        partial void OnSfamiChanged();
+        /// <summary>
+        /// There are no comments for Property Jpays in the schema.
+        /// </summary>
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        [global::Microsoft.OData.Client.OriginalNameAttribute("Jpays")]
+        public virtual global::System.Nullable<int> Jpays
+        {
+            get
+            {
+                return this._Jpays;
+            }
+            set
+            {
+                this.OnJpaysChanging(value);
+                this._Jpays = value;
+                this.OnJpaysChanged();
+                this.OnPropertyChanged("Jpays");
+            }
+        }
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        private global::System.Nullable<int> _Jpays;
+        partial void OnJpaysChanging(global::System.Nullable<int> value);
+        partial void OnJpaysChanged();
+        /// <summary>
+        /// There are no comments for Property Jcity in the schema.
+        /// </summary>
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        [global::Microsoft.OData.Client.OriginalNameAttribute("Jcity")]
+        public virtual global::System.Nullable<int> Jcity
+        {
+            get
+            {
+                return this._Jcity;
+            }
+            set
+            {
+                this.OnJcityChanging(value);
+                this._Jcity = value;
+                this.OnJcityChanged();
+                this.OnPropertyChanged("Jcity");
+            }
+        }
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        private global::System.Nullable<int> _Jcity;
+        partial void OnJcityChanging(global::System.Nullable<int> value);
+        partial void OnJcityChanged();
+        /// <summary>
+        /// There are no comments for Property Kpays in the schema.
+        /// </summary>
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        [global::Microsoft.OData.Client.OriginalNameAttribute("Kpays")]
+        public virtual global::System.Nullable<int> Kpays
+        {
+            get
+            {
+                return this._Kpays;
+            }
+            set
+            {
+                this.OnKpaysChanging(value);
+                this._Kpays = value;
+                this.OnKpaysChanged();
+                this.OnPropertyChanged("Kpays");
+            }
+        }
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        private global::System.Nullable<int> _Kpays;
+        partial void OnKpaysChanging(global::System.Nullable<int> value);
+        partial void OnKpaysChanged();
+        /// <summary>
+        /// There are no comments for Property Kcity in the schema.
+        /// </summary>
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        [global::Microsoft.OData.Client.OriginalNameAttribute("Kcity")]
+        public virtual global::System.Nullable<int> Kcity
+        {
+            get
+            {
+                return this._Kcity;
+            }
+            set
+            {
+                this.OnKcityChanging(value);
+                this._Kcity = value;
+                this.OnKcityChanged();
+                this.OnPropertyChanged("Kcity");
+            }
+        }
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        private global::System.Nullable<int> _Kcity;
+        partial void OnKcityChanging(global::System.Nullable<int> value);
+        partial void OnKcityChanged();
+        /// <summary>
+        /// There are no comments for Property Ttyp in the schema.
+        /// </summary>
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        [global::Microsoft.OData.Client.OriginalNameAttribute("Ttyp")]
+        public virtual global::System.Nullable<int> Ttyp
+        {
+            get
+            {
+                return this._Ttyp;
+            }
+            set
+            {
+                this.OnTtypChanging(value);
+                this._Ttyp = value;
+                this.OnTtypChanged();
+                this.OnPropertyChanged("Ttyp");
+            }
+        }
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        private global::System.Nullable<int> _Ttyp;
+        partial void OnTtypChanging(global::System.Nullable<int> value);
+        partial void OnTtypChanged();
+        /// <summary>
+        /// There are no comments for Property Iloc in the schema.
+        /// </summary>
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        [global::Microsoft.OData.Client.OriginalNameAttribute("Iloc")]
+        public virtual global::System.Nullable<int> Iloc
+        {
+            get
+            {
+                return this._Iloc;
+            }
+            set
+            {
+                this.OnIlocChanging(value);
+                this._Iloc = value;
+                this.OnIlocChanged();
+                this.OnPropertyChanged("Iloc");
+            }
+        }
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        private global::System.Nullable<int> _Iloc;
+        partial void OnIlocChanging(global::System.Nullable<int> value);
+        partial void OnIlocChanged();
+        /// <summary>
+        /// There are no comments for Property Styp in the schema.
+        /// </summary>
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        [global::Microsoft.OData.Client.OriginalNameAttribute("Styp")]
+        public virtual global::System.Nullable<int> Styp
+        {
+            get
+            {
+                return this._Styp;
+            }
+            set
+            {
+                this.OnStypChanging(value);
+                this._Styp = value;
+                this.OnStypChanged();
+                this.OnPropertyChanged("Styp");
+            }
+        }
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        private global::System.Nullable<int> _Styp;
+        partial void OnStypChanging(global::System.Nullable<int> value);
+        partial void OnStypChanged();
+        /// <summary>
+        /// There are no comments for Property Ordp in the schema.
+        /// </summary>
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        [global::Microsoft.OData.Client.OriginalNameAttribute("Ordp")]
+        public virtual global::System.Nullable<int> Ordp
+        {
+            get
+            {
+                return this._Ordp;
+            }
+            set
+            {
+                this.OnOrdpChanging(value);
+                this._Ordp = value;
+                this.OnOrdpChanged();
+                this.OnPropertyChanged("Ordp");
+            }
+        }
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        private global::System.Nullable<int> _Ordp;
+        partial void OnOrdpChanging(global::System.Nullable<int> value);
+        partial void OnOrdpChanged();
+        /// <summary>
+        /// There are no comments for Property Sichef in the schema.
+        /// </summary>
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        [global::Microsoft.OData.Client.OriginalNameAttribute("Sichef")]
+        public virtual global::System.Nullable<int> Sichef
+        {
+            get
+            {
+                return this._Sichef;
+            }
+            set
+            {
+                this.OnSichefChanging(value);
+                this._Sichef = value;
+                this.OnSichefChanged();
+                this.OnPropertyChanged("Sichef");
+            }
+        }
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        private global::System.Nullable<int> _Sichef;
+        partial void OnSichefChanging(global::System.Nullable<int> value);
+        partial void OnSichefChanged();
+        /// <summary>
+        /// There are no comments for Property Sno in the schema.
+        /// </summary>
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        [global::Microsoft.OData.Client.OriginalNameAttribute("Sno")]
+        public virtual global::System.Nullable<int> Sno
+        {
+            get
+            {
+                return this._Sno;
+            }
+            set
+            {
+                this.OnSnoChanging(value);
+                this._Sno = value;
+                this.OnSnoChanged();
+                this.OnPropertyChanged("Sno");
+            }
+        }
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        private global::System.Nullable<int> _Sno;
+        partial void OnSnoChanging(global::System.Nullable<int> value);
+        partial void OnSnoChanged();
+        /// <summary>
+        /// There are no comments for Property Liba in the schema.
+        /// </summary>
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        [global::Microsoft.OData.Client.OriginalNameAttribute("Liba")]
+        public virtual string Liba
+        {
+            get
+            {
+                return this._Liba;
+            }
+            set
+            {
+                this.OnLibaChanging(value);
+                this._Liba = value;
+                this.OnLibaChanged();
+                this.OnPropertyChanged("Liba");
+            }
+        }
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        private string _Liba;
+        partial void OnLibaChanging(string value);
+        partial void OnLibaChanged();
+        /// <summary>
+        /// There are no comments for Property Abg in the schema.
+        /// </summary>
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        [global::Microsoft.OData.Client.OriginalNameAttribute("Abg")]
+        public virtual string Abg
+        {
+            get
+            {
+                return this._Abg;
+            }
+            set
+            {
+                this.OnAbgChanging(value);
+                this._Abg = value;
+                this.OnAbgChanged();
+                this.OnPropertyChanged("Abg");
+            }
+        }
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        private string _Abg;
+        partial void OnAbgChanging(string value);
+        partial void OnAbgChanged();
+        /// <summary>
+        /// There are no comments for Property Intmat in the schema.
+        /// </summary>
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        [global::Microsoft.OData.Client.OriginalNameAttribute("Intmat")]
+        public virtual global::System.Nullable<int> Intmat
+        {
+            get
+            {
+                return this._Intmat;
+            }
+            set
+            {
+                this.OnIntmatChanging(value);
+                this._Intmat = value;
+                this.OnIntmatChanged();
+                this.OnPropertyChanged("Intmat");
+            }
+        }
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        private global::System.Nullable<int> _Intmat;
+        partial void OnIntmatChanging(global::System.Nullable<int> value);
+        partial void OnIntmatChanged();
+        /// <summary>
+        /// There are no comments for Property Binid in the schema.
+        /// </summary>
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        [global::Microsoft.OData.Client.OriginalNameAttribute("Binid")]
+        public virtual global::System.Nullable<int> Binid
+        {
+            get
+            {
+                return this._Binid;
+            }
+            set
+            {
+                this.OnBinidChanging(value);
+                this._Binid = value;
+                this.OnBinidChanged();
+                this.OnPropertyChanged("Binid");
+            }
+        }
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        private global::System.Nullable<int> _Binid;
+        partial void OnBinidChanging(global::System.Nullable<int> value);
+        partial void OnBinidChanged();
+        /// <summary>
+        /// There are no comments for Property Raison in the schema.
+        /// </summary>
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        [global::Microsoft.OData.Client.OriginalNameAttribute("Raison")]
+        public virtual string Raison
+        {
+            get
+            {
+                return this._Raison;
+            }
+            set
+            {
+                this.OnRaisonChanging(value);
+                this._Raison = value;
+                this.OnRaisonChanged();
+                this.OnPropertyChanged("Raison");
+            }
+        }
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        private string _Raison;
+        partial void OnRaisonChanging(string value);
+        partial void OnRaisonChanged();
+        /// <summary>
+        /// There are no comments for Property Titre in the schema.
+        /// </summary>
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        [global::Microsoft.OData.Client.OriginalNameAttribute("Titre")]
+        public virtual string Titre
+        {
+            get
+            {
+                return this._Titre;
+            }
+            set
+            {
+                this.OnTitreChanging(value);
+                this._Titre = value;
+                this.OnTitreChanged();
+                this.OnPropertyChanged("Titre");
+            }
+        }
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        private string _Titre;
+        partial void OnTitreChanging(string value);
+        partial void OnTitreChanged();
+        /// <summary>
+        /// There are no comments for Property Nident in the schema.
+        /// </summary>
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        [global::Microsoft.OData.Client.OriginalNameAttribute("Nident")]
+        public virtual string Nident
+        {
+            get
+            {
+                return this._Nident;
+            }
+            set
+            {
+                this.OnNidentChanging(value);
+                this._Nident = value;
+                this.OnNidentChanged();
+                this.OnPropertyChanged("Nident");
+            }
+        }
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        private string _Nident;
+        partial void OnNidentChanging(string value);
+        partial void OnNidentChanged();
+        /// <summary>
+        /// There are no comments for Property Aident in the schema.
+        /// </summary>
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        [global::Microsoft.OData.Client.OriginalNameAttribute("Aident")]
+        public virtual string Aident
+        {
+            get
+            {
+                return this._Aident;
+            }
+            set
+            {
+                this.OnAidentChanging(value);
+                this._Aident = value;
+                this.OnAidentChanged();
+                this.OnPropertyChanged("Aident");
+            }
+        }
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        private string _Aident;
+        partial void OnAidentChanging(string value);
+        partial void OnAidentChanged();
+        /// <summary>
+        /// There are no comments for Property Pident in the schema.
+        /// </summary>
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        [global::Microsoft.OData.Client.OriginalNameAttribute("Pident")]
+        public virtual byte[] Pident
+        {
+            get
+            {
+                return this._Pident;
+            }
+            set
+            {
+                this.OnPidentChanging(value);
+                this._Pident = value;
+                this.OnPidentChanged();
+                this.OnPropertyChanged("Pident");
+            }
+        }
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        private byte[] _Pident;
+        partial void OnPidentChanging(byte[] value);
+        partial void OnPidentChanged();
+        /// <summary>
+        /// There are no comments for Property Tdiplo in the schema.
+        /// </summary>
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        [global::Microsoft.OData.Client.OriginalNameAttribute("Tdiplo")]
+        public virtual global::System.Nullable<int> Tdiplo
+        {
+            get
+            {
+                return this._Tdiplo;
+            }
+            set
+            {
+                this.OnTdiploChanging(value);
+                this._Tdiplo = value;
+                this.OnTdiploChanged();
+                this.OnPropertyChanged("Tdiplo");
+            }
+        }
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        private global::System.Nullable<int> _Tdiplo;
+        partial void OnTdiploChanging(global::System.Nullable<int> value);
+        partial void OnTdiploChanged();
+        /// <summary>
+        /// There are no comments for Property Ndiplo in the schema.
+        /// </summary>
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        [global::Microsoft.OData.Client.OriginalNameAttribute("Ndiplo")]
+        public virtual string Ndiplo
+        {
+            get
+            {
+                return this._Ndiplo;
+            }
+            set
+            {
+                this.OnNdiploChanging(value);
+                this._Ndiplo = value;
+                this.OnNdiploChanged();
+                this.OnPropertyChanged("Ndiplo");
+            }
+        }
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        private string _Ndiplo;
+        partial void OnNdiploChanging(string value);
+        partial void OnNdiploChanged();
+        /// <summary>
+        /// There are no comments for Property Adr in the schema.
+        /// </summary>
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        [global::Microsoft.OData.Client.OriginalNameAttribute("Adr")]
+        public virtual string Adr
+        {
+            get
+            {
+                return this._Adr;
+            }
+            set
+            {
+                this.OnAdrChanging(value);
+                this._Adr = value;
+                this.OnAdrChanged();
+                this.OnPropertyChanged("Adr");
+            }
+        }
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        private string _Adr;
+        partial void OnAdrChanging(string value);
+        partial void OnAdrChanged();
+        /// <summary>
+        /// There are no comments for Property Adr2 in the schema.
+        /// </summary>
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        [global::Microsoft.OData.Client.OriginalNameAttribute("Adr2")]
+        public virtual string Adr2
+        {
+            get
+            {
+                return this._Adr2;
+            }
+            set
+            {
+                this.OnAdr2Changing(value);
+                this._Adr2 = value;
+                this.OnAdr2Changed();
+                this.OnPropertyChanged("Adr2");
+            }
+        }
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        private string _Adr2;
+        partial void OnAdr2Changing(string value);
+        partial void OnAdr2Changed();
+        /// <summary>
+        /// There are no comments for Property Adr3 in the schema.
+        /// </summary>
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        [global::Microsoft.OData.Client.OriginalNameAttribute("Adr3")]
+        public virtual string Adr3
+        {
+            get
+            {
+                return this._Adr3;
+            }
+            set
+            {
+                this.OnAdr3Changing(value);
+                this._Adr3 = value;
+                this.OnAdr3Changed();
+                this.OnPropertyChanged("Adr3");
+            }
+        }
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        private string _Adr3;
+        partial void OnAdr3Changing(string value);
+        partial void OnAdr3Changed();
+        /// <summary>
+        /// There are no comments for Property Ivge in the schema.
+        /// </summary>
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        [global::Microsoft.OData.Client.OriginalNameAttribute("Ivge")]
+        public virtual global::System.Nullable<int> Ivge
+        {
+            get
+            {
+                return this._Ivge;
+            }
+            set
+            {
+                this.OnIvgeChanging(value);
+                this._Ivge = value;
+                this.OnIvgeChanged();
+                this.OnPropertyChanged("Ivge");
+            }
+        }
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        private global::System.Nullable<int> _Ivge;
+        partial void OnIvgeChanging(global::System.Nullable<int> value);
+        partial void OnIvgeChanged();
+        /// <summary>
+        /// There are no comments for Property Svge in the schema.
+        /// </summary>
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        [global::Microsoft.OData.Client.OriginalNameAttribute("Svge")]
+        public virtual string Svge
+        {
+            get
+            {
+                return this._Svge;
+            }
+            set
+            {
+                this.OnSvgeChanging(value);
+                this._Svge = value;
+                this.OnSvgeChanged();
+                this.OnPropertyChanged("Svge");
+            }
+        }
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        private string _Svge;
+        partial void OnSvgeChanging(string value);
+        partial void OnSvgeChanged();
+        /// <summary>
+        /// There are no comments for Property Iadr1 in the schema.
+        /// </summary>
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        [global::Microsoft.OData.Client.OriginalNameAttribute("Iadr1")]
+        public virtual global::System.Nullable<int> Iadr1
+        {
+            get
+            {
+                return this._Iadr1;
+            }
+            set
+            {
+                this.OnIadr1Changing(value);
+                this._Iadr1 = value;
+                this.OnIadr1Changed();
+                this.OnPropertyChanged("Iadr1");
+            }
+        }
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        private global::System.Nullable<int> _Iadr1;
+        partial void OnIadr1Changing(global::System.Nullable<int> value);
+        partial void OnIadr1Changed();
+        /// <summary>
+        /// There are no comments for Property Iadr2 in the schema.
+        /// </summary>
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        [global::Microsoft.OData.Client.OriginalNameAttribute("Iadr2")]
+        public virtual global::System.Nullable<int> Iadr2
+        {
+            get
+            {
+                return this._Iadr2;
+            }
+            set
+            {
+                this.OnIadr2Changing(value);
+                this._Iadr2 = value;
+                this.OnIadr2Changed();
+                this.OnPropertyChanged("Iadr2");
+            }
+        }
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        private global::System.Nullable<int> _Iadr2;
+        partial void OnIadr2Changing(global::System.Nullable<int> value);
+        partial void OnIadr2Changed();
+        /// <summary>
+        /// There are no comments for Property Atrplus in the schema.
+        /// </summary>
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        [global::Microsoft.OData.Client.OriginalNameAttribute("Atrplus")]
+        public virtual string Atrplus
+        {
+            get
+            {
+                return this._Atrplus;
+            }
+            set
+            {
+                this.OnAtrplusChanging(value);
+                this._Atrplus = value;
+                this.OnAtrplusChanged();
+                this.OnPropertyChanged("Atrplus");
+            }
+        }
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        private string _Atrplus;
+        partial void OnAtrplusChanging(string value);
+        partial void OnAtrplusChanged();
+        /// <summary>
+        /// There are no comments for Property Nnais in the schema.
+        /// </summary>
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        [global::Microsoft.OData.Client.OriginalNameAttribute("Nnais")]
+        public virtual global::System.Nullable<int> Nnais
+        {
+            get
+            {
+                return this._Nnais;
+            }
+            set
+            {
+                this.OnNnaisChanging(value);
+                this._Nnais = value;
+                this.OnNnaisChanged();
+                this.OnPropertyChanged("Nnais");
+            }
+        }
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        private global::System.Nullable<int> _Nnais;
+        partial void OnNnaisChanging(global::System.Nullable<int> value);
+        partial void OnNnaisChanged();
+        /// <summary>
+        /// There are no comments for Property Inais in the schema.
+        /// </summary>
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        [global::Microsoft.OData.Client.OriginalNameAttribute("Inais")]
+        public virtual global::System.Nullable<int> Inais
+        {
+            get
+            {
+                return this._Inais;
+            }
+            set
+            {
+                this.OnInaisChanging(value);
+                this._Inais = value;
+                this.OnInaisChanged();
+                this.OnPropertyChanged("Inais");
+            }
+        }
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        private global::System.Nullable<int> _Inais;
+        partial void OnInaisChanging(global::System.Nullable<int> value);
+        partial void OnInaisChanged();
+        /// <summary>
+        /// There are no comments for Property Iemb in the schema.
+        /// </summary>
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        [global::Microsoft.OData.Client.OriginalNameAttribute("Iemb")]
+        public virtual global::System.Nullable<int> Iemb
+        {
+            get
+            {
+                return this._Iemb;
+            }
+            set
+            {
+                this.OnIembChanging(value);
+                this._Iemb = value;
+                this.OnIembChanged();
+                this.OnPropertyChanged("Iemb");
+            }
+        }
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        private global::System.Nullable<int> _Iemb;
+        partial void OnIembChanging(global::System.Nullable<int> value);
+        partial void OnIembChanged();
+        /// <summary>
+        /// There are no comments for Property Nactu in the schema.
+        /// </summary>
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        [global::Microsoft.OData.Client.OriginalNameAttribute("Nactu")]
+        public virtual global::System.Nullable<int> Nactu
+        {
+            get
+            {
+                return this._Nactu;
+            }
+            set
+            {
+                this.OnNactuChanging(value);
+                this._Nactu = value;
+                this.OnNactuChanged();
+                this.OnPropertyChanged("Nactu");
+            }
+        }
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        private global::System.Nullable<int> _Nactu;
+        partial void OnNactuChanging(global::System.Nullable<int> value);
+        partial void OnNactuChanged();
+        /// <summary>
+        /// There are no comments for Property Inlg in the schema.
+        /// </summary>
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        [global::Microsoft.OData.Client.OriginalNameAttribute("Inlg")]
+        public virtual global::System.Nullable<int> Inlg
+        {
+            get
+            {
+                return this._Inlg;
+            }
+            set
+            {
+                this.OnInlgChanging(value);
+                this._Inlg = value;
+                this.OnInlgChanged();
+                this.OnPropertyChanged("Inlg");
+            }
+        }
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        private global::System.Nullable<int> _Inlg;
+        partial void OnInlgChanging(global::System.Nullable<int> value);
+        partial void OnInlgChanged();
+        /// <summary>
+        /// There are no comments for Property Inth in the schema.
+        /// </summary>
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        [global::Microsoft.OData.Client.OriginalNameAttribute("Inth")]
+        public virtual global::System.Nullable<int> Inth
+        {
+            get
+            {
+                return this._Inth;
+            }
+            set
+            {
+                this.OnInthChanging(value);
+                this._Inth = value;
+                this.OnInthChanged();
+                this.OnPropertyChanged("Inth");
+            }
+        }
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        private global::System.Nullable<int> _Inth;
+        partial void OnInthChanging(global::System.Nullable<int> value);
+        partial void OnInthChanged();
+        /// <summary>
+        /// There are no comments for Property Idoc in the schema.
+        /// </summary>
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        [global::Microsoft.OData.Client.OriginalNameAttribute("Idoc")]
+        public virtual string Idoc
+        {
+            get
+            {
+                return this._Idoc;
+            }
+            set
+            {
+                this.OnIdocChanging(value);
+                this._Idoc = value;
+                this.OnIdocChanged();
+                this.OnPropertyChanged("Idoc");
+            }
+        }
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        private string _Idoc;
+        partial void OnIdocChanging(string value);
+        partial void OnIdocChanged();
+        /// <summary>
+        /// There are no comments for Property Photo in the schema.
+        /// </summary>
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        [global::Microsoft.OData.Client.OriginalNameAttribute("Photo")]
+        public virtual byte[] Photo
+        {
+            get
+            {
+                return this._Photo;
+            }
+            set
+            {
+                this.OnPhotoChanging(value);
+                this._Photo = value;
+                this.OnPhotoChanged();
+                this.OnPropertyChanged("Photo");
+            }
+        }
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        private byte[] _Photo;
+        partial void OnPhotoChanging(byte[] value);
+        partial void OnPhotoChanged();
+        /// <summary>
+        /// There are no comments for Property Phot2 in the schema.
+        /// </summary>
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        [global::Microsoft.OData.Client.OriginalNameAttribute("Phot2")]
+        public virtual byte[] Phot2
+        {
+            get
+            {
+                return this._Phot2;
+            }
+            set
+            {
+                this.OnPhot2Changing(value);
+                this._Phot2 = value;
+                this.OnPhot2Changed();
+                this.OnPropertyChanged("Phot2");
+            }
+        }
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        private byte[] _Phot2;
+        partial void OnPhot2Changing(byte[] value);
+        partial void OnPhot2Changed();
+        /// <summary>
+        /// There are no comments for Property Socacc in the schema.
+        /// </summary>
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        [global::Microsoft.OData.Client.OriginalNameAttribute("Socacc")]
+        public virtual string Socacc
+        {
+            get
+            {
+                return this._Socacc;
+            }
+            set
+            {
+                this.OnSocaccChanging(value);
+                this._Socacc = value;
+                this.OnSocaccChanged();
+                this.OnPropertyChanged("Socacc");
+            }
+        }
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        private string _Socacc;
+        partial void OnSocaccChanging(string value);
+        partial void OnSocaccChanged();
+        /// <summary>
+        /// There are no comments for Property Idno in the schema.
+        /// </summary>
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        [global::Microsoft.OData.Client.OriginalNameAttribute("Idno")]
+        public virtual string Idno
+        {
+            get
+            {
+                return this._Idno;
+            }
+            set
+            {
+                this.OnIdnoChanging(value);
+                this._Idno = value;
+                this.OnIdnoChanged();
+                this.OnPropertyChanged("Idno");
+            }
+        }
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        private string _Idno;
+        partial void OnIdnoChanging(string value);
+        partial void OnIdnoChanged();
+        /// <summary>
+        /// There are no comments for Property Id2no in the schema.
+        /// </summary>
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        [global::Microsoft.OData.Client.OriginalNameAttribute("Id2no")]
+        public virtual string Id2no
+        {
+            get
+            {
+                return this._Id2no;
+            }
+            set
+            {
+                this.OnId2noChanging(value);
+                this._Id2no = value;
+                this.OnId2noChanged();
+                this.OnPropertyChanged("Id2no");
+            }
+        }
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        private string _Id2no;
+        partial void OnId2noChanging(string value);
+        partial void OnId2noChanged();
+        /// <summary>
+        /// There are no comments for Property Uopt in the schema.
+        /// </summary>
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        [global::Microsoft.OData.Client.OriginalNameAttribute("Uopt")]
+        public virtual global::System.Nullable<int> Uopt
+        {
+            get
+            {
+                return this._Uopt;
+            }
+            set
+            {
+                this.OnUoptChanging(value);
+                this._Uopt = value;
+                this.OnUoptChanged();
+                this.OnPropertyChanged("Uopt");
+            }
+        }
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        private global::System.Nullable<int> _Uopt;
+        partial void OnUoptChanging(global::System.Nullable<int> value);
+        partial void OnUoptChanged();
+        /// <summary>
+        /// There are no comments for Property Uthem in the schema.
+        /// </summary>
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        [global::Microsoft.OData.Client.OriginalNameAttribute("Uthem")]
+        public virtual global::System.Nullable<int> Uthem
+        {
+            get
+            {
+                return this._Uthem;
+            }
+            set
+            {
+                this.OnUthemChanging(value);
+                this._Uthem = value;
+                this.OnUthemChanged();
+                this.OnPropertyChanged("Uthem");
+            }
+        }
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        private global::System.Nullable<int> _Uthem;
+        partial void OnUthemChanging(global::System.Nullable<int> value);
+        partial void OnUthemChanged();
+        /// <summary>
+        /// There are no comments for Property Usaie in the schema.
+        /// </summary>
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        [global::Microsoft.OData.Client.OriginalNameAttribute("Usaie")]
+        public virtual global::System.Nullable<int> Usaie
+        {
+            get
+            {
+                return this._Usaie;
+            }
+            set
+            {
+                this.OnUsaieChanging(value);
+                this._Usaie = value;
+                this.OnUsaieChanged();
+                this.OnPropertyChanged("Usaie");
+            }
+        }
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        private global::System.Nullable<int> _Usaie;
+        partial void OnUsaieChanging(global::System.Nullable<int> value);
+        partial void OnUsaieChanged();
+        /// <summary>
+        /// There are no comments for Property Typct in the schema.
+        /// </summary>
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        [global::Microsoft.OData.Client.OriginalNameAttribute("Typct")]
+        public virtual global::System.Nullable<int> Typct
+        {
+            get
+            {
+                return this._Typct;
+            }
+            set
+            {
+                this.OnTypctChanging(value);
+                this._Typct = value;
+                this.OnTypctChanged();
+                this.OnPropertyChanged("Typct");
+            }
+        }
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        private global::System.Nullable<int> _Typct;
+        partial void OnTypctChanging(global::System.Nullable<int> value);
+        partial void OnTypctChanged();
+        /// <summary>
+        /// There are no comments for Property Dtdval in the schema.
+        /// </summary>
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        [global::Microsoft.OData.Client.OriginalNameAttribute("Dtdval")]
+        public virtual global::System.Nullable<int> Dtdval
+        {
+            get
+            {
+                return this._Dtdval;
+            }
+            set
+            {
+                this.OnDtdvalChanging(value);
+                this._Dtdval = value;
+                this.OnDtdvalChanged();
+                this.OnPropertyChanged("Dtdval");
+            }
+        }
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        private global::System.Nullable<int> _Dtdval;
+        partial void OnDtdvalChanging(global::System.Nullable<int> value);
+        partial void OnDtdvalChanged();
+        /// <summary>
+        /// There are no comments for Property Dtfval in the schema.
+        /// </summary>
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        [global::Microsoft.OData.Client.OriginalNameAttribute("Dtfval")]
+        public virtual global::System.Nullable<int> Dtfval
+        {
+            get
+            {
+                return this._Dtfval;
+            }
+            set
+            {
+                this.OnDtfvalChanging(value);
+                this._Dtfval = value;
+                this.OnDtfvalChanged();
+                this.OnPropertyChanged("Dtfval");
+            }
+        }
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        private global::System.Nullable<int> _Dtfval;
+        partial void OnDtfvalChanging(global::System.Nullable<int> value);
+        partial void OnDtfvalChanged();
+        /// <summary>
+        /// There are no comments for Property Eta in the schema.
+        /// </summary>
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        [global::Microsoft.OData.Client.OriginalNameAttribute("Eta")]
+        public virtual global::System.Nullable<int> Eta
+        {
+            get
+            {
+                return this._Eta;
+            }
+            set
+            {
+                this.OnEtaChanging(value);
+                this._Eta = value;
+                this.OnEtaChanged();
+                this.OnPropertyChanged("Eta");
+            }
+        }
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        private global::System.Nullable<int> _Eta;
+        partial void OnEtaChanging(global::System.Nullable<int> value);
+        partial void OnEtaChanged();
+        /// <summary>
+        /// There are no comments for Property Sia in the schema.
+        /// </summary>
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        [global::Microsoft.OData.Client.OriginalNameAttribute("Sia")]
+        public virtual global::System.Nullable<bool> Sia
+        {
+            get
+            {
+                return this._Sia;
+            }
+            set
+            {
+                this.OnSiaChanging(value);
+                this._Sia = value;
+                this.OnSiaChanged();
+                this.OnPropertyChanged("Sia");
+            }
+        }
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        private global::System.Nullable<bool> _Sia;
+        partial void OnSiaChanging(global::System.Nullable<bool> value);
+        partial void OnSiaChanged();
+        /// <summary>
+        /// There are no comments for Property Siv in the schema.
+        /// </summary>
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        [global::Microsoft.OData.Client.OriginalNameAttribute("Siv")]
+        public virtual global::System.Nullable<bool> Siv
+        {
+            get
+            {
+                return this._Siv;
+            }
+            set
+            {
+                this.OnSivChanging(value);
+                this._Siv = value;
+                this.OnSivChanged();
+                this.OnPropertyChanged("Siv");
+            }
+        }
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        private global::System.Nullable<bool> _Siv;
+        partial void OnSivChanging(global::System.Nullable<bool> value);
+        partial void OnSivChanged();
+        /// <summary>
+        /// There are no comments for Property Ela in the schema.
+        /// </summary>
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        [global::Microsoft.OData.Client.OriginalNameAttribute("Ela")]
+        public virtual global::System.Nullable<int> Ela
+        {
+            get
+            {
+                return this._Ela;
+            }
+            set
+            {
+                this.OnElaChanging(value);
+                this._Ela = value;
+                this.OnElaChanged();
+                this.OnPropertyChanged("Ela");
+            }
+        }
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        private global::System.Nullable<int> _Ela;
+        partial void OnElaChanging(global::System.Nullable<int> value);
+        partial void OnElaChanged();
+        /// <summary>
+        /// There are no comments for Property Selc in the schema.
+        /// </summary>
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        [global::Microsoft.OData.Client.OriginalNameAttribute("Selc")]
+        public virtual global::System.Nullable<bool> Selc
+        {
+            get
+            {
+                return this._Selc;
+            }
+            set
+            {
+                this.OnSelcChanging(value);
+                this._Selc = value;
+                this.OnSelcChanged();
+                this.OnPropertyChanged("Selc");
+            }
+        }
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        private global::System.Nullable<bool> _Selc;
+        partial void OnSelcChanging(global::System.Nullable<bool> value);
+        partial void OnSelcChanged();
+        /// <summary>
+        /// There are no comments for Property Datc in the schema.
+        /// </summary>
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        [global::Microsoft.OData.Client.OriginalNameAttribute("Datc")]
+        public virtual global::System.Nullable<global::System.DateTimeOffset> Datc
+        {
+            get
+            {
+                return this._Datc;
+            }
+            set
+            {
+                this.OnDatcChanging(value);
+                this._Datc = value;
+                this.OnDatcChanged();
+                this.OnPropertyChanged("Datc");
+            }
+        }
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        private global::System.Nullable<global::System.DateTimeOffset> _Datc;
+        partial void OnDatcChanging(global::System.Nullable<global::System.DateTimeOffset> value);
+        partial void OnDatcChanged();
+        /// <summary>
+        /// There are no comments for Property Datu in the schema.
+        /// </summary>
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        [global::Microsoft.OData.Client.OriginalNameAttribute("Datu")]
+        public virtual global::System.Nullable<global::System.DateTimeOffset> Datu
+        {
+            get
+            {
+                return this._Datu;
+            }
+            set
+            {
+                this.OnDatuChanging(value);
+                this._Datu = value;
+                this.OnDatuChanged();
+                this.OnPropertyChanged("Datu");
+            }
+        }
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        private global::System.Nullable<global::System.DateTimeOffset> _Datu;
+        partial void OnDatuChanging(global::System.Nullable<global::System.DateTimeOffset> value);
+        partial void OnDatuChanged();
+        /// <summary>
+        /// There are no comments for Property Usrope in the schema.
+        /// </summary>
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        [global::Microsoft.OData.Client.OriginalNameAttribute("Usrope")]
+        public virtual string Usrope
+        {
+            get
+            {
+                return this._Usrope;
+            }
+            set
+            {
+                this.OnUsropeChanging(value);
+                this._Usrope = value;
+                this.OnUsropeChanged();
+                this.OnPropertyChanged("Usrope");
+            }
+        }
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        private string _Usrope;
+        partial void OnUsropeChanging(string value);
+        partial void OnUsropeChanged();
+        /// <summary>
+        /// There are no comments for Property Usrupd in the schema.
+        /// </summary>
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        [global::Microsoft.OData.Client.OriginalNameAttribute("Usrupd")]
+        public virtual string Usrupd
+        {
+            get
+            {
+                return this._Usrupd;
+            }
+            set
+            {
+                this.OnUsrupdChanging(value);
+                this._Usrupd = value;
+                this.OnUsrupdChanged();
+                this.OnPropertyChanged("Usrupd");
+            }
+        }
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        private string _Usrupd;
+        partial void OnUsrupdChanging(string value);
+        partial void OnUsrupdChanged();
+        /// <summary>
+        /// There are no comments for Property Datope in the schema.
+        /// </summary>
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        [global::Microsoft.OData.Client.OriginalNameAttribute("Datope")]
+        public virtual global::System.Nullable<global::System.DateTimeOffset> Datope
+        {
+            get
+            {
+                return this._Datope;
+            }
+            set
+            {
+                this.OnDatopeChanging(value);
+                this._Datope = value;
+                this.OnDatopeChanged();
+                this.OnPropertyChanged("Datope");
+            }
+        }
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        private global::System.Nullable<global::System.DateTimeOffset> _Datope;
+        partial void OnDatopeChanging(global::System.Nullable<global::System.DateTimeOffset> value);
+        partial void OnDatopeChanged();
+        /// <summary>
+        /// There are no comments for Property Datupd in the schema.
+        /// </summary>
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        [global::Microsoft.OData.Client.OriginalNameAttribute("Datupd")]
+        public virtual global::System.Nullable<global::System.DateTimeOffset> Datupd
+        {
+            get
+            {
+                return this._Datupd;
+            }
+            set
+            {
+                this.OnDatupdChanging(value);
+                this._Datupd = value;
+                this.OnDatupdChanged();
+                this.OnPropertyChanged("Datupd");
+            }
+        }
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        private global::System.Nullable<global::System.DateTimeOffset> _Datupd;
+        partial void OnDatupdChanging(global::System.Nullable<global::System.DateTimeOffset> value);
+        partial void OnDatupdChanged();
+        /// <summary>
+        /// There are no comments for Property Ivalid in the schema.
+        /// </summary>
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        [global::Microsoft.OData.Client.OriginalNameAttribute("Ivalid")]
+        public virtual global::System.Nullable<int> Ivalid
+        {
+            get
+            {
+                return this._Ivalid;
+            }
+            set
+            {
+                this.OnIvalidChanging(value);
+                this._Ivalid = value;
+                this.OnIvalidChanged();
+                this.OnPropertyChanged("Ivalid");
+            }
+        }
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        private global::System.Nullable<int> _Ivalid;
+        partial void OnIvalidChanging(global::System.Nullable<int> value);
+        partial void OnIvalidChanged();
+        /// <summary>
+        /// There are no comments for Property Iclos in the schema.
+        /// </summary>
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        [global::Microsoft.OData.Client.OriginalNameAttribute("Iclos")]
+        public virtual global::System.Nullable<int> Iclos
+        {
+            get
+            {
+                return this._Iclos;
+            }
+            set
+            {
+                this.OnIclosChanging(value);
+                this._Iclos = value;
+                this.OnIclosChanged();
+                this.OnPropertyChanged("Iclos");
+            }
+        }
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        private global::System.Nullable<int> _Iclos;
+        partial void OnIclosChanging(global::System.Nullable<int> value);
+        partial void OnIclosChanged();
+        /// <summary>
+        /// There are no comments for Property Eaut in the schema.
+        /// </summary>
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        [global::Microsoft.OData.Client.OriginalNameAttribute("Eaut")]
+        public virtual global::System.Nullable<int> Eaut
+        {
+            get
+            {
+                return this._Eaut;
+            }
+            set
+            {
+                this.OnEautChanging(value);
+                this._Eaut = value;
+                this.OnEautChanged();
+                this.OnPropertyChanged("Eaut");
+            }
+        }
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        private global::System.Nullable<int> _Eaut;
+        partial void OnEautChanging(global::System.Nullable<int> value);
+        partial void OnEautChanged();
+        /// <summary>
+        /// There are no comments for Property Rowguid in the schema.
+        /// </summary>
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        [global::Microsoft.OData.Client.OriginalNameAttribute("Rowguid")]
+        [global::System.ComponentModel.DataAnnotations.RequiredAttribute(ErrorMessage = "Rowguid is required.")]
+        public virtual global::System.Guid Rowguid
+        {
+            get
+            {
+                return this._Rowguid;
+            }
+            set
+            {
+                this.OnRowguidChanging(value);
+                this._Rowguid = value;
+                this.OnRowguidChanged();
+                this.OnPropertyChanged("Rowguid");
+            }
+        }
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        private global::System.Guid _Rowguid;
+        partial void OnRowguidChanging(global::System.Guid value);
+        partial void OnRowguidChanged();
+        /// <summary>
+        /// There are no comments for Property Obsv in the schema.
+        /// </summary>
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        [global::Microsoft.OData.Client.OriginalNameAttribute("Obsv")]
+        public virtual string Obsv
+        {
+            get
+            {
+                return this._Obsv;
+            }
+            set
+            {
+                this.OnObsvChanging(value);
+                this._Obsv = value;
+                this.OnObsvChanged();
+                this.OnPropertyChanged("Obsv");
+            }
+        }
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        private string _Obsv;
+        partial void OnObsvChanging(string value);
+        partial void OnObsvChanged();
+        /// <summary>
+        /// There are no comments for Property ItieNavigation in the schema.
+        /// </summary>
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        [global::Microsoft.OData.Client.OriginalNameAttribute("ItieNavigation")]
+        public virtual global::GxWapi.DaModels.Tiersp ItieNavigation
+        {
+            get
+            {
+                return this._ItieNavigation;
+            }
+            set
+            {
+                this.OnItieNavigationChanging(value);
+                this._ItieNavigation = value;
+                this.OnItieNavigationChanged();
+                this.OnPropertyChanged("ItieNavigation");
+            }
+        }
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        private global::GxWapi.DaModels.Tiersp _ItieNavigation;
+        partial void OnItieNavigationChanging(global::GxWapi.DaModels.Tiersp value);
+        partial void OnItieNavigationChanged();
+        /// <summary>
+        /// This event is raised when the value of the property is changed
+        /// </summary>
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        public event global::System.ComponentModel.PropertyChangedEventHandler PropertyChanged;
+        /// <summary>
+        /// The value of the property is changed
+        /// </summary>
+        /// <param name="property">property name</param>
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        protected virtual void OnPropertyChanged(string property)
+        {
+            if ((this.PropertyChanged != null))
+            {
+                this.PropertyChanged(this, new global::System.ComponentModel.PropertyChangedEventArgs(property));
+            }
+        }
+    }
+    /// <summary>
     /// There are no comments for TiwatrSingle in the schema.
     /// </summary>
     [global::Microsoft.OData.Client.OriginalNameAttribute("TiwatrSingle")]
@@ -28643,4220 +32843,6 @@ namespace GxWapi.DaModels
         [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
         private global::GxWapi.DaModels.Tiewel _ItieNavigation;
         partial void OnItieNavigationChanging(global::GxWapi.DaModels.Tiewel value);
-        partial void OnItieNavigationChanged();
-        /// <summary>
-        /// This event is raised when the value of the property is changed
-        /// </summary>
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        public event global::System.ComponentModel.PropertyChangedEventHandler PropertyChanged;
-        /// <summary>
-        /// The value of the property is changed
-        /// </summary>
-        /// <param name="property">property name</param>
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        protected virtual void OnPropertyChanged(string property)
-        {
-            if ((this.PropertyChanged != null))
-            {
-                this.PropertyChanged(this, new global::System.ComponentModel.PropertyChangedEventArgs(property));
-            }
-        }
-    }
-    /// <summary>
-    /// There are no comments for TieatrSingle in the schema.
-    /// </summary>
-    [global::Microsoft.OData.Client.OriginalNameAttribute("TieatrSingle")]
-    public partial class TieatrSingle : global::Microsoft.OData.Client.DataServiceQuerySingle<Tieatr>
-    {
-        /// <summary>
-        /// Initialize a new TieatrSingle object.
-        /// </summary>
-        public TieatrSingle(global::Microsoft.OData.Client.DataServiceContext context, string path)
-            : base(context, path) {}
-
-        /// <summary>
-        /// Initialize a new TieatrSingle object.
-        /// </summary>
-        public TieatrSingle(global::Microsoft.OData.Client.DataServiceContext context, string path, bool isComposable)
-            : base(context, path, isComposable) {}
-
-        /// <summary>
-        /// Initialize a new TieatrSingle object.
-        /// </summary>
-        public TieatrSingle(global::Microsoft.OData.Client.DataServiceQuerySingle<Tieatr> query)
-            : base(query) {}
-
-        /// <summary>
-        /// There are no comments for ItieNavigation in the schema.
-        /// </summary>
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        [global::Microsoft.OData.Client.OriginalNameAttribute("ItieNavigation")]
-        public virtual global::GxWapi.DaModels.TierspSingle ItieNavigation
-        {
-            get
-            {
-                if (!this.IsComposable)
-                {
-                    throw new global::System.NotSupportedException("The previous function is not composable.");
-                }
-                if ((this._ItieNavigation == null))
-                {
-                    this._ItieNavigation = new global::GxWapi.DaModels.TierspSingle(this.Context, GetPath("ItieNavigation"));
-                }
-                return this._ItieNavigation;
-            }
-        }
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        private global::GxWapi.DaModels.TierspSingle _ItieNavigation;
-    }
-    /// <summary>
-    /// There are no comments for Tieatr in the schema.
-    /// </summary>
-    /// <KeyProperties>
-    /// Id
-    /// </KeyProperties>
-    [global::Microsoft.OData.Client.Key("Id")]
-    [global::Microsoft.OData.Client.OriginalNameAttribute("Tieatr")]
-    public partial class Tieatr : global::Microsoft.OData.Client.BaseEntityType, global::System.ComponentModel.INotifyPropertyChanged
-    {
-        /// <summary>
-        /// Create a new Tieatr object.
-        /// </summary>
-        /// <param name="ID">Initial value of Id.</param>
-        /// <param name="noatr">Initial value of Noatr.</param>
-        /// <param name="rowguid">Initial value of Rowguid.</param>
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        public static Tieatr CreateTieatr(int ID, int noatr, global::System.Guid rowguid)
-        {
-            Tieatr tieatr = new Tieatr();
-            tieatr.Id = ID;
-            tieatr.Noatr = noatr;
-            tieatr.Rowguid = rowguid;
-            return tieatr;
-        }
-        /// <summary>
-        /// There are no comments for Property Id in the schema.
-        /// </summary>
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        [global::Microsoft.OData.Client.OriginalNameAttribute("Id")]
-        [global::System.ComponentModel.DataAnnotations.RequiredAttribute(ErrorMessage = "Id is required.")]
-        public virtual int Id
-        {
-            get
-            {
-                return this._Id;
-            }
-            set
-            {
-                this.OnIdChanging(value);
-                this._Id = value;
-                this.OnIdChanged();
-                this.OnPropertyChanged("Id");
-            }
-        }
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        private int _Id;
-        partial void OnIdChanging(int value);
-        partial void OnIdChanged();
-        /// <summary>
-        /// There are no comments for Property Itie in the schema.
-        /// </summary>
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        [global::Microsoft.OData.Client.OriginalNameAttribute("Itie")]
-        public virtual global::System.Nullable<int> Itie
-        {
-            get
-            {
-                return this._Itie;
-            }
-            set
-            {
-                this.OnItieChanging(value);
-                this._Itie = value;
-                this.OnItieChanged();
-                this.OnPropertyChanged("Itie");
-            }
-        }
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        private global::System.Nullable<int> _Itie;
-        partial void OnItieChanging(global::System.Nullable<int> value);
-        partial void OnItieChanged();
-        /// <summary>
-        /// There are no comments for Property Iele in the schema.
-        /// </summary>
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        [global::Microsoft.OData.Client.OriginalNameAttribute("Iele")]
-        public virtual global::System.Nullable<int> Iele
-        {
-            get
-            {
-                return this._Iele;
-            }
-            set
-            {
-                this.OnIeleChanging(value);
-                this._Iele = value;
-                this.OnIeleChanged();
-                this.OnPropertyChanged("Iele");
-            }
-        }
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        private global::System.Nullable<int> _Iele;
-        partial void OnIeleChanging(global::System.Nullable<int> value);
-        partial void OnIeleChanged();
-        /// <summary>
-        /// There are no comments for Property Idorg in the schema.
-        /// </summary>
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        [global::Microsoft.OData.Client.OriginalNameAttribute("Idorg")]
-        public virtual global::System.Nullable<int> Idorg
-        {
-            get
-            {
-                return this._Idorg;
-            }
-            set
-            {
-                this.OnIdorgChanging(value);
-                this._Idorg = value;
-                this.OnIdorgChanged();
-                this.OnPropertyChanged("Idorg");
-            }
-        }
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        private global::System.Nullable<int> _Idorg;
-        partial void OnIdorgChanging(global::System.Nullable<int> value);
-        partial void OnIdorgChanged();
-        /// <summary>
-        /// There are no comments for Property Zcdati in the schema.
-        /// </summary>
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        [global::Microsoft.OData.Client.OriginalNameAttribute("Zcdati")]
-        public virtual string Zcdati
-        {
-            get
-            {
-                return this._Zcdati;
-            }
-            set
-            {
-                this.OnZcdatiChanging(value);
-                this._Zcdati = value;
-                this.OnZcdatiChanged();
-                this.OnPropertyChanged("Zcdati");
-            }
-        }
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        private string _Zcdati;
-        partial void OnZcdatiChanging(string value);
-        partial void OnZcdatiChanged();
-        /// <summary>
-        /// There are no comments for Property Siat in the schema.
-        /// </summary>
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        [global::Microsoft.OData.Client.OriginalNameAttribute("Siat")]
-        public virtual global::System.Nullable<int> Siat
-        {
-            get
-            {
-                return this._Siat;
-            }
-            set
-            {
-                this.OnSiatChanging(value);
-                this._Siat = value;
-                this.OnSiatChanged();
-                this.OnPropertyChanged("Siat");
-            }
-        }
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        private global::System.Nullable<int> _Siat;
-        partial void OnSiatChanging(global::System.Nullable<int> value);
-        partial void OnSiatChanged();
-        /// <summary>
-        /// There are no comments for Property Sidpd in the schema.
-        /// </summary>
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        [global::Microsoft.OData.Client.OriginalNameAttribute("Sidpd")]
-        public virtual global::System.Nullable<int> Sidpd
-        {
-            get
-            {
-                return this._Sidpd;
-            }
-            set
-            {
-                this.OnSidpdChanging(value);
-                this._Sidpd = value;
-                this.OnSidpdChanged();
-                this.OnPropertyChanged("Sidpd");
-            }
-        }
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        private global::System.Nullable<int> _Sidpd;
-        partial void OnSidpdChanging(global::System.Nullable<int> value);
-        partial void OnSidpdChanged();
-        /// <summary>
-        /// There are no comments for Property Adpd in the schema.
-        /// </summary>
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        [global::Microsoft.OData.Client.OriginalNameAttribute("Adpd")]
-        public virtual global::System.Nullable<global::System.Guid> Adpd
-        {
-            get
-            {
-                return this._Adpd;
-            }
-            set
-            {
-                this.OnAdpdChanging(value);
-                this._Adpd = value;
-                this.OnAdpdChanged();
-                this.OnPropertyChanged("Adpd");
-            }
-        }
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        private global::System.Nullable<global::System.Guid> _Adpd;
-        partial void OnAdpdChanging(global::System.Nullable<global::System.Guid> value);
-        partial void OnAdpdChanged();
-        /// <summary>
-        /// There are no comments for Property Xdpd in the schema.
-        /// </summary>
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        [global::Microsoft.OData.Client.OriginalNameAttribute("Xdpd")]
-        public virtual global::System.Nullable<global::System.Guid> Xdpd
-        {
-            get
-            {
-                return this._Xdpd;
-            }
-            set
-            {
-                this.OnXdpdChanging(value);
-                this._Xdpd = value;
-                this.OnXdpdChanged();
-                this.OnPropertyChanged("Xdpd");
-            }
-        }
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        private global::System.Nullable<global::System.Guid> _Xdpd;
-        partial void OnXdpdChanging(global::System.Nullable<global::System.Guid> value);
-        partial void OnXdpdChanged();
-        /// <summary>
-        /// There are no comments for Property Ydpd in the schema.
-        /// </summary>
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        [global::Microsoft.OData.Client.OriginalNameAttribute("Ydpd")]
-        public virtual global::System.Nullable<global::System.Guid> Ydpd
-        {
-            get
-            {
-                return this._Ydpd;
-            }
-            set
-            {
-                this.OnYdpdChanging(value);
-                this._Ydpd = value;
-                this.OnYdpdChanged();
-                this.OnPropertyChanged("Ydpd");
-            }
-        }
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        private global::System.Nullable<global::System.Guid> _Ydpd;
-        partial void OnYdpdChanging(global::System.Nullable<global::System.Guid> value);
-        partial void OnYdpdChanged();
-        /// <summary>
-        /// There are no comments for Property Dpdsac in the schema.
-        /// </summary>
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        [global::Microsoft.OData.Client.OriginalNameAttribute("Dpdsac")]
-        public virtual global::System.Nullable<int> Dpdsac
-        {
-            get
-            {
-                return this._Dpdsac;
-            }
-            set
-            {
-                this.OnDpdsacChanging(value);
-                this._Dpdsac = value;
-                this.OnDpdsacChanged();
-                this.OnPropertyChanged("Dpdsac");
-            }
-        }
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        private global::System.Nullable<int> _Dpdsac;
-        partial void OnDpdsacChanging(global::System.Nullable<int> value);
-        partial void OnDpdsacChanged();
-        /// <summary>
-        /// There are no comments for Property Pnoatr in the schema.
-        /// </summary>
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        [global::Microsoft.OData.Client.OriginalNameAttribute("Pnoatr")]
-        public virtual string Pnoatr
-        {
-            get
-            {
-                return this._Pnoatr;
-            }
-            set
-            {
-                this.OnPnoatrChanging(value);
-                this._Pnoatr = value;
-                this.OnPnoatrChanged();
-                this.OnPropertyChanged("Pnoatr");
-            }
-        }
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        private string _Pnoatr;
-        partial void OnPnoatrChanging(string value);
-        partial void OnPnoatrChanged();
-        /// <summary>
-        /// There are no comments for Property Atyp in the schema.
-        /// </summary>
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        [global::Microsoft.OData.Client.OriginalNameAttribute("Atyp")]
-        public virtual global::System.Nullable<int> Atyp
-        {
-            get
-            {
-                return this._Atyp;
-            }
-            set
-            {
-                this.OnAtypChanging(value);
-                this._Atyp = value;
-                this.OnAtypChanged();
-                this.OnPropertyChanged("Atyp");
-            }
-        }
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        private global::System.Nullable<int> _Atyp;
-        partial void OnAtypChanging(global::System.Nullable<int> value);
-        partial void OnAtypChanged();
-        /// <summary>
-        /// There are no comments for Property Svala in the schema.
-        /// </summary>
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        [global::Microsoft.OData.Client.OriginalNameAttribute("Svala")]
-        public virtual string Svala
-        {
-            get
-            {
-                return this._Svala;
-            }
-            set
-            {
-                this.OnSvalaChanging(value);
-                this._Svala = value;
-                this.OnSvalaChanged();
-                this.OnPropertyChanged("Svala");
-            }
-        }
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        private string _Svala;
-        partial void OnSvalaChanging(string value);
-        partial void OnSvalaChanged();
-        /// <summary>
-        /// There are no comments for Property Ivala in the schema.
-        /// </summary>
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        [global::Microsoft.OData.Client.OriginalNameAttribute("Ivala")]
-        public virtual global::System.Nullable<int> Ivala
-        {
-            get
-            {
-                return this._Ivala;
-            }
-            set
-            {
-                this.OnIvalaChanging(value);
-                this._Ivala = value;
-                this.OnIvalaChanged();
-                this.OnPropertyChanged("Ivala");
-            }
-        }
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        private global::System.Nullable<int> _Ivala;
-        partial void OnIvalaChanging(global::System.Nullable<int> value);
-        partial void OnIvalaChanged();
-        /// <summary>
-        /// There are no comments for Property Rvala in the schema.
-        /// </summary>
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        [global::Microsoft.OData.Client.OriginalNameAttribute("Rvala")]
-        public virtual global::System.Nullable<float> Rvala
-        {
-            get
-            {
-                return this._Rvala;
-            }
-            set
-            {
-                this.OnRvalaChanging(value);
-                this._Rvala = value;
-                this.OnRvalaChanged();
-                this.OnPropertyChanged("Rvala");
-            }
-        }
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        private global::System.Nullable<float> _Rvala;
-        partial void OnRvalaChanging(global::System.Nullable<float> value);
-        partial void OnRvalaChanged();
-        /// <summary>
-        /// There are no comments for Property Bvala in the schema.
-        /// </summary>
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        [global::Microsoft.OData.Client.OriginalNameAttribute("Bvala")]
-        public virtual global::System.Nullable<bool> Bvala
-        {
-            get
-            {
-                return this._Bvala;
-            }
-            set
-            {
-                this.OnBvalaChanging(value);
-                this._Bvala = value;
-                this.OnBvalaChanged();
-                this.OnPropertyChanged("Bvala");
-            }
-        }
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        private global::System.Nullable<bool> _Bvala;
-        partial void OnBvalaChanging(global::System.Nullable<bool> value);
-        partial void OnBvalaChanged();
-        /// <summary>
-        /// There are no comments for Property Dvala in the schema.
-        /// </summary>
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        [global::Microsoft.OData.Client.OriginalNameAttribute("Dvala")]
-        public virtual global::System.Nullable<global::System.DateTimeOffset> Dvala
-        {
-            get
-            {
-                return this._Dvala;
-            }
-            set
-            {
-                this.OnDvalaChanging(value);
-                this._Dvala = value;
-                this.OnDvalaChanged();
-                this.OnPropertyChanged("Dvala");
-            }
-        }
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        private global::System.Nullable<global::System.DateTimeOffset> _Dvala;
-        partial void OnDvalaChanging(global::System.Nullable<global::System.DateTimeOffset> value);
-        partial void OnDvalaChanged();
-        /// <summary>
-        /// There are no comments for Property Ndval in the schema.
-        /// </summary>
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        [global::Microsoft.OData.Client.OriginalNameAttribute("Ndval")]
-        public virtual global::System.Nullable<int> Ndval
-        {
-            get
-            {
-                return this._Ndval;
-            }
-            set
-            {
-                this.OnNdvalChanging(value);
-                this._Ndval = value;
-                this.OnNdvalChanged();
-                this.OnPropertyChanged("Ndval");
-            }
-        }
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        private global::System.Nullable<int> _Ndval;
-        partial void OnNdvalChanging(global::System.Nullable<int> value);
-        partial void OnNdvalChanged();
-        /// <summary>
-        /// There are no comments for Property Idval in the schema.
-        /// </summary>
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        [global::Microsoft.OData.Client.OriginalNameAttribute("Idval")]
-        public virtual global::System.Nullable<int> Idval
-        {
-            get
-            {
-                return this._Idval;
-            }
-            set
-            {
-                this.OnIdvalChanging(value);
-                this._Idval = value;
-                this.OnIdvalChanged();
-                this.OnPropertyChanged("Idval");
-            }
-        }
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        private global::System.Nullable<int> _Idval;
-        partial void OnIdvalChanging(global::System.Nullable<int> value);
-        partial void OnIdvalChanged();
-        /// <summary>
-        /// There are no comments for Property Ifval in the schema.
-        /// </summary>
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        [global::Microsoft.OData.Client.OriginalNameAttribute("Ifval")]
-        public virtual global::System.Nullable<int> Ifval
-        {
-            get
-            {
-                return this._Ifval;
-            }
-            set
-            {
-                this.OnIfvalChanging(value);
-                this._Ifval = value;
-                this.OnIfvalChanged();
-                this.OnPropertyChanged("Ifval");
-            }
-        }
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        private global::System.Nullable<int> _Ifval;
-        partial void OnIfvalChanging(global::System.Nullable<int> value);
-        partial void OnIfvalChanged();
-        /// <summary>
-        /// There are no comments for Property Totyp in the schema.
-        /// </summary>
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        [global::Microsoft.OData.Client.OriginalNameAttribute("Totyp")]
-        public virtual global::System.Nullable<int> Totyp
-        {
-            get
-            {
-                return this._Totyp;
-            }
-            set
-            {
-                this.OnTotypChanging(value);
-                this._Totyp = value;
-                this.OnTotypChanged();
-                this.OnPropertyChanged("Totyp");
-            }
-        }
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        private global::System.Nullable<int> _Totyp;
-        partial void OnTotypChanging(global::System.Nullable<int> value);
-        partial void OnTotypChanged();
-        /// <summary>
-        /// There are no comments for Property Htyp in the schema.
-        /// </summary>
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        [global::Microsoft.OData.Client.OriginalNameAttribute("Htyp")]
-        public virtual global::System.Nullable<int> Htyp
-        {
-            get
-            {
-                return this._Htyp;
-            }
-            set
-            {
-                this.OnHtypChanging(value);
-                this._Htyp = value;
-                this.OnHtypChanged();
-                this.OnPropertyChanged("Htyp");
-            }
-        }
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        private global::System.Nullable<int> _Htyp;
-        partial void OnHtypChanging(global::System.Nullable<int> value);
-        partial void OnHtypChanged();
-        /// <summary>
-        /// There are no comments for Property Uraz in the schema.
-        /// </summary>
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        [global::Microsoft.OData.Client.OriginalNameAttribute("Uraz")]
-        public virtual global::System.Nullable<int> Uraz
-        {
-            get
-            {
-                return this._Uraz;
-            }
-            set
-            {
-                this.OnUrazChanging(value);
-                this._Uraz = value;
-                this.OnUrazChanged();
-                this.OnPropertyChanged("Uraz");
-            }
-        }
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        private global::System.Nullable<int> _Uraz;
-        partial void OnUrazChanging(global::System.Nullable<int> value);
-        partial void OnUrazChanged();
-        /// <summary>
-        /// There are no comments for Property Gxseq in the schema.
-        /// </summary>
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        [global::Microsoft.OData.Client.OriginalNameAttribute("Gxseq")]
-        public virtual global::System.Nullable<int> Gxseq
-        {
-            get
-            {
-                return this._Gxseq;
-            }
-            set
-            {
-                this.OnGxseqChanging(value);
-                this._Gxseq = value;
-                this.OnGxseqChanged();
-                this.OnPropertyChanged("Gxseq");
-            }
-        }
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        private global::System.Nullable<int> _Gxseq;
-        partial void OnGxseqChanging(global::System.Nullable<int> value);
-        partial void OnGxseqChanged();
-        /// <summary>
-        /// There are no comments for Property Idoc in the schema.
-        /// </summary>
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        [global::Microsoft.OData.Client.OriginalNameAttribute("Idoc")]
-        public virtual string Idoc
-        {
-            get
-            {
-                return this._Idoc;
-            }
-            set
-            {
-                this.OnIdocChanging(value);
-                this._Idoc = value;
-                this.OnIdocChanged();
-                this.OnPropertyChanged("Idoc");
-            }
-        }
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        private string _Idoc;
-        partial void OnIdocChanging(string value);
-        partial void OnIdocChanged();
-        /// <summary>
-        /// There are no comments for Property Idoca in the schema.
-        /// </summary>
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        [global::Microsoft.OData.Client.OriginalNameAttribute("Idoca")]
-        public virtual string Idoca
-        {
-            get
-            {
-                return this._Idoca;
-            }
-            set
-            {
-                this.OnIdocaChanging(value);
-                this._Idoca = value;
-                this.OnIdocaChanged();
-                this.OnPropertyChanged("Idoca");
-            }
-        }
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        private string _Idoca;
-        partial void OnIdocaChanging(string value);
-        partial void OnIdocaChanged();
-        /// <summary>
-        /// There are no comments for Property Idocb in the schema.
-        /// </summary>
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        [global::Microsoft.OData.Client.OriginalNameAttribute("Idocb")]
-        public virtual string Idocb
-        {
-            get
-            {
-                return this._Idocb;
-            }
-            set
-            {
-                this.OnIdocbChanging(value);
-                this._Idocb = value;
-                this.OnIdocbChanged();
-                this.OnPropertyChanged("Idocb");
-            }
-        }
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        private string _Idocb;
-        partial void OnIdocbChanging(string value);
-        partial void OnIdocbChanged();
-        /// <summary>
-        /// There are no comments for Property Photo in the schema.
-        /// </summary>
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        [global::Microsoft.OData.Client.OriginalNameAttribute("Photo")]
-        public virtual string Photo
-        {
-            get
-            {
-                return this._Photo;
-            }
-            set
-            {
-                this.OnPhotoChanging(value);
-                this._Photo = value;
-                this.OnPhotoChanged();
-                this.OnPropertyChanged("Photo");
-            }
-        }
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        private string _Photo;
-        partial void OnPhotoChanging(string value);
-        partial void OnPhotoChanged();
-        /// <summary>
-        /// There are no comments for Property Phot2 in the schema.
-        /// </summary>
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        [global::Microsoft.OData.Client.OriginalNameAttribute("Phot2")]
-        public virtual byte[] Phot2
-        {
-            get
-            {
-                return this._Phot2;
-            }
-            set
-            {
-                this.OnPhot2Changing(value);
-                this._Phot2 = value;
-                this.OnPhot2Changed();
-                this.OnPropertyChanged("Phot2");
-            }
-        }
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        private byte[] _Phot2;
-        partial void OnPhot2Changing(byte[] value);
-        partial void OnPhot2Changed();
-        /// <summary>
-        /// There are no comments for Property Datc in the schema.
-        /// </summary>
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        [global::Microsoft.OData.Client.OriginalNameAttribute("Datc")]
-        public virtual global::System.Nullable<global::System.DateTimeOffset> Datc
-        {
-            get
-            {
-                return this._Datc;
-            }
-            set
-            {
-                this.OnDatcChanging(value);
-                this._Datc = value;
-                this.OnDatcChanged();
-                this.OnPropertyChanged("Datc");
-            }
-        }
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        private global::System.Nullable<global::System.DateTimeOffset> _Datc;
-        partial void OnDatcChanging(global::System.Nullable<global::System.DateTimeOffset> value);
-        partial void OnDatcChanged();
-        /// <summary>
-        /// There are no comments for Property Eta in the schema.
-        /// </summary>
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        [global::Microsoft.OData.Client.OriginalNameAttribute("Eta")]
-        public virtual global::System.Nullable<int> Eta
-        {
-            get
-            {
-                return this._Eta;
-            }
-            set
-            {
-                this.OnEtaChanging(value);
-                this._Eta = value;
-                this.OnEtaChanged();
-                this.OnPropertyChanged("Eta");
-            }
-        }
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        private global::System.Nullable<int> _Eta;
-        partial void OnEtaChanging(global::System.Nullable<int> value);
-        partial void OnEtaChanged();
-        /// <summary>
-        /// There are no comments for Property Selc in the schema.
-        /// </summary>
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        [global::Microsoft.OData.Client.OriginalNameAttribute("Selc")]
-        public virtual global::System.Nullable<bool> Selc
-        {
-            get
-            {
-                return this._Selc;
-            }
-            set
-            {
-                this.OnSelcChanging(value);
-                this._Selc = value;
-                this.OnSelcChanged();
-                this.OnPropertyChanged("Selc");
-            }
-        }
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        private global::System.Nullable<bool> _Selc;
-        partial void OnSelcChanging(global::System.Nullable<bool> value);
-        partial void OnSelcChanged();
-        /// <summary>
-        /// There are no comments for Property Usrope in the schema.
-        /// </summary>
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        [global::Microsoft.OData.Client.OriginalNameAttribute("Usrope")]
-        public virtual string Usrope
-        {
-            get
-            {
-                return this._Usrope;
-            }
-            set
-            {
-                this.OnUsropeChanging(value);
-                this._Usrope = value;
-                this.OnUsropeChanged();
-                this.OnPropertyChanged("Usrope");
-            }
-        }
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        private string _Usrope;
-        partial void OnUsropeChanging(string value);
-        partial void OnUsropeChanged();
-        /// <summary>
-        /// There are no comments for Property Usrupd in the schema.
-        /// </summary>
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        [global::Microsoft.OData.Client.OriginalNameAttribute("Usrupd")]
-        public virtual string Usrupd
-        {
-            get
-            {
-                return this._Usrupd;
-            }
-            set
-            {
-                this.OnUsrupdChanging(value);
-                this._Usrupd = value;
-                this.OnUsrupdChanged();
-                this.OnPropertyChanged("Usrupd");
-            }
-        }
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        private string _Usrupd;
-        partial void OnUsrupdChanging(string value);
-        partial void OnUsrupdChanged();
-        /// <summary>
-        /// There are no comments for Property Ivalid in the schema.
-        /// </summary>
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        [global::Microsoft.OData.Client.OriginalNameAttribute("Ivalid")]
-        public virtual global::System.Nullable<int> Ivalid
-        {
-            get
-            {
-                return this._Ivalid;
-            }
-            set
-            {
-                this.OnIvalidChanging(value);
-                this._Ivalid = value;
-                this.OnIvalidChanged();
-                this.OnPropertyChanged("Ivalid");
-            }
-        }
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        private global::System.Nullable<int> _Ivalid;
-        partial void OnIvalidChanging(global::System.Nullable<int> value);
-        partial void OnIvalidChanged();
-        /// <summary>
-        /// There are no comments for Property Iclos in the schema.
-        /// </summary>
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        [global::Microsoft.OData.Client.OriginalNameAttribute("Iclos")]
-        public virtual global::System.Nullable<int> Iclos
-        {
-            get
-            {
-                return this._Iclos;
-            }
-            set
-            {
-                this.OnIclosChanging(value);
-                this._Iclos = value;
-                this.OnIclosChanged();
-                this.OnPropertyChanged("Iclos");
-            }
-        }
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        private global::System.Nullable<int> _Iclos;
-        partial void OnIclosChanging(global::System.Nullable<int> value);
-        partial void OnIclosChanged();
-        /// <summary>
-        /// There are no comments for Property Eaut in the schema.
-        /// </summary>
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        [global::Microsoft.OData.Client.OriginalNameAttribute("Eaut")]
-        public virtual global::System.Nullable<int> Eaut
-        {
-            get
-            {
-                return this._Eaut;
-            }
-            set
-            {
-                this.OnEautChanging(value);
-                this._Eaut = value;
-                this.OnEautChanged();
-                this.OnPropertyChanged("Eaut");
-            }
-        }
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        private global::System.Nullable<int> _Eaut;
-        partial void OnEautChanging(global::System.Nullable<int> value);
-        partial void OnEautChanged();
-        /// <summary>
-        /// There are no comments for Property Noatr in the schema.
-        /// </summary>
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        [global::Microsoft.OData.Client.OriginalNameAttribute("Noatr")]
-        [global::System.ComponentModel.DataAnnotations.RequiredAttribute(ErrorMessage = "Noatr is required.")]
-        public virtual int Noatr
-        {
-            get
-            {
-                return this._Noatr;
-            }
-            set
-            {
-                this.OnNoatrChanging(value);
-                this._Noatr = value;
-                this.OnNoatrChanged();
-                this.OnPropertyChanged("Noatr");
-            }
-        }
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        private int _Noatr;
-        partial void OnNoatrChanging(int value);
-        partial void OnNoatrChanged();
-        /// <summary>
-        /// There are no comments for Property Rowguid in the schema.
-        /// </summary>
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        [global::Microsoft.OData.Client.OriginalNameAttribute("Rowguid")]
-        [global::System.ComponentModel.DataAnnotations.RequiredAttribute(ErrorMessage = "Rowguid is required.")]
-        public virtual global::System.Guid Rowguid
-        {
-            get
-            {
-                return this._Rowguid;
-            }
-            set
-            {
-                this.OnRowguidChanging(value);
-                this._Rowguid = value;
-                this.OnRowguidChanged();
-                this.OnPropertyChanged("Rowguid");
-            }
-        }
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        private global::System.Guid _Rowguid;
-        partial void OnRowguidChanging(global::System.Guid value);
-        partial void OnRowguidChanged();
-        /// <summary>
-        /// There are no comments for Property Obsv in the schema.
-        /// </summary>
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        [global::Microsoft.OData.Client.OriginalNameAttribute("Obsv")]
-        public virtual string Obsv
-        {
-            get
-            {
-                return this._Obsv;
-            }
-            set
-            {
-                this.OnObsvChanging(value);
-                this._Obsv = value;
-                this.OnObsvChanged();
-                this.OnPropertyChanged("Obsv");
-            }
-        }
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        private string _Obsv;
-        partial void OnObsvChanging(string value);
-        partial void OnObsvChanged();
-        /// <summary>
-        /// There are no comments for Property ItieNavigation in the schema.
-        /// </summary>
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        [global::Microsoft.OData.Client.OriginalNameAttribute("ItieNavigation")]
-        public virtual global::GxWapi.DaModels.Tiersp ItieNavigation
-        {
-            get
-            {
-                return this._ItieNavigation;
-            }
-            set
-            {
-                this.OnItieNavigationChanging(value);
-                this._ItieNavigation = value;
-                this.OnItieNavigationChanged();
-                this.OnPropertyChanged("ItieNavigation");
-            }
-        }
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        private global::GxWapi.DaModels.Tiersp _ItieNavigation;
-        partial void OnItieNavigationChanging(global::GxWapi.DaModels.Tiersp value);
-        partial void OnItieNavigationChanged();
-        /// <summary>
-        /// This event is raised when the value of the property is changed
-        /// </summary>
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        public event global::System.ComponentModel.PropertyChangedEventHandler PropertyChanged;
-        /// <summary>
-        /// The value of the property is changed
-        /// </summary>
-        /// <param name="property">property name</param>
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        protected virtual void OnPropertyChanged(string property)
-        {
-            if ((this.PropertyChanged != null))
-            {
-                this.PropertyChanged(this, new global::System.ComponentModel.PropertyChangedEventArgs(property));
-            }
-        }
-    }
-    /// <summary>
-    /// There are no comments for TieaflSingle in the schema.
-    /// </summary>
-    [global::Microsoft.OData.Client.OriginalNameAttribute("TieaflSingle")]
-    public partial class TieaflSingle : global::Microsoft.OData.Client.DataServiceQuerySingle<Tieafl>
-    {
-        /// <summary>
-        /// Initialize a new TieaflSingle object.
-        /// </summary>
-        public TieaflSingle(global::Microsoft.OData.Client.DataServiceContext context, string path)
-            : base(context, path) {}
-
-        /// <summary>
-        /// Initialize a new TieaflSingle object.
-        /// </summary>
-        public TieaflSingle(global::Microsoft.OData.Client.DataServiceContext context, string path, bool isComposable)
-            : base(context, path, isComposable) {}
-
-        /// <summary>
-        /// Initialize a new TieaflSingle object.
-        /// </summary>
-        public TieaflSingle(global::Microsoft.OData.Client.DataServiceQuerySingle<Tieafl> query)
-            : base(query) {}
-
-        /// <summary>
-        /// There are no comments for ItieNavigation in the schema.
-        /// </summary>
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        [global::Microsoft.OData.Client.OriginalNameAttribute("ItieNavigation")]
-        public virtual global::GxWapi.DaModels.TierspSingle ItieNavigation
-        {
-            get
-            {
-                if (!this.IsComposable)
-                {
-                    throw new global::System.NotSupportedException("The previous function is not composable.");
-                }
-                if ((this._ItieNavigation == null))
-                {
-                    this._ItieNavigation = new global::GxWapi.DaModels.TierspSingle(this.Context, GetPath("ItieNavigation"));
-                }
-                return this._ItieNavigation;
-            }
-        }
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        private global::GxWapi.DaModels.TierspSingle _ItieNavigation;
-    }
-    /// <summary>
-    /// There are no comments for Tieafl in the schema.
-    /// </summary>
-    /// <KeyProperties>
-    /// Id
-    /// </KeyProperties>
-    [global::Microsoft.OData.Client.Key("Id")]
-    [global::Microsoft.OData.Client.OriginalNameAttribute("Tieafl")]
-    public partial class Tieafl : global::Microsoft.OData.Client.BaseEntityType, global::System.ComponentModel.INotifyPropertyChanged
-    {
-        /// <summary>
-        /// Create a new Tieafl object.
-        /// </summary>
-        /// <param name="ID">Initial value of Id.</param>
-        /// <param name="nom">Initial value of Nom.</param>
-        /// <param name="pnom">Initial value of Pnom.</param>
-        /// <param name="rowguid">Initial value of Rowguid.</param>
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        public static Tieafl CreateTieafl(int ID, string nom, string pnom, global::System.Guid rowguid)
-        {
-            Tieafl tieafl = new Tieafl();
-            tieafl.Id = ID;
-            tieafl.Nom = nom;
-            tieafl.Pnom = pnom;
-            tieafl.Rowguid = rowguid;
-            return tieafl;
-        }
-        /// <summary>
-        /// There are no comments for Property Id in the schema.
-        /// </summary>
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        [global::Microsoft.OData.Client.OriginalNameAttribute("Id")]
-        [global::System.ComponentModel.DataAnnotations.RequiredAttribute(ErrorMessage = "Id is required.")]
-        public virtual int Id
-        {
-            get
-            {
-                return this._Id;
-            }
-            set
-            {
-                this.OnIdChanging(value);
-                this._Id = value;
-                this.OnIdChanged();
-                this.OnPropertyChanged("Id");
-            }
-        }
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        private int _Id;
-        partial void OnIdChanging(int value);
-        partial void OnIdChanged();
-        /// <summary>
-        /// There are no comments for Property Itie in the schema.
-        /// </summary>
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        [global::Microsoft.OData.Client.OriginalNameAttribute("Itie")]
-        public virtual global::System.Nullable<int> Itie
-        {
-            get
-            {
-                return this._Itie;
-            }
-            set
-            {
-                this.OnItieChanging(value);
-                this._Itie = value;
-                this.OnItieChanged();
-                this.OnPropertyChanged("Itie");
-            }
-        }
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        private global::System.Nullable<int> _Itie;
-        partial void OnItieChanging(global::System.Nullable<int> value);
-        partial void OnItieChanged();
-        /// <summary>
-        /// There are no comments for Property Iele in the schema.
-        /// </summary>
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        [global::Microsoft.OData.Client.OriginalNameAttribute("Iele")]
-        public virtual global::System.Nullable<int> Iele
-        {
-            get
-            {
-                return this._Iele;
-            }
-            set
-            {
-                this.OnIeleChanging(value);
-                this._Iele = value;
-                this.OnIeleChanged();
-                this.OnPropertyChanged("Iele");
-            }
-        }
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        private global::System.Nullable<int> _Iele;
-        partial void OnIeleChanging(global::System.Nullable<int> value);
-        partial void OnIeleChanged();
-        /// <summary>
-        /// There are no comments for Property Idorg in the schema.
-        /// </summary>
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        [global::Microsoft.OData.Client.OriginalNameAttribute("Idorg")]
-        public virtual global::System.Nullable<int> Idorg
-        {
-            get
-            {
-                return this._Idorg;
-            }
-            set
-            {
-                this.OnIdorgChanging(value);
-                this._Idorg = value;
-                this.OnIdorgChanged();
-                this.OnPropertyChanged("Idorg");
-            }
-        }
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        private global::System.Nullable<int> _Idorg;
-        partial void OnIdorgChanging(global::System.Nullable<int> value);
-        partial void OnIdorgChanged();
-        /// <summary>
-        /// There are no comments for Property Irang in the schema.
-        /// </summary>
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        [global::Microsoft.OData.Client.OriginalNameAttribute("Irang")]
-        public virtual global::System.Nullable<int> Irang
-        {
-            get
-            {
-                return this._Irang;
-            }
-            set
-            {
-                this.OnIrangChanging(value);
-                this._Irang = value;
-                this.OnIrangChanged();
-                this.OnPropertyChanged("Irang");
-            }
-        }
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        private global::System.Nullable<int> _Irang;
-        partial void OnIrangChanging(global::System.Nullable<int> value);
-        partial void OnIrangChanged();
-        /// <summary>
-        /// There are no comments for Property Usrid in the schema.
-        /// </summary>
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        [global::Microsoft.OData.Client.OriginalNameAttribute("Usrid")]
-        public virtual string Usrid
-        {
-            get
-            {
-                return this._Usrid;
-            }
-            set
-            {
-                this.OnUsridChanging(value);
-                this._Usrid = value;
-                this.OnUsridChanged();
-                this.OnPropertyChanged("Usrid");
-            }
-        }
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        private string _Usrid;
-        partial void OnUsridChanging(string value);
-        partial void OnUsridChanged();
-        /// <summary>
-        /// There are no comments for Property Tyafl in the schema.
-        /// </summary>
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        [global::Microsoft.OData.Client.OriginalNameAttribute("Tyafl")]
-        public virtual global::System.Nullable<int> Tyafl
-        {
-            get
-            {
-                return this._Tyafl;
-            }
-            set
-            {
-                this.OnTyaflChanging(value);
-                this._Tyafl = value;
-                this.OnTyaflChanged();
-                this.OnPropertyChanged("Tyafl");
-            }
-        }
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        private global::System.Nullable<int> _Tyafl;
-        partial void OnTyaflChanging(global::System.Nullable<int> value);
-        partial void OnTyaflChanged();
-        /// <summary>
-        /// There are no comments for Property Gpafl in the schema.
-        /// </summary>
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        [global::Microsoft.OData.Client.OriginalNameAttribute("Gpafl")]
-        public virtual global::System.Nullable<int> Gpafl
-        {
-            get
-            {
-                return this._Gpafl;
-            }
-            set
-            {
-                this.OnGpaflChanging(value);
-                this._Gpafl = value;
-                this.OnGpaflChanged();
-                this.OnPropertyChanged("Gpafl");
-            }
-        }
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        private global::System.Nullable<int> _Gpafl;
-        partial void OnGpaflChanging(global::System.Nullable<int> value);
-        partial void OnGpaflChanged();
-        /// <summary>
-        /// There are no comments for Property Smatri in the schema.
-        /// </summary>
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        [global::Microsoft.OData.Client.OriginalNameAttribute("Smatri")]
-        public virtual string Smatri
-        {
-            get
-            {
-                return this._Smatri;
-            }
-            set
-            {
-                this.OnSmatriChanging(value);
-                this._Smatri = value;
-                this.OnSmatriChanged();
-                this.OnPropertyChanged("Smatri");
-            }
-        }
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        private string _Smatri;
-        partial void OnSmatriChanging(string value);
-        partial void OnSmatriChanged();
-        /// <summary>
-        /// There are no comments for Property Xmatri in the schema.
-        /// </summary>
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        [global::Microsoft.OData.Client.OriginalNameAttribute("Xmatri")]
-        public virtual string Xmatri
-        {
-            get
-            {
-                return this._Xmatri;
-            }
-            set
-            {
-                this.OnXmatriChanging(value);
-                this._Xmatri = value;
-                this.OnXmatriChanged();
-                this.OnPropertyChanged("Xmatri");
-            }
-        }
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        private string _Xmatri;
-        partial void OnXmatriChanging(string value);
-        partial void OnXmatriChanged();
-        /// <summary>
-        /// There are no comments for Property Nom in the schema.
-        /// </summary>
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        [global::Microsoft.OData.Client.OriginalNameAttribute("Nom")]
-        [global::System.ComponentModel.DataAnnotations.RequiredAttribute(ErrorMessage = "Nom is required.")]
-        public virtual string Nom
-        {
-            get
-            {
-                return this._Nom;
-            }
-            set
-            {
-                this.OnNomChanging(value);
-                this._Nom = value;
-                this.OnNomChanged();
-                this.OnPropertyChanged("Nom");
-            }
-        }
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        private string _Nom;
-        partial void OnNomChanging(string value);
-        partial void OnNomChanged();
-        /// <summary>
-        /// There are no comments for Property Nomb in the schema.
-        /// </summary>
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        [global::Microsoft.OData.Client.OriginalNameAttribute("Nomb")]
-        public virtual string Nomb
-        {
-            get
-            {
-                return this._Nomb;
-            }
-            set
-            {
-                this.OnNombChanging(value);
-                this._Nomb = value;
-                this.OnNombChanged();
-                this.OnPropertyChanged("Nomb");
-            }
-        }
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        private string _Nomb;
-        partial void OnNombChanging(string value);
-        partial void OnNombChanged();
-        /// <summary>
-        /// There are no comments for Property Pnom in the schema.
-        /// </summary>
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        [global::Microsoft.OData.Client.OriginalNameAttribute("Pnom")]
-        [global::System.ComponentModel.DataAnnotations.RequiredAttribute(ErrorMessage = "Pnom is required.")]
-        public virtual string Pnom
-        {
-            get
-            {
-                return this._Pnom;
-            }
-            set
-            {
-                this.OnPnomChanging(value);
-                this._Pnom = value;
-                this.OnPnomChanged();
-                this.OnPropertyChanged("Pnom");
-            }
-        }
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        private string _Pnom;
-        partial void OnPnomChanging(string value);
-        partial void OnPnomChanged();
-        /// <summary>
-        /// There are no comments for Property Statut in the schema.
-        /// </summary>
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        [global::Microsoft.OData.Client.OriginalNameAttribute("Statut")]
-        public virtual global::System.Nullable<int> Statut
-        {
-            get
-            {
-                return this._Statut;
-            }
-            set
-            {
-                this.OnStatutChanging(value);
-                this._Statut = value;
-                this.OnStatutChanged();
-                this.OnPropertyChanged("Statut");
-            }
-        }
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        private global::System.Nullable<int> _Statut;
-        partial void OnStatutChanging(global::System.Nullable<int> value);
-        partial void OnStatutChanged();
-        /// <summary>
-        /// There are no comments for Property Relat in the schema.
-        /// </summary>
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        [global::Microsoft.OData.Client.OriginalNameAttribute("Relat")]
-        public virtual global::System.Nullable<int> Relat
-        {
-            get
-            {
-                return this._Relat;
-            }
-            set
-            {
-                this.OnRelatChanging(value);
-                this._Relat = value;
-                this.OnRelatChanged();
-                this.OnPropertyChanged("Relat");
-            }
-        }
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        private global::System.Nullable<int> _Relat;
-        partial void OnRelatChanging(global::System.Nullable<int> value);
-        partial void OnRelatChanged();
-        /// <summary>
-        /// There are no comments for Property Sexe in the schema.
-        /// </summary>
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        [global::Microsoft.OData.Client.OriginalNameAttribute("Sexe")]
-        public virtual global::System.Nullable<int> Sexe
-        {
-            get
-            {
-                return this._Sexe;
-            }
-            set
-            {
-                this.OnSexeChanging(value);
-                this._Sexe = value;
-                this.OnSexeChanged();
-                this.OnPropertyChanged("Sexe");
-            }
-        }
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        private global::System.Nullable<int> _Sexe;
-        partial void OnSexeChanging(global::System.Nullable<int> value);
-        partial void OnSexeChanged();
-        /// <summary>
-        /// There are no comments for Property Sitmat in the schema.
-        /// </summary>
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        [global::Microsoft.OData.Client.OriginalNameAttribute("Sitmat")]
-        public virtual global::System.Nullable<int> Sitmat
-        {
-            get
-            {
-                return this._Sitmat;
-            }
-            set
-            {
-                this.OnSitmatChanging(value);
-                this._Sitmat = value;
-                this.OnSitmatChanged();
-                this.OnPropertyChanged("Sitmat");
-            }
-        }
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        private global::System.Nullable<int> _Sitmat;
-        partial void OnSitmatChanging(global::System.Nullable<int> value);
-        partial void OnSitmatChanged();
-        /// <summary>
-        /// There are no comments for Property Ifonc in the schema.
-        /// </summary>
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        [global::Microsoft.OData.Client.OriginalNameAttribute("Ifonc")]
-        public virtual global::System.Nullable<int> Ifonc
-        {
-            get
-            {
-                return this._Ifonc;
-            }
-            set
-            {
-                this.OnIfoncChanging(value);
-                this._Ifonc = value;
-                this.OnIfoncChanged();
-                this.OnPropertyChanged("Ifonc");
-            }
-        }
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        private global::System.Nullable<int> _Ifonc;
-        partial void OnIfoncChanging(global::System.Nullable<int> value);
-        partial void OnIfoncChanged();
-        /// <summary>
-        /// There are no comments for Property Igrad in the schema.
-        /// </summary>
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        [global::Microsoft.OData.Client.OriginalNameAttribute("Igrad")]
-        public virtual global::System.Nullable<int> Igrad
-        {
-            get
-            {
-                return this._Igrad;
-            }
-            set
-            {
-                this.OnIgradChanging(value);
-                this._Igrad = value;
-                this.OnIgradChanged();
-                this.OnPropertyChanged("Igrad");
-            }
-        }
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        private global::System.Nullable<int> _Igrad;
-        partial void OnIgradChanging(global::System.Nullable<int> value);
-        partial void OnIgradChanged();
-        /// <summary>
-        /// There are no comments for Property Usrname in the schema.
-        /// </summary>
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        [global::Microsoft.OData.Client.OriginalNameAttribute("Usrname")]
-        public virtual string Usrname
-        {
-            get
-            {
-                return this._Usrname;
-            }
-            set
-            {
-                this.OnUsrnameChanging(value);
-                this._Usrname = value;
-                this.OnUsrnameChanged();
-                this.OnPropertyChanged("Usrname");
-            }
-        }
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        private string _Usrname;
-        partial void OnUsrnameChanging(string value);
-        partial void OnUsrnameChanged();
-        /// <summary>
-        /// There are no comments for Property Usremail in the schema.
-        /// </summary>
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        [global::Microsoft.OData.Client.OriginalNameAttribute("Usremail")]
-        public virtual string Usremail
-        {
-            get
-            {
-                return this._Usremail;
-            }
-            set
-            {
-                this.OnUsremailChanging(value);
-                this._Usremail = value;
-                this.OnUsremailChanged();
-                this.OnPropertyChanged("Usremail");
-            }
-        }
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        private string _Usremail;
-        partial void OnUsremailChanging(string value);
-        partial void OnUsremailChanged();
-        /// <summary>
-        /// There are no comments for Property Usrphone in the schema.
-        /// </summary>
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        [global::Microsoft.OData.Client.OriginalNameAttribute("Usrphone")]
-        public virtual string Usrphone
-        {
-            get
-            {
-                return this._Usrphone;
-            }
-            set
-            {
-                this.OnUsrphoneChanging(value);
-                this._Usrphone = value;
-                this.OnUsrphoneChanged();
-                this.OnPropertyChanged("Usrphone");
-            }
-        }
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        private string _Usrphone;
-        partial void OnUsrphoneChanging(string value);
-        partial void OnUsrphoneChanged();
-        /// <summary>
-        /// There are no comments for Property Usrphon2 in the schema.
-        /// </summary>
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        [global::Microsoft.OData.Client.OriginalNameAttribute("Usrphon2")]
-        public virtual string Usrphon2
-        {
-            get
-            {
-                return this._Usrphon2;
-            }
-            set
-            {
-                this.OnUsrphon2Changing(value);
-                this._Usrphon2 = value;
-                this.OnUsrphon2Changed();
-                this.OnPropertyChanged("Usrphon2");
-            }
-        }
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        private string _Usrphon2;
-        partial void OnUsrphon2Changing(string value);
-        partial void OnUsrphon2Changed();
-        /// <summary>
-        /// There are no comments for Property Usrsocial in the schema.
-        /// </summary>
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        [global::Microsoft.OData.Client.OriginalNameAttribute("Usrsocial")]
-        public virtual string Usrsocial
-        {
-            get
-            {
-                return this._Usrsocial;
-            }
-            set
-            {
-                this.OnUsrsocialChanging(value);
-                this._Usrsocial = value;
-                this.OnUsrsocialChanged();
-                this.OnPropertyChanged("Usrsocial");
-            }
-        }
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        private string _Usrsocial;
-        partial void OnUsrsocialChanging(string value);
-        partial void OnUsrsocialChanged();
-        /// <summary>
-        /// There are no comments for Property Ihie in the schema.
-        /// </summary>
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        [global::Microsoft.OData.Client.OriginalNameAttribute("Ihie")]
-        public virtual global::System.Nullable<int> Ihie
-        {
-            get
-            {
-                return this._Ihie;
-            }
-            set
-            {
-                this.OnIhieChanging(value);
-                this._Ihie = value;
-                this.OnIhieChanged();
-                this.OnPropertyChanged("Ihie");
-            }
-        }
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        private global::System.Nullable<int> _Ihie;
-        partial void OnIhieChanging(global::System.Nullable<int> value);
-        partial void OnIhieChanged();
-        /// <summary>
-        /// There are no comments for Property Ipst in the schema.
-        /// </summary>
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        [global::Microsoft.OData.Client.OriginalNameAttribute("Ipst")]
-        public virtual global::System.Nullable<int> Ipst
-        {
-            get
-            {
-                return this._Ipst;
-            }
-            set
-            {
-                this.OnIpstChanging(value);
-                this._Ipst = value;
-                this.OnIpstChanged();
-                this.OnPropertyChanged("Ipst");
-            }
-        }
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        private global::System.Nullable<int> _Ipst;
-        partial void OnIpstChanging(global::System.Nullable<int> value);
-        partial void OnIpstChanged();
-        /// <summary>
-        /// There are no comments for Property Igeo in the schema.
-        /// </summary>
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        [global::Microsoft.OData.Client.OriginalNameAttribute("Igeo")]
-        public virtual global::System.Nullable<int> Igeo
-        {
-            get
-            {
-                return this._Igeo;
-            }
-            set
-            {
-                this.OnIgeoChanging(value);
-                this._Igeo = value;
-                this.OnIgeoChanged();
-                this.OnPropertyChanged("Igeo");
-            }
-        }
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        private global::System.Nullable<int> _Igeo;
-        partial void OnIgeoChanging(global::System.Nullable<int> value);
-        partial void OnIgeoChanged();
-        /// <summary>
-        /// There are no comments for Property Dnais in the schema.
-        /// </summary>
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        [global::Microsoft.OData.Client.OriginalNameAttribute("Dnais")]
-        public virtual global::System.Nullable<global::System.DateTimeOffset> Dnais
-        {
-            get
-            {
-                return this._Dnais;
-            }
-            set
-            {
-                this.OnDnaisChanging(value);
-                this._Dnais = value;
-                this.OnDnaisChanged();
-                this.OnPropertyChanged("Dnais");
-            }
-        }
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        private global::System.Nullable<global::System.DateTimeOffset> _Dnais;
-        partial void OnDnaisChanging(global::System.Nullable<global::System.DateTimeOffset> value);
-        partial void OnDnaisChanged();
-        /// <summary>
-        /// There are no comments for Property Demb in the schema.
-        /// </summary>
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        [global::Microsoft.OData.Client.OriginalNameAttribute("Demb")]
-        public virtual global::System.Nullable<global::System.DateTimeOffset> Demb
-        {
-            get
-            {
-                return this._Demb;
-            }
-            set
-            {
-                this.OnDembChanging(value);
-                this._Demb = value;
-                this.OnDembChanged();
-                this.OnPropertyChanged("Demb");
-            }
-        }
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        private global::System.Nullable<global::System.DateTimeOffset> _Demb;
-        partial void OnDembChanging(global::System.Nullable<global::System.DateTimeOffset> value);
-        partial void OnDembChanged();
-        /// <summary>
-        /// There are no comments for Property Dinscr in the schema.
-        /// </summary>
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        [global::Microsoft.OData.Client.OriginalNameAttribute("Dinscr")]
-        public virtual global::System.Nullable<global::System.DateTimeOffset> Dinscr
-        {
-            get
-            {
-                return this._Dinscr;
-            }
-            set
-            {
-                this.OnDinscrChanging(value);
-                this._Dinscr = value;
-                this.OnDinscrChanged();
-                this.OnPropertyChanged("Dinscr");
-            }
-        }
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        private global::System.Nullable<global::System.DateTimeOffset> _Dinscr;
-        partial void OnDinscrChanging(global::System.Nullable<global::System.DateTimeOffset> value);
-        partial void OnDinscrChanged();
-        /// <summary>
-        /// There are no comments for Property Nchge in the schema.
-        /// </summary>
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        [global::Microsoft.OData.Client.OriginalNameAttribute("Nchge")]
-        public virtual global::System.Nullable<int> Nchge
-        {
-            get
-            {
-                return this._Nchge;
-            }
-            set
-            {
-                this.OnNchgeChanging(value);
-                this._Nchge = value;
-                this.OnNchgeChanged();
-                this.OnPropertyChanged("Nchge");
-            }
-        }
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        private global::System.Nullable<int> _Nchge;
-        partial void OnNchgeChanging(global::System.Nullable<int> value);
-        partial void OnNchgeChanged();
-        /// <summary>
-        /// There are no comments for Property Nenf in the schema.
-        /// </summary>
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        [global::Microsoft.OData.Client.OriginalNameAttribute("Nenf")]
-        public virtual global::System.Nullable<int> Nenf
-        {
-            get
-            {
-                return this._Nenf;
-            }
-            set
-            {
-                this.OnNenfChanging(value);
-                this._Nenf = value;
-                this.OnNenfChanged();
-                this.OnPropertyChanged("Nenf");
-            }
-        }
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        private global::System.Nullable<int> _Nenf;
-        partial void OnNenfChanging(global::System.Nullable<int> value);
-        partial void OnNenfChanged();
-        /// <summary>
-        /// There are no comments for Property Respon in the schema.
-        /// </summary>
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        [global::Microsoft.OData.Client.OriginalNameAttribute("Respon")]
-        public virtual global::System.Nullable<int> Respon
-        {
-            get
-            {
-                return this._Respon;
-            }
-            set
-            {
-                this.OnResponChanging(value);
-                this._Respon = value;
-                this.OnResponChanged();
-                this.OnPropertyChanged("Respon");
-            }
-        }
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        private global::System.Nullable<int> _Respon;
-        partial void OnResponChanging(global::System.Nullable<int> value);
-        partial void OnResponChanged();
-        /// <summary>
-        /// There are no comments for Property Tele2 in the schema.
-        /// </summary>
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        [global::Microsoft.OData.Client.OriginalNameAttribute("Tele2")]
-        public virtual string Tele2
-        {
-            get
-            {
-                return this._Tele2;
-            }
-            set
-            {
-                this.OnTele2Changing(value);
-                this._Tele2 = value;
-                this.OnTele2Changed();
-                this.OnPropertyChanged("Tele2");
-            }
-        }
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        private string _Tele2;
-        partial void OnTele2Changing(string value);
-        partial void OnTele2Changed();
-        /// <summary>
-        /// There are no comments for Property Tele3 in the schema.
-        /// </summary>
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        [global::Microsoft.OData.Client.OriginalNameAttribute("Tele3")]
-        public virtual string Tele3
-        {
-            get
-            {
-                return this._Tele3;
-            }
-            set
-            {
-                this.OnTele3Changing(value);
-                this._Tele3 = value;
-                this.OnTele3Changed();
-                this.OnPropertyChanged("Tele3");
-            }
-        }
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        private string _Tele3;
-        partial void OnTele3Changing(string value);
-        partial void OnTele3Changed();
-        /// <summary>
-        /// There are no comments for Property Servi in the schema.
-        /// </summary>
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        [global::Microsoft.OData.Client.OriginalNameAttribute("Servi")]
-        public virtual string Servi
-        {
-            get
-            {
-                return this._Servi;
-            }
-            set
-            {
-                this.OnServiChanging(value);
-                this._Servi = value;
-                this.OnServiChanged();
-                this.OnPropertyChanged("Servi");
-            }
-        }
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        private string _Servi;
-        partial void OnServiChanging(string value);
-        partial void OnServiChanged();
-        /// <summary>
-        /// There are no comments for Property Chxp in the schema.
-        /// </summary>
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        [global::Microsoft.OData.Client.OriginalNameAttribute("Chxp")]
-        public virtual global::System.Nullable<int> Chxp
-        {
-            get
-            {
-                return this._Chxp;
-            }
-            set
-            {
-                this.OnChxpChanging(value);
-                this._Chxp = value;
-                this.OnChxpChanged();
-                this.OnPropertyChanged("Chxp");
-            }
-        }
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        private global::System.Nullable<int> _Chxp;
-        partial void OnChxpChanging(global::System.Nullable<int> value);
-        partial void OnChxpChanged();
-        /// <summary>
-        /// There are no comments for Property Chxp2 in the schema.
-        /// </summary>
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        [global::Microsoft.OData.Client.OriginalNameAttribute("Chxp2")]
-        public virtual global::System.Nullable<int> Chxp2
-        {
-            get
-            {
-                return this._Chxp2;
-            }
-            set
-            {
-                this.OnChxp2Changing(value);
-                this._Chxp2 = value;
-                this.OnChxp2Changed();
-                this.OnPropertyChanged("Chxp2");
-            }
-        }
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        private global::System.Nullable<int> _Chxp2;
-        partial void OnChxp2Changing(global::System.Nullable<int> value);
-        partial void OnChxp2Changed();
-        /// <summary>
-        /// There are no comments for Property Chxp3 in the schema.
-        /// </summary>
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        [global::Microsoft.OData.Client.OriginalNameAttribute("Chxp3")]
-        public virtual global::System.Nullable<int> Chxp3
-        {
-            get
-            {
-                return this._Chxp3;
-            }
-            set
-            {
-                this.OnChxp3Changing(value);
-                this._Chxp3 = value;
-                this.OnChxp3Changed();
-                this.OnPropertyChanged("Chxp3");
-            }
-        }
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        private global::System.Nullable<int> _Chxp3;
-        partial void OnChxp3Changing(global::System.Nullable<int> value);
-        partial void OnChxp3Changed();
-        /// <summary>
-        /// There are no comments for Property Siset in the schema.
-        /// </summary>
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        [global::Microsoft.OData.Client.OriginalNameAttribute("Siset")]
-        public virtual global::System.Nullable<int> Siset
-        {
-            get
-            {
-                return this._Siset;
-            }
-            set
-            {
-                this.OnSisetChanging(value);
-                this._Siset = value;
-                this.OnSisetChanged();
-                this.OnPropertyChanged("Siset");
-            }
-        }
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        private global::System.Nullable<int> _Siset;
-        partial void OnSisetChanging(global::System.Nullable<int> value);
-        partial void OnSisetChanged();
-        /// <summary>
-        /// There are no comments for Property Weltie in the schema.
-        /// </summary>
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        [global::Microsoft.OData.Client.OriginalNameAttribute("Weltie")]
-        public virtual global::System.Nullable<int> Weltie
-        {
-            get
-            {
-                return this._Weltie;
-            }
-            set
-            {
-                this.OnWeltieChanging(value);
-                this._Weltie = value;
-                this.OnWeltieChanged();
-                this.OnPropertyChanged("Weltie");
-            }
-        }
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        private global::System.Nullable<int> _Weltie;
-        partial void OnWeltieChanging(global::System.Nullable<int> value);
-        partial void OnWeltieChanged();
-        /// <summary>
-        /// There are no comments for Property Natio in the schema.
-        /// </summary>
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        [global::Microsoft.OData.Client.OriginalNameAttribute("Natio")]
-        public virtual global::System.Nullable<int> Natio
-        {
-            get
-            {
-                return this._Natio;
-            }
-            set
-            {
-                this.OnNatioChanging(value);
-                this._Natio = value;
-                this.OnNatioChanged();
-                this.OnPropertyChanged("Natio");
-            }
-        }
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        private global::System.Nullable<int> _Natio;
-        partial void OnNatioChanging(global::System.Nullable<int> value);
-        partial void OnNatioChanged();
-        /// <summary>
-        /// There are no comments for Property Resid in the schema.
-        /// </summary>
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        [global::Microsoft.OData.Client.OriginalNameAttribute("Resid")]
-        public virtual global::System.Nullable<int> Resid
-        {
-            get
-            {
-                return this._Resid;
-            }
-            set
-            {
-                this.OnResidChanging(value);
-                this._Resid = value;
-                this.OnResidChanged();
-                this.OnPropertyChanged("Resid");
-            }
-        }
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        private global::System.Nullable<int> _Resid;
-        partial void OnResidChanging(global::System.Nullable<int> value);
-        partial void OnResidChanged();
-        /// <summary>
-        /// There are no comments for Property Tymut in the schema.
-        /// </summary>
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        [global::Microsoft.OData.Client.OriginalNameAttribute("Tymut")]
-        public virtual global::System.Nullable<int> Tymut
-        {
-            get
-            {
-                return this._Tymut;
-            }
-            set
-            {
-                this.OnTymutChanging(value);
-                this._Tymut = value;
-                this.OnTymutChanged();
-                this.OnPropertyChanged("Tymut");
-            }
-        }
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        private global::System.Nullable<int> _Tymut;
-        partial void OnTymutChanging(global::System.Nullable<int> value);
-        partial void OnTymutChanged();
-        /// <summary>
-        /// There are no comments for Property Psmatri in the schema.
-        /// </summary>
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        [global::Microsoft.OData.Client.OriginalNameAttribute("Psmatri")]
-        public virtual string Psmatri
-        {
-            get
-            {
-                return this._Psmatri;
-            }
-            set
-            {
-                this.OnPsmatriChanging(value);
-                this._Psmatri = value;
-                this.OnPsmatriChanged();
-                this.OnPropertyChanged("Psmatri");
-            }
-        }
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        private string _Psmatri;
-        partial void OnPsmatriChanging(string value);
-        partial void OnPsmatriChanged();
-        /// <summary>
-        /// There are no comments for Property Ibank in the schema.
-        /// </summary>
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        [global::Microsoft.OData.Client.OriginalNameAttribute("Ibank")]
-        public virtual global::System.Nullable<int> Ibank
-        {
-            get
-            {
-                return this._Ibank;
-            }
-            set
-            {
-                this.OnIbankChanging(value);
-                this._Ibank = value;
-                this.OnIbankChanged();
-                this.OnPropertyChanged("Ibank");
-            }
-        }
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        private global::System.Nullable<int> _Ibank;
-        partial void OnIbankChanging(global::System.Nullable<int> value);
-        partial void OnIbankChanged();
-        /// <summary>
-        /// There are no comments for Property Icotis in the schema.
-        /// </summary>
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        [global::Microsoft.OData.Client.OriginalNameAttribute("Icotis")]
-        public virtual global::System.Nullable<int> Icotis
-        {
-            get
-            {
-                return this._Icotis;
-            }
-            set
-            {
-                this.OnIcotisChanging(value);
-                this._Icotis = value;
-                this.OnIcotisChanged();
-                this.OnPropertyChanged("Icotis");
-            }
-        }
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        private global::System.Nullable<int> _Icotis;
-        partial void OnIcotisChanging(global::System.Nullable<int> value);
-        partial void OnIcotisChanged();
-        /// <summary>
-        /// There are no comments for Property Itax in the schema.
-        /// </summary>
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        [global::Microsoft.OData.Client.OriginalNameAttribute("Itax")]
-        public virtual global::System.Nullable<int> Itax
-        {
-            get
-            {
-                return this._Itax;
-            }
-            set
-            {
-                this.OnItaxChanging(value);
-                this._Itax = value;
-                this.OnItaxChanged();
-                this.OnPropertyChanged("Itax");
-            }
-        }
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        private global::System.Nullable<int> _Itax;
-        partial void OnItaxChanging(global::System.Nullable<int> value);
-        partial void OnItaxChanged();
-        /// <summary>
-        /// There are no comments for Property Ipaid in the schema.
-        /// </summary>
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        [global::Microsoft.OData.Client.OriginalNameAttribute("Ipaid")]
-        public virtual global::System.Nullable<int> Ipaid
-        {
-            get
-            {
-                return this._Ipaid;
-            }
-            set
-            {
-                this.OnIpaidChanging(value);
-                this._Ipaid = value;
-                this.OnIpaidChanged();
-                this.OnPropertyChanged("Ipaid");
-            }
-        }
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        private global::System.Nullable<int> _Ipaid;
-        partial void OnIpaidChanging(global::System.Nullable<int> value);
-        partial void OnIpaidChanged();
-        /// <summary>
-        /// There are no comments for Property Ipays in the schema.
-        /// </summary>
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        [global::Microsoft.OData.Client.OriginalNameAttribute("Ipays")]
-        public virtual global::System.Nullable<int> Ipays
-        {
-            get
-            {
-                return this._Ipays;
-            }
-            set
-            {
-                this.OnIpaysChanging(value);
-                this._Ipays = value;
-                this.OnIpaysChanged();
-                this.OnPropertyChanged("Ipays");
-            }
-        }
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        private global::System.Nullable<int> _Ipays;
-        partial void OnIpaysChanging(global::System.Nullable<int> value);
-        partial void OnIpaysChanged();
-        /// <summary>
-        /// There are no comments for Property Iregio in the schema.
-        /// </summary>
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        [global::Microsoft.OData.Client.OriginalNameAttribute("Iregio")]
-        public virtual global::System.Nullable<int> Iregio
-        {
-            get
-            {
-                return this._Iregio;
-            }
-            set
-            {
-                this.OnIregioChanging(value);
-                this._Iregio = value;
-                this.OnIregioChanged();
-                this.OnPropertyChanged("Iregio");
-            }
-        }
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        private global::System.Nullable<int> _Iregio;
-        partial void OnIregioChanging(global::System.Nullable<int> value);
-        partial void OnIregioChanged();
-        /// <summary>
-        /// There are no comments for Property Iprovi in the schema.
-        /// </summary>
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        [global::Microsoft.OData.Client.OriginalNameAttribute("Iprovi")]
-        public virtual global::System.Nullable<int> Iprovi
-        {
-            get
-            {
-                return this._Iprovi;
-            }
-            set
-            {
-                this.OnIproviChanging(value);
-                this._Iprovi = value;
-                this.OnIproviChanged();
-                this.OnPropertyChanged("Iprovi");
-            }
-        }
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        private global::System.Nullable<int> _Iprovi;
-        partial void OnIproviChanging(global::System.Nullable<int> value);
-        partial void OnIproviChanged();
-        /// <summary>
-        /// There are no comments for Property Icity in the schema.
-        /// </summary>
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        [global::Microsoft.OData.Client.OriginalNameAttribute("Icity")]
-        public virtual global::System.Nullable<int> Icity
-        {
-            get
-            {
-                return this._Icity;
-            }
-            set
-            {
-                this.OnIcityChanging(value);
-                this._Icity = value;
-                this.OnIcityChanged();
-                this.OnPropertyChanged("Icity");
-            }
-        }
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        private global::System.Nullable<int> _Icity;
-        partial void OnIcityChanging(global::System.Nullable<int> value);
-        partial void OnIcityChanged();
-        /// <summary>
-        /// There are no comments for Property Icomu in the schema.
-        /// </summary>
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        [global::Microsoft.OData.Client.OriginalNameAttribute("Icomu")]
-        public virtual global::System.Nullable<int> Icomu
-        {
-            get
-            {
-                return this._Icomu;
-            }
-            set
-            {
-                this.OnIcomuChanging(value);
-                this._Icomu = value;
-                this.OnIcomuChanged();
-                this.OnPropertyChanged("Icomu");
-            }
-        }
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        private global::System.Nullable<int> _Icomu;
-        partial void OnIcomuChanging(global::System.Nullable<int> value);
-        partial void OnIcomuChanged();
-        /// <summary>
-        /// There are no comments for Property Iquarti in the schema.
-        /// </summary>
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        [global::Microsoft.OData.Client.OriginalNameAttribute("Iquarti")]
-        public virtual global::System.Nullable<int> Iquarti
-        {
-            get
-            {
-                return this._Iquarti;
-            }
-            set
-            {
-                this.OnIquartiChanging(value);
-                this._Iquarti = value;
-                this.OnIquartiChanged();
-                this.OnPropertyChanged("Iquarti");
-            }
-        }
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        private global::System.Nullable<int> _Iquarti;
-        partial void OnIquartiChanging(global::System.Nullable<int> value);
-        partial void OnIquartiChanged();
-        /// <summary>
-        /// There are no comments for Property Ifami in the schema.
-        /// </summary>
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        [global::Microsoft.OData.Client.OriginalNameAttribute("Ifami")]
-        public virtual global::System.Nullable<int> Ifami
-        {
-            get
-            {
-                return this._Ifami;
-            }
-            set
-            {
-                this.OnIfamiChanging(value);
-                this._Ifami = value;
-                this.OnIfamiChanged();
-                this.OnPropertyChanged("Ifami");
-            }
-        }
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        private global::System.Nullable<int> _Ifami;
-        partial void OnIfamiChanging(global::System.Nullable<int> value);
-        partial void OnIfamiChanged();
-        /// <summary>
-        /// There are no comments for Property Shie in the schema.
-        /// </summary>
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        [global::Microsoft.OData.Client.OriginalNameAttribute("Shie")]
-        public virtual string Shie
-        {
-            get
-            {
-                return this._Shie;
-            }
-            set
-            {
-                this.OnShieChanging(value);
-                this._Shie = value;
-                this.OnShieChanged();
-                this.OnPropertyChanged("Shie");
-            }
-        }
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        private string _Shie;
-        partial void OnShieChanging(string value);
-        partial void OnShieChanged();
-        /// <summary>
-        /// There are no comments for Property Sgrad in the schema.
-        /// </summary>
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        [global::Microsoft.OData.Client.OriginalNameAttribute("Sgrad")]
-        public virtual string Sgrad
-        {
-            get
-            {
-                return this._Sgrad;
-            }
-            set
-            {
-                this.OnSgradChanging(value);
-                this._Sgrad = value;
-                this.OnSgradChanged();
-                this.OnPropertyChanged("Sgrad");
-            }
-        }
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        private string _Sgrad;
-        partial void OnSgradChanging(string value);
-        partial void OnSgradChanged();
-        /// <summary>
-        /// There are no comments for Property Sbank in the schema.
-        /// </summary>
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        [global::Microsoft.OData.Client.OriginalNameAttribute("Sbank")]
-        public virtual string Sbank
-        {
-            get
-            {
-                return this._Sbank;
-            }
-            set
-            {
-                this.OnSbankChanging(value);
-                this._Sbank = value;
-                this.OnSbankChanged();
-                this.OnPropertyChanged("Sbank");
-            }
-        }
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        private string _Sbank;
-        partial void OnSbankChanging(string value);
-        partial void OnSbankChanged();
-        /// <summary>
-        /// There are no comments for Property Scotis in the schema.
-        /// </summary>
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        [global::Microsoft.OData.Client.OriginalNameAttribute("Scotis")]
-        public virtual string Scotis
-        {
-            get
-            {
-                return this._Scotis;
-            }
-            set
-            {
-                this.OnScotisChanging(value);
-                this._Scotis = value;
-                this.OnScotisChanged();
-                this.OnPropertyChanged("Scotis");
-            }
-        }
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        private string _Scotis;
-        partial void OnScotisChanging(string value);
-        partial void OnScotisChanged();
-        /// <summary>
-        /// There are no comments for Property Stax in the schema.
-        /// </summary>
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        [global::Microsoft.OData.Client.OriginalNameAttribute("Stax")]
-        public virtual string Stax
-        {
-            get
-            {
-                return this._Stax;
-            }
-            set
-            {
-                this.OnStaxChanging(value);
-                this._Stax = value;
-                this.OnStaxChanged();
-                this.OnPropertyChanged("Stax");
-            }
-        }
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        private string _Stax;
-        partial void OnStaxChanging(string value);
-        partial void OnStaxChanged();
-        /// <summary>
-        /// There are no comments for Property Spaid in the schema.
-        /// </summary>
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        [global::Microsoft.OData.Client.OriginalNameAttribute("Spaid")]
-        public virtual string Spaid
-        {
-            get
-            {
-                return this._Spaid;
-            }
-            set
-            {
-                this.OnSpaidChanging(value);
-                this._Spaid = value;
-                this.OnSpaidChanged();
-                this.OnPropertyChanged("Spaid");
-            }
-        }
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        private string _Spaid;
-        partial void OnSpaidChanging(string value);
-        partial void OnSpaidChanged();
-        /// <summary>
-        /// There are no comments for Property Spays in the schema.
-        /// </summary>
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        [global::Microsoft.OData.Client.OriginalNameAttribute("Spays")]
-        public virtual string Spays
-        {
-            get
-            {
-                return this._Spays;
-            }
-            set
-            {
-                this.OnSpaysChanging(value);
-                this._Spays = value;
-                this.OnSpaysChanged();
-                this.OnPropertyChanged("Spays");
-            }
-        }
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        private string _Spays;
-        partial void OnSpaysChanging(string value);
-        partial void OnSpaysChanged();
-        /// <summary>
-        /// There are no comments for Property Sregio in the schema.
-        /// </summary>
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        [global::Microsoft.OData.Client.OriginalNameAttribute("Sregio")]
-        public virtual string Sregio
-        {
-            get
-            {
-                return this._Sregio;
-            }
-            set
-            {
-                this.OnSregioChanging(value);
-                this._Sregio = value;
-                this.OnSregioChanged();
-                this.OnPropertyChanged("Sregio");
-            }
-        }
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        private string _Sregio;
-        partial void OnSregioChanging(string value);
-        partial void OnSregioChanged();
-        /// <summary>
-        /// There are no comments for Property Sprovi in the schema.
-        /// </summary>
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        [global::Microsoft.OData.Client.OriginalNameAttribute("Sprovi")]
-        public virtual string Sprovi
-        {
-            get
-            {
-                return this._Sprovi;
-            }
-            set
-            {
-                this.OnSproviChanging(value);
-                this._Sprovi = value;
-                this.OnSproviChanged();
-                this.OnPropertyChanged("Sprovi");
-            }
-        }
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        private string _Sprovi;
-        partial void OnSproviChanging(string value);
-        partial void OnSproviChanged();
-        /// <summary>
-        /// There are no comments for Property Scity in the schema.
-        /// </summary>
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        [global::Microsoft.OData.Client.OriginalNameAttribute("Scity")]
-        public virtual string Scity
-        {
-            get
-            {
-                return this._Scity;
-            }
-            set
-            {
-                this.OnScityChanging(value);
-                this._Scity = value;
-                this.OnScityChanged();
-                this.OnPropertyChanged("Scity");
-            }
-        }
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        private string _Scity;
-        partial void OnScityChanging(string value);
-        partial void OnScityChanged();
-        /// <summary>
-        /// There are no comments for Property Scomu in the schema.
-        /// </summary>
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        [global::Microsoft.OData.Client.OriginalNameAttribute("Scomu")]
-        public virtual string Scomu
-        {
-            get
-            {
-                return this._Scomu;
-            }
-            set
-            {
-                this.OnScomuChanging(value);
-                this._Scomu = value;
-                this.OnScomuChanged();
-                this.OnPropertyChanged("Scomu");
-            }
-        }
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        private string _Scomu;
-        partial void OnScomuChanging(string value);
-        partial void OnScomuChanged();
-        /// <summary>
-        /// There are no comments for Property Squarti in the schema.
-        /// </summary>
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        [global::Microsoft.OData.Client.OriginalNameAttribute("Squarti")]
-        public virtual string Squarti
-        {
-            get
-            {
-                return this._Squarti;
-            }
-            set
-            {
-                this.OnSquartiChanging(value);
-                this._Squarti = value;
-                this.OnSquartiChanged();
-                this.OnPropertyChanged("Squarti");
-            }
-        }
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        private string _Squarti;
-        partial void OnSquartiChanging(string value);
-        partial void OnSquartiChanged();
-        /// <summary>
-        /// There are no comments for Property Sfami in the schema.
-        /// </summary>
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        [global::Microsoft.OData.Client.OriginalNameAttribute("Sfami")]
-        public virtual string Sfami
-        {
-            get
-            {
-                return this._Sfami;
-            }
-            set
-            {
-                this.OnSfamiChanging(value);
-                this._Sfami = value;
-                this.OnSfamiChanged();
-                this.OnPropertyChanged("Sfami");
-            }
-        }
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        private string _Sfami;
-        partial void OnSfamiChanging(string value);
-        partial void OnSfamiChanged();
-        /// <summary>
-        /// There are no comments for Property Jpays in the schema.
-        /// </summary>
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        [global::Microsoft.OData.Client.OriginalNameAttribute("Jpays")]
-        public virtual global::System.Nullable<int> Jpays
-        {
-            get
-            {
-                return this._Jpays;
-            }
-            set
-            {
-                this.OnJpaysChanging(value);
-                this._Jpays = value;
-                this.OnJpaysChanged();
-                this.OnPropertyChanged("Jpays");
-            }
-        }
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        private global::System.Nullable<int> _Jpays;
-        partial void OnJpaysChanging(global::System.Nullable<int> value);
-        partial void OnJpaysChanged();
-        /// <summary>
-        /// There are no comments for Property Jcity in the schema.
-        /// </summary>
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        [global::Microsoft.OData.Client.OriginalNameAttribute("Jcity")]
-        public virtual global::System.Nullable<int> Jcity
-        {
-            get
-            {
-                return this._Jcity;
-            }
-            set
-            {
-                this.OnJcityChanging(value);
-                this._Jcity = value;
-                this.OnJcityChanged();
-                this.OnPropertyChanged("Jcity");
-            }
-        }
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        private global::System.Nullable<int> _Jcity;
-        partial void OnJcityChanging(global::System.Nullable<int> value);
-        partial void OnJcityChanged();
-        /// <summary>
-        /// There are no comments for Property Kpays in the schema.
-        /// </summary>
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        [global::Microsoft.OData.Client.OriginalNameAttribute("Kpays")]
-        public virtual global::System.Nullable<int> Kpays
-        {
-            get
-            {
-                return this._Kpays;
-            }
-            set
-            {
-                this.OnKpaysChanging(value);
-                this._Kpays = value;
-                this.OnKpaysChanged();
-                this.OnPropertyChanged("Kpays");
-            }
-        }
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        private global::System.Nullable<int> _Kpays;
-        partial void OnKpaysChanging(global::System.Nullable<int> value);
-        partial void OnKpaysChanged();
-        /// <summary>
-        /// There are no comments for Property Kcity in the schema.
-        /// </summary>
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        [global::Microsoft.OData.Client.OriginalNameAttribute("Kcity")]
-        public virtual global::System.Nullable<int> Kcity
-        {
-            get
-            {
-                return this._Kcity;
-            }
-            set
-            {
-                this.OnKcityChanging(value);
-                this._Kcity = value;
-                this.OnKcityChanged();
-                this.OnPropertyChanged("Kcity");
-            }
-        }
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        private global::System.Nullable<int> _Kcity;
-        partial void OnKcityChanging(global::System.Nullable<int> value);
-        partial void OnKcityChanged();
-        /// <summary>
-        /// There are no comments for Property Ttyp in the schema.
-        /// </summary>
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        [global::Microsoft.OData.Client.OriginalNameAttribute("Ttyp")]
-        public virtual global::System.Nullable<int> Ttyp
-        {
-            get
-            {
-                return this._Ttyp;
-            }
-            set
-            {
-                this.OnTtypChanging(value);
-                this._Ttyp = value;
-                this.OnTtypChanged();
-                this.OnPropertyChanged("Ttyp");
-            }
-        }
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        private global::System.Nullable<int> _Ttyp;
-        partial void OnTtypChanging(global::System.Nullable<int> value);
-        partial void OnTtypChanged();
-        /// <summary>
-        /// There are no comments for Property Iloc in the schema.
-        /// </summary>
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        [global::Microsoft.OData.Client.OriginalNameAttribute("Iloc")]
-        public virtual global::System.Nullable<int> Iloc
-        {
-            get
-            {
-                return this._Iloc;
-            }
-            set
-            {
-                this.OnIlocChanging(value);
-                this._Iloc = value;
-                this.OnIlocChanged();
-                this.OnPropertyChanged("Iloc");
-            }
-        }
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        private global::System.Nullable<int> _Iloc;
-        partial void OnIlocChanging(global::System.Nullable<int> value);
-        partial void OnIlocChanged();
-        /// <summary>
-        /// There are no comments for Property Styp in the schema.
-        /// </summary>
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        [global::Microsoft.OData.Client.OriginalNameAttribute("Styp")]
-        public virtual global::System.Nullable<int> Styp
-        {
-            get
-            {
-                return this._Styp;
-            }
-            set
-            {
-                this.OnStypChanging(value);
-                this._Styp = value;
-                this.OnStypChanged();
-                this.OnPropertyChanged("Styp");
-            }
-        }
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        private global::System.Nullable<int> _Styp;
-        partial void OnStypChanging(global::System.Nullable<int> value);
-        partial void OnStypChanged();
-        /// <summary>
-        /// There are no comments for Property Ordp in the schema.
-        /// </summary>
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        [global::Microsoft.OData.Client.OriginalNameAttribute("Ordp")]
-        public virtual global::System.Nullable<int> Ordp
-        {
-            get
-            {
-                return this._Ordp;
-            }
-            set
-            {
-                this.OnOrdpChanging(value);
-                this._Ordp = value;
-                this.OnOrdpChanged();
-                this.OnPropertyChanged("Ordp");
-            }
-        }
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        private global::System.Nullable<int> _Ordp;
-        partial void OnOrdpChanging(global::System.Nullable<int> value);
-        partial void OnOrdpChanged();
-        /// <summary>
-        /// There are no comments for Property Sichef in the schema.
-        /// </summary>
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        [global::Microsoft.OData.Client.OriginalNameAttribute("Sichef")]
-        public virtual global::System.Nullable<int> Sichef
-        {
-            get
-            {
-                return this._Sichef;
-            }
-            set
-            {
-                this.OnSichefChanging(value);
-                this._Sichef = value;
-                this.OnSichefChanged();
-                this.OnPropertyChanged("Sichef");
-            }
-        }
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        private global::System.Nullable<int> _Sichef;
-        partial void OnSichefChanging(global::System.Nullable<int> value);
-        partial void OnSichefChanged();
-        /// <summary>
-        /// There are no comments for Property Sno in the schema.
-        /// </summary>
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        [global::Microsoft.OData.Client.OriginalNameAttribute("Sno")]
-        public virtual global::System.Nullable<int> Sno
-        {
-            get
-            {
-                return this._Sno;
-            }
-            set
-            {
-                this.OnSnoChanging(value);
-                this._Sno = value;
-                this.OnSnoChanged();
-                this.OnPropertyChanged("Sno");
-            }
-        }
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        private global::System.Nullable<int> _Sno;
-        partial void OnSnoChanging(global::System.Nullable<int> value);
-        partial void OnSnoChanged();
-        /// <summary>
-        /// There are no comments for Property Liba in the schema.
-        /// </summary>
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        [global::Microsoft.OData.Client.OriginalNameAttribute("Liba")]
-        public virtual string Liba
-        {
-            get
-            {
-                return this._Liba;
-            }
-            set
-            {
-                this.OnLibaChanging(value);
-                this._Liba = value;
-                this.OnLibaChanged();
-                this.OnPropertyChanged("Liba");
-            }
-        }
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        private string _Liba;
-        partial void OnLibaChanging(string value);
-        partial void OnLibaChanged();
-        /// <summary>
-        /// There are no comments for Property Abg in the schema.
-        /// </summary>
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        [global::Microsoft.OData.Client.OriginalNameAttribute("Abg")]
-        public virtual string Abg
-        {
-            get
-            {
-                return this._Abg;
-            }
-            set
-            {
-                this.OnAbgChanging(value);
-                this._Abg = value;
-                this.OnAbgChanged();
-                this.OnPropertyChanged("Abg");
-            }
-        }
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        private string _Abg;
-        partial void OnAbgChanging(string value);
-        partial void OnAbgChanged();
-        /// <summary>
-        /// There are no comments for Property Intmat in the schema.
-        /// </summary>
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        [global::Microsoft.OData.Client.OriginalNameAttribute("Intmat")]
-        public virtual global::System.Nullable<int> Intmat
-        {
-            get
-            {
-                return this._Intmat;
-            }
-            set
-            {
-                this.OnIntmatChanging(value);
-                this._Intmat = value;
-                this.OnIntmatChanged();
-                this.OnPropertyChanged("Intmat");
-            }
-        }
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        private global::System.Nullable<int> _Intmat;
-        partial void OnIntmatChanging(global::System.Nullable<int> value);
-        partial void OnIntmatChanged();
-        /// <summary>
-        /// There are no comments for Property Binid in the schema.
-        /// </summary>
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        [global::Microsoft.OData.Client.OriginalNameAttribute("Binid")]
-        public virtual global::System.Nullable<int> Binid
-        {
-            get
-            {
-                return this._Binid;
-            }
-            set
-            {
-                this.OnBinidChanging(value);
-                this._Binid = value;
-                this.OnBinidChanged();
-                this.OnPropertyChanged("Binid");
-            }
-        }
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        private global::System.Nullable<int> _Binid;
-        partial void OnBinidChanging(global::System.Nullable<int> value);
-        partial void OnBinidChanged();
-        /// <summary>
-        /// There are no comments for Property Raison in the schema.
-        /// </summary>
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        [global::Microsoft.OData.Client.OriginalNameAttribute("Raison")]
-        public virtual string Raison
-        {
-            get
-            {
-                return this._Raison;
-            }
-            set
-            {
-                this.OnRaisonChanging(value);
-                this._Raison = value;
-                this.OnRaisonChanged();
-                this.OnPropertyChanged("Raison");
-            }
-        }
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        private string _Raison;
-        partial void OnRaisonChanging(string value);
-        partial void OnRaisonChanged();
-        /// <summary>
-        /// There are no comments for Property Titre in the schema.
-        /// </summary>
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        [global::Microsoft.OData.Client.OriginalNameAttribute("Titre")]
-        public virtual string Titre
-        {
-            get
-            {
-                return this._Titre;
-            }
-            set
-            {
-                this.OnTitreChanging(value);
-                this._Titre = value;
-                this.OnTitreChanged();
-                this.OnPropertyChanged("Titre");
-            }
-        }
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        private string _Titre;
-        partial void OnTitreChanging(string value);
-        partial void OnTitreChanged();
-        /// <summary>
-        /// There are no comments for Property Nident in the schema.
-        /// </summary>
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        [global::Microsoft.OData.Client.OriginalNameAttribute("Nident")]
-        public virtual string Nident
-        {
-            get
-            {
-                return this._Nident;
-            }
-            set
-            {
-                this.OnNidentChanging(value);
-                this._Nident = value;
-                this.OnNidentChanged();
-                this.OnPropertyChanged("Nident");
-            }
-        }
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        private string _Nident;
-        partial void OnNidentChanging(string value);
-        partial void OnNidentChanged();
-        /// <summary>
-        /// There are no comments for Property Aident in the schema.
-        /// </summary>
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        [global::Microsoft.OData.Client.OriginalNameAttribute("Aident")]
-        public virtual string Aident
-        {
-            get
-            {
-                return this._Aident;
-            }
-            set
-            {
-                this.OnAidentChanging(value);
-                this._Aident = value;
-                this.OnAidentChanged();
-                this.OnPropertyChanged("Aident");
-            }
-        }
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        private string _Aident;
-        partial void OnAidentChanging(string value);
-        partial void OnAidentChanged();
-        /// <summary>
-        /// There are no comments for Property Pident in the schema.
-        /// </summary>
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        [global::Microsoft.OData.Client.OriginalNameAttribute("Pident")]
-        public virtual byte[] Pident
-        {
-            get
-            {
-                return this._Pident;
-            }
-            set
-            {
-                this.OnPidentChanging(value);
-                this._Pident = value;
-                this.OnPidentChanged();
-                this.OnPropertyChanged("Pident");
-            }
-        }
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        private byte[] _Pident;
-        partial void OnPidentChanging(byte[] value);
-        partial void OnPidentChanged();
-        /// <summary>
-        /// There are no comments for Property Tdiplo in the schema.
-        /// </summary>
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        [global::Microsoft.OData.Client.OriginalNameAttribute("Tdiplo")]
-        public virtual global::System.Nullable<int> Tdiplo
-        {
-            get
-            {
-                return this._Tdiplo;
-            }
-            set
-            {
-                this.OnTdiploChanging(value);
-                this._Tdiplo = value;
-                this.OnTdiploChanged();
-                this.OnPropertyChanged("Tdiplo");
-            }
-        }
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        private global::System.Nullable<int> _Tdiplo;
-        partial void OnTdiploChanging(global::System.Nullable<int> value);
-        partial void OnTdiploChanged();
-        /// <summary>
-        /// There are no comments for Property Ndiplo in the schema.
-        /// </summary>
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        [global::Microsoft.OData.Client.OriginalNameAttribute("Ndiplo")]
-        public virtual string Ndiplo
-        {
-            get
-            {
-                return this._Ndiplo;
-            }
-            set
-            {
-                this.OnNdiploChanging(value);
-                this._Ndiplo = value;
-                this.OnNdiploChanged();
-                this.OnPropertyChanged("Ndiplo");
-            }
-        }
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        private string _Ndiplo;
-        partial void OnNdiploChanging(string value);
-        partial void OnNdiploChanged();
-        /// <summary>
-        /// There are no comments for Property Adr in the schema.
-        /// </summary>
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        [global::Microsoft.OData.Client.OriginalNameAttribute("Adr")]
-        public virtual string Adr
-        {
-            get
-            {
-                return this._Adr;
-            }
-            set
-            {
-                this.OnAdrChanging(value);
-                this._Adr = value;
-                this.OnAdrChanged();
-                this.OnPropertyChanged("Adr");
-            }
-        }
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        private string _Adr;
-        partial void OnAdrChanging(string value);
-        partial void OnAdrChanged();
-        /// <summary>
-        /// There are no comments for Property Adr2 in the schema.
-        /// </summary>
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        [global::Microsoft.OData.Client.OriginalNameAttribute("Adr2")]
-        public virtual string Adr2
-        {
-            get
-            {
-                return this._Adr2;
-            }
-            set
-            {
-                this.OnAdr2Changing(value);
-                this._Adr2 = value;
-                this.OnAdr2Changed();
-                this.OnPropertyChanged("Adr2");
-            }
-        }
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        private string _Adr2;
-        partial void OnAdr2Changing(string value);
-        partial void OnAdr2Changed();
-        /// <summary>
-        /// There are no comments for Property Adr3 in the schema.
-        /// </summary>
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        [global::Microsoft.OData.Client.OriginalNameAttribute("Adr3")]
-        public virtual string Adr3
-        {
-            get
-            {
-                return this._Adr3;
-            }
-            set
-            {
-                this.OnAdr3Changing(value);
-                this._Adr3 = value;
-                this.OnAdr3Changed();
-                this.OnPropertyChanged("Adr3");
-            }
-        }
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        private string _Adr3;
-        partial void OnAdr3Changing(string value);
-        partial void OnAdr3Changed();
-        /// <summary>
-        /// There are no comments for Property Ivge in the schema.
-        /// </summary>
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        [global::Microsoft.OData.Client.OriginalNameAttribute("Ivge")]
-        public virtual global::System.Nullable<int> Ivge
-        {
-            get
-            {
-                return this._Ivge;
-            }
-            set
-            {
-                this.OnIvgeChanging(value);
-                this._Ivge = value;
-                this.OnIvgeChanged();
-                this.OnPropertyChanged("Ivge");
-            }
-        }
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        private global::System.Nullable<int> _Ivge;
-        partial void OnIvgeChanging(global::System.Nullable<int> value);
-        partial void OnIvgeChanged();
-        /// <summary>
-        /// There are no comments for Property Svge in the schema.
-        /// </summary>
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        [global::Microsoft.OData.Client.OriginalNameAttribute("Svge")]
-        public virtual string Svge
-        {
-            get
-            {
-                return this._Svge;
-            }
-            set
-            {
-                this.OnSvgeChanging(value);
-                this._Svge = value;
-                this.OnSvgeChanged();
-                this.OnPropertyChanged("Svge");
-            }
-        }
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        private string _Svge;
-        partial void OnSvgeChanging(string value);
-        partial void OnSvgeChanged();
-        /// <summary>
-        /// There are no comments for Property Iadr1 in the schema.
-        /// </summary>
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        [global::Microsoft.OData.Client.OriginalNameAttribute("Iadr1")]
-        public virtual global::System.Nullable<int> Iadr1
-        {
-            get
-            {
-                return this._Iadr1;
-            }
-            set
-            {
-                this.OnIadr1Changing(value);
-                this._Iadr1 = value;
-                this.OnIadr1Changed();
-                this.OnPropertyChanged("Iadr1");
-            }
-        }
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        private global::System.Nullable<int> _Iadr1;
-        partial void OnIadr1Changing(global::System.Nullable<int> value);
-        partial void OnIadr1Changed();
-        /// <summary>
-        /// There are no comments for Property Iadr2 in the schema.
-        /// </summary>
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        [global::Microsoft.OData.Client.OriginalNameAttribute("Iadr2")]
-        public virtual global::System.Nullable<int> Iadr2
-        {
-            get
-            {
-                return this._Iadr2;
-            }
-            set
-            {
-                this.OnIadr2Changing(value);
-                this._Iadr2 = value;
-                this.OnIadr2Changed();
-                this.OnPropertyChanged("Iadr2");
-            }
-        }
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        private global::System.Nullable<int> _Iadr2;
-        partial void OnIadr2Changing(global::System.Nullable<int> value);
-        partial void OnIadr2Changed();
-        /// <summary>
-        /// There are no comments for Property Atrplus in the schema.
-        /// </summary>
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        [global::Microsoft.OData.Client.OriginalNameAttribute("Atrplus")]
-        public virtual string Atrplus
-        {
-            get
-            {
-                return this._Atrplus;
-            }
-            set
-            {
-                this.OnAtrplusChanging(value);
-                this._Atrplus = value;
-                this.OnAtrplusChanged();
-                this.OnPropertyChanged("Atrplus");
-            }
-        }
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        private string _Atrplus;
-        partial void OnAtrplusChanging(string value);
-        partial void OnAtrplusChanged();
-        /// <summary>
-        /// There are no comments for Property Nnais in the schema.
-        /// </summary>
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        [global::Microsoft.OData.Client.OriginalNameAttribute("Nnais")]
-        public virtual global::System.Nullable<int> Nnais
-        {
-            get
-            {
-                return this._Nnais;
-            }
-            set
-            {
-                this.OnNnaisChanging(value);
-                this._Nnais = value;
-                this.OnNnaisChanged();
-                this.OnPropertyChanged("Nnais");
-            }
-        }
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        private global::System.Nullable<int> _Nnais;
-        partial void OnNnaisChanging(global::System.Nullable<int> value);
-        partial void OnNnaisChanged();
-        /// <summary>
-        /// There are no comments for Property Inais in the schema.
-        /// </summary>
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        [global::Microsoft.OData.Client.OriginalNameAttribute("Inais")]
-        public virtual global::System.Nullable<int> Inais
-        {
-            get
-            {
-                return this._Inais;
-            }
-            set
-            {
-                this.OnInaisChanging(value);
-                this._Inais = value;
-                this.OnInaisChanged();
-                this.OnPropertyChanged("Inais");
-            }
-        }
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        private global::System.Nullable<int> _Inais;
-        partial void OnInaisChanging(global::System.Nullable<int> value);
-        partial void OnInaisChanged();
-        /// <summary>
-        /// There are no comments for Property Iemb in the schema.
-        /// </summary>
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        [global::Microsoft.OData.Client.OriginalNameAttribute("Iemb")]
-        public virtual global::System.Nullable<int> Iemb
-        {
-            get
-            {
-                return this._Iemb;
-            }
-            set
-            {
-                this.OnIembChanging(value);
-                this._Iemb = value;
-                this.OnIembChanged();
-                this.OnPropertyChanged("Iemb");
-            }
-        }
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        private global::System.Nullable<int> _Iemb;
-        partial void OnIembChanging(global::System.Nullable<int> value);
-        partial void OnIembChanged();
-        /// <summary>
-        /// There are no comments for Property Nactu in the schema.
-        /// </summary>
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        [global::Microsoft.OData.Client.OriginalNameAttribute("Nactu")]
-        public virtual global::System.Nullable<int> Nactu
-        {
-            get
-            {
-                return this._Nactu;
-            }
-            set
-            {
-                this.OnNactuChanging(value);
-                this._Nactu = value;
-                this.OnNactuChanged();
-                this.OnPropertyChanged("Nactu");
-            }
-        }
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        private global::System.Nullable<int> _Nactu;
-        partial void OnNactuChanging(global::System.Nullable<int> value);
-        partial void OnNactuChanged();
-        /// <summary>
-        /// There are no comments for Property Inlg in the schema.
-        /// </summary>
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        [global::Microsoft.OData.Client.OriginalNameAttribute("Inlg")]
-        public virtual global::System.Nullable<int> Inlg
-        {
-            get
-            {
-                return this._Inlg;
-            }
-            set
-            {
-                this.OnInlgChanging(value);
-                this._Inlg = value;
-                this.OnInlgChanged();
-                this.OnPropertyChanged("Inlg");
-            }
-        }
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        private global::System.Nullable<int> _Inlg;
-        partial void OnInlgChanging(global::System.Nullable<int> value);
-        partial void OnInlgChanged();
-        /// <summary>
-        /// There are no comments for Property Inth in the schema.
-        /// </summary>
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        [global::Microsoft.OData.Client.OriginalNameAttribute("Inth")]
-        public virtual global::System.Nullable<int> Inth
-        {
-            get
-            {
-                return this._Inth;
-            }
-            set
-            {
-                this.OnInthChanging(value);
-                this._Inth = value;
-                this.OnInthChanged();
-                this.OnPropertyChanged("Inth");
-            }
-        }
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        private global::System.Nullable<int> _Inth;
-        partial void OnInthChanging(global::System.Nullable<int> value);
-        partial void OnInthChanged();
-        /// <summary>
-        /// There are no comments for Property Idoc in the schema.
-        /// </summary>
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        [global::Microsoft.OData.Client.OriginalNameAttribute("Idoc")]
-        public virtual string Idoc
-        {
-            get
-            {
-                return this._Idoc;
-            }
-            set
-            {
-                this.OnIdocChanging(value);
-                this._Idoc = value;
-                this.OnIdocChanged();
-                this.OnPropertyChanged("Idoc");
-            }
-        }
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        private string _Idoc;
-        partial void OnIdocChanging(string value);
-        partial void OnIdocChanged();
-        /// <summary>
-        /// There are no comments for Property Photo in the schema.
-        /// </summary>
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        [global::Microsoft.OData.Client.OriginalNameAttribute("Photo")]
-        public virtual byte[] Photo
-        {
-            get
-            {
-                return this._Photo;
-            }
-            set
-            {
-                this.OnPhotoChanging(value);
-                this._Photo = value;
-                this.OnPhotoChanged();
-                this.OnPropertyChanged("Photo");
-            }
-        }
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        private byte[] _Photo;
-        partial void OnPhotoChanging(byte[] value);
-        partial void OnPhotoChanged();
-        /// <summary>
-        /// There are no comments for Property Phot2 in the schema.
-        /// </summary>
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        [global::Microsoft.OData.Client.OriginalNameAttribute("Phot2")]
-        public virtual byte[] Phot2
-        {
-            get
-            {
-                return this._Phot2;
-            }
-            set
-            {
-                this.OnPhot2Changing(value);
-                this._Phot2 = value;
-                this.OnPhot2Changed();
-                this.OnPropertyChanged("Phot2");
-            }
-        }
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        private byte[] _Phot2;
-        partial void OnPhot2Changing(byte[] value);
-        partial void OnPhot2Changed();
-        /// <summary>
-        /// There are no comments for Property Socacc in the schema.
-        /// </summary>
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        [global::Microsoft.OData.Client.OriginalNameAttribute("Socacc")]
-        public virtual string Socacc
-        {
-            get
-            {
-                return this._Socacc;
-            }
-            set
-            {
-                this.OnSocaccChanging(value);
-                this._Socacc = value;
-                this.OnSocaccChanged();
-                this.OnPropertyChanged("Socacc");
-            }
-        }
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        private string _Socacc;
-        partial void OnSocaccChanging(string value);
-        partial void OnSocaccChanged();
-        /// <summary>
-        /// There are no comments for Property Idno in the schema.
-        /// </summary>
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        [global::Microsoft.OData.Client.OriginalNameAttribute("Idno")]
-        public virtual string Idno
-        {
-            get
-            {
-                return this._Idno;
-            }
-            set
-            {
-                this.OnIdnoChanging(value);
-                this._Idno = value;
-                this.OnIdnoChanged();
-                this.OnPropertyChanged("Idno");
-            }
-        }
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        private string _Idno;
-        partial void OnIdnoChanging(string value);
-        partial void OnIdnoChanged();
-        /// <summary>
-        /// There are no comments for Property Id2no in the schema.
-        /// </summary>
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        [global::Microsoft.OData.Client.OriginalNameAttribute("Id2no")]
-        public virtual string Id2no
-        {
-            get
-            {
-                return this._Id2no;
-            }
-            set
-            {
-                this.OnId2noChanging(value);
-                this._Id2no = value;
-                this.OnId2noChanged();
-                this.OnPropertyChanged("Id2no");
-            }
-        }
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        private string _Id2no;
-        partial void OnId2noChanging(string value);
-        partial void OnId2noChanged();
-        /// <summary>
-        /// There are no comments for Property Uopt in the schema.
-        /// </summary>
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        [global::Microsoft.OData.Client.OriginalNameAttribute("Uopt")]
-        public virtual global::System.Nullable<int> Uopt
-        {
-            get
-            {
-                return this._Uopt;
-            }
-            set
-            {
-                this.OnUoptChanging(value);
-                this._Uopt = value;
-                this.OnUoptChanged();
-                this.OnPropertyChanged("Uopt");
-            }
-        }
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        private global::System.Nullable<int> _Uopt;
-        partial void OnUoptChanging(global::System.Nullable<int> value);
-        partial void OnUoptChanged();
-        /// <summary>
-        /// There are no comments for Property Uthem in the schema.
-        /// </summary>
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        [global::Microsoft.OData.Client.OriginalNameAttribute("Uthem")]
-        public virtual global::System.Nullable<int> Uthem
-        {
-            get
-            {
-                return this._Uthem;
-            }
-            set
-            {
-                this.OnUthemChanging(value);
-                this._Uthem = value;
-                this.OnUthemChanged();
-                this.OnPropertyChanged("Uthem");
-            }
-        }
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        private global::System.Nullable<int> _Uthem;
-        partial void OnUthemChanging(global::System.Nullable<int> value);
-        partial void OnUthemChanged();
-        /// <summary>
-        /// There are no comments for Property Usaie in the schema.
-        /// </summary>
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        [global::Microsoft.OData.Client.OriginalNameAttribute("Usaie")]
-        public virtual global::System.Nullable<int> Usaie
-        {
-            get
-            {
-                return this._Usaie;
-            }
-            set
-            {
-                this.OnUsaieChanging(value);
-                this._Usaie = value;
-                this.OnUsaieChanged();
-                this.OnPropertyChanged("Usaie");
-            }
-        }
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        private global::System.Nullable<int> _Usaie;
-        partial void OnUsaieChanging(global::System.Nullable<int> value);
-        partial void OnUsaieChanged();
-        /// <summary>
-        /// There are no comments for Property Typct in the schema.
-        /// </summary>
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        [global::Microsoft.OData.Client.OriginalNameAttribute("Typct")]
-        public virtual global::System.Nullable<int> Typct
-        {
-            get
-            {
-                return this._Typct;
-            }
-            set
-            {
-                this.OnTypctChanging(value);
-                this._Typct = value;
-                this.OnTypctChanged();
-                this.OnPropertyChanged("Typct");
-            }
-        }
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        private global::System.Nullable<int> _Typct;
-        partial void OnTypctChanging(global::System.Nullable<int> value);
-        partial void OnTypctChanged();
-        /// <summary>
-        /// There are no comments for Property Dtdval in the schema.
-        /// </summary>
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        [global::Microsoft.OData.Client.OriginalNameAttribute("Dtdval")]
-        public virtual global::System.Nullable<int> Dtdval
-        {
-            get
-            {
-                return this._Dtdval;
-            }
-            set
-            {
-                this.OnDtdvalChanging(value);
-                this._Dtdval = value;
-                this.OnDtdvalChanged();
-                this.OnPropertyChanged("Dtdval");
-            }
-        }
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        private global::System.Nullable<int> _Dtdval;
-        partial void OnDtdvalChanging(global::System.Nullable<int> value);
-        partial void OnDtdvalChanged();
-        /// <summary>
-        /// There are no comments for Property Dtfval in the schema.
-        /// </summary>
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        [global::Microsoft.OData.Client.OriginalNameAttribute("Dtfval")]
-        public virtual global::System.Nullable<int> Dtfval
-        {
-            get
-            {
-                return this._Dtfval;
-            }
-            set
-            {
-                this.OnDtfvalChanging(value);
-                this._Dtfval = value;
-                this.OnDtfvalChanged();
-                this.OnPropertyChanged("Dtfval");
-            }
-        }
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        private global::System.Nullable<int> _Dtfval;
-        partial void OnDtfvalChanging(global::System.Nullable<int> value);
-        partial void OnDtfvalChanged();
-        /// <summary>
-        /// There are no comments for Property Eta in the schema.
-        /// </summary>
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        [global::Microsoft.OData.Client.OriginalNameAttribute("Eta")]
-        public virtual global::System.Nullable<int> Eta
-        {
-            get
-            {
-                return this._Eta;
-            }
-            set
-            {
-                this.OnEtaChanging(value);
-                this._Eta = value;
-                this.OnEtaChanged();
-                this.OnPropertyChanged("Eta");
-            }
-        }
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        private global::System.Nullable<int> _Eta;
-        partial void OnEtaChanging(global::System.Nullable<int> value);
-        partial void OnEtaChanged();
-        /// <summary>
-        /// There are no comments for Property Sia in the schema.
-        /// </summary>
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        [global::Microsoft.OData.Client.OriginalNameAttribute("Sia")]
-        public virtual global::System.Nullable<bool> Sia
-        {
-            get
-            {
-                return this._Sia;
-            }
-            set
-            {
-                this.OnSiaChanging(value);
-                this._Sia = value;
-                this.OnSiaChanged();
-                this.OnPropertyChanged("Sia");
-            }
-        }
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        private global::System.Nullable<bool> _Sia;
-        partial void OnSiaChanging(global::System.Nullable<bool> value);
-        partial void OnSiaChanged();
-        /// <summary>
-        /// There are no comments for Property Siv in the schema.
-        /// </summary>
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        [global::Microsoft.OData.Client.OriginalNameAttribute("Siv")]
-        public virtual global::System.Nullable<bool> Siv
-        {
-            get
-            {
-                return this._Siv;
-            }
-            set
-            {
-                this.OnSivChanging(value);
-                this._Siv = value;
-                this.OnSivChanged();
-                this.OnPropertyChanged("Siv");
-            }
-        }
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        private global::System.Nullable<bool> _Siv;
-        partial void OnSivChanging(global::System.Nullable<bool> value);
-        partial void OnSivChanged();
-        /// <summary>
-        /// There are no comments for Property Ela in the schema.
-        /// </summary>
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        [global::Microsoft.OData.Client.OriginalNameAttribute("Ela")]
-        public virtual global::System.Nullable<int> Ela
-        {
-            get
-            {
-                return this._Ela;
-            }
-            set
-            {
-                this.OnElaChanging(value);
-                this._Ela = value;
-                this.OnElaChanged();
-                this.OnPropertyChanged("Ela");
-            }
-        }
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        private global::System.Nullable<int> _Ela;
-        partial void OnElaChanging(global::System.Nullable<int> value);
-        partial void OnElaChanged();
-        /// <summary>
-        /// There are no comments for Property Selc in the schema.
-        /// </summary>
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        [global::Microsoft.OData.Client.OriginalNameAttribute("Selc")]
-        public virtual global::System.Nullable<bool> Selc
-        {
-            get
-            {
-                return this._Selc;
-            }
-            set
-            {
-                this.OnSelcChanging(value);
-                this._Selc = value;
-                this.OnSelcChanged();
-                this.OnPropertyChanged("Selc");
-            }
-        }
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        private global::System.Nullable<bool> _Selc;
-        partial void OnSelcChanging(global::System.Nullable<bool> value);
-        partial void OnSelcChanged();
-        /// <summary>
-        /// There are no comments for Property Datc in the schema.
-        /// </summary>
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        [global::Microsoft.OData.Client.OriginalNameAttribute("Datc")]
-        public virtual global::System.Nullable<global::System.DateTimeOffset> Datc
-        {
-            get
-            {
-                return this._Datc;
-            }
-            set
-            {
-                this.OnDatcChanging(value);
-                this._Datc = value;
-                this.OnDatcChanged();
-                this.OnPropertyChanged("Datc");
-            }
-        }
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        private global::System.Nullable<global::System.DateTimeOffset> _Datc;
-        partial void OnDatcChanging(global::System.Nullable<global::System.DateTimeOffset> value);
-        partial void OnDatcChanged();
-        /// <summary>
-        /// There are no comments for Property Datu in the schema.
-        /// </summary>
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        [global::Microsoft.OData.Client.OriginalNameAttribute("Datu")]
-        public virtual global::System.Nullable<global::System.DateTimeOffset> Datu
-        {
-            get
-            {
-                return this._Datu;
-            }
-            set
-            {
-                this.OnDatuChanging(value);
-                this._Datu = value;
-                this.OnDatuChanged();
-                this.OnPropertyChanged("Datu");
-            }
-        }
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        private global::System.Nullable<global::System.DateTimeOffset> _Datu;
-        partial void OnDatuChanging(global::System.Nullable<global::System.DateTimeOffset> value);
-        partial void OnDatuChanged();
-        /// <summary>
-        /// There are no comments for Property Usrope in the schema.
-        /// </summary>
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        [global::Microsoft.OData.Client.OriginalNameAttribute("Usrope")]
-        public virtual string Usrope
-        {
-            get
-            {
-                return this._Usrope;
-            }
-            set
-            {
-                this.OnUsropeChanging(value);
-                this._Usrope = value;
-                this.OnUsropeChanged();
-                this.OnPropertyChanged("Usrope");
-            }
-        }
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        private string _Usrope;
-        partial void OnUsropeChanging(string value);
-        partial void OnUsropeChanged();
-        /// <summary>
-        /// There are no comments for Property Usrupd in the schema.
-        /// </summary>
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        [global::Microsoft.OData.Client.OriginalNameAttribute("Usrupd")]
-        public virtual string Usrupd
-        {
-            get
-            {
-                return this._Usrupd;
-            }
-            set
-            {
-                this.OnUsrupdChanging(value);
-                this._Usrupd = value;
-                this.OnUsrupdChanged();
-                this.OnPropertyChanged("Usrupd");
-            }
-        }
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        private string _Usrupd;
-        partial void OnUsrupdChanging(string value);
-        partial void OnUsrupdChanged();
-        /// <summary>
-        /// There are no comments for Property Datope in the schema.
-        /// </summary>
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        [global::Microsoft.OData.Client.OriginalNameAttribute("Datope")]
-        public virtual global::System.Nullable<global::System.DateTimeOffset> Datope
-        {
-            get
-            {
-                return this._Datope;
-            }
-            set
-            {
-                this.OnDatopeChanging(value);
-                this._Datope = value;
-                this.OnDatopeChanged();
-                this.OnPropertyChanged("Datope");
-            }
-        }
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        private global::System.Nullable<global::System.DateTimeOffset> _Datope;
-        partial void OnDatopeChanging(global::System.Nullable<global::System.DateTimeOffset> value);
-        partial void OnDatopeChanged();
-        /// <summary>
-        /// There are no comments for Property Datupd in the schema.
-        /// </summary>
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        [global::Microsoft.OData.Client.OriginalNameAttribute("Datupd")]
-        public virtual global::System.Nullable<global::System.DateTimeOffset> Datupd
-        {
-            get
-            {
-                return this._Datupd;
-            }
-            set
-            {
-                this.OnDatupdChanging(value);
-                this._Datupd = value;
-                this.OnDatupdChanged();
-                this.OnPropertyChanged("Datupd");
-            }
-        }
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        private global::System.Nullable<global::System.DateTimeOffset> _Datupd;
-        partial void OnDatupdChanging(global::System.Nullable<global::System.DateTimeOffset> value);
-        partial void OnDatupdChanged();
-        /// <summary>
-        /// There are no comments for Property Ivalid in the schema.
-        /// </summary>
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        [global::Microsoft.OData.Client.OriginalNameAttribute("Ivalid")]
-        public virtual global::System.Nullable<int> Ivalid
-        {
-            get
-            {
-                return this._Ivalid;
-            }
-            set
-            {
-                this.OnIvalidChanging(value);
-                this._Ivalid = value;
-                this.OnIvalidChanged();
-                this.OnPropertyChanged("Ivalid");
-            }
-        }
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        private global::System.Nullable<int> _Ivalid;
-        partial void OnIvalidChanging(global::System.Nullable<int> value);
-        partial void OnIvalidChanged();
-        /// <summary>
-        /// There are no comments for Property Iclos in the schema.
-        /// </summary>
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        [global::Microsoft.OData.Client.OriginalNameAttribute("Iclos")]
-        public virtual global::System.Nullable<int> Iclos
-        {
-            get
-            {
-                return this._Iclos;
-            }
-            set
-            {
-                this.OnIclosChanging(value);
-                this._Iclos = value;
-                this.OnIclosChanged();
-                this.OnPropertyChanged("Iclos");
-            }
-        }
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        private global::System.Nullable<int> _Iclos;
-        partial void OnIclosChanging(global::System.Nullable<int> value);
-        partial void OnIclosChanged();
-        /// <summary>
-        /// There are no comments for Property Eaut in the schema.
-        /// </summary>
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        [global::Microsoft.OData.Client.OriginalNameAttribute("Eaut")]
-        public virtual global::System.Nullable<int> Eaut
-        {
-            get
-            {
-                return this._Eaut;
-            }
-            set
-            {
-                this.OnEautChanging(value);
-                this._Eaut = value;
-                this.OnEautChanged();
-                this.OnPropertyChanged("Eaut");
-            }
-        }
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        private global::System.Nullable<int> _Eaut;
-        partial void OnEautChanging(global::System.Nullable<int> value);
-        partial void OnEautChanged();
-        /// <summary>
-        /// There are no comments for Property Rowguid in the schema.
-        /// </summary>
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        [global::Microsoft.OData.Client.OriginalNameAttribute("Rowguid")]
-        [global::System.ComponentModel.DataAnnotations.RequiredAttribute(ErrorMessage = "Rowguid is required.")]
-        public virtual global::System.Guid Rowguid
-        {
-            get
-            {
-                return this._Rowguid;
-            }
-            set
-            {
-                this.OnRowguidChanging(value);
-                this._Rowguid = value;
-                this.OnRowguidChanged();
-                this.OnPropertyChanged("Rowguid");
-            }
-        }
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        private global::System.Guid _Rowguid;
-        partial void OnRowguidChanging(global::System.Guid value);
-        partial void OnRowguidChanged();
-        /// <summary>
-        /// There are no comments for Property Obsv in the schema.
-        /// </summary>
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        [global::Microsoft.OData.Client.OriginalNameAttribute("Obsv")]
-        public virtual string Obsv
-        {
-            get
-            {
-                return this._Obsv;
-            }
-            set
-            {
-                this.OnObsvChanging(value);
-                this._Obsv = value;
-                this.OnObsvChanged();
-                this.OnPropertyChanged("Obsv");
-            }
-        }
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        private string _Obsv;
-        partial void OnObsvChanging(string value);
-        partial void OnObsvChanged();
-        /// <summary>
-        /// There are no comments for Property ItieNavigation in the schema.
-        /// </summary>
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        [global::Microsoft.OData.Client.OriginalNameAttribute("ItieNavigation")]
-        public virtual global::GxWapi.DaModels.Tiersp ItieNavigation
-        {
-            get
-            {
-                return this._ItieNavigation;
-            }
-            set
-            {
-                this.OnItieNavigationChanging(value);
-                this._ItieNavigation = value;
-                this.OnItieNavigationChanged();
-                this.OnPropertyChanged("ItieNavigation");
-            }
-        }
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        private global::GxWapi.DaModels.Tiersp _ItieNavigation;
-        partial void OnItieNavigationChanging(global::GxWapi.DaModels.Tiersp value);
         partial void OnItieNavigationChanged();
         /// <summary>
         /// This event is raised when the value of the property is changed
@@ -59427,52 +59413,6 @@ namespace GxWapi.DaModels
             return new global::GxWapi.DaModels.RubhieSingle(_source.Context, _source.GetKeyPath(global::Microsoft.OData.Client.Serializer.GetKeyString(_source.Context, _keys)));
         }
         /// <summary>
-        /// Get an entity of type global::GxWapi.DaModels.Tiwatr as global::GxWapi.DaModels.TiwatrSingle specified by key from an entity set
-        /// </summary>
-        /// <param name="_source">source entity set</param>
-        /// <param name="_keys">dictionary with the names and values of keys</param>
-        public static global::GxWapi.DaModels.TiwatrSingle ByKey(this global::Microsoft.OData.Client.DataServiceQuery<global::GxWapi.DaModels.Tiwatr> _source, global::System.Collections.Generic.IDictionary<string, object> _keys)
-        {
-            return new global::GxWapi.DaModels.TiwatrSingle(_source.Context, _source.GetKeyPath(global::Microsoft.OData.Client.Serializer.GetKeyString(_source.Context, _keys)));
-        }
-        /// <summary>
-        /// Get an entity of type global::GxWapi.DaModels.Tiwatr as global::GxWapi.DaModels.TiwatrSingle specified by key from an entity set
-        /// </summary>
-        /// <param name="_source">source entity set</param>
-        /// <param name="id">The value of id</param>
-        public static global::GxWapi.DaModels.TiwatrSingle ByKey(this global::Microsoft.OData.Client.DataServiceQuery<global::GxWapi.DaModels.Tiwatr> _source,
-            int id)
-        {
-            global::System.Collections.Generic.IDictionary<string, object> _keys = new global::System.Collections.Generic.Dictionary<string, object>
-            {
-                { "Id", id }
-            };
-            return new global::GxWapi.DaModels.TiwatrSingle(_source.Context, _source.GetKeyPath(global::Microsoft.OData.Client.Serializer.GetKeyString(_source.Context, _keys)));
-        }
-        /// <summary>
-        /// Get an entity of type global::GxWapi.DaModels.Tiwafl as global::GxWapi.DaModels.TiwaflSingle specified by key from an entity set
-        /// </summary>
-        /// <param name="_source">source entity set</param>
-        /// <param name="_keys">dictionary with the names and values of keys</param>
-        public static global::GxWapi.DaModels.TiwaflSingle ByKey(this global::Microsoft.OData.Client.DataServiceQuery<global::GxWapi.DaModels.Tiwafl> _source, global::System.Collections.Generic.IDictionary<string, object> _keys)
-        {
-            return new global::GxWapi.DaModels.TiwaflSingle(_source.Context, _source.GetKeyPath(global::Microsoft.OData.Client.Serializer.GetKeyString(_source.Context, _keys)));
-        }
-        /// <summary>
-        /// Get an entity of type global::GxWapi.DaModels.Tiwafl as global::GxWapi.DaModels.TiwaflSingle specified by key from an entity set
-        /// </summary>
-        /// <param name="_source">source entity set</param>
-        /// <param name="id">The value of id</param>
-        public static global::GxWapi.DaModels.TiwaflSingle ByKey(this global::Microsoft.OData.Client.DataServiceQuery<global::GxWapi.DaModels.Tiwafl> _source,
-            int id)
-        {
-            global::System.Collections.Generic.IDictionary<string, object> _keys = new global::System.Collections.Generic.Dictionary<string, object>
-            {
-                { "Id", id }
-            };
-            return new global::GxWapi.DaModels.TiwaflSingle(_source.Context, _source.GetKeyPath(global::Microsoft.OData.Client.Serializer.GetKeyString(_source.Context, _keys)));
-        }
-        /// <summary>
         /// Get an entity of type global::GxWapi.DaModels.Tieatr as global::GxWapi.DaModels.TieatrSingle specified by key from an entity set
         /// </summary>
         /// <param name="_source">source entity set</param>
@@ -59517,6 +59457,52 @@ namespace GxWapi.DaModels
                 { "Id", id }
             };
             return new global::GxWapi.DaModels.TieaflSingle(_source.Context, _source.GetKeyPath(global::Microsoft.OData.Client.Serializer.GetKeyString(_source.Context, _keys)));
+        }
+        /// <summary>
+        /// Get an entity of type global::GxWapi.DaModels.Tiwatr as global::GxWapi.DaModels.TiwatrSingle specified by key from an entity set
+        /// </summary>
+        /// <param name="_source">source entity set</param>
+        /// <param name="_keys">dictionary with the names and values of keys</param>
+        public static global::GxWapi.DaModels.TiwatrSingle ByKey(this global::Microsoft.OData.Client.DataServiceQuery<global::GxWapi.DaModels.Tiwatr> _source, global::System.Collections.Generic.IDictionary<string, object> _keys)
+        {
+            return new global::GxWapi.DaModels.TiwatrSingle(_source.Context, _source.GetKeyPath(global::Microsoft.OData.Client.Serializer.GetKeyString(_source.Context, _keys)));
+        }
+        /// <summary>
+        /// Get an entity of type global::GxWapi.DaModels.Tiwatr as global::GxWapi.DaModels.TiwatrSingle specified by key from an entity set
+        /// </summary>
+        /// <param name="_source">source entity set</param>
+        /// <param name="id">The value of id</param>
+        public static global::GxWapi.DaModels.TiwatrSingle ByKey(this global::Microsoft.OData.Client.DataServiceQuery<global::GxWapi.DaModels.Tiwatr> _source,
+            int id)
+        {
+            global::System.Collections.Generic.IDictionary<string, object> _keys = new global::System.Collections.Generic.Dictionary<string, object>
+            {
+                { "Id", id }
+            };
+            return new global::GxWapi.DaModels.TiwatrSingle(_source.Context, _source.GetKeyPath(global::Microsoft.OData.Client.Serializer.GetKeyString(_source.Context, _keys)));
+        }
+        /// <summary>
+        /// Get an entity of type global::GxWapi.DaModels.Tiwafl as global::GxWapi.DaModels.TiwaflSingle specified by key from an entity set
+        /// </summary>
+        /// <param name="_source">source entity set</param>
+        /// <param name="_keys">dictionary with the names and values of keys</param>
+        public static global::GxWapi.DaModels.TiwaflSingle ByKey(this global::Microsoft.OData.Client.DataServiceQuery<global::GxWapi.DaModels.Tiwafl> _source, global::System.Collections.Generic.IDictionary<string, object> _keys)
+        {
+            return new global::GxWapi.DaModels.TiwaflSingle(_source.Context, _source.GetKeyPath(global::Microsoft.OData.Client.Serializer.GetKeyString(_source.Context, _keys)));
+        }
+        /// <summary>
+        /// Get an entity of type global::GxWapi.DaModels.Tiwafl as global::GxWapi.DaModels.TiwaflSingle specified by key from an entity set
+        /// </summary>
+        /// <param name="_source">source entity set</param>
+        /// <param name="id">The value of id</param>
+        public static global::GxWapi.DaModels.TiwaflSingle ByKey(this global::Microsoft.OData.Client.DataServiceQuery<global::GxWapi.DaModels.Tiwafl> _source,
+            int id)
+        {
+            global::System.Collections.Generic.IDictionary<string, object> _keys = new global::System.Collections.Generic.Dictionary<string, object>
+            {
+                { "Id", id }
+            };
+            return new global::GxWapi.DaModels.TiwaflSingle(_source.Context, _source.GetKeyPath(global::Microsoft.OData.Client.Serializer.GetKeyString(_source.Context, _keys)));
         }
         /// <summary>
         /// Get an entity of type global::GxWapi.DaModels.Rubfmt as global::GxWapi.DaModels.RubfmtSingle specified by key from an entity set
@@ -60167,42 +60153,6 @@ namespace Default
         [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
         private global::Microsoft.OData.Client.DataServiceQuery<global::GxWapi.DaModels.Tiewel> _Tiewels;
         /// <summary>
-        /// There are no comments for Gsesios in the schema.
-        /// </summary>
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        [global::Microsoft.OData.Client.OriginalNameAttribute("Gsesios")]
-        public virtual global::Microsoft.OData.Client.DataServiceQuery<global::GxWapi.DaModels.Gsesio> Gsesios
-        {
-            get
-            {
-                if ((this._Gsesios == null))
-                {
-                    this._Gsesios = base.CreateQuery<global::GxWapi.DaModels.Gsesio>("Gsesios");
-                }
-                return this._Gsesios;
-            }
-        }
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        private global::Microsoft.OData.Client.DataServiceQuery<global::GxWapi.DaModels.Gsesio> _Gsesios;
-        /// <summary>
-        /// There are no comments for Gsjets in the schema.
-        /// </summary>
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        [global::Microsoft.OData.Client.OriginalNameAttribute("Gsjets")]
-        public virtual global::Microsoft.OData.Client.DataServiceQuery<global::GxWapi.DaModels.Gsjet> Gsjets
-        {
-            get
-            {
-                if ((this._Gsjets == null))
-                {
-                    this._Gsjets = base.CreateQuery<global::GxWapi.DaModels.Gsjet>("Gsjets");
-                }
-                return this._Gsjets;
-            }
-        }
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        private global::Microsoft.OData.Client.DataServiceQuery<global::GxWapi.DaModels.Gsjet> _Gsjets;
-        /// <summary>
         /// There are no comments for Rubvars in the schema.
         /// </summary>
         [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
@@ -60221,24 +60171,6 @@ namespace Default
         [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
         private global::Microsoft.OData.Client.DataServiceQuery<global::GxWapi.DaModels.Rubvar> _Rubvars;
         /// <summary>
-        /// There are no comments for Rubfmts in the schema.
-        /// </summary>
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        [global::Microsoft.OData.Client.OriginalNameAttribute("Rubfmts")]
-        public virtual global::Microsoft.OData.Client.DataServiceQuery<global::GxWapi.DaModels.Rubfmt> Rubfmts
-        {
-            get
-            {
-                if ((this._Rubfmts == null))
-                {
-                    this._Rubfmts = base.CreateQuery<global::GxWapi.DaModels.Rubfmt>("Rubfmts");
-                }
-                return this._Rubfmts;
-            }
-        }
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        private global::Microsoft.OData.Client.DataServiceQuery<global::GxWapi.DaModels.Rubfmt> _Rubfmts;
-        /// <summary>
         /// There are no comments for Rubhies in the schema.
         /// </summary>
         [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
@@ -60256,6 +60188,24 @@ namespace Default
         }
         [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
         private global::Microsoft.OData.Client.DataServiceQuery<global::GxWapi.DaModels.Rubhie> _Rubhies;
+        /// <summary>
+        /// There are no comments for Rubfmts in the schema.
+        /// </summary>
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        [global::Microsoft.OData.Client.OriginalNameAttribute("Rubfmts")]
+        public virtual global::Microsoft.OData.Client.DataServiceQuery<global::GxWapi.DaModels.Rubfmt> Rubfmts
+        {
+            get
+            {
+                if ((this._Rubfmts == null))
+                {
+                    this._Rubfmts = base.CreateQuery<global::GxWapi.DaModels.Rubfmt>("Rubfmts");
+                }
+                return this._Rubfmts;
+            }
+        }
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        private global::Microsoft.OData.Client.DataServiceQuery<global::GxWapi.DaModels.Rubfmt> _Rubfmts;
         /// <summary>
         /// There are no comments for Rubpsts in the schema.
         /// </summary>
@@ -60557,22 +60507,6 @@ namespace Default
             base.AddObject("Tiewels", tiewel);
         }
         /// <summary>
-        /// There are no comments for Gsesios in the schema.
-        /// </summary>
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        public virtual void AddToGsesios(global::GxWapi.DaModels.Gsesio gsesio)
-        {
-            base.AddObject("Gsesios", gsesio);
-        }
-        /// <summary>
-        /// There are no comments for Gsjets in the schema.
-        /// </summary>
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        public virtual void AddToGsjets(global::GxWapi.DaModels.Gsjet gsjet)
-        {
-            base.AddObject("Gsjets", gsjet);
-        }
-        /// <summary>
         /// There are no comments for Rubvars in the schema.
         /// </summary>
         [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
@@ -60581,20 +60515,20 @@ namespace Default
             base.AddObject("Rubvars", rubvar);
         }
         /// <summary>
-        /// There are no comments for Rubfmts in the schema.
-        /// </summary>
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        public virtual void AddToRubfmts(global::GxWapi.DaModels.Rubfmt rubfmt)
-        {
-            base.AddObject("Rubfmts", rubfmt);
-        }
-        /// <summary>
         /// There are no comments for Rubhies in the schema.
         /// </summary>
         [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
         public virtual void AddToRubhies(global::GxWapi.DaModels.Rubhie rubhie)
         {
             base.AddObject("Rubhies", rubhie);
+        }
+        /// <summary>
+        /// There are no comments for Rubfmts in the schema.
+        /// </summary>
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        public virtual void AddToRubfmts(global::GxWapi.DaModels.Rubfmt rubfmt)
+        {
+            base.AddObject("Rubfmts", rubfmt);
         }
         /// <summary>
         /// There are no comments for Rubpsts in the schema.

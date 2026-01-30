@@ -1,9 +1,17 @@
 ﻿using System.ComponentModel.DataAnnotations.Schema;
 
+using GxShared.Sess;
+
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 namespace GxWapi.DaModels
 {
+    public partial class Gxorga
+    {
+        [JsonIgnore]
+        public int Xedt1 { get; set; } = 0;
+    }
+
     public partial class Actsaie
     {
         [JsonIgnore]
@@ -13,6 +21,7 @@ namespace GxWapi.DaModels
         [JsonIgnore]
         public int Xedt1 { get; set; } = 0;
         [JsonIgnore]
+        public int Xdel1 { get; set; } = 0;
         public string Liba { get; set; } = string.Empty;
         [JsonIgnore]
         public string KMatri { get; set; } = string.Empty;
@@ -34,6 +43,8 @@ namespace GxWapi.DaModels
         [JsonIgnore]
         public int Xedt1 { get; set; } = 0;
         [JsonIgnore]
+        public int Xdel1 { get; set; } = 0;
+        [JsonIgnore]
         public string Liba { get; set; } = string.Empty;
         [JsonIgnore]
         public string Abg { get; set; } = string.Empty;
@@ -49,9 +60,7 @@ namespace GxWapi.DaModels
     public partial class Resdon
     {
         [JsonIgnore]
-        public int Xadd1 { get; set; } = 0;
-        [JsonIgnore]
-        public int Xedt1 { get; set; } = 0;
+        public int Iui { get; set; } = 0;
         [JsonIgnore]
         public string Liba { get; set; } = string.Empty;
         [JsonIgnore]
@@ -68,10 +77,7 @@ namespace GxWapi.DaModels
     public partial class Resdet
     {
         [JsonIgnore]
-        public int Xadd1 { get; set; } = 0;
-        [JsonIgnore]
-        public int Xedt1 { get; set; } = 0;
-        [JsonIgnore]
+        public int Iui { get; set; } = 0;
         public string Liba { get; set; } = string.Empty;
         [JsonIgnore]
         public string Abg { get; set; } = string.Empty;
@@ -87,9 +93,7 @@ namespace GxWapi.DaModels
     public partial class Resbro
     {
         [JsonIgnore]
-        public int Xadd1 { get; set; } = 0;
-        [JsonIgnore]
-        public int Xedt1 { get; set; } = 0;
+        public int Iui { get; set; } = 0;
         [JsonIgnore]
         public string Liba { get; set; } = string.Empty;
         [JsonIgnore]
@@ -128,6 +132,8 @@ namespace GxWapi.DaModels
         public int Xadd1 { get; set; } = 0;
         [JsonIgnore]
         public int Xedt1 { get; set; } = 0;
+        [JsonIgnore]
+        public int Xdel1 { get; set; } = 0;
     }
     public partial class Plngen
     {
@@ -137,6 +143,8 @@ namespace GxWapi.DaModels
         public int Xadd1 { get; set; } = 0;
         [JsonIgnore]
         public int Xedt1 { get; set; } = 0;
+        [JsonIgnore]
+        public int Xdel1 { get; set; } = 0;
     }
     public partial class Rubvar
     {
@@ -146,6 +154,8 @@ namespace GxWapi.DaModels
         public int Xadd1 { get; set; } = 0;
         [JsonIgnore]
         public int Xedt1 { get; set; } = 0;
+        [JsonIgnore]
+        public int Xdel1 { get; set; } = 0;
     }
     public partial class Rubfmt
     {
@@ -155,6 +165,8 @@ namespace GxWapi.DaModels
         public int Xadd1 { get; set; } = 0;
         [JsonIgnore]
         public int Xedt1 { get; set; } = 0;
+        [JsonIgnore]
+        public int Xdel1 { get; set; } = 0;
     }
     public partial class Rubhie
     {
@@ -164,6 +176,8 @@ namespace GxWapi.DaModels
         public int Xadd1 { get; set; } = 0;
         [JsonIgnore]
         public int Xedt1 { get; set; } = 0;
+        [JsonIgnore]
+        public int Xdel1 { get; set; } = 0;
     }
     public partial class Rubpst
     {
@@ -173,6 +187,8 @@ namespace GxWapi.DaModels
         public int Xadd1 { get; set; } = 0;
         [JsonIgnore]
         public int Xedt1 { get; set; } = 0;
+        [JsonIgnore]
+        public int Xdel1 { get; set; } = 0;
     }
     public partial class Tiersp
     {
@@ -182,6 +198,8 @@ namespace GxWapi.DaModels
         public int Xadd1 { get; set; } = 0;
         [JsonIgnore]
         public int Xedt1 { get; set; } = 0;
+        [JsonIgnore]
+        public int Xdel1 { get; set; } = 0;
         [JsonIgnore]
         public int Xgen1 { get; set; } = 0;
         [JsonIgnore]
@@ -216,6 +234,8 @@ namespace GxWapi.DaModels
         [JsonIgnore]
         public int Xedt1 { get; set; } = 0;
         [JsonIgnore]
+        public int Xdel1 { get; set; } = 0;
+        [JsonIgnore]
         public int Xgen1 { get; set; } = 0;
         [JsonIgnore]
         public bool IsJaccChecked
@@ -235,38 +255,6 @@ namespace GxWapi.DaModels
             get => Jnot == 1;
             set => Jnot = value ? 1 : 0;
         }
-        //[JsonIgnore]
-        //private bool isValCheck = false;
-        //[JsonIgnore]
-        //private bool isRejCheck = false;
-        //[JsonIgnore]
-        //public bool IsValCheck
-        //{
-        //    get => isValCheck;
-        //    set
-        //    {
-        //        if (value)
-        //        {
-        //            if (isRejCheck) isRejCheck = false;
-        //        }
-        //        isValCheck = value;
-        //    }
-        //}
-        //[JsonIgnore]
-        //public bool IsRejCheck
-        //{
-        //    get => isRejCheck;
-        //    set
-        //    {
-        //        if (value)
-        //        {
-        //            if (isValCheck) isValCheck = false;
-        //        }
-        //        isRejCheck = value;
-        //    }
-        //}
-        //[JsonIgnore]
-        //public bool IsNotCheck { get; set; } = false;
     }
     public partial class Tieafl
     {
@@ -276,6 +264,8 @@ namespace GxWapi.DaModels
         public int Xadd1 { get; set; } = 0;
         [JsonIgnore]
         public int Xedt1 { get; set; } = 0;
+        [JsonIgnore]
+        public int Xdel1 { get; set; } = 0;
         [JsonIgnore]
         public int Xgen1 { get; set; } = 0;
 
@@ -321,6 +311,8 @@ namespace GxWapi.DaModels
         [JsonIgnore]
         public int Xedt1 { get; set; } = 0;
         [JsonIgnore]
+        public int Xdel1 { get; set; } = 0;
+        [JsonIgnore]
         public int Xgen1 { get; set; } = 0;
         [JsonIgnore]
         private bool isValCheck = false;
@@ -363,6 +355,8 @@ namespace GxWapi.DaModels
         public int Xadd1 { get; set; } = 0;
         [JsonIgnore]
         public int Xedt1 { get; set; } = 0;
+        [JsonIgnore]
+        public int Xdel1 { get; set; } = 0;
     }
 
     public class Mytable

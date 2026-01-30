@@ -24,14 +24,14 @@
 @using GxAdm.Services.Mform
 
 @inject ILocalStorageService _localStorage
-@inject NavigationManager _navmanager
+@inject IHttpClientFactory _httpClientFactory
+@inject NavigationManager _navManager
 @inject HttpClientService _cliemanager
 @inject IODataContextFactory _contextFactory
 @inject SessionContextService _sessionContext
-@inject RendAgres _rendAgres;
+@inject RendAgres _rendAgres
 @inject PendingChangesGuard _guard
-
-@inject IHttpClientFactory _httpClientFactory
+@inject IJSRuntime _JsRUN
 
 <PageTitle>INSTITUTION</PageTitle>
 @* <h3>AOrgas</h3> *@
@@ -43,21 +43,21 @@
     </div>
 }
 <div>
-    @Imessage
-</div>
-<div>
-    @Ierror
+    
 </div>
 @if (edOrgContext != null)
 {
     <AuthorizeView Context="authContext">
     <Authorized>
             <div class="row">
-                <div class="col-md-10 input-group">
+                <div class="col-md-10 justify-content-center">
                     <button class="navbar-brand text-left text-white bg-dark bg-opacity-75 me-2 py-0 px-1" style="height:44px;" @onclick="NavigateBack">
                         A24soft Gx-Solutions
                     </button>
-                    <button type="button" class="btn btn-sm btn-secondary btnsz @(!allEnable ? "" : "d-none")" style="font-size: small" @onclick="() => EdtAll()">Modifier</button>
+                    <span>
+                        &nbsp; @Imessage
+                    </span>
+                    @* <button type="button" class="btn btn-sm btn-secondary btnsz @(!allEnable ? "" : "d-none")" style="font-size: small" @onclick="() => EdtAll()">Modifier</button> *@
                 </div>
             </div>
             <div class="container-fluid-fixed-top">
@@ -65,6 +65,9 @@
                         <div class="col-auto">
                             <label style="font-weight:bold"> Package :&nbsp;</label>
                             <label style="font-weight:bold;font-size:larger">@curOrga.Sidom</label>
+                        </div>
+                        <div class="col-auto">
+                            <label style="font-weight:bold;font-size:larger">@curOrga.Sigle</label>
                         </div>
                     </div>
                     <div class="row">
@@ -77,7 +80,7 @@
                                     <div class="col-md-2">
                                         @if(!isEdOrg)
                                         {
-                                            <button class="btn btn-warning btn-sm" @onclick="() => EdtEOrg()">Edit</button>
+                                            <button class="btn btn-warning btn-sm" @onclick="() => StartOrgEdit()">Edit</button>
                                         } else
                                         {
                                             <button class="btn btn-warning btn-sm" @onclick="() => ConfEOrg()">Confirm</button>
@@ -376,7 +379,7 @@
                                                     <ChildContent Context="item">
                                                         @if (EdDomRowguid  != item.Rowguid)
                                                         {
-                                                            <button class="btn btn-warning btn-sm @(!isEdDom && EdDomRowguid != item.Rowguid ? "" : "disabled-action")" @onclick="() => EditGdom(item)">Edit</button>
+                                                            <button class="btn btn-warning btn-sm @(!isEdDom && EdDomRowguid != item.Rowguid ? "" : "disabled-action")" @onclick="() => StartDomEdit(item)">Edit</button>
                                                         }
                                                         else
                                                         {
@@ -461,7 +464,7 @@
                                                         <div class="col-md-2 d-flex gap-2">
                                                             @if (EdAflRowguid  != item.Rowguid)
                                                             {
-                                                                <button class="btn btn-warning btn-sm @(!isEdAfl && EdAflRowguid != item.Rowguid ? "" : "disabled-action")" @onclick="() => EditGafl(item)">Edit</button>
+                                                                <button class="btn btn-warning btn-sm @(!isEdAfl && EdAflRowguid != item.Rowguid ? "" : "disabled-action")" @onclick="() => StartAflEdit(item)">Edit</button>
                                                             }
                                                             else
                                                             {
@@ -701,7 +704,7 @@
                                                             <ChildContent Context="r">
                                                                             @if (EdColRowguid != r.Rowguid)
                                                                             {
-                                                                                <button class="btn btn-warning btn-sm @(!isEdCol && EdColRowguid != r.Rowguid ? "" : "disabled-action")" @onclick="() => EditGcol(r)">Edit</button>
+                                                                                <button class="btn btn-warning btn-sm @(!isEdCol && EdColRowguid != r.Rowguid ? "" : "disabled-action")" @onclick="() => StartColEdit(r)">Edit</button>
                                                                             }
                                                                             else
                                                                             {
@@ -728,27 +731,25 @@
                         </Tabs>
                     <!-- GLOBAL Save/Cancel - ONE button saves ALL tabs -->
                     <div class="row mt-3">
-                        <div class="col-12">
-                            @if (_guard.HasPendingChanges())
-                            {
-                                <div class="alert alert-warning">
-                                    <strong>@pendingCount changes pending across all tabs</strong>
+                        <div class="col p-0 m-0">
+                            <div class="alert alert-warning d-flex justify-content-between align-items-center mb-0 py-1 px-2">
+                                <div>
+                                    ⚠️ @_guard.GetPendingChangesCount() unsaved changes
                                 </div>
-                            }
-                            <div class="d-flex gap-2 justify-content-end">
-                                <Button Color="ButtonColor.Primary"
-                                        @onclick="SaveAllAsync"
-                                        Enabled="@_guard.HasPendingChanges()">
-                                    Save All (@pendingCount changes)
-                                </Button>
-                                <Button Color="ButtonColor.Secondary"
-                                        @onclick="CancelAllChanges">
-                                    Cancel All Changes
-                                </Button>
-                                 <Button Color="ButtonColor.Success"
-                                        @onclick="TestSaveBatch">
-                                    Test Save Batch
-                                 </Button>
+                                <div class="d-flex gap-2 align-items-center">
+                                    <Button Color="ButtonColor.Info" @onclick="SaveAllChanges"
+                                            Enabled="@_guard.HasPendingChanges()">
+                                        Save All (@_guard.GetPendingChangesCount() changes)
+                                    </Button>
+                                    <Button Color="ButtonColor.Secondary" @onclick="CancelAllChanges"
+                                            Enabled="@_guard.HasPendingChanges()">
+                                        Cancel All
+                                    </Button>
+                                    <Button Color="ButtonColor.Success"
+                                            @onclick="TestSaveBatch">
+                                        Test Save Batch
+                                    </Button>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -840,8 +841,9 @@
     private Task<AuthenticationState>? AuthState { get; set; }
     private ClaimsPrincipal authUser;
     private bool isAuthenticated = false;
-    public MyODataContext _gODContext;
+    public MyODataContext curODContext;
 
+    public EventCallback<PendingState> OnPendingStateChanged { get; set; }
     public Gxorga curOrga = new Gxorga();
     private EditContext edOrgContext;
     private EditContext edFixContext;
@@ -913,8 +915,8 @@
     Gsglne? editingCol = null;
     bool isEdingCol = false;
     //GENERATION
-    
-    
+
+
     private MarkupString mesAflGen = new MarkupString(""), mesAflSup = new MarkupString("");
 
     //row GFIX
@@ -937,19 +939,61 @@
     private int? savYrng = 0, savJacc = 0, savJenr = 0, savEta = 0;
     //private string DisabledClass => isDisabled ? "disabled" : "";
     //Guard
-    private int pendingCount => _guard.HasPendingChanges() ?
-        _gODContext.Context.Entities.Count(e => e.State != EntityStates.Unchanged) : 0;
+    //Guard
+    private int _nbChanges = 0;
+    private IDisposable? _locationHandler;
 
-    private async Task SaveAllAsync()
+    //private int pendingCount => _guard.HasPendingChanges() ?
+    //    curODContext.Context.Entities.Count(e => e.State != EntityStates.Unchanged) : 0;
+
+    private async Task CancelAllChanges()
     {
-        await _guard.FlushAsync();
+        Console.WriteLine("🗑️ CancelAllChanges START");
+
+        await _guard.CancelChangesAsync();  // 🔥 AWAIT - blocks until done
+
+        Imessage = "CancelAllChanges successfully";
+        StateHasChanged();
+        Console.WriteLine($"✅ CancelAllChanges END - Pending: {_guard.GetPendingChangesCount()}");
+    }
+
+    private async Task SaveAllChanges()
+    {
+        Console.WriteLine($"🔄 SaveAllChanges START: {_guard.GetPendingChangesCount()}");
+
+        _guard.DiscardAllUnconfirmedAdds();
+
+        if (!_guard.HasPendingChanges())
+        {
+            Imessage = "No changes to save";
+            StateHasChanged();
+            return;
+        }
+
+        try
+        {
+            await curODContext.Context.SaveChangesAsync();
+            Imessage = "✅ Save successful";
+        }
+        catch (Exception ex)
+        {
+            Imessage = $"❌ Save failed: {ex.Message}";
+            await _guard.CancelChangesAsync();  // Also await here!
+        }
+
         StateHasChanged();
     }
-    private void CancelAllChanges()
-    {
-        _guard.CancelChanges();
-        StateHasChanged();
-    }
+
+    // private async Task SaveAllAsync()
+    // {
+    //     await _guard.FlushAsync();
+    //     StateHasChanged();
+    // }
+    // private void CancelAllChanges()
+    // {
+    //     _guard.CancelChanges();
+    //     StateHasChanged();
+    // }
     protected override async Task OnInitializedAsync()
     {
         //prise valeurs parent
@@ -960,10 +1004,10 @@
         if (!isAuthenticated)
         {
             Console.WriteLine("Authentication in Orga Utilisateur ECHEC");
-            _navmanager.RegisterLocationChangingHandler(async args =>
+            _navManager.RegisterLocationChangingHandler(async args =>
             {
                 args.PreventNavigation();
-                _navmanager.NavigateTo("/login");
+                _navManager.NavigateTo("/login");
             });
             return;
         }
@@ -991,11 +1035,11 @@
         //load WebApi entities
         // try
         // {
-        //     _gODContext = await _contextFactory.CreateAsync(); // Use factory
-        //     _guard.AttachContext(_gODContext);
+        //     curODContext = await _contextFactory.CreateAsync(); // Use factory
+        //     _guard.AttachContext(curODContext);
 
         //     var expand = "Gsgfixes,Gsglnes";
-        //     var dxorgas = await _gODContext.LoadFilteredAsync<Gxorga>(expand: expand);
+        //     var dxorgas = await curODContext.LoadFilteredAsync<Gxorga>(expand: expand);
         //     curOrga = dxorgas.FirstOrDefault();
         //     if (curOrga != null) 
         //     {
@@ -1020,13 +1064,13 @@
 
         // // try
         // // {
-        // //     _gODContext = await _contextFactory.CreateAsync();
-        // //     _guard.AttachContext(_gODContext);
+        // //     curODContext = await _contextFactory.CreateAsync();
+        // //     _guard.AttachContext(curODContext);
 
         // //     string expand = "Gsgfixes,Gsglnes";
 
         // //     // Load just the entity by key
-        // //     curOrga = await _gODContext.LoadFilteredAsync<Gxorga>(
+        // //     curOrga = await curODContext.LoadFilteredAsync<Gxorga>(
         // //         filter: g => g.Idorg == key,  // ✅ lambda expression
         // //         expand: expand
         // //     ).ContinueWith(t => t.Result.FirstOrDefault());
@@ -1050,11 +1094,21 @@
 
         try
         {
-            _gODContext = await _contextFactory.CreateAsync();
-            _guard.AttachContext(_gODContext);
-            int key = _usrBag.Idorg;
+            curODContext = await _contextFactory.CreateAsync();
+            _guard.AttachContext(curODContext);
             // ✅ Use key-based query instead of filtered collection
-            curOrga = await _gODContext.GetByKeyAsync<Gxorga>(key, "Gxorgas", "Gsgfixes,Gsglnes");
+            //curOrga = await curODContext.GetByKeyAsync<Gxorga>(_usrBag.Idorg, "Gxorgas");
+            //if (curOrga == null) return;
+            //             curOrga = await curODContext.GetByKeyAsync<Gxorga>(
+            //     _usrBag.Idorg,
+            //     "Gxorgas",
+            //     "gsgfixes,gsglnes"
+            // );
+            // curOrga = curODContext.GetByKeyAsync<Gxorga>($"Gxorgas({key})")
+            //     .AddQueryOption("$expand", "gsgfixes,gsglnes");
+
+            int key = _usrBag.Idorg;
+            curOrga = await curODContext.GetByKeyAsync<Gxorga>(key, "Gxorgas", "Gsgfixes,Gsglnes");
             if (curOrga != null)
             {
                 Console.WriteLine("curOrga loaded by key");
@@ -1096,11 +1150,101 @@
                     .Where(p => p.PropertyType == typeof(Gxorga))
                     .Select(p => p.Name)
                     .FirstOrDefault() ?? "NO NAVIGATION PROPERTY!");
+                // Register "add-edit-delete mode" predicate for existing entities
+                _guard.RegisterUnconfirmedPredicate<Gxorga>(o => o.Xedt1 == -1);
+                _guard.RegisterUnconfirmedPredicate<Gsgfix>(x => x.Xadd1 == -1 || x.Xedt1 == -1 || x.Xdel1 == -1);
+                _guard.RegisterUnconfirmedPredicate<Gsglne>(e => e.Xadd1 == -1 || e.Xedt1 == -1 || e.Xdel1 == -1);
+                _nbChanges = _guard.GetPendingChangesCount();  // Initial value
             }
         }
         catch (Exception ex)
         {
             Console.WriteLine($"Problem EntityManagement: {ex.Message}");
+        }
+        finally {
+            isLoading = false;
+            Console.WriteLine($"isLoading state :{isLoading}");
+        }
+    }
+    protected override void OnAfterRender(bool firstRender)
+    {
+        if (firstRender)
+        {
+            _locationHandler = _navManager.RegisterLocationChangingHandler(OnLocationChangingAsync);
+            Console.WriteLine("📌 LocationChangingHandler registered");
+        }
+    }
+    // private async ValueTask OnLocationChangingAsync(LocationChangingContext context)
+    // {
+    //     _guard.DiscardAllUnconfirmedAdds();
+
+    //     if (!_guard.HasConfirmedPendingChanges()) return;
+    //     if (context.TargetLocation == "/") return;
+
+    //     context.PreventNavigation();
+
+    //     var save = await _jsRuntime.InvokeAsync<bool>("confirm", "Save changes?");
+    //     if (save)
+    //     {
+    //         try
+    //         {
+    //             await _guard.FlushAsync();
+    //             // 🔥 MISSING: Navigate after success!
+    //             _navManager.NavigateTo("/", forceLoad: false);
+    //         }
+    //         catch
+    //         {
+    //             _guard.CancelChanges();
+    //         }
+    //     }
+    //     else
+    //     {
+    //         _guard.CancelChanges();
+    //     }
+    // }
+
+    private async ValueTask OnLocationChangingAsync(LocationChangingContext context)
+    {
+        Console.WriteLine($"🌐 Intercepted: {context.TargetLocation}");
+
+        // Discard unconfirmed first
+        _guard.DiscardAllUnconfirmedAdds();
+
+        // Allow if no pending changes
+        if (!_guard.HasPendingChanges())
+        {
+            Console.WriteLine("✅ Clean - allowing navigation");
+            return; // Blazor continues automatically
+        }
+
+        // Normalize path
+        var absoluteUri = _navManager.ToAbsoluteUri(context.TargetLocation);
+        var relative = _navManager.ToBaseRelativePath(absoluteUri.ToString());
+
+        // Intercept navigation because there are confirmed changes
+        context.PreventNavigation();
+        Console.WriteLine("🚫 Showing confirm dialog");
+
+        try
+        {
+            var save = await _JsRUN.InvokeAsync<bool>("confirm", "Save changes?");
+            if (save)
+            {
+                await _guard.FlushAsync();
+                Console.WriteLine("💾 Saved - resuming navigation");
+                _navManager.NavigateTo(context.TargetLocation, forceLoad: false);
+            }
+            else
+            {
+                _guard.CancelChangesAsync();
+                Console.WriteLine("❌ Cancelled - staying put");
+                // Do NOT call NavigateTo here → user stays on current page
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"❌ Error: {ex.Message}");
+            _guard.CancelChangesAsync();
         }
     }
 
@@ -1228,8 +1372,46 @@
             IMyBas = 7;
         }
     }
+    //EDITING Gxorga (orga)
+    public async Task StartOrgEdit()
+    {
+        curOrga.Xedt1 = -1;  //editing
+        isEdOrg = true;
+    }
+    public async Task CancEOrg()
+    {
+        curOrga.Xedt1 = 0;
+        isEdOrg = false;
+    }
+    private async Task ConfEOrg()
+    {
+        //if (!ValidateOrg(curOrga)) return;
+
+        if (curOrga.Idorg > 0)
+        {
+            curOrga.Xedt1 = 0;
+            try
+            {
+                curODContext.Context.AttachTo("Gxorgas", curOrga);
+            }
+            catch (InvalidOperationException)
+            {
+                // Already tracked, safe to ignore
+            }
+            curODContext.Context.UpdateObject(curOrga);
+            //GorgEdRowguid = Guid.Empty;
+
+            isEdOrg = false;
+            //EdOrgRowguid = Guid.Empty;
+
+            //isEdingOrg = false;
+            //editingOrg = null;
+            //isEdingOrg = false;
+            Console.WriteLine("Gsgfix marked as Modified");
+        }
+    }
     //EDITING Gsgfix (dom)
-    void EditGdom(Gsgfix myafil)
+    void StartDomEdit(Gsgfix myafil)
     {
         myafil.Xedt1 = -1; //editing
         curGfix = myafil;
@@ -1245,9 +1427,8 @@
         } else {
             return;
         }
-        curGfix.Xedt1 = -1; //editing
         isEdingAfl = true;
-        
+
         isEdDom = true;
         EdDomRowguid = myafil.Rowguid;
 
@@ -1255,14 +1436,14 @@
     }
     void CancGdom(Gsgfix mytfl)
     {
+        mytfl.Xadd1 = 0;
+        mytfl.Xedt1 = 0;
         EmptyGfix();
-
         GfixEdRowguid = Guid.Empty;
-        
+
         isEdDom = false;
         EdDomRowguid = Guid.Empty;
-        
-        mytfl.Xedt1 = 0;
+
         isEdingAfl = false;
         editingAfl = null;
         curGfix = new();
@@ -1270,23 +1451,25 @@
     }
     private async Task ConfGdom(Gsgfix myfix)
     {
-        if (myfix.Xseq != 0)
+        if (myfix.Xseq > 0)
         {
+            myfix.Xedt1 = 0;
+            myfix.Xadd1 = 0;
+            myfix.Xdel1 = 0;
             try
             {
-                _gODContext.Context.AttachTo("Gsgfixes", myfix);
+                curODContext.Context.AttachTo("Gsgfixes", myfix);
             }
             catch (InvalidOperationException)
             {
                 // Already tracked, safe to ignore
             }
-            _gODContext.Context.UpdateObject(myfix);
+            curODContext.Context.UpdateObject(myfix);
             GfixEdRowguid = Guid.Empty;
-            
+
             isEdDom = false;
             EdDomRowguid = Guid.Empty;
-            
-            myfix.Xedt1 = 0;
+
             isEdingAfl = false;
             editingAfl = null;
             isEdingAfl = false;
@@ -1294,32 +1477,33 @@
         }
     }
     //EDITING Gsgfix (afl)
-    void EditGafl(Gsgfix myafil)
+    void StartAflEdit(Gsgfix myafil)
     {
-            myafil.Xedt1 = -1; //editing
-            curGfix = myafil;
-            if (myafil.Gvars == 21 && (myafil.Itb == 1 || myafil.Itb == 2 || myafil.Itb == 3))
-            { //lim
-                RefilGdom(myafil);
-            }
-            else if (myafil.Gvars == 3 && myafil.Itb == 5)
-            { //afil
-                RefilGafl(myafil);
-            }
-            else
-            {
-                return;
-            }
-            curGfix.Xedt1 = -1; //editing
-            isEdingAfl = true;
+        myafil.Xedt1 = 0; //editing
+        curGfix = myafil;
+        if (myafil.Gvars == 21 && (myafil.Itb == 1 || myafil.Itb == 2 || myafil.Itb == 3))
+        { //lim
+            RefilGdom(myafil);
+        }
+        else if (myafil.Gvars == 3 && myafil.Itb == 5)
+        { //afil
+            RefilGafl(myafil);
+        }
+        else
+        {
+            return;
+        }
+        isEdingAfl = true;
 
-            isEdAfl = true;
-            EdAflRowguid = myafil.Rowguid;
+        isEdAfl = true;
+        EdAflRowguid = myafil.Rowguid;
 
-            GfixEdRowguid = myafil.Rowguid;
+        GfixEdRowguid = myafil.Rowguid;
     }
     void CancGafl(Gsgfix mytfl)
     {
+        mytfl.Xadd1 = 0;
+        mytfl.Xedt1 = 0;
         EmptyGfix();
 
         GfixEdRowguid = Guid.Empty;
@@ -1327,7 +1511,6 @@
         isEdAfl = false;
         EdAflRowguid = Guid.Empty;
 
-        mytfl.Xedt1 = 0;
         isEdingAfl = false;
         editingAfl = null;
         curGfix = new();
@@ -1335,32 +1518,34 @@
     }
     private async Task ConfGafl(Gsgfix myfix)
     {
-        if (myfix.Xseq != 0)
+        if (myfix.Xseq > 0)
         {
+            myfix.Xedt1 = 0;
+            myfix.Xadd1 = 0;
+            myfix.Xdel1 = 0;
             try
             {
-                _gODContext.Context.AttachTo("Gsgfixes", myfix);
+                curODContext.Context.AttachTo("Gsgfixes", myfix);
             }
             catch (InvalidOperationException)
             {
                 // Already tracked, safe to ignore
             }
-            _gODContext.Context.UpdateObject(myfix);
+            curODContext.Context.UpdateObject(myfix);
             GfixEdRowguid = Guid.Empty;
 
             isEdAfl = false;
             EdAflRowguid = Guid.Empty;
 
-            myfix.Xedt1 = 0;
             isEdingAfl = false;
             editingAfl = null;
             isEdingAfl = false;
             Console.WriteLine("Gsgfix marked as Modified");
         }
     }
-    void EditGcol(Gsglne mycol)
+    void StartColEdit(Gsglne mycol)
     {
-        mycol.Xedt1 = 0;
+        mycol.Xedt1 = -1; //editing
         editingCol = mycol;
         savOliba = mycol.Oliba;
         savOabg = mycol.Oabg;
@@ -1380,19 +1565,18 @@
         //     Eta = myafil.Eta,
         // };
         // //init edition
-        // draftTfl.Xedt1 = -1;
-        mycol.Xedt1 = -1;
+        // draftTfl.Xadd1 = 0;
         isEdCol = true;
         EdColRowguid = mycol.Rowguid;
 
-        
+
         isEdingCol = true;
         GlneEdRowguid = mycol.Rowguid;
     }
     void CancGcol(Gsglne mycol)
     {
         mycol.Xedt1 = 0;
-
+        mycol.Xadd1 = 0;
         isEdCol = false;
         EdColRowguid = Guid.Empty;
 
@@ -1403,6 +1587,8 @@
     }
     void ConfGcol(Gsglne mycol)
     {
+        mycol.Xedt1 = 0;
+        mycol.Xadd1 = 0;
         if (isEdingCol)
         {
 
@@ -1452,15 +1638,13 @@
             }
             if (yaeuModif)
             {
-                if (!_gODContext.GetAllTrackedEntities().Any(e => e.Entity == mycol))
+                if (!curODContext.GetAllTrackedEntities().Any(e => e.Entity == mycol))
                 {
-                    _gODContext.AttachTo("Gsglnes", mycol);
+                    curODContext.AttachTo("Gsglnes", mycol);
                 }
-                _gODContext.UpdateObject(mycol);
+                curODContext.UpdateObject(mycol);
             }
         }
-        mycol.Xedt1 = 0;
-
         isEdCol = false;
         EdColRowguid = Guid.Empty;
 
@@ -1529,10 +1713,10 @@
     //EDITING Gsglne (colonne)
     void EditGlne(Gsglne myclne)
     {
-        myclne.Xedt1 = -1; //editing
+        myclne.Xadd1 = 0; //editing
         curGlne = myclne;
         RefilGlne(myclne);
-        curColVM.Xedt1 = -1; //editing
+        curColVM.Xadd1 = 0; //editing
         isEdingCol = true;
         GlneEdRowguid = myclne.Rowguid;
     }
@@ -1542,7 +1726,7 @@
 
         GlneEdRowguid = Guid.Empty;
 
-        myclne.Xedt1 = 0;
+        myclne.Xadd1 = 0;
         isEdingCol = false;
         editingCol = null;
         curColVM = new();
@@ -1555,7 +1739,7 @@
     //         return;
 
     //     // 1️⃣ Find tracked instance by KEY
-    //     var tracked = _gODContext
+    //     var tracked = curODContext
     //         .GetAllTrackedEntities()
     //         .Select(e => e.Entity)
     //         .OfType<Gsglne>()
@@ -1567,7 +1751,7 @@
     //         // FK-only: ensure FK is set
     //         edited.Idgfix = curGfix.Idgfix;
 
-    //         _gODContext.Context.AddObject("Gsglnes", edited);
+    //         curODContext.Context.AddObject("Gsglnes", edited);
     //         tracked = edited;
     //     }
     //     else // EXISTING
@@ -1578,11 +1762,11 @@
     //         }
     //         else
     //         {
-    //             _gODContext.AttachTo("Gsglnes", edited);
+    //             curODContext.AttachTo("Gsglnes", edited);
     //             tracked = edited;
     //         }
 
-    //         _gODContext.UpdateObject(tracked);
+    //         curODContext.UpdateObject(tracked);
     //     }
 
     //     _guard.MarkDirty();
@@ -1595,7 +1779,7 @@
     //         return;
 
     //     // 1️⃣ Find tracked instance by KEY
-    //     var tracked = _gODContext
+    //     var tracked = curODContext
     //         .GetAllTrackedEntities()
     //         .Select(e => e.Entity)
     //         .OfType<Gsglne>()
@@ -1607,7 +1791,7 @@
     //         // Ensure parent navigation is set
     //         edited.IdorgNavigation = curOrga;   // or edited.Gxorga = curOrga
 
-    //         _gODContext.Context.AddObject("Gsglnes", edited);
+    //         curODContext.Context.AddObject("Gsglnes", edited);
     //         tracked = edited;
     //     }
     //     else // EXISTING entity
@@ -1618,27 +1802,27 @@
     //         }
     //         else
     //         {
-    //             _gODContext.AttachTo("Gsglnes", edited);
+    //             curODContext.AttachTo("Gsglnes", edited);
     //             tracked = edited;
     //         }
 
-    //         _gODContext.UpdateObject(tracked);
+    //         curODContext.UpdateObject(tracked);
     //     }
 
     //     _guard.MarkDirty();
     //     GlneEdRowguid = Guid.Empty;
-    //     edited.Xedt1 = 0;
+    //     edited.Xadd1 = 0;
     //     isEdingCol = false;
     //     editingCol = null;
     // }
     void AddGlneWithNav(Gsglne newGlne)
     {
-        if (!_gODContext.Context.Entities.Any(e => e.Entity == curGfix))
+        if (!curODContext.Context.Entities.Any(e => e.Entity == curGfix))
         {
-            _gODContext.AttachTo("Gsgfixes", curGfix);
+            curODContext.AttachTo("Gsgfixes", curGfix);
         }
 
-        _gODContext.Context.AddRelatedObject(
+        curODContext.Context.AddRelatedObject(
             curOrga,
             "Gsglnes",
             newGlne
@@ -1671,7 +1855,7 @@
     // }
     //EDITING Gsglne
 
-    
+
     // //DELETING
     // private void PromptTflDelete(Gsgfix myafil)
     // {
@@ -1751,7 +1935,7 @@
     // }
     // void CancGcol(Gsglne mycol)
     // {
-    //     mycol.Xedt1 = 0;
+    //     mycol.Xadd1 = 0;
     //     isEdingCol = false;
     //     editingCol = null;
     //     //draftTfl = null;
@@ -1808,14 +1992,14 @@
     //         }
     //         if (yaeuModif)
     //         {
-    //             if (!_gODContext.GetAllTrackedEntities().Any(e => e.Entity == mycol))
+    //             if (!curODContext.GetAllTrackedEntities().Any(e => e.Entity == mycol))
     //             {
-    //                 _gODContext.AttachTo("Gsglnes", mycol);
+    //                 curODContext.AttachTo("Gsglnes", mycol);
     //             }
-    //             _gODContext.UpdateObject(mycol);
+    //             curODContext.UpdateObject(mycol);
     //         }
     //     }
-    //     mycol.Xedt1 = 0;
+    //     mycol.Xadd1 = 0;
     //     isEdingCol = false;
     //     GlneEdRowguid = Guid.Empty;
     //     editingCol = null;
@@ -1926,54 +2110,49 @@
         isGenDelTfl = false;
     }
     //manage SAVING
-    private async Task EdtAll()
-    {
-        allEnable = true;
-    }
-    //Gxorga (Gxorga)
-    public async Task EdtEOrg()
-    {
-        isEdOrg = true;
-    }
-    public async Task CancEOrg()
-    {
-        isEdOrg = false;
-    }
-    private async Task ConfEOrg()
-    {
-        if (curOrga.Idorg != 0)
-        {
-            try
-            {
-                _gODContext.Context.AttachTo("Gxorgas", curOrga);
-            }
-            catch (InvalidOperationException)
-            {
-                // Already tracked, safe to ignore
-            }
+    // private async Task EdtAll()
+    // {
+    //     allEnable = true;
+    // }
+    // private async Task ConfEOrg()
+    // {
+    //     if (curOrga.Idorg != 0)
+    //     {
+    //         try
+    //         {
+    //             curODContext.Context.AttachTo("Gxorgas", curOrga);
+    //         }
+    //         catch (InvalidOperationException)
+    //         {
+    //             // Already tracked, safe to ignore
+    //         }
+    //         curODContext.Context.UpdateObject(curOrga);
+    //         Console.WriteLine("Gxorga marked as Modified");
+    //     }
 
-            _gODContext.Context.UpdateObject(curOrga);
-            Console.WriteLine("Gxorga marked as Modified");
-        }
-        isEdOrg = false;
-    }
+    //     curOrga.Xadd1 = 0;
+    //     isEdOrg = false;
+    // }
     //Gsgfix (Doc and Afl)
-    
+
     private async Task ConfEAfl(Gsgfix myfix)
     {
-        if (myfix.Xseq != 0)
+        if (myfix.Xseq > 0)
         {
             try
             {
-                _gODContext.Context.AttachTo("Gsgfixes", myfix);
+                myfix.Xadd1 = 0;
+                myfix.Xedt1 = 0;
+                myfix.Xdel1 = 0;
+                curODContext.Context.AttachTo("Gsgfixes", myfix);
             }
             catch (InvalidOperationException)
             {
                 // Already tracked, safe to ignore
             }
-            _gODContext.Context.UpdateObject(myfix);
+            curODContext.Context.UpdateObject(myfix);
             GfixEdRowguid = Guid.Empty;
-            myfix.Xedt1 = 0;
+            myfix.Xadd1 = 0;
             isEdingAfl = false;
             editingAfl = null;
             Console.WriteLine("Gsgfix marked as Modified");
@@ -1981,20 +2160,23 @@
     }
     public async Task ConfECol(Gsglne mycol)
     {
-        if (mycol.Id != 0)
+        if (mycol.Id > 0)
         {
+            mycol.Xedt1 = 0;
+            mycol.Xadd1 = 0;
+            mycol.Xdel1 = 0;
             try
             {
-                _gODContext.Context.AttachTo("Gsglnes", mycol);
+                curODContext.Context.AttachTo("Gsglnes", mycol);
             }
             catch (InvalidOperationException)
             {
                 // Already tracked, safe to ignore
             }
 
-            _gODContext.Context.UpdateObject(mycol);
+            curODContext.Context.UpdateObject(mycol);
             GlneEdRowguid = Guid.Empty;
-            mycol.Xedt1 = 0;
+            mycol.Xadd1 = 0;
             isEdingCol = false;
             editingCol = null;
             isEdingCol = false;
@@ -2015,13 +2197,13 @@
 
     // public async Task SavAll()
     // {
-    //     bool hasChanges = _gODContext.Context.Entities.Any(e =>
+    //     bool hasChanges = curODContext.Context.Entities.Any(e =>
     //         e.State == EntityStates.Added ||
     //         e.State == EntityStates.Modified ||
     //         e.State == EntityStates.Deleted);
     //     if (!hasChanges)
     //         return;
-    //     await _gODContext.Context.SaveChangesAsync();
+    //     await curODContext.Context.SaveChangesAsync();
     //     allEnable = false;
     // }
     private void ToggleGlneFiltering()
@@ -2145,6 +2327,6 @@
     }
     void NavigateBack()
     {
-        _navmanager.NavigateTo("/");
+        _navManager.NavigateTo("/");
     }
 }
