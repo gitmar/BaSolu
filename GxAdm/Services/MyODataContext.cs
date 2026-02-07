@@ -57,7 +57,7 @@ namespace GxAdm.Services
         // NEW: For PendingChangesGuard integration
         IEnumerable<EntityDescriptor> GetPendingChanges();  // ← Native OData type
         //IEnumerable<EntityEntry> GetPendingChanges();
-        void ClearPendingChanges();
+        //void ClearPendingChanges();
 
         // Collections
         DataServiceCollection<T> CreateTrackedCollection<T>(

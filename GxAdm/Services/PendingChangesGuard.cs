@@ -51,17 +51,10 @@ namespace GxAdm.Services
             Console.WriteLine($"🔍 Marked unconfirmed {typeof(T).Name}: {entity?.GetHashCode()}");
             //NotifyChanges();
         }
-        // 🔥 NEW GENERIC METHODS - Child entities use these
-        //public void RegisterUnconfirmedPredicate<T>(Func<T, bool> isUnconfirmed) where T : class
-        //{
-        //    _unconfirmedPredicates[typeof(T)] = obj => isUnconfirmed((T)obj);
-        //    Console.WriteLine($"✅ Registered {typeof(T).Name}: Xxxx == -1");
-        //}
         public void DiscardAllUnconfirmedAdds()
         {
             if (_ctx?.Context?.Entities == null) return;
 
-            // 🔥 UNIVERSAL: ALL registered predicates (Plngen/Rubvar/Rubfmt/...)
             foreach (var kvp in _unconfirmedPredicates)
             {
                 var entityType = kvp.Key;
@@ -70,18 +63,54 @@ namespace GxAdm.Services
                 var unconfirmed = _ctx.Context.Entities
                     .Where(e => e.Entity != null &&
                                entityType.IsInstanceOfType(e.Entity) &&
-                               predicate(e.Entity))
+                               predicate(e.Entity) &&
+                               _unconfirmedAdds.Contains(e.Entity))  // 🔥 FIXED!
                     .ToList();
-
                 foreach (var entityDesc in unconfirmed)
                 {
-                    _ctx.Context.Detach(entityDesc);
+                    _ctx.Context.Detach(entityDesc);  // 🔥 Primary action
                     Console.WriteLine($"🚫 Discarded unconfirmed {entityType.Name}");
+
+                    // Optional: Clean tracking (safe remove)
+                    try
+                    {
+                        _unconfirmedAdds.Remove((dynamic)entityDesc.Entity);
+                    }
+                    catch
+                    {
+                        // Ignore - already detached
+                    }
                 }
             }
 
             NotifyChanges();
         }
+
+        //public void DiscardAllUnconfirmedAdds()
+        //{
+        //    if (_ctx?.Context?.Entities == null) return;
+
+        //    // 🔥 UNIVERSAL: ALL registered predicates (Plngen/Rubvar/Rubfmt/...)
+        //    foreach (var kvp in _unconfirmedPredicates)
+        //    {
+        //        var entityType = kvp.Key;
+        //        var predicate = kvp.Value;
+
+        //        var unconfirmed = _ctx.Context.Entities
+        //            .Where(e => e.Entity != null &&
+        //                       entityType.IsInstanceOfType(e.Entity) &&
+        //                       predicate(e.Entity))
+        //            .ToList();
+
+        //        foreach (var entityDesc in unconfirmed)
+        //        {
+        //            _ctx.Context.Detach(entityDesc);
+        //            Console.WriteLine($"🚫 Discarded unconfirmed {entityType.Name}");
+        //        }
+        //    }
+
+        //    NotifyChanges();
+        //}
         // 🔥 Your existing methods - UNCHANGED
         public static bool IsPendingState(EntityStates state) =>
             state == EntityStates.Added || state == EntityStates.Modified || state == EntityStates.Deleted;
@@ -92,6 +121,43 @@ namespace GxAdm.Services
         public int GetPendingChangesCount() =>
             (_ctx?.Context?.Entities.Count(e => IsPendingState(e.State)) ?? 0) + _childPendingCount;
 
+        public async Task ClearPendingChangesAsync()
+        {
+            Console.WriteLine("🔄 ClearPendingChangesAsync START");
+
+            try
+            {
+                // 🔥 1. Get ALL pending entities (Added/Modified/Deleted)
+                var pendingEntities = _ctx?.Context.Entities
+                    .Where(e => e.State != EntityStates.Unchanged)
+                    .ToList();
+
+                Console.WriteLine($"📊 Found {pendingEntities.Count} pending entities");
+
+                // 🔥 2. Detach EACH entity async-safe
+                foreach (var entityEntry in pendingEntities)
+                {
+                    try
+                    {
+                        _ctx?.Detach(entityEntry.Entity);
+                        Console.WriteLine($"✅ Detached: {entityEntry.Entity.GetType().Name}");
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine($"⚠️ Failed to detach {entityEntry.Entity}: {ex.Message}");
+                    }
+                }
+
+                // 🔥 3. Force context refresh (async-safe)
+                await Task.Yield();  // Yield to UI thread
+
+                Console.WriteLine($"✅ ClearPendingChangesAsync COMPLETE - Cleared {pendingEntities.Count}");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"❌ ClearPendingChangesAsync FAILED: {ex.Message}");
+            }
+        }
         //public bool HasConfirmedPendingChanges()
         //{
         //    if (_ctx?.Context == null) return _childPendingCount > 0;
@@ -136,30 +202,13 @@ namespace GxAdm.Services
             });
         }
         public void NotifyChanges() => OnChanges?.Invoke();
-
-        // 🔥 Your existing FlushAsync - ENHANCED
-        public async Task FlushAsync()
-        {
-            DiscardAllUnconfirmedAdds();  // All entity types
-
-            if (!HasConfirmedPendingChanges())
-            {
-                Console.WriteLine("✅ No confirmed changes to flush");
-                return;
-            }
-
-            await _ctx.Context.SaveChangesAsync();
-        }
-
-        // 🔥 Navigation guard - Uses HasConfirmedPendingChanges
-
         public async Task CancelChangesAsync()
         {
             Console.WriteLine("🗑️ CancelChangesAsync START");
 
             // 1. Detach ALL current entities
             DiscardAllUnconfirmedAdds();
-
+            Console.WriteLine($"{GetPendingChangesCount}");
             if (_ctx?.Context != null)
             {
                 var allPending = _ctx.Context.Entities
@@ -182,6 +231,56 @@ namespace GxAdm.Services
 
             Console.WriteLine($"✅ CancelChangesAsync END - Fresh context");
         }
+        public async Task FlushAsync(bool skipUnconfirmedDiscard = false)
+        {
+            Console.WriteLine($"1- Pending: {GetPendingChangesCount()}");
+
+            if (!skipUnconfirmedDiscard)
+                DiscardAllUnconfirmedAdds();
+
+            if (!HasConfirmedPendingChanges())
+            {
+                Console.WriteLine("✅ No confirmed changes to flush");
+                return;
+            }
+
+            Console.WriteLine($"2- Saving {GetPendingChangesCount()} confirmed changes");
+            await _ctx.Context.SaveChangesAsync();
+            Console.WriteLine($"3- After save: {GetPendingChangesCount()}");
+        }
+
+        // 🔥 Your existing FlushAsync - ENHANCED
+        //public async Task FlushAsync()
+        //{
+        //    Console.WriteLine($"1- {GetPendingChangesCount()}");
+        //    DiscardAllUnconfirmedAdds();  // All entity types twice verification
+
+        //    if (!HasConfirmedPendingChanges())
+        //    {
+        //        Console.WriteLine("✅ No confirmed changes to flush");
+        //        return;
+        //    }
+        //    Console.WriteLine($"2- {GetPendingChangesCount()}");
+        //    await _ctx.Context.SaveChangesAsync();
+        //    Console.WriteLine($"3- {GetPendingChangesCount()}");
+        //}
+        public async Task FlushConfirmedChangesOnlyAsync()
+        {
+            ////Console.WriteLine($"Saving ONLY confirmed changes: {GetConfirmedPendingChangesCount()}");
+
+            // 🔥 NO DiscardAllUnconfirmedAdds() here
+            if (!HasConfirmedPendingChanges())
+            {
+                Console.WriteLine("✅ No confirmed changes to flush");
+                return;
+            }
+
+            await _ctx.Context.SaveChangesAsync();
+            ////ClearConfirmedChanges();  // Reset flags only
+        }
+        // 🔥 Navigation guard - Uses HasConfirmedPendingChanges
+
+        
 
         //private void NotifyChanges() => OnChanges?.Invoke();
         public event Action<int>? OnChildPendingChanged;
@@ -198,6 +297,7 @@ namespace GxAdm.Services
             // ✅ CORRECT ValueTask return
             return ValueTask.CompletedTask;  // NOT 'default'
         }
+
         public void DiscardUnconfirmedAdds<T>() where T : class
         {
             if (_ctx?.Context?.Entities == null) return;

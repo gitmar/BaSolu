@@ -63,32 +63,34 @@ else
                             toChild="@toChild"
                             curODContext="@curODContext">
                                 <ChildContent>
-                                    <h2 class="child-box">Hello RECEPTION</h2>
                                 </ChildContent>
                             </PrubSaie>
                         }
                         else if (_chxMenu == 2)
                         { //CALCULS
-                            <PrubCalc @ref="mygclc" 
-                            toMenu="@_chxMenu"
-                            curOrga="@curOrga"
-                            toChild="@toChild"
-                            curODContext="@curODContext">
-                                <ChildContent>
-                                </ChildContent>
-                            </PrubCalc>
+                          <PrubCalc @ref="mygclc"
+                                    toMenu="@_chxMenu"
+                                    @bind-NbChanges="_nbChanges"
+                                    _guard="_guard"
+                                    curOrga="@curOrga"
+                                    toChild="@toChild"
+                                    curODContext="@curODContext">
+                              <ChildContent>
+                              </ChildContent>
+                          </PrubCalc>
                         }
                         else if (_chxMenu == 3)
                         { //VENTILATIONS
-                            <PrubVent @ref="mygvnt"
-                            toMenu="@_chxMenu"
-                            curOrga="@curOrga"
-                            toChild="@toChild"
-                            curODContext="@curODContext">
-                                <ChildContent>
-                                    @* <h2 class="child-box">Hello RECEPTION</h2> *@
-                                </ChildContent>
-                            </PrubVent>
+                          <PrubVent @ref="mygvnt"
+                                    toMenu="@_chxMenu"
+                                    @bind-NbChanges="_nbChanges"
+                                    _guard="_guard"
+                                    curOrga="@curOrga"
+                                    toChild="@toChild"
+                                    curODContext="@curODContext">
+                              <ChildContent>
+                              </ChildContent>
+                        </PrubVent>
                         }
                         else if (_chxMenu == 4)
                         { //CALCULS
@@ -112,9 +114,6 @@ else
             </Button>
         </div>
     </div>
-    @* <div>
-        ⚠️ @_guard.GetPendingChangesCount() unsaved changes
-    </div> *@
 }
 
 @code {
@@ -122,30 +121,17 @@ else
     public MyODataContext curODContext;
     public Gxorga curOrga = new Gxorga();
     public MyShareVars toChild = new();
-    //private bool allEnable = false;
 
     private PrubSaie mygsai = new();
     private PrubCalc mygclc = new();
     private PrubVent mygvnt = new();
 
-    [Parameter]
-    public RenderFragment Pstands { get; set; }
-    [Parameter]
-    public RenderFragment Pmaties { get; set; }
-    [Parameter]
-    public RenderFragment Pgrilles { get; set; }
-    [Parameter]
-    public RenderFragment Pschemas { get; set; }
     [CascadingParameter]
     private Task<AuthenticationState>? AuthState { get; set; }
     public ClaimsPrincipal authUser;
-    //public bool isAuthenticated = false;
-    //in DATA
-    public List<Gsgfix> LsTables = new List<Gsgfix>();
-
-    public string _strOrga = "", _curSigle = "", MImessage = "", strmeta = "", strmeta2 = "";
 
     //menus
+    private string strComp = "Prog.SAISIE";
     public List<GxMenuItem> MenuItems = new()
     {
         new GxMenuItem { Id = 1, Text = "Prog.SAISIE", Icon = "bi bi-box-arrow-in-down" },
@@ -155,13 +141,7 @@ else
     };
     public List<GxGroupe> Groupes = new();
 
-    //entities load
-    private IEnumerable<Gxorga> _lsOrgas = new List<Gxorga>();
-    //Gestion CRUD Entete
-    public bool EnrEnable = false;
     public string Imessage = "";
-
-    //GlobModels
     public Userbag _usrBag = new Userbag();
     public List<Gpfixe> LsFixes = new();
     public List<Gpdivh> LsDivs = new();
@@ -170,12 +150,9 @@ else
     public List<Gpvar> LtTabls = new();
     public List<Gpvar> LsTabls = new();
     private int _gIdTie = 0, _chxGpe = 0, _chxMenu = 1;
-    private string strComp = "Prog.SAISIE";
+
     //modal management
     private string SidebarStyle = "width: 200px;";
-    private bool IsOpen = true;
-    private bool FirstLoadCompleted = false;
-    private bool ContentLoaded = false;
 
     //Guard
     private int _nbChanges = 0;
@@ -189,7 +166,6 @@ else
             var authState = await AuthState;
             if (!authState.User.Identity.IsAuthenticated) return;
             // Load lightweight user data FIRST
-            // 2. Load user data
             _usrBag = await _sessionContext.GetUserbagAsync();
             _gIdTie = _usrBag.Usorga.Gdtie;
             LsVars = _usrBag.Usorga.Uvars.ToList();
@@ -202,11 +178,6 @@ else
             _guard.AttachContext(curODContext);
             // Load ONLY parent entity
             int key = _usrBag.Idorg;
-            // curOrga = await curODContext.GetByKeyAsync<Gxorga>(
-            //     key,
-            //     "Gxorgas",
-            //     "Plngens($expand=Rubvars($expand=Rubfmts))"
-            // );
             // Typed expansion for Plngens -> Rubvars -> Rubfmts
             string expand = ODataQueryHelper.Expand<Gxorga, IEnumerable<Plngen>>(
                 o => o.Plngens) + "($expand=Rubvars($expand=Rubfmts))";
@@ -218,11 +189,10 @@ else
             // ✅ Plngens exists as empty DataServiceCollection - USE I
             Console.WriteLine($"READY: Orga loaded, Plngens={curOrga.Plngens?.Count ?? 0}");
             if (curOrga == null) return;
-
             // Populate child data immediately
             toChild = new MyShareVars
             {
-              authUser = authState.User,
+                authUser = authState.User,
                 isAuthenticated = true,
                 LsDivs = await _rendAgres.LoadOrgaPostes(),
                 LsVars = LsVars.ToList(),
@@ -248,81 +218,45 @@ else
             Console.WriteLine("📌 LocationChangingHandler registered");
         }
     } 
-    // private async ValueTask On55LocationChangingAsync(LocationChangingContext context)
-    // {
-    //     _guard.DiscardAllUnconfirmedAdds();
-
-    //     if (!_guard.HasConfirmedPendingChanges()) return;
-    //     if (context.TargetLocation == "/") return;
-
-    //     context.PreventNavigation();
-
-    //     try
-    //     {
-    //         // 🔥 Custom JS - NO cast errors!
-    //         var save = await _JsRUN.InvokeAsync<bool>("confirm", "Save changes?");
-
-    //         if (save)
-    //         {
-    //             await _guard.FlushAsync();
-    //             _navManager.NavigateTo("/", forceLoad: false);
-    //         }
-    //         else
-    //         {
-    //             _guard.CancelChanges();
-    //         }
-    //     }
-    //     catch (Exception ex)
-    //     {
-    //         Console.WriteLine($"❌ Error: {ex.Message}");
-    //         _guard.CancelChanges();
-    //     }
-    // }
-
     private async ValueTask OnLocationChangingAsync(LocationChangingContext context)
     {
         Console.WriteLine($"🌐 Intercepted: {context.TargetLocation}");
 
-        // Discard unconfirmed first
-        _guard.DiscardAllUnconfirmedAdds();
-
-        // Allow if no pending changes
         if (!_guard.HasPendingChanges())
         {
             Console.WriteLine("✅ Clean - allowing navigation");
-            return; // Blazor continues automatically
+            return;
         }
 
-        // Normalize path
-        var absoluteUri = _navManager.ToAbsoluteUri(context.TargetLocation);
-        var relative = _navManager.ToBaseRelativePath(absoluteUri.ToString());
-
-        // Intercept navigation because there are confirmed changes
-        context.PreventNavigation();
-        Console.WriteLine("🚫 Showing confirm dialog");
+        context.PreventNavigation();  // BLOCK navigation
+        Console.WriteLine($"🚫 Showing confirm dialog {context.TargetLocation}");
 
         try
         {
-            var save = await _JsRUN.InvokeAsync<bool>("confirm", "Save changes?");
+            var save = await _JsRUN.InvokeAsync<bool>("confirm", "Save changes before leaving?");
+
             if (save)
             {
-                await _guard.FlushAsync();
-                Console.WriteLine("💾 Saved - resuming navigation");
+                // 🔥 YES: SaveAllChanges() → Navigate away
+                await SaveAllChanges();
+                Console.WriteLine("💾 Saved - navigating away");
                 _navManager.NavigateTo(context.TargetLocation, forceLoad: false);
             }
             else
             {
-                _guard.CancelChangesAsync();
-                Console.WriteLine("❌ Cancelled - staying put");
-                // Do NOT call NavigateTo here → user stays on current page
+                // 🔥 NO: STAY on page - NO CancelAllChanges()
+                Console.WriteLine("❌ User chose NO - staying on page");
+                // User stays - sees SaveAllChanges() / CancelAllChanges() buttons ENABLED
+                // They can now manually: SaveAllChanges() OR CancelAllChanges()
             }
         }
         catch (Exception ex)
         {
             Console.WriteLine($"❌ Error: {ex.Message}");
-            _guard.CancelChangesAsync();
+            // Safety: stay on page
         }
     }
+
     private async Task SelMenu(int noM)
     {
         _chxMenu = noM;
@@ -340,80 +274,25 @@ else
         Console.WriteLine("PAS 2");
         await Task.Delay(1);
     }
-    // private async Task CancelAllChanges()
-    // {
-    //     Console.WriteLine("🗑️ CancelAllChanges");
-
-    //     // 🔥 SINGLE LINE - service handles everything
-    //     _guard.CancelChangesAsync();
-    //     Imessage = "CancelAllChanges successfully";
-    //     StateHasChanged();
-    // }
-
-    // private async Task SaveAllChanges()
-    // {
-    //     Console.WriteLine($"🔄 SaveAllChanges: {_guard.GetPendingChangesCount()} pending");
-
-    //     // 🔥 DISCARD ALL unconfirmed rows FIRST (Plngen + Rubvar + ANY type)
-    //     _guard.DiscardAllUnconfirmedAdds();
-
-    //     if (!_guard.HasPendingChanges())
-    //     {
-    //         Console.WriteLine("✅ No confirmed changes - nothing to save");
-    //         StateHasChanged();
-    //         return;
-    //     }
-    //     try
-    //     {
-    //         await curODContext.Context.SaveChangesAsync();
-    //         Console.WriteLine("✅ Save successful");
-    //         Imessage = "✅ Save successful";
-    //     }
-    //     catch (Exception ex)
-    //     {
-    //         Console.WriteLine($"❌ Save failed: {ex.Message}");
-    //         // Optionally revert changes
-    //         _guard.CancelChangesAsync();
-    //         Imessage = $"❌ Save failed: {ex.Message}";
-    //     }
-    //     _guard.NotifyChanges();
-    //     StateHasChanged();
-    // }
     private async Task CancelAllChanges()
     {
         Console.WriteLine("🗑️ CancelAllChanges START");
-
         await _guard.CancelChangesAsync();  // 🔥 AWAIT - blocks until done
-
         Imessage = "CancelAllChanges successfully";
         StateHasChanged();
         Console.WriteLine($"✅ CancelAllChanges END - Pending: {_guard.GetPendingChangesCount()}");
     }
-
     private async Task SaveAllChanges()
     {
-        Console.WriteLine($"🔄 SaveAllChanges START: {_guard.GetPendingChangesCount()}");
-
-        _guard.DiscardAllUnconfirmedAdds();
-
-        if (!_guard.HasPendingChanges())
-        {
-            Imessage = "No changes to save";
-            StateHasChanged();
-            return;
-        }
-
-        try
+        _guard.DiscardUnconfirmedAdds<Plngen>();
+        _guard.DiscardUnconfirmedAdds<Rubvar>();
+        _guard.DiscardUnconfirmedAdds<Rubfmt>();
+        if (_guard.HasPendingChanges())
         {
             await curODContext.Context.SaveChangesAsync();
-            Imessage = "✅ Save successful";
         }
-        catch (Exception ex)
-        {
-            Imessage = $"❌ Save failed: {ex.Message}";
-            await _guard.CancelChangesAsync();  // Also await here!
-        }
-
+        _guard.NotifyChanges();
+        Imessage = "✅ Save successful";
         StateHasChanged();
     }
 
@@ -425,39 +304,7 @@ else
         _guard.DiscardUnconfirmedAdds<Rubvar>();
         _guard.DiscardUnconfirmedAdds<Rubfmt>();
     }
-    private void DiscardAllUnconfirmed()
-    {
-        _guard.DiscardUnconfirmedAdds<Plngen>();
-        _guard.DiscardUnconfirmedAdds<Rubvar>();
-        _guard.DiscardUnconfirmedAdds<Rubfmt>();
-    }
-    private async ValueTask OnLocationChanging(LocationChangingContext args)
-    {
-        // Already handled by child Dispose() - but defensive check
-        if (HasOnlyUnconfirmed())
-        {
-            DiscardAllKnownUnconfirmed();
-            return;
-        }
-        await SaveAllChanges();
-    }
-
-    private bool HasOnlyUnconfirmed()
-    {
-        return _guard.GetPendingChangesCount() == 0
-            && curODContext.Context.Entities.Any(e =>
-                e.Entity is Plngen p && p.Xadd1 == -1 ||
-                e.Entity is Rubvar r && r.Xadd1 == -1 ||
-                e.Entity is Rubfmt f && f.Xadd1 == -1);
-    }
-
-    private void DiscardAllKnownUnconfirmed()
-    {
-        _guard.DiscardUnconfirmedAdds<Plngen>();
-        _guard.DiscardUnconfirmedAdds<Rubvar>();
-        _guard.DiscardUnconfirmedAdds<Rubfmt>();
-    }
-
+   
     void NavigateBack()
     {
         _navManager.NavigateTo("/");

@@ -19,6 +19,7 @@ namespace GxAdm.Services
             _localStorage = localStorage;
             _clients["AUTHClient"] = _httpClientFactory.CreateClient("AUTHClient");
             _clients["OFFLClient"] = _httpClientFactory.CreateClient("OFFLClient");
+            _clients["ODataClient"] = _httpClientFactory.CreateClient("ODataClient");
             // Add others as needed
 
         }
