@@ -195,7 +195,7 @@ namespace GxAdm.Services
                 try
                 {
                     Userbag = JsonConvert.DeserializeObject<Userbag>(json);
-                    Console.Write("Userbag got {json}");
+                    Console.WriteLine("Userbag got {json}");
                 }
                 catch (Exception ex)
                 {

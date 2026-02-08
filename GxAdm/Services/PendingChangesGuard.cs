@@ -183,7 +183,7 @@ namespace GxAdm.Services
                     return isUnconfirmed(entity);
                 return false;  // Not this type → not unconfirmed
             };
-            Console.WriteLine($"✅ Registered {typeof(T).Name}: Xxxx == -1");
+            //Console.WriteLine($"✅ Registered {typeof(T).Name}: Xxxx == -1");
         }
         public bool HasConfirmedPendingChanges()
         {
@@ -317,38 +317,4 @@ namespace GxAdm.Services
             }
         }
     }
-
-    //public void DiscardAllUnconfirmedAdds()
-    //{
-    //    if (_ctx?.Context == null) return;
-
-    //    // 🔥 ALL unconfirmed via predicate dictionary
-    //    foreach (var kvp in _unconfirmedPredicates)
-    //    {
-    //        var entityType = kvp.Key;
-    //        var predicate = kvp.Value;
-
-    //        var unconfirmed = _ctx.Context.Entities
-    //            .Where(e => e.Entity != null &&
-    //                       entityType.IsInstanceOfType(e.Entity) &&
-    //                       predicate(e.Entity))
-    //            .ToList();
-
-    //        foreach (var entityDesc in unconfirmed)
-    //        {
-    //            _ctx.Context.Detach(entityDesc);
-    //            Console.WriteLine($"🚫 Discarded unconfirmed {entityType.Name}");
-    //        }
-    //    }
-
-    //    // Plus Plngen fallback (backward compatible)
-    //    var plngenUnconfirmed = _ctx.Context.Entities
-    //        .Where(e => e.Entity is Plngen p && (p.Xadd1 == -1 || p.Xedt1 == -1))
-    //        .ToList();
-
-    //    foreach (var entityDesc in plngenUnconfirmed)
-    //        _ctx.Context.Detach(entityDesc);
-
-    //    NotifyChanges();
-    //}
 }

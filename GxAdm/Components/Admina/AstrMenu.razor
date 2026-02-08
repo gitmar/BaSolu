@@ -9,6 +9,7 @@
 @using GxAdm.ClieModels
 @using GxAdm.Components.Admina.Astreins
 @using GxAdm.Services
+@using GxAdm.StaticHelpers
 @using GxShared.Sess
 @using GxShared.Others
 @using GxWapi.DaModels
@@ -294,14 +295,22 @@
         {
             curODContext = await _contextFactory.CreateAsync();
             _guard.AttachContext(curODContext);
-            // //curOrga et Gsgfixes, Gsglnes
-            // var expand = "Gsgfixes," + "Gsglnes";
-            // //Expression<Func<Gxorga, bool>> ogfilter = g => g.Idorg == _usrBag.Idorg;
-            // var dxorgas = await curODContext.LoadFilteredAsync<Gxorga>(expand: expand);
-            // pisa = 3;
             int key = _usrBag.Idorg;
             // ✅ Use key-based query instead of filtered collection
-            curOrga = await curODContext.GetByKeyAsync<Gxorga>(key, "Gxorgas", "Gsgfixes,Gsglnes");
+            string expandGsgfixes = ODataQueryHelper.Expand<Gxorga, IEnumerable<Gsgfix>>(o => o.Gsgfixes);
+            string expandGsglnes = ODataQueryHelper.Expand<Gxorga, IEnumerable<Gsglne>>(o => o.Gsglnes);
+            //string expandPlngens = ODataQueryHelper.Expand<Gxorga, IEnumerable<Plngen>>(o => o.Plngens);
+            // Build nested expansions
+            //string expandPlngensNested = expandPlngens + "($expand=Rubvars,Rubhies)";
+            // Combine them
+            string expand = string.Join(",", expandGsgfixes, expandGsglnes);
+            curOrga = await curODContext.GetByKeyAsync<Gxorga>(
+                key,
+                "Gxorgas",
+                expand
+            );
+            
+            //curOrga = await curODContext.GetByKeyAsync<Gxorga>(key, "Gxorgas", "Gsgfixes,Gsglnes");
             if (curOrga == null)
             {
                 Console.WriteLine("No organization found for the current user.");
@@ -312,7 +321,7 @@
             //curOrga Plngens and rubvars
             var expand2 = "Rubvars";
             var dxplns = await curODContext.LoadFilteredAsync<Plngen>(expand: expand2);
-            pisa = 4;
+            ////pisa = 4;
             Console.WriteLine($"nb de plans :  {dxplns.Count()}");
         }catch(Exception ex)
         {

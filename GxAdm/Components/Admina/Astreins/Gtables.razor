@@ -88,343 +88,324 @@ else
                             </div>
                         </div>
                         <div class="row">
-                            <ul class="nav nav- flex-nowrap" id="cltabs" role="tablist">
-                                <li class="nav-item" role="tab">
-                                    <a class="nav-link show active" id="lst" data-bs-toggle="tab"
-                                       href="#nav-lists" role="tab" aria-controls="nav-lists"
-                                       aria-selected="false">
-                                        Liste
-                                    </a>
-                                </li>
-                                <li class="nav-item" role="tab">
-                                    <a class="nav-link" id="cnt" data-bs-toggle="tab"
-                                       href="#nav-conts" role="tab" aria-controls="nav-conts"
-                                       aria-selected="true">
-                                        Contenu
-                                    </a>
-                                </li>
-                                <li class="nav-item" role="tab">
-                                    <a class="nav-link" id="ses" data-bs-toggle="tab"
-                                       href="#nav-sesios" role="tab" aria-controls="nav-sesios"
-                                       aria-selected="true">
-                                        Sessions
-                                    </a>
-                                </li>
-                            </ul>
-                            <div class="tab-content" id="tab-contenu">
-                                @if (MyDaRubrs.Any() && IMyBas != 0 && IMyGtbl != 0)
-                                {
-                                    <!--Liste principale des tables-->
-                                    <div class="row tab-pane fade show active" id="nav-lists" role="tabpanel" aria-labelledby="lst">
-                                        <Grid TItem="Gsgfix"
-                                              Data="@MyDaRubrs"
-                                              AllowPaging="true"
-                                              OnRowClick="@OnPaterRowClick"
-                                              AllowRowClick="true"
-                                              Responsive="true">
-                                            <GridColumns>
-                                                <GridColumn TItem="Gsgfix" HeaderText="No">
-                                                    <ChildContent Context="item">
-                                                        @if (item.Elea == 0)
-                                                        {
-                                                            <span>?@item.Iui</span>
-                                                        }
-                                                        else
-                                                        {
-                                                            @item.Elea
-                                                        }
-                                                    </ChildContent>
-                                                </GridColumn>
-                                                <GridColumn TItem="Gsgfix" HeaderText="Designation">
-                                                    <ChildContent Context="item">
-                                                        @if (EditingManRowGuid == item.Rowguid)
-                                                        {
-
-                                                            <InputText @bind-Value="draftMan.Liba" />
-                                                        }
-                                                        else
-                                                        {
-                                                            @item.Liba
-                                                        }
-                                                </ChildContent>
-                                                </GridColumn>
-                                                <GridColumn TItem="Gsgfix" HeaderText="abrege">
-                                                    <ChildContent Context="item">
-                                                        @if (EditingManRowGuid == item.Rowguid)
-                                                        {
-
-                                                            <InputText @bind-Value="draftMan.Abg" />
-                                                        }
-                                                        else
-                                                        {
-                                                            @item.Abg
-                                                        }
-                                                   </ChildContent>
-                                                </GridColumn>
-                                                <GridColumn TItem="Gsgfix" HeaderText="Eta">
-                                                    <ChildContent Context="item">
-                                                        @if (EditingManRowGuid == item.Rowguid)
-                                                        {
-                                                            <InputSelect @bind-Value="draftMan.Eta">
-                                                                <option class="jchx" value="0">?choisir</option>
-                                                                @foreach (var tob in LsFixes.Where(ut => ut.Gvars == 32 && ut.Itb == 1 && ut.Elea != 0))
-                                                                {
-                                                                    <option value="@tob.Elea">@tob.Liba</option>
-                                                                }
-                                                            </InputSelect>
-                                                        }
-                                                        else
-                                                        {
-                                                            <InputSelect @bind-Value="item.Eta" disabled="true">
-                                                                <option class="jchx" value="0">?choisir</option>
-                                                                @foreach (var tob in LsFixes.Where(ut => ut.Gvars == 32 && ut.Itb == 1 && ut.Elea != 0))
-                                                                {
-                                                                    <option value="@tob.Elea">@tob.Liba</option>
-                                                                }
-                                                            </InputSelect>
-                                                        }
-                                                    </ChildContent>
-                                                </GridColumn>
-                                                <GridColumn TItem="Gsgfix" HeaderText="actions">
-                                                    <HeaderContent>
-                                                        @if (allEnable)
-                                                        {
-                                                            @if (IMyGtbl == 2)
+                            @if (MyDaRubrs.Any() && IMyBas != 0 && IMyGtbl != 0)
+                            {
+                            <Tabs>
+                                    <Tab Title="Liste">
+                                        <Content>
+                                            <!--Liste des tables-->
+                                            <Grid TItem="Gsgfix"
+                                                  Data="@MyDaRubrs"
+                                                  AllowPaging="true"
+                                                  OnRowClick="@OnPaterRowClick"
+                                                  AllowRowClick="true"
+                                                  Responsive="true">
+                                                <GridColumns>
+                                                    <GridColumn TItem="Gsgfix" HeaderText="No">
+                                                        <ChildContent Context="item">
+                                                            @if (item.Elea == 0)
                                                             {
-                                                                <button class="btn btn-primary btn-sm" @onclick="() => OpenAddPater()">
-                                                                    ➕ Add
-                                                                </button>
+                                                                <span>?@item.Iui</span>
                                                             }
-                                                        }
-                                                        else
-                                                        {
-                                                            <button class="btn btn-info btn-sm" @onclick="ToggleFiltering">
-                                                                @(isFilteringEnabled ? "🚫 Out Filter" : "🔍 In Filter")
-                                                            </button>
-                                                        }
-                                                    </HeaderContent>
-                                                    <ChildContent Context="item">
-                                                        @if (EdTblRowguid != item.Rowguid)
-                                                        {
-                                                            <button class="btn btn-warning btn-sm 
-                                                                @(!isEdTbl && !isDlTbl && EdTblRowguid != item.Rowguid ? "" : "disabled-action")" 
-                                                                @onclick="() => Edit1tbl(item)">
-                                                                ✏️ Edit
-                                                            </button>
-                                                        }
-                                                        else
-                                                        {
-                                                            <button class="btn btn-sm btn-success" @onclick="() => Conf1tbl(item)">
-                                                                💾 Save
-                                                            </button>
-                                                            <button class="btn btn-sm btn-secondary" @onclick="() => Canc1tbl(item)">
-                                                                ❎ Cancel
-                                                            </button>
-                                                        }
-                                                        @if (DlTblRowguid != item.Rowguid)
-                                                        {
-                                                            @if (IMyGtbl == 2)
+                                                            else
                                                             {
-                                                                <button class="btn btn-sm btn-outline-danger @(!isDlTbl && !isEdTbl && DlTblRowguid != item.Rowguid ? "" : "disabled-action")"
-                                                                    @onclick="() => Dele1tbl(item)">🗑️ Delete
-                                                                </button>
+                                                                @item.Elea
                                                             }
-                                                        } else
-                                                        {
-                                                            <button class="btn btn-warning btn-sm @(DlTblRowguid == item.Rowguid ? "" : "disabled-action")" @onclick="() => ConfD1tbl(item)">Confirm</button>
-                                                            <button class="btn btn-danger btn-sm @(DlTblRowguid == item.Rowguid ? "" : "disabled-action")" @onclick="() => CancD1tbl(item)">Annul</button>
-                                                        }
-                                                    </ChildContent>
-                                                </GridColumn>
-                                            </GridColumns>
-                                        </Grid>
-                                    </div>
-                                    <!--Contenu des tables-->
-                                    <div class="row tab-pane fade" id="nav-conts" role="tabpanel" aria-labelledby="cnt">
-                                        <Grid TItem="Gsgfix"
-                                              Data="@MyDaRubrs"
-                                              AllowDetailView="true"
-                                              OnRowClick="@OnPaterRowClick"
-                                              AllowRowClick="true"
-                                              AllowPaging="true"
-                                              Responsive="true">
-                                            <GridColumns>
-                                                <GridColumn TItem="Gsgfix" HeaderText="No">
-                                                    <ChildContent Context="item">@item.Elea</ChildContent>
-                                                </GridColumn>
-                                                <GridColumn TItem="Gsgfix" HeaderText="Designation">
-                                                    <ChildContent Context="item">@item.Liba</ChildContent>
-                                                </GridColumn>
-                                                <GridColumn TItem="Gsgfix" HeaderText="abrege">
-                                                    <ChildContent Context="item">@item.Abg</ChildContent>
-                                                </GridColumn>
-                                                <GridColumn TItem="Gsgfix" HeaderText="actions">
-                                                    <HeaderContent>
-                                                        @if (!allEnable)
-                                                        {
-                                                            <button class="btn btn-info btn-sm" @onclick="ToggleFiltering">
-                                                                @(isFilteringEnabled ? "🚫 Out Filter" : "🔍 In Filter")
-                                                            </button>
-                                                        }
-                                                    </HeaderContent>
-                                                </GridColumn>
-                                            </GridColumns>
-                                            <GridDetailView TItem="Gsgfix" Context="parent">
-                                                <Grid TItem="Gsglne"
-                                                      Data="@MyDaChilds.Where(uc => uc.Pseq == parent.Xseq).ToList()"
-                                                      AllowPaging="true"
-                                                      Responsive="true">
-                                                    <GridColumns>
-                                                        <GridColumn TItem="Gsglne" HeaderText="No">
-                                                            <ChildContent Context="item">
-                                                                @if(item.Elea == 0)
+                                                        </ChildContent>
+                                                    </GridColumn>
+                                                    <GridColumn TItem="Gsgfix" HeaderText="Designation">
+                                                        <ChildContent Context="item">
+                                                            @if (EditingManRowGuid == item.Rowguid)
+                                                            {
+
+                                                                <InputText @bind-Value="draftMan.Liba" />
+                                                            }
+                                                            else
+                                                            {
+                                                                @item.Liba
+                                                            }
+                                                        </ChildContent>
+                                                    </GridColumn>
+                                                    <GridColumn TItem="Gsgfix" HeaderText="abrege">
+                                                        <ChildContent Context="item">
+                                                            @if (EditingManRowGuid == item.Rowguid)
+                                                            {
+
+                                                                <InputText @bind-Value="draftMan.Abg" />
+                                                            }
+                                                            else
+                                                            {
+                                                                @item.Abg
+                                                            }
+                                                        </ChildContent>
+                                                    </GridColumn>
+                                                    <GridColumn TItem="Gsgfix" HeaderText="Eta">
+                                                        <ChildContent Context="item">
+                                                            @if (EditingManRowGuid == item.Rowguid)
+                                                            {
+                                                                <InputSelect @bind-Value="draftMan.Eta">
+                                                                    <option class="jchx" value="0">?choisir</option>
+                                                                    @foreach (var tob in LsFixes.Where(ut => ut.Gvars == 32 && ut.Itb == 1 && ut.Elea != 0))
+                                                                    {
+                                                                        <option value="@tob.Elea">@tob.Liba</option>
+                                                                    }
+                                                                </InputSelect>
+                                                            }
+                                                            else
+                                                            {
+                                                                <InputSelect @bind-Value="item.Eta" disabled="true">
+                                                                    <option class="jchx" value="0">?choisir</option>
+                                                                    @foreach (var tob in LsFixes.Where(ut => ut.Gvars == 32 && ut.Itb == 1 && ut.Elea != 0))
+                                                                    {
+                                                                        <option value="@tob.Elea">@tob.Liba</option>
+                                                                    }
+                                                                </InputSelect>
+                                                            }
+                                                        </ChildContent>
+                                                    </GridColumn>
+                                                    <GridColumn TItem="Gsgfix" HeaderText="actions">
+                                                        <HeaderContent>
+                                                            @if (allEnable)
+                                                            {
+                                                                @if (IMyGtbl == 2)
                                                                 {
-                                                                  <span>?@item.Iui</span>  
-                                                                } else
-                                                                {
-                                                                    @item.Elea
-                                                                }
-                                                            </ChildContent>
-                                                        </GridColumn>
-                                                        <GridColumn TItem="Gsglne" HeaderText="Designation">
-                                                            <ChildContent Context="item">
-                                                                @if (EditingLneRowGuid == item.Rowguid)
-                                                                {
-                                                                    <InputText @bind-Value="draftLne.Liba" />
-                                                                }
-                                                                else
-                                                                {
-                                                                    @item.Liba
-                                                                }
-                                                            </ChildContent>
-                                                        </GridColumn>
-                                                        <GridColumn TItem="Gsglne" HeaderText="Abrege">
-                                                            <ChildContent Context="item">
-                                                                @if (EditingLneRowGuid == item.Rowguid)
-                                                                {
-                                                                    <InputText @bind-Value="draftLne.Abg" />
-                                                                }
-                                                                else
-                                                                {
-                                                                    @item.Abg
-                                                                }
-                                                            </ChildContent>
-                                                        </GridColumn>
-                                                        <GridColumn TItem="Gsglne" HeaderText="Dpdce">
-                                                            <ChildContent Context="item">
-                                                                @if (EditingLneRowGuid == item.Rowguid)
-                                                                {
-                                                                    <InputSelect @bind-Value="draftLne.Ydpd">
-                                                                        <option class="jchx" value="0">?choisir</option>
-                                                                        @foreach (var utb in curOrga.Gsglnes.Where(uv => uv.Pseq == parent.Xseq && (uv.Otyp == 4) && uv.Id < item.Id))
-                                                                        {
-                                                                            <option value="@utb.Id">@utb.Liba</option>
-                                                                        }
-                                                                    </InputSelect>
-                                                                }
-                                                                else
-                                                                {
-                                                                    <InputSelect @bind-Value="item.Ydpd" disabled="true">
-                                                                        <option class="jchx" value="0">aucun</option>
-                                                                        @foreach (var utb in curOrga.Gsglnes.Where(uv => uv.Pseq == parent.Xseq && (uv.Otyp == 4) && uv.Id < item.Id))
-                                                                        {
-                                                                            <option value="@utb.Id">@utb.Liba</option>
-                                                                        }
-                                                                    </InputSelect>
-                                                                }
-                                                            </ChildContent>
-                                                        </GridColumn>
-                                                        <GridColumn TItem="Gsglne" HeaderText="Eta">
-                                                            <ChildContent Context="item">
-                                                                @if (EditingLneRowGuid == item.Rowguid)
-                                                                {
-                                                                    <InputSelect @bind-Value="draftLne.Eta">
-                                                                        <option class="jchx" value="0">?choisir</option>
-                                                                        @foreach (var tob in LsFixes.Where(ut => ut.Gvars == 32 && ut.Itb == 1 && ut.Elea != 0))
-                                                                        {
-                                                                            <option value="@tob.Elea">@tob.Liba</option>
-                                                                        }
-                                                                    </InputSelect>
-                                                                }
-                                                                else
-                                                                {
-                                                                    <InputSelect @bind-Value="item.Eta" disabled="true">
-                                                                        <option class="jchx" value="0">?choisir</option>
-                                                                        @foreach (var tob in LsFixes.Where(ut => ut.Gvars == 32 && ut.Itb == 1 && ut.Elea != 0))
-                                                                        {
-                                                                            <option value="@tob.Elea">@tob.Liba</option>
-                                                                        }
-                                                                    </InputSelect>
-                                                                }
-                                                            </ChildContent>
-                                                        </GridColumn>
-                                                        <GridColumn TItem="Gsglne" HeaderText="Actions" Filterable="false">
-                                                            <HeaderContent>
-                                                                @if (allEnable)
-                                                                {
-                                                                    <button class="btn btn-primary btn-sm" @onclick="() => OpenAddChild(parent)">
+                                                                    <button class="btn btn-primary btn-sm" @onclick="() => OpenAddPater()">
                                                                         ➕ Add
                                                                     </button>
                                                                 }
-                                                            </HeaderContent>
-                                                            <ChildContent Context="item">
-                                                                @if (EdElmRowguid != item.Rowguid)
+                                                            }
+                                                            else
+                                                            {
+                                                                <button class="btn btn-info btn-sm" @onclick="ToggleFiltering">
+                                                                    @(isFilteringEnabled ? "🚫 Out Filter" : "🔍 In Filter")
+                                                                </button>
+                                                            }
+                                                        </HeaderContent>
+                                                        <ChildContent Context="item">
+                                                            @if (EdTblRowguid != item.Rowguid)
+                                                            {
+                                                                <button class="btn btn-warning btn-sm
+                                                                                                @(!isEdTbl && !isDlTbl && EdTblRowguid != item.Rowguid ? "" : "disabled-action")"
+                                                                        @onclick="() => Edit1tbl(item)">
+                                                                    ✏️ Edit
+                                                                </button>
+                                                            }
+                                                            else
+                                                            {
+                                                                <button class="btn btn-sm btn-success" @onclick="() => Conf1tbl(item)">
+                                                                    💾 Save
+                                                                </button>
+                                                                <button class="btn btn-sm btn-secondary" @onclick="() => Canc1tbl(item)">
+                                                                    ❎ Cancel
+                                                                </button>
+                                                            }
+                                                            @if (DlTblRowguid != item.Rowguid)
+                                                            {
+                                                                @if (IMyGtbl == 2)
                                                                 {
-                                                                    <button class="btn btn-warning btn-sm 
-                                                                        @(!isEdElm && !isDlElm && EdElmRowguid != item.Rowguid ? "" : "disabled-action")" 
-                                                                            @onclick="() => Edit2tbl(item)">
-                                                                            ✏️ Edit
+                                                                    <button class="btn btn-sm btn-outline-danger @(!isDlTbl && !isEdTbl && DlTblRowguid != item.Rowguid ? "" : "disabled-action")"
+                                                                            @onclick="() => Dele1tbl(item)">
+                                                                        🗑️ Delete
                                                                     </button>
                                                                 }
-                                                                else
-                                                                {
-                                                                        <button class="btn btn-sm btn-success 
-                                                                            @(EdElmRowguid == item.Rowguid ? "" : "disabled-action")"
-                                                                            @onclick="() => Conf2tbl(item)">
+                                                            }
+                                                            else
+                                                            {
+                                                                <button class="btn btn-warning btn-sm @(DlTblRowguid == item.Rowguid ? "" : "disabled-action")" @onclick="() => ConfD1tbl(item)">Confirm</button>
+                                                                <button class="btn btn-danger btn-sm @(DlTblRowguid == item.Rowguid ? "" : "disabled-action")" @onclick="() => CancD1tbl(item)">Annul</button>
+                                                            }
+                                                        </ChildContent>
+                                                    </GridColumn>
+                                                </GridColumns>
+                                            </Grid>
+                                        </Content>
+                                    </Tab>
+                                    <Tab Title="Contenu">
+                                        <Content>
+                                            <!--Contenu des tables-->
+                                            <Grid TItem="Gsgfix"
+                                                  Data="@MyDaRubrs"
+                                                  AllowDetailView="true"
+                                                  OnRowClick="@OnPaterRowClick"
+                                                  AllowRowClick="true"
+                                                  AllowPaging="true"
+                                                  Responsive="true">
+                                                <GridColumns>
+                                                    <GridColumn TItem="Gsgfix" HeaderText="No">
+                                                        <ChildContent Context="item">@item.Elea</ChildContent>
+                                                    </GridColumn>
+                                                    <GridColumn TItem="Gsgfix" HeaderText="Designation">
+                                                        <ChildContent Context="item">@item.Liba</ChildContent>
+                                                    </GridColumn>
+                                                    <GridColumn TItem="Gsgfix" HeaderText="abrege">
+                                                        <ChildContent Context="item">@item.Abg</ChildContent>
+                                                    </GridColumn>
+                                                    <GridColumn TItem="Gsgfix" HeaderText="actions">
+                                                        <HeaderContent>
+                                                            @if (!allEnable)
+                                                            {
+                                                                <button class="btn btn-info btn-sm" @onclick="ToggleFiltering">
+                                                                    @(isFilteringEnabled ? "🚫 Out Filter" : "🔍 In Filter")
+                                                                </button>
+                                                            }
+                                                        </HeaderContent>
+                                                    </GridColumn>
+                                                </GridColumns>
+                                                <GridDetailView TItem="Gsgfix" Context="parent">
+                                                    <Grid TItem="Gsglne"
+                                                          Data="@MyDaChilds.Where(uc => uc.Pseq == parent.Xseq).ToList()"
+                                                          AllowPaging="true"
+                                                          Responsive="true">
+                                                        <GridColumns>
+                                                            <GridColumn TItem="Gsglne" HeaderText="No">
+                                                                <ChildContent Context="item">
+                                                                    @if (item.Elea == 0)
+                                                                    {
+                                                                        <span>?@item.Iui</span>
+                                                                    }
+                                                                    else
+                                                                    {
+                                                                        @item.Elea
+                                                                    }
+                                                                </ChildContent>
+                                                            </GridColumn>
+                                                            <GridColumn TItem="Gsglne" HeaderText="Designation">
+                                                                <ChildContent Context="item">
+                                                                    @if (EditingLneRowGuid == item.Rowguid)
+                                                                    {
+                                                                        <InputText @bind-Value="draftLne.Liba" />
+                                                                    }
+                                                                    else
+                                                                    {
+                                                                        @item.Liba
+                                                                    }
+                                                                </ChildContent>
+                                                            </GridColumn>
+                                                            <GridColumn TItem="Gsglne" HeaderText="Abrege">
+                                                                <ChildContent Context="item">
+                                                                    @if (EditingLneRowGuid == item.Rowguid)
+                                                                    {
+                                                                        <InputText @bind-Value="draftLne.Abg" />
+                                                                    }
+                                                                    else
+                                                                    {
+                                                                        @item.Abg
+                                                                    }
+                                                                </ChildContent>
+                                                            </GridColumn>
+                                                            <GridColumn TItem="Gsglne" HeaderText="Dpdce">
+                                                                <ChildContent Context="item">
+                                                                    @if (EditingLneRowGuid == item.Rowguid)
+                                                                    {
+                                                                        <InputSelect @bind-Value="draftLne.Ydpd">
+                                                                            <option class="jchx" value="0">?choisir</option>
+                                                                            @foreach (var utb in curOrga.Gsglnes.Where(uv => uv.Pseq == parent.Xseq && (uv.Otyp == 4) && uv.Id < item.Id))
+                                                                            {
+                                                                                <option value="@utb.Id">@utb.Liba</option>
+                                                                            }
+                                                                        </InputSelect>
+                                                                    }
+                                                                    else
+                                                                    {
+                                                                        <InputSelect @bind-Value="item.Ydpd" disabled="true">
+                                                                            <option class="jchx" value="0">aucun</option>
+                                                                            @foreach (var utb in curOrga.Gsglnes.Where(uv => uv.Pseq == parent.Xseq && (uv.Otyp == 4) && uv.Id < item.Id))
+                                                                            {
+                                                                                <option value="@utb.Id">@utb.Liba</option>
+                                                                            }
+                                                                        </InputSelect>
+                                                                    }
+                                                                </ChildContent>
+                                                            </GridColumn>
+                                                            <GridColumn TItem="Gsglne" HeaderText="Eta">
+                                                                <ChildContent Context="item">
+                                                                    @if (EditingLneRowGuid == item.Rowguid)
+                                                                    {
+                                                                        <InputSelect @bind-Value="draftLne.Eta">
+                                                                            <option class="jchx" value="0">?choisir</option>
+                                                                            @foreach (var tob in LsFixes.Where(ut => ut.Gvars == 32 && ut.Itb == 1 && ut.Elea != 0))
+                                                                            {
+                                                                                <option value="@tob.Elea">@tob.Liba</option>
+                                                                            }
+                                                                        </InputSelect>
+                                                                    }
+                                                                    else
+                                                                    {
+                                                                        <InputSelect @bind-Value="item.Eta" disabled="true">
+                                                                            <option class="jchx" value="0">?choisir</option>
+                                                                            @foreach (var tob in LsFixes.Where(ut => ut.Gvars == 32 && ut.Itb == 1 && ut.Elea != 0))
+                                                                            {
+                                                                                <option value="@tob.Elea">@tob.Liba</option>
+                                                                            }
+                                                                        </InputSelect>
+                                                                    }
+                                                                </ChildContent>
+                                                            </GridColumn>
+                                                            <GridColumn TItem="Gsglne" HeaderText="Actions" Filterable="false">
+                                                                <HeaderContent>
+                                                                    @if (allEnable)
+                                                                    {
+                                                                        <button class="btn btn-primary btn-sm" @onclick="() => OpenAddChild(parent)">
+                                                                            ➕ Add
+                                                                        </button>
+                                                                    }
+                                                                </HeaderContent>
+                                                                <ChildContent Context="item">
+                                                                    @if (EdElmRowguid != item.Rowguid)
+                                                                    {
+                                                                        <button class="btn btn-warning btn-sm
+                                                                                                                    @(!isEdElm && !isDlElm && EdElmRowguid != item.Rowguid ? "" : "disabled-action")"
+                                                                                @onclick="() => Edit2tbl(item)">
+                                                                            ✏️ Edit
+                                                                        </button>
+                                                                    }
+                                                                    else
+                                                                    {
+                                                                        <button class="btn btn-sm btn-success
+                                                                                                                        @(EdElmRowguid == item.Rowguid ? "" : "disabled-action")"
+                                                                                @onclick="() => Conf2tbl(item)">
                                                                             💾 Save
                                                                         </button>
                                                                         <button class="btn btn-sm btn-secondary
-                                                                            @(EdElmRowguid == item.Rowguid ? "" : "disabled-action")"
-                                                                            @onclick="() => Canc2tbl(item)">
+                                                                                                                        @(EdElmRowguid == item.Rowguid ? "" : "disabled-action")"
+                                                                                @onclick="() => Canc2tbl(item)">
                                                                             ❎ Cancel
                                                                         </button>
-                                                                }
-                                                                @if (DlElmRowguid != item.Rowguid)
-                                                                {
-                                                                    @if (IMyGtbl == 2)
+                                                                    }
+                                                                    @if (DlElmRowguid != item.Rowguid)
                                                                     {
-                                                                        <button class="btn btn-sm btn-outline-danger
-                                                                            @(!isDlElm && !isEdElm && DlElmRowguid != item.Rowguid ? "" : "disabled-action")"
-                                                                                @onclick="() => Dele2tbl(item)">
-                                                                            🗑️ Delete
+                                                                        @if (IMyGtbl == 2)
+                                                                        {
+                                                                            <button class="btn btn-sm btn-outline-danger
+                                                                                                                                    @(!isDlElm && !isEdElm && DlElmRowguid != item.Rowguid ? "" : "disabled-action")"
+                                                                                    @onclick="() => Dele2tbl(item)">
+                                                                                🗑️ Delete
+                                                                            </button>
+                                                                        }
+                                                                    }
+                                                                    else
+                                                                    {
+                                                                        <button class="btn btn-warning btn-sm
+                                                                                                                    @(DlElmRowguid == item.Rowguid ? "" : "disabled-action")"
+                                                                                @onclick="() => ConfD2tbl(item)">
+                                                                            Confirm
+                                                                        </button>
+                                                                        <button class="btn btn-danger btn-sm
+                                                                                                                    @(DlElmRowguid == item.Rowguid ? "" : "disabled-action")"
+                                                                                @onclick="() => CancD2tbl(item)">
+                                                                            Annul
                                                                         </button>
                                                                     }
-                                                                } else
-                                                                {
-                                                                    <button class="btn btn-warning btn-sm
-                                                                        @(DlElmRowguid == item.Rowguid ? "" : "disabled-action")"
-                                                                        @onclick="() => ConfD2tbl(item)">
-                                                                        Confirm
-                                                                    </button>
-                                                                    <button class="btn btn-danger btn-sm
-                                                                        @(DlElmRowguid == item.Rowguid ? "" : "disabled-action")"
-                                                                        @onclick="() => CancD2tbl(item)">
-                                                                        Annul
-                                                                    </button>
-                                                                }
-                                                            </ChildContent>
-                                                        </GridColumn>
-                                                    </GridColumns>
-                                                </Grid>
-                                            </GridDetailView>
-                                        </Grid>
-                                    </div>
-                                    <!--Liste des sessions-->
-                                    <div class="row tab-pane fade" id="nav-sesios" role="tabpanel" aria-labelledby="ses">
-                                        
-                                    </div>
-                                }
-                            </div>
+                                                                </ChildContent>
+                                                            </GridColumn>
+                                                        </GridColumns>
+                                                    </Grid>
+                                                </GridDetailView>
+                                            </Grid>
+                                        </Content>
+                                    </Tab>
+                            </Tabs>
+                            }
                         </div>
                     </EditForm>
                 }

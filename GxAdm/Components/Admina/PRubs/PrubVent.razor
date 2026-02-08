@@ -28,12 +28,12 @@
 @inject IJSRuntime _jsRun
 
 <!-- InscTiewComponent.razor -->
-<PageTitle>Prog.Saisie</PageTitle>
+<PageTitle>Prog.Ventilation</PageTitle>
 
 @if (isLoading)
 {
     <Progress class="progress mb-3">
-        <ProgressBar Width="30" Label="Prog.Saisie Loading..." Type="ProgressType.StripedAndAnimated" Color="ProgressColor.Primary" />
+        <ProgressBar Width="30" Label="Prog.Ventilation Loading..." Type="ProgressType.StripedAndAnimated" Color="ProgressColor.Primary" />
     </Progress>
 }
 else
@@ -939,9 +939,9 @@ else
 
     //Global
     private int _lgcdu = 0;
-    private int IMyGpln = 5; //type Programme
-    private int IMyDom = 0; //domaine 1Compta2Cumul
-    private int IMyVue = 1; //default vue Reel
+    private int IMyGpln = 5; //5Programme
+    private int IMyDom = 3; //3Compta4Cumul
+    private int IMyVue = 1; //1Reel2Virtuel
     private int IMyCtprog = 0, IMyCtrub = 0;
     private string atrTitle = "";
 
@@ -1052,7 +1052,7 @@ else
                 Console.WriteLine($"Plngens loaded: {curOrga.Plngens.Count}");
 
                 MyDaPlans = new ObservableCollection<Plngen>(
-                    curOrga.Plngens.Where(pl => pl.Ptyp == 5 && pl.Todom == IMyDom));
+                    curOrga.Plngens.Where(pl => pl.Ptyp == IMyGpln && pl.Todom == IMyDom));
             }
             else
             {
@@ -1061,9 +1061,9 @@ else
             }
 
             // Guard registration (safe)
-            _guard.RegisterUnconfirmedPredicate<Plngen>(p => p.Xadd1 == -1 || p.Xedt1 == -1 || p.Xdel1 == -1);
-            _guard.RegisterUnconfirmedPredicate<Rubvar>(r => r.Xadd1 == -1 || r.Xedt1 == -1 || r.Xdel1 == -1);
-            _guard.RegisterUnconfirmedPredicate<Rubfmt>(f => f.Xadd1 == -1 || f.Xedt1 == -1 || f.Xdel1 == -1);
+            // _guard.RegisterUnconfirmedPredicate<Plngen>(p => p.Xadd1 == -1 || p.Xedt1 == -1 || p.Xdel1 == -1);
+            // _guard.RegisterUnconfirmedPredicate<Rubvar>(r => r.Xadd1 == -1 || r.Xedt1 == -1 || r.Xdel1 == -1);
+            // _guard.RegisterUnconfirmedPredicate<Rubfmt>(f => f.Xadd1 == -1 || f.Xedt1 == -1 || f.Xdel1 == -1);
 
             atrTitle = "Saisie";
         }
@@ -1091,12 +1091,12 @@ else
             Iui =  lsnb, //nextSeq(1),
             Ptyp = IMyGpln,
             Todom = IMyDom,
-            Liba = "",
-            Abg = "",
-            Styp = 0,
-            Totyp = 0,
             Tovue = IMyVue,
             Toatr = 0,
+            Totyp = 0,
+            Styp = 0,
+            Liba = "",
+            Abg = "",
             Eta = 1,
             Xadd1 = -1,
             Xedt1 = 0,

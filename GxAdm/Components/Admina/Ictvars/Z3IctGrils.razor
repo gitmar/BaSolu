@@ -1,5 +1,5 @@
-﻿@page "/rubgrils"
-@layout ArubMenu
+﻿@page "/z3ictgrils"
+@layout IagrMenu
 
 @using System
 @using System.Collections.ObjectModel
@@ -28,12 +28,12 @@
 @inject IJSRuntime _jsRun
 
 <!-- InscTiewComponent.razor -->
-<PageTitle>Prog.Grille</PageTitle>
+<PageTitle>Prog.Saisie</PageTitle>
 
 @if (isLoading)
 {
     <Progress class="progress mb-3">
-        <ProgressBar Width="30" Label="Prog.Grille Loading..." Type="ProgressType.StripedAndAnimated" Color="ProgressColor.Primary" />
+        <ProgressBar Width="30" Label="Prog.Saisie Loading..." Type="ProgressType.StripedAndAnimated" Color="ProgressColor.Primary" />
     </Progress>
 }
 else
@@ -59,38 +59,17 @@ else
                 </div>
             </div>
             <div class="form-group">
-                <label class="fw-bold">Domaine :</label>
-                <InputSelect @bind-Value="ItkDom" class="me-3" style="width:auto">
-                    <option class="jchx" value="0">?domaine</option>
-                    @foreach (var tob in LsDoms) //LsFixes.Where(ut => ut.Gvars == 61 && ut.Itb == 1 & ut.Elea != 0))
-                    {
-                        <option value="@tob.Gp2" @onclick="() => SelPlanDom(tob.Gp2)">@tob.Liba</option>
-                    }
-                </InputSelect>
-                <label class="fw-bold">G.Tiers :</label>
-                <InputSelect @bind-Value="IMyGtie" class="me-3" style="width:auto">
-                    <option class="jchx" value="0">?gtiers</option>
-                    @foreach (var tob in LsGties)
-                    {
-                        <option value="@tob.Elea" @onclick="() => SelPlanTier(tob.Elea)">@tob.Liba</option>
-                    }
-                </InputSelect>
-                <label class="fw-bold">Attribut :</label>
-                <InputSelect @bind-Value="IMyAtr" class="me-3" style="width:auto">
-                    <option class="jchx" value="0">?util</option>
-                    @foreach (var tob in LsAtrs) //.Where(ut => ut.Gvars == 62 && ut.Itb == 1 && ut.Elea != 0 && ut.Gp2 == IMyDom))
-                    {
-                        <option value="@tob.Elea" @onclick="() => SelPlanAtr(tob.Elea)">@tob.Liba</option>
-                    }
-                </InputSelect>
-                <label class="fw-bold">Base :</label>
-                <InputSelect @bind-Value="IMyVue" class="me-3" style="width:auto">
-                    <option class="jchx" value="0">?util</option>
-                    @foreach (var tob in LsVues) //.Where(ut => ut.Gvars == 62 && ut.Itb == 1 && ut.Elea != 0 && ut.Gp2 == IMyDom))
-                    {
-                        <option value="@tob.Gp2" @onclick="() => SelPlanVue(tob.Elea)">@tob.Liba</option>
-                    }
-                </InputSelect>
+                <div class="btn btn-group">
+                    <label class="me-2">Plan :</label>
+                    <InputSelect @bind-Value="IMyPlan" class="me-3" style="width:auto">
+                        <option class="jchx" value="0">?plan</option>
+                        @foreach (var upl in LsPlans)
+                        {
+                            <option value="@upl.Id" @onclick="() => SelPlanDom(1)">@upl.Liba</option>
+                        }
+                    </InputSelect>
+                    <label class="fw-bold">@splnDom</label>
+                </div>
             </div>
             <div class="container-fluid-fixed-top">
                 @if (curOrga == null)
@@ -109,305 +88,91 @@ else
                             }
                         </div>
                         <div class="row">
-                            @if (IMyDom != 0 && ItkDom != 0 && IMyGtie !=0 && IMyAtr != 0 && IMyVue != 0)
+                            @if (IMyPlan != 0)
                             {
-                                <Grid TItem="Plngen"
-                                      Data="@MyDaPlans.Where(vu => vu.Todom == IMyDom && vu.Todkt == ItkDom && vu.Totyp == IMyGtie && vu.Toatr == IMyAtr &&  vu.Tovue == IMyVue)"
-                                      @key="PlanRenderKey"
+                                <Grid TItem="Actsaie"
+                                      Data="@MyDaActs.Where(ac => ac.IrubNavigation.Ipln == selPlan.Id)"
                                       AllowDetailView="true"
                                       AllowPaging="true"
-                                      RowClass="@((item) => GetPlnRowClass(item))"
-                                      Responsive="true">
+                                      Responsive="true"
+                                      AllowRowClick="true">
                                     <GridColumns>
-                                        <GridColumn TItem="Plngen" HeaderText="No" Class="xcol1">
-                                            <ChildContent Context="item">
-                                                @if (item.Xadd1 == -1)
-                                                {
-                                                    <span>@item?.Iui</span>
-                                                }
-                                                else
-                                                {
-                                                    <span>@(item.Xedt1 == -1 ? item?.Iui : (item?.Iui == 0 ? item?.Iele : item?.Iui))</span>
-                                                }
-                                            </ChildContent>
+                                        <GridColumn TItem="Actsaie" HeaderText="No">
+                                            <ChildContent Context="item">@item.Scdrub</ChildContent>
                                         </GridColumn>
-                                        <GridColumn TItem="Plngen" HeaderText="Designation" Class="xcol3">
+                                        <GridColumn TItem="Actsaie" HeaderText="Designation">
+                                            <ChildContent Context="item">@item.Liba</ChildContent>
+                                        </GridColumn>
+                                        <GridColumn TItem="Actsaie" HeaderText="abrege">
+                                            <ChildContent Context="item">@item.Abg</ChildContent>
+                                        </GridColumn>
+                                        <GridColumn TItem="Actsaie" HeaderText="actions">
                                             <ChildContent Context="item">
-                                                @if (EdPlnRowguid == item.Rowguid)
-                                                {
 
-                                                    <InputText @bind-Value="draftPln.Liba" />
-                                                }
-                                                else
-                                                {
-                                                    @item.Liba
-                                                }
-                                            </ChildContent>
-                                        </GridColumn>
-                                        <GridColumn TItem="Plngen" HeaderText="abrege" Class="xcol2">
-                                            <ChildContent Context="item">
-                                                @if (EdPlnRowguid == item.Rowguid)
-                                                {
-
-                                                    <InputText @bind-Value="draftPln.Abg" />
-                                                }
-                                                else
-                                                {
-                                                    @item.Abg
-                                                }
-                                            </ChildContent>
-                                        </GridColumn>
-                                        <GridColumn TItem="Plngen" HeaderText="Formule" Class="xcol1">
-                                            <ChildContent Context="item">
-                                                @if (EdPlnRowguid == item.Rowguid)
-                                                { // show draftPln inputs
-                                                  <Button Color="ButtonColor.Secondary" Class="btn btn-default btn-sm d-inline-flex align-items-center gap-1"
-                                                          @onclick="() => showFrplnModal(draftPln, 1)">
-                                                      <i class="bi bi-pencil-square"></i>
-                                                      <span class="text-truncate flex-grow-1">@draftPln?.Fpsource</span>
-                                                  </Button>
-                                                }
-                                                else
-                                                { // show item as read-only
-                                                  <Button Color="ButtonColor.Secondary" Class="btn btn-default btn-sm d-inline-flex align-items-center gap-1"
-                                                          @onclick="() => showFrplnModal(item, 2)">
-                                                      <i class="bi bi-pencil-square"></i>
-                                                      <span class="text-truncate flex-grow-1">@item.Fpsource</span>
-                                                  </Button>
-                                                }
-                                            </ChildContent>
-                                        </GridColumn>
-                                        <GridColumn TItem="Plngen" HeaderText="Eta" Class="xcol1">
-                                            <HeaderContent>
-                                                @if (IMyDom != 0 && IMyAtr != 0 && IMyGtie != 0 && IMyVue != 0)
-                                                {
-                                                    <button class="btn btn-primary btn-sm @(isAddPln || isEdtPln ? "disabled-action" : "")"
-                                                            @onclick="StartPlnNew">
-                                                        ➕ Add
-                                                    </button>
-                                                }
-                                            </HeaderContent>
-                                            <ChildContent Context="item">
-                                                @if (EdPlnRowguid == item.Rowguid)
-                                                {
-                                                    <InputSelect @bind-Value="draftPln.Eta">
-                                                        <option class="jchx" value="0">?choisir</option>
-                                                        @foreach (var tob in LsFixes.Where(ut => ut.Gvars == 32 && ut.Itb == 1 && ut.Elea != 0))
-                                                        {
-                                                            <option value="@tob.Elea">@tob.Liba</option>
-                                                        }
-                                                    </InputSelect>
-                                                }
-                                                else
-                                                {
-                                                    <InputSelect @bind-Value="item.Eta" disabled="true">
-                                                        <option class="jchx" value="0">?choisir</option>
-                                                        @foreach (var tob in LsFixes.Where(ut => ut.Gvars == 32 && ut.Itb == 1 && ut.Elea != 0))
-                                                        {
-                                                            <option value="@tob.Elea">@tob.Liba</option>
-                                                        }
-                                                    </InputSelect>
-                                                }
-                                            </ChildContent>
-                                        </GridColumn>
-                                        <GridColumn TItem="Plngen" HeaderText="Actions" Filterable="false" Class="xcol2 actions-col">
-                                            <ChildContent Context="item">
-                                                @switch (GetRowState(item.Rowguid))
-                                                {
-                                                    case RowState.Locked:
-                                                        <span class="text-muted">—</span>
-                                                        break;
-
-                                                    case RowState.DeletePending:
-                                                        <Button Color="ButtonColor.Danger" Size="ButtonSize.Small"
-                                                                @onclick="() => ConfirmDelete(item, EntityLevel.Plan)">
-                                                            ⚠️ Confirm
-                                                        </Button>
-                                                        <Button Color="ButtonColor.Secondary" Size="ButtonSize.Small"
-                                                                @onclick="() => CancelDelete(item, EntityLevel.Plan)">
-                                                            ❎ Cancel
-                                                        </Button>
-                                                        break;
-                                                    case RowState.EditPending:
-                                                        <Button Color="ButtonColor.Success" Size="ButtonSize.Small"
-                                                                @onclick="() => ConfirmEdit(item, EntityLevel.Plan)">
-                                                            ✅ Confirm
-                                                        </Button>
-                                                        <Button Color="ButtonColor.Secondary" Size="ButtonSize.Small"
-                                                                @onclick="() => CancelEdit(item, EntityLevel.Plan)">
-                                                            ❌ Cancel
-                                                        </Button>
-                                                        break;
-                                                    default:
-                                                        <Button Color="ButtonColor.Warning" Size="ButtonSize.Small"
-                                                                @onclick="() => StartPlnEdit(item, item.Rowguid)">
-                                                            ✏️ Edit
-                                                        </Button>
-                                                        <Button Color="ButtonColor.Danger" Size="ButtonSize.Small"
-                                                                @onclick="() => StartRowDelete(item.Rowguid, EntityLevel.Plan)">
-                                                            🗑 Delete
-                                                        </Button>
-                                                        break;
-                                                }
                                             </ChildContent>
                                         </GridColumn>
                                     </GridColumns>
-                                    <GridDetailView TItem="Plngen" Context="selectedPln">
-                                        @if (selectedPln != null)
+                                    <GridDetailView TItem="Actsaie" Context="selectedAct">
+                                        @if (selectedAct != null)
                                         {
-                                            <div class="mt-2 border-start border-primary border-3 bg-light bg-opacity-25 rounded-end">
-                                                <div class="row align-items-center mb-2">
-                                                    <div class="col-auto">
-                                                        <i class="bi bi-chevron-right text-primary"></i>
-                                                    </div>
-                                                    <div class="col">
-                                                        <small class="text-muted fw-semibold">
-                                                            Plan ← @selectedPln.Liba (No: @selectedPln.Iele)
-                                                        </small>
-                                                    </div>
-                                                </div>
-                                                <div class="row">
-                                                    <div class="col-12">
-                                                        <Grid TItem="Rubvar"
-                                                              Data="@selectedPln.Rubvars"
-                                                              @key="RubRenderKey"
-                                                              RowClass="@((item) => GetRubRowClass(item))"
-                                                              Responsive="true">
-                                                            <GridColumns>
-                                                                <GridColumn TItem="Rubvar" HeaderText="No" Class="xcol1">
-                                                                    <ChildContent Context="item">
-                                                                        @if (item.Xadd1 == -1)
-                                                                        {
-                                                                            <span>?@item?.Iui</span>
-                                                                        }
-                                                                        else
-                                                                        {
-                                                                            <span>
-                                                                                @(item.Xedt1 == -1 ? item?.Iui : (item?.Iui == 0 ? item?.Iele : item?.Iui))
-                                                                            </span>
-                                                                        }
-                                                                    </ChildContent>
-                                                                </GridColumn>
-                                                                <GridColumn TItem="Rubvar" HeaderText="">
-                                                                    <HeaderContent>
-                                                                        Code
-                                                                        @if (!String.IsNullOrEmpty(Jmessage))
-                                                                        {
-                                                                            <span class="bg-info bg-opacity-10" style="font-style:italic;color:red">&nbsp;--> @Jmessage</span>
-                                                                        }
-                                                                    </HeaderContent>
-                                                                    <ChildContent Context="item">
-                                                                        <div style="width:90px" class="rubpoint">
-                                                                            @if (EdRubRowguid == item.Rowguid)
-                                                                            {
-                                                                                <InputText @bind-Value="draftRub.Scdrub"
-                                                                                           placeholder="code"
-                                                                                           id="rucode"
-                                                                                           class="w-100"
-                                                                                           maxlength="@_lgcdu"
-                                                                                           @onblur="@(() => OnChlBlurHandler(selectedPln, draftRub))"
-                                                                                           @onfocus="@(() => OnChlFocusHandler(selectedPln, draftRub))"
-                                                                                           pattern="@($"[0-9]{{{_lgcdu}}}")"
-                                                                                           title="@($"{_lgcdu} chiffres obligatoires et unique")"
-                                                                                           required />
-                                                                            }
-                                                                            else
-                                                                            {
-                                                                                @item.Scdrub
-                                                                            }
-                                                                        </div>
-                                                                    </ChildContent>
-                                                                </GridColumn>
-                                                                <GridColumn TItem="Rubvar" HeaderText="Designation" Class="xcol3">
-                                                                    <ChildContent Context="item">
-                                                                        @if (EdRubRowguid == item.Rowguid)
-                                                                        {
-                                                                            <InputText @bind-Value="draftRub.Liba" />
-                                                                        }
-                                                                        else
-                                                                        {
-                                                                            @item.Liba
-                                                                        }
-                                                                    </ChildContent>
-                                                                </GridColumn>
-                                                                <GridColumn TItem="Rubvar" HeaderText="Abrege" Class="xcol2">
-                                                                    <ChildContent Context="item">
-                                                                        @if (EdRubRowguid == item.Rowguid)
-                                                                        {
-                                                                            <InputText @bind-Value="draftRub.Abg" />
-                                                                        }
-                                                                        else
-                                                                        {
-                                                                            @item.Abg
-                                                                        }
-                                                                    </ChildContent>
-                                                                </GridColumn>
-                                                                <GridColumn TItem="Rubvar" HeaderText="Refer" Class="xcol1">
-                                                                    <ChildContent Context="item">
-                                                                        @if (EdRubRowguid == item.Rowguid)
-                                                                        { // show draftPln inputs
-                                                                          <InputText @bind-Value="draftRub.Xcod" />
-                                                                        }
-                                                                        else
-                                                                        { // show item as read-only
-                                                                          @item.Xcod
-                                                                        }
-                                                                    </ChildContent>
-                                                                </GridColumn>
-                                                                <GridColumn TItem="Rubvar" HeaderText="Atyp">
-                                                                    <ChildContent Context="item">
-                                                                        @if (EdRubRowguid == item.Rowguid)
-                                                                        {
-                                                                            <InputSelect @bind-Value="draftRub.Atyp" class="col-md-1" style="width:auto">
-                                                                                @foreach (var tob in LsFixes.Where(ut => ut.Gvars == 32 && ut.Itb == 2 && ut.Elea != 0))
-                                                                                {
-                                                                                    <option value="@tob.Elea">@tob.Liba</option>
-                                                                                }
-                                                                            </InputSelect>
-                                                                        }
-                                                                        else
-                                                                        { // show item as read-only
-                                                                          <InputSelect @bind-Value="item.Atyp" class="col-md-1" style="width:auto" disabled>
-                                                                                @foreach (var tob in LsFixes.Where(ut => ut.Gvars == 32 && ut.Itb == 2 && ut.Elea != 0))
-                                                                                {
-                                                                                    <option value="@tob.Elea">@tob.Liba</option>
-                                                                                }
-                                                                            </InputSelect>
-                                                                        }
-                                                                    </ChildContent>
-                                                                </GridColumn>
-                                                                <GridColumn TItem="Rubvar" HeaderText="Formule" Class="xcol1">
-                                                                    <ChildContent Context="item">
-                                                                        @if (EdRubRowguid == item.Rowguid)
-                                                                        { // show draftPln inputs
-                                                                          <Button Color="ButtonColor.Secondary" Class="btn btn-default btn-sm d-inline-flex align-items-center gap-1"
-                                                                                  @onclick="() => showFrrubModal(draftRub, 1)">
-                                                                              <i class="bi bi-pencil-square"></i>
-                                                                              <span class="text-truncate flex-grow-1">@draftRub?.Frsource</span>
-                                                                          </Button>
-                                                                        }
-                                                                        else
-                                                                        { // show item as read-only
-                                                                          <Button Color="ButtonColor.Secondary" Class="btn btn-default btn-sm d-inline-flex align-items-center gap-1"
-                                                                                  @onclick="() => showFrrubModal(item, 2)">
-                                                                              <i class="bi bi-pencil-square"></i>
-                                                                              <span class="text-truncate flex-grow-1">@item.Frsource</span>
-                                                                          </Button>
-                                                                        }
-                                                                    </ChildContent>
-                                                                </GridColumn>
-                                                                <GridColumn TItem="Rubvar" HeaderText="Eta">
-                                                                    <HeaderContent>
-                                                                        @if (selectedPln != null)
-                                                                        {
-                                                                            <button class="btn btn-primary btn-sm
-                                                                                                     @(AllowMultipleEdits || !isAddRub ? "" : "disabled-action")"
-                                                                                    @onclick="() => StartRubNew(selectedPln)">
-                                                                                ➕ Add
-                                                                            </button>
-                                                                        }
-                                                                    </HeaderContent>
-                                                                    <ChildContent Context="item">
+                                        <Grid TItem="Actdet"
+                                              Data="@selectedAct.Actdets"
+                                              AllowPaging="true"
+                                              Responsive="true">
+                                            <GridColumns>
+                                                <GridColumn TItem="Actdet" HeaderText="No">
+                                                    <ChildContent Context="item">
+                                                        <div @key="item.Rowguid">
+                                                            @if (item.Xadd1 == -1)
+                                                            {
+                                                                <span>?@item?.Iui</span>
+                                                            }
+                                                            else
+                                                            {
+                                                                <span class="plnpoint">@item?.Iele</span>
+                                                            }
+                                                        </div>
+                                                    </ChildContent>
+                                                </GridColumn>
+                                                <GridColumn TItem="Actdet" HeaderText="Inferieur">
+                                                    <ChildContent Context="item">
+                                                        @if (EdRubRowguid == item.Rowguid)
+                                                        {
+                                                            <InputText @bind-Value="draftRub.Dstr" placeholder="debut" />
+                                                        }
+                                                        else
+                                                        {
+                                                            @item.Dstr
+                                                        }
+                                                    </ChildContent>
+                                                </GridColumn>
+                                                <GridColumn TItem="Actdet" HeaderText="Superieur">
+                                                    <ChildContent Context="item">
+                                                        @if (EdRubRowguid == item.Rowguid)
+                                                        {
+                                                            <InputText @bind-Value="item.Fstr" placeholder="fin" />
+                                                        }
+                                                        else
+                                                        {
+                                                            @item.Fstr
+                                                        }
+                                                    </ChildContent>
+                                                </GridColumn>
+                                                <GridColumn TItem="Actdet" HeaderText="Valeur">
+                                                    <ChildContent Context="item">
+                                                            @if (EdRubRowguid == item.Rowguid)
+                                                        {
+                                                            <InputText @bind-Value="draftRub.Svala" placeholder="valeur" />
+                                                        }
+                                                        else
+                                                        {
+                                                            @item.Svala
+                                                        }
+                                                    </ChildContent>
+                                                </GridColumn>
+                                                    <GridColumn TItem="Actdet" HeaderText="Eta">
+                                                        <ChildContent Context="item">
+                                                            <ChildContent Context="item">
                                                                         @if (EdRubRowguid == item?.Rowguid)
                                                                         { // show draftPln inputs
                                                                           <InputSelect @bind-Value="draftRub.Eta" class="col-md-1" style="width:auto">
@@ -429,61 +194,60 @@ else
                                                                             </InputSelect>
                                                                         }
                                                                     </ChildContent>
-                                                                </GridColumn>
-                                                                <GridColumn TItem="Rubvar" HeaderText="Actions" Filterable="false" Class="xcol2 actions-col">
-                                                                    <HeaderContent>
-                                                                        @if (!isFiltre)
-                                                                        {
-                                                                            <button class="btn btn-info btn-sm" @onclick="ToggleRubFiltering">
-                                                                                @(isRubFilteringEnabled ? "🚫 Out Filter" : "🔍 In Filter")
-                                                                            </button>
-                                                                        }
-                                                                    </HeaderContent>
-                                                                    <ChildContent Context="item">
-                                                                        @switch (GetRowState(item.Rowguid))
-                                                                        {
-                                                                            case RowState.Locked:
-                                                                                <span class="text-muted">—</span>
-                                                                                break;
+                                                        </ChildContent>
+                                                    </GridColumn>
+                                                    <GridColumn TItem="Actdet" HeaderText="Actions" Filterable="false" Class="xcol2 actions-col">
+                                                        <HeaderContent>
+                                                            @if (!isFiltre)
+                                                            {
+                                                                <button class="btn btn-info btn-sm" @onclick="ToggleRubFiltering">
+                                                                    @(isRubFilteringEnabled ? "🚫 Out Filter" : "🔍 In Filter")
+                                                                </button>
+                                                            }
+                                                        </HeaderContent>
+                                                        <ChildContent Context="item">
+                                                            @switch (GetRowState(item.Rowguid))
+                                                            {
+                                                                case RowState.Locked:
+                                                                    <span class="text-muted">—</span>
+                                                                    break;
 
-                                                                            case RowState.DeletePending:
-                                                                                <Button Color="ButtonColor.Danger" Size="ButtonSize.Small"
-                                                                                        @onclick="() => ConfirmDelete(item, EntityLevel.Rub)">
-                                                                                    ⚠️ Confirm
-                                                                                </Button>
-                                                                                <Button Color="ButtonColor.Secondary" Size="ButtonSize.Small"
-                                                                                        @onclick="() => CancelDelete(item, EntityLevel.Rub)">
-                                                                                    ❎ Cancel
-                                                                                </Button>
-                                                                                break;
-                                                                            case RowState.EditPending:
-                                                                                <Button Color="ButtonColor.Success" Size="ButtonSize.Small"
-                                                                                        @onclick="() => ConfirmEdit(item, EntityLevel.Rub)">
-                                                                                    ✅ Confirm
-                                                                                </Button>
-                                                                                <Button Color="ButtonColor.Secondary" Size="ButtonSize.Small"
-                                                                                        @onclick="() => CancelEdit(item, EntityLevel.Rub)">
-                                                                                    ❌ Cancel
-                                                                                </Button>
-                                                                                break;
-                                                                            default:
-                                                                                <Button Color="ButtonColor.Warning" Size="ButtonSize.Small"
-                                                                                        @onclick="() => StartRubEdit(item, item.Rowguid)">
-                                                                                    ✏️ Edit
-                                                                                </Button>
-                                                                                <Button Color="ButtonColor.Danger" Size="ButtonSize.Small"
-                                                                                        @onclick="() => StartRowDelete(item.Rowguid, EntityLevel.Rub)">
-                                                                                    🗑 Delete
-                                                                                </Button>
-                                                                                break;
-                                                                        }
-                                                                    </ChildContent>
-                                                                </GridColumn>
-                                                            </GridColumns>
-                                                        </Grid>
-                                                    </div>
-                                                </div>
-                                            </div>
+                                                                case RowState.DeletePending:
+                                                                                    <Button Color="ButtonColor.Danger" Size="ButtonSize.Small"
+                                                                                            @onclick="() => ConfirmDelete(item, EntityLevel.Rub)">
+                                                                                        ⚠️ Confirm
+                                                                                    </Button>
+                                                                                    <Button Color="ButtonColor.Secondary" Size="ButtonSize.Small"
+                                                                                            @onclick="() => CancelDelete(item, EntityLevel.Rub)">
+                                                                                        ❎ Cancel
+                                                                                    </Button>
+                                                                                    break;
+                                                                case RowState.EditPending:
+                                                                    <Button Color="ButtonColor.Success" Size="ButtonSize.Small"
+                                                                            @onclick="() => ConfirmEdit(item, EntityLevel.Rub)">
+                                                                        ✅ Confirm
+                                                                    </Button>
+                                                                    <Button Color="ButtonColor.Secondary" Size="ButtonSize.Small"
+                                                                            @onclick="() => CancelEdit(item, EntityLevel.Rub)">
+                                                                        ❌ Cancel
+                                                                    </Button>
+                                                                    break;
+                                                                default:
+                                                                    <Button Color="ButtonColor.Warning" Size="ButtonSize.Small"
+                                                                            @onclick="() => StartRubEdit(item, item.Rowguid)">
+                                                                        ✏️ Edit
+                                                                    </Button>
+                                                                    <Button Color="ButtonColor.Danger" Size="ButtonSize.Small"
+                                                                                            @onclick="() => StartRowDelete(item.Rowguid, EntityLevel.Rub)">
+                                                                                        🗑 Delete
+                                                                                    </Button>
+                                                                    break;
+                                                            }
+                                                        </ChildContent>
+                                                    </GridColumn>
+
+                                            </GridColumns>
+                                        </Grid>
                                         }
                                     </GridDetailView>
                                 </Grid>
@@ -505,6 +269,21 @@ else
                 </BodyTemplate>
                 <FooterTemplate>
                     <Button Color="ButtonColor.Secondary" @onclick="() => pForuModal.HideAsync()">Cancel</Button>
+                </FooterTemplate>
+            </Modal>
+            <!-- Modal for FORMULE RUB -->
+            <Modal @ref="rForuModal" Size="ModalSize.Large" Title="Edit Plan Formula" ShowCloseButton=false>
+                <BodyTemplate>
+                    <div class="mb-3">
+                        <label class="form-label">Formula</label>
+                        <InputTextArea class="form-control"
+                                       @bind-Value="curRubr.Frsource"
+                                       rows="6"
+                                       style="resize: vertical;" />
+                    </div>
+                </BodyTemplate>
+                <FooterTemplate>
+                    <Button Color="ButtonColor.Secondary" @onclick="() => rForuModal.HideAsync()">Cancel</Button>
                 </FooterTemplate>
             </Modal>
         </Authorized>
@@ -716,19 +495,16 @@ else
     private List<Gpfixe> LsDoms = new();
     private List<Gpfixe> LsAtrs = new();
     private List<Gpfixe> LsVues = new();
-    private List<Gpfixe> LsGties = new();
 
     private bool isPlnFilteringEnabled = false;
     private bool isRubFilteringEnabled = false;
 
     //Global
     private int _lgcdu = 0;
-    private int IMyGpln = 3; //3Grille
+    private int IMyGpln = 5; //5Programme
+    private int IMyPlan = 0; //curPlan
     private int IMyDom = 1; //1Saisie
-    private int ItkDom = 0; //?6Tiers7Mat
-    private int IMyAtr = 0; //?1Categ/2Fonct...
-    private int IMyGtie = 0; //?1Cible/2Operat...
-    private int IMyVue = 1; //?1Reel2Virtuel
+    private int IMyVue = 1; //1Reel2Virtuel
     private string atrTitle = "";
 
     private string atrDest = "Programmes de Saisie";
@@ -737,19 +513,26 @@ else
     private Rubvar curRubr = new();
     private Rubfmt curFmat = new();
 
+    private Tiersp gridTier = new();
+    private Plngen selPlan = new();
+
     private bool isRubCodeValid = false; //child blur
     //data
     private ObservableCollection<Plngen> MyDaPlans { get; set; } = new();
-    private List<Plngen> LsPlsEchs => curOrga.Plngens.Where(pl => pl.Ptyp == 2).ToList();
-    private List<Plngen> LsPlsGris => curOrga.Plngens.Where(pl => pl.Ptyp == 3).ToList();
-    private List<Plngen> LsPlsDivs => curOrga.Plngens.Where(pl => pl.Ptyp == 4).ToList();
+
+    private ObservableCollection<Actsaie> MyDaActs { get; set; } = new();
+    private ObservableCollection<Actsaie> GrubNewRows { get; set; } = new();
+
+    // private List<Plngen> LsPlsEchs => curOrga.Plngens.Where(pl => pl.Ptyp == 2).ToList();
+    // private List<Plngen> LsPlsGris => curOrga.Plngens.Where(pl => pl.Ptyp == 3).ToList();
+    // private List<Plngen> LsPlsDivs => curOrga.Plngens.Where(pl => pl.Ptyp == 4).ToList();
     //add/edit options
     private bool AllowMultipleEdits { get; set; } = false;
     private bool isFiltre { get; set; } = false;
     //PLAN
     private Guid? PlanRenderKey = null;
-    private Dictionary<Guid, Plngen> _edPlnOriginals = new();
-    private Plngen? draftPln = null;
+    private Dictionary<Guid, Actsaie> _edPlnOriginals = new();
+    private Actsaie? draftPln = null;
     private bool isAddPln = false;
     private bool isEdtPln = false;
     private Guid? AdPlnRowguid = null;
@@ -757,8 +540,8 @@ else
     private Guid? DlPlnRowguid = null;
     //RUBRIQUE
     private Guid? RubRenderKey = null;
-    private Dictionary<Guid, Rubvar> _edRubOriginals = new();
-    private Rubvar? draftRub = null;
+    private Dictionary<Guid, Actdet> _edRubOriginals = new();
+    private Actdet? draftRub = null;
     private bool isAddRub = false;
     private bool isEdtRub = false;
     private Guid? AdRubRowguid = null;
@@ -794,6 +577,7 @@ else
     Modal pForuModal = new(); //plans
     Modal rForuModal = new(); //rubriques
     Modal gForuModal = new(); //formats
+    private string splnDom = "";
     private string patTitle = "", chlTitle = "", gsnTitle = "";
     private string patInitTitle = "", chlInitTitle = "", gsnInitTitle = "";
     private string pstrFormu = "", rstrFormu = "", fstrFormu = "";
@@ -817,9 +601,7 @@ else
             }
             LsVars = toChild.LsVars;
             LsFixes = toChild.LsFixes;
-            LsDoms = LsFixes.Where(ut => ut.Gvars == 36 && ut.Itb == 4 && ut.Gp1 == 3 && ut.Elea != 0).ToList();
-            LsAtrs = LsFixes.Where(ut => ut.Gvars == 36 && ut.Itb == 1 && ut.Gp1 == 3 && ut.Elea != 0).ToList();
-            LsVues = LsFixes.Where(ut => ut.Gvars == 36 && ut.Itb == 4 && ut.Gp1 == 4 && ut.Elea != 0).ToList();
+            LsVues = LsFixes.Where(ut => ut.Gvars == 36 && ut.Itb == 4 && ut.Gp1 == 5 && ut.Elea != 0).ToList();
             //LsTabls = toChild.LsTabls.ToList();
             LsPlans = toChild.LsPlans;
             //LsSites = toChild.LsSites;
@@ -831,12 +613,31 @@ else
             Console.WriteLine($"Child init: Plngens={curOrga.Plngens?.Count ?? 0}");
 
             // 🔥 SAFE - Only initialize if Plngens EXISTS
+            if (curOrga.Tiersps != null && curOrga.Tiersps.Any())
+            {
+                var inTiers = curOrga.Tiersps.Where(ut => ut.Sigrid == 1).ToList(); //tiers Actsaie-Actdet
+                gridTier = inTiers.FirstOrDefault();
+                if (gridTier == null)
+                {
+                    Console.WriteLine("No tiers found for the current user.");
+                    return;
+                }
+                MyDaActs = new ObservableCollection<Actsaie>(
+                    gridTier.Actsaies);
+                Console.WriteLine($"nb.acts wl {MyDaActs.Count()}");
+            }
+            else
+            {
+                Console.WriteLine("No tiers found for the current user.");
+            }
+            
+            //MyGrubs = inPlan.Rubhies.ToList();
             if (curOrga.Plngens != null && curOrga.Plngens.Any())
             {
                 Console.WriteLine($"Plngens loaded: {curOrga.Plngens.Count}");
 
                 MyDaPlans = new ObservableCollection<Plngen>(
-                    curOrga.Plngens.Where(pl => pl.Ptyp == IMyGpln && pl.Todom == IMyDom));
+                    curOrga.Plngens.Where(pl => pl.Ptyp == 3 && pl.Todom == IMyDom));
             }
             else
             {
@@ -845,13 +646,11 @@ else
             }
 
             // Guard registration (safe)
-            _guard.RegisterUnconfirmedPredicate<Plngen>(p => p.Xadd1 == -1 || p.Xedt1 == -1 || p.Xdel1 == -1);
-            _guard.RegisterUnconfirmedPredicate<Rubvar>(r => r.Xadd1 == -1 || r.Xedt1 == -1 || r.Xdel1 == -1);
-            //_guard.RegisterUnconfirmedPredicate<Rubfmt>(f => f.Xadd1 == -1 || f.Xedt1 == -1 || f.Xdel1 == -1);
+            // _guard.RegisterUnconfirmedPredicate<Plngen>(p => p.Xadd1 == -1 || p.Xedt1 == -1 || p.Xdel1 == -1);
+            // _guard.RegisterUnconfirmedPredicate<Rubvar>(r => r.Xadd1 == -1 || r.Xedt1 == -1 || r.Xdel1 == -1);
+            // _guard.RegisterUnconfirmedPredicate<Rubfmt>(f => f.Xadd1 == -1 || f.Xedt1 == -1 || f.Xdel1 == -1);
 
             atrTitle = "Saisie";
-            var ivue = curOrga.Plngens.FirstOrDefault(pl => pl.Ptyp == IMyGpln && pl.Todom == IMyDom);
-            Imessage = $"gpln : {ivue.Ptyp} et dom {ivue.Todom} et atr {ivue.Toatr} et gtie {ivue.Totyp} et vue {ivue.Tovue}";
         }
         catch (Exception ex)
         {
@@ -865,193 +664,187 @@ else
             StateHasChanged();
         }
     }
-
-    private async Task StartPlnNew()
-    {
-        Console.WriteLine("🚨 StartPlnNew");
-        var lsnb = NextSeq(MyDaPlans, p => p.Iui);
-        var newPln = new Plngen
-        { /* init properties */
-            //vu.Todom == IMyDom && vu.Totyp == IMyGtie && vu.Toatr == IMyAtr &&  vu.Tovue == IMyVue
-            Rowguid = Guid.NewGuid(),
-            Idorg = curOrga.Idorg, //pere Id
-            Iui = lsnb, //nextSeq(1),
-            Ptyp = IMyGpln, //grille
-            Todom = IMyDom,
-            Todkt = ItkDom,
-            Toatr = IMyAtr, 
-            Tovue = IMyVue,
-            Totyp = IMyGtie,
-            Styp = 0,
-            Liba = "",
-            Abg = "",
-            Eta = 1,
-            Xadd1 = -1,
-            Xedt1 = 0,
-            Xdel1 = 0
-        };
-        SetRowState(newPln.Rowguid, RowState.AddPending);
-        SetLightBackground(newPln.Rowguid, true);
-        MyDaPlans.Insert(0, newPln);
-        draftPln = (Plngen)DeepClone(newPln);
-        EdPlnRowguid = draftPln.Rowguid;
-        isAddPln = true;
-        isEdtPln = true;
-        SetRowState(draftPln.Rowguid, RowState.EditPending);  // Shows Confirm/Cancel ✓
-        PlanRenderKey = draftPln.Rowguid;
-        Console.WriteLine($"✅ New row added to curOrga.Plngens - Count: {curOrga.Plngens.Count}");
-        StartRowEdit(draftPln.Rowguid, EntityLevel.Plan);
-        StateHasChanged();
-    }
+    // private async Task StartPlnNew()
+    // {
+    //     Console.WriteLine("🚨 StartPlnNew");
+    //     var lsnb = NextSeq(MyDaPlans, p => p.Iui);
+    //     var newPln = new Plngen
+    //     { /* init properties */
+    //         Rowguid = Guid.NewGuid(),
+    //         Idorg = curOrga.Idorg, //pere Id
+    //         Iui = lsnb, //nextSeq(1),
+    //         Ptyp = IMyGpln, //programme
+    //         Todom = IMyDom, //de saisie
+    //         Tovue = IMyVue,
+    //         Toatr = 0,
+    //         Totyp = 0,
+    //         Styp = 0,
+    //         Liba = "",
+    //         Abg = "",
+    //         Eta = 1,
+    //         Xadd1 = -1,
+    //         Xedt1 = 0,
+    //         Xdel1 = 0
+    //     };
+    //     SetRowState(newPln.Rowguid, RowState.AddPending);
+    //     SetLightBackground(newPln.Rowguid, true);
+    //     MyDaPlans.Insert(0, newPln);
+    //     draftPln = (Plngen)DeepClone(newPln);
+    //     EdPlnRowguid = draftPln.Rowguid;
+    //     isAddPln = true;
+    //     isEdtPln = true;
+    //     SetRowState(draftPln.Rowguid, RowState.EditPending);  // Shows Confirm/Cancel ✓
+    //     PlanRenderKey = draftPln.Rowguid;
+    //     Console.WriteLine($"✅ New row added to curOrga.Plngens - Count: {curOrga.Plngens.Count}");
+    //     StartRowEdit(draftPln.Rowguid, EntityLevel.Plan);
+    //     StateHasChanged();
+    // }
     private async Task StartPlnEdit(Plngen item, Guid rowguid)
     {
         if (rowguid == Guid.Empty) return;
         item.Xedt1 = -1;
         if (item.Iele != 0) item.Iui = (int)item.Iele;
         SetRowState(rowguid, RowState.EditPending);  // Shows Confirm/Cancel buttons
-        _edPlnOriginals[rowguid] = (Plngen)DeepClone(item);
+        _edPlnOriginals[rowguid] = (Actsaie)DeepClone(item);
         EdPlnRowguid = AllowMultipleEdits ? null : rowguid;
-        draftPln = (Plngen)DeepClone(item);
+        draftPln = (Actsaie)DeepClone(item);
         isEdtPln = true;
         StartRowEdit(rowguid, EntityLevel.Plan);
         StateHasChanged();
     }
-    private async Task StartRubNew(Plngen mypln)
+    private async Task StartRubNew(Actsaie myact)
     {
-        if (mypln.Id <= 0)
+        if (myact.Id <= 0)
         {
             Imessage = "🚫 Cannot add Rubrique: Plan must be saved first.";
             return;
         }
         Console.WriteLine("🚨 StartRubNew");
-        var lsnb = NextSeq(mypln.Rubvars, p => p.Iui);
-        var newRub = new Rubvar
+        var lsnb = NextSeq(myact.Actdets, p => p.Iui);
+        var newRub = new Actdet
         { /* init */
             Rowguid = Guid.NewGuid(),
-            Idorg = mypln.Idorg, //grand pere Id
-            Ipln = mypln.Id, //pere Id
+            //Idorg = myact.Idorg, //grand pere Id
+            Iact = myact.Id,
             Iui = lsnb, //nextSeq(2),
-            Torub = 0,
-            Utyp = IMyAtr, //grille
-            Tovue = mypln.Tovue, //virtuel-reel
-            Sigrid = 1, //est grille
-            Gdact = 3, //declenche (ajt rubriq Actsaie)
-            Ustyp = 0, //de base
+            Froac = 3, //de grille
+            Dstr = "",
+            Fstr = "",
+            Ddval = DateTime.Now,
+            Dfval = DateTime.Now,
+            Svala = "",
+            Pirub = myact.Irub,
+            Pscdrub = myact.Scdrub, //parent scdrub
+            Acdrub = $"{myact.Scdrub}Z{lsnb.ToString()}",
             Dtperi = 0, //toujours
-            Liba = "",
-            Abg = "",
-            Xcod = "",
-            Ddval = 0,
-            Dfval = 0,
             Eaut = 0, //supprimable
             Atyp = 4,
-            Eint = 0,
-            Eta = 1,
+            Eta = 1, //1actif
             Xadd1 = -1, //newly added/edited
             Xedt1 = 0,
             Xdel1 = 0
         };
         SetRowState(newRub.Rowguid, RowState.AddPending);
         SetLightBackground(newRub.Rowguid, true);
-        if (mypln.Rubvars == null)
+        if (myact.Actdets == null)
         {
-            mypln.Rubvars = new DataServiceCollection<Rubvar>();  // ✅ Correct type
+            myact.Actdets = new DataServiceCollection<Actdet>();  // ✅ Correct type
         }
-        mypln.Rubvars.Insert(0, newRub);
-        draftRub = (Rubvar)DeepClone(newRub);
+        myact.Actdets.Insert(0, newRub);
+        draftRub = (Actdet)DeepClone(newRub);
         EdRubRowguid = draftRub.Rowguid;
         isAddRub = true;
         isEdtRub = true;
         SetRowState(draftRub.Rowguid, RowState.EditPending);  // 🔥 ADD
         RubRenderKey = draftRub.Rowguid;  // Force grid refresh
-        Console.WriteLine($"✅ New row added to Plngen.Rubvars - Count: {mypln.Rubvars.Count}");
+        Console.WriteLine($"✅ New row added to Plngen.Rubvars - Count: {myact.Actdets.Count}");
         StartRowEdit(draftRub.Rowguid, EntityLevel.Rub);
         StateHasChanged();
     }
-    private async Task StartRubEdit(Rubvar item, Guid rowguid)
+    private async Task StartRubEdit(Actdet item, Guid rowguid)
     {
         if (rowguid == Guid.Empty) return;
 
         item.Xedt1 = -1;
         if (item.Iele != 0) item.Iui = (int)item.Iele;
         SetRowState(rowguid, RowState.EditPending);  // Shows Confirm/Cancel buttons
-        _edRubOriginals[rowguid] = (Rubvar)DeepClone(item);
+        _edRubOriginals[rowguid] = (Actdet)DeepClone(item);
         EdRubRowguid = AllowMultipleEdits ? null : rowguid;
-        draftRub = (Rubvar)DeepClone(item);
+        draftRub = (Actdet)DeepClone(item);
         isEdtRub = true;
         StartRowEdit(rowguid, EntityLevel.Rub);
         StateHasChanged();
     }
-    private async Task StartFmtNew(Rubvar myrub)
-    {
-        if (myrub.Id <= 0)
-        {
-            Imessage = "🚫 Cannot add Format: Rubrique must be saved first.";
-            return;
-        }
-        var lsnb = NextSeq(myrub.Rubfmts, p => p.Iui);
-        Console.WriteLine("🚨 StartFmtNew");
-        var newFmt = new Rubfmt
-        { /* init */
-            Rowguid = Guid.NewGuid(),
-            Irub = myrub.Id, //pere Id
-            Iui = lsnb, //nextSeq(3),
-            Idzon = lsnb, //nextSeq(3),
-            Zcdrub = lsnb.ToString(),
-            Liba = "",
-            Abg = "",
-            Tperi = 1,
-            Col = 1,
-            Lne = 1,
-            Ztyp = 4, //decimal
-            Eint = 0,
-            Eta = 1,
-            Xadd1 = -1,  //newly added/edited
-            Xedt1 = 0,
-            Xdel1 = 0
-        };
-        SetRowState(newFmt.Rowguid, RowState.AddPending);
-        SetLightBackground(newFmt.Rowguid, true);
-        if (myrub.Rubfmts == null)
-        {
-            myrub.Rubfmts = new DataServiceCollection<Rubfmt>();  // ✅ Correct type
-        }
-        myrub.Rubfmts.Insert(0, newFmt);
-        draftFmt = (Rubfmt)DeepClone(newFmt);
-        EdFmtRowguid = draftFmt.Rowguid;
+    // private async Task StartFmtNew(Rubvar myrub)
+    // {
+    //     if (myrub.Id <= 0)
+    //     {
+    //         Imessage = "🚫 Cannot add Format: Rubrique must be saved first.";
+    //         return;
+    //     }
+    //     var lsnb = NextSeq(myrub.Rubfmts, p => p.Iui);
+    //     Console.WriteLine("🚨 StartFmtNew");
+    //     var newFmt = new Rubfmt
+    //     { /* init */
+    //         Rowguid = Guid.NewGuid(),
+    //         Irub = myrub.Id, //pere Id
+    //         Iui = lsnb, //nextSeq(3),
+    //         Idzon = lsnb, //nextSeq(3),
+    //         Zcdrub = lsnb.ToString(),
+    //         Liba = "",
+    //         Abg = "",
+    //         Tperi = 1,
+    //         Col = 1,
+    //         Lne = 1,
+    //         Ztyp = 4, //decimal
+    //         Eint = 0,
+    //         Eta = 1,
+    //         Xadd1 = -1,  //newly added/edited
+    //         Xedt1 = 0,
+    //         Xdel1 = 0
+    //     };
+    //     SetRowState(newFmt.Rowguid, RowState.AddPending);
+    //     SetLightBackground(newFmt.Rowguid, true);
+    //     if (myrub.Rubfmts == null)
+    //     {
+    //         myrub.Rubfmts = new DataServiceCollection<Rubfmt>();  // ✅ Correct type
+    //     }
+    //     myrub.Rubfmts.Insert(0, newFmt);
+    //     draftFmt = (Rubfmt)DeepClone(newFmt);
+    //     EdFmtRowguid = draftFmt.Rowguid;
 
-        isAddFmt = true;
-        isEdtFmt = true;
-        SetRowState(draftFmt.Rowguid, RowState.EditPending);  // 🔥 ADD
-        FmtRenderKey = draftFmt.Rowguid; //force Grid render
-        Console.WriteLine($"✅ New row added to Rubvar.Rubfmts - Count: {myrub.Rubfmts.Count}");
-        StartRowEdit(draftFmt.Rowguid, EntityLevel.Fmt);
-        StateHasChanged();
-    }
-    private async Task StartFmtEdit(Rubfmt item, Guid rowguid)
-    {
-        if (rowguid == Guid.Empty) return;
-        item.Xedt1 = -1;
-        if (item.Iele != 0) item.Iui = (int)item.Iele;
-        SetRowState(rowguid, RowState.EditPending);  // Shows Confirm/Cancel buttons
-        _edFmtOriginals[rowguid] = (Rubfmt)DeepClone(item);
-        EdFmtRowguid = AllowMultipleEdits ? null : rowguid;
-        draftFmt = (Rubfmt)DeepClone(item);
-        isEdtFmt = true;
-        StartRowEdit(rowguid, EntityLevel.Fmt);
-        StateHasChanged();
-    }
+    //     isAddFmt = true;
+    //     isEdtFmt = true;
+    //     SetRowState(draftFmt.Rowguid, RowState.EditPending);  // 🔥 ADD
+    //     FmtRenderKey = draftFmt.Rowguid; //force Grid render
+    //     Console.WriteLine($"✅ New row added to Rubvar.Rubfmts - Count: {myrub.Rubfmts.Count}");
+    //     StartRowEdit(draftFmt.Rowguid, EntityLevel.Fmt);
+    //     StateHasChanged();
+    // }
+    // private async Task StartFmtEdit(Rubfmt item, Guid rowguid)
+    // {
+    //     if (rowguid == Guid.Empty) return;
+    //     item.Xedt1 = -1;
+    //     if (item.Iele != 0) item.Iui = (int)item.Iele;
+    //     SetRowState(rowguid, RowState.EditPending);  // Shows Confirm/Cancel buttons
+    //     _edFmtOriginals[rowguid] = (Rubfmt)DeepClone(item);
+    //     EdFmtRowguid = AllowMultipleEdits ? null : rowguid;
+    //     draftFmt = (Rubfmt)DeepClone(item);
+    //     isEdtFmt = true;
+    //     StartRowEdit(rowguid, EntityLevel.Fmt);
+    //     StateHasChanged();
+    // }
     // ✅ 2.1 CONFIRM OPERATIONS
     private async Task ConfirmPlnEdit(Plngen item) =>
         await UnifiedEditAction(item, true, EntityLevel.Plan);
-    private async Task ConfirmRubEdit(Rubvar item) =>
+    private async Task ConfirmRubEdit(Actdet item) =>
         await UnifiedEditAction(item, true, EntityLevel.Rub);
     private async Task ConfirmFmtEdit(Rubfmt item) =>
         await UnifiedEditAction(item, true, EntityLevel.Fmt);
     // ✅ 2.2 CANCEL OPERATIONS
     private async Task CancelPlnEdit(Plngen item) =>
         await UnifiedEditAction(item, false, EntityLevel.Plan);
-    private async Task CancelRubEdit(Rubvar item) =>
+    private async Task CancelRubEdit(Actdet item) =>
         await UnifiedEditAction(item, false, EntityLevel.Rub);
     private async Task CancelFmtEdit(Rubfmt item) =>
         await UnifiedEditAction(item, false, EntityLevel.Fmt);
@@ -1064,7 +857,7 @@ else
                 await ProcessPlan((Plngen)item, isConfirm);
                 break;
             case EntityLevel.Rub:
-                await ProcessRub((Rubvar)item, isConfirm);
+                await ProcessRub((Actdet)item, isConfirm);
                 break;
             case EntityLevel.Fmt:
                 await ProcessFmt((Rubfmt)item, isConfirm);
@@ -1076,9 +869,9 @@ else
     {
         await ProcessEntity(pln, isConfirm, "Plngens", p => ValidatePln(p));
     }
-    private async Task ProcessRub(Rubvar rub, bool isConfirm)
+    private async Task ProcessRub(Actdet rub, bool isConfirm)
     {
-        await ProcessEntity(rub, isConfirm, "Rubvars", r => ValidateRub(r));
+        await ProcessEntity(rub, isConfirm, "Actdets", r => ValidateRub(r));
     }
     private async Task ProcessFmt(Rubfmt fmt, bool isConfirm)
     {
@@ -1232,18 +1025,18 @@ else
                 var pln = (Plngen)(object)gridItem;
                 pln.Liba = draftPln.Liba; //designation
                 pln.Abg = draftPln.Abg; //abrege
-                pln.Fpsource = draftPln.Fpsource; //formule-non valider
+                //pln.Fpsource = draftPln.Fpsource; //formule-non valider
                 pln.Eta = draftPln.Eta; //etat
                 break;
-            case nameof(Rubvar):
+            case nameof(Actdet):
                 if (draftRub == null) return;
-                var rub = (Rubvar)(object)gridItem;
+                var rub = (Actdet)(object)gridItem;
                 rub.Liba = draftRub.Liba; //designation
                 rub.Abg = draftRub.Abg; //abrege
-                rub.Scdrub = draftRub.Scdrub; //code
-                rub.Xcod = draftRub.Xcod; //refer
+                //rub.Scdrub = draftRub.Scdrub; //code
+                //rub.Xcod = draftRub.Xcod; //refer
                 rub.Atyp = draftRub.Atyp; //atyp
-                rub.Frsource = draftRub.Frsource; //formule
+                //rub.Frsource = draftRub.Frsource; //formule
                 rub.Eta = draftRub.Eta; //etat
                 break;
             case nameof(Rubfmt):
@@ -1271,7 +1064,7 @@ else
                 Console.WriteLine("EdPlnRowguid is become null");
                 EdPlnRowguid = null;
                 break;
-            case nameof(Rubvar):
+            case nameof(Actdet):
                 draftRub = null;
                 EdRubRowguid = null;
                 break;
@@ -1305,7 +1098,7 @@ else
 
         return GetRowCss(state, isLight, pln.Rowguid, isActiveEdit, isOtherRowEditing);
     }
-    private string GetRubRowClass(Rubvar rub)
+    private string GetRubRowClass(Actdet rub)
     {
         var state = GetRowState(rub.Rowguid);
         var isLight = IsLightBackground(rub.Rowguid);  // 🔥 Uses your existing
@@ -1368,7 +1161,7 @@ else
         switch (typeof(T).Name)
         {
             case nameof(Plngen): ResetPlnUI(); break;
-            case nameof(Rubvar): ResetRubUI(); break;
+            case nameof(Actdet): ResetRubUI(); break;
             case nameof(Rubfmt): ResetFmtUI(); break;
         }
     }
@@ -1459,7 +1252,7 @@ else
         switch (level)
         {
             case EntityLevel.Plan: await ProcessDelete<Plngen>(item as Plngen, isConfirm); break;
-            case EntityLevel.Rub: await ProcessDelete<Rubvar>(item as Rubvar, isConfirm); break;
+            case EntityLevel.Rub: await ProcessDelete<Actdet>(item as Actdet, isConfirm); break;
             case EntityLevel.Fmt: await ProcessDelete<Rubfmt>(item as Rubfmt, isConfirm); break;
         }
     }
@@ -1494,7 +1287,7 @@ else
         return typeof(T) switch
         {
             Type t when t == typeof(Plngen) => "Plngens",
-            Type t when t == typeof(Rubvar) => "Rubvars",
+            Type t when t == typeof(Actdet) => "Actdets",
             Type t when t == typeof(Rubfmt) => "Rubfmts",
             _ => throw new ArgumentException($"Unknown entity type: {typeof(T).Name}")
         };
@@ -1504,7 +1297,7 @@ else
         return entity switch
         {
             Plngen _ => "Plngens",
-            Rubvar _ => "Rubvars",
+            Rubvar _ => "Actdets",
             Rubfmt _ => "Rubfmts",
             _ => throw new ArgumentException("Unknown entity type")
         };
@@ -1516,7 +1309,7 @@ else
         return item switch
         {
             Plngen pln => ValidatePln(pln),
-            Rubvar rub => ValidateRub(rub),
+            Actdet rub => ValidateRub(rub),
             Rubfmt fmt => ValidateFmt(fmt),
             _ => true
         };
@@ -1546,29 +1339,29 @@ else
         // }
         return true;
     }
-    private bool ValidateRub(Rubvar myrub)
+    private bool ValidateRub(Actdet myadt)
     {
         //liba
-        if (string.IsNullOrEmpty(myrub.Liba)
-            || myrub.Liba.Length < 5)
+        if (string.IsNullOrEmpty(myadt.Liba)
+            || myadt.Liba.Length < 5)
         {
             Imessage = "designation obligatoire/longueur";
             return false;
         }
         //abrege
-        if (string.IsNullOrEmpty(myrub.Abg)
-            || myrub.Abg.Length < 4)
+        if (string.IsNullOrEmpty(myadt.Abg)
+            || myadt.Abg.Length < 4)
         {
             Imessage = "abrege obligatoire/longueur";
             return false;
         }
         //scdrub
-        if (string.IsNullOrEmpty(myrub.Scdrub)
-            || myrub.Scdrub.Length != _lgcdu)
-        {
-            Imessage = "code obligatoire/longueur";
-            return false;
-        }
+        // if (string.IsNullOrEmpty(myadt.Scdrub)
+        //     || myrub.Scdrub.Length != _lgcdu)
+        // {
+        //     Imessage = "code obligatoire/longueur";
+        //     return false;
+        // }
         // //etat
         // if (myrub.Eta < 0)
         // {
@@ -1650,30 +1443,22 @@ else
         return string.Join(" ", css);
     }
     // ✅ 6. SELECTIONS
-    private void SelPlanAtr(int xatr)
+    private void SelPlanVue(int xdom)
     {
+        if (xdom != 0)
+        {
 
+        }
     }
     private void SelPlanDom(int xdom)
     {
         if (xdom != 0)
-        { //6 ou 7
-            LsGties = LsFixes.Where(ut => ut.Gvars == 36 && ut.Itb == xdom && ut.Elea != 0 && ut.Elea != 9).ToList();
-        }
-        else
         {
-            LsGties = new();
+            selPlan = MyDaPlans?.FirstOrDefault(p => p.Id == IMyPlan);
+            //MyDaPlans = new ObservableO curog.Where(pl => pl.IrubNavigation.Ipln == IMyPlan).ToList()
+            //splnDom = MyDaPlans?.FirstOrDefault(p => p.Id == IMyPlan)?.Liba;
         }
     }
-    private void SelPlanTier(int xtie)
-    {
-
-    }
-    private void SelPlanVue(int xvue)
-    {
-
-    }
-    
 
     // ✅ 6. HELPERS - Mark Count and Clone
 
@@ -1849,4 +1634,5 @@ else
         _guard.DiscardUnconfirmedAdds<Rubfmt>();
     }
 }
+
 

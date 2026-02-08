@@ -6,30 +6,34 @@
 @using BlazorBootstrap
 @using Blazored.LocalStorage
 @using GxAdm.ClieModels
-@using GxAdm.Components.Admina.ARubs
+@using GxAdm.Components.Admina.PRubs
 @using GxAdm.Components.Admina.Ictvars
 @using GxAdm.Services
+@using GxAdm.StaticHelpers
 @using GxShared.Sess
 @using GxWapi.DaModels
 @using Microsoft.OData.Client
 @using Newtonsoft.Json
 
-@inject NavigationManager _navmanager
+@implements IDisposable
+
+@inject NavigationManager _navManager
 @inject ILocalStorageService _localStorage
 @inject HttpClientService _cliemanager
 @inject IODataContextFactory _contextFactory
 @inject SessionContextService _sessionContext
 @inject RendAgres _rendAgres
 @inject PendingChangesGuard _guard
+@inject IJSRuntime _JsRUN
 
 @if (isLoading)
 {
     <div class="text-center">
         <Spinner Color="SpinnerColor.Primary" Size="SpinnerSize.Large" />
-        <p>PARAMS/ASTREINTES Loading...</p>
+        <p>ASTREINTES/Saisies Loading...</p>
     </div>
 }
-@if(!isLoading)
+else
 {
     <div class="gx-screen-layout">
         <div class="container gx-parent-container" style="height: 100vh;">
@@ -44,468 +48,354 @@
                            GroupSelected="@_chxGpe"
                            GroupSelectedChanged="@SelGpe"
                            OnBack="@NavigateBack" />
-                @* <!-- Top Menu -->
-                <div class="innermenu-container d-flex align-items-center justify-content-start">
-                    <!-- Brand -->
-                    <button class="navbar-brand text-white d-flex align-items-center me-4"
-                            style="height:44px;" @onclick="() => NavigateBack()">
-                        <i class="bi bi-grid-3x3-gap-fill me-2"></i>
-                        A24soft Gx-Solutions
-                    </button>
 
-                    <!-- Nav Items -->
-                    <ul class="menu nav nav-pills d-flex align-items-center">
-                        <li class="nav-item">
-                            <div @onclick="() => SelMenu(1)"
-                                 class="nav-link d-flex align-items-center @(_chxMenu == 1 ? "active" : "")">
-                                <i class="bi bi-table me-2"></i> Grille
-                            </div>
-                        </li>
-
-                        <li class="nav-item">
-                            <div @onclick="() => SelMenu(2)"
-                                 class="nav-link d-flex align-items-center @(_chxMenu == 2 ? "active" : "")">
-                                <i class="bi bi-tags me-2"></i> Echeancier
-                            </div>
-                        </li>
-
-                        <li class="nav-item">
-                            <div @onclick="() => SelMenu(3)"
-                                 class="nav-link d-flex align-items-center @(_chxMenu == 3 ? "active" : "")">
-                                <i class="bi bi-file-earmark-text me-2"></i> Postes
-                            </div>
-                        </li>
-
-                        <li class="nav-item">
-                            <div @onclick="() => SelMenu(4)"
-                                 class="nav-link d-flex align-items-center @(_chxMenu == 4 ? "active" : "")">
-                                <i class="bi bi-file-earmark-text me-2"></i> Plans
-                            </div>
-                        </li>
-                    </ul>
-                </div> *@
-                <div class="row">
-                    <div class="col-md-12 input-group align-middle">
-                        <span class="text-uppercase text- text-success"><b>@strComp</b></span>
-                        &nbsp;&nbsp;
-                        <span class="separator">|| </span>
-                        <Button class="btn btn-sm btn-secondary btnsz"
-                                style="@(!allEnable ? "" : "display:none;")"
-                                @onclick="ManEditAll">
-                            Modifier
-                        </Button>
-                        <Button class="btn btn-sm btn-secondary btnsz"
-                                style="@(allEnable ? "" : "display:none;")"
-                                @onclick="ManCnclAll">
-                            Annuler
-                        </Button>
-                        <span class="separator">|  </span>
-                        <Button class="btn btn-sm btn-secondary btnsz"
-                                style="@(allEnable ? "" : "display:none;")"
-                                @onclick="ManSaveAll">
-                            Enregistrer
-                        </Button>
-                        @if (!String.IsNullOrEmpty(MImessage))
-                        {
-                            <span class="bg-info bg-opacity-10" style="font-style:italic;color:red">&nbsp;--> @MImessage</span>
-                        }
-                    </div>
-                </div>
                 <!-- Main Content -->
-                @if (_chxMenu != 0 && toChild != null && curOrga != null && curODContext != null)
+                @if (this != null)
                 {
-                    @if (_chxMenu == 1)
-                    { //grille
-                        <Ictgrils @ref="myigrd"
-                                   toMenu="@_chxMenu"
-                                   curOrga="@curOrga"
-                                   toChild="@toChild"
-                                   allEnable="@allEnable"
-                                   curODContext="@curODContext">
-                            <ChildContent>
-                               @*  <h2 class="child-box">Hello STANDARD</h2> *@
-                            </ChildContent>
-                        </Ictgrils>
+                    @if (_chxMenu != 0 && toChild != null && curOrga != null && curODContext != null)
+                    {
+                        @if (_chxMenu == 1)
+                        { //grille
+                            <IctGrils @ref="myigrd"
+                            toMenu="@_chxMenu"
+                            @bind-NbChanges="_nbChanges"
+                            _guard="_guard"
+                            curOrga="@curOrga"
+                            toChild="@toChild"
+                            curODContext="@curODContext">
+                                <ChildContent>
+                                    @*  <h2 class="child-box">Hello STANDARD</h2> *@
+                                </ChildContent>
+                            </IctGrils>
+                        }
+                        else if (_chxMenu == 2)
+                        { //échéancier
+                            <IctEches @ref="myiech"
+                            toMenu="@_chxMenu"
+                            @bind-NbChanges="_nbChanges"
+                            _guard="_guard"
+                            curOrga="@curOrga"
+                            toChild="@toChild"
+                            curODContext="@curODContext">
+                                <ChildContent>
+                                </ChildContent>
+                            </IctEches>
+                        }
+                        else if (_chxMenu == 3)
+                        {  //postes
+                            <IctPosts @ref="myipst"
+                            toMenu="@_chxMenu"
+                            @bind-NbChanges="_nbChanges"
+                            _guard="_guard"
+                            curOrga="@curOrga"
+                            toChild="@toChild"
+                            curODContext="@curODContext">
+                                <ChildContent>
+                                </ChildContent>
+                            </IctPosts>
+                        }
+                        else if (_chxMenu == 4)
+                        { //CALCULS
+                            //ref="mygclc"
+                        }
                     }
-                    else if (_chxMenu == 2)
-                    { //echeancier
-                        <Icteches @ref="myiech"
-                                 toMenu ="@_chxMenu"
-                                 curOrga="@curOrga"
-                                 toChild="@toChild"
-                                 allEnable="@allEnable"
-                                 curODContext="@curODContext">
-                            <ChildContent>
-                                @* <h2 class="child-box">Hello STANDARD</h2> *@
-                            </ChildContent>
-                        </Icteches>
-                    }
-                    else if (_chxMenu == 3)
-                    { //schema-postes
-                        <Ictposts @ref="myipst"
-                                   toMenu="@_chxMenu"
-                                   curOrga="@curOrga"
-                                   toChild="@toChild"
-                                   allEnable="@allEnable"
-                                   curODContext="@curODContext">
-                            <ChildContent>
-                                <h2 class="child-box">Hello POSTES</h2>
-                            </ChildContent>
-                        </Ictposts>
-                    }
-                    @* else if (_chxMenu == 4)
-                    { //plan rubriques sur un autre menu
-                        <ArubMenu @ref="myrmenu">
-                         
-
-                          </ChildContent>
-                        </ArubMenu>
-                    } *@
                 }
-            </div>
-        </div>
-        <div class="row mt-3">
-            <div class="col-12">
-                @if (_guard.HasPendingChanges())
-                {
-                    <div class="alert alert-warning">
-                        <strong>@pendingCount changes pending across all tabs</strong>
-                    </div>
-                }
-                <div class="d-flex gap-2 justify-content-end">
-                    <Button Color="ButtonColor.Primary"
-                            @onclick="SaveAllAsync"
-                            Enabled="@_guard.HasPendingChanges()">
-                        Save All (@pendingCount changes)
-                    </Button>
-                    <Button Color="ButtonColor.Secondary"
-                            @onclick="CancelAllChanges">
-                        Cancel All Changes
-                    </Button>
-                </div>
             </div>
         </div>
     </div>
+    <div class="alert alert-warning d-flex justify-content-between align-items-center py-1 px-2 position-fixed bottom-0 end-0"
+         style="background-color: transparent; z-index: 1050; max-width: 400px;">
+        <div class="d-flex gap-2 align-items-center">
+            <Button class="w-auto flex-grow-0 flex-shrink-0" Color="ButtonColor.Info" @onclick="SaveAllChanges"
+                    Enabled="@_guard.HasPendingChanges()">
+                Save All (@_guard.GetPendingChangesCount() changes)
+            </Button>
+            <Button class="w-auto flex-grow-0 flex-shrink-0" Color="ButtonColor.Secondary" @onclick="CancelAllChanges"
+                    Enabled="@_guard.HasPendingChanges()">
+                Cancel All
+            </Button>
+        </div>
+    </div>
 }
+
 @code {
     private bool isLoading = true;
     public MyODataContext curODContext;
     public Gxorga curOrga = new Gxorga();
     public MyShareVars toChild = new();
-    private bool allEnable = false;
-    private Ictgrils myigrd = new();
-    private Icteches myiech = new();  
-    private Ictposts myipst = new();
-    private ArubMenu myrmenu = new();
 
-    [Parameter]
-    public RenderFragment Pstands { get; set; }
-    [Parameter]
-    public RenderFragment Pmaties { get; set; }
-    [Parameter]
-    public RenderFragment Pgrilles { get; set; }
-    [Parameter]
-    public RenderFragment Pschemas { get; set; }
+    private PrubSaie mygsai = new();
+    private PrubCalc mygclc = new();
+    private PrubVent mygvnt = new();
+
+    private IctGrils myigrd = new();
+    private IctEches myiech = new();
+    private IctPosts myipst = new();
+    private ArubMenu myrmenu = new();
 
     [CascadingParameter]
     private Task<AuthenticationState>? AuthState { get; set; }
     public ClaimsPrincipal authUser;
-    public bool isAuthenticated = false;
-    //in DATA
-    public List<Gsgfix> LsTables = new List<Gsgfix>();
-
-    public string _strOrga = "", _curSigle = "", MImessage ="", strmeta = "", strmeta2 = "";
 
     //menus
+    private string strComp = "Grille.SAISIE";
     public List<GxMenuItem> MenuItems = new()
     {
-        new GxMenuItem { Id = 1, Text = "Saisie GRILLE", Icon = "bi bi-box-arrow-in-down" },
-        new GxMenuItem { Id = 2, Text = "Saisie ECHEANCIER", Icon = "bi bi-house-door" },
-        new GxMenuItem { Id = 3, Text = "Saisie POSTES", Icon = "bi bi-house-door" },
+        new GxMenuItem { Id = 1, Text = "Saisie.GRILLE", Icon = "bi bi-box-arrow-in-down" },
+        new GxMenuItem { Id = 2, Text = "Saisie.ECHEANCIER", Icon = "bi bi-house-door" },
+        new GxMenuItem { Id = 3, Text = "Saisie.POSTES", Icon = "bi bi-house-door" },
         new GxMenuItem { Id = 4, Text = "APlans", Icon = "bi bi-house-door" },
-        //new MenuItem { Id = 4, Text = "Mutation", Icon = "bi bi-arrow-repeat" },
     };
     public List<GxGroupe> Groupes = new();
 
-    //entities load
-    private IEnumerable<Gxorga> _lsOrgas = new List<Gxorga>();
-    //Gestion CRUD Entete
-    public bool EnrEnable = false;
     public string Imessage = "";
-
-    //GlobModels
     public Userbag _usrBag = new Userbag();
-    //public Usaibag ColBag = new Usaibag();
     public List<Gpfixe> LsFixes = new();
-    //public List<Upara> TUafls = new List<Upara>();
     public List<Gpdivh> LsDivs = new();
     public List<Gpvar> LsVars = new();
     public List<Gplan> LsPlans = new();
     public List<Gpvar> LtTabls = new();
     public List<Gpvar> LsTabls = new();
-    public List<Gpvar> TbElems = new();
-    //Navigation
     private int _gIdTie = 0, _chxGpe = 0, _chxMenu = 1;
-    private string strComp = "Saisie GRILLE";
+
     //modal management
     private string SidebarStyle = "width: 200px;";
-    private bool IsOpen = true;
-    private bool FirstLoadCompleted = false;
-    private bool ContentLoaded = false;
 
     //Guard
-    private int pendingCount => _guard.HasPendingChanges() ?
-        curODContext.Context.Entities.Count(e => e.State != EntityStates.Unchanged) : 0;
-    private async Task SaveAllAsync()
-    {
-        await _guard.FlushAsync();
-        StateHasChanged();
-    }
-    private void CancelAllChanges()
-    {
-        _guard.CancelChangesAsync();
-        StateHasChanged();
-    }
+    private int _nbChanges = 0;
+    private IDisposable? _locationHandler;
+
     protected override async Task OnInitializedAsync()
     {
         isLoading = true;
-        var authState = await AuthState;
-        authUser = authState.User;
-        isAuthenticated = authUser.Identity.IsAuthenticated;
-        if (!isAuthenticated)
+        try
         {
-            Console.WriteLine("Authentication in Astreintes Utilisateur ECHEC");
-            return;
+            var authState = await AuthState;
+            if (!authState.User.Identity.IsAuthenticated) return;
+            // Load lightweight user data FIRST
+            _usrBag = await _sessionContext.GetUserbagAsync();
+            _gIdTie = _usrBag.Usorga.Gdtie;
+            LsVars = _usrBag.Usorga.Uvars.ToList();
+            LsFixes = _usrBag.Ufixes.ToList();
+            LsPlans = _usrBag.Usorga.Uplns.Where(pl => pl.Ptyp == 2 || pl.Ptyp == 3 || pl.Ptyp == 4).ToList();
+            LtTabls = _usrBag.Usorga.Uvars.Where(tb => tb.Gvars == 4).ToList();
+            LsTabls = _usrBag.Usorga.Uvars.Where(tb => tb.Gvars == 5).ToList();
+            // Create context
+            curODContext = await _contextFactory.CreateAsync();
+            _guard.AttachContext(curODContext);
+            //var expand1 = "Plngens($expand=Rubvars,Rubhies),Gsgfixes,Gsglnes";
+            int key = _usrBag.Idorg;
+            string expandPlngens = ODataQueryHelper.Expand<Gxorga, IEnumerable<Plngen>>(o => o.Plngens);
+            string expandTiersps = ODataQueryHelper.Expand<Gxorga, IEnumerable<Tiersp>>(o => o.Tiersps);
+            // Build nested expansions
+            string expandPlngensNested = expandPlngens + "($expand=Rubvars($expand=Rubfmts))";
+            string expandTierspsNested = expandTiersps + "($expand=Actsaies($expand=Actdets))";
+            // Combine them
+            string expand = string.Join(",", expandPlngensNested, expandTierspsNested);
+            curOrga = await curODContext.GetByKeyAsync<Gxorga>(
+                key,
+                "Gxorgas",
+                expand
+            );
+            if (curOrga == null)
+            {
+                Console.WriteLine("No organization found for the current user.");
+                return;
+            }
+            Console.WriteLine($"✅ COMPLETE: Plngens={curOrga.Plngens?.Count ?? 0}, " +
+                          $"Gsgfixes={curOrga.Gsgfixes?.Count ?? 0}, " +
+                          $"Tiersps={curOrga.Tiersps?.Count ?? 0}");
+            // Populate child data immediately
+            Console.WriteLine($"Usrbag plans : {_usrBag.Usorga.Uplns.Count()}");
+            foreach (var ipl in LsPlans)
+            {
+                Console.WriteLine($"before : pliba {ipl.Liba} et ptyp {ipl.Ptyp}");
+            }
+            toChild = new MyShareVars
+            {
+                authUser = authState.User,
+                isAuthenticated = true,
+                LsDivs = await _rendAgres.LoadOrgaPostes(),
+                LsVars = LsVars.ToList(),
+                LsFixes = LsFixes.ToList(),
+                LsPlans = LsPlans.ToList(),
+                LsTabls = LsTabls.ToList()
+            };
+            foreach(var ipl in LsPlans)
+            {
+                Console.WriteLine($"after : pliba {ipl.Liba} et ptyp {ipl.Ptyp}");
+            }
+            //_guard.RegisterUnconfirmedPredicate<Plngen>(p => p.Xadd1 == -1);
+            //_guard.RegisterUnconfirmedPredicate<Rubvar>(r => r.Xadd1 == -1);
+            _guard.RegisterUnconfirmedPredicate<Rubhie>(p => p.Xadd1 == -1);
+            _guard.RegisterUnconfirmedPredicate<Rubpst>(f => f.Xadd1 == -1);
+            _guard.RegisterUnconfirmedPredicate<Actsaie>(a => a.Xadd1 == -1);
+            _guard.RegisterUnconfirmedPredicate<Actdet>(d => d.Xadd1 == -1);
+            _nbChanges = _guard.GetPendingChangesCount();  // Initial value
         }
-        else
+        finally
         {
-            Console.WriteLine("Authentication in Astreintes SUCCESS");
+            isLoading = false;
         }
-        _usrBag = await _sessionContext.GetUserbagAsync();
-        _gIdTie = _usrBag.Usorga.Gdtie;
-        //var idplnadm = _usrBag.Usorga.Schba;
-        //LsDivs = _usrBag.Usorga.Uhies.Where(uh => uh.Idpln == idplnadm && uh.Sidiv == 1).ToList();
-        LsVars = _usrBag.Usorga.Uvars.ToList();
-        LsFixes = _usrBag.Ufixes.ToList();
-        LsPlans = _usrBag.Usorga.Uplns.Where(pl => (pl.Ptyp == 2 || pl.Ptyp == 3 || pl.Ptyp == 4)).ToList();
-        LtTabls = _usrBag.Usorga.Uvars.Where(tb => tb.Gvars == 4).ToList();
-        LsTabls = _usrBag.Usorga.Uvars.Where(tb => tb.Gvars == 5).ToList();
-        //LsCols = ColBag.Ucols.Where(uv => uv.Jtyp == 1).OrderBy(uv => uv.Ydpd).ToList();
-        //TbElems = _usrBag.Usorga.Uvars.Where(uv => uv.Gvars == 5 && uv.Ade == 1 && uv.Elea != 0).ToList();
-        //ensemble des roles
-        //var _allRoles = _usrBag.Allroles;
-        //var _usrRoles = _usrBag.Allroles.Where(ur => ur.Sicur == true).ToList();
-        //int minrol = _usrBag.Usprof.Rlmin;
-        Console.WriteLine("Authentication ENTREE");
-        ////EnrolVue.ShowSubmenu();
-        //pita = 21;
-        //await LoadROrgaAsync();
-        await LoadSTROrgaAsync();
-        //await LoadRubricsAsync();
-        //pita = 5;
-        Console.WriteLine("TIERS A ETE TESTE");
-        toChild.authUser = authUser;
-        toChild.isAuthenticated = isAuthenticated;
-        //toChild.Usrid = _UserId;
-        //toChild.Idorg = _UorgId;
-        toChild.LsDivs = await _rendAgres.LoadOrgaPostes();
-        toChild.LsVars = LsVars.ToList();
-        toChild.LsFixes = LsFixes.ToList();
-        toChild.LsPlans = LsPlans.ToList();
-        toChild.LsTabls = LsTabls.ToList();
-        //curODContext = _curODContext;
+    }
+  
+    private async Task LoadChildrenAsync(int key)
+    {
+        // 🔥 ONE CALL - ALL NAV PROPERTIES!
+        await curODContext.GetByKeyAsync<Gxorga>(key, "Gxorgas",
+            "Plngens($expand=Rubvars),Gsgfixes,Gsglnes,Tiersps($expand=Actsaies)");
+
+        // Refresh curOrga with ALL children
+        curOrga = await curODContext.GetByKeyAsync<Gxorga>(key, "Gxorgas");
+
+        Console.WriteLine($"✅ COMPLETE: Plngens={curOrga.Plngens?.Count ?? 0}, " +
+                          $"Gsgfixes={curOrga.Gsgfixes?.Count ?? 0}, " +
+                          $"Tiersps={curOrga.Tiersps?.Count ?? 0}");
+
         isLoading = false;
-    }
-    //CRUD
-    private async Task LoadSTROrgaAsync()
-    {
-        curODContext = await _contextFactory.CreateAsync();
-        _guard.AttachContext(curODContext);
-        int key = _usrBag.Idorg;
+        await InvokeAsync(StateHasChanged);
 
-        // 🔥 SINGLE QUERY - ALL data at once!
-        var expand = "Gsgfixes,Gsglnes," +                    // Level 1
-                     "Tiersps,Tiersps($expand=Actsaies)," +   // Level 2
-                     "Plngens," +                             // Level 1
-                     "Plngens($expand=Rubvars,Rubhies)";     // Level 2
-        curOrga = await curODContext.GetByKeyAsync<Gxorga>(key, "Gxorgas", expand);
-        if (curOrga == null)
+        // await curODContext.GetByKeyAsync<Gxorga>(key, "Gxorgas", "Gsgfixes,Gsglnes");
+        // await curODContext.GetByKeyAsync<Gxorga>(key, "Gxorgas", "Plngens($expand=Rubvars)");
+        // //await curODContext.GetByKeyAsync<Gxorga>(key, "Gxorgas", "Gsgfixes,Gsglnes");
+        // await curODContext.GetByKeyAsync<Gxorga>(key, "Gxorgas", "Tiersps($expand=Actsaies)");
+
+        // // Refresh curOrga with children
+        // curOrga = await curODContext.GetByKeyAsync<Gxorga>(key, "Gxorgas");
+    }
+
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        if (firstRender)
         {
-            Console.WriteLine("No organization found.");
+            _locationHandler = _navManager.RegisterLocationChangingHandler(OnLocationChangingAsync);
+            //Console.WriteLine("📌 LocationChangingHandler registered");
+        }
+    }
+    private async ValueTask OnLocationChangingAsync(LocationChangingContext context)
+    {
+        Console.WriteLine($"🌐 Intercepted: {context.TargetLocation}");
+
+        if (!_guard.HasPendingChanges())
+        {
+            Console.WriteLine("✅ Clean - allowing navigation");
             return;
         }
-        Console.WriteLine($"✅ Orga loaded: {curOrga.Raison}");
-        Console.WriteLine($"   Gsgfixes: {curOrga.Gsgfixes?.Count() ?? 0}");
-        Console.WriteLine($"   Tiersps: {curOrga.Tiersps?.Count() ?? 0}");
-        Console.WriteLine($"   Plngens: {curOrga.Plngens?.Count() ?? 0}");
-        // curODContext = await _contextFactory.CreateAsync(); // Use factory
-        // _guard.AttachContext(curODContext);
-        // int key = _usrBag.Idorg;
-        // // ✅ Use key-based query instead of filtered collection
-        // curOrga = await curODContext.GetByKeyAsync<Gxorga>(key, "Gxorgas", "Gsgfixes,Gsglnes");
 
-        // var expand = "Tiersps," +
-        //     "Tiersps($expand=Actsaies,Actsaies($expand=Actdets))";
-        // var dxorgas = await curODContext.LoadFilteredAsync<Gxorga>(expand: expand);
-        // curOrga = dxorgas.FirstOrDefault();
-        
-        // if (curOrga == null)
-        // {
-        //     Console.WriteLine("No organization found for the current user.");
-        //     return;
-        // }
-        // Console.WriteLine($"orga recu {curOrga.Raison}");
-        // var expand2 = "Plngens," +
-        //     "Plngens($expand=Rubvars,Rubvars($expand=Rubfmts))," +
-        //     "Plngens($expand=Rubhies,Rubhies($expand=Rubpsts))";
-        // var dxplns = await curODContext.LoadFilteredAsync<Gxorga>(expand: expand2);
-        // Console.WriteLine($"nb de tiers :  {curOrga.Tiersps.Count()}");
-    }
-    // private async Task LoadSTROrgaAsync22()
-    // {
-    //     int pisa = 2;
-    //     try
-    //     {
-    //         curODContext = await _contextFactory.CreateAsync(); // Use factory
+        context.PreventNavigation();  // BLOCK navigation
+        Console.WriteLine($"🚫 Showing confirm dialog {context.TargetLocation}");
 
-    //         //curODContext = await _contextFactory.CreateAsync();
-    //         //curOrga et Gsgfixes, Gsglnes
-    //         //var expand = "Gsgfixes," + "Gsglnes";
-    //         //Expression<Func<Gxorga, bool>> ogfilter = g => g.Idorg == _usrBag.Idorg;
-    //         var dxorgas = await curODContext.LoadFilteredAsync<Gxorga>();
-    //         pisa = 3;
-    //         curOrga = dxorgas.FirstOrDefault();
-    //         if (curOrga == null)
-    //         {
-    //             Console.WriteLine("No organization found for the current user.");
-    //             return;
-    //         }
-    //         Console.WriteLine($"orga recu {curOrga.Raison}");
-    //         //Console.WriteLine($"nb gsgfixes : {curOrga.Gsgfixes.Count()}");
-    //         //curOrga Plngens and rubvars
-    //         var expand2 =
-    //         "Rubvars," +
-    //         "Rubvars($expand=Rubfmts)," +
-    //         "Rubhies," +
-    //         "Rubhies($expand=Rubpsts)";
-    //         var dxplns = await curODContext.LoadFilteredAsync<Plngen>(expand: expand2);
-    //         pisa = 4;
-    //         //Console.WriteLine($"nb de plans :  {dxplns.Count()}");
-    //         var expand3 = 
-    //         "Actsaies," +
-    //         "Actsaies($expand=Actdets)";
-    //         var dxtiers = await curODContext.LoadFilteredAsync<Tiersp>(expand: expand3);
-    //         pisa = 5;
-    //         Console.WriteLine($"nb de tiers :  {curOrga.Tiersps.Count()}");
-    //     }
-    //     catch (Exception ex)
-    //     {
-    //         Console.WriteLine($"stack trace : {ex.StackTrace} place : {pisa} ex-mess : {ex.Message} and also in-mess: {ex.InnerException}");
-    //     }
-    // }
-    // public async Task<IEnumerable<Plngen>> LoadRubricsAsync()
-    // {
-    //     // int pisa = 2;
-    //     var expand = "Rubhies,Rubhies($expand=Rubpsts),Rubvars,Rubvars($expand=Rubfmts)";
-    //     return await curODContext.LoadFilteredAsync<Plngen>(expand: expand);
-    //     //expand = "Rubvars,Rubvars($expand=Rubfmts)";
-    //     //return await curODContext.LoadFilteredAsync<Plngen>(expand: expand);
-    // }
-    // manage Access all
+        try
+        {
+            var save = await _JsRUN.InvokeAsync<bool>("confirm", "Save changes before leaving?");
 
-    private async Task ManEditAll()
-    {
-        MImessage = "Edition en preparation...";
-        if (_chxMenu == 1)
-        { //grille
-            await myigrd.EdtAll();
+            if (save)
+            {
+                // 🔥 YES: SaveAllChanges() → Navigate away
+                await SaveAllChanges();
+                Console.WriteLine("💾 Saved - navigating away");
+                _navManager.NavigateTo(context.TargetLocation, forceLoad: false);
+            }
+            else
+            {
+                // 🔥 NO: STAY on page - NO CancelAllChanges()
+                Console.WriteLine("❌ User chose NO - staying on page");
+                // User stays - sees SaveAllChanges() / CancelAllChanges() buttons ENABLED
+                // They can now manually: SaveAllChanges() OR CancelAllChanges()
+            }
         }
-        if (_chxMenu == 2)
-        { //echeancier
-            await myiech.EdtAll();
+        catch (Exception ex)
+        {
+            Console.WriteLine($"❌ Error: {ex.Message}");
+            // Safety: stay on page
         }
-        if (_chxMenu == 3)
-        { //schemas
-            await myipst.EdtAll();
-        }
-        MImessage = "";
-        allEnable = true;
-    }
-    private async Task ManCnclAll()
-    {
-        MImessage = "annulation en cours...";
-        if (_chxMenu == 1)
-        { //grille
-            await myigrd.CncAll();
-        }
-        if (_chxMenu == 2)
-        { //echeancier
-            await myiech.CncAll();
-        }
-        if (_chxMenu == 3)
-        { //schemas
-            await myipst.CncAll();
-        }
-        //reload
-        //LoadSTROrgaAsync();
-        MImessage = "";
-        allEnable = false;
-    }
-    private async Task ManSaveAll()
-    {
-        MImessage = "enregistrement en cours...";
-        if (_chxMenu == 1)
-        { //grille
-            //await myigrd.SavAll();
-        }
-        if (_chxMenu == 2)
-        { //echeancier
-            //await myiech.SavAll();
-        }
-        if (_chxMenu == 3)
-        { //schemas
-            //await myipst.SavAll();
-        }
-        MImessage = "";
-        allEnable = false;
     }
 
     private async Task SelMenu(int noM)
     {
         _chxMenu = noM;
-        if (_chxMenu == 1) strComp = $"Saisie GRILLE";
-        if (_chxMenu == 2) strComp = $"Saisie ECHEANCIER";
-        if (_chxMenu == 3) strComp = $"Saisie POSTES";
+        if (_chxMenu == 1) strComp = $"Saisie.GRILLE";
+        if (_chxMenu == 2) strComp = $"Saisie.ECHEANCIER";
+        if (_chxMenu == 3) strComp = $"Saisie.POSTES";
         if (_chxMenu == 4)
         {
-            _navmanager.NavigateTo("/arubmenu", replace: true);
+            _navManager.NavigateTo("/arubmenu", replace: true);
             strComp = $"Aplans";
         }
-        //if (_chxMenu == 5) strComp = "Colonnes";
-        allEnable = false;
         StateHasChanged();
         await Task.Delay(1);
     }
     private async Task SelGpe(int noG)
     {
         _chxGpe = noG;
-        //gpeLiba = "";
-        //if (noG == 0) return;
-        //var mygpe = LsGties.Where(gt => gt.Itb == 6 && gt.Elea == noG).FirstOrDefault();
-        //LsCols = curOrga.Gsglnes.Where(ug => ug.Otyp == 5 && ug.Dtyp == 6 && ug.Totyp == Ugpe && ug.Jacc == 1).ToList();
-        //Ugpe = noG;
-        //Tgpe = mygpe.Gp2;
-        //gpeLiba = LsGties.Where(ut => ut.Elea == mygpe.Elea).FirstOrDefault().Liba.ToUpperInvariant();
         StateHasChanged();
         Console.WriteLine("PAS 2");
         await Task.Delay(1);
     }
-    private async Task Save()
+    private async Task CancelAllChanges()
     {
-        await _guard.FlushAsync();  // ✅ Parallel batch saves
+        Console.WriteLine("🗑️ CancelAllChanges START");
+        await _guard.CancelChangesAsync();  // 🔥 AWAIT - blocks until done
+        Imessage = "CancelAllChanges successfully";
+        StateHasChanged();
+        Console.WriteLine($"✅ CancelAllChanges END - Pending: {_guard.GetPendingChangesCount()}");
     }
+    private async Task SaveAllChanges()
+    {
+        //_guard.DiscardUnconfirmedAdds<Plngen>();
+        //_guard.DiscardUnconfirmedAdds<Rubvar>();
+        _guard.DiscardUnconfirmedAdds<Rubhie>();
+        _guard.DiscardUnconfirmedAdds<Rubpst>();
+        _guard.DiscardUnconfirmedAdds<Actsaie>();
+        _guard.DiscardUnconfirmedAdds<Actdet>();
+        if (_guard.HasPendingChanges())
+        {
+            await curODContext.Context.SaveChangesAsync();
+        }
+        _guard.NotifyChanges();
+        Imessage = "✅ Save successful";
+        StateHasChanged();
+    }
+
+    public void Dispose()
+    {
+        _locationHandler?.Dispose();
+        // Parent-level cleanup
+        _guard.DiscardUnconfirmedAdds<Rubhie>();
+        _guard.DiscardUnconfirmedAdds<Rubpst>();
+        _guard.DiscardUnconfirmedAdds<Actsaie>();
+        _guard.DiscardUnconfirmedAdds<Actdet>();
+    }
+
     void NavigateBack()
     {
-        _navmanager.NavigateTo("/");
+        _navManager.NavigateTo("/");
     }
+    // // var expand1 = "Plngens($expand=Rubvars,Rubhies($expand=Rubpsts)),Gsgfixes,Gsglnes";
+    // // var expand2 = "Tiersps($expand=Actsaies($expand=Actdets))";
+    // // await curODContext.GetByKeyAsync<Gxorga>(key, "Gxorgas", expand1);
+    // // await curODContext.GetByKeyAsync<Gxorga>(key, "Gxorgas", expand2);
+    // // curOrga = curODContext.Context.Entities
+    // //     .Select(e => e.Entity)
+    // //     .OfType<Gxorga>()
+    // //     .SingleOrDefault(o => o.Idorg == key);
+    // var expand = "Plngens($expand=Rubvars($expand=Rubfmts),Rubhies($expand=Rubpsts)),Gsgfixes,Gsglnes,Tiersps($expand=Actsaies($expand=Actdets))";
+    // await curODContext.GetByKeyAsync<Gxorga>(key, "Gxorgas", expand);  // ONE call!
+
+    // curOrga = curODContext.Context.Entities
+    //     .OfType<Gxorga>()
+    //     .SingleOrDefault(o => o.Idorg == key);
+    // var orgaTask1 = curODContext.Context.Gxorgas
+    //     .ByKey(key)
+    //     .Expand("Plngens($expand=Rubvars($expand=Rubfmts))")
+    //     .Expand("Gsgfixes,Gsglnes")
+    //     .FindEntryAsync();
+
+    // var orgaTask2 = curODContext.Context.Gxorgas
+    //     .ByKey(key)
+    //     .Expand("Tiersps($expand=Actsaies($expand=Actdets))")
+    //     .FindEntryAsync();
+
+    // await Task.WhenAll(orgaTask1, orgaTask2);
 }

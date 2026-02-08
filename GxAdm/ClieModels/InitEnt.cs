@@ -22,6 +22,7 @@ namespace GxWapi.DaModels
         public int Xedt1 { get; set; } = 0;
         [JsonIgnore]
         public int Xdel1 { get; set; } = 0;
+        [JsonIgnore]
         public string Liba { get; set; } = string.Empty;
         [JsonIgnore]
         public string KMatri { get; set; } = string.Empty;
