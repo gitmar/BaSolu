@@ -446,6 +446,17 @@ else
     public int? Ugpe { get; set; }
     [Parameter]
     public bool allEnable { get; set; }
+    [Parameter]
+    public int toMenu { get; set; }
+    //guard
+    [Parameter]
+    public PendingChangesGuard _guard { get; set; }
+    [Parameter]
+    public EventCallback<PendingState> OnPendingStateChanged { get; set; }
+    [Parameter]
+    public int NbChanges { get; set; }
+    [Parameter]
+    public EventCallback<int> NbChangesChanged { get; set; }  // 🔥 CRITICAL
     //private Tiersp gridTier = new Tiersp();
     //private Plngen curTier = new Plngen();
     //private List<Rubvar> LsRubs = new List<Rubvar>();
@@ -1185,7 +1196,7 @@ else
         {
             //if (hasbeenModified)
             //{
-            await curODContext.SaveDataAsync();
+            ////await curODContext.SaveDataAsync();
             Console.WriteLine("Saved SUCCESS");
             //}
             //var wrkplns = curOrga.Plngens.Where(pl => pl.Ptyp == 3 && pl.Totyp == IMyAtr).ToList();

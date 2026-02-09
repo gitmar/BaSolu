@@ -246,16 +246,18 @@ else
     public MyShareVars toChild { get; set; }
     [Parameter]
     public bool allEnable { get; set; }
-    //[Parameter]
-    //public MyMenuVars froMenu { get; set; }
-
-    // [CascadingParameter(Name = "SaieLayout")]
-    // public SaieLayout Mainsaie { get; set; }
-    //[Parameter]
-    //public MyODataContext _gODContext { get; set; }    //Authentication
-
-    //private EditContext _saiEdtContext;
-
+    [Parameter]
+    public int toMenu { get; set; }
+    //guard
+    [Parameter]
+    public PendingChangesGuard _guard { get; set; }
+    [Parameter]
+    public EventCallback<PendingState> OnPendingStateChanged { get; set; }
+    [Parameter]
+    public int NbChanges { get; set; }
+    [Parameter]
+    public EventCallback<int> NbChangesChanged { get; set; }  // 🔥 CRITICAL
+  
     private bool isAuthenticated { get; set; }
     private ClaimsPrincipal authUser;
     private IEnumerable<Claim> claims = Enumerable.Empty<Claim>();
@@ -268,7 +270,6 @@ else
     //private FormulaEvalService _calcService;
 
 
-    //private HttpClient _apiClient;
     public int _lgcdu = 0;
 
     //private Userbag _usrBag = new Userbag();
@@ -654,7 +655,7 @@ else
         Imessage = "Enregistrement Operations, patience...";
         allEnable = false;
         //EditingRowGuid = Guid.Empty;
-        await curODContext.SaveDataAsync();
+        ////await curODContext.SaveDataAsync();
     }
     //Manage CALCULATION
     private void Opecalc()

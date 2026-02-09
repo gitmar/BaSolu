@@ -296,19 +296,29 @@
             curODContext = await _contextFactory.CreateAsync();
             _guard.AttachContext(curODContext);
             int key = _usrBag.Idorg;
-            // ✅ Use key-based query instead of filtered collection
-            string expandGsgfixes = ODataQueryHelper.Expand<Gxorga, IEnumerable<Gsgfix>>(o => o.Gsgfixes);
-            string expandGsglnes = ODataQueryHelper.Expand<Gxorga, IEnumerable<Gsglne>>(o => o.Gsglnes);
-            //string expandPlngens = ODataQueryHelper.Expand<Gxorga, IEnumerable<Plngen>>(o => o.Plngens);
-            // Build nested expansions
-            //string expandPlngensNested = expandPlngens + "($expand=Rubvars,Rubhies)";
-            // Combine them
-            string expand = string.Join(",", expandGsgfixes, expandGsglnes);
+
+            string expand =
+                "Gsgfixes," +
+                "Gsglnes," +
+                "Plngens($expand=Rubvars)";
             curOrga = await curODContext.GetByKeyAsync<Gxorga>(
                 key,
                 "Gxorgas",
                 expand
             );
+
+            //Console.WriteLine(curOrga.Plngens.Count); // ✅ populated
+
+
+            // ✅ Use key-based query instead of filtered collection
+            // string expandGsgfixes = ODataQueryHelper.Expand<Gxorga, IEnumerable<Gsgfix>>(o => o.Gsgfixes);
+            // string expandGsglnes = ODataQueryHelper.Expand<Gxorga, IEnumerable<Gsglne>>(o => o.Gsglnes);
+            // string expand = string.Join(",", expandGsgfixes, expandGsglnes);
+            // curOrga = await curODContext.GetByKeyAsync<Gxorga>(
+            //     key,
+            //     "Gxorgas",
+            //     expand
+            // );
             
             //curOrga = await curODContext.GetByKeyAsync<Gxorga>(key, "Gxorgas", "Gsgfixes,Gsglnes");
             if (curOrga == null)
@@ -319,10 +329,10 @@
             Console.WriteLine($"orga recu {curOrga.Raison}");
             //Console.WriteLine($"nb gsgfixes : {curOrga.Gsgfixes.Count()}");
             //curOrga Plngens and rubvars
-            var expand2 = "Rubvars";
-            var dxplns = await curODContext.LoadFilteredAsync<Plngen>(expand: expand2);
+            // var expand2 = "Rubvars";
+            // var dxplns = await curODContext.LoadFilteredAsync<Plngen>(expand: expand2);
             ////pisa = 4;
-            Console.WriteLine($"nb de plans :  {dxplns.Count()}");
+            Console.WriteLine($"nb plans curOrga {curOrga.Plngens.Count()}");
         }catch(Exception ex)
         {
             Console.WriteLine($"ICI TODAY stack trace : {ex.StackTrace} place : {pisa} ex-mess : {ex.Message} and also in-mess: {ex.InnerException}");

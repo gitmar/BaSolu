@@ -3,7 +3,7 @@ using System.Security.Claims;
 
 using Blazored.LocalStorage;
 
-using GxTie.Helpers;
+using GxTie.StaticHelpers;
 using GxTie.Profile;
 
 using GxShared.Sess;
@@ -196,7 +196,7 @@ namespace GxTie.Services
                 try
                 {
                     Userbag = JsonConvert.DeserializeObject<Userbag>(json);
-                    Console.Write($"Userbag got {json}");
+                    ////Console.Write($"Userbag got {json}");
                 }
                 catch (Exception ex)
                 {

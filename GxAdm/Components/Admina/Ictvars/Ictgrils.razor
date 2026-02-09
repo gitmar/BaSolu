@@ -822,7 +822,6 @@ else
             _lgcdu = 3;
             var noslims = LsVars.Where(uv => uv.Idhie == 0 && uv.Gvars == 21 && uv.Itb == 1 && uv.Elea == 1);
             if (noslims.Any()) _lgcdu = noslims.FirstOrDefault().Ivala;
-            Console.WriteLine($"lsplans {LsPlans.Count} IS NULL");
             //ChargeParentData;
             Console.WriteLine($"Child init: Plngens={curOrga.Plngens?.Count ?? 0}");
 

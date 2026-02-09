@@ -3,8 +3,6 @@ using System.Reflection;
 
 using GxWapi.DaModels;
 
-using static GxTie.Components.Paccu.Inscr.EnrolTiw;
-
 namespace GxTie.Services
 {
     public class LookupService

@@ -247,7 +247,7 @@
         try
         {
             var token = await _localStorage.GetItemAsync<string>("blazToken");
-            _gODContext = new MyODataContext(new Uri("https://localhost:7095/odata"), token);
+            ////_gODContext = new MyODataContext(new Uri("https://localhost:7095/odata"), token);
             var expand = "Actsaies,Actsaies($expand=Actdets)";
             var dxtiers = await _gODContext.LoadFilteredAsync<Tiersp>(expand: expand);
             EnsTiers = dxtiers.ToList();

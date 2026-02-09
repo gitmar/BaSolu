@@ -554,6 +554,17 @@
     public int Id { get; set; }
     [Parameter]
     public bool allEnable { get; set; }
+    [Parameter]
+    public int toMenu { get; set; }
+    //guard
+    [Parameter]
+    public PendingChangesGuard _guard { get; set; }
+    [Parameter]
+    public EventCallback<PendingState> OnPendingStateChanged { get; set; }
+    [Parameter]
+    public int NbChanges { get; set; }
+    [Parameter]
+    public EventCallback<int> NbChangesChanged { get; set; }  // 🔥 CRITICAL
     //[Parameter] 
     //public EventCallback<int> OnEdit { get; set; }
     [Parameter]
@@ -1572,7 +1583,7 @@
             //if (isTiwInEditing)
             //{
                 //curODContext.UpdateObject<Tiewel>(curTiw);
-                await curODContext.SaveDataAsync();
+                ////await curODContext.SaveDataAsync();
                 //isTiwInEditing = false;
                 Console.WriteLine("Saved SUCCESS");
             //}

@@ -203,14 +203,14 @@ else
                 return;
             }
             Console.WriteLine($"✅ COMPLETE: Plngens={curOrga.Plngens?.Count ?? 0}, " +
-                          $"Gsgfixes={curOrga.Gsgfixes?.Count ?? 0}, " +
+                          //$"Gsgfixes={curOrga.Gsgfixes?.Count ?? 0}, " +
                           $"Tiersps={curOrga.Tiersps?.Count ?? 0}");
             // Populate child data immediately
             Console.WriteLine($"Usrbag plans : {_usrBag.Usorga.Uplns.Count()}");
-            foreach (var ipl in LsPlans)
-            {
-                Console.WriteLine($"before : pliba {ipl.Liba} et ptyp {ipl.Ptyp}");
-            }
+            // foreach (var ipl in LsPlans)
+            // {
+            //     Console.WriteLine($"before : pliba {ipl.Liba} et ptyp {ipl.Ptyp}");
+            // }
             toChild = new MyShareVars
             {
                 authUser = authState.User,
@@ -221,10 +221,10 @@ else
                 LsPlans = LsPlans.ToList(),
                 LsTabls = LsTabls.ToList()
             };
-            foreach(var ipl in LsPlans)
-            {
-                Console.WriteLine($"after : pliba {ipl.Liba} et ptyp {ipl.Ptyp}");
-            }
+            // foreach(var ipl in LsPlans)
+            // {
+            //     Console.WriteLine($"after : pliba {ipl.Liba} et ptyp {ipl.Ptyp}");
+            // }
             //_guard.RegisterUnconfirmedPredicate<Plngen>(p => p.Xadd1 == -1);
             //_guard.RegisterUnconfirmedPredicate<Rubvar>(r => r.Xadd1 == -1);
             _guard.RegisterUnconfirmedPredicate<Rubhie>(p => p.Xadd1 == -1);

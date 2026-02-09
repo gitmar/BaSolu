@@ -4,12 +4,22 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 namespace GxWapi.DaModels
 {
+    public partial class Gxorga
+    {
+        [JsonIgnore]
+        public int Xedt1 { get; set; } = 0;
+    }
+
     public partial class Actsaie
     {
+        [JsonIgnore]
+        public int Iui { get; set; } = 0;
         [JsonIgnore]
         public int Xadd1 { get; set; } = 0;
         [JsonIgnore]
         public int Xedt1 { get; set; } = 0;
+        [JsonIgnore]
+        public int Xdel1 { get; set; } = 0;
         [JsonIgnore]
         public string Liba { get; set; } = string.Empty;
         [JsonIgnore]
@@ -26,9 +36,13 @@ namespace GxWapi.DaModels
     public partial class Actdet
     {
         [JsonIgnore]
+        public int Iui { get; set; } = 0;
+        [JsonIgnore]
         public int Xadd1 { get; set; } = 0;
         [JsonIgnore]
         public int Xedt1 { get; set; } = 0;
+        [JsonIgnore]
+        public int Xdel1 { get; set; } = 0;
         [JsonIgnore]
         public string Liba { get; set; } = string.Empty;
         [JsonIgnore]
@@ -45,9 +59,7 @@ namespace GxWapi.DaModels
     public partial class Resdon
     {
         [JsonIgnore]
-        public int Xadd1 { get; set; } = 0;
-        [JsonIgnore]
-        public int Xedt1 { get; set; } = 0;
+        public int Iui { get; set; } = 0;
         [JsonIgnore]
         public string Liba { get; set; } = string.Empty;
         [JsonIgnore]
@@ -64,10 +76,7 @@ namespace GxWapi.DaModels
     public partial class Resdet
     {
         [JsonIgnore]
-        public int Xadd1 { get; set; } = 0;
-        [JsonIgnore]
-        public int Xedt1 { get; set; } = 0;
-        [JsonIgnore]
+        public int Iui { get; set; } = 0;
         public string Liba { get; set; } = string.Empty;
         [JsonIgnore]
         public string Abg { get; set; } = string.Empty;
@@ -83,9 +92,7 @@ namespace GxWapi.DaModels
     public partial class Resbro
     {
         [JsonIgnore]
-        public int Xadd1 { get; set; } = 0;
-        [JsonIgnore]
-        public int Xedt1 { get; set; } = 0;
+        public int Iui { get; set; } = 0;
         [JsonIgnore]
         public string Liba { get; set; } = string.Empty;
         [JsonIgnore]
@@ -102,6 +109,8 @@ namespace GxWapi.DaModels
     public partial class Gsgfix
     {
         [JsonIgnore]
+        public int Iui { get; set; } = 0;
+        [JsonIgnore]
         public bool IsParent => (Gvars == 4 && (Itb == 1 || Itb ==2));
         [JsonIgnore]
         public int Xadd1 { get; set; } = 0;
@@ -111,57 +120,85 @@ namespace GxWapi.DaModels
         public int Xdel1 { get; set; } = 0;
         [JsonIgnore]
         public int Xgen1 { get; set; } = 0;
+        //[JsonIgnore]
+        //public List<Gsglne> colsxVM { get; set; } = new();
     }
     public partial class Gsglne
     {
         [JsonIgnore]
+        public int Iui { get; set; } = 0;
+        [JsonIgnore]
         public int Xadd1 { get; set; } = 0;
         [JsonIgnore]
         public int Xedt1 { get; set; } = 0;
         [JsonIgnore]
-        public List<Gsglne> Tsource { get; set; } = new();
+        public int Xdel1 { get; set; } = 0;
     }
     public partial class Plngen
     {
         [JsonIgnore]
+        public int Iui { get; set; } = 0;
+        [JsonIgnore]
         public int Xadd1 { get; set; } = 0;
         [JsonIgnore]
         public int Xedt1 { get; set; } = 0;
+        [JsonIgnore]
+        public int Xdel1 { get; set; } = 0;
     }
     public partial class Rubvar
     {
         [JsonIgnore]
+        public int Iui { get; set; } = 0;
+        [JsonIgnore]
         public int Xadd1 { get; set; } = 0;
         [JsonIgnore]
         public int Xedt1 { get; set; } = 0;
+        [JsonIgnore]
+        public int Xdel1 { get; set; } = 0;
     }
     public partial class Rubfmt
     {
         [JsonIgnore]
+        public int Iui { get; set; } = 0;
+        [JsonIgnore]
         public int Xadd1 { get; set; } = 0;
         [JsonIgnore]
         public int Xedt1 { get; set; } = 0;
+        [JsonIgnore]
+        public int Xdel1 { get; set; } = 0;
     }
     public partial class Rubhie
     {
         [JsonIgnore]
+        public int Iui { get; set; } = 0;
+        [JsonIgnore]
         public int Xadd1 { get; set; } = 0;
         [JsonIgnore]
         public int Xedt1 { get; set; } = 0;
+        [JsonIgnore]
+        public int Xdel1 { get; set; } = 0;
     }
     public partial class Rubpst
     {
         [JsonIgnore]
+        public int Iui { get; set; } = 0;
+        [JsonIgnore]
         public int Xadd1 { get; set; } = 0;
         [JsonIgnore]
         public int Xedt1 { get; set; } = 0;
+        [JsonIgnore]
+        public int Xdel1 { get; set; } = 0;
     }
     public partial class Tiersp
     {
         [JsonIgnore]
+        public int Iui { get; set; } = 0;
+        [JsonIgnore]
         public int Xadd1 { get; set; } = 0;
         [JsonIgnore]
         public int Xedt1 { get; set; } = 0;
+        [JsonIgnore]
+        public int Xdel1 { get; set; } = 0;
         [JsonIgnore]
         public int Xgen1 { get; set; } = 0;
         [JsonIgnore]
@@ -186,15 +223,17 @@ namespace GxWapi.DaModels
             get => Jnot == 1;
             set => Jnot = value ? 1 : 0;
         }
-        [JsonIgnore]
-        public Dictionary<string, bool> FieldVisible { get; set; } = new();
     }
     public partial class Tiewel
     {
         [JsonIgnore]
+        public int Iui { get; set; } = 0;
+        [JsonIgnore]
         public int Xadd1 { get; set; } = 0;
         [JsonIgnore]
         public int Xedt1 { get; set; } = 0;
+        [JsonIgnore]
+        public int Xdel1 { get; set; } = 0;
         [JsonIgnore]
         public int Xgen1 { get; set; } = 0;
         [JsonIgnore]
@@ -215,15 +254,17 @@ namespace GxWapi.DaModels
             get => Jnot == 1;
             set => Jnot = value ? 1 : 0;
         }
-        [JsonIgnore]//[NotMapped]
-        public Dictionary<string, bool> FieldVisible { get; set; } = new();
     }
     public partial class Tieafl
     {
         [JsonIgnore]
+        public int Iui { get; set; } = 0;
+        [JsonIgnore]
         public int Xadd1 { get; set; } = 0;
         [JsonIgnore]
         public int Xedt1 { get; set; } = 0;
+        [JsonIgnore]
+        public int Xdel1 { get; set; } = 0;
         [JsonIgnore]
         public int Xgen1 { get; set; } = 0;
 
@@ -263,9 +304,13 @@ namespace GxWapi.DaModels
     public partial class Tiwafl
     {
         [JsonIgnore]
+        public int Iui { get; set; } = 0;
+        [JsonIgnore]
         public int Xadd1 { get; set; } = 0;
         [JsonIgnore]
         public int Xedt1 { get; set; } = 0;
+        [JsonIgnore]
+        public int Xdel1 { get; set; } = 0;
         [JsonIgnore]
         public int Xgen1 { get; set; } = 0;
         [JsonIgnore]
@@ -304,9 +349,13 @@ namespace GxWapi.DaModels
     public partial class Gsesio
     {
         [JsonIgnore]
+        public int Iui { get; set; } = 0;
+        [JsonIgnore]
         public int Xadd1 { get; set; } = 0;
         [JsonIgnore]
         public int Xedt1 { get; set; } = 0;
+        [JsonIgnore]
+        public int Xdel1 { get; set; } = 0;
     }
 
     public class Mytable

@@ -5,11 +5,9 @@ using System.Net.Http.Json;
 using System.Security.Claims;
 using System.Text;
 using System.Text.Json;
+using GxShared.Identity;
 
 using Blazored.LocalStorage;
-
-using GxShared.Sess;
-using GxShared.Identity;
 
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.IdentityModel.Tokens;
@@ -114,87 +112,6 @@ namespace GxTie.Services
             var anoauthstate = Task.FromResult(new AuthenticationState(anonymousUser));
             NotifyAuthenticationStateChanged(anoauthstate);
         }
-        //public void NotifyUserAuthentication(ClaimsPrincipal authenticatedUser)
-        //{
-        //    var authState = Task.FromResult(new AuthenticationState(authenticatedUser));
-        //    NotifyAuthenticationStateChanged(authState); // ✅ internal trigger
-        //}
-        //public async Task<bool> ValidateToken(string token, JsonWebKey[] usrkeys)
-        //{
-        //    int bida = 1;
-        //    try
-        //    {
-        //        //var keys = await GetJsonWebKeys(username);
-        //        var tokenHandler = new JwtSecurityTokenHandler();
-        //        var jwToken = tokenHandler.ReadJwtToken(token);
-        //        bida = 2;
-        //        var kid = jwToken.Header["kid"].ToString();
-        //        ////Console.WriteLine($"Valeur KID : {kid}");
-        //        bida = 3;
-        //        ////Console.WriteLine($"Valeur SignKEY : {jwToken}");
-        //        var signkey = jwToken.SigningKey.ToString();
-        //        bida = 4;
-        //        var signingKey = usrkeys.FirstOrDefault(k => k.Kid == kid);
-        //        bida = 5;
-        //        if (signingKey == null)
-        //        {
-        //            bida = 6;
-        //            Console.WriteLine($"vue kid : {kid}");
-        //            //Console.WriteLine($"vue signingKey : {signingKey}");
-        //            throw new SecurityTokenInvalidSignatureException("Invalid kid.");
-        //        }
-        //        bida = 7;
-        //        byte[] nwsigningKey = Encoding.UTF8.GetBytes(signkey);
-        //        ////Console.WriteLine($"after kid : {kid}");
-        //        ////Console.WriteLine($"after signingKey : {signingKey}");
-        //        //decoding jsonweb key
-        //        bida = 8;
-        //        byte[] verifyingKey = Convert.FromBase64String(signingKey.K);
-        //        var validationParameters = new TokenValidationParameters
-        //        {
-        //            ValidateIssuerSigningKey = true,
-        //            IssuerSigningKey = new SymmetricSecurityKey(nwsigningKey), // Adjust if using asymmetric keys
-        //            ValidateIssuer = true,
-        //            ValidIssuer = "https://www.a24soft.com",
-        //            ValidateAudience = true,
-        //            ValidAudience = "https://www.gxclie.a24soft.com",
-        //            ClockSkew = TimeSpan.Zero,
-        //        };
-        //        //bida = 9;
-        //        //tokenHandler.ValidateToken(token, validationParameters, out SecurityToken validatedToken);
-        //        //var jwtSecurityToken = validatedToken as JwtSecurityToken;
-        //        //if (jwtSecurityToken != null)
-        //        //{
-        //        //    bida = 10;
-        //        //    var roles = jwtSecurityToken.Claims.Where(c => c.Type == ClaimTypes.Role)
-        //        //            .Select(c => c.Value).ToList();
-        //        //    //Use roles for further authorization logic
-        //        //}
-        //        //////Console.WriteLine("V---TOKEN VERIFIE");
-        //        //    return true;
-        //        //}
-        //        //catch (Exception ex)
-        //        //{
-        //        //    Console.WriteLine($"V---TOKEN NON VERIFIE : {bida} erreur : { ex.Message }");
-        //        //    return false;
-        //        //}
-        //        //}
-        //        //private async Task<JsonWebKey[]> GetJsonWebKeys(String username)
-        //        //{
-        //        //    var gwtoken = await _localStorage.GetItemAsync<string>("blazToken");
-        //        //    var _apiClient = _httpClientFactory.CreateClient("ASClient");
-        //        //    var response = await _apiClient.GetAsync("lgauth/getkeytok?username=" + username);
-        //        //    response.EnsureSuccessStatusCode();
-        //        //    var jwks = await response.Content.ReadFromJsonAsync<Userjwt>();
-        //        //    return jwks.JwKeys.ToArray();
-        //        //}
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        Console.WriteLine(ex.ToString());
-        //    }
-        //}
-
         public class JwtConfig
         {
             public string Secret { get; set; } = string.Empty;

@@ -14,7 +14,7 @@
 @using GxTie.ClieModels
 @using GxTie.Services
 @using GxTie.Components.Opera.RtOpe
-@using GxTie.Helpers
+@using GxTie.StaticHelpers
 @using GxWapi.DaModels
 
 @inject MyAuthStateProvider _authprovider
@@ -217,6 +217,17 @@ else
     public MyShareVars toChild { get; set; }
     [Parameter]
     public bool allEnable { get; set; }
+    [Parameter]
+    public int toMenu { get; set; }
+    //guard
+    [Parameter]
+    public PendingChangesGuard _guard { get; set; }
+    [Parameter]
+    public EventCallback<PendingState> OnPendingStateChanged { get; set; }
+    [Parameter]
+    public int NbChanges { get; set; }
+    [Parameter]
+    public EventCallback<int> NbChangesChanged { get; set; }  // 🔥 CRITICAL
     //[Parameter]
     //public MyMenuVars froMenu { get; set; }
 
@@ -476,7 +487,7 @@ else
         Imessage = "Enregistrement Operations, patience...";
         allEnable = false;
         //EditingRowGuid = Guid.Empty;
-        await curODContext.SaveDataAsync();
+        ////await curODContext.Context.SaveDataAsync();
     }
 
     private async Task CalcAndSaveAsync()

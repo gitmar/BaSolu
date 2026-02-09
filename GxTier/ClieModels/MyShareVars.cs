@@ -1,5 +1,6 @@
 ﻿using System.Security.Claims;
 using GxWapi.DaModels;
+using GxShared.Others;
 using GxShared.Sess;
 
 namespace GxTie.ClieModels

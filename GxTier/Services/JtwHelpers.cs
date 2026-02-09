@@ -2,7 +2,7 @@
 
 using Newtonsoft.Json;
 
-namespace GxTie.Helpers
+namespace GxTie.Services
 {
     public static class JwtHelper
     {

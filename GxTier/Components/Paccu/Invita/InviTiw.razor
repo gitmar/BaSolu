@@ -294,6 +294,18 @@
     public Gxorga curOrga { get; set; }
     [Parameter]
     public bool allEnable { get; set; }
+    [Parameter]
+    public int toMenu { get; set; }
+    //guard
+    [Parameter]
+    public PendingChangesGuard _guard { get; set; }
+    [Parameter]
+    public EventCallback<PendingState> OnPendingStateChanged { get; set; }
+    [Parameter]
+    public int NbChanges { get; set; }
+    [Parameter]
+    public EventCallback<int> NbChangesChanged { get; set; }  // 🔥 CRITICAL
+
     private UsrOgSetModel _invModel = new();
 
     //[Parameter]
@@ -339,6 +351,7 @@
     private List<Tiersp> lsTiers = new List<Tiersp>();
     private List<Gpdivh> _lsDivs = new List<Gpdivh>();
     private List<Divpst> _lsPsts => _lsDivs.Where(dv => dv.Ihie == _invModel.Ihie).SelectMany(dp => dp.Divpsts).ToList();
+
 
     protected override async Task OnInitializedAsync()
     {

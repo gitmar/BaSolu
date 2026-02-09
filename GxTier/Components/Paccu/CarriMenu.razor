@@ -20,6 +20,7 @@
 @inject IODataContextFactory _contextFactory
 @inject SessionContextService _sessionContext
 @inject RendAgres _rendAgres
+@inject PendingChangesGuard _guard
 @inject IJSRuntime _jsRun
 
 @if (isLoading)
@@ -85,6 +86,7 @@ else
                                      Ugpe="@Ugpe"
                                      Tgpe="@Tgpe"
                                      curOrga="@curOrga"
+                                     _guard ="_guard"
                                      toChild="@toChild"
                                      allEnable="@allEnable"
                                      curODContext="@curODContext">
@@ -182,6 +184,20 @@ else
     private bool FirstLoadCompleted = false;
     private bool ContentLoaded = false;
 
+    //Guard
+    private int pendingCount => _guard.HasPendingChanges() ?
+        curODContext.Context.Entities.Count(e => e.State != EntityStates.Unchanged) : 0;
+
+    private async Task SaveAllAsync()
+    {
+        await _guard.FlushAsync();
+        StateHasChanged();
+    }
+    private async Task CancelAllChanges()
+    {
+        await _guard.CancelChangesAsync();
+        StateHasChanged();
+    }
     protected override async Task OnInitializedAsync()
     {
         //prise valeurs parent
@@ -242,11 +258,25 @@ else
         try
         {
             curODContext = await _contextFactory.CreateAsync(); // Use factory
-            //var expand = "Tiewels,Tiewels($expand=Tiwafls),Tiersps,Tiersps($expand=Tieafls),Gsglnes";
-            var expand = "Gsesios," + "Tiersps," +
-             "Tiersps($expand=Tiemvts)";
-            var dxorgas = await curODContext.LoadFilteredAsync<Gxorga>(expand: expand);
-            curOrga = dxorgas.FirstOrDefault();
+            _guard.AttachContext(curODContext);
+            
+            var expand =
+                "Gsesios," +
+                "Tiersps($expand=Tiemvts)";
+
+            await curODContext.LoadFilteredAsync<Gxorga>(expand: expand);
+            curOrga = curODContext.Context.Entities
+                .Select(e => e.Entity)
+                .OfType<Gxorga>()
+                .SingleOrDefault(o => o.Idorg == _usrBag.Idorg);
+
+
+            // //var expand = "Tiewels,Tiewels($expand=Tiwafls),Tiersps,Tiersps($expand=Tieafls),Gsglnes";
+            // var expand = "Gsesios," + "Tiersps," +
+            //  "Tiersps($expand=Tiemvts)";
+            // var dxorgas = await curODContext.LoadFilteredAsync<Gxorga>(expand: expand);
+            // curOrga = dxorgas.FirstOrDefault();
+
             if (curOrga == null)
             {
                 Console.WriteLine("No organization found for the current user.");

@@ -10,6 +10,7 @@
 @using GxShared.Others
 @using GxTie.ClieModels
 @using GxTie.Services
+@using GxTie.StaticHelpers
 @using GxTie.Components.Opera.Saisies
 @using GxWapi.DaModels
 @using Microsoft.OData.Client
@@ -24,6 +25,7 @@
 @inject IODataContextFactory _contextFactory
 @inject SessionContextService _sessionScontext
 @inject RendAgres _rendAgres
+@inject PendingChangesGuard _guard
 
 @if (isLoading)
 {
@@ -98,6 +100,16 @@
                         {
                             case 1:
                                 <SaieActLnes @ref="mygsaie"
+                                    curOrga="@curOrga"
+                                    _guard="@_guard"
+                                    toChild="@toChild"
+                                    allEnable="@allEnable"
+                                    curODContext="@curODContext">
+                                        <ChildContent>
+                                            @* <h2 class="child-box">Hello TABLES</h2> *@
+                                        </ChildContent>
+                                </SaieActLnes>
+                                @* <SaieActLnes @ref="mygsaie"
                                              curOrga="@curOrga"
                                              toChild="@toChild"
                                              allEnable="@allEnable"
@@ -105,7 +117,7 @@
                                     <ChildContent>
                                         <h2 class="child-box">Hello GRILLES</h2>
                                     </ChildContent>
-                                </SaieActLnes>
+                                </SaieActLnes> *@
                                 break;
 
                             case 2:
@@ -140,8 +152,33 @@
             </div>
         </div>
     </div>
+     <div class="row mt-3">
+            <div class="col-12">
+                @if (_guard.HasPendingChanges())
+                {
+                    <div class="alert alert-warning">
+                        <strong>@pendingCount changes pending across all tabs</strong>
+                    </div>
+                }
+                <div class="d-flex gap-2 justify-content-end">
+                    <Button Color="ButtonColor.Primary"
+                            @onclick="SaveAllAsync"
+                            Enabled="@_guard.HasPendingChanges()">
+                        Save All (@pendingCount changes)
+                    </Button>
+                    <Button Color="ButtonColor.Secondary"
+                            @onclick="CancelAllChanges">
+                        Cancel All Changes
+                    </Button>
+                </div>
+            </div>
+        </div>
 }
-
+<ErrorBoundary>
+    <ErrorContent>
+        An unexpected error occured. Please try again later.
+    </ErrorContent>
+</ErrorBoundary>
 @code {
     private bool isLoading = true;
     public MyODataContext curODContext;
@@ -257,6 +294,20 @@
 
     private bool isFilteringEnabled = false;
 
+    //Guard
+    private int pendingCount => _guard.HasPendingChanges() ?
+        curODContext.Context.Entities.Count(e => e.State != EntityStates.Unchanged) : 0;
+    
+    private async Task SaveAllAsync()
+    {
+        await _guard.FlushAsync();
+        StateHasChanged();
+    }
+    private async Task CancelAllChanges()
+    {
+        await _guard.CancelChangesAsync();
+        StateHasChanged();
+    }
     protected override async Task OnInitializedAsync()
     {
         isLoading = true;
@@ -330,28 +381,68 @@
         try
         {
             curODContext = await _contextFactory.CreateAsync();
+            _guard.AttachContext(curODContext);
+            int key = _usrBag.Idorg;
+            // ✅ Use key-based query instead of filtered collection
+            string expandGsesios =
+                ODataQueryHelper.Expand<Gxorga, IEnumerable<Gsesio>>(o => o.Gsesios);
+
+            string expandPlngens =
+                ODataQueryHelper.Expand<Gxorga, IEnumerable<Plngen>>(o => o.Plngens);
+
+            string expandTiersps =
+                ODataQueryHelper.Expand<Gxorga, IEnumerable<Tiersp>>(o => o.Tiersps);
+
+            // ✅ Correct nested expands
+            string expandPlngensNested =
+                expandPlngens +
+                "($expand=Rubvars($expand=Rubfmts),Rubhies($expand=Rubpsts))";
+
+            string expandTierspsNested =
+                expandTiersps +
+                "($expand=Actsaies($expand=Actdets))";
+
+            // Combine
+            string expand = string.Join(
+                ",",
+                expandGsesios,
+                expandPlngensNested,
+                expandTierspsNested
+            );
+
+            curOrga = await curODContext.GetByKeyAsync<Gxorga>(
+                key,
+                "Gxorgas",
+                expand
+            );
             //var expand = "Tiersps($expand=Actsaies($expand=Actdets))";
-            var expand = "Tiersps," + "Gsesios," +
-                "Tiersps($expand=Actsaies($expand=Actdets))";
-            var dxorgas = await curODContext.LoadFilteredAsync<Gxorga>(expand: expand);
-            pisa = 3;
-            curOrga = dxorgas.FirstOrDefault();
+            // var expand = "Tiersps," + "Gsesios," +
+            //     "Tiersps($expand=Actsaies($expand=Actdets))";
+            // var dxorgas = await curODContext.LoadFilteredAsync<Gxorga>(expand: expand);
+            // pisa = 3;
+            // curOrga = dxorgas.FirstOrDefault();
+            // if (curOrga == null)
+            // {
+            //     Console.WriteLine("No organization found for the current user.");
+            //     return;
+            // }
+            // var expand2 = "Plngens," +
+            //     "Plngens($expand=Rubvars($expand=Rubfmts))," +
+            //     "Plngens($expand=Rubhies($expand=Rubpsts))";
+            // var dxplns = await curODContext.LoadFilteredAsync<Gxorga>(expand: expand2);
+            // pisa = 3;
+            // curOrga = dxorgas.FirstOrDefault();
+            // if (curOrga == null)
+            // {
+            //     Console.WriteLine("No organization found for the current user.");
+            //     return;
+            // }
             if (curOrga == null)
             {
                 Console.WriteLine("No organization found for the current user.");
                 return;
             }
-            var expand2 = "Plngens," +
-                "Plngens($expand=Rubvars($expand=Rubfmts))," +
-                "Plngens($expand=Rubhies($expand=Rubpsts))";
-            var dxplns = await curODContext.LoadFilteredAsync<Gxorga>(expand: expand2);
-            pisa = 3;
-            curOrga = dxorgas.FirstOrDefault();
-            if (curOrga == null)
-            {
-                Console.WriteLine("No organization found for the current user.");
-                return;
-            }
+            Console.WriteLine($"orga recu {curOrga.Raison}");
             EnsTiers = curOrga.Tiersps.ToList();
             Console.WriteLine($"orga recu {curOrga.Raison}");
             pisa = 4;

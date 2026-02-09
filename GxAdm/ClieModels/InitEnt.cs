@@ -1,7 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations.Schema;
 
-using GxShared.Sess;
-
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 namespace GxWapi.DaModels
