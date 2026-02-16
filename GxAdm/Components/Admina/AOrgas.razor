@@ -174,7 +174,7 @@
                                                 <tr>
                                                     <td>Pays:</td>
                                                     <td class="text-right">
-                                                        <InputSelect id="ogpays" @bind-Value="curOrga.Ipays" disabled="@(!isEdOrg)">
+                                                        <InputSelect id="ogpays" @bind-Value="curOrga.Npays" disabled="@(!isEdOrg)">
                                                             <option value="0">-- Select a country --</option>
                                                             @foreach (var tob in curOrga.Gsglnes.Where(ug => ug.Otyp == 4 && ug.Pitb == 31))
                                                             {
@@ -475,6 +475,16 @@
                                             </Grid>
                                         </div>
                                     </EditForm>
+                                </Content>
+                            </Tab>
+                            <Tab Title="Colonnes">
+                                <Content>
+                                    <Aogcols @ref="myicols"
+                                            curOrga="@curOrga"
+                                            UserId="@curOrga.Idorg.ToString()"
+                                            LsCols="@LsCols"
+                                            OnPreferencesSaved="@OnOptcolsSave">
+                                    </Aogcols>
                                 </Content>
                             </Tab>
                             <Tab Title="Colonnes">
@@ -831,10 +841,12 @@
     public MyODataContext curODContext;
 
     public EventCallback<PendingState> OnPendingStateChanged { get; set; }
-    public Gxorga curOrga = new Gxorga();
     private EditContext edOrgContext;
     private EditContext edFixContext;
     private EditContext edColContext;
+
+    private Aogcols myicols;
+    public Gxorga curOrga = new Gxorga();
 
     public string Title { get; set; }
     private string tbTitle = "Cible";
@@ -846,6 +858,7 @@
     private List<Gpfixe> LsGties = new();
     private List<Gpfixe> LsDoms = new();
     private List<Gpdivh> LsDivs = new();
+    private List<Gpvar> LsCols = new();
     
     private List<MyRolTable> _inRoles = new();
     private List<Grole> _invRoles = new();
@@ -860,6 +873,7 @@
     private int Rubtto = 1;
 
     private string Imessage = "", Ierror = "";
+    private string optGrid = "tiewel";
 
     Gsgfix newTfl = new();
   
@@ -944,7 +958,13 @@
 
         StateHasChanged();
     }
-
+    private async Task OnOptcolsSave(string svoptcols)
+    {
+        curOrga.Optcols = svoptcols;
+        //StateHasChanged();
+        //Console.WriteLine("PAS 2");
+        await Task.Delay(1);
+    }
     protected override async Task OnInitializedAsync()
     {
         //prise valeurs parent
@@ -980,6 +1000,9 @@
             .ToList();
         LsDoms = _usrBag.Ufixes
             .Where(ut => ut.Gvars == 36 && ut.Itb == 4 && ut.Gp1 == 3 && ut.Elea != 0)
+            .ToList();
+        LsCols = _usrBag.Usorga.Uvars
+            .Where(uv => uv.Gvars == 31 && uv.Elea != 0)
             .ToList();
         _invRoles = await _rendAgres.LoadOrgaRoles();
         Console.WriteLine($"Roles disponibles : {_invRoles.Count}");

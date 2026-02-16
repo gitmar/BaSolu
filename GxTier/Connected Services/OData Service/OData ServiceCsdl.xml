@@ -32,10 +32,13 @@
         <Property Name="Sidom" Type="Edm.String" />
         <Property Name="Jdoma" Type="Edm.Int32" />
         <Property Name="Sjdom" Type="Edm.String" />
+        <Property Name="Vdivue" Type="Edm.Int32" />
+        <Property Name="Svdom" Type="Edm.String" />
         <Property Name="Jacta" Type="Edm.Int32" />
         <Property Name="Sjacta" Type="Edm.String" />
         <Property Name="Jpoint" Type="Edm.Int32" />
         <Property Name="Sjpoint" Type="Edm.String" />
+        <Property Name="Optcols" Type="Edm.String" />
         <Property Name="Rcm" Type="Edm.String" />
         <Property Name="Rifu" Type="Edm.String" />
         <Property Name="Ircm" Type="Edm.Int32" />
@@ -45,13 +48,13 @@
         <Property Name="Tyafec" Type="Edm.Int32" />
         <Property Name="Codi" Type="Edm.Int32" />
         <Property Name="Cods" Type="Edm.String" />
-        <Property Name="Natio" Type="Edm.Int32" />
-        <Property Name="Resid" Type="Edm.Int32" />
+        <Property Name="Natio" Type="Edm.String" />
+        <Property Name="Npays" Type="Edm.String" />
+        <Property Name="Rpays" Type="Edm.String" />
         <Property Name="Ibank" Type="Edm.Int32" />
         <Property Name="Icotis" Type="Edm.Int32" />
         <Property Name="Itax" Type="Edm.Int32" />
         <Property Name="Ipaid" Type="Edm.Int32" />
-        <Property Name="Ipays" Type="Edm.Int32" />
         <Property Name="Iregio" Type="Edm.Int32" />
         <Property Name="Iprovi" Type="Edm.Int32" />
         <Property Name="Icity" Type="Edm.Int32" />
@@ -84,7 +87,6 @@
         <Property Name="Cpnom" Type="Edm.String" />
         <Property Name="Cip" Type="Edm.String" />
         <Property Name="Liba" Type="Edm.String" />
-        <Property Name="Liba2" Type="Edm.String" />
         <Property Name="Abg" Type="Edm.String" />
         <Property Name="Ntcible" Type="Edm.Int32" />
         <Property Name="Stcible" Type="Edm.String" />
@@ -253,8 +255,7 @@
         <Property Name="Zfro" Type="Edm.Int32" />
         <Property Name="Zgpe" Type="Edm.Int32" />
         <Property Name="Gat" Type="Edm.Int32" />
-        <Property Name="Idpln" Type="Edm.Int32" />
-        <Property Name="Idpgr" Type="Edm.Int32" />
+        <Property Name="Ipln" Type="Edm.Int32" />
         <Property Name="Iperi" Type="Edm.Int32" />
         <Property Name="Pseq" Type="Edm.Int32" />
         <Property Name="Ifx" Type="Edm.Int32" />
@@ -267,49 +268,19 @@
         <Property Name="Xsac" Type="Edm.Int32" />
         <Property Name="Psac" Type="Edm.Int32" />
         <Property Name="Scdrub" Type="Edm.String" />
-        <Property Name="Icdrub" Type="Edm.Int32" />
-        <Property Name="Pgnom" Type="Edm.String" />
-        <Property Name="Clnom" Type="Edm.String" />
-        <Property Name="Varbloc" Type="Edm.String" />
-        <Property Name="Princbloc" Type="Edm.String" />
-        <Property Name="Procbloc" Type="Edm.String" />
         <Property Name="Fpsource" Type="Edm.String" />
-        <Property Name="Fpcpl" Type="Edm.String" />
-        <Property Name="Fpexec" Type="Edm.String" />
-        <Property Name="Xuid" Type="Edm.String" />
-        <Property Name="Xumail" Type="Edm.String" />
-        <Property Name="Xuphone" Type="Edm.String" />
-        <Property Name="Xunom" Type="Edm.String" />
-        <Property Name="Xupnom" Type="Edm.String" />
-        <Property Name="Xuraison" Type="Edm.String" />
+        <Property Name="Fpexe" Type="Edm.String" />
         <Property Name="Sitie" Type="Edm.Boolean" />
-        <Property Name="Xlrubs" Type="Edm.String" />
-        <Property Name="Xlprubs" Type="Edm.String" />
-        <Property Name="Xlplus" Type="Edm.String" />
         <Property Name="Hrtyp" Type="Edm.Int32" />
         <Property Name="Serrors" Type="Edm.String" />
-        <Property Name="Verrors" Type="Edm.String" />
-        <Property Name="Perrors" Type="Edm.String" />
-        <Property Name="Sicpl" Type="Edm.Int32" />
-        <Property Name="Siexc" Type="Edm.Int32" />
-        <Property Name="Sidecl" Type="Edm.Boolean" />
-        <Property Name="Sifunc" Type="Edm.Boolean" />
-        <Property Name="Siprog" Type="Edm.Boolean" />
-        <Property Name="Siest" Type="Edm.Int32" />
         <Property Name="Sigrid" Type="Edm.Int32" />
         <Property Name="Svala" Type="Edm.String" />
-        <Property Name="Sval2" Type="Edm.String" />
-        <Property Name="Siti2" Type="Edm.Boolean" />
         <Property Name="Iorig" Type="Edm.Int32" />
-        <Property Name="Iori2" Type="Edm.Int32" />
         <Property Name="Ivala" Type="Edm.Int32" />
-        <Property Name="Ival2" Type="Edm.Int32" />
         <Property Name="Rvala" Type="Edm.Single" />
-        <Property Name="Rval2" Type="Edm.Single" />
         <Property Name="Dval" Type="Edm.DateTimeOffset" />
         <Property Name="Fval" Type="Edm.DateTimeOffset" />
         <Property Name="Bvala" Type="Edm.Boolean" />
-        <Property Name="Bval2" Type="Edm.Boolean" />
         <Property Name="Speri" Type="Edm.String" />
         <Property Name="Sdouv" Type="Edm.String" />
         <Property Name="Sdclot" Type="Edm.String" />
@@ -323,7 +294,6 @@
         <Property Name="Ede" Type="Edm.Int32" />
         <Property Name="Ade" Type="Edm.Int32" />
         <Property Name="Eseq" Type="Edm.Int32" />
-        <Property Name="Sval3" Type="Edm.String" />
         <Property Name="Lgt1" Type="Edm.Int32" />
         <Property Name="Lgft" Type="Edm.String" />
         <Property Name="Lgt2" Type="Edm.Int32" />
@@ -429,18 +399,18 @@
         <Property Name="Smatri" Type="Edm.String" />
         <Property Name="Xmatri" Type="Edm.String" />
         <Property Name="Zmatri" Type="Edm.String" />
-        <Property Name="Refapl" Type="Edm.String" />
-        <Property Name="Intmat" Type="Edm.Int32" />
+        <Property Name="Imatri" Type="Edm.Int32" />
+        <Property Name="Jmatri" Type="Edm.Int32" />
         <Property Name="Nom" Type="Edm.String" Nullable="false" />
-        <Property Name="Nomb" Type="Edm.String" />
+        <Property Name="Bnom" Type="Edm.String" />
         <Property Name="Pnom" Type="Edm.String" Nullable="false" />
         <Property Name="Sexe" Type="Edm.Int32" />
         <Property Name="Sitmat" Type="Edm.Int32" />
         <Property Name="Statut" Type="Edm.Int32" />
+        <Property Name="Title" Type="Edm.String" />
         <Property Name="Usrid" Type="Edm.String" />
-        <Property Name="Pxmat" Type="Edm.Int32" />
-        <Property Name="Hiem" Type="Edm.Guid" />
-        <Property Name="Pstm" Type="Edm.Guid" />
+        <Property Name="Pmatri" Type="Edm.Int32" />
+        <Property Name="Pid" Type="Edm.Int32" />
         <Property Name="Hieg" Type="Edm.Int32" />
         <Property Name="Pstg" Type="Edm.Int32" />
         <Property Name="Hiep" Type="Edm.Int32" />
@@ -458,8 +428,7 @@
         <Property Name="Phone" Type="Edm.String" />
         <Property Name="Phon2" Type="Edm.String" />
         <Property Name="Idsocia" Type="Edm.String" />
-        <Property Name="Idsocia2" Type="Edm.String" />
-        <Property Name="Pid" Type="Edm.Int32" />
+        <Property Name="Idsoci2" Type="Edm.String" />
         <Property Name="Utyp" Type="Edm.Int32" />
         <Property Name="Putyp" Type="Edm.Int32" />
         <Property Name="Ustyp" Type="Edm.Int32" />
@@ -480,14 +449,13 @@
         <Property Name="Tele2" Type="Edm.String" />
         <Property Name="Tele3" Type="Edm.String" />
         <Property Name="Relat" Type="Edm.Int32" />
-        <Property Name="Chxp" Type="Edm.Int32" />
-        <Property Name="Chxp2" Type="Edm.Int32" />
-        <Property Name="Chxp3" Type="Edm.Int32" />
         <Property Name="Respon" Type="Edm.Int32" />
         <Property Name="Sichef" Type="Edm.Int32" />
+        <Property Name="Titre" Type="Edm.String" />
         <Property Name="Sigrid" Type="Edm.Int32" />
-        <Property Name="Natio" Type="Edm.Int32" />
-        <Property Name="Resid" Type="Edm.Int32" />
+        <Property Name="Rpays" Type="Edm.String" />
+        <Property Name="Npays" Type="Edm.String" />
+        <Property Name="Natio" Type="Edm.String" />
         <Property Name="Ibank" Type="Edm.Int32" />
         <Property Name="Icotis" Type="Edm.Int32" />
         <Property Name="Itax" Type="Edm.Int32" />
@@ -511,16 +479,13 @@
         <Property Name="Squarti" Type="Edm.String" />
         <Property Name="Sfami" Type="Edm.String" />
         <Property Name="Iloc" Type="Edm.Int32" />
-        <Property Name="Binid" Type="Edm.Int32" />
         <Property Name="Siscv" Type="Edm.Int32" />
         <Property Name="Sioca" Type="Edm.Int32" />
-        <Property Name="Mvtdcl" Type="Edm.Int32" />
         <Property Name="Jpays" Type="Edm.Int32" />
         <Property Name="Jcity" Type="Edm.Int32" />
         <Property Name="Kpays" Type="Edm.Int32" />
         <Property Name="Kcity" Type="Edm.Int32" />
         <Property Name="Raison" Type="Edm.String" />
-        <Property Name="Titre" Type="Edm.String" />
         <Property Name="Xidtie" Type="Edm.String" />
         <Property Name="Tident" Type="Edm.Int32" />
         <Property Name="Nident" Type="Edm.String" />
@@ -540,6 +505,10 @@
         <Property Name="Idoc2" Type="Edm.String" />
         <Property Name="Photo" Type="Edm.Binary" />
         <Property Name="Phot2" Type="Edm.Binary" />
+        <Property Name="Siset" Type="Edm.Int32" />
+        <Property Name="Idoma" Type="Edm.Int32" />
+        <Property Name="Tiedcl" Type="Edm.Int32" />
+        <Property Name="Weburl" Type="Edm.String" />
         <Property Name="Typct" Type="Edm.Int32" />
         <Property Name="Dtdval" Type="Edm.Int32" />
         <Property Name="Dtfval" Type="Edm.Int32" />
@@ -571,55 +540,65 @@
         </Key>
         <Property Name="Id" Type="Edm.Int32" Nullable="false" />
         <Property Name="Iele" Type="Edm.Int32" />
-        <Property Name="Tseq" Type="Edm.Int32" />
         <Property Name="Idorg" Type="Edm.Int32" />
-        <Property Name="Usrid" Type="Edm.String" />
+        <Property Name="Weltie" Type="Edm.Int32" />
         <Property Name="Smatri" Type="Edm.String" />
         <Property Name="Xmatri" Type="Edm.String" />
-        <Property Name="Refapl" Type="Edm.String" />
+        <Property Name="Zmatri" Type="Edm.String" />
+        <Property Name="Imatri" Type="Edm.Int32" />
+        <Property Name="Jmatri" Type="Edm.Int32" />
         <Property Name="Nom" Type="Edm.String" Nullable="false" />
-        <Property Name="Nomb" Type="Edm.String" />
+        <Property Name="Bnom" Type="Edm.String" />
         <Property Name="Pnom" Type="Edm.String" Nullable="false" />
-        <Property Name="Statut" Type="Edm.Int32" />
         <Property Name="Sexe" Type="Edm.Int32" />
         <Property Name="Sitmat" Type="Edm.Int32" />
+        <Property Name="Statut" Type="Edm.Int32" />
+        <Property Name="Title" Type="Edm.String" />
+        <Property Name="Usrid" Type="Edm.String" />
+        <Property Name="Pmatri" Type="Edm.Int32" />
+        <Property Name="Pid" Type="Edm.Int32" />
+        <Property Name="Hieg" Type="Edm.Int32" />
+        <Property Name="Pstg" Type="Edm.Int32" />
+        <Property Name="Hiep" Type="Edm.Int32" />
+        <Property Name="Pstp" Type="Edm.Int32" />
+        <Property Name="Ihie" Type="Edm.Int32" />
+        <Property Name="Ipst" Type="Edm.Int32" />
+        <Property Name="Ihiea" Type="Edm.Int32" />
+        <Property Name="Ipsta" Type="Edm.Int32" />
+        <Property Name="Ifonc" Type="Edm.Int32" />
+        <Property Name="Igrad" Type="Edm.Int32" />
+        <Property Name="Sfonc" Type="Edm.String" />
+        <Property Name="Sgrad" Type="Edm.String" />
         <Property Name="Uname" Type="Edm.String" />
         <Property Name="Email" Type="Edm.String" />
         <Property Name="Phone" Type="Edm.String" />
         <Property Name="Phon2" Type="Edm.String" />
         <Property Name="Idsocia" Type="Edm.String" />
-        <Property Name="Idsocia2" Type="Edm.String" />
+        <Property Name="Idsoci2" Type="Edm.String" />
         <Property Name="Utyp" Type="Edm.Int32" />
         <Property Name="Putyp" Type="Edm.Int32" />
         <Property Name="Ustyp" Type="Edm.Int32" />
         <Property Name="Atyp" Type="Edm.Int32" />
-        <Property Name="Pxmat" Type="Edm.Int32" />
-        <Property Name="Hiea" Type="Edm.Int32" />
-        <Property Name="Psta" Type="Edm.Int32" />
-        <Property Name="Hiem" Type="Edm.Guid" />
-        <Property Name="Pstm" Type="Edm.Guid" />
-        <Property Name="Hieg" Type="Edm.Int32" />
-        <Property Name="Pstg" Type="Edm.Int32" />
-        <Property Name="Hiep" Type="Edm.Int32" />
-        <Property Name="Pstp" Type="Edm.Int32" />
-        <Property Name="Idhie" Type="Edm.Int32" />
-        <Property Name="Idpst" Type="Edm.Int32" />
-        <Property Name="Idgeo" Type="Edm.Int32" />
-        <Property Name="Idgst" Type="Edm.Int32" />
         <Property Name="Jacc" Type="Edm.Int32" />
         <Property Name="Jrej" Type="Edm.Int32" />
         <Property Name="Jint" Type="Edm.Int32" />
         <Property Name="Jnot" Type="Edm.Int32" />
         <Property Name="Jwlc" Type="Edm.Int32" />
-        <Property Name="Ihie" Type="Edm.Int32" />
-        <Property Name="Ipst" Type="Edm.Int32" />
-        <Property Name="Ifonc" Type="Edm.Int32" />
-        <Property Name="Igrad" Type="Edm.Int32" />
         <Property Name="Dnais" Type="Edm.DateTimeOffset" />
         <Property Name="Demb" Type="Edm.DateTimeOffset" />
         <Property Name="Dinscr" Type="Edm.DateTimeOffset" />
+        <Property Name="Ademail" Type="Edm.String" />
+        <Property Name="Adphone" Type="Edm.String" />
+        <Property Name="Weburl" Type="Edm.String" />
+        <Property Name="Wcemail" Type="Edm.String" />
+        <Property Name="Wcphone" Type="Edm.String" />
+        <Property Name="Wcphon2" Type="Edm.String" />
+        <Property Name="Wcwhats" Type="Edm.String" />
+        <Property Name="Htoken" Type="Edm.String" />
+        <Property Name="Datx" Type="Edm.DateTimeOffset" />
+        <Property Name="Wused" Type="Edm.Boolean" />
+        <Property Name="Wcuname" Type="Edm.String" />
         <Property Name="Nchge" Type="Edm.Int32" />
-        <Property Name="Respon" Type="Edm.Int32" />
         <Property Name="Ncjn" Type="Edm.Int32" />
         <Property Name="Nenf" Type="Edm.Int32" />
         <Property Name="Npai" Type="Edm.Int32" />
@@ -627,29 +606,23 @@
         <Property Name="Tele2" Type="Edm.String" />
         <Property Name="Tele3" Type="Edm.String" />
         <Property Name="Relat" Type="Edm.Int32" />
-        <Property Name="Chxp" Type="Edm.Int32" />
-        <Property Name="Chxp2" Type="Edm.Int32" />
-        <Property Name="Siset" Type="Edm.Int32" />
-        <Property Name="Natio" Type="Edm.Int32" />
-        <Property Name="Resid" Type="Edm.Int32" />
+        <Property Name="Respon" Type="Edm.Int32" />
+        <Property Name="Sichef" Type="Edm.Int32" />
+        <Property Name="Titre" Type="Edm.String" />
+        <Property Name="Sigrid" Type="Edm.Int32" />
         <Property Name="Ibank" Type="Edm.Int32" />
         <Property Name="Icotis" Type="Edm.Int32" />
         <Property Name="Itax" Type="Edm.Int32" />
         <Property Name="Ipaid" Type="Edm.Int32" />
-        <Property Name="Ipays" Type="Edm.Int32" />
+        <Property Name="Natio" Type="Edm.String" />
+        <Property Name="Rpays" Type="Edm.String" />
+        <Property Name="Npays" Type="Edm.String" />
         <Property Name="Iregio" Type="Edm.Int32" />
         <Property Name="Iprovi" Type="Edm.Int32" />
         <Property Name="Icity" Type="Edm.Int32" />
         <Property Name="Icomu" Type="Edm.Int32" />
         <Property Name="Iquarti" Type="Edm.Int32" />
         <Property Name="Ifami" Type="Edm.Int32" />
-        <Property Name="Idoma" Type="Edm.Int32" />
-        <Property Name="Weburl" Type="Edm.String" />
-        <Property Name="Cdtyp" Type="Edm.Int32" />
-        <Property Name="Cutyp" Type="Edm.Int32" />
-        <Property Name="Colne" Type="Edm.Int32" />
-        <Property Name="Sfonc" Type="Edm.String" />
-        <Property Name="Sgrad" Type="Edm.String" />
         <Property Name="Sbank" Type="Edm.String" />
         <Property Name="Scotis" Type="Edm.String" />
         <Property Name="Stax" Type="Edm.String" />
@@ -662,24 +635,13 @@
         <Property Name="Squarti" Type="Edm.String" />
         <Property Name="Sfami" Type="Edm.String" />
         <Property Name="Iloc" Type="Edm.Int32" />
-        <Property Name="Cpgid" Type="Edm.Int32" />
-        <Property Name="Cpgcod" Type="Edm.String" />
-        <Property Name="Parqui" Type="Edm.Int32" />
-        <Property Name="Ifchef" Type="Edm.Int32" />
-        <Property Name="Ymatri" Type="Edm.String" />
-        <Property Name="Zmatri" Type="Edm.String" />
-        <Property Name="Psmatri" Type="Edm.String" />
-        <Property Name="Intmat" Type="Edm.Int32" />
-        <Property Name="Binid" Type="Edm.Int32" />
         <Property Name="Siscv" Type="Edm.Int32" />
         <Property Name="Sioca" Type="Edm.Int32" />
-        <Property Name="Tiedcl" Type="Edm.Int32" />
         <Property Name="Jpays" Type="Edm.Int32" />
         <Property Name="Jcity" Type="Edm.Int32" />
         <Property Name="Kpays" Type="Edm.Int32" />
         <Property Name="Kcity" Type="Edm.Int32" />
         <Property Name="Raison" Type="Edm.String" />
-        <Property Name="Titre" Type="Edm.String" />
         <Property Name="Xidtie" Type="Edm.String" />
         <Property Name="Tident" Type="Edm.Int32" />
         <Property Name="Nident" Type="Edm.String" />
@@ -695,18 +657,13 @@
         <Property Name="Iadr1" Type="Edm.Int32" />
         <Property Name="Iadr2" Type="Edm.Int32" />
         <Property Name="Atrplus" Type="Edm.String" />
-        <Property Name="Nnais" Type="Edm.Int32" />
-        <Property Name="Inais" Type="Edm.Int32" />
-        <Property Name="Iemb" Type="Edm.Int32" />
-        <Property Name="Nactu" Type="Edm.Int32" />
-        <Property Name="Inlg" Type="Edm.Int32" />
-        <Property Name="Inth" Type="Edm.Int32" />
-        <Property Name="Idoca" Type="Edm.String" />
+        <Property Name="Idoc" Type="Edm.String" />
+        <Property Name="Idoc2" Type="Edm.String" />
         <Property Name="Photo" Type="Edm.Binary" />
         <Property Name="Phot2" Type="Edm.Binary" />
-        <Property Name="Cdinvite" Type="Edm.String" />
-        <Property Name="Sipris" Type="Edm.Int32" />
-        <Property Name="Refa" Type="Edm.String" />
+        <Property Name="Siset" Type="Edm.Int32" />
+        <Property Name="Idoma" Type="Edm.Int32" />
+        <Property Name="Tiedcl" Type="Edm.Int32" />
         <Property Name="Typct" Type="Edm.Int32" />
         <Property Name="Dtdval" Type="Edm.Int32" />
         <Property Name="Dtfval" Type="Edm.Int32" />
@@ -714,6 +671,7 @@
         <Property Name="Sia" Type="Edm.Boolean" />
         <Property Name="Siv" Type="Edm.Boolean" />
         <Property Name="Selc" Type="Edm.Boolean" />
+        <Property Name="Dati" Type="Edm.DateTimeOffset" />
         <Property Name="Datc" Type="Edm.DateTimeOffset" />
         <Property Name="Datu" Type="Edm.DateTimeOffset" />
         <Property Name="Usrope" Type="Edm.String" />
@@ -838,9 +796,9 @@
         <Property Name="Xcod" Type="Edm.String" />
         <Property Name="Idorg" Type="Edm.Int32" />
         <Property Name="Scdrub" Type="Edm.String" Nullable="false" />
-        <Property Name="Siroot" Type="Edm.Int32" />
         <Property Name="Torub" Type="Edm.Int32" />
         <Property Name="Tovue" Type="Edm.Int32" />
+        <Property Name="Siroot" Type="Edm.Int32" />
         <Property Name="Dpdce" Type="Edm.Int32" />
         <Property Name="Udpd" Type="Edm.Int32" />
         <Property Name="Xdpd" Type="Edm.Int32" />
@@ -850,7 +808,7 @@
         <Property Name="Abg" Type="Edm.String" />
         <Property Name="Utyp" Type="Edm.Int32" />
         <Property Name="Ustyp" Type="Edm.Int32" />
-        <Property Name="Lgcdrub" Type="Edm.String" />
+        <Property Name="Lgrub" Type="Edm.String" />
         <Property Name="Uraz" Type="Edm.Int32" />
         <Property Name="Tosrub" Type="Edm.Int32" />
         <Property Name="Sigrid" Type="Edm.Int32" />
@@ -860,8 +818,8 @@
         <Property Name="Ivala" Type="Edm.Int32" />
         <Property Name="Rvala" Type="Edm.Single" />
         <Property Name="Bvala" Type="Edm.Boolean" />
-        <Property Name="Sesperi" Type="Edm.String" />
-        <Property Name="Valperi" Type="Edm.String" />
+        <Property Name="Speri" Type="Edm.String" />
+        <Property Name="Vperi" Type="Edm.String" />
         <Property Name="Exoperi" Type="Edm.String" />
         <Property Name="Datope" Type="Edm.DateTimeOffset" />
         <Property Name="Datvalid" Type="Edm.DateTimeOffset" />
@@ -874,7 +832,6 @@
         <Property Name="Eint" Type="Edm.Int32" />
         <Property Name="Xdocu" Type="Edm.String" />
         <Property Name="Emont" Type="Edm.Decimal" Scale="variable" />
-        <Property Name="E2mont" Type="Edm.Decimal" Scale="variable" />
         <Property Name="Sifin" Type="Edm.Int32" />
         <Property Name="Sifor" Type="Edm.Int32" />
         <Property Name="Sicmp" Type="Edm.Int32" />
@@ -886,7 +843,6 @@
         <Property Name="Lib2" Type="Edm.String" />
         <Property Name="Frsource" Type="Edm.String" />
         <Property Name="F2source" Type="Edm.String" />
-        <Property Name="F3source" Type="Edm.String" />
         <Property Name="Frbinaire" Type="Edm.String" />
         <Property Name="Col" Type="Edm.Int32" />
         <Property Name="Lne" Type="Edm.Int32" />
@@ -916,7 +872,6 @@
         <Property Name="Eaut" Type="Edm.Int32" />
         <Property Name="Rowguid" Type="Edm.Guid" Nullable="false" />
         <Property Name="Obsv" Type="Edm.String" />
-        <Property Name="Pseq" Type="Edm.Int32" Nullable="false" />
         <NavigationProperty Name="IplnNavigation" Type="GxWapi.DaModels.Plngen" Nullable="false" />
         <NavigationProperty Name="Rubfmts" Type="Collection(GxWapi.DaModels.Rubfmt)" />
         <NavigationProperty Name="Actsaies" Type="Collection(GxWapi.DaModels.Actsaie)" />
@@ -961,7 +916,7 @@
         <Property Name="Tcalc" Type="Edm.Int32" />
         <Property Name="Utyp" Type="Edm.Int32" />
         <Property Name="Ustyp" Type="Edm.Int32" />
-        <Property Name="Lgcdrub" Type="Edm.String" />
+        <Property Name="Lgrub" Type="Edm.String" />
         <Property Name="Nivhie" Type="Edm.String" />
         <Property Name="Hlevel" Type="Edm.String" />
         <Property Name="Nivlne" Type="Edm.Int32" />
@@ -970,7 +925,7 @@
         <Property Name="Tosrub" Type="Edm.Int32" />
         <Property Name="Pidpln" Type="Edm.Int32" />
         <Property Name="Pidrub" Type="Edm.Int32" />
-        <Property Name="Pptyp" Type="Edm.Int32" />
+        <Property Name="Ptyp" Type="Edm.Int32" />
         <Property Name="Atyp" Type="Edm.Int32" />
         <Property Name="Svala" Type="Edm.String" />
         <Property Name="Svbas" Type="Edm.String" />
@@ -982,8 +937,8 @@
         <Property Name="Idval" Type="Edm.Int32" />
         <Property Name="Ifval" Type="Edm.Int32" />
         <Property Name="Tperi" Type="Edm.Int32" />
-        <Property Name="Sesperi" Type="Edm.String" />
-        <Property Name="Valperi" Type="Edm.String" />
+        <Property Name="Speri" Type="Edm.String" />
+        <Property Name="Vperi" Type="Edm.String" />
         <Property Name="Exoperi" Type="Edm.String" />
         <Property Name="Datope" Type="Edm.DateTimeOffset" />
         <Property Name="Datvalid" Type="Edm.DateTimeOffset" />
@@ -997,8 +952,6 @@
         <Property Name="Stfstr" Type="Edm.String" />
         <Property Name="Ddval" Type="Edm.Int32" />
         <Property Name="Dfval" Type="Edm.Int32" />
-        <Property Name="Xdocu" Type="Edm.String" />
-        <Property Name="Lib2" Type="Edm.String" />
         <Property Name="Frsource" Type="Edm.String" />
         <Property Name="Rcm" Type="Edm.String" />
         <Property Name="Rifu" Type="Edm.String" />
@@ -1007,9 +960,13 @@
         <Property Name="Adr" Type="Edm.String" />
         <Property Name="Adr2" Type="Edm.String" />
         <Property Name="Codi" Type="Edm.Int32" />
+        <Property Name="Xdocu" Type="Edm.String" />
+        <Property Name="Lib2" Type="Edm.String" />
+        <Property Name="Emont" Type="Edm.Decimal" Scale="variable" />
         <Property Name="Cods" Type="Edm.String" />
-        <Property Name="Natio" Type="Edm.Int32" />
-        <Property Name="Resid" Type="Edm.Int32" />
+        <Property Name="Natio" Type="Edm.String" />
+        <Property Name="Npays" Type="Edm.String" />
+        <Property Name="Rpays" Type="Edm.String" />
         <Property Name="Ibank" Type="Edm.Int32" />
         <Property Name="Icotis" Type="Edm.Int32" />
         <Property Name="Itax" Type="Edm.Int32" />
@@ -1064,11 +1021,11 @@
         <Property Name="Prvexy" Type="Edm.Int32" />
         <Property Name="Prvexm" Type="Edm.Int32" />
         <Property Name="Prvexd" Type="Edm.Int32" />
-        <Property Name="Findat" Type="Edm.DateTimeOffset" />
-        <Property Name="Finstr" Type="Edm.String" />
         <Property Name="Finexy" Type="Edm.Int32" />
         <Property Name="Finexm" Type="Edm.Int32" />
         <Property Name="Finexd" Type="Edm.Int32" />
+        <Property Name="Findat" Type="Edm.DateTimeOffset" />
+        <Property Name="Finstr" Type="Edm.String" />
         <Property Name="Eta" Type="Edm.Int32" />
         <Property Name="Selc" Type="Edm.Boolean" Nullable="false" />
         <Property Name="Datc" Type="Edm.DateTimeOffset" />
@@ -1535,8 +1492,8 @@
           <PropertyRef Name="Id" />
         </Key>
         <Property Name="Id" Type="Edm.Int32" Nullable="false" />
-        <Property Name="Iele" Type="Edm.Int32" />
         <Property Name="Itie" Type="Edm.Int32" />
+        <Property Name="Iele" Type="Edm.Int32" />
         <Property Name="Idorg" Type="Edm.Int32" />
         <Property Name="Zcdati" Type="Edm.String" />
         <Property Name="Siat" Type="Edm.Int32" />
@@ -1572,11 +1529,12 @@
         <Property Name="Ivalid" Type="Edm.Int32" />
         <Property Name="Iclos" Type="Edm.Int32" />
         <Property Name="Eaut" Type="Edm.Int32" />
-        <Property Name="Prowguid" Type="Edm.Guid" Nullable="false" />
-        <Property Name="Noatr" Type="Edm.Int32" />
+        <Property Name="Noatr" Type="Edm.Int32" Nullable="false" />
         <Property Name="Rowguid" Type="Edm.Guid" Nullable="false" />
         <Property Name="Obsv" Type="Edm.String" />
-        <NavigationProperty Name="Prow" Type="GxWapi.DaModels.Tiewel" />
+        <NavigationProperty Name="ItieNavigation" Type="GxWapi.DaModels.Tiewel">
+          <ReferentialConstraint Property="Itie" ReferencedProperty="Id" />
+        </NavigationProperty>
       </EntityType>
       <EntityType Name="Tiwafl">
         <Key>
@@ -2738,7 +2696,7 @@
           <NavigationPropertyBinding Path="IcptNavigation" Target="Gscpts" />
         </EntitySet>
         <EntitySet Name="Tiwatrs" EntityType="GxWapi.DaModels.Tiwatr">
-          <NavigationPropertyBinding Path="Prow" Target="Tiewels" />
+          <NavigationPropertyBinding Path="ItieNavigation" Target="Tiewels" />
         </EntitySet>
         <EntitySet Name="Tiwafls" EntityType="GxWapi.DaModels.Tiwafl">
           <NavigationPropertyBinding Path="ItieNavigation" Target="Tiewels" />

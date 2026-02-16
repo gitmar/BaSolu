@@ -108,6 +108,21 @@
                         <DataAnnotationsValidator />
                         <ValidationSummary />
                         <div class="container row">
+                            <Tabs>
+                                <Tab Title ="Candidature">
+                                    <Content>
+
+                                    </Content>
+                                </Tab>
+                                <Tab Title="Details">
+                                    <Content>
+                                    </Content>
+                                    </Tab>
+                                <Tab Title="Verification">
+                                    <Content>
+                                    </Content>
+                                </Tab>
+                            </Tabs>
                             <div class="row">
                                 <ul class="nav nav- flex-nowrap" id="cltabs" role="tablist">
                                     <li class="nav-item" role="tab">
@@ -244,7 +259,7 @@
                                                 <label><b>Service :</b>:</label>
                                                 @if (_lsDivs.Count > 0)
                                                 {
-                                                    <select class="standard-width" id="TypDiv" @bind="curTiw.Idhie">
+                                                    <select class="standard-width" id="TypDiv" @bind="curTiw.Ihie">
                                                         <option value="0">Aucun</option>
                                                         @foreach (var divo in _lsDivs)
                                                         {
@@ -656,7 +671,7 @@
     public List<Tiewel> ensTiws = new();
 
     private List<Gpdivh> _lsDivs = new List<Gpdivh>();
-    private List<Divpst> _lsPsts => _lsDivs.Where(dv => dv.Ihie == curTiw.Idhie).SelectMany(dp => dp.Divpsts).ToList();
+    private List<Divpst> _lsPsts => _lsDivs.Where(dv => dv.Ihie == curTiw.Ihie).SelectMany(dp => dp.Divpsts).ToList();
 
     private RtW11Fic myftiw { get; set; }
 

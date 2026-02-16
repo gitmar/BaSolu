@@ -1,0 +1,159 @@
+﻿@page "/aogcols"
+
+@using System.Text
+@using System.Text.Json
+@using GxWapi.DaModels
+@using GxAdm.Services
+@using GxShared.Sess
+
+@using Newtonsoft.Json;
+
+<div class="card">
+    <div class="card-header">
+        <div class="form-group">
+            <label class="fw-bold">Formulaire :</label>
+            <InputSelect @bind-Value="@GrdName" class="me-3" style="width:auto">
+                <option class="jchx" value="Tiewel">Tiers Accueil</option>
+                <option class="jchx" value="Tiersp">Tiers Validat</option>
+            </InputSelect>
+        </div>
+    </div>
+    <div class="card-body">
+        <Grid TItem="UserGridPreference"
+             Data="@Columns"
+             AllowPaging="true"
+             Responsive="true">
+            <GridColumns>
+                <GridColumn TItem="UserGridPreference" HeaderText="No">
+                    <ChildContent Context="item">
+                        @item.ColNo
+                    </ChildContent>
+                </GridColumn>
+                <GridColumn TItem="UserGridPreference" HeaderText="Original">
+                    <ChildContent Context="item">
+                        @item.CLabel
+                    </ChildContent>
+                </GridColumn>
+                <GridColumn TItem="UserGridPreference" HeaderText="Adaptee">
+                    <ChildContent Context="item">
+                        @item.UCLabel
+                    </ChildContent>
+                </GridColumn>
+                <GridColumn TItem="UserGridPreference" HeaderText="Selection">
+                    <ChildContent Context="item">
+                        <InputCheckbox @bind-Value="item.IsVisible" />
+                    </ChildContent>
+                </GridColumn>
+            </GridColumns>
+        </Grid>
+        <button class="btn btn-primary mt-2" @onclick="SavePreferences">Save</button>
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public Gxorga curOrga { get; set; }
+    //[Parameter]
+    //public MyODataContext curODContext { get; set; }
+    [Parameter]
+    public string UserId { get; set; } = string.Empty;
+    [Parameter] 
+    public List<Gpvar> LsCols { get; set; } = new();
+    //[Parameter] 
+    [Parameter]
+    public string StrStore { get; set; } = string.Empty;
+
+    // This list drives the checkboxes
+    public List<UserGridPreference> Columns { get; set; } = new();
+
+    // Event callback if you want parent to react
+    [Parameter] public EventCallback<string> OnPreferencesSaved { get; set; }
+
+    private string GrdName = "Tiewel";
+    protected override async Task OnInitializedAsync()
+    {
+        // Load from DB (replace with your service)
+        ////var stored = await DbContext.GetPreferencesStringAsync(UserId, GridName);
+        ////Columns = DeserializePreferences(stored)
+        ////    .Where(p => p.GridName == GridName && p.UserId == UserId)
+        ////    .ToList();
+        //TEST
+        //var stored = await curODContext.GetPreferencesStringAsync(UserId, GrdName);
+        StrStore = curOrga.Optcols;
+        Columns = DeserializePreferences(StrStore)
+            .Where(p => p.GrdName == GrdName && p.UserId == UserId)
+            .ToList();
+        // If no stored prefs, initialize defaults
+        if (!Columns.Any())
+        {
+            Columns = new List<UserGridPreference>
+            {
+                new() { UserId = UserId, GrdName = GrdName, ColName = "Irang", IsVisible = true },
+                new() { UserId = UserId, GrdName = GrdName, ColName = "Xmatri", IsVisible = true },
+            };
+        }
+        foreach(var ucl in LsCols)
+        {
+            var nwcola = new UserGridPreference();
+            nwcola.UserId = UserId;
+            nwcola.GrdName = GrdName;
+            nwcola.ColName = ucl.Scdrub;
+            nwcola.ColNo = ucl.Ntyp;
+            nwcola.CLabel = ucl.Liba;
+            nwcola.UCLabel = ucl.Sliba;
+            nwcola.IsVisible = true; 
+            Columns.Add(nwcola);
+        }
+    }
+
+    private async Task SavePreferences()
+    {
+        var serialized = SerializePreferences(Columns);
+        //await DbContext.SavePreferencesStringAsync(UserId, GridName, serialized);
+
+        if (OnPreferencesSaved.HasDelegate)
+            await OnPreferencesSaved.InvokeAsync(serialized);
+    }
+
+    // --- Serialization helpers ---
+    public static string SerializePreferences(IEnumerable<UserGridPreference> prefs)
+    {
+        return string.Join("/", prefs.Select(p =>
+            $"{p.UserId};{p.GrdName};{p.ColName};{p.ColNo};{p.IsVisible}"));
+    }
+
+    public static List<UserGridPreference> DeserializePreferences(string data)
+    {
+        var prefs = new List<UserGridPreference>();
+        if (string.IsNullOrWhiteSpace(data)) return prefs;
+
+        foreach (var entry in data.Split('/', StringSplitOptions.RemoveEmptyEntries))
+        {
+            var parts = entry.Split(';');
+            if (parts.Length == 5)
+            {
+                prefs.Add(new UserGridPreference
+                {
+                    UserId = parts[0],
+                    GrdName = parts[1],
+                    ColName = parts[2],
+                    ColNo = Int16.Parse(parts[3]),
+                    IsVisible = bool.Parse(parts[4]),
+                });
+            }
+        }
+        return prefs;
+    }
+    public class UserGridPreference
+    {
+        public string UserId { get; set; } = string.Empty;
+        public string GrdName { get; set; } = string.Empty;
+        public string ColName { get; set; } = string.Empty;
+        [JsonIgnore]
+        public string CLabel { get; set; } = string.Empty;
+        [JsonIgnore]
+        public string UCLabel { get; set; } = string.Empty;
+        public int ColNo { get; set; } = 0;
+        public bool IsVisible { get; set; }
+    }
+}

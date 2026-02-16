@@ -12,6 +12,7 @@
 @using GxShared.Others
 @using GxShared.Identity
 @using GxShared.Helpers
+@using GxShared.ShdServices
 @using GxWapi.DaModels
 @using Microsoft.AspNetCore.WebUtilities
 @using Microsoft.OData.Client
@@ -96,14 +97,19 @@
                                             <InputSelect @bind-Value="_invModel.Irole" id="TieIrole">
                                                 @foreach (var uro in _invRoles)
                                                 {
-                                                    <option value="@uro.Level" @onclick="() => SetUtyp(uro)">@uro.Surname</option>
+                                                    <option value="@uro.Level">@uro.Name</option>
                                                 }
                                             </InputSelect>
                                         }
-                                        else
-                                        {
-                                            <p>Loading/ou absent</p>
-                                        }
+                                    </div>
+                                    <div>
+                                        <label for="TieIrole">Quality:</label>
+                                        <InputSelect @bind-Value="_invModel.Utyp" id="TieUtyp">
+                                            @foreach (var ut in LsFixes.Where(uf => uf.Gvars == 36 && uf.Itb == 6))
+                                            {
+                                                <option value="@ut.Elea">@ut.Liba</option>
+                                            }
+                                        </InputSelect>
                                     </div>
                                     @if (_invModel.Utyp >= 3 && _invModel.Utyp <= 6)
                                     { //client-fournisseur...
@@ -160,14 +166,14 @@
                                     @if (!IsGenerated)
                                     {
                                         <div>
-                                            <button type="button" class="btn btn-primary" @onclick="() => GenerateEmailLink(1)">Preparer Lien Individuel</button>
+                                            <button type="button" class="btn btn-primary" @onclick="() => PrepareInviteEmailForApi(1)">Envoyer Invitation Individuelle</button>
                                         </div>
                                     }
                                 </Content>
                             </Tab>
                             <Tab Title="De groupe">
                                 <Content>
-                                    <div>
+                                    @* <div>
                                         <label for="tiev1">Validite du... :</label>
                                         <InputDate id="tiev1" @bind-Value="_invModel.Datdu">
                                             placeholder="du..."
@@ -178,7 +184,7 @@
                                         <InputDate id="tiev2" @bind-Value="_invModel.Datau">
                                             placeholder="au..."
                                         </InputDate>
-                                    </div>
+                                    </div> *@
                                     <div>
                                         <label for="Tiedos">Ref.appel:</label>
                                         <InputText id="tiedos" @bind-Value="_invModel.Refapl" required
@@ -191,13 +197,9 @@
                                             <InputSelect @bind-Value="_invModel.Irole" id="TieBrol">
                                                 @foreach (var uro in _invRoles)
                                                 {
-                                                    <option value="@uro.Level">@uro.Surname</option>
+                                                    <option value="@uro.Level">@uro.Name</option>
                                                 }
                                             </InputSelect>
-                                        }
-                                        else
-                                        {
-                                            <p>Loading/ou absent</p>
                                         }
                                     </div>
                                     <div class="input-group">
@@ -217,19 +219,19 @@
                                             <p>Loading/ou absent</p>
                                         }
                                     </div>
-                                    @if (!IsGenerated)
-                                    {
+                                    @* @if (!IsGenerated)
+                                    { *@
                                         <div>
-                                            <button type="button" class="btn btn-primary" @onclick="() => GenerateEmailLink(2)">Preparer Lien de Groupe</button>
+                                            <button type="button" class="btn btn-primary" @onclick="() => PrepareInviteEmailForApi(2)">Envoyer Invitation de Groupe</button>
                                         </div>
-                                    }
+                                    @* } *@
                                 </Content>
                             </Tab>
                         </Tabs>
                     }
                     @if (!isLoading)
                     {
-                        @if (IsGenerated)
+                        @* @if (IsGenerated)
                         {
                             <div class="mt-3">
                                 <button class="btn btn-outline-secondary ms-2" type="button" @onclick="CopyToClipboard" disabled="@string.IsNullOrWhiteSpace(generatedLink)">
@@ -241,7 +243,7 @@
                                     Envoyer Email
                                 </button>
                             </div>
-                        }
+                        } *@
                     }
                 </EditForm>
             </div>
@@ -316,6 +318,7 @@
     // public int? Ugpe { get; set; }
     //[Parameter]
     public Userbag _usrBag = new();
+    public List<Gpfixe> LsFixes = new();
 
     private bool success, errors, isSubmitting = false;
     private string successmsg = "", searchstr="", strPoint = "", strmeta = "";
@@ -373,6 +376,7 @@
         _apiClient = _httpFactorer.CreateClient("AUTHClient");
         _locClient = _httpFactorer.CreateClient("DefaultClient");
         _usrBag = await _sessionContext.GetUserbagAsync();
+        LsFixes = _usrBag.Ufixes.ToList();
         //_usrRoles = _usrBag.Uroles.ToList();
         //LsVars = _usrBag.Usorga.Uvars.ToList();
         _lsDivs = await _rendAgres.LoadOrgaPostes();
@@ -458,85 +462,138 @@
     //     }
     //     //toChild.LsCols = LsCols;
     // }
-    private async Task GenerateEmailLink(int gpe)
+
+    private async Task PrepareInviteEmailForApi(int gpe)
     {
-        bool IsVerified = false;
-        IsVerified = await VerifInputs(); //reverification
+        //gpe = individuel/groupe
+        bool IsVerified = await VerifInputs();
         if (!IsVerified)
         {
-            Imessage = Imessage + "Echec Generation : des issues persistent..." + Imessage;
-            Console.WriteLine($"message : {Imessage}");
+            Imessage += "Echec Generation : des issues persistent...";
             StateHasChanged();
             return;
         }
+        var sndModel = ModelHelper.MapTo<UsrOgSetModel, RegisterDto>(_invModel);
         var inpUrl = _apiClient.BaseAddress?.ToString().TrimEnd('/');
         if (!inpUrl.StartsWith("http", StringComparison.OrdinalIgnoreCase))
             inpUrl = "https://" + inpUrl;
         inpUrl = inpUrl.TrimEnd('/');
-        inpUrl = inpUrl + "/api/regis"; //controller
-        Console.WriteLine($"Backend Link : {inpUrl}");
+        inpUrl = inpUrl + "/api/register/generate-invite";
         // Replace with gxadm subdomain
         var gxadmUrl = UrlParser.ReplaceWithSubdomain(inpUrl, "gxadm"); // → https://gxadm.a24soft.com
-        _invModel.Idorg = curOrga.Idorg;
-        _invModel.Orig = 2; //from invite
-        _invModel.Toqui = _invModel.Irole; 
-        _invModel.Utyp = _invModel.Irole;
-        _invModel.HlpWurl = curOrga.Hlpwurl;
-        _invModel.Weburl = gxadmUrl;
-        generatedLink = _linkSerialiser.EncodeAndSerialize(_invModel);
-    }
-    private async Task CmdCustSendEmail()
-    {
-        // var cdlink = _linkSerialiser.EncodeAndSerialize(new UsrOgSetModel
-        // {
-        //     Id = 1,
-        //     Idorg = _curOrder.Oidorg,
-        //     Email = _curOrder.Customer.Email,
-        //     Phonenumber = _curOrder.Customer.Phonenumber,
-        //     Orig = 1, //from support
-        //     HlpWurl = _curGxdom.HlpWurl,
-        //     Sdoma = _invModel.Sdoma,
-        //     //Srole = "Admin",
-        //     Utyp = 3,
-        //     Weburl = gxadmUrl,
-        //     Ipays = _curOrder.Customer.Country,
-        //     Ilang = _curOrder.Customer.Ilang,
-        //     Raison = _curOrder.Customer.Raison,
-        //     Sigle = _curOrder.Customer.Sigle,
-        //     Nom = _curOrder.Customer.Nom,
-        //     Pnom = _curOrder.Customer.Pnom
-        // }); // or GenerateLink if it returns just the payload
-        // var ogqryplus = _LinkSerialiser.EncodeAndSerialize(new RegisterDto
-        //     { ...
+        // Fill RegisterDto fields
+        sndModel.Idorg = curOrga.Idorg;
+        sndModel.Orig = 2;
+        sndModel.Toqui = _invModel.Irole; // 1.std / 2.hlp / 3.own
+        sndModel.Utyp = _invModel.Utyp;
+        sndModel.FbackUrl = gxadmUrl;
+        sndModel.WebUrl =  //UrlParser.ReplaceWithSubdomain(inpUrl, "gxadm");
+        sndModel.Email = _invModel.Email;       // must be set
+        sndModel.Username = "";     // not yet set
+        sndModel.Nom = _invModel.Nom;
+        sndModel.Pnom = _invModel.Pnom;
 
-        //     });
-        // Build final URL with query string
-        //var fullUrl = $"{gxadmUrl}/register?cdlink={Uri.EscapeDataString(cdlink)}";
-        var fullUrl = $"{_invModel.Weburl}/stdregis?cdlink={Uri.EscapeDataString(generatedLink)}"; //&ogqryplus={Uri.EscapeDataString(ogqryplus)}";
-        //lien a envoyer par CxApi mailer
-        InviteEmailRequest mailReq = new();
-        mailReq.InviteLink = fullUrl;
-        mailReq.SenderEmail = curOrga.Hlpwurl;
-        //mailReq.Email = _invModel.Email;
-        mailReq.UserName = _invModel.Username;
-        mailReq.Message = "Veuillez cliquer le lien pour joindre le webSite de votre logiciel";
-        mailReq.Subject = "Invite webSite";
-        mailReq.To = _invModel.Email;
-        var response = await _apiClient.PostAsJsonAsync<InviteEmailRequest>("email/sendinvite", mailReq);
+        // POST to API
+        var response = await _apiClient.PostAsJsonAsync(inpUrl, sndModel);
+
         if (response.IsSuccessStatusCode)
         {
-            Imessage = "Customer Email sent successfully";
-            Console.WriteLine("✅ Customer Email sent successfully!");
+            Imessage = "Invitation generated and email sent.";
         }
         else
         {
-            Imessage = $"Customer Email fail to sent ({response.StatusCode})";
-            var error = await response.Content.ReadAsStringAsync();
-            Console.WriteLine($"❌ Customer Email fail to sent ({response.StatusCode}): {error}");
+            Imessage = await response.Content.ReadAsStringAsync();
         }
-        //var mailUrl = $"{inpUrl}/api/usercontext?{cdlink}";  //api/controller
-        //_navmanager.NavigateTo(inpUrl, forceLoad: true);
+        StateHasChanged();
     }
+
+    // private async Task GenerateEmailLink(int gpe)
+    // {
+    //     bool IsVerified = false;
+    //     IsVerified = await VerifInputs(); //reverification
+    //     if (!IsVerified)
+    //     {
+    //         Imessage = Imessage + "Echec Generation : des issues persistent..." + Imessage;
+    //         Console.WriteLine($"message : {Imessage}");
+    //         StateHasChanged();
+    //         return;
+    //     }
+    //     var inpUrl = _apiClient.BaseAddress?.ToString().TrimEnd('/');
+    //     if (!inpUrl.StartsWith("http", StringComparison.OrdinalIgnoreCase))
+    //         inpUrl = "https://" + inpUrl;
+    //     inpUrl = inpUrl.TrimEnd('/');
+    //     inpUrl = inpUrl + "/api/regis"; //controller
+    //     Console.WriteLine($"Backend Link : {inpUrl}");
+    //     // Replace with gxadm subdomain
+    //     var gxadmUrl = UrlParser.ReplaceWithSubdomain(inpUrl, "gxadm"); // → https://gxadm.a24soft.com
+    //     _invModel.Idorg = curOrga.Idorg;
+    //     _invModel.Orig = 2; //from invite
+    //     _invModel.Toqui = _invModel.Irole; 
+    //     _invModel.Utyp = _invModel.Irole;
+    //     _invModel.HlpWurl = curOrga.Hlpwurl;
+    //     _invModel.Weburl = gxadmUrl;
+    //     generatedLink = _linkSerialiser.EncodeAndSerialize(_invModel);
+    // }
+    // private async Task CmdCustSendEmail()
+    // {
+    //     // var cdlink = _linkSerialiser.EncodeAndSerialize(new UsrOgSetModel
+    //     // {
+    //     //     Id = 1,
+    //     //     Idorg = _curOrder.Oidorg,
+    //     //     Email = _curOrder.Customer.Email,
+    //     //     Phonenumber = _curOrder.Customer.Phonenumber,
+    //     //     Orig = 1, //from support
+    //     //     HlpWurl = _curGxdom.HlpWurl,
+    //     //     Sdoma = _invModel.Sdoma,
+    //     //     //Srole = "Admin",
+    //     //     Utyp = 3,
+    //     //     Weburl = gxadmUrl,
+    //     //     Ipays = _curOrder.Customer.Country,
+    //     //     Ilang = _curOrder.Customer.Ilang,
+    //     //     Raison = _curOrder.Customer.Raison,
+    //     //     Sigle = _curOrder.Customer.Sigle,
+    //     //     Nom = _curOrder.Customer.Nom,
+    //     //     Pnom = _curOrder.Customer.Pnom
+    //     // }); // or GenerateLink if it returns just the payload
+    //     // var ogqryplus = _LinkSerialiser.EncodeAndSerialize(new RegisterDto
+    //     //     { ...
+
+    //     //     });
+    //     // Build final URL with query string
+    //     //var fullUrl = $"{gxadmUrl}/register?cdlink={Uri.EscapeDataString(cdlink)}";
+    //     var fullUrl = $"{_invModel.Weburl}/stdregis?cdlink={Uri.EscapeDataString(generatedLink)}"; //&ogqryplus={Uri.EscapeDataString(ogqryplus)}";
+    //     //lien a envoyer par CxApi mailer
+    //     StandardEmailRequest mailReq = new();
+    //     mailReq.InviteLink = fullUrl;
+    //     mailReq.Etype = 2; //invite a enregistrer
+    //     mailReq.SenderEmail = curOrga.Hlpwurl;
+    //     //mailReq.Email = _invModel.Email;
+    //     mailReq.UserName = _invModel.Username;
+    //     mailReq.Message = "Veuillez cliquer le lien pour joindre le webSite de votre logiciel";
+    //     mailReq.Subject = "Invite webSite";
+    //     var recipients = mailReq.To?
+    //             .Select(r => new EmailRecipientDto
+    //             {
+    //                 Email = "mesbrous@gmail",
+    //                 Name = "gxsupport@cyberso.net"
+    //             })
+    //             .ToList();
+    //     mailReq.To = recipients;
+    //     var response = await _apiClient.PostAsJsonAsync<StandardEmailRequest>("email/sendinvite", mailReq);
+    //     if (response.IsSuccessStatusCode)
+    //     {
+    //         Imessage = "Customer Email sent successfully";
+    //         Console.WriteLine("✅ Customer Email sent successfully!");
+    //     }
+    //     else
+    //     {
+    //         Imessage = $"Customer Email fail to sent ({response.StatusCode})";
+    //         var error = await response.Content.ReadAsStringAsync();
+    //         Console.WriteLine($"❌ Customer Email fail to sent ({response.StatusCode}): {error}");
+    //     }
+    //     //var mailUrl = $"{inpUrl}/api/usercontext?{cdlink}";  //api/controller
+    //     //_navmanager.NavigateTo(inpUrl, forceLoad: true);
+    // }
     private async Task<bool> VerifInputs()
     {
         errors = false;

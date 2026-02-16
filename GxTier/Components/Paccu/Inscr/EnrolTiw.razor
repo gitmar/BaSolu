@@ -574,7 +574,7 @@
     public List<Tiewel> ensTiws = new();
 
     private List<Gpdivh> _lsDivs = new List<Gpdivh>();
-    private List<Divpst> _lsPsts => _lsDivs.Where(dv => dv.Ihie == curTiw.Idhie).SelectMany(dp => dp.Divpsts).ToList();
+    private List<Divpst> _lsPsts => _lsDivs.Where(dv => dv.Ihie == curTiw.Ihie).SelectMany(dp => dp.Divpsts).ToList();
 
     private RtW11Fic myftiw { get; set; }
 

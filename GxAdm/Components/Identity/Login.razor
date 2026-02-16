@@ -140,6 +140,7 @@ else
         //verified connection
         try
         {
+            Console.WriteLine($"adresse : {_dftClient.BaseAddress.ToString()}");
             var response = await _dftClient.GetAsync("lgauth/health");
             _yaconn = response.IsSuccessStatusCode;
         }
@@ -185,6 +186,7 @@ else
             //loginModel.UsernameOrEmail = loginModel.Username;
             //loginModel.Idorg = 0; selection
             //Console.WriteLine($"uname : {loginModel.Username} et {loginModel.Email}");
+            //Console.WriteLine($"adresse11 : {_dftClient.BaseAddress.ToString()}");
             var json = JsonConvert.SerializeObject(loginModel);
             var request = new HttpRequestMessage(HttpMethod.Post, "lgauth/login")
             {
@@ -225,6 +227,7 @@ else
         }
         catch (Exception ex)
         {
+            //Console.WriteLine($"adresse22 : {_dftClient.BaseAddress.ToString()}");
             Error = "Login failed. Check credentials.";
             isBusy = false;
             Imessage = $"Login failed: {ex.Message}";

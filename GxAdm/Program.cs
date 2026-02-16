@@ -99,12 +99,7 @@ builder.Services.AddHttpClient("ODataClient", client =>
 .AddHttpMessageHandler<AuthDelegatingHandler>();
 // 🔥 2. OData Context Factory (loads token + creates context)
 builder.Services.AddScoped<IODataContextFactory, ODataContextFactory>();
-//builder.Services.AddScoped<IODataContextFactory, ODataContextFactory>();
-//builder.Services.AddHttpClient("ODataClient", client =>
-//{
-//    client.BaseAddress = new Uri("https://localhost:7095/odata");
-//    // Add any default headers or auth here if needed
-//});
+
 builder.Services.AddScoped<TblJsonRender>();
 builder.Services.AddScoped<LinkSerialiser>();
 

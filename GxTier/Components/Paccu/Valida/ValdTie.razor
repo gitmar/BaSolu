@@ -151,7 +151,7 @@ else
                                                 }
                                                 else
                                                 {
-                                                    <span class="plnpoint">@item?.Tseq</span>
+                                                    <span class="plnpoint">@item?.Iele</span>
                                                 }
                                             </ChildContent>
                                         </GridColumn>
@@ -309,7 +309,7 @@ else
                                         }
                                         else
                                         {
-                                            <span class="plnpoint">@item?.Tseq</span>
+                                            <span class="plnpoint">@item?.Iele</span>
                                         }
                                     </ChildContent>
                                 </GridColumn>
@@ -637,7 +637,7 @@ else
         {
             gTiwsMap.Remove(parentKey); // Clear previous children for clean modal state
         }
-        tiwMax = curOrga.Tiewels.Any() ? curOrga.Tiewels.Max(x => x.Tseq) : 0;
+        tiwMax = curOrga.Tiewels.Any() ? curOrga.Tiewels.Max(x => x.Iele) : 0;
         PrepareAddTiw();
 
         patInitTitle = $"{curOrga.Idorg} - {curOrga.Raison} (creation programme)";
@@ -708,7 +708,7 @@ else
                 Nom = "",
                 Pnom = "",
                 Eta = 1,
-                Tseq = 0,
+                //Tseq = 0,
                 //Belea = nextSeq,
                 Xadd1 = -1
             };
@@ -917,7 +917,7 @@ else
             Nom = mytiw.Nom,
             Pnom = mytiw.Pnom,
             Eta = mytiw.Eta,
-            Tseq = mytiw.Tseq,
+            Iele = mytiw.Iele,
             //Belea = mytiw.Belea,
             Xadd1 = mytiw.Xadd1, //newly added
             // Copy other fields as necessary
@@ -1023,7 +1023,7 @@ else
             editingTiw.Nom = mytiw.Nom;
             editingTiw.Pnom = mytiw.Pnom;
             editingTiw.Eta = mytiw.Eta;
-            editingTiw.Tseq = mytiw.Tseq;
+            editingTiw.Iele = mytiw.Iele;
             //editingTiw.Belea = mytiw.Belea;
             editingTiw.Xadd1 = mytiw.Xadd1; //newly added
             if (!curODContext.GetAllTrackedEntities().Any(e => e.Entity == editingTiw))

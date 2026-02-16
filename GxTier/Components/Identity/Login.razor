@@ -12,7 +12,7 @@
 @inject ILocalStorageService _localStorage  
 @inject NavigationManager _navManager
 @inject IServiceProvider _serviceProvider
-@inject HttpClientService _apiClient
+@* @inject HttpClientService _apiClient *@
 @inject IHttpClientFactory _httpClientFactory
 @inject SessionContextService _sessionContext
 @inject HttpClientService _clieManager
@@ -95,6 +95,7 @@ else
         //verified connection
         try
         {
+            Console.WriteLine($"adresse : {_dftClient.BaseAddress.ToString()}");
             var response = await _dftClient.GetAsync("lgauth/health");
             _yaconn = response.IsSuccessStatusCode;
         }

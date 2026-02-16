@@ -1,0 +1,77 @@
+﻿@page "/testmail"
+<h3>TestMail</h3>
+
+@using GxTie.Services
+@using GxShared.ShdServices
+
+@inject HttpClientService _clieManager
+@inject IHttpClientFactory _httpClientFactory
+
+<div class="d-flex gap-2 justify-content-end">
+     <Button Color="ButtonColor.Primary"
+        @onclick="EnvoieMail">
+             Envoie Test                
+     </Button>
+</div>
+
+@code {
+    private HttpClient _dftClient;
+    private bool _yaconn = false;
+    private bool isLoading = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        isLoading = true;
+        _dftClient = _httpClientFactory.CreateClient("AUTHClient");
+        //verified connection
+        try
+        {
+            Console.WriteLine($"adresse : {_dftClient.BaseAddress.ToString()}");
+            var response = await _dftClient.GetAsync("lgauth/health");
+            _yaconn = response.IsSuccessStatusCode;
+        }
+        catch (Exception ex)
+        {
+            isLoading = false;
+            return;
+        }
+    }
+    private async Task EnvoieMail()
+    {
+        try
+        {
+            string inviteMessage = "Bienvenue au Test de Brevo Mail";
+
+            StandardEmailRequest mailReq = new()
+            {
+                To = new List<EmailRecipientDto>
+            {
+                new EmailRecipientDto
+                {
+                    Email = "mesbrous@gmail.com",
+                    Username = "Martin",
+                    Nom = "",
+                    Pnom = "",
+                }
+            },
+                InviteLink = inviteMessage,
+                Ademail = "gxsupport@cyberso.net",
+                Wcuname = "jesuisceluiquisuis",
+                Message = "Veuillez cliquer le lien pour vous enregistrer",
+                Subject = "Invite Enregistrement Logiciel"
+            };
+
+            await _clieManager.SetAuthorizationHeaderAsync("AUTHClient");
+
+            var response = await _clieManager.SendRequestAsync(
+                "AUTHClient",
+                HttpMethod.Post,
+                "gxemail/send",
+                mailReq);
+        }
+        catch (Exception)
+        {
+            isLoading = false;
+        }
+    }
+}

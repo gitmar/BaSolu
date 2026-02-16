@@ -1,0 +1,2968 @@
+﻿@page "/enrolacc"
+@* @implements IDisposable *@
+@layout EnrolMenu
+
+@using System
+@using System.ComponentModel.DataAnnotations
+@using System.Dynamic
+@using System.Net.Http.Headers
+@using System.Reflection
+@using System.Text
+@using System.Text.Json
+@using System.Web
+@using BlazorBootstrap
+@using GxShared.Sess
+@using GxShared.Others
+@using GxTie.ClieModels
+@using GxTie.Services
+@using GxTie.Components.Paccu.RtPer
+@* @using GxTie.Services.Mform *@
+@using GxWapi.DaModels
+@using Microsoft.AspNetCore.Components.Forms
+@using Microsoft.AspNetCore.Components.Rendering
+@using Microsoft.AspNetCore.WebUtilities
+@using Microsoft.OData.Client
+@using Newtonsoft.Json
+
+@using System.Collections.ObjectModel
+@using System.Linq.Expressions
+@using System.Security.Claims
+@using System.Text.RegularExpressions
+@using Blazored.LocalStorage
+
+
+
+
+@inject NavigationManager _navmanager
+@inject HttpClientService _cliemanager
+<!-- InscTiewComponent.razor -->
+<PageTitle>RECEPTION</PageTitle>
+@* <h3>Formulaire INSCRIPTION</h3> *@ 
+@* <div>
+    @strmeta
+</div>  *@
+<div>
+    @Imessage
+</div>
+@if (isLoading)
+{
+    <Progress class="progress mb-3">
+        <ProgressBar Width="100" Label="Persos/Accueil Loading..." Type="ProgressType.StripedAndAnimated" Color="ProgressColor.Primary" />
+    </Progress>
+}
+<!--downmodal-->
+@if (curTiw != null && isModalVisible == true)
+{
+    <GlobModal IsVisible="@isModalVisible"
+               IsVisibleChanged="@OnModalVisibilityChanged"
+               Title="Chargement des documents"
+               EntyTiw="@curTiw"
+               EntyTie="null"
+               LsmVars="@LsVars"
+               LsmFixes="@LsFixes"
+               OnTiwSave="@HandleSave"
+               Oparent="2">
+    </GlobModal>
+}
+<div class="d-flex flex-column">
+    <div class="container row">
+        <div class="d-flex flex-column">
+            @if (success)
+            {
+                <div class="alert alert-success">@successmsg</div>
+            }
+            @if (errors)
+            {
+                foreach (var error in errorList)
+                {
+                    <div class="alert alert-danger">@error</div>
+                }
+            }
+            @if (yainfo)
+            {
+                <div class="alert alert-info">
+                    @infomess
+                </div>
+            }
+        </div>
+    </div>
+    <div class="my-container">
+        @if (toChild != null)
+        {
+            @ChildContent
+        }
+    </div>
+    <AuthorizeView>
+        <Authorized Context="authContext">
+            @if (isLoading)
+            {
+                <p>Loading...</p>
+            }
+            else
+            {
+                
+                <Tabs @bind-ActiveTabIndex="activeTabIndex" EnableFadeEffect="true">
+                    <Tab Title="Candidature">
+                        <Content>
+                            <div class="card">
+                                <div class="card-header">
+
+                                    
+                                </div>
+                                 @* @(isTiwDisabled ? "disabled-div" : "")" *@
+                                <div class="card-body">
+                                    <Grid TItem="Tiewel"
+                                            Data="@MyDaTiws"
+                                            @key="TiwRenderKey"
+                                            AllowDetailView="true"
+                                            AllowPaging="true"
+                                            Responsive="true">
+                                        <GridColumns>
+                                            <GridColumn TItem="Tiewel" HeaderText="No">
+                                                <ChildContent Context="item">
+                                                    @if (item.Xadd1 == -1)
+                                                    {
+                                                        <span>@item?.Iui</span>
+                                                    }
+                                                    else
+                                                    {
+                                                    <span>@(item.Xedt1 == -1 ? item?.Iui : (item?.Iui == 0 ? item?.Iele : item?.Iui))</span>
+                                                    }
+                                                </ChildContent>
+                                            </GridColumn>
+                                            <GridColumn TItem="Tiewel" HeaderText="Dossier">
+                                                <ChildContent Context="item">
+                                                    @if (EdTiwRowguid == item.Rowguid)
+                                                    {
+
+                                                        <InputText @bind-Value="draftTiw.Xmatri" />
+                                                    }
+                                                    else
+                                                    {
+                                                        @item.Xmatri
+                                                    }
+                                                </ChildContent>
+                                            </GridColumn>
+                                            <GridColumn TItem="Tiewel" HeaderText="Nom">
+                                                <ChildContent Context="item">
+                                                    @if (EdTiwRowguid == item.Rowguid)
+                                                    {
+
+                                                        <InputText @bind-Value="draftTiw.Nom" />
+                                                    }
+                                                    else
+                                                    {
+                                                        @item.Nom
+                                                    }
+                                                </ChildContent>
+                                            </GridColumn>
+                                            <GridColumn TItem="Tiewel" HeaderText="Pnom">
+                                                <ChildContent Context="item">
+                                                    @if (EdTiwRowguid == item.Rowguid)
+                                                    {
+
+                                                        <InputText @bind-Value="draftTiw.Pnom" />
+                                                    }
+                                                    else
+                                                    {
+                                                        @item.Pnom
+                                                    }
+                                                </ChildContent>
+                                            </GridColumn>
+                                            <GridColumn TItem="Tiewel" HeaderText="etat" IsVisible="true">
+                                                <HeaderContent>
+                                                    <button class="btn btn-primary btn-sm @(isAddTiw || isEdtTiw ? "disabled-action" : "")"
+                                                            @onclick="StartTiwNew">
+                                                        ➕ Add
+                                                    </button>
+                                                </HeaderContent>
+                                                <ChildContent Context="item">
+                                                    @if (EdTiwRowguid == item.Rowguid)
+                                                    {
+                                                        <InputSelect @bind-Value="draftTiw.Eta">
+                                                            <option class="jchx" value="0">?choisir</option>
+                                                            @foreach (var tob in LsFixes.Where(ut => ut.Gvars == 32 && ut.Itb == 1 && ut.Elea != 0))
+                                                            {
+                                                                <option value="@tob.Elea">@tob.Liba</option>
+                                                            }
+                                                        </InputSelect>
+                                                    }
+                                                    else
+                                                    {
+                                                        <InputSelect @bind-Value="item.Eta" disabled="true">
+                                                            <option class="jchx" value="0">?choisir</option>
+                                                            @foreach (var tob in LsFixes.Where(ut => ut.Gvars == 32 && ut.Itb == 1 && ut.Elea != 0))
+                                                            {
+                                                                <option value="@tob.Elea">@tob.Liba</option>
+                                                            }
+                                                        </InputSelect>
+                                                    }
+                                                </ChildContent>
+                                            </GridColumn>
+                                            <GridColumn TItem="Tiewel" HeaderText="Actions" Filterable="false" Class="xcol2 actions-col">
+                                            <ChildContent Context="item">
+                                                    @switch (GetRowState(item.Rowguid))
+                                                    {
+                                                        case RowState.Locked:
+                                                            <span class="text-muted">—</span>
+                                                            break;
+
+                                                        case RowState.DeletePending:
+                                                            <Button Color="ButtonColor.Danger" Size="ButtonSize.Small"
+                                                                    @onclick="() => ConfirmDelete(item, EntityLevel.Plan)">
+                                                                ⚠️ Confirm
+                                                            </Button>
+                                                            <Button Color="ButtonColor.Secondary" Size="ButtonSize.Small"
+                                                                    @onclick="() => CancelDelete(item, EntityLevel.Plan)">
+                                                                ❎ Cancel
+                                                            </Button>
+                                                            break;
+                                                        case RowState.EditPending:
+                                                            <Button Color="ButtonColor.Success" Size="ButtonSize.Small"
+                                                                    @onclick="() => ConfirmEdit(item, EntityLevel.Plan)">
+                                                                ✅ Confirm
+                                                            </Button>
+                                                            <Button Color="ButtonColor.Secondary" Size="ButtonSize.Small"
+                                                                    @onclick="() => CancelEdit(item, EntityLevel.Plan)">
+                                                                ❌ Cancel
+                                                            </Button>
+                                                            break;
+                                                        default:
+                                                            <Button Color="ButtonColor.Warning" Size="ButtonSize.Small"
+                                                                    @onclick="() => StartTiwEdit(item, item.Rowguid)">
+                                                                ✏️ Edit
+                                                            </Button>
+                                                            <Button Color="ButtonColor.Danger" Size="ButtonSize.Small"
+                                                                    @onclick="() => StartRowDelete(item.Rowguid, EntityLevel.Plan)">
+                                                                🗑 Delete
+                                                            </Button>
+                                                            break;
+                                                    }
+                                            </ChildContent>
+                                        </GridColumn>
+                                        </GridColumns>
+                                        <GridDetailView TItem="Tiewel">
+                                            <!-- 🔥 VERTICAL FORM - Each label+value = 1 ROW -->
+                                            <div class="p-3 bg-light" style="display: flex; flex-direction: column; gap: 1rem;">
+                                                <!-- FIELD 1: ID (Read-only) -->
+                                                <div style="display: flex; align-items: center; gap: 1rem;">
+                                                    <label class="fw-bold col-form-label col-md-3 text-nowrap" style="min-width: 120px;">ID:</label>
+                                                    <div class="form-control-plaintext col-md-9">@context.Id</div>
+                                                </div>
+                                                <!-- FIELD 2: Dossier -->
+                                                <div style="display: flex; align-items: center; gap: 1rem;">
+                                                    <label class="fw-bold col-form-label col-md-3 text-nowrap" style="min-width: 120px;">Dossier:</label>
+                                                    @if (EdTiwRowguid == context.Rowguid)
+                                                    {
+                                                        <InputText @bind-Value="draftTiw.Xmatri" class="form-control flex-grow-1" style="min-width: 200px;" />
+                                                    }
+                                                    else
+                                                    {
+                                                        <div class="form-control-plaintext flex-grow-1">@context.Xmatri</div>
+                                                    }
+                                                </div>
+                                                <!-- FIELD 3: Nom -->
+                                                <div style="display: flex; align-items: center; gap: 1rem;">
+                                                    <label class="fw-bold col-form-label col-md-3 text-nowrap" style="min-width: 120px;">Nom:</label>
+                                                    @if (EdTiwRowguid == context.Rowguid)
+                                                    {
+                                                        <InputText @bind-Value="draftTiw.Nom" class="form-control flex-grow-1" style="min-width: 200px;" />
+                                                    }
+                                                    else
+                                                    {
+                                                        <div class="form-control-plaintext flex-grow-1">@context.Nom</div>
+                                                    }
+                                                </div>
+                                                <!-- FIELD 4: Pnom -->
+                                                <div style="display: flex; align-items: center; gap: 1rem;">
+                                                    <label class="fw-bold col-form-label col-md-3 text-nowrap" style="min-width: 120px;">Pnom:</label>
+                                                    @if (EdTiwRowguid == context.Rowguid)
+                                                    {
+                                                        <InputText @bind-Value="draftTiw.Pnom" class="form-control flex-grow-1" style="min-width: 200px;" />
+                                                    }
+                                                    else
+                                                    {
+                                                        <div class="form-control-plaintext flex-grow-1">@context.Pnom</div>
+                                                    }
+                                                </div>
+                                                <!-- FIELD 4: Nomb / de jeune fille -->
+                                                <div style="display: flex; align-items: center; gap: 1rem;">
+                                                    <label class="fw-bold col-form-label col-md-3 text-nowrap" style="min-width: 120px;">Nom de Jeune fille:</label>
+                                                    @if (EdTiwRowguid == context.Rowguid)
+                                                    {
+                                                        <InputText @bind-Value="draftTiw.Bnom" class="form-control flex-grow-1" style="min-width: 200px;" />
+                                                    }
+                                                    else
+                                                    {
+                                                        <div class="form-control-plaintext flex-grow-1">@context.Bnom</div>
+                                                    }
+                                                </div>
+                                                <!-- FIELD 4: Statut -->
+                                                <div style="display: flex; align-items: center; gap: 1rem;">
+                                                    <label class="fw-bold col-form-label col-md-3 text-nowrap" style="min-width: 120px;">Statut:</label>
+                                                    @if (EdTiwRowguid == context.Rowguid)
+                                                    {
+                                                        <InputSelect @bind-Value="draftTiw.Statut">
+                                                            <option class="jchx" value="0">?choisir</option>
+                                                            @foreach (var tob in TbElems.Where(ut => ut.Pvars == 4 && ut.Pitb == 1 && ut.Elea != 0))
+                                                            {
+                                                                <option value="@tob.Elea">@tob.Liba</option>
+                                                            }
+                                                        </InputSelect>
+                                                    }
+                                                    else
+                                                    {
+                                                        <InputSelect @bind-Value="context.Statut" disabled="true">
+                                                            <option class="jchx" value="0">?choisir</option>
+                                                            @foreach (var tob in TbElems.Where(ut => ut.Pvars == 4 && ut.Pitb == 1 && ut.Elea != 0))
+                                                            {
+                                                                <option value="@tob.Elea">@tob.Liba</option>
+                                                            }
+                                                        </InputSelect>
+                                                    }
+                                                </div>
+                                                <!-- FIELD 4: Relat -->
+                                                <div style="display: flex; align-items: center; gap: 1rem;">
+                                                    <label class="fw-bold col-form-label col-md-3 text-nowrap" style="min-width: 120px;">Relat:</label>
+                                                    @if (EdTiwRowguid == context.Rowguid)
+                                                    {
+                                                        <InputSelect @bind-Value="draftTiw.Relat">
+                                                            <option class="jchx" value="0">?choisir</option>
+                                                            @foreach (var tob in TbElems.Where(ut => ut.Pvars == 4 && ut.Pitb == 8 && ut.Elea != 0))
+                                                            {
+                                                                <option value="@tob.Elea">@tob.Liba</option>
+                                                            }
+                                                        </InputSelect>
+                                                    }
+                                                    else
+                                                    {
+                                                        <InputSelect @bind-Value="context.Relat" disabled="true">
+                                                            <option class="jchx" value="0">?choisir</option>
+                                                            @foreach (var tob in TbElems.Where(ut => ut.Pvars == 4 && ut.Pitb == 8 && ut.Elea != 0))
+                                                            {
+                                                                <option value="@tob.Elea">@tob.Liba</option>
+                                                            }
+                                                        </InputSelect>
+                                                    }
+                                                </div>
+                                                <!-- FIELD 4: Sexe -->
+                                                <div style="display: flex; align-items: center; gap: 1rem;">
+                                                    <label class="fw-bold col-form-label col-md-3 text-nowrap" style="min-width: 120px;">Sexe:</label>
+                                                    @if (EdTiwRowguid == context.Rowguid)
+                                                    {
+                                                        <InputSelect @bind-Value="draftTiw.Sexe">
+                                                            <option class="jchx" value="0">?choisir</option>
+                                                            @foreach (var tob in TbElems.Where(ut => ut.Pvars == 4 && ut.Pitb == 2 && ut.Elea != 0))
+                                                            {
+                                                                <option value="@tob.Elea">@tob.Liba</option>
+                                                            }
+                                                        </InputSelect>
+                                                    }
+                                                    else
+                                                    {
+                                                        <InputSelect @bind-Value="context.Sexe" disabled="true">
+                                                            <option class="jchx" value="0">?choisir</option>
+                                                            @foreach (var tob in TbElems.Where(ut => ut.Pvars == 4 && ut.Pitb == 2 && ut.Elea != 0))
+                                                            {
+                                                                <option value="@tob.Elea">@tob.Liba</option>
+                                                            }
+                                                        </InputSelect>
+                                                    }
+                                                </div>
+                                                <!-- FIELD 4: Sitmat -->
+                                                <div style="display: flex; align-items: center; gap: 1rem;">
+                                                    <label class="fw-bold col-form-label col-md-3 text-nowrap" style="min-width: 120px;">Sitmat:</label>
+                                                    @if (EdTiwRowguid == context.Rowguid)
+                                                    {
+                                                        <InputSelect @bind-Value="draftTiw.Sitmat">
+                                                            <option class="jchx" value="0">?choisir</option>
+                                                            @foreach (var tob in TbElems.Where(ut => ut.Pvars == 4 && ut.Pitb == 3 && ut.Elea != 0))
+                                                            {
+                                                                <option value="@tob.Elea">@tob.Liba</option>
+                                                            }
+                                                        </InputSelect>
+                                                    }
+                                                    else
+                                                    {
+                                                        <InputSelect @bind-Value="context.Sitmat" disabled="true">
+                                                            <option class="jchx" value="0">?choisir</option>
+                                                            @foreach (var tob in TbElems.Where(ut => ut.Pvars == 4 && ut.Pitb == 3 && ut.Elea != 0))
+                                                            {
+                                                                <option value="@tob.Elea">@tob.Liba</option>
+                                                            }
+                                                        </InputSelect>
+                                                    }
+                                                </div>
+                                                <!-- FIELD 4: fonction -->
+                                                <div style="display: flex; align-items: center; gap: 1rem;">
+                                                    <label class="fw-bold col-form-label col-md-3 text-nowrap" style="min-width: 120px;">Fonction:</label>
+                                                    @if (EdTiwRowguid == context.Rowguid)
+                                                    {
+                                                        <InputSelect @bind-Value="draftTiw.Ifonc">
+                                                            <option class="jchx" value="0">?choisir</option>
+                                                            @foreach (var tob in TbElems.Where(ut => ut.Pvars == 4 && ut.Pitb == 3 && ut.Elea != 0))
+                                                            {
+                                                                <option value="@tob.Elea">@tob.Liba</option>
+                                                            }
+                                                        </InputSelect>
+                                                    }
+                                                    else
+                                                    {
+                                                        <InputSelect @bind-Value="context.Ifonc" disabled="true">
+                                                            <option class="jchx" value="0">?choisir</option>
+                                                            @foreach (var tob in TbElems.Where(ut => ut.Pvars == 4 && ut.Pitb == 3 && ut.Elea != 0))
+                                                            {
+                                                                <option value="@tob.Elea">@tob.Liba</option>
+                                                            }
+                                                        </InputSelect>
+                                                    }
+                                                </div>
+                                                <!-- FIELD 4: grade -->
+                                                <div style="display: flex; align-items: center; gap: 1rem;">
+                                                    <label class="fw-bold col-form-label col-md-3 text-nowrap" style="min-width: 120px;">Grade:</label>
+                                                    @if (EdTiwRowguid == context.Rowguid)
+                                                    {
+                                                        <InputSelect @bind-Value="draftTiw.Igrad">
+                                                            <option class="jchx" value="0">?choisir</option>
+                                                            @foreach (var tob in TbElems.Where(ut => ut.Pvars == 4 && ut.Pitb == 5 && ut.Elea != 0))
+                                                            {
+                                                                <option value="@tob.Elea">@tob.Liba</option>
+                                                            }
+                                                        </InputSelect>
+                                                    }
+                                                    else
+                                                    {
+                                                        <InputSelect @bind-Value="context.Igrad" disabled="true">
+                                                            <option class="jchx" value="0">?choisir</option>
+                                                            @foreach (var tob in TbElems.Where(ut => ut.Pvars == 4 && ut.Pitb == 5 && ut.Elea != 0))
+                                                            {
+                                                                <option value="@tob.Elea">@tob.Liba</option>
+                                                            }
+                                                        </InputSelect>
+                                                    }
+                                                </div>
+                                                <!-- FIELD 4: usremail -->
+                                                <div style="display: flex; align-items: center; gap: 1rem;">
+                                                    <label class="fw-bold col-form-label col-md-3 text-nowrap" style="min-width: 120px;">Email:</label>
+                                                    @if (EdTiwRowguid == context.Rowguid)
+                                                    {
+                                                        <InputText @bind-Value="draftTiw.Email" class="form-control flex-grow-1" style="min-width: 200px;" />
+                                                    }
+                                                    else
+                                                    {
+                                                        <div class="form-control-plaintext flex-grow-1">@context.Email</div>
+                                                    }
+                                                </div>
+                                                <!-- FIELD 4: Phone -->
+                                                <div style="display: flex; align-items: center; gap: 1rem;">
+                                                    <label class="fw-bold col-form-label col-md-3 text-nowrap" style="min-width: 120px;">Phone:</label>
+                                                    @if (EdTiwRowguid == context.Rowguid)
+                                                    {
+                                                        <InputText @bind-Value="draftTiw.Phone" class="form-control flex-grow-1" style="min-width: 200px;" />
+                                                    }
+                                                    else
+                                                    {
+                                                        <div class="form-control-plaintext flex-grow-1">@context.Phone</div>
+                                                    }
+                                                </div>
+                                                <!-- FIELD 4: Phone2 -->
+                                                @* <div style="display: flex; align-items: center; gap: 1rem;">
+                                                    <label class="fw-bold col-form-label col-md-3 text-nowrap" style="min-width: 120px;">Phone2:</label>
+                                                    @if (EdTiwRowguid == context.Rowguid)
+                                                    {
+                                                        <InputText @bind-Value="draftTiw.Phone2" class="form-control flex-grow-1" style="min-width: 200px;" />
+                                                    }
+                                                    else
+                                                    {
+                                                        <div class="form-control-plaintext flex-grow-1">@context.Phone2</div>
+                                                    }
+                                                </div> *@
+                                                <!-- FIELD 4: Dnais -->
+                                                <div style="display: flex; align-items: center; gap: 1rem;">
+                                                    <label class="fw-bold col-form-label col-md-3 text-nowrap" style="min-width: 120px;">Date nais.:</label>
+                                                    @if (EdTiwRowguid == context.Rowguid)
+                                                    {
+                                                        <InputDate @bind-Value="draftTiw.Dnais" class="form-control flex-grow-1" style="min-width: 200px;" />
+                                                    }
+                                                    else
+                                                    {
+                                                        <div class="form-control-plaintext flex-grow-1">@context.Dnais</div>
+                                                    }
+                                                </div>
+                                                <!-- FIELD 4: Demb -->
+                                                <div style="display: flex; align-items: center; gap: 1rem;">
+                                                    <label class="fw-bold col-form-label col-md-3 text-nowrap" style="min-width: 120px;">Date emb.:</label>
+                                                    @if (EdTiwRowguid == context.Rowguid)
+                                                    {
+                                                        <InputDate @bind-Value="draftTiw.Demb" class="form-control flex-grow-1" style="min-width: 200px;" />
+                                                    }
+                                                    else
+                                                    {
+                                                        <div class="form-control-plaintext flex-grow-1">@context.Demb</div>
+                                                    }
+                                                </div>
+                                                <!-- FIELD 4: Nenf -->
+                                                <div style="display: flex; align-items: center; gap: 1rem;">
+                                                    <label class="fw-bold col-form-label col-md-3 text-nowrap" style="min-width: 120px;">Nb enf.:</label>
+                                                    @if (EdTiwRowguid == context.Rowguid)
+                                                    {
+                                                        <InputNumber @bind-Value="draftTiw.Nenf" class="form-control flex-grow-1" style="min-width: 200px;" />
+                                                    }
+                                                    else
+                                                    {
+                                                        <div class="form-control-plaintext flex-grow-1">@context.Nenf</div>
+                                                    }
+                                                </div>
+                                                <!-- FIELD 4: resp. -->
+                                                <div style="display: flex; align-items: center; gap: 1rem;">
+                                                    <label class="fw-bold col-form-label col-md-3 text-nowrap" style="min-width: 120px;">Responsabilite:</label>
+                                                    @if (EdTiwRowguid == context.Rowguid)
+                                                    {
+                                                        <InputSelect @bind-Value="draftTiw.Respon">
+                                                            <option class="jchx" value="0">?choisir</option>
+                                                            @foreach (var tob in TbElems.Where(ut => ut.Pvars == 4 && ut.Pitb == 7 && ut.Elea != 0))
+                                                            {
+                                                                <option value="@tob.Elea">@tob.Liba</option>
+                                                            }
+                                                        </InputSelect>
+                                                    }
+                                                    else
+                                                    {
+                                                        <InputSelect @bind-Value="context.Respon" disabled="true">
+                                                            <option class="jchx" value="0">?choisir</option>
+                                                            @foreach (var tob in TbElems.Where(ut => ut.Pvars == 4 && ut.Pitb == 7 && ut.Elea != 0))
+                                                            {
+                                                                <option value="@tob.Elea">@tob.Liba</option>
+                                                            }
+                                                        </InputSelect>
+                                                    }
+                                                </div>
+                                                <!-- FIELD 4: resid/pays. -->
+                                                <div style="display: flex; align-items: center; gap: 1rem;">
+                                                    <label class="fw-bold col-form-label col-md-3 text-nowrap" style="min-width: 120px;">P.residence:</label>
+                                                    @if (EdTiwRowguid == context.Rowguid)
+                                                    {
+                                                        <InputSelect @bind-Value="draftTiw.Rpays">
+                                                            <option class="jchx" value="0">?choisir</option>
+                                                            @foreach (var tob in TbElems.Where(ut => ut.Pvars == 4 && ut.Pitb == 31 && ut.Elea != 0))
+                                                            {
+                                                                <option value="@tob.Abg">@tob.Liba</option>
+                                                            }
+                                                        </InputSelect>
+                                                    }
+                                                    else
+                                                    {
+                                                        <InputSelect @bind-Value="context.Rpays" disabled="true">
+                                                            <option class="jchx" value="0">?choisir</option>
+                                                            @foreach (var tob in TbElems.Where(ut => ut.Pvars == 4 && ut.Pitb == 31 && ut.Elea != 0))
+                                                            {
+                                                                <option value="@tob.Abg">@tob.Liba</option>
+                                                            }
+                                                        </InputSelect>
+                                                    }
+                                                </div>
+                                                <!-- FIELD 4: natio/pays. -->
+                                                <div style="display: flex; align-items: center; gap: 1rem;">
+                                                    <label class="fw-bold col-form-label col-md-3 text-nowrap" style="min-width: 120px;">Nationalite:</label>
+                                                    @if (EdTiwRowguid == context.Rowguid)
+                                                    {
+                                                        <InputSelect @bind-Value="draftTiw.Natio">
+                                                            <option class="jchx" value="0">?choisir</option>
+                                                            @foreach (var tob in TbElems.Where(ut => ut.Pvars == 4 && ut.Pitb == 31 && ut.Elea != 0))
+                                                            {
+                                                                <option value="@tob.Abg">@tob.Liba</option>
+                                                            }
+                                                        </InputSelect>
+                                                    }
+                                                    else
+                                                    {
+                                                        <InputSelect @bind-Value="context.Natio" disabled="true">
+                                                            <option class="jchx" value="0">?choisir</option>
+                                                            @foreach (var tob in TbElems.Where(ut => ut.Pvars == 4 && ut.Pitb == 31 && ut.Elea != 0))
+                                                            {
+                                                                <option value="@tob.Elea">@tob.Liba</option>
+                                                            }
+                                                        </InputSelect>
+                                                    }
+                                                </div>
+                                                <!-- FIELD 4: methP. -->
+                                                <div style="display: flex; align-items: center; gap: 1rem;">
+                                                    <label class="fw-bold col-form-label col-md-3 text-nowrap" style="min-width: 120px;">M.Paiement:</label>
+                                                    @if (EdTiwRowguid == context.Rowguid)
+                                                    {
+                                                        <InputSelect @bind-Value="draftTiw.Ipaid">
+                                                            <option class="jchx" value="0">?choisir</option>
+                                                            @foreach (var tob in TbElems.Where(ut => ut.Pvars == 4 && ut.Pitb == 1 && ut.Elea != 0))
+                                                            {
+                                                                <option value="@tob.Elea">@tob.Liba</option>
+                                                            }
+                                                        </InputSelect>
+                                                    }
+                                                    else
+                                                    {
+                                                        <InputSelect @bind-Value="context.Ipaid" disabled="true">
+                                                            <option class="jchx" value="0">?choisir</option>
+                                                            @foreach (var tob in TbElems.Where(ut => ut.Pvars == 4 && ut.Pitb == 1 && ut.Elea != 0))
+                                                            {
+                                                                <option value="@tob.Elea">@tob.Liba</option>
+                                                            }
+                                                        </InputSelect>
+                                                    }
+                                                </div>
+
+                                                <!-- ACTION BUTTONS -->
+                                                @if (EdTiwRowguid == context.Rowguid)
+                                                {
+                                                    <div class="mt-3 pt-3 border-top text-end">
+                                                        <Button Color="ButtonColor.Success" Size="ButtonSize.Small" Class="me-2"
+                                                                @onclick="() => ConfirmEdit(context, EntityLevel.Plan)">
+                                                            ✅ Save
+                                                        </Button>
+                                                        <Button Color="ButtonColor.Secondary" Size="ButtonSize.Small"
+                                                                @onclick="() => CancelEdit(context, EntityLevel.Plan)">
+                                                            ❌ Cancel
+                                                        </Button>
+                                                    </div>
+                                                }
+                                            </div>
+                                        </GridDetailView>
+                                    </Grid>
+                                </div>
+                            </div>
+                        </Content>
+                    </Tab>
+                    <Tab Title="Details">
+                        <Content>
+                            <div class="card">
+                                <div class="card-header">
+                                    <label>Carte header</label>
+                                </div>                
+                            
+                                <div class="card-body @(isTiwDisabled ? "disabled-div" : "")">
+                                    <label>Carte body</label>
+                                    @if (1 == 1) //Ugpe != 0 && curTiw != null
+                                    {
+                                        Console.WriteLine($"Step1 {Ugpe} et {curTiw?.Nom}");
+                                        <!--Ityp(exist?)-->
+                                        var eligibleUfls = TUafls.ToList();   //.Where(ufl => ufl.Ityp == 1 && ufl.Etyp != 1 && ufl.Etyp != 0).ToList();
+                                        <Tabs @bind-ActiveTabIndex="activeTabIndex" EnableFadeEffect="true">
+                                            @foreach (var ufl in eligibleUfls)
+                                            {
+                                                Console.WriteLine($"Step2 {ufl.Elea} et {ufl.Liba}");
+                                                var jsliba = ufl.Sliba + (ufl.Elea == 1 ? "(es)" : "(s)");
+                                                <Tab Title="@jsliba">
+                                                    <Content>
+                                                        <Grid TItem="Tiwafl"
+                                                              Data="@curTiw.Tiwafls.ToList()"
+                                                              AllowDetailView="true"
+                                                              AllowPaging="true"
+                                                              Responsive="true">
+                                                            <GridColumns>
+                                                                <GridColumn TItem="Tiwafl" HeaderText="No">
+                                                                    <ChildContent Context="item">
+                                                                        @item.Id
+                                                                    </ChildContent>
+                                                                </GridColumn>
+                                                                <GridColumn TItem="Tiwafl" HeaderText="Dossier">
+                                                                    <ChildContent Context="item">
+                                                                        @item.Xmatri
+                                                                    </ChildContent>
+                                                                </GridColumn>
+                                                                <GridColumn TItem="Tiwafl" HeaderText="Nom">
+                                                                    <ChildContent Context="item">
+                                                                        @item.Nom
+                                                                    </ChildContent>
+                                                                </GridColumn>
+                                                                <GridColumn TItem="Tiwafl" HeaderText="Pnom">
+                                                                    <ChildContent Context="item">
+                                                                        @item.Pnom
+                                                                    </ChildContent>
+                                                                </GridColumn>
+                                                                <GridColumn TItem="Tiwafl" HeaderText="etat">
+                                                                    <HeaderContent>
+                                                                        <button class="btn btn-primary btn-sm @(isAddTiw || isEdtTiw ? "disabled-action" : "")"
+                                                                                @onclick="StartTiwNew">
+                                                                            ➕ Add
+                                                                        </button>
+                                                                    </HeaderContent>
+                                                                    <ChildContent Context="item">
+                                                                        @item.Eta
+                                                                    </ChildContent>
+                                                                </GridColumn>
+                                                                <GridColumn TItem="Tiwafl" HeaderText="Actions" Filterable="false" Class="xcol2 actions-col">
+                                                                    <ChildContent Context="item">
+                                                                        @switch (GetRowState(item.Rowguid))
+                                                                        {
+                                                                            case RowState.Locked:
+                                                                                <span class="text-muted">—</span>
+                                                                                break;
+
+                                                                            case RowState.DeletePending:
+                                                                                <Button Color="ButtonColor.Danger" Size="ButtonSize.Small"
+                                                                                        @onclick="() => ConfirmDelete(item, EntityLevel.Rub)">
+                                                                                    ⚠️ Confirm
+                                                                                </Button>
+                                                                                <Button Color="ButtonColor.Secondary" Size="ButtonSize.Small"
+                                                                                        @onclick="() => CancelDelete(item, EntityLevel.Rub)">
+                                                                                    ❎ Cancel
+                                                                                </Button>
+                                                                                break;
+                                                                            case RowState.EditPending:
+                                                                                <Button Color="ButtonColor.Success" Size="ButtonSize.Small"
+                                                                                        @onclick="() => ConfirmEdit(item, EntityLevel.Rub)">
+                                                                                    ✅ Confirm
+                                                                                </Button>
+                                                                                <Button Color="ButtonColor.Secondary" Size="ButtonSize.Small"
+                                                                                        @onclick="() => CancelEdit(item, EntityLevel.Rub)">
+                                                                                    ❌ Cancel
+                                                                                </Button>
+                                                                                break;
+                                                                            default:
+                                                                                <Button Color="ButtonColor.Warning" Size="ButtonSize.Small"
+                                                                                        @onclick="() => StartAflEdit(item, item.Rowguid)">
+                                                                                    ✏️ Edit
+                                                                                </Button>
+                                                                                <Button Color="ButtonColor.Danger" Size="ButtonSize.Small"
+                                                                                        @onclick="() => StartRowDelete(item.Rowguid, EntityLevel.Rub)">
+                                                                                    🗑 Delete
+                                                                                </Button>
+                                                                                break;
+                                                                        }
+                                                                    </ChildContent>
+                                                                </GridColumn>
+                                                            </GridColumns>
+
+                                                            <GridDetailView TItem="Tiwafl" Context="aflpere">
+                                                                <div class="row">
+                                                                    <div class="col-5 fw-bold">Id</div>
+                                                                    <div class="col">@aflpere.Id</div>
+                                                                </div>
+                                                                <div class="row">
+                                                                    <div class="col-5 fw-bold">Dossier</div>
+                                                                    <div class="col">@aflpere.Xmatri</div>
+                                                                </div>
+                                                                <div class="row">
+                                                                    <div class="col-5 fw-bold">Nom</div>
+                                                                    <div class="col">@aflpere.Nom</div>
+                                                                </div>
+                                                                <div class="row">
+                                                                    <div class="col-5 fw-bold">Pnom</div>
+                                                                    <div class="col">@aflpere.Pnom</div>
+                                                                </div>
+                                                            </GridDetailView>
+
+                                                        </Grid>
+                                                    </Content>
+                                                </Tab>
+                                            }
+                                        </Tabs>
+                                    }
+                                </div>
+                            </div>
+                        </Content>
+                    </Tab>
+                    <Tab Title="Verification">
+                        <Content>
+                            <div class="row tab-pane fade" id="nav-verfs" role="tabpanel" aria-labelledby="vrf">
+                                <div style="max-height: 300px; overflow-y: auto;">
+                                    <Grid TItem="Tiewel"
+                                          Data="@ensTiws.Where(t=>t.Jwlc < 4)"
+                                          AllowPaging="true"
+                                          Responsive="true">
+                                        <GridColumns>
+                                            <GridColumn TItem="Tiewel" HeaderText="Accord?">
+                                                <HeaderContent>
+                                                    <label>Verf?</label>
+                                                    <InputCheckbox Value="@IsGlobalT1Checked"
+                                                                   ValueChanged="(bool val) => OnTAccAll(new ChangeEventArgs { Value = val }, 1)"
+                                                                   ValueExpression="@(() => IsGlobalT1Checked)"
+                                                                   class="form-check-input">
+                                                    </InputCheckbox>
+                                                </HeaderContent>
+                                                <ChildContent Context="item">
+                                                    <div @key="item.Rowguid"></div>
+                                                    <InputCheckbox @bind-Value="item.IsJaccChecked"
+                                                                   @onchange="e => { item.Jacc = (bool)e.Value ? 1 : 0; }"
+                                                                   class="form-check-input">
+                                                    </InputCheckbox>
+                                                </ChildContent>
+                                            </GridColumn>
+                                            <GridColumn TItem="Tiewel" HeaderText="Rejet?">
+                                                <HeaderContent>
+                                                    <label>Rjt?</label>
+                                                    <InputCheckbox Value="@IsGlobalT2Checked"
+                                                                   ValueChanged="(bool val) => OnTAccAll(new ChangeEventArgs { Value = val }, 2)"
+                                                                   ValueExpression="@(() => IsGlobalT2Checked)"
+                                                                   class="form-check-input">
+                                                    </InputCheckbox>
+                                                </HeaderContent>
+                                                <ChildContent Context="item">
+                                                    <InputCheckbox @bind-Value="item.IsJrejChecked"
+                                                                   @onchange="e => { item.Jrej = (bool)e.Value ? 1 : 0; }"
+                                                                   class="form-check-input">
+                                                    </InputCheckbox>
+                                                </ChildContent>
+                                            </GridColumn>
+                                            <GridColumn TItem="Tiewel" HeaderText="Notif?">
+                                                <HeaderContent>
+                                                    <label>Ntf?</label>
+                                                    <InputCheckbox Value="@IsGlobalT3Checked"
+                                                                   ValueChanged="(bool val) => OnTAccAll(new ChangeEventArgs { Value = val }, 3)"
+                                                                   ValueExpression="@(() => IsGlobalT3Checked)"
+                                                                   class="form-check-input">
+                                                    </InputCheckbox>
+                                                </HeaderContent>
+                                                <ChildContent Context="item">
+                                                    <InputCheckbox @bind-Value="item.IsJnotChecked"
+                                                                   @onchange="e => { item.Jrej = (bool)e.Value ? 1 : 0; }"
+                                                                   class="form-check-input">
+                                                    </InputCheckbox>
+                                                </ChildContent>
+                                            </GridColumn>
+                                            <GridColumn TItem="Tiewel" HeaderText="Dossier">
+                                                <ChildContent Context="item">
+                                                    @item.Xmatri
+                                                </ChildContent>
+                                            </GridColumn>
+                                            <GridColumn TItem="Tiewel" HeaderText="Nom">
+                                                <ChildContent Context="item">
+                                                    @item.Nom
+                                                </ChildContent>
+                                            </GridColumn>
+                                            <GridColumn TItem="Tiewel" HeaderText="Pnom">
+                                                <ChildContent Context="item">
+                                                    @item.Pnom
+                                                </ChildContent>
+                                            </GridColumn>
+                                            <GridColumn TItem="Tiewel" HeaderText="Actions">
+                                                <HeaderContent>
+                                                    <!-- Accepter-->
+                                                    <!-- Rejeter-->
+                                                    <!-- Notifier-->
+                                                </HeaderContent>
+                                                <ChildContent Context="item">
+                                                    @if (!(curODContext.GetEntityState(item) == EntityStates.Added))
+                                                    {
+                                                        @if (curODContext.GetEntityState(item) == EntityStates.Modified)
+                                                        {
+                                                            <span>&nbsp;&nbsp;</span>
+                                                        }
+                                                    }
+                                                </ChildContent>
+                                            </GridColumn>
+                                            <GridColumn TItem="Tiewel" HeaderText="Actions">
+                                                <ChildContent Context="item">
+                                                    <div class="col-2">
+                                                        <button class="btn btn-warning btn-sm" @onclick="() => OuvrirFiche(1)">Recepisse</button>
+                                                    </div>
+                                                </ChildContent>
+                                            </GridColumn>
+                                        </GridColumns>
+                                        <GridEmptyDataTemplate TItem="Tiewel">
+                                            @* <div class="text-center p-3">
+                                                        <p>No records available.</p>
+                                                        <button class="btn btn-primary" @onclick="() => InitializeData()">
+                                                                Initialize Data
+                                                        </button>
+                                                    </div> *@
+                                        </GridEmptyDataTemplate>
+                                    </Grid>
+                                </div>
+                            </div>
+                        </Content>
+                    </Tab>
+                </Tabs>
+                @if (isRecptVisible)
+                {
+                    <div class="row">
+                        <RtW11Fic @ref="myftiw"
+                                  curOrga="@curOrga"
+                                  toChild="@toChild"
+                                  curODContext="@curODContext"
+                                  curTiw="@rselTiw">
+                            <ChildContent>
+                                @* <h2 class="child-box">Fiche d'Inscription</h2> *@
+                            </ChildContent>
+                        </RtW11Fic>
+                    </div>
+                }
+            }
+        </Authorized>
+        <NotAuthorized>
+            <p>Access denied. Please log in.</p>
+        </NotAuthorized>
+    </AuthorizeView>
+</div>
+    <style>
+    /* Force GridDetailView out of table mode */
+    .grid-detail-container {
+        table-layout: auto !important;
+        width: 100% !important;
+    }
+
+        .grid-detail-container > div {
+            display: block !important;
+        }
+
+    .form-control-plaintext {
+        padding: 0.375rem 0.75rem;
+        background-color: #f8f9fa;
+        border: 1px solid #dee2e6;
+        border-radius: 0.375rem;
+    }
+
+    .formul.button {
+        pointer-events: none;
+        opacity: 0.5;
+        height: 160px;
+    }
+
+    .plnpoint {
+        font-weight: bold;
+        background-color: blue;
+        color: white;
+    }
+
+    .rubpoint {
+        font-weight: bold;
+        background-color: yellow;
+        color: black;
+    }
+
+    .fmtpoint {
+        font-weight: bold;
+        background-color: darkolivegreen;
+        color: black;
+    }
+
+    .xcolx {
+        width: 40px !important;
+    }
+
+    .xcol1 {
+        width: 60px;
+    }
+
+    .xcol2 {
+        width: 120px;
+    }
+
+    .xcol3 {
+        width: 180px;
+    }
+
+    .xcol4 {
+        width: 240px;
+    }
+        /* Ensure inputs inside these columns fill the width */
+        .xcol1 input,
+        .xcol2 input,
+        .xcol3 input,
+        .xcol4 input {
+            width: 100%;
+            box-sizing: border-box; /* prevents overflow due to padding/border */
+        }
+
+    .editing-row {
+        pointer-events: none; /* Blocks all clicks on row */
+    }
+
+        .editing-row * {
+            pointer-events: auto; /* Re-enables clicks on buttons/inputs */
+        }
+
+    .new-add-indicator::after {
+        content: "➕ NEW";
+        float: right;
+        margin-left: 8px;
+        background: #ffc107;
+        color: #000;
+        font-size: 0.65em;
+        padding: 1px 4px;
+        border-radius: 8px;
+        font-weight: bold;
+    }
+
+    .readonly input,
+    .readonly textarea,
+    .readonly select,
+    .readonly button {
+        pointer-events: none;
+        background-color: #f8f9fa; /* light gray to indicate disabled */
+        opacity: 0.8;
+    }
+    /* Add to your CSS */
+    .row-active-edit {
+        background-color: #fff3cd !important; /* Light yellow */
+        border-left: 5px solid #ffc107 !important; /* Thick yellow border */
+        box-shadow: 0 2px 8px rgba(255,193,7,0.3);
+        z-index: 10;
+    }
+
+    .row-readonly {
+        opacity: 0.65 !important;
+        background-color: #f8f9fa !important;
+        cursor: not-allowed !important;
+    }
+
+        .row-readonly button,
+        .row-readonly .btn {
+            pointer-events: none !important;
+            opacity: 0.4 !important;
+        }
+
+    /* Make the whole cell a flex container so buttons line up horizontally */
+    .actions-col {
+        display: flex;
+        flex-direction: row;
+        gap: 6px; /* spacing between buttons */
+        align-items: center; /* vertical alignment */
+        justify-content: flex-start;
+    }
+        /* Apply to all buttons in your grid (or globally if you prefer) */
+        .actions-col .btn {
+            display: inline-flex; /* flex container */
+            flex-direction: row; /* horizontal layout */
+            align-items: center; /* vertical centering */
+            gap: 4px; /* spacing between emoji and text */
+            white-space: nowrap; /* prevent wrapping onto two lines */
+            line-height: 1.2; /* normalize baseline */
+        }
+</style>
+
+@code {
+    private bool isLoading = true;
+
+    private bool isRecptVisible = false;
+    // private AccuAfil myafl;
+    private string Imessage = "", Jmessage = "";
+
+    [Parameter]
+    public RenderFragment ChildContent { get; set; }
+    [Parameter]
+    public MyODataContext curODContext { get; set; }
+    [Parameter]
+    public Gxorga curOrga { get; set; }
+    [Parameter]
+    public MyShareVars toChild { get; set; }
+    [Parameter]
+    public int? Tgpe { get; set; }
+    [Parameter]
+    public int? Ugpe { get; set; }
+    [Parameter]
+    public int Id { get; set; }
+    // [Parameter]
+    // public bool allEnable { get; set; }
+    [Parameter]
+    public int toMenu { get; set; }
+    //guard
+    [Parameter]
+    public PendingChangesGuard _guard { get; set; }
+    [Parameter]
+    public EventCallback<PendingState> OnPendingStateChanged { get; set; }
+    [Parameter]
+    public int NbChanges { get; set; }
+    [Parameter]
+    public EventCallback<int> NbChangesChanged { get; set; }  // 🔥 CRITICAL
+    //[Parameter]
+    //public EventCallback<int> OnEdit { get; set; }
+    [Parameter]
+    public EventCallback<Tiewel> OnSaved { get; set; }
+
+    //author
+    private ClaimsPrincipal authUser;
+    private bool isAuthenticated = false;
+
+    //tiers non integrer, non rejeter et non accepter
+    public List<Tiewel> ensTiws = new();
+
+    private List<Gpdivh> _lsDivs = new List<Gpdivh>();
+    private List<Divpst> _lsPsts => _lsDivs.Where(dv => dv.Ihie == curTiw.Ihie).SelectMany(dp => dp.Divpsts).ToList();
+
+    private RtW11Fic myftiw { get; set; }
+
+    public string Title { get; set; }
+    public List<Gpvar> TUafls = new();
+    public List<Tiwafl> Dasafls = new();
+    string gpeLiba = "", tiwTitle;
+    private int chxTab = 0;
+    private Tiewel? curTiw = new();
+
+    [Parameter]
+    public Tiewel Model { get; set; } = default!;
+    private Tiwafl? curAfl = new();
+    private Tiewel? rselTiw = new();
+    private bool sinwTiw = false, sinwAfl = false;
+    private int _lgcdu = 0;
+    private bool IsGlobalT1Checked { get; set; } = false;
+    private bool IsGlobalT2Checked { get; set; } = false;
+    private bool IsGlobalT3Checked { get; set; } = false;
+
+    public List<Gpfixe> LsFixes { get; set; }
+    public List<Gpfixe> LsTgpes { get; set; }
+    public List<Gpvar> LsVars { get; set; }
+    public List<Gsglne> LsCols = new();
+    public List<Gsglne> TbElems = new();
+    //liste attente de save
+    private List<Tiewel> LsTAtts = new List<Tiewel>();
+    private UsrMail _usrMail = new UsrMail();
+
+    private bool success, errors, yaEnreg = false, yainfo = false;
+    private string successmsg = "", infomess = "", searchstr = "", strPoint = "";
+    private List<string> errorList = new List<string>();
+    private ProgressBar progressBar;
+    private string strmeta = "";
+    private bool chkAll { get; set; }
+    // Operation VUE
+    [Parameter]
+    public bool ParentOK { get; set; }
+    [Parameter]
+    public bool ParentEDT { get; set; }
+
+    private Guid? AddingTiwRowGuid = Guid.Empty;
+    private Guid? EditingTiwRowGuid = Guid.Empty;
+    private Guid? ConfirmingTiwDeleteRowGuid = Guid.Empty;
+    private Guid? AddingAflRowGuid = Guid.Empty; //pmodal
+    private Guid? EditingAflRowGuid = Guid.Empty;
+    private Guid? ConfirmingAflDeleteRowGuid = Guid.Empty;
+
+    //private bool AddVue => ParentOK && ParentEDT;
+    private bool isTiwDisabled = false; //=> curTiw != null; //!(isTiwAdding || isTiwEdding);
+    private bool isTiwAdding = false, isTiwEdding = false, isTiwDeling;
+
+    private bool isAflAdding = false, isAflEdding = false, isAflDeling = false;
+    //private bool IncludeVue => AddVue && AddingTiwRowGuid != Guid.Empty;
+    private bool ValiderVue => (EditingTiwRowGuid != Guid.Empty || ConfirmingTiwDeleteRowGuid != Guid.Empty);
+    //private bool EdtDelVue => !IncludeVue || !ValiderVue;
+    //private bool EdtDelDisable => curTiw == null || !ParentEDT;
+    //rubriques Afl
+    //private bool AddRubVue => curTiw != null && Addvue;
+    //private bool IncludeRubVue => AddRubVue && AddingAflRowGuid != Guid.Empty;
+    //private bool ValiderRubVue => (EditingAflRowGuid != Guid.Empty || ConfirmingAflDeleteRowGuid != Guid.Empty);
+    //private bool EdtDelRubVue => !IncludeRubVue || !ValiderRubVue;
+    private bool EdtDelRubDisable => curAfl == null || !ParentEDT;
+    //private bool isDisabled = true;
+    //private string DisabledClass => !EdtDelVue ? "disabled" : "";
+
+    //modals
+    private bool isModalVisible = false;
+
+    //pere-editing/adding/deleting
+    private bool noData = false;
+    private bool isTiwInEditing = false;
+
+    private bool IsTiwAdding(Tiewel item) => AddingTiwRowGuid == item.Rowguid;
+    private bool IsTiwEditing(Tiewel item) => EditingTiwRowGuid == item.Rowguid;
+
+    //data
+    private ObservableCollection<Tiewel> MyDaTiws { get; set; } = new();
+
+    private int activeTabIndex { get; set; } = 0;
+
+
+    //private bool IsAflAdding(Tiwafl item) => AddingAflRowGuid == item.Rowguid;
+    //private bool IsAflEditing(Tiwafl item) => EditingAflRowGuid == item.Rowguid;
+
+    Tiwafl? editingAfl = null;
+    private LookupService _lookupService;
+    private Dictionary<string, List<LookupItem>> _tiewelLookups = new();
+    private Dictionary<string, List<LookupItem>> _tiwaflLookups = new();
+
+    private Dictionary<string, bool> visibleJaccFields = new();
+    private Dictionary<string, string> FieldLabels = new();  // ✅ New!
+    private Dictionary<string, string> TieLabels { get; set; } = new();
+    private Dictionary<string, string> StringProps { get; set; } = new();
+    private Dictionary<string, int?> IntProps { get; set; } = new();
+    private Dictionary<string, decimal?> DecimalProps { get; set; } = new();
+
+    //row management
+    private Dictionary<int, bool> EdState = new Dictionary<int, bool>();
+    private Dictionary<Guid, RowState> _rowStates = new();
+    private Dictionary<Guid, bool> _isLightBg = new();  // Track light background
+    private void SetLightBackground(Guid rowguid, bool isLight)
+    {
+        _isLightBg[rowguid] = isLight;
+    }
+    private bool GetLightBackground(Guid rowguid)
+    {
+        return _isLightBg.GetValueOrDefault(rowguid, false);
+    }
+    // Disable ALL actions when ANY row editing
+    private Guid? _activeEditRowguid = null;
+    private EntityLevel? _activeEditLevel = null;
+    private bool CanEditRows() => _activeEditRowguid == null;
+    private bool IsRowEditing(Guid rowguid) => _activeEditRowguid == rowguid;
+    private bool IsAnyRowEditing => _activeEditRowguid != null;
+
+    public enum RowState
+    {
+        Normal,
+        EditPending,
+        DeletePending,
+        AddPending,  // 🔥 NEW for Add
+        Locked
+    }
+    public enum EntityLevel { Plan, Rub, Fmt }
+    //Guard
+    private int pendingCount => _guard.HasPendingChanges() ?
+        curODContext.Context.Entities.Count(e => e.State != EntityStates.Unchanged) : 0;
+    //add/edit options
+    private bool AllowMultipleEdits { get; set; } = false;
+    private bool isFiltre { get; set; } = false;
+    //PLAN
+    private Guid? TiwRenderKey = null;
+    private Dictionary<Guid, Tiewel> _edTiwOriginals = new();
+    private Tiewel? draftTiw = null;
+    private bool isAddTiw = false;
+    private bool isEdtTiw = false;
+    private Guid? AdTiwRowguid = null;
+    private Guid? EdTiwRowguid = null;// Currently editing row ID
+    private Guid? DlTiwRowguid = null;
+    //RUBRIQUE
+    private Guid? AflRenderKey = null;
+    private Dictionary<Guid, Tiwafl> _edAflOriginals = new();
+    private Tiwafl? draftAfl = null;
+    private bool isAddAfl = false;
+    private bool isEdtAfl = false;
+    private Guid? AdAflRowguid = null;
+    private Guid? EdAflRowguid = null;// Currently editing row ID
+    private Guid? DlAflRowguid = null;
+
+    bool IsTiwRowLocked(Guid rowGuid) =>
+        !AllowMultipleEdits &&
+        (EdTiwRowguid.HasValue || DlTiwRowguid.HasValue) &&
+        EdTiwRowguid != rowGuid &&
+        DlTiwRowguid != rowGuid;
+    bool IsAflRowLocked(Guid rowGuid) =>
+        !AllowMultipleEdits &&
+        (EdAflRowguid.HasValue || DlAflRowguid.HasValue) &&
+        EdAflRowguid != rowGuid &&
+        DlAflRowguid != rowGuid;
+
+    protected override async Task OnInitializedAsync()
+    {
+        isLoading = true;
+        if (Ugpe == 0)
+        {
+            Imessage = "Groupe Obligatoire";
+            return;
+        }
+        try
+        {
+            if (toChild == null || curOrga == null)
+            {
+                Console.WriteLine("Missing parent data");
+                return;
+            }
+            isAuthenticated = toChild.isAuthenticated;
+            authUser = toChild.authUser;
+            if (!isAuthenticated)
+            {
+                Imessage = "CONNEXION, Utilisateur non authentifie";
+                return;
+            }
+            //transmis par 2
+            LsVars = toChild.LsVars;
+            //Ityp=1exist/Itb=6ou7/Totyp=1cible2operat3client....
+            TUafls = LsVars.Where(tu => tu.Gvars == 3 && tu.Itb == 5 && tu.Totyp == Ugpe && tu.Ityp == 1).ToList();
+            //Console.WriteLine($"TUafls {TUafls.Count} // {Ugpe}");
+            LsFixes = toChild.LsFixes;
+            //LsPlans = toChild.LsPlans.Where(pl => pl.Ptyp == 4).ToList();
+            LsCols = toChild.LsCols;
+            TbElems = toChild.TbElems;
+            _lgcdu = 3;
+            var noslims = LsVars.Where(uv => uv.Idhie == 0 && uv.Gvars == 21 && uv.Itb == 1 && uv.Elea == 1);
+            if (noslims.Any()) _lgcdu = noslims.FirstOrDefault().Ivala;
+
+            _lsDivs = toChild.LsDivs.Where(uh => uh.Sidiv == 1).ToList();
+
+            // Load ALL gsglne for this organization (single query!)
+            var allCols = curOrga.Gsglnes.Where(g => g.Otyp == 5).ToList();
+            var tblitems = curOrga.Gsglnes.Where(g => g.Otyp == 4).ToList();
+            Console.WriteLine($"nb cols {allCols}");
+            _lookupService = new LookupService(allCols, tblitems);  // ✅ Direct constructor
+            _tiewelLookups = await _lookupService.GetTiewelLookupsAsync(curOrga.Idorg);
+            _tiwaflLookups = await _lookupService.GetTiwaflLookupsAsync(curOrga.Idorg);
+
+            LsTgpes = LsFixes.Where(iv => iv.Gvars == 53 && iv.Itb == 2 && iv.Elea != 0).ToList(); //cible/operat...
+            // = "Gpe//" + Ugpe.ToString();
+
+            // 🔥 SAFE - Only initialize if Plngens EXISTS
+            if (curOrga.Tiewels != null && curOrga.Tiewels.Any())
+            {
+                Console.WriteLine($"Tiewels loaded: {curOrga.Tiewels.Count}");
+
+                MyDaTiws = new ObservableCollection<Tiewel>(
+                        curOrga.Tiewels.Where(tie => tie.Jwlc < 4));
+            }
+            else
+            {
+                Console.WriteLine("Tiewels null/empty - initializing empty collections");
+                MyDaTiws = new ObservableCollection<Tiewel>();
+            }
+
+            tiwTitle = "Saisie";
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Child crash: {ex.Message}");
+            Console.WriteLine($"Stack: {ex.StackTrace}");  // 🔥 More debug info
+            Imessage = $"Erreur chargement: {ex.Message}";
+        }
+        finally
+        {
+            isLoading = false;
+            StateHasChanged();
+        }
+
+
+        ensTiws = curOrga.Tiewels.Where(t => t.Jwlc < 4).ToList();
+        curTiw = ensTiws.FirstOrDefault();
+        curTiw ??= new Tiewel();
+        if (curTiw != null)
+        {
+            Dasafls = curTiw.Tiwafls.ToList();
+        }
+        // _tiewelLookups = await _lookupService.GetTiewelLookupsAsync(curOrga.Idorg);
+        // visibleJaccFields = _lookupService.GetVisibleFields(curOrga.Idorg);
+        // //var visibleJacc1 = _lookupService.GetFieldsByJacc(curOrga.Idorg, 1);
+        // Console.WriteLine($"Charge : {visibleJaccFields.Count}");
+        // // 🔥 ONE LINE MAGIC
+        // var (str, ints, decs, labels) = _lookupService.InitializeAllPropsWithLabels(
+        //     curOrga.Idorg, typeof(Tiewel), curTiw, visibleJaccFields.Keys);
+        // StringProps = str;
+        // IntProps = ints;
+        // DecimalProps = decs;
+        // FieldLabels = labels;  // ✅ Labels ready!
+        isLoading = false;
+        //_navmanager.LocationChanged += OnLocationChanged;
+        //Console.WriteLine($"Authentication ENTREE curtiw {curTiw.Nom} nbele :{TbElems.Count} et nbcols : {LsCols.Count}");
+    }
+    //TEST GRID
+    private Guid ExpandedDetailRow { get; set; } = Guid.Empty;
+
+    // In your Edit method - AUTO-EXPAND detail:
+    // private async Task StartTiwEdit(Tiewel item, Guid rowguid)
+    // {
+    //     EdTiwRowguid = rowguid;
+    //     draftTiw = (Tiewel)DeepClone(item);
+
+    //     // 🔥 EXPAND DETAIL ROW
+    //     ExpandedDetailRow = rowguid;
+
+    //     StateHasChanged();
+    // }
+
+    // Close detail row
+    private void CloseDetailRow()
+    {
+        ExpandedDetailRow = Guid.Empty;
+        StateHasChanged();
+    }
+
+    // Toggle detail row independently (optional button in actions)
+    private void ToggleDetailRow(Guid rowguid)
+    {
+        ExpandedDetailRow = ExpandedDetailRow == rowguid ? Guid.Empty : rowguid;
+        StateHasChanged();
+    }
+    //END TEST GRID
+    private async Task StartTiwNew()
+    {
+        draftTiw = new Tiewel
+        {
+            //Idorg = _usrBag.Idorg,
+            Rowguid = Guid.NewGuid(),
+            Xadd1 = 0  // New item marker
+        };
+
+        isAddTiw = true;
+        EdTiwRowguid = draftTiw.Rowguid;
+
+        MyDaTiws.Insert(0, draftTiw);
+        StateHasChanged();
+
+        // GridDetailView will show expand icon for new row
+    }
+    private async Task StartTiwEdit(Tiewel item, Guid rowguid)
+    {
+        EdTiwRowguid = rowguid;
+        draftTiw = (Tiewel)DeepClone(item);
+        isEdtTiw = true;
+
+        StateHasChanged();
+        // User clicks expand icon → detail appears below THIS ROW
+    }
+    // private async Task StartTiwNew()
+    // {
+    //     Console.WriteLine("🚨 StartTiwNew");
+    //     var lsnb = NextSeq(MyDaTiws, p => p.Iui);
+    //     var newTiw = new Tiewel
+    //     { /* init properties */
+    //         Rowguid = Guid.NewGuid(),
+    //         Idorg = curOrga.Idorg,
+    //         Iui = lsnb, //nextSeq(1),
+    //         Utyp = Ugpe,
+    //         Nom = "",
+    //         Pnom = "",
+    //         Datc = DateTime.Now,
+    //         Eta = 1,
+    //         Xadd1 = -1,
+    //         Xedt1 = 0,
+    //         Xdel1 = 0
+    //     };
+    //     SetRowState(newTiw.Rowguid, RowState.AddPending);
+    //     SetLightBackground(newTiw.Rowguid, true);
+    //     MyDaTiws.Insert(0, newTiw);
+    //     draftTiw = (Tiewel)DeepClone(newTiw);
+    //     EdTiwRowguid = draftTiw.Rowguid;
+    //     isAddTiw = true;
+    //     isEdtTiw = true;
+    //     SetRowState(draftTiw.Rowguid, RowState.EditPending);  // Shows Confirm/Cancel ✓
+    //     TiwRenderKey = draftTiw.Rowguid;
+    //     Console.WriteLine($"✅ New row added to curOrga.Tiewels - Count: {curOrga.Tiewels.Count}");
+    //     StartRowEdit(draftTiw.Rowguid, EntityLevel.Plan);
+    //     StateHasChanged();
+    // }
+    // private async Task StartTiwEdit(Tiewel item, Guid rowguid)
+    // {
+    //     if (rowguid == Guid.Empty) return;
+    //     item.Xedt1 = -1;
+    //     if (item.Iele != 0) item.Iui = (int)item.Iele;
+    //     SetRowState(rowguid, RowState.EditPending);  // Shows Confirm/Cancel buttons
+    //     _edTiwOriginals[rowguid] = (Tiewel)DeepClone(item);
+    //     EdTiwRowguid = AllowMultipleEdits ? null : rowguid;
+    //     draftTiw = (Tiewel)DeepClone(item);
+    //     isEdtTiw = true;
+    //     StartRowEdit(rowguid, EntityLevel.Plan);
+    //     StateHasChanged();
+    // }
+    private async Task StartAflNew(Tiewel mypln, int afltyp)
+    {
+        if (mypln.Id <= 0)
+        {
+            Imessage = "🚫 Cannot add Aflrique: Plan must be saved first.";
+            return;
+        }
+        Console.WriteLine("🚨 StartAflNew");
+        var lsnb = NextSeq(mypln.Tiwafls, p => p.Iui);
+        var newAfl = new Tiwafl
+        { /* init */
+            Rowguid = Guid.NewGuid(),
+            Itie = curTiw?.Id,
+            Iui = lsnb, //nextSeq(2),
+            Ttyp = Ugpe,
+            Tyafl = afltyp,
+            Irang = lsnb,
+            Nom = "",
+            Pnom = "",
+            Datc = DateTime.Now,
+            Eaut = 0, //supprimable
+            Eta = 1,
+            Xadd1 = -1, //newly added/edited
+            Xedt1 = 0,
+            Xdel1 = 0
+        };
+        SetRowState(newAfl.Rowguid, RowState.AddPending);
+        SetLightBackground(newAfl.Rowguid, true);
+        if (mypln.Tiwafls == null)
+        {
+            mypln.Tiwafls = new DataServiceCollection<Tiwafl>();  // ✅ Correct type
+        }
+        mypln.Tiwafls.Insert(0, newAfl);
+        draftAfl = (Tiwafl)DeepClone(newAfl);
+        EdAflRowguid = draftAfl.Rowguid;
+        isAddAfl = true;
+        isEdtAfl = true;
+        SetRowState(draftAfl.Rowguid, RowState.EditPending);  // 🔥 ADD
+        AflRenderKey = draftAfl.Rowguid;  // Force grid refresh
+        Console.WriteLine($"✅ New row added to Tiewel.Tiwafls - Count: {mypln.Tiwafls.Count}");
+        StartRowEdit(draftAfl.Rowguid, EntityLevel.Rub);
+        StateHasChanged();
+    }
+    private async Task StartAflEdit(Tiwafl item, Guid rowguid)
+    {
+        if (rowguid == Guid.Empty) return;
+
+        item.Xedt1 = -1;
+        if (item.Iele != 0) item.Iui = (int)item.Iele;
+        SetRowState(rowguid, RowState.EditPending);  // Shows Confirm/Cancel buttons
+        _edAflOriginals[rowguid] = (Tiwafl)DeepClone(item);
+        EdAflRowguid = AllowMultipleEdits ? null : rowguid;
+        draftAfl = (Tiwafl)DeepClone(item);
+        isEdtAfl = true;
+        StartRowEdit(rowguid, EntityLevel.Rub);
+        StateHasChanged();
+    }
+    // ✅ 2.1 CONFIRM OPERATIONS
+    private async Task ConfirmTiwEdit(Tiewel item) =>
+        await UnifiedEditAction(item, true, EntityLevel.Plan);
+    private async Task ConfirmAflEdit(Tiwafl item) =>
+        await UnifiedEditAction(item, true, EntityLevel.Rub);
+    // ✅ 2.2 CANCEL OPERATIONS
+    private async Task CancelTiwEdit(Tiewel item) =>
+        await UnifiedEditAction(item, false, EntityLevel.Plan);
+    private async Task CancelTiwEdit(Tiwafl item) =>
+        await UnifiedEditAction(item, false, EntityLevel.Rub);
+
+    private async Task UnifiedEditAction(object item, bool isConfirm, EntityLevel level)
+    {
+        switch (level)
+        {
+            case EntityLevel.Plan:
+                await ProcessTiw((Tiewel)item, isConfirm);
+                break;
+            case EntityLevel.Rub:
+                await ProcessAfl((Tiwafl)item, isConfirm);
+                break;
+        }
+    }
+
+    private async Task ProcessTiw(Tiewel pln, bool isConfirm)
+    {
+        await ProcessEntity(pln, isConfirm, "Tiewels", p => ValidateTiw(p));
+    }
+    private async Task ProcessAfl(Tiwafl rub, bool isConfirm)
+    {
+        await ProcessEntity(rub, isConfirm, "Tiwafls", r => ValidateAfl(r));
+    }
+
+    private async Task ProcessEntity<T>(T entity, bool isConfirm, string entitySet, Func<T, bool> validate)
+    where T : class
+    {
+        Console.WriteLine($"🔄 Process{(typeof(T).Name)}: {(isConfirm ? "CONFIRM" : "CANCEL")}");
+        if (entity == null)
+        {
+            Imessage = "entity nulle";
+            StateHasChanged();
+            return;
+        }
+        if (isConfirm)
+        {
+            CopyDraftToGridItem<T>(entity);
+            // 🔥 1. VALIDATE FIRST - uses your ValidateXXX() helpers
+            if (!validate(entity))
+            {
+                // Imessage already set by ValidatePln/ValidateRub/ValidateFmt
+                Console.WriteLine($"❌ Validation failed: {Imessage}");
+                StateHasChanged();
+                return;
+            }
+            // 🔥 2. NEW vs EXISTING LOGIC
+            bool isNewAdd = GetXadd1(entity) == -1;
+            if (isNewAdd)
+            {
+                // 🔥 NEW ADD: AddObject (not tracked yet)
+                curODContext.AddObject(entitySet, entity);
+                Console.WriteLine($"➕ NEW {typeof(T).Name} → AddObject");
+            }
+            else
+            {
+                // 🔥 EXISTING: Attach + UpdateObject
+                if (!curODContext.IsEntityTracked(entity))
+                {
+                    curODContext.Context.AttachTo(entitySet, entity);
+                    Console.WriteLine($"📥 Attached existing {entitySet}");
+                }
+                curODContext.Context.UpdateObject(entity);
+                Console.WriteLine($"✏️ EXISTING {typeof(T).Name} → UpdateObject");
+            }
+            // 🔥 2. Container: Attach → Update → Flags
+            if (!curODContext.IsEntityTracked(entity))
+            {
+                curODContext.Context.AttachTo(entitySet, entity);
+                Console.WriteLine($"📥 Attached {entitySet}");
+            }
+
+            SetFlags(entity, 0, -1, 0);  // Confirmed: Xadd1=0, Xedt1=-1
+            curODContext.Context.UpdateObject(entity);
+
+            Console.WriteLine($"✅ {typeof(T).Name} confirmed → tracked");
+
+            // 🔥 3. UI cleanup
+            ResetRowState((Guid)typeof(T).GetProperty("Rowguid")!.GetValue(entity)!);
+            SetLightBackground((Guid)typeof(T).GetProperty("Rowguid")!.GetValue(entity)!, false);
+            ResetEntityUIState<T>();
+            await NotifyPendingChanges();
+            Imessage = $"✅ {typeof(T).Name} confirmed";
+        }
+        else  // CANCEL
+        {
+            if (GetXadd1(entity) == -1)  // New add
+            {
+                if (curODContext.IsEntityTracked(entity))
+                    curODContext.Context.Detach(entity);
+                RemoveFromParentCollection(entity);
+                Console.WriteLine($"🗑️ New {typeof(T).Name} canceled");
+            }
+            else
+            {
+                ClearDraft<T>();
+            }
+            ResetRowState((Guid)typeof(T).GetProperty("Rowguid")!.GetValue(entity)!);
+            ResetEntityUIState<T>();
+            Imessage = "";
+        }
+
+        StateHasChanged();
+    }
+    // Generic flag setter
+    private void SetFlags<T>(T entity, int xadd1, int xedt1, int xdel1)
+    {
+        typeof(T).GetProperty("Xadd1")?.SetValue(entity, xadd1);
+        typeof(T).GetProperty("Xedt1")?.SetValue(entity, xedt1);
+        typeof(T).GetProperty("Xdel1")?.SetValue(entity, xdel1);
+    }
+    // Generic Xadd1 getter
+    private int GetXadd1<T>(T entity)
+    {
+        return (int)typeof(T).GetProperty("Xadd1")?.GetValue(entity)!;
+    }
+    // Remove from parent collection
+    private void RemoveFromParentCollection<T>(T entity)
+    {
+        // Plngen: top-level
+        if (entity is Tiewel pln && MyDaTiws.Any(p => p.Rowguid == pln.Rowguid))
+            MyDaTiws.Remove(pln);
+        // Rubvar: parent Plngen.Rubvars
+        else if (entity is Tiwafl rub)
+        {
+            var parent = MyDaTiws.FirstOrDefault(p => p.Id == rub.Itie);
+            parent?.Tiwafls?.Remove(rub);
+        }
+    }
+
+    private void MarkAsModified<T>(T item, string entitySet) where T : class
+    {
+        SetFlags(item, 0, 0, 0);  // Xadd1=Xedt1=Xdel1=0
+
+        try
+        {
+            curODContext.Context.AttachTo(entitySet, item);
+        }
+        catch (InvalidOperationException)
+        {
+            // Already tracked ✅
+        }
+        Console.WriteLine($"modified liba {((dynamic)item).Liba} et abg {((dynamic)item).Abg}");
+        curODContext.Context.UpdateObject(item);  // 🔥 KEY: Context.UpdateObject()
+        Console.WriteLine($"✅ {entitySet} marked Modified");
+    }
+    private void CopyDraftToGridItem<T>(T gridItem) where T : class
+    {
+        switch (typeof(T).Name)
+        { // ONLY editable UI fields - 5-10x faster than reflection!
+            case nameof(Tiewel):
+                if (draftTiw == null) return;
+                var pln = (Tiewel)(object)gridItem;
+                pln.Xmatri = draftTiw.Xmatri; //dossier
+                pln.Nom = draftTiw.Nom; //nom
+                pln.Pnom = draftTiw.Pnom; //pnom
+
+                pln.Eta = draftTiw.Eta; //etat
+                break;
+            case nameof(Tiwafl):
+                if (draftAfl == null) return;
+                var rub = (Tiwafl)(object)gridItem;
+                rub.Xmatri = draftTiw.Xmatri; //dossier
+                rub.Nom = draftTiw.Nom; //nom
+                rub.Pnom = draftTiw.Pnom; //pnom
+
+                rub.Eta = draftTiw.Eta; //etat
+
+                break;
+        }
+    }
+    private void ClearDraft<T>()
+    {
+        switch (typeof(T).Name)
+        {
+            case nameof(Tiewel):
+                draftTiw = null;
+                Console.WriteLine("EdTiwRowguid is become null");
+                EdTiwRowguid = null;
+                break;
+            case nameof(Tiwafl):
+                draftAfl = null;
+                EdAflRowguid = null;
+                break;
+        }
+    }
+    // ROWS MANAGEMENT
+    private void StartRowEdit(Guid rowguid, EntityLevel level)
+    {
+        _activeEditRowguid = rowguid;
+        _activeEditLevel = level;
+        StateHasChanged();
+    }
+    private void EndRowEdit()
+    {
+        _activeEditRowguid = null;
+        _activeEditLevel = null;
+        StateHasChanged();
+    }
+    private string GetTiwRowClass(Tiewel pln)
+    {
+        var state = GetRowState(pln.Rowguid);
+        var isLight = IsLightBackground(pln.Rowguid);  // 🔥 Uses your existing
+
+        // 🔥 NEW: Single Active Row Editing
+        var isActiveEdit = _activeEditRowguid == pln.Rowguid;
+        var isOtherRowEditing = _activeEditRowguid != null && !isActiveEdit;
+
+        return GetRowCss(state, isLight, pln.Rowguid, isActiveEdit, isOtherRowEditing);
+    }
+    private string GetAflRowClass(Tiwafl rub)
+    {
+        var state = GetRowState(rub.Rowguid);
+        var isLight = IsLightBackground(rub.Rowguid);  // 🔥 Uses your existing
+
+        // 🔥 NEW: Single Active Row Editing
+        var isActiveEdit = _activeEditRowguid == rub.Rowguid;
+        var isOtherRowEditing = _activeEditRowguid != null && !isActiveEdit;
+
+        return GetRowCss(state, isLight, rub.Rowguid, isActiveEdit, isOtherRowEditing);
+    }
+
+    private RowState GetRowState(Guid rowguid, object? parent = null)
+    {
+        if (_rowStates.TryGetValue(rowguid, out var state)) return state;
+
+        // Context-aware lookup
+        if (parent is Plngen mypln)
+        {
+            if (mypln.Rowguid == rowguid && IsTiwRowLocked(rowguid)) return RowState.Locked;
+            var rub = mypln.Rubvars?.FirstOrDefault(r => r.Rowguid == rowguid);
+            if (rub != null && IsAflRowLocked(rowguid)) return RowState.Locked;
+        }
+
+        // Full hierarchy fallback
+        // ... same as above
+        //Dictionary lookup by RowGuid
+        // 🔥 MISSING: Final return for normal state
+        return _rowStates.TryGetValue(rowguid, out var cachedState) ? cachedState : RowState.Normal;
+    }
+    private void SetRowState(Guid rowguid, RowState state)  // Remove <T>
+    {
+        _rowStates[rowguid] = state;
+    }
+    private void ResetRowState(Guid rowguid)  // Reset specific row
+    {
+        _rowStates.Remove(rowguid);  // Back to Normal
+    }
+    private bool IsLightBackground(Guid rowguid)
+    {
+        return _isLightBg.ContainsKey(rowguid) && _isLightBg[rowguid];
+    }
+
+    private void ResetEntityUIState<T>()
+    {
+        switch (typeof(T).Name)
+        {
+            case nameof(Tiewel): ResetTiwUI(); break;
+            case nameof(Tiwafl): ResetAflUI(); break;
+        }
+    }
+    private void ResetTiwUI()
+    {
+        Console.WriteLine("🔄 ResetPlnUI");
+
+        // 🔥 CLEAR ALL MODES
+        isEdtTiw = false;
+        isAddTiw = false;  // ← CRITICAL - Exits add mode
+
+        draftTiw = null;
+        EdTiwRowguid = null;
+        DlTiwRowguid = null;
+
+        TiwRenderKey = Guid.NewGuid();  // Force grid refresh
+        StateHasChanged();
+    }
+    private void ResetAflUI()
+    {
+        draftAfl = null; EdAflRowguid = AdAflRowguid = null;
+        isEdtAfl = isAddAfl = false; AflRenderKey = null;
+    }
+    // ✅ 3. NOTIFICATIONS
+    private async Task NotifyPendingChanges()
+    {
+        await OnPendingStateChanged.InvokeAsync(new PendingState(
+            _guard.HasPendingChanges(),
+            _guard.GetPendingChangesCount()
+        ));
+
+        NbChanges = _guard.GetPendingChangesCount();
+        await NbChangesChanged.InvokeAsync(NbChanges);
+        StateHasChanged();
+    }
+
+    private string GetEntitySetName<T>() where T : class
+    {
+        return typeof(T) switch
+        {
+            Type t when t == typeof(Tiewel) => "Tiewels",
+            Type t when t == typeof(Tiwafl) => "Tiwafls",
+            _ => throw new ArgumentException($"Unknown entity type: {typeof(T).Name}")
+        };
+    }
+    private string GetEntitySet(object entity)
+    {
+        return entity switch
+        {
+            Tiewel _ => "Tiewels",
+            Tiwafl _ => "Tiwafls",
+            _ => throw new ArgumentException("Unknown entity type")
+        };
+    }
+    private void StartDelete<T>(T item, string entitySet) where T : class
+    {
+        var rowguid = ((dynamic)item).Rowguid;
+        SetDeleteFlags(item); // e.g. Xdel1 = -1
+        SetRowState(rowguid, RowState.DeletePending);  // Triggers
+        Console.WriteLine($"🗑 {typeof(T).Name} {rowguid} marked as pending delete");
+        StateHasChanged();
+    }
+    private void StartRowDelete(Guid rowguid, EntityLevel level)
+    {
+        // 🔥 1. Set DeletePending → triggers your @switch
+        SetRowState(rowguid, RowState.DeletePending);
+
+        // 🔥 2. Enable single-row editing (CSS)
+        StartRowEdit(rowguid, level);
+
+        StateHasChanged();
+    }
+    private async Task ConfirmDelete<T>(T item, EntityLevel level) where T : class
+    {
+        await UnifiedDeleteAction(item, true, level);
+        EndRowEdit();  // Close single delete mode
+    }
+    // SINGLE method - ALL delete cancels
+    private async Task CancelDelete<T>(T item, EntityLevel level) where T : class
+    {
+        await UnifiedDeleteAction(item, false, level);
+        EndRowEdit();  // Close single delete mode
+    }
+
+    // ✅ 6. VALIDATIONS
+    private bool ValidateEntity<T>(T item)
+    {
+        return item switch
+        {
+            Tiewel pln => ValidateTiw(pln),
+            Tiwafl rub => ValidateAfl(rub),
+            _ => true
+        };
+    }
+    private bool ValidateTiw(Tiewel? mypln)
+    {
+        Console.WriteLine($"A verifier {mypln.Xmatri}");
+        //dossier
+        if (string.IsNullOrEmpty(mypln.Xmatri)
+            || mypln.Xmatri.Length < 3)
+        {
+            Imessage = "dossier obligatoire/longueur";
+            return false;
+        }
+        //nom
+        if (string.IsNullOrEmpty(mypln.Nom)
+            || mypln.Nom.Length < 3)
+        {
+            Imessage = "nom obligatoire/longueur";
+            return false;
+        }
+        //pnom
+        if (string.IsNullOrEmpty(mypln.Pnom)
+            || mypln.Pnom.Length < 3)
+        {
+            Imessage = "Pnom obligatoire/longueur";
+            return false;
+        }
+        // //etat
+        // if (mypln.Eta < 0)
+        // {
+        //     Imessage = "etat obligatoire";
+        //     return false;
+        // }
+        return true;
+    }
+    private bool ValidateAfl(Tiwafl myrub)
+    {
+        //nom
+        if (string.IsNullOrEmpty(myrub.Nom)
+            || myrub.Nom.Length < 3)
+        {
+            Imessage = "nom obligatoire/longueur";
+            return false;
+        }
+        //pnom
+        if (string.IsNullOrEmpty(myrub.Pnom)
+            || myrub.Pnom.Length < 3)
+        {
+            Imessage = "Pnom obligatoire/longueur";
+            return false;
+        }
+        // //etat
+        // if (myrub.Eta < 0)
+        // {
+        //     Imessage = "etat obligatoire";
+        //     return false;
+        // }
+        return true;
+    }
+
+    // ✅ 6. ROW Management
+    private string GetRowCss(RowState state, bool isLight, Guid rowguid, 
+                        bool isActiveEdit, bool isOtherRowEditing)
+    {
+        var css = new List<string>();
+
+        if (isLight) css.Add("bg-light");
+
+        // 🔥 YOUR EXISTING: NEW ADD detection (Xadd1 == -1)
+        var isNewAdd = ((dynamic)MyDaTiws.FirstOrDefault(p => p.Rowguid == rowguid))?.Xadd1 == -1;
+
+        // 🔥 HIGHEST PRIORITY: Single Row Editing
+        if (isActiveEdit)
+        {
+            css.Add("row-active-edit");  // Thick yellow border + highlight
+            return string.Join(" ", css);  // EARLY RETURN - editing overrides all
+        }
+
+        // 🔥 NEXT: Other rows when editing active → READONLY
+        if (isOtherRowEditing)
+        {
+            css.Add("row-readonly");
+            css.Add("opacity-65");
+            css.Add("cursor-not-allowed");
+        }
+
+        // 🔥 YOUR EXISTING RowState logic
+        switch (state)
+        {
+            case RowState.AddPending:
+            case RowState.EditPending when isNewAdd:
+                css.Add("border-start border-warning border-3");
+                //css.Add("new-add-indicator");
+                break;
+            case RowState.EditPending:
+                css.Add("border-start border-info border-3");
+                break;
+            case RowState.DeletePending:
+                css.Add("bg-danger-subtle");
+                break;
+            case RowState.Locked:
+                css.Add("bg-secondary-subtle opacity-75");
+                break;
+        }
+
+        return string.Join(" ", css);
+    }    
+    // ✅ 6. SELECTIONS
+    private void SelPlanVue(int xdom)
+    {
+        if (xdom != 0)
+        {
+
+        }
+    }
+    // private void SelPlanDom(int xdom)
+    // {
+    //     if (xdom != 0)
+    //     {
+
+    //     }
+    // }
+
+    // ✅ 6. HELPERS - Mark Count and Clone
+
+    private void MarkAsModified(object entity)
+    {
+        // Reset flags universally
+        if (entity is Tiewel pln) { pln.Xedt1 = pln.Xadd1 = pln.Xdel1 = 0; }
+        else if (entity is Tiwafl rub) { rub.Xedt1 = rub.Xadd1 = rub.Xdel1 = 0; }
+
+        try { curODContext.Context.AttachTo(GetEntitySet(entity), entity); }
+        catch (InvalidOperationException) { }  // Already tracked
+
+        curODContext.Context.UpdateObject(entity);  // 🔥 KEY: Context.UpdateObject()
+        Console.WriteLine($"✅ {entity.GetType().Name} marked Modified");
+    }
+    private object DeepClone(object entity)
+    {
+        var settings = new JsonSerializerSettings
+        {
+            ReferenceLoopHandling = ReferenceLoopHandling.Ignore
+        };
+
+        var json = JsonConvert.SerializeObject(entity, settings);
+        return JsonConvert.DeserializeObject(json, entity.GetType(), settings)!;
+    }
+    // SINGLE method handles ALL confirm operations
+    private async Task ConfirmEdit<T>(T item, EntityLevel level) where T : class
+    {
+        await UnifiedEditAction(item, true, level);
+        EndRowEdit();  // Close single edit mode
+    }
+    // SINGLE method handles ALL cancel operations
+    private async Task CancelEdit<T>(T item, EntityLevel level) where T : class
+    {
+        await UnifiedEditAction(item, false, level);
+        EndRowEdit();  // Close single edit mode
+    }
+    private async Task UnifiedDeleteAction<T>(T item, bool isConfirm, EntityLevel level) where T : class
+    {
+        switch (level)
+        {
+            case EntityLevel.Plan: await ProcessDelete<Plngen>(item as Plngen, isConfirm); break;
+            case EntityLevel.Rub: await ProcessDelete<Rubvar>(item as Rubvar, isConfirm); break;
+            case EntityLevel.Fmt: await ProcessDelete<Rubfmt>(item as Rubfmt, isConfirm); break;
+        }
+    }
+    private async Task ProcessDelete<T>(T item, bool isConfirm) where T : class
+    {
+        if (item == null) return;
+
+        var rowguid = (Guid)typeof(T).GetProperty("Rowguid")!.GetValue(item)!;
+
+        if (isConfirm)
+        {
+            // 🔥 Generic delete logic
+            RemoveFromParentCollection(item);
+
+            if (!curODContext.IsEntityTracked(item))
+                curODContext.Context.AttachTo(GetEntitySetName<T>(), item);
+
+            curODContext.Context.DeleteObject(item);
+            SetDeleteFlags(item);
+            SetRowState(rowguid, RowState.Normal);
+            await NotifyPendingChanges();
+        }
+        else
+        {
+            SetRowState(rowguid, RowState.Normal);
+        }
+
+        StateHasChanged();
+    }
+    private void SetDeleteFlags(object item) => SetFlags(item, 0, 0, -1);
+
+    // private async Task InitializeData()
+    // {
+    //     // Seed some sample rows
+    //     // if (OnChildEmptyData.HasDelegate)
+    //     // {
+    //     //     await OnChildEmptyData.InvokeAsync();
+    //     //Console.WriteLine($"Retour parent : {allEnable}");
+    //     curTiw = new();
+    //     curTiw.Idorg = curOrga.Idorg;
+    //     curTiw.Utyp = Ugpe;
+    //     curTiw.Nom = "Martin ESSEC";
+    //     curTiw.Pnom = "Simpore";
+    //     curTiw.Datc = DateTime.Now;
+    //     curTiw.Xadd1 = -1;
+    //     noData = true;
+    //     //Console.WriteLine($"1.{ParentEDT} 2.{ParentOK}");
+    //     //AddingTiwRowGuid = curTiw.Rowguid;
+    //     //sinwTiw = true;
+    //     Console.WriteLine("Correct");
+    //     StateHasChanged();
+    // }
+
+    // void OnTiwRowClick(GridRowEventArgs<Tiewel> args)
+    // {
+    //     Console.WriteLine($"OnTiwRowClick Triggered : {args.Item.Id}");
+    //     rselTiw = args.Item; //get gRubsMap
+    //     Console.WriteLine($"X1seq {rselTiw.Id}");
+    //     if (rselTiw == null || rselTiw.Id == 0)
+    //     {
+    //         return;
+    //     }
+    //     StateHasChanged();
+    // }
+
+    //new method to reset EditContext
+    // private async Task<Dictionary<string, bool>> LoadVisibleFieldsAsync(int idorg)
+    // {
+    //     var visible = new Dictionary<string, bool>();
+
+    //     var visibleGsglne = _lookupService.ColDefs
+    //         .Where(g => g.Scdrub != null
+    //                  && g.Jacc == 1) // ← VISIBLE fields only
+    //         .Select(g => g.Scdrub)
+    //         .Distinct()
+    //         .ToList();
+
+    //     foreach (var fieldName in visibleGsglne)
+    //     {
+    //         visible[fieldName] = true;
+    //     }
+
+    //     return visible;
+    // }
+
+    // ✅ CORRECT property access with EditContext support
+    // private string GetPropValue(Tiewel entity, PropertyInfo prop)
+    // {
+    //     var value = prop.GetValue(entity);
+    //     return value?.ToString() ?? "";
+    // }
+
+    // private async Task SetPropValue(Tiewel entity, PropertyInfo prop, object newValue)
+    // {
+    //     if (newValue == null) return;
+
+    //     try
+    //     {
+    //         string stringValue = newValue.ToString();
+
+    //         // ✅ Simple type-safe conversion
+    //         object convertedValue = prop.PropertyType.Name switch
+    //         {
+    //             "String" => stringValue,
+    //             "Int32" or "int" => int.TryParse(stringValue, out int i) ? i : 0,
+    //             "Decimal" => decimal.TryParse(stringValue, out decimal d) ? d : 0m,
+    //             "DateTime" => DateTime.TryParse(stringValue, out DateTime dt) ? dt : DateTime.MinValue,
+    //             "DateOnly" => DateOnly.TryParse(stringValue, out DateOnly dateOnly) ? dateOnly : DateOnly.MinValue,
+    //             "Boolean" => bool.TryParse(stringValue, out bool b) ? b : false,
+    //             _ => stringValue  // default to string
+    //         };
+
+    //         prop.SetValue(entity, convertedValue);
+    //         //editContext.NotifyFieldChanged(editContext.Field(prop.Name));
+    //         StateHasChanged();
+    //     }
+    //     catch (Exception)
+    //     {
+    //         // Silent fail
+    //     }
+    // }
+
+    // ✅ For regular inputs - bind directly to property
+    // private async Task OnInputChanged(ChangeEventArgs e, PropertyInfo prop)
+    // {
+    //     await SetPropValue(curTiw, prop, e.Value);
+    // }
+
+    // ✅ Correct input type detection
+    // private string GetInputType(PropertyInfo prop)
+    // {
+    //     var typeName = prop.PropertyType.Name.ToLowerInvariant();
+    //     return typeName switch
+    //     {
+    //         "datetime" or "dateonly" => "date",
+    //         "int32" or "int" => "number",
+    //         "decimal" or "double" => "number",
+    //         "bool" => "checkbox",
+    //         _ => "text"
+    //     };
+    // }
+    // CheckBoxes
+    private bool isChecked
+    {
+        get => curTiw.Jacc == 1;
+        set => curTiw.Jacc = value ? 1 : 0;
+    }
+    //CRUD Tiewel
+    private EntityStates? GetState(object entity)
+    {
+        return curODContext?.GetEntityState(entity);
+    }
+    
+    private void HandleValidSubmit()
+    {
+        Console.WriteLine("Form submitted successfully!");
+    }
+    private void OnTiwChanged(EventArgs args)
+    {
+        var chgeEventArgs = (ChangeEventArgs)args;
+        var selno = Convert.ToInt16(chgeEventArgs.Value.ToString());
+        if (selno > 0)
+        {
+            curTiw = LsTAtts.Where(tiw => tiw.Id == selno).FirstOrDefault();
+        }
+    }
+    private void OnTAccAll(ChangeEventArgs e, int origchk)
+    {
+        bool isChecked = (bool)e.Value;
+        if (origchk == 1)
+        {
+            IsGlobalT1Checked = isChecked; // Update the bound value manually
+        }
+        else if (origchk == 2)
+        {
+            IsGlobalT2Checked = isChecked; // Update the bound value manually
+        }
+        else if (origchk == 3)
+        {
+            IsGlobalT3Checked = isChecked; // Update the bound value manually
+        }
+        foreach (var tw in ensTiws)
+        {
+            if (origchk == 1)
+            {
+                //tw.Ivalid = isChecked ? 9 : 0;
+                tw.Jacc = isChecked ? 1 : 0;
+            }
+            else
+            if (origchk == 2)
+            {
+                //tw.Ivalid = isChecked ? 9 : 0;
+                tw.Jrej = isChecked ? 1 : 0;
+            }
+            else
+            if (origchk == 3)
+            {
+                //tw.Ivalid = isChecked ? 9 : 0;
+                tw.Jnot = isChecked ? 1 : 0;
+            }
+            Console.WriteLine($"Global Valid  / {tw.Jacc} / {tw.Jrej} / {tw.Jnot}");
+        }
+        StateHasChanged();
+    }
+
+    private void ShowModal()
+    {
+        // Optionally, set the current entity to edit
+        //currentEntity = new YourEntityType { Name = "Sample Name", Description = "Sample Description" }; // Example initialization
+        //_mdcTiwel = curTiwel;
+        Console.WriteLine($"ShowModal appele");
+        isModalVisible = true;
+    }
+
+    private Task OnModalVisibilityChanged(bool isVisible)
+    {
+        isModalVisible = isVisible;
+        return Task.CompletedTask;
+    }
+    private Task HandleSave(Tiewel entity)
+    {
+        // Handle modal entity save
+        // For example, save to the database or update the UI
+        Console.WriteLine($"Entity saved: {entity.Nom}, {entity.Pnom}");
+        return Task.CompletedTask;
+    }
+    private async Task OuvrirFiche(int orig)
+    {
+        isRecptVisible = false;
+        if (orig == 1)
+        { //recepisse
+            isRecptVisible = true;
+        }
+        //stopenFich = "OuvrirRecepisse";
+        //isFicheVisible = true;
+        // isFicheVisible = !isFicheVisible;
+        // if (isFicheVisible)
+        // {
+        //     stopenFich = "FermerRecepisse";
+        // }
+        // else
+        // {
+        //     stopenFich = "OuvrirRecepisse";
+        // }
+    }
+    // private async Task<bool> IsTiwValid(Tiewel mytiw)
+    // {
+    //     //verification saisie
+    //     errors = false;
+    //     errorList = new List<string>();
+    //     if (String.IsNullOrEmpty(mytiw.Nom))
+    //     {
+    //         errors = true;
+    //         errorList.Add("Echec, Nom obligatoire.");
+    //         return false;
+    //     }
+    //     if (String.IsNullOrEmpty(mytiw.Pnom))
+    //     {
+    //         errors = true;
+    //         errorList.Add("Echec, Prenom(s) obligatoire.");
+    //         return false;
+    //     }
+    //     // if (mytiw.Sexe == "0")
+    //     // {
+    //     //     errors = true;
+    //     //     errorList.Add("Echec, Sexe obligatoire.");
+    //     //     return false;
+    //     // }
+    //     // if (mytiw.Sitmat == 0)
+    //     // {
+    //     //     errors = true;
+    //     //     errorList.Add("Echec, Sit.matrimon. obligatoire.");
+    //     //     return false;
+    //     // }
+    //     // if (mytiw.Respon == 0)
+    //     // {
+    //     //     errors = true;
+    //     //     errorList.Add("Echec, Responsabilite obligatoire.");
+    //     //     return false;
+    //     // }
+    //     if (String.IsNullOrEmpty(mytiw.Email))
+    //     {
+    //         strmeta = mytiw.Email;
+    //         errors = true;
+    //         errorList.Add("Echec, Email obligatoire.");
+    //         return false;
+    //     }
+    //     // if (Siphone == 1)
+    //     // { //telephone obligatoire
+    //     //     if (String.IsNullOrEmpty(mytiw.Usrphone))
+    //     //     {
+    //     //         errors = true;
+    //     //         errorList.Add("Echec, Telephone obligatoire.");
+    //     //         return false;
+    //     //     }
+    //     // }
+    //     return true;
+    // }
+    //manage SAVING
+    public async Task EdtAll()
+    {
+        //allEnable = true;
+        //myacfl.EdtAll();
+        isTiwInEditing = false;
+    }
+    public async Task CncCHILD()
+    { //reload
+        isTiwInEditing = false;
+        //ChildADDING = false;
+        //ChildUPDING = false;
+    }
+    private async Task<bool> IsAflValid(Tiwafl mytiw)
+    {
+        //verification saisie
+        errors = false;
+        errorList = new List<string>();
+        if (String.IsNullOrEmpty(mytiw.Nom))
+        {
+            errors = true;
+            errorList.Add("Echec, Nom obligatoire.");
+            return false;
+        }
+        if (String.IsNullOrEmpty(mytiw.Pnom))
+        {
+            errors = true;
+            errorList.Add("Echec, Prenom(s) obligatoire.");
+            return false;
+        }
+        // if (mytiw.Sexe == "0")
+        // {
+        //     errors = true;
+        //     errorList.Add("Echec, Sexe obligatoire.");
+        //     return false;
+        // }
+        // if (mytiw.Sitmat == 0)
+        // {
+        //     errors = true;
+        //     errorList.Add("Echec, Sit.matrimon. obligatoire.");
+        //     return false;
+        // }
+        // if (mytiw.Respon == 0)
+        // {
+        //     errors = true;
+        //     errorList.Add("Echec, Responsabilite obligatoire.");
+        //     return false;
+        // }
+        if (String.IsNullOrEmpty(mytiw.Usremail))
+        {
+            strmeta = mytiw.Usremail;
+            errors = true;
+            errorList.Add("Echec, Email obligatoire.");
+            return false;
+        }
+        // if (Siphone == 1)
+        // { //telephone obligatoire
+        //     if (String.IsNullOrEmpty(mytiw.Usrphone))
+        //     {
+        //         errors = true;
+        //         errorList.Add("Echec, Telephone obligatoire.");
+        //         return false;
+        //     }
+        // }
+        return true;
+    }
+    // public async Task SavAll()
+    // {
+    //     if (isTiwInEditing)
+    //     {
+    //         curODContext.UpdateObject<Tiewel>(curTiw);
+    //         await curODContext.SaveDataAsync();
+    //         isTiwInEditing = false;
+    //     }
+    //     allEnable = false;
+    // }
+    private void HandleFieldChanged(object sender, FieldChangedEventArgs e)
+    {
+        //ChildUPDING = true;
+        if (!isTiwInEditing) isTiwInEditing = true;
+        Console.WriteLine($"Field edited: {e.FieldIdentifier.FieldName}");
+        // Place your logic here when a field is edited
+    }
+    // private async void OnLocationChanged(object sender, LocationChangedEventArgs e)
+    // {
+    //     //allEnable = false;
+    //     await SaveCurEntities();
+    // }
+    public async Task<bool> SaveCurEntities()
+    {
+        try
+        {
+            //if (isTiwInEditing || myacfl.isTwAflEditing)
+            //if (isTiwInEditing)
+            //{
+            //curODContext.UpdateObject<Tiewel>(curTiw);
+            ////await curODContext.SaveDataAsync();
+            //isTiwInEditing = false;
+            Console.WriteLine("Saved SUCCESS");
+            //}
+            //var wrkplns = curOrga.Plngens.Where(pl => pl.Ptyp == 3 && pl.Totyp == IMyAtr).ToList();
+            //MyDaPlans = wrkplns;
+            StateHasChanged();
+            return true;
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Saved ISSUE {ex.Message}");
+            //Alert($"ECHEC Entities not SAVED");
+            return false;
+        }
+    }
+    private int NextSeq<T>(IEnumerable<T> source, Func<T, int?> selector)
+    {
+        int maxSeq = source.Any() ? source.Max(selector) ?? 0 : 0;
+        return maxSeq + 1;
+    }
+    public void Dispose()  // ← ADD THIS
+    {
+        Console.WriteLine("🧹 Child EnrolAcc cleaning up");
+        _guard.DiscardUnconfirmedAdds<Tiewel>();
+        _guard.DiscardUnconfirmedAdds<Tiwafl>();       
+    }// void PrepareAddTiw()
+    // {
+    //     //curTiw = new();
+    //     Tiewel mytier = AddNewTiwRow();
+    //     if (mytier != null)
+    //     {
+    //         curTiw = mytier;  //mytier;
+    //         AddingTiwRowGuid = curTiw.Rowguid;
+    //         sinwTiw = true;
+    //         isTiwAdding = true;
+    //         StateHasChanged();
+    //     }
+    //     else
+    //     {
+    //         curTiw = new();
+    //         isTiwAdding = false;
+    //     }
+    // }
+    // void PrepareAddAfl(Tiewel mytier, int typfl)
+    // {
+    //     //calc next Seq
+    //     //Console.WriteLine($" le type : {mySTyp}");
+    //     int nextSeq = 1;
+    //     Tiwafl myafl = AddNewAflRow(mytier, typfl, nextSeq);
+    //     if (myafl != null)
+    //     {
+    //         //curAfl = myafl;
+    //         //AddStep[mySTyp] = -1;
+    //         curTiw.Tiwafls.Add(myafl);
+    //         AddingAflRowGuid = myafl.Rowguid;
+    //         sinwAfl = true;
+    //         isAflAdding = true;
+    //         curAfl = myafl;
+    //         StateHasChanged();
+    //     }
+    // }
+    // Tiewel AddNewTiwRow()
+    // {
+    //     if (curOrga == null || allEnable == false)
+    //     {
+    //         Imessage = "REFUS, Creation Orga indisponible";
+    //         //Yames = true;
+    //         return new Tiewel();
+    //     }
+    //     try
+    //     {
+    //         Console.WriteLine("In Adding");
+    //         var lsnb = NextSeq(MyDaTiws, p => p.Iui);
+    //         return new Tiewel
+    //         {
+    //             Rowguid = Guid.NewGuid(),
+    //             Idorg = curOrga.Idorg,
+    //             Iui = lsnb, //nextSeq(1),
+    //             Utyp = Ugpe,
+    //             Nom = "",
+    //             Pnom = "",
+    //             Datc = DateTime.Now,
+    //             Eta = 1,
+    //             Xadd1 = -1,
+    //             Xedt1 = 0,
+    //             Xdel1 = 0
+    //         };
+    //     }
+    //     catch (Exception ex)
+    //     {
+    //         Console.WriteLine($"ici : error exception : {ex.Message}");
+    //     }
+    //     return new Tiewel();
+    // }
+    // Tiwafl AddNewAflRow(Tiewel mytier, int typfl, int nextSeq)
+    // {
+    //     if (mytier == null || allEnable == false)
+    //     {
+    //         Imessage = "REFUS, Creation Tiers indisponible";
+    //         //Yames = true;
+    //         return new Tiwafl();
+    //     }
+    //     try
+    //     {
+    //         Console.WriteLine("In Adding");
+    //         var lsnb = NextSeq(mytier.Tiwafls, p => p.Iui);
+    //         return new Tiwafl
+    //         {
+    //             Rowguid = Guid.NewGuid(),
+    //             Itie = curTiw?.Id,
+    //             Iui = lsnb, //nextSeq(2),
+    //             Ttyp = Ugpe,
+    //             Tyafl = typfl,
+    //             Irang = nextSeq,
+    //             Nom = "",
+    //             Pnom = "",
+    //             Datc = DateTime.Now,
+    //             Eaut = 0, //supprimable
+    //             Eta = 1,
+    //             Xadd1 = -1, //newly added/edited
+    //             Xedt1 = 0,
+    //             Xdel1 = 0
+    //         };
+    //     }
+    //     catch (Exception ex)
+    //     {
+    //         Console.WriteLine($"ici : error exception : {ex.Message}");
+    //     }
+    //     return new Tiwafl();
+    // }
+    // async Task IncludeTiw(Tiewel aglne)
+    // {
+    //     // Use parent Idrub as key to gRubsMap dictionary
+    //     var parentId = curOrga.Idorg;
+    //     bool YaTiw = false;
+    //     YaTiw = await IsTiwValid(aglne);
+    //     if (!YaTiw) return;
+    //     Imessage = "";
+    //     if (!curODContext.IsEntityTracked(aglne))
+    //     {
+    //         curTiw.Xadd1 = -2;  //fin adding to be tracked in loaded rubfmts wait for new add
+    //         aglne.Xadd1 = 0;
+    //         aglne.Utyp = Ugpe;
+    //         int wivalid = 0; int wjwlc = 1;
+    //         if (aglne.Utyp == 3) //auto tiersp/admin
+    //         { //auto ou Admin
+    //             wivalid = 9; //declench validation tiersp
+    //             wjwlc = 3; //integrate to tiersp in Jwcl = 1/added
+    //         }
+    //         if (curOrga.Opauto == 1 && aglne.Utyp == 5)
+    //         { //operateur
+    //             wivalid = 9; //declench validation tiersp
+    //             wjwlc = 1; //added
+    //         }
+    //         if (curOrga.Cbauto == 1 && aglne.Utyp == 11)
+    //         { //cible
+    //             wivalid = 9; //declench validation tiersp
+    //             wjwlc = 1; //added
+    //         }
+    //         aglne.Tiedcl = wivalid;
+    //         aglne.Jwlc = wjwlc;
+    //         curODContext.AddObject<Tiewel>("Tiewels", aglne);
+    //         sinwTiw = false;
+    //         AddingTiwRowGuid = Guid.Empty;
+    //         curOrga.Tiewels.Add(aglne);
+    //         ensTiws.Add(aglne);
+    //         StateHasChanged();
+    //         Imessage = "Success... programme ajoute";
+    //     }
+    //     else
+    //     {
+    //         aglne.Xadd1 = 0;
+    //         Imessage = "Deja ajoute";
+    //     }
+    //     sinwTiw = false;
+    // }
+    // void IncludeAfl(Tiwafl myafl)
+    // {
+    //     var parentId = curTiw.Rowguid;
+    //     //bool YaChild = IsChildValid(aglne); // Make sure this returns true if aglne is valid to add
+    //     if (!curODContext.IsEntityTracked(myafl)) // && YaChild)
+    //     {
+    //         try
+    //         {
+    //             myafl.Xadd1 = -2;  // Mark as being added
+    //             if (!curODContext.IsEntityTracked(curTiw))
+    //             {
+    //                 curODContext.AttachTo("Tiewels", curTiw);
+    //             }
+    //             int instp = Convert.ToInt16(myafl.Tyafl);
+    //             //AddStep[instp] = -2;
+    //             //myafl.Xadd1 = -2;  //fin adding to be tracked in loaded rubfmts wait for new add
+    //             curODContext.AddRelatedObject(curTiw, "Tiwafls", myafl);
+    //             //curAfl.Xadd1 = -2;
+    //             sinwAfl = false;
+    //             AddingAflRowGuid = Guid.Empty;
+    //             curTiw.Tiwafls.Add(myafl);
+    //             //siAflAdding = true;
+    //             Imessage = "Success... Rubrique ajoutee";
+    //         }
+    //         catch (Exception ex)
+    //         {
+    //             Console.WriteLine($"Erreur addrelatedobject : {ex.Message}");
+    //         }
+    //         StateHasChanged();
+    //     }
+    //     else
+    //     {
+    //         myafl.Xadd1 = 0;
+    //         Imessage = "Deja ajoute";
+    //     }
+
+    //     //isAdetCodeValid = false;
+    //     sinwAfl = false; // Consider moving this flag reset based on your UI state management needs
+    // }
+    // private async Task CancelTiwAdding()
+    // {
+    //     if (curODContext.IsEntityTracked(curTiw))
+    //     {
+    //         foreach (var ifl in curTiw.Tiwafls)
+    //         {
+    //             if (curODContext.IsEntityTracked(ifl))
+    //             {
+    //                 curODContext.Detach(ifl);
+    //             }
+    //         }
+    //         curODContext.Detach(curTiw);
+    //         //LsTAtts.Remove(curTiw);
+    //         Imessage = "Annulee... Creation Personne";
+    //     }
+    //     else
+    //     {
+    //         curTiw = new Tiewel();
+    //         Imessage = "";
+    //     }
+    //     //added or included
+    //     var ya1Tiw = LsTAtts.Where(t => t.Xadd1 == -1 || t.Xadd1 == -2).FirstOrDefault();
+    //     if (ya1Tiw != null)
+    //     { //Xadd1 est parti
+    //         LsTAtts.Remove(ya1Tiw);
+    //         ensTiws.Remove(ya1Tiw);
+    //     }
+    //     AddingTiwRowGuid = Guid.Empty;
+    //     sinwTiw = false;
+    //     isTiwAdding = false;
+    //     isTiwEdding = false;
+    //     isTiwDeling = false;
+    //     StateHasChanged();
+    // }
+    // private async Task CancelAflAdding()
+    // {
+    //     if (curODContext.IsEntityTracked(curAfl))
+    //     {
+    //         curODContext.Detach(curAfl);
+    //         //curTiw.Tiwafls.Remove(curAfl);
+    //         Imessage = "Annulee... Creation Affilie";
+    //     }
+    //     else
+    //     {
+    //         curAfl = new Tiwafl();
+    //         Imessage = "Deja annule";
+    //     }
+    //     //added or included
+    //     var ya1Afl = curTiw.Tiwafls.Where(a => a.Xadd1 == -1 || a.Xadd1 == -2).FirstOrDefault();
+    //     if (ya1Afl != null)
+    //     { //curAfl.Xadd1 est parti
+    //         curTiw.Tiwafls.Remove(ya1Afl);
+    //     }
+    //     int custp = Convert.ToInt16(curAfl.Tyafl);
+    //     //AddStep[custp] = 0;
+    //     AddingAflRowGuid = Guid.Empty;
+    //     sinwAfl = false;
+    //     isAflAdding = false;
+    //     isAflEdding = false;
+    //     isAflDeling = false;
+    //     StateHasChanged();
+    // }
+    //EDITION/DELETE - Tiewel
+    // void BeginTiwEdit()
+    // {
+    //     EditingTiwRowGuid = curTiw.Rowguid;
+    //     isTiwEdding = true;
+    // }
+    // void PromptTiwEding(Tiewel mytiw)
+    // {
+    //     // myafl.Xedt1 = 0;
+    //     // editingAfl = myafl;
+
+    //     // draftAfl = new Tiwafl();
+
+    //     // // List of property names to copy, e.g. from your available names
+    //     // var propertyNamesToCopy = new List<string>();
+    //     // foreach (var ucol in LsCols.Where(uv => uv.Totyp == Ugpe && uv.Tstyp == myafl.Tyafl && uv.Jacc == 1))
+    //     // {
+    //     //     string propname = ucol.Scdrub + ",";
+    //     //     propertyNamesToCopy.Add(ucol.Scdrub);
+    //     // }
+    //     // var type = typeof(Tiwafl);
+    //     // foreach (var propName in propertyNamesToCopy)
+    //     // {
+    //     //     var prop = type.GetProperty(propName);
+    //     //     if (prop != null && prop.CanRead && prop.CanWrite)
+    //     //     {
+    //     //         var value = prop.GetValue(myafl);
+    //     //         prop.SetValue(draftAfl, value);
+    //     //     }
+    //     // }
+    //     // //init edition
+    //     // myafl.Xedt1 = -1;
+    //     // EditingAflRowGuid = myafl.Rowguid;
+    // }
+    // private void CancelTiwEdding()
+    // {
+    //     // if (_originalTiwSnapshots.TryGetValue(curTiw.Rowguid, out var original))
+    //     // {
+    //     //     RestoreTiwValues(curTiw, original);
+    //     //     _originalTiwSnapshots.Remove(curTiw.Rowguid);
+    //     // }
+    //     EditingTiwRowGuid = Guid.Empty;
+    //     isTiwEdding = false;
+    //     isTiwAdding = false;
+    //     isTiwDeling = false;
+    //     StateHasChanged();
+    // }
+    // void ConfirmTiwEdding()
+    // {
+    //     // if (editingTiw != null)
+    //     // {
+    //     //     // List of property names to copy, e.g. from your available names
+    //     //     var propertyNamesToCopy = new List<string>();
+    //     //     foreach (var ucol in LsCols.Where(uv => uv.Totyp == Ugpe && uv.Tstyp == myafl.Tyafl && uv.Jacc == 1))
+    //     //     {
+    //     //         string propname = ucol.Scdrub + ",";
+    //     //         propertyNamesToCopy.Add(ucol.Scdrub);
+    //     //     }
+    //     //     var type = typeof(Tiwafl);
+
+    //     //     // Assuming you want to copy the same set of property names as before,
+    //     //     // or you can dynamically load those names as needed instead of hardcoding:
+
+    //     //     foreach (var propName in propertyNamesToCopy)
+    //     //     {
+    //     //         var prop = type.GetProperty(propName);
+    //     //         if (prop != null && prop.CanRead && prop.CanWrite)
+    //     //         {
+    //     //             var value = prop.GetValue(myafl);
+    //     //             prop.SetValue(editingAfl, value);
+    //     //         }
+    //     //     }
+
+    //     //     // Now attach or update in context as you do:
+    //     //     if (!curODContext.GetAllTrackedEntities().Any(e => e.Entity == editingAfl))
+    //     //         curODContext.AttachTo("Tiwelss", editingTiw);
+
+    //     //     curODContext.UpdateObject(editingTiw);
+    //     // }
+
+    //     // mytiw.Xedt1 = 0;
+    //     // editingTiw = null;
+    //     // EditingTiwRowGuid = Guid.Empty;
+    //     isTiwEdding = false;
+    //     isTiwAdding = false;
+    //     isTiwDeling = false;
+    // }
+    // private void PromptTiwDeling()
+    // {
+    //     ConfirmingTiwDeleteRowGuid = curTiw.Rowguid;
+    //     isTiwDeling = true;
+    // }
+    // private void CancelTiwDeling()
+    // {
+    //     ConfirmingTiwDeleteRowGuid = Guid.Empty;
+    //     isTiwDeling = false;
+    //     isTiwEdding = false;
+    //     isTiwAdding = false;
+    // }
+    // private void ConfirmTiwDeling()
+    // {
+    //     var parent = curOrga;
+    //     if (parent == null)
+    //         return;
+    //     Console.WriteLine($"del parent {parent.Raison} and row id : {parent.Idorg}");
+    //     Tiewel svRow = curTiw;
+    //     // For existing rows: mark for OData deletion and remove locally
+    //     if (curODContext.IsEntityTracked(curTiw))
+    //     {
+    //         curODContext.DeleteObject(curTiw); // Mark for deletion in OData context
+    //     }
+    //     else
+    //     {
+    //         curODContext.Detach(curTiw); // Mark for deletion in OData context
+    //     }
+    //     //curOrga.Rubvars.ToList().RemoveAll(rf => rf.Idpln == svRow.Idpln);
+    //     //curOrga.Plngens.Remove(svRow); // Remove from tracked collection
+    //     EditingTiwRowGuid = Guid.Empty;
+    //     ConfirmingTiwDeleteRowGuid = Guid.Empty;
+    //     isTiwDeling = false;
+    //     isTiwEdding = false;
+    //     isTiwAdding = false;
+    //     StateHasChanged(); // Notify UI about changes
+    // }
+    // private async Task DelTiwAsync(Tiewel mytiw)
+    // {
+    //     Console.WriteLine("In Deleting");
+    //     curTiw = mytiw;
+    // }
+    // //EDITION Tiwafl
+    // void BeginAflEdit(Tiwafl myafl)
+    // {
+    //     EditingAflRowGuid = myafl.Rowguid;
+    //     isAflEdding = false;
+    // }
+    // void PromptAflEdit(Tiwafl myafl)
+    // {
+    //     myafl.Xedt1 = 0;
+    //     editingAfl = myafl;
+
+    //     draftAfl = new Tiwafl();
+
+    //     // List of property names to copy, e.g. from your available names
+    //     var propertyNamesToCopy = new List<string>();
+    //     foreach (var ucol in LsCols.Where(uv => uv.Totyp == Ugpe && uv.Tstyp == myafl.Tyafl && uv.Jacc == 1))
+    //     {
+    //         string propname = ucol.Scdrub + ",";
+    //         propertyNamesToCopy.Add(ucol.Scdrub);
+    //     }
+    //     var type = typeof(Tiwafl);
+    //     foreach (var propName in propertyNamesToCopy)
+    //     {
+    //         var prop = type.GetProperty(propName);
+    //         if (prop != null && prop.CanRead && prop.CanWrite)
+    //         {
+    //             var value = prop.GetValue(myafl);
+    //             prop.SetValue(draftAfl, value);
+    //         }
+    //     }
+    //     //init edition
+    //     myafl.Xedt1 = -1;
+    //     EditingAflRowGuid = myafl.Rowguid;
+    // }
+    // void CancelAflEding(Tiwafl myafl)
+    // {
+    //     myafl.Xedt1 = 0;
+    //     //isEdingMan = false;
+    //     editingAfl = null;
+    //     draftAfl = null;
+    //     EditingAflRowGuid = Guid.Empty;
+    //     isAflEdding = false;
+    //     isAflAdding = false;
+    //     isAflDeling = false;
+    // }
+    // void ConfirmAflEding(Tiwafl myafl)
+    // {
+    //     if (editingAfl != null)
+    //     {
+    //         // List of property names to copy, e.g. from your available names
+    //         var propertyNamesToCopy = new List<string>();
+    //         foreach (var ucol in LsCols.Where(uv => uv.Totyp == Ugpe && uv.Tstyp == myafl.Tyafl && uv.Jacc == 1))
+    //         {
+    //             string propname = ucol.Scdrub + ",";
+    //             propertyNamesToCopy.Add(ucol.Scdrub);
+    //         }
+    //         var type = typeof(Tiwafl);
+
+    //         // Assuming you want to copy the same set of property names as before,
+    //         // or you can dynamically load those names as needed instead of hardcoding:
+
+    //         foreach (var propName in propertyNamesToCopy)
+    //         {
+    //             var prop = type.GetProperty(propName);
+    //             if (prop != null && prop.CanRead && prop.CanWrite)
+    //             {
+    //                 var value = prop.GetValue(myafl);
+    //                 prop.SetValue(editingAfl, value);
+    //             }
+    //         }
+
+    //         // Now attach or update in context as you do:
+    //         if (!curODContext.GetAllTrackedEntities().Any(e => e.Entity == editingAfl))
+    //             curODContext.AttachTo("Tiwafls", editingAfl);
+
+    //         curODContext.UpdateObject(editingAfl);
+    //     }
+
+    //     myafl.Xedt1 = 0;
+    //     editingAfl = null;
+    //     EditingAflRowGuid = Guid.Empty;
+    //     isAflEdding = false;
+    //     isAflAdding = false;
+    //     isAflDeling = false;
+    // }
+    //DELETING AFL
+    // private void PromptAflDelete(Tiwafl item)
+    // {
+    //     ConfirmingAflDeleteRowGuid = item.Rowguid;
+    //     isAflDeling = true;
+    // }
+    // private void CancelAflDeling()
+    // {
+    //     ConfirmingAflDeleteRowGuid = Guid.Empty;
+    //     isAflEdding = false;
+    //     isAflAdding = false;
+    //     isAflDeling = false;
+    // }
+    // private void ConfirmAflDeling(Tiwafl row)
+    // {
+    //     var parent = curTiw;
+    //     Console.WriteLine($"Parent may be found : {parent.Id}");
+    //     if (parent == null)
+    //         return;
+    //     Console.WriteLine($"del parent {parent.Nom} and row id : {parent.Id}");
+    //     Tiwafl svRow = row;
+    //     // For existing rows: mark for OData deletion and remove locally
+    //     if (curODContext.IsEntityTracked(row))
+    //     {
+    //         curODContext.DeleteObject(row); // Mark for deletion in OData context
+    //     }
+    //     else
+    //     {
+    //         curODContext.Detach(row); // Mark for deletion in OData context
+    //     }
+    //     curTiw.Tiwafls.ToList().RemoveAll(rf => rf.Itie == svRow.Itie);
+    //     curTiw.Tiwafls.Remove(svRow);
+    //     EditingAflRowGuid = Guid.Empty;
+    //     ConfirmingAflDeleteRowGuid = Guid.Empty;
+    //     isAflEdding = false;
+    //     isAflAdding = false;
+    //     isAflDeling = false;
+    //     StateHasChanged(); // Notify UI about changes
+    // }
+    // private async Task OuvrirFiche(int orig)
+    // {
+    //     isRecptVisible = false;
+    //     if (orig == 1)
+    //     { //recepisse
+    //         isRecptVisible = true;
+    //     }
+    //     //stopenFich = "OuvrirRecepisse";
+    //     //isFicheVisible = true;
+    //     // isFicheVisible = !isFicheVisible;
+    //     // if (isFicheVisible)
+    //     // {
+    //     //     stopenFich = "FermerRecepisse";
+    //     // }
+    //     // else
+    //     // {
+    //     //     stopenFich = "OuvrirRecepisse";
+    //     // }
+    // }
+    // private async Task ValidTiwAsync()
+    // {
+    //     //await _twentityManager.SaveChanges();
+    // }
+
+}
