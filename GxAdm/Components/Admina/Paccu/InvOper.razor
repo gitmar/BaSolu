@@ -22,7 +22,7 @@
 @* @inject MyAuthStateProvider _authprovider *@
 @inject IHttpClientFactory _httpFactorer
 @inject ILocalStorageService _localStorage
-@inject HttpClientService _cliemanager
+@inject HttpClientService _clieManager
 @inject IODataContextFactory _contextFactory
 @inject LinkSerialiser _linkSerialiser
 @inject NavigationManager _navmanager
@@ -40,6 +40,13 @@
     <div>
         @Imessage
     </div>
+}
+@if (errors)
+{
+    foreach (var uner in errorList)
+    {
+        Imessage = Imessage + uner.ToString();
+    }
 }
 @if (isLoading)
 {
@@ -351,7 +358,7 @@ else
         // LsDivs = _usrBag.Usorga.Uhies
         //     .Where(uh => uh.Idpln == idplnadm && uwaih.Sidiv == 1).ToList();
         _lsDivs = await _rendAgres.LoadOrgaPostes();
-        var json = await _cliemanager.SendRequestAsync("AUTHClient", HttpMethod.Get, "usercontext/session");
+        var json = await _clieManager.SendRequestAsync("AUTHClient", HttpMethod.Get, "usercontext/session");
         var result = JsonConvert.DeserializeObject<SessionDto>(json);
         if (result != null)
         {
@@ -411,48 +418,57 @@ else
     private async Task PrepareInviteEmailForApi(int gpe)
     {
         //gpe = individuel/groupe
-        bool IsVerified = await VerifInputs();
-        if (!IsVerified)
+        bool IsErrors = await VerifInputs();
+        if (IsErrors)
         {
             Imessage += "Echec Generation : des issues persistent...";
             StateHasChanged();
             return;
         }
-        var sndModel  = ModelHelper.MapTo<UsrOgSetModel, RegisterDto>(_invModel);
-        var inpUrl = _apiClient.BaseAddress?.ToString().TrimEnd('/');
-        if (!inpUrl.StartsWith("http", StringComparison.OrdinalIgnoreCase))
+        try
+        {
+            string inviteMessage = "Bienvenue au Test de Brevo Mail";
+            var infosModel  = ModelHelper.MapTo<UsrOgSetModel, RegisterDto>(_invModel);
+            //RETOUR URL /voir si sur Api
+            var inpUrl = _apiClient.BaseAddress?.ToString().TrimEnd('/');
+            if (!inpUrl.StartsWith("http", StringComparison.OrdinalIgnoreCase))
             inpUrl = "https://" + inpUrl;
-        inpUrl = inpUrl.TrimEnd('/');
-        inpUrl = inpUrl + "/api/register/generate-invite";
-        // Replace with gxadm subdomain
-        var gxadmUrl = UrlParser.ReplaceWithSubdomain(inpUrl, "gxadm"); // → https://gxadm.a24soft.com
-        // Fill RegisterDto fields
-        sndModel.Idorg = curOrga.Idorg;
-        sndModel.Orig = 2;
-        sndModel.Toqui = _invModel.Irole; // 1.std / 2.hlp / 3.own
-        sndModel.Utyp = _invModel.Utyp;
-        sndModel.FbackUrl = gxadmUrl;
-        sndModel.WebUrl = curOrga.Weburl; //UrlParser.ReplaceWithSubdomain(inpUrl, "gxadm");
-        sndModel.Email = _invModel.Email;       // must be set
-        sndModel.Username = "";     // not yet set
-        sndModel.Nom = _invModel.Nom;
-        sndModel.Pnom = _invModel.Pnom;
-
-        // POST to API
-        var response = await _apiClient.PostAsJsonAsync(inpUrl, sndModel);
-
-        if (response.IsSuccessStatusCode)
-        {
-            Imessage = "Invitation generated and email sent.";
+            inpUrl = inpUrl.TrimEnd('/');
+            inpUrl = inpUrl + "/usercontext/generate-invite";
+            // Replace with gxadm subdomain
+            var gxadmUrl = UrlParser.ReplaceWithSubdomain(inpUrl, "gxadm"); // → https://gxadm.a24soft.com
+            // Fill RegisterDto fields
+            infosModel.Idorg = curOrga.Idorg;
+            infosModel.Orig = 2;
+            infosModel.Toqui = _invModel.Irole; // 1.std / 2.hlp / 3.own
+            infosModel.Utyp = _invModel.Utyp;
+            infosModel.FbackUrl = gxadmUrl;
+            infosModel.WebUrl = curOrga.Weburl; //UrlParser.ReplaceWithSubdomain(inpUrl, "gxadm");
+            infosModel.Email = _invModel.Email;       // must be set
+            infosModel.Username = "";     // not yet set
+            infosModel.Nom = _invModel.Nom;
+            infosModel.Pnom = _invModel.Pnom;
+            infosModel.Rtype = EmailType.Invite;
+            //verification
+            Console.WriteLine($"Url Api pour invite : {inpUrl} et {gxadmUrl}");
+            // POST to API
+            infosModel.Brevman.Add(new BrevoRecipient
+            {
+                Email = _invModel.Email,
+                Name = "tu5e87suis"
+            });
+            var response = await _clieManager.SendRequestAsync(
+                "AUTHClient",
+                HttpMethod.Post,
+                "usercontext/generate-invite",
+                infosModel);
         }
-        else
+        catch (Exception)
         {
-            Imessage = await response.Content.ReadAsStringAsync();
+            isLoading = false;
         }
-        StateHasChanged();
     }
-
-
+    
     // private async Task GenerateEmailLink(int gpe)
     // {
     //     bool IsVerified = false;
@@ -536,64 +552,77 @@ else
     //     }
     // }
 
-    private async Task CmdCustSendEmail()
-    {
-        // var cdlink = _linkSerialiser.EncodeAndSerialize(new UsrOgSetModel
-        // {
-        //     Id = 1,
-        //     Idorg = _curOrder.Oidorg,
-        //     Email = _curOrder.Customer.Email,
-        //     Phonenumber = _curOrder.Customer.Phonenumber,
-        //     Orig = 1, //from support
-        //     HlpWurl = _curGxdom.HlpWurl,
-        //     Sdoma = _invModel.Sdoma,
-        //     //Srole = "Admin",
-        //     Utyp = 3,
-        //     Weburl = gxadmUrl,
-        //     Ipays = _curOrder.Customer.Country,
-        //     Ilang = _curOrder.Customer.Ilang,
-        //     Raison = _curOrder.Customer.Raison,
-        //     Sigle = _curOrder.Customer.Sigle,
-        //     Nom = _curOrder.Customer.Nom,
-        //     Pnom = _curOrder.Customer.Pnom
-        // }); // or GenerateLink if it returns just the payload
-        // var ogqryplus = _LinkSerialiser.EncodeAndSerialize(new RegisterDto
-        //     { ...
+ //    private async Task CmdCustSendEmail()
+ //    {
+ //        // var cdlink = _linkSerialiser.EncodeAndSerialize(new UsrOgSetModel
+ //        // {
+ //        //     Id = 1,
+ //        //     Idorg = _curOrder.Oidorg,
+ //        //     Email = _curOrder.Customer.Email,
+ //        //     Phonenumber = _curOrder.Customer.Phonenumber,
+ //        //     Orig = 1, //from support
+ //        //     HlpWurl = _curGxdom.HlpWurl,
+ //        //     Sdoma = _invModel.Sdoma,
+ //        //     //Srole = "Admin",
+ //        //     Utyp = 3,
+ //        //     Weburl = gxadmUrl,
+ //        //     Ipays = _curOrder.Customer.Country,
+ //        //     Ilang = _curOrder.Customer.Ilang,
+ //        //     Raison = _curOrder.Customer.Raison,
+ //        //     Sigle = _curOrder.Customer.Sigle,
+ //        //     Nom = _curOrder.Customer.Nom,
+ //        //     Pnom = _curOrder.Customer.Pnom
+ //        // }); // or GenerateLink if it returns just the payload
+ //        // var ogqryplus = _LinkSerialiser.EncodeAndSerialize(new RegisterDto
+ //        //     { ...
 
-        //     });
-        // Build final URL with query string
-        //var fullUrl = $"{gxadmUrl}/register?cdlink={Uri.EscapeDataString(cdlink)}";
-        var fullUrl = $"{_invModel.Weburl}/stdregis?cdlink={Uri.EscapeDataString(generatedLink)}"; //&ogqryplus={Uri.EscapeDataString(ogqryplus)}";
-        //lien a envoyer par CxApi mailer
-        StandardEmailRequest mailReq = new();
-        mailReq.InviteLink = fullUrl;
-        mailReq.Ademail = curOrga.Hlpwurl;
-        var recipients = mailReq.To?
-                .Select(r => new EmailRecipientDto
-                {
-                    Email = _invModel.Email,
-                    Username = ""
-                })
-                .ToList();
-        mailReq.To = recipients;
-        mailReq.Wcemail = _invModel.Username;
-        mailReq.Message = "Veuillez cliquer le lien pour joindre le webSite de votre logiciel";
-        mailReq.Subject = "Invite webSite";
-        var response = await _apiClient.PostAsJsonAsync<StandardEmailRequest>("email/sendinvite", mailReq);
-        if (response.IsSuccessStatusCode)
-        {
-            Imessage = "Customer Email sent successfully";
-            Console.WriteLine("✅ Customer Email sent successfully!");
-        }
-        else
-        {
-            Imessage = $"Customer Email fail to sent ({response.StatusCode})";
-            var error = await response.Content.ReadAsStringAsync();
-            Console.WriteLine($"❌ Customer Email fail to sent ({response.StatusCode}): {error}");
-        }
-        //var mailUrl = $"{inpUrl}/api/usercontext?{cdlink}";  //api/controller
-        //_navmanager.NavigateTo(inpUrl, forceLoad: true);
-    }
+ //        //     });
+ //        // Build final URL with query string
+ //        //var fullUrl = $"{gxadmUrl}/register?cdlink={Uri.EscapeDataString(cdlink)}";
+ //        var fullUrl = $"{_invModel.Weburl}/stdregis?cdlink={Uri.EscapeDataString(generatedLink)}"; //&ogqryplus={Uri.EscapeDataString(ogqryplus)}";
+ //        //lien a envoyer par CxApi mailer
+ //        RegisterDto mailReq = new();
+ //        mailReq.InviteLink = fullUrl;
+ //        mailReq.Ademail = curOrga.Hlpwurl;
+        
+ //        // var recipients = mailReq.To?
+ //        //         .Select(r => new EmailRecipientDto
+ //        //         {
+ //        //             Email = _invModel.Email,
+ //        //             Username = ""
+ //        //         })
+ //        //         .ToList();
+ //        // mailReq.To = recipients;
+ //        // mailReq.Wcemail = _invModel.Username;
+ //        // mailReq.Message = "Veuillez cliquer le lien pour joindre le webSite de votre logiciel";
+ //        // mailReq.Subject = "Invite webSite";
+
+        
+ //        // catch (Exception)
+ //        // {
+ //        //     isLoading = false;
+ //        // }
+
+ //    try{
+ //        //var response = await _apiClient.PostAsJsonAsync<StandardEmailRequest>("email/sendinvite", mailReq);
+ //        await _clieManager.SetAuthorizationHeaderAsync("AUTHClient");
+ //        var response = await _clieManager.SendRequestAsync(
+ //            "AUTHClient",
+ //            HttpMethod.Post,
+ //            "usercontext/generate-invite",
+ //            mailReq);
+ //            Imessage = "Customer Email sent successfully";
+ //            Console.WriteLine("✅ Customer Email sent successfully!");
+ //    }
+ //    catch(Exception ex)
+ //    {
+ //            Imessage = $"Customer Email fail to sent ({response.StatusCode})";
+ //            var error = await response.Content.ReadAsStringAsync();
+ //            Console.WriteLine($"❌ Customer Email fail to sent ({response.StatusCode}): {error}");
+ //    }
+ //        //var mailUrl = $"{inpUrl}/api/usercontext?{cdlink}";  //api/controller
+ //        //_navmanager.NavigateTo(inpUrl, forceLoad: true);
+ // }
     private async Task<bool> VerifInputs()
     {
         errors = false;
@@ -782,7 +811,7 @@ else
     //     string infoplus = $" Nom : {usrNom }, Prenom(s) : {usrPnom} Telephone : {usrPhone}";
     //     _usrMail.Uinfos = infoplus;
     //     //envoie var response = await _logClient.PostAsJsonAsync("Lgauth/renvoiemail", usrMail);
-    //     var response = await _cliemanager.SendRequestAsync("AUTHClient", HttpMethod.Post, $"lgauth/sendcodemail");
+    //     var response = await _clieManager.SendRequestAsync("AUTHClient", HttpMethod.Post, $"lgauth/sendcodemail");
     //     success = true;
     //     successmsg = "Succes email INVITE envoye";
     //     Console.WriteLine("Succes ENVOIE");

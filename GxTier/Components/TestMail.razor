@@ -3,6 +3,7 @@
 
 @using GxTie.Services
 @using GxShared.ShdServices
+@using GxShared.Others
 
 @inject HttpClientService _clieManager
 @inject IHttpClientFactory _httpClientFactory
@@ -41,37 +42,76 @@
         try
         {
             string inviteMessage = "Bienvenue au Test de Brevo Mail";
-
-            StandardEmailRequest mailReq = new()
+            
+            RegisterDto rDto = new();
+            rDto.Idorg = 10001; //test
+            rDto.Email = "a24soft@gmail.com";
+            rDto.Username = "ajesuis";
+            rDto.Phonenumber = "23553353";
+            rDto.Nom = "Sawadogo";
+            rDto.Pnom = "Martin";
+            rDto.Rtype = EmailType.Notification;
+            rDto.Brevman = new();
+            rDto.Brevman.Add(new BrevoRecipient
             {
-                To = new List<EmailRecipientDto>
-            {
-                new EmailRecipientDto
-                {
-                    Email = "mesbrous@gmail.com",
-                    Username = "Martin",
-                    Nom = "",
-                    Pnom = "",
-                }
-            },
-                InviteLink = inviteMessage,
-                Ademail = "gxsupport@cyberso.net",
-                Wcuname = "jesuisceluiquisuis",
-                Message = "Veuillez cliquer le lien pour vous enregistrer",
-                Subject = "Invite Enregistrement Logiciel"
-            };
-
-            await _clieManager.SetAuthorizationHeaderAsync("AUTHClient");
-
+                Email = "a24soft@gmail.com",
+                Name = "ajesuis"
+            });
+            
             var response = await _clieManager.SendRequestAsync(
                 "AUTHClient",
                 HttpMethod.Post,
-                "gxemail/send",
-                mailReq);
+                "usercontext/generate-invite",
+                rDto);
         }
         catch (Exception)
         {
             isLoading = false;
         }
     }
+    // private async Task PrepareInviteEmailForApi(int gpe)
+    // {
+    //     //gpe = individuel/groupe
+    //     bool IsErrors = await VerifInputs();
+    //     if (IsErrors)
+    //     {
+    //         Imessage += "Echec Generation : des issues persistent...";
+    //         StateHasChanged();
+    //         return;
+    //     }
+    //     var sndModel = ModelHelper.MapTo<UsrOgSetModel, RegisterDto>(_invModel);
+    //     var inpUrl = _dftClient.BaseAddress?.ToString().TrimEnd('/');
+    //     if (!inpUrl.StartsWith("http", StringComparison.OrdinalIgnoreCase))
+    //         inpUrl = "https://" + inpUrl;
+    //     inpUrl = inpUrl.TrimEnd('/');
+    //     inpUrl = inpUrl + "/usercontext/generate-invite";
+    //     // Replace with gxadm subdomain
+    //     var gxadmUrl = UrlParser.ReplaceWithSubdomain(inpUrl, "gxadm"); // → https://gxadm.a24soft.com
+    //     // Fill RegisterDto fields
+    //     sndModel.Idorg = curOrga.Idorg;
+    //     sndModel.Orig = 2;
+    //     sndModel.Toqui = _invModel.Irole; // 1.std / 2.hlp / 3.own
+    //     sndModel.Utyp = _invModel.Utyp;
+    //     sndModel.FbackUrl = gxadmUrl;
+    //     sndModel.WebUrl = curOrga.Weburl; //UrlParser.ReplaceWithSubdomain(inpUrl, "gxadm");
+    //     sndModel.Email = _invModel.Email;       // must be set
+    //     sndModel.Username = "";     // not yet set
+    //     sndModel.Nom = _invModel.Nom;
+    //     sndModel.Pnom = _invModel.Pnom;
+    //     sndModel.Rtype = EmailType.Invite;
+    //     //verification
+    //     Console.WriteLine($"Url Api pour invite : {inpUrl} et {gxadmUrl}");
+    //     // POST to API
+    //     var response = await _dftClient.PostAsJsonAsync(inpUrl, sndModel);
+
+    //     if (response.IsSuccessStatusCode)
+    //     {
+    //         //Imessage = "Invitation generated and email sent.";
+    //     }
+    //     else
+    //     {
+    //         //Imessage = await response.Content.ReadAsStringAsync();
+    //     }
+    //     StateHasChanged();
+    // }
 }
