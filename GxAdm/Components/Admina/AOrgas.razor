@@ -26,7 +26,7 @@
 @inject ILocalStorageService _localStorage
 @inject IHttpClientFactory _httpClientFactory
 @inject NavigationManager _navManager
-@inject HttpClientService _cliemanager
+@inject HttpClientService _clieManager
 @inject IODataContextFactory _contextFactory
 @inject SessionContextService _sessionContext
 @inject RendAgres _rendAgres
@@ -1522,8 +1522,8 @@
         reqModel.Pdomtie = IMyBas; //6tiers7produits
         reqModel.Ptyptie = selTyp; //1cible2operat3client4fournis5patern
         reqModel.Psupafl = myacol.Elea; //1cible2cnj3par4enf5pai6flh
-        await _cliemanager.SetAuthorizationHeaderAsync("AUTHClient");
-        var cblcall = await _cliemanager.SendRequestAsync("AUTHClient", HttpMethod.Post, "usercontext/creaflcols", reqModel);
+        await _clieManager.SetAuthorizationHeaderAsync("AUTHClient");
+        var cblcall = await _clieManager.SendRequestAsync("AUTHClient", HttpMethod.Post, "usercontext/creaflcols", reqModel);
         var cblresp = JsonConvert.DeserializeObject<ResgnModel>(cblcall);
         if (cblresp != null)
         {
@@ -1572,8 +1572,8 @@
         reqModel.Pdomtie = IMyBas; //6tiers7produits
         reqModel.Ptyptie = selTyp; //1cible2operat3client4fournis5patern
         reqModel.Psupafl = myacol.Elea; //1cible2cnj3par4enf5pai6flh
-        await _cliemanager.SetAuthorizationHeaderAsync("AUTHClient");
-        var cblcall = await _cliemanager.SendRequestAsync("AUTHClient", HttpMethod.Post, "usercontext/supaflcols", reqModel);
+        await _clieManager.SetAuthorizationHeaderAsync("AUTHClient");
+        var cblcall = await _clieManager.SendRequestAsync("AUTHClient", HttpMethod.Post, "usercontext/supaflcols", reqModel);
         var cblresp = JsonConvert.DeserializeObject<ResgnModel>(cblcall);
         if (cblresp != null)
         {

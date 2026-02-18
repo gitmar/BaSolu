@@ -8,7 +8,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-// Generation date: 16-Feb-26 8:59:19 PM
+// Generation date: 18-Feb-26 10:56:42 AM
 namespace GxWapi.DaModels
 {
     /// <summary>

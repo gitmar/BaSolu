@@ -22,7 +22,7 @@
 @* @inject MyAuthStateProvider _authprovider *@
 @inject IHttpClientFactory _httpFactorer
 @inject ILocalStorageService _localStorage
-@inject HttpClientService _cliemanager
+@inject HttpClientService _clieManager
 @inject IODataContextFactory _contextFactory
 @inject LinkSerialiser _linkSerialiser
 @inject NavigationManager _navmanager
@@ -64,18 +64,6 @@
                             <Tab Title="Individuelle">
                                 <Content>
                                     <div>
-                                        <label for="tiev1">Validite du... :</label>
-                                        <InputDate id="tiev1" @bind-Value="_invModel.Datdu">
-                                            placeholder="du..."
-                                        </InputDate>
-                                    </div>
-                                    <div>
-                                        <label for="tiev2"> au... :</label>
-                                        <InputDate id="tiev2" @bind-Value="_invModel.Datau">
-                                            placeholder="au..."
-                                        </InputDate>
-                                    </div>
-                                    <div>
                                         <label for="Tiedos">Ref.appel:</label>
                                         <InputText id="tiedos" @bind-Value="_invModel.Refapl" required
                                                    placeholder="Enter call reference" />
@@ -95,6 +83,7 @@
                                         @if (_invRoles.Count > 0)
                                         {
                                             <InputSelect @bind-Value="_invModel.Irole" id="TieIrole">
+                                                <option value="0">role?</option>
                                                 @foreach (var uro in _invRoles)
                                                 {
                                                     <option value="@uro.Level">@uro.Name</option>
@@ -105,86 +94,77 @@
                                     <div>
                                         <label for="TieIrole">Quality:</label>
                                         <InputSelect @bind-Value="_invModel.Utyp" id="TieUtyp">
-                                            @foreach (var ut in LsFixes.Where(uf => uf.Gvars == 36 && uf.Itb == 6))
+                                            <option value="0">quality?</option>
+                                            @foreach (var ut in LsFixes.Where(uf => uf.Gvars == 36 && uf.Itb == 6 && uf.Elea != 0))
                                             {
                                                 <option value="@ut.Elea">@ut.Liba</option>
                                             }
                                         </InputSelect>
                                     </div>
-                                    @if (_invModel.Utyp >= 3 && _invModel.Utyp <= 6)
-                                    { //client-fournisseur...
-                                      <div>
-                                          <label for="tierais">Raison:</label>
-                                          <InputText id="tierais" @bind-Value="_invModel.Raison"
-                                                     placeholder="Enter his-her raison" />
-                                      </div>
-                                    }
-                                    <div>
-                                        <label for="tiemail">Email:</label>
-                                        <InputText type="email" id="tiemail" @bind-Value="_invModel.Email" required
-                                                   placeholder="Enter his-her email address" />
-                                    </div>
-                                    <div>
-                                        <label for="tiephon3">Telephone:</label>
-                                        <InputText id="tiephone" @bind-Value="_invModel.Phonenumber" required
-                                                   placeholder="Enter his-her phone number" />
-                                    </div>
-                                    <div class="input-group">
-                                        <label for="TypDiv">Services:</label>
-                                        @if (_lsDivs.Count > 0)
-                                        {
-                                            <InputSelect @bind-Value="_invModel.Ihie" id="TypDiv">
-                                                <option value="0">Aucun</option>
-                                                @foreach (var divo in _lsDivs)
-                                                {
-                                                    <option value="@divo.Ipln">@divo.Liba</option>
-                                                }
-                                            </InputSelect>
-                                        }
-                                        else
-                                        {
-                                            <p>Loading/ou absent</p>
-                                        }
-                                    </div>
-                                    <div class="input-group">
-                                        <label for="TypPst">Poste:</label>
-                                        @if (_lsPsts.Count > 0)
-                                        {
-                                            <InputSelect @bind-Value="_invModel.Ipst" id="TypPst">
-                                                <option value="0">Aucun</option>
-                                                @foreach (var divo in _lsPsts)
-                                                {
-                                                    <option value="@divo.Ipst">@divo.Liba</option>
-                                                }
-                                            </InputSelect>
-                                        }
-                                        else
-                                        {
-                                            <p>Loading/ou absent</p>
-                                        }
-                                    </div>
-                                    @if (!IsGenerated)
+                                    @if (_invModel.Irole > 0 && _invModel.Utyp > 0)
                                     {
+                                        @if (_invModel.Utyp >= 3 && _invModel.Utyp <= 6)
+                                        { //client-fournisseur...
+                                            <div>
+                                                <label for="tierais">Raison:</label>
+                                                <InputText id="tierais" @bind-Value="_invModel.Raison"
+                                                placeholder="Enter his-her raison" />
+                                            </div>
+                                        }
                                         <div>
-                                            <button type="button" class="btn btn-primary" @onclick="() => PrepareInviteEmailForApi(1)">Envoyer Invitation Individuelle</button>
+                                            <label for="tiemail">Email:</label>
+                                            <InputText type="email" id="tiemail" @bind-Value="_invModel.Email" required
+                                            placeholder="Enter his-her email address" />
+                                        </div>
+                                        <div>
+                                            <label for="tiephon3">Telephone:</label>
+                                            <InputText id="tiephone" @bind-Value="_invModel.Phonenumber" required
+                                            placeholder="Enter his-her phone number" />
+                                        </div>
+                                        <div class="input-group">
+                                            <label for="TypDiv">Services:</label>
+                                            @if (_lsDivs.Count > 0)
+                                            {
+                                                <InputSelect @bind-Value="_invModel.Ihie" id="TypDiv">
+                                                    <option value="0">Aucun</option>
+                                                    @foreach (var divo in _lsDivs)
+                                                    {
+                                                        <option value="@divo.Ipln">@divo.Liba</option>
+                                                    }
+                                                </InputSelect>
+                                            }
+                                            else
+                                            {
+                                                <p>Loading/ou absent</p>
+                                            }
+                                        </div>
+                                        <div class="input-group">
+                                            <label for="TypPst">Poste:</label>
+                                            @if (_lsPsts.Count > 0)
+                                            {
+                                                <InputSelect @bind-Value="_invModel.Ipst" id="TypPst">
+                                                    <option value="0">Aucun</option>
+                                                    @foreach (var divo in _lsPsts)
+                                                    {
+                                                        <option value="@divo.Ipst">@divo.Liba</option>
+                                                    }
+                                                </InputSelect>
+                                            }
+                                            else
+                                            {
+                                                <p>Loading/ou absent</p>
+                                            }
+                                        </div>
+                                        <div>
+                                            <Button Color="ButtonColor.Primary" Class="btn btn-primary" @onclick="() => PrepareInviteEmailForApi(1)">
+                                                Envoyer Invitation Individuelle
+                                            </Button>
                                         </div>
                                     }
                                 </Content>
                             </Tab>
                             <Tab Title="De groupe">
                                 <Content>
-                                    @* <div>
-                                        <label for="tiev1">Validite du... :</label>
-                                        <InputDate id="tiev1" @bind-Value="_invModel.Datdu">
-                                            placeholder="du..."
-                                        </InputDate>
-                                    </div>
-                                    <div>
-                                        <label for="tiev2"> au... :</label>
-                                        <InputDate id="tiev2" @bind-Value="_invModel.Datau">
-                                            placeholder="au..."
-                                        </InputDate>
-                                    </div> *@
                                     <div>
                                         <label for="Tiedos">Ref.appel:</label>
                                         <InputText id="tiedos" @bind-Value="_invModel.Refapl" required
@@ -195,6 +175,7 @@
                                         @if (_invRoles.Count > 0)
                                         {
                                             <InputSelect @bind-Value="_invModel.Irole" id="TieBrol">
+                                                <option value="0">role?</option>
                                                 @foreach (var uro in _invRoles)
                                                 {
                                                     <option value="@uro.Level">@uro.Name</option>
@@ -202,50 +183,66 @@
                                             </InputSelect>
                                         }
                                     </div>
-                                    <div class="input-group">
-                                        <label for="TypBDiv">Services:</label>
-                                        @if (_lsDivs.Count > 0)
-                                        {
-                                            <InputSelect @bind-Value="_invModel.Ihie" id="TypBDiv">
-                                                <option value="0">Aucun</option>
-                                                @foreach (var divo in _lsDivs)
-                                                {
-                                                    <option value="@divo.Ihie">@divo.Liba</option>
-                                                }
-                                            </InputSelect>
-                                        }
-                                        else
-                                        {
-                                            <p>Loading/ou absent</p>
-                                        }
+                                    <div>
+                                        <label for="TieIrole">Quality:</label>
+                                        <InputSelect @bind-Value="_invModel.Utyp" id="TieUtyp">
+                                            <option value="0">quality?</option>
+                                            @foreach (var ut in LsFixes.Where(uf => uf.Gvars == 36 && uf.Itb == 6 && uf.Elea != 0))
+                                            {
+                                                <option value="@ut.Elea">@ut.Liba</option>
+                                            }
+                                        </InputSelect>
                                     </div>
-                                    @* @if (!IsGenerated)
-                                    { *@
-                                        <div>
-                                            <button type="button" class="btn btn-primary" @onclick="() => PrepareInviteEmailForApi(2)">Envoyer Invitation de Groupe</button>
+                                    @if (_invModel.Irole > 0 && _invModel.Utyp > 0)
+                                    {
+                                        <div class="input-group">
+                                            <label for="TypBDiv">Services:</label>
+                                            @if (_lsDivs.Count > 0)
+                                            {
+                                                <InputSelect @bind-Value="_invModel.Ihie" id="TypBDiv">
+                                                    <option value="0">Aucun</option>
+                                                    @foreach (var divo in _lsDivs)
+                                                    {
+                                                        <option value="@divo.Ihie">@divo.Liba</option>
+                                                    }
+                                                </InputSelect>
+                                            }
+                                            else
+                                            {
+                                                <p>Loading/ou absent</p>
+                                            }
                                         </div>
-                                    @* } *@
+                                        <div class="row">
+                                            <div class="mb-3">
+                                                <label for="emails" class="form-label">Recipients (email - name)</label>
+                                                <textarea id="emails" class="form-control"
+                                                @bind="emailsInput" rows="6"
+                                                placeholder="Enter one per line: email - name"></textarea>
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <Button Color="ButtonColor.Primary" Class="btn btn-primary" @onclick="() => PrepareInviteEmailForApi(2)">
+                                                Envoyer Invitation de Groupe
+                                            </Button>
+                                        </div>
+                                    }
                                 </Content>
                             </Tab>
                         </Tabs>
                     }
-                    @if (!isLoading)
-                    {
-                        @* @if (IsGenerated)
-                        {
-                            <div class="mt-3">
-                                <button class="btn btn-outline-secondary ms-2" type="button" @onclick="CopyToClipboard" disabled="@string.IsNullOrWhiteSpace(generatedLink)">
-                                    Copy
-                                </button>
-                            </div>
-                            <div class="mt-3">
-                                <button class="btn btn-outline-secondary ms-2" type="button" @onclick="() => CmdCustSendEmail()" disabled="@string.IsNullOrWhiteSpace(generatedLink)">
-                                    Envoyer Email
-                                </button>
-                            </div>
-                        } *@
-                    }
                 </EditForm>
+                @if (invalidEmails.Any())
+                {
+                    <Alert Color="AlertColor.Danger">
+                        <strong>Invalid entries:</strong>
+                        <ul>
+                            @foreach (var line in invalidLines)
+                            {
+                                <li>@line</li>
+                            }
+                        </ul>
+                    </Alert>
+                }
             </div>
         </Authorized>
         <NotAuthorized>
@@ -310,6 +307,12 @@
 
     private UsrOgSetModel _invModel = new();
 
+    private RegisterDto infosModel = new();
+    private string emailsInput = string.Empty;
+    private List<string> invalidEmails = new();
+    private List<string> invalidLines = new();
+
+
     //[Parameter]
     //public Gxorga curOrga { get; set; }
     // [Parameter]
@@ -325,6 +328,8 @@
     private List<string> errorList = new List<string>();
 
     private string rolInv = "", isatmsg = "", Imessage="";
+    private string Adrlist = "";
+    int uMinrol = 0;
     private bool IsGenerated = false;
     private string generatedLink = "";
     //private int Ugpe = 1;
@@ -355,7 +360,6 @@
     private List<Gpdivh> _lsDivs = new List<Gpdivh>();
     private List<Divpst> _lsPsts => _lsDivs.Where(dv => dv.Ihie == _invModel.Ihie).SelectMany(dp => dp.Divpsts).ToList();
 
-
     protected override async Task OnInitializedAsync()
     {
         //prise utilisateur courant
@@ -380,7 +384,7 @@
         //_usrRoles = _usrBag.Uroles.ToList();
         //LsVars = _usrBag.Usorga.Uvars.ToList();
         _lsDivs = await _rendAgres.LoadOrgaPostes();
-        var json = await _cliemanager.SendRequestAsync("AUTHClient", HttpMethod.Get, "usercontext/session");
+        var json = await _clieManager.SendRequestAsync("AUTHClient", HttpMethod.Get, "usercontext/session");
         var result = JsonConvert.DeserializeObject<SessionDto>(json);
         if (result != null)
         {
@@ -395,11 +399,6 @@
         _invModel.Utyp = 1; //dft = cible
         //Imessage = "Donnees Grilles chargees";
         _navmanager.LocationChanged += OnLocationChanged;
-        Console.WriteLine("Authentication ENTREE");
-        isLoading = false;
-    }
-    protected override async void OnParametersSet()
-    {
         try
         {
             curODContext = await _contextFactory.CreateAsync(); // Use factory
@@ -416,7 +415,6 @@
             _invModel.Idorg = curOrga.Idorg; // convert.toint16(user.findfirst("insidorg")?.value);                                                        //Console.WriteLine(usrBag.Lkorga.Idorg);
             _invModel.Raison = curOrga.Raison;
             //orga all roles
-            int uMinrol = 0;
             //Calcul de uMax role de utilisateur +1 si admin/lui-meme
             uMinrol = _usrRoles.Min(ur => ur.Level);
             if (authUser.IsInRole("Owner"))
@@ -446,6 +444,12 @@
         {
             Console.WriteLine($"stack trace : {ex.StackTrace} ex-mess : {ex.Message} and also in-mess: {ex.InnerException}");
         }
+        Console.WriteLine("Authentication ENTREE");
+        isLoading = false;
+    }
+    protected override async void OnParametersSet()
+    {
+
     }
     //changes des selections
     // void ChxGpeTiers(Gpfixe mygpe)
@@ -466,6 +470,7 @@
     private async Task PrepareInviteEmailForApi(int gpe)
     {
         //gpe = individuel/groupe
+        isLoading = true;
         bool IsVerified = await VerifInputs();
         if (!IsVerified)
         {
@@ -473,38 +478,55 @@
             StateHasChanged();
             return;
         }
-        var sndModel = ModelHelper.MapTo<UsrOgSetModel, RegisterDto>(_invModel);
-        var inpUrl = _apiClient.BaseAddress?.ToString().TrimEnd('/');
-        if (!inpUrl.StartsWith("http", StringComparison.OrdinalIgnoreCase))
-            inpUrl = "https://" + inpUrl;
-        inpUrl = inpUrl.TrimEnd('/');
-        inpUrl = inpUrl + "/api/register/generate-invite";
-        // Replace with gxadm subdomain
-        var gxadmUrl = UrlParser.ReplaceWithSubdomain(inpUrl, "gxadm"); // → https://gxadm.a24soft.com
-        // Fill RegisterDto fields
-        sndModel.Idorg = curOrga.Idorg;
-        sndModel.Orig = 2;
-        sndModel.Toqui = _invModel.Irole; // 1.std / 2.hlp / 3.own
-        sndModel.Utyp = _invModel.Utyp;
-        sndModel.FbackUrl = gxadmUrl;
-        sndModel.WebUrl =  //UrlParser.ReplaceWithSubdomain(inpUrl, "gxadm");
-        sndModel.Email = _invModel.Email;       // must be set
-        sndModel.Username = "";     // not yet set
-        sndModel.Nom = _invModel.Nom;
-        sndModel.Pnom = _invModel.Pnom;
-
-        // POST to API
-        var response = await _apiClient.PostAsJsonAsync(inpUrl, sndModel);
-
-        if (response.IsSuccessStatusCode)
+        try
         {
-            Imessage = "Invitation generated and email sent.";
-        }
-        else
+            string inviteMessage = "Bienvenue au Test de Brevo Mail";
+            infosModel = ModelHelper.MapTo<UsrOgSetModel, RegisterDto>(_invModel);
+            //RETOUR URL /voir si sur Api
+            var inpUrl = _apiClient.BaseAddress?.ToString().TrimEnd('/');
+            if (!inpUrl.StartsWith("http", StringComparison.OrdinalIgnoreCase))
+                inpUrl = "https://" + inpUrl;
+            inpUrl = inpUrl.TrimEnd('/');
+            inpUrl = inpUrl + "/usercontext/generate-invite";
+            // Replace with gxadm subdomain
+            var gxadmUrl = UrlParser.ReplaceWithSubdomain(inpUrl, "gxadm"); // → https://gxadm.a24soft.com
+            // Fill RegisterDto fields
+            infosModel.Idorg = curOrga.Idorg;
+            infosModel.Orig = 2;
+            infosModel.Toqui = _invModel.Irole; // 1.std / 2.hlp / 3.own
+            infosModel.Utyp = _invModel.Utyp;
+            infosModel.FbackUrl = gxadmUrl;
+            infosModel.WebUrl = curOrga.Weburl; //UrlParser.ReplaceWithSubdomain(inpUrl, "gxadm");
+            infosModel.Email = _invModel.Email;       // must be set
+            infosModel.Username = "";     // not yet set
+            infosModel.Nom = _invModel.Nom;
+            infosModel.Pnom = _invModel.Pnom;
+            infosModel.Rtype = EmailType.Invite;
+            //verification
+            Console.WriteLine($"Url Api pour invite : {inpUrl} et {gxadmUrl}");
+            // POST to
+            if (gpe == 1)
+            { //individuel
+                infosModel.Brevman.Add(new BrevoRecipient
+                {
+                    Email = _invModel.Email,
+                    Name = "tu5e87suis"
+                });
+            }
+            else 
+            { //par gpe
+                await HandleValidEmails();
+            }
+            var response = await _clieManager.SendRequestAsync(
+                "AUTHClient",
+                HttpMethod.Post,
+                "usercontext/generate-invite",
+                infosModel);
+        } catch(Exception ex)
         {
-            Imessage = await response.Content.ReadAsStringAsync();
+
         }
-        StateHasChanged();
+        isLoading = false;
     }
 
     // private async Task GenerateEmailLink(int gpe)
@@ -630,6 +652,39 @@
         }
         return errors;
     }
+
+    private async Task HandleValidEmails()
+    {
+        invalidLines.Clear();
+
+        var lines = emailsInput
+            .Split(Environment.NewLine, StringSplitOptions.RemoveEmptyEntries)
+            .Select(l => l.Trim())
+            .Where(l => !string.IsNullOrWhiteSpace(l))
+            .ToList();
+
+        var regex = new System.Text.RegularExpressions.Regex(@"^[^\s@]+@[^\s@]+\.[^\s@]+$");
+
+        foreach (var line in lines)
+        {
+            var parts = line.Split('-', 2, StringSplitOptions.TrimEntries);
+            var email = parts[0];
+            var name = parts.Length > 1 ? parts[1] : null;
+
+            if (!regex.IsMatch(email))
+            {
+                invalidLines.Add(line);
+                continue;
+            }
+
+            infosModel.Brevman.Add(new BrevoRecipient
+            {
+                Email = email,
+                Name = string.IsNullOrWhiteSpace(name) ? "tu5e87suis" : name
+            });
+        }
+    }
+
     private async Task SetUtyp(Grole myrol)
     {
         _invModel.Utyp = myrol.Level;
@@ -786,7 +841,7 @@
     //     string infoplus = $" Nom : {usrNom }, Prenom(s) : {usrPnom} Telephone : {usrPhone}";
     //     _usrMail.Uinfos = infoplus;
     //     //envoie var response = await _logClient.PostAsJsonAsync("Lgauth/renvoiemail", usrMail);
-    //     var response = await _cliemanager.SendRequestAsync("AUTHClient", HttpMethod.Post, $"lgauth/sendcodemail");
+    //     var response = await _clieManager.SendRequestAsync("AUTHClient", HttpMethod.Post, $"lgauth/sendcodemail");
     //     success = true;
     //     successmsg = "Succes email INVITE envoye";
     //     Console.WriteLine("Succes ENVOIE");
