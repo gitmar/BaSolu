@@ -32,237 +32,181 @@
 
 <PageTitle>OPERATEURS</PageTitle>
 <h3>OPERATEURS</h3>
-@* <div>
-    @strmeta
-</div> *@
 @if (!string.IsNullOrEmpty(Imessage))
 {
     <div>
         @Imessage
     </div>
 }
-@if (errors)
+@if (ErrorsList.Any())
 {
-    foreach (var uner in errorList)
+    foreach (var uner in ErrorsList)
     {
         Imessage = Imessage + uner.ToString();
     }
 }
-@if (isLoading)
-{
-    <div class="text-center">
-        <Spinner Color="SpinnerColor.Primary" Size="SpinnerSize.Large" />
-        <p>PARAMS/INVITE Loading...</p>
-    </div>
-} 
-else
-{   
-<div class="my-container">
-    @ChildContent
-</div>
 <AuthorizeView>
     <Authorized>
     <div class="d-flex flex-row">
-        <EditForm Context="invform" Model="@_invModel">
-        @if (!isLoading){
-            <DataAnnotationsValidator />
-            <ValidationSummary />
-           <Tabs>
-                  <Tab Title="Individuelle">
-                      <Content>
-                                    @* <div>
-                                        <label for="tiev1">Validite du... :</label>
-                                        <InputDate id="tiev1" @bind-Value="_invModel.Datdu">
-                                            placeholder="du..."
-                                        </InputDate>
+            <EditForm Model="_invModel" OnValidSubmit="SendIndividualInvite" Context="invFormContext">
+                <DataAnnotationsValidator />
+                    <DataAnnotationsValidator />
+                    <ValidationSummary />
+                    <Tabs>
+                        <Tab Title="Individuelle">
+                            <Content>
+                                <div class="row g-3">
+                                    <!-- Common fields -->
+                                    <div class="col-md-6">
+                                        <label>Ref.appel:</label>
+                                        <InputText @bind-Value="_invModel.Refapl" class="form-control" />
                                     </div>
-                                    <div>
-                                        <label for="tiev2"> au... :</label>
-                                        <InputDate id="tiev2" @bind-Value="_invModel.Datau">
-                                            placeholder="au..."
-                                        </InputDate>
-                                    </div> *@
-                                <div>
-                                    <label for="Tiedos">Ref.appel:</label>
-                                    <InputText id="tiedos" @bind-Value="_invModel.Refapl" required
-                                               placeholder="Enter call reference" />
-                                </div>
-                                <div>
-                                    <label for="tienom">Nom:</label>
-                                    <InputText id="tienom" @bind-Value="_invModel.Nom" required
-                                               placeholder="Enter his-her nom" />
-                                </div>
-                                <div>
-                                    <label for="tiepnom">Prenom(s):</label>
-                                    <InputText id="tiepnom" name="tiepnomInput" @bind-Value="_invModel.Pnom" required
-                                               placeholder="Enter his-her prenom" />
-                                </div>
-                                <div>
-                                    <label for="TieIrole">Role:</label>
-                                    @if (_invRoles.Count > 0)
-                                    {
-                                        <InputSelect @bind-Value="_invModel.Irole" id="TieIrole">
-                                                <option value="0">role?</option>
-                                            @foreach (var uro in _invRoles)
+
+                                    <div class="col-md-6">
+                                        <label>Role:</label>
+                                        <InputSelect @bind-Value="_invModel.Irole" class="form-select">
+                                            <option value="0">Sélectionner...</option>
+                                            @foreach (var role in _invRoles)
                                             {
-                                                <option value="@uro.Level">@uro.Name</option>
+                                                <option value="@role.Level">@role.Name</option>
                                             }
                                         </InputSelect>
-                                    }
-                                </div>
-                                    <div>
-                                        <label for="TieIrole">Quality:</label>
-                                        <InputSelect @bind-Value="_invModel.Utyp" id="TieUtyp">
-                                            <option value="0">quality?</option>
+                                    </div>
+
+                                    <div class="col-md-6">
+                                        <label>Qualité:</label>
+                                        <InputSelect @bind-Value="_invModel.Utyp" class="form-select">
+                                            <option value="0">Sélectionner...</option>
                                             @foreach (var ut in LsFixes.Where(uf => uf.Gvars == 36 && uf.Itb == 6 && uf.Elea != 0))
                                             {
                                                 <option value="@ut.Elea">@ut.Liba</option>
                                             }
                                         </InputSelect>
                                     </div>
-                                    @if (_invModel.Irole > 0 && _invModel.Utyp > 0)
+
+                                    @if (_invModel.Utyp > 3 && _invModel.Utyp <= 6)
                                     {
-                                        @if (_invModel.Utyp >= 3 && _invModel.Utyp <= 6)
-                                        { //client-fournisseur...
-                                            <div>
-                                                <label for="tierais">Raison:</label>
-                                                <InputText id="tierais" @bind-Value="_invModel.Raison"
-                                                placeholder="Enter his-her raison" />
+                                        <div class="col-md-6">
+                                            <label>Raison:</label>
+                                            <InputText @bind-Value="_invModel.TRaison" class="form-control" />
+                                        </div>
+                                    }
+                                    <div class="col-md-6">
+                                        <label>Email:</label>
+                                        <InputText type="email" @bind-Value="_invModel.Email" class="form-control" />
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label>Nom:</label>
+                                        <InputText @bind-Value="_invModel.FirstName" class="form-control" />
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label>Prenom(s):</label>
+                                        <InputText @bind-Value="_invModel.LastName" class="form-control" />
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label>Téléphone:</label>
+                                        <InputText @bind-Value="_invModel.PhoneNumber" class="form-control" />
+                                    </div>
+
+                                    <div class="col-md-6">
+                                        <label>Services:</label>
+                                        <InputSelect @bind-Value="_invModel.Ihie" class="form-select">
+                                            <option value="0">Aucun</option>
+                                            @foreach (var div in _lsDivs)
+                                            {
+                                                <option value="@div.Ihie">@div.Liba</option>
+                                            }
+                                        </InputSelect>
+                                    </div>
+
+                                    <div class="col-md-6">
+                                        <label>Poste:</label>
+                                        <InputSelect @bind-Value="_invModel.Ipst" class="form-select">
+                                            <option value="0">Aucun</option>
+                                            @foreach (var pst in _lsPsts)
+                                            {
+                                                <option value="@pst.Ipst">@pst.Liba</option>
+                                            }
+                                        </InputSelect>
+                                    </div>
+                                </div>
+
+                                <div class="mt-4">
+                                <Button color="ButtonColor.Primary" @onclick="() => SendIndividualInvite()">
+                                        Envoyer Invitation Individuelle
+                                    </Button>
+                                </div>
+                            </Content>
+                        </Tab>
+                        <Tab Title="De groupe">
+                            <Content>
+                                <div class="row g-3">
+                                    <div class="col-md-6">
+                                        <label>Ref.appel:</label>
+                                        <InputText @bind-Value="_invModel.Refapl" class="form-control" />
+                                    </div>
+
+                                    <div class="col-md-6">
+                                        <label>Role:</label>
+                                        <InputSelect @bind-Value="_invModel.Irole" class="form-select">
+                                            <option value="0">Sélectionner...</option>
+                                            @foreach (var role in _invRoles)
+                                            {
+                                                <option value="@role.Level">@role.Name</option>
+                                            }
+                                        </InputSelect>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label>Qualité:</label>
+                                        <InputSelect @bind-Value="_invModel.Utyp" class="form-select">
+                                            <option value="0">Sélectionner...</option>
+                                            @foreach (var ut in LsFixes.Where(uf => uf.Gvars == 36 && uf.Itb == 6 && uf.Elea != 0))
+                                            {
+                                                <option value="@ut.Elea">@ut.Liba</option>
+                                            }
+                                        </InputSelect>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label>Services:</label>
+                                        <InputSelect @bind-Value="_invModel.Ihie" class="form-select">
+                                            <option value="0">Aucun</option>
+                                            @foreach (var div in _lsDivs)
+                                            {
+                                                <option value="@div.Ihie">@div.Liba</option>
+                                            }
+                                        </InputSelect>
+                                    </div>
+                                </div>
+                                <div class="row mt-3">
+                                    <div class="col-12">
+                                        <label>Recipients (email - nom):</label>
+                                        <textarea class="form-control" rows="6" @bind="emailsInput"
+                                                  placeholder="user1@example.com - John Doe&#10;user2@example.com - Jane Smith">
+                                        </textarea>
+                                        @if (invalidEmails.Any())
+                                        {
+                                            <div class="alert alert-warning mt-2">
+                                                <strong>Emails invalides:</strong>
+                                                <ul>
+                                                    @foreach (var email in invalidEmails)
+                                                    {
+                                                        <li>@email</li>
+                                                    }
+                                                </ul>
                                             </div>
                                         }
-                                        <div>
-                                            <label for="tiemail">Email:</label>
-                                            <InputText type="email" id="tiemail" @bind-Value="_invModel.Email" required
-                                            placeholder="Enter his-her email address" />
-                                        </div>
-                                        <div>
-                                            <label for="tiephon3">Telephone:</label>
-                                            <InputText id="tiephone" @bind-Value="_invModel.Phonenumber" required
-                                            placeholder="Enter his-her phone number" />
-                                        </div>
-                                        <div class="input-group">
-                                            <label for="TypDiv">Services:</label>
-                                            @if (_lsDivs.Count > 0)
-                                            {
-                                                <InputSelect @bind-Value="_invModel.Ihie" id="TypDiv">
-                                                    <option value="0">Aucun</option>
-                                                    @foreach (var divo in _lsDivs)
-                                                    {
-                                                        <option value="@divo.Ihie">@divo.Liba</option>
-                                                    }
-                                                </InputSelect>
-                                            }
-                                            else
-                                            {
-                                                <p>Loading/ou absent</p>
-                                            }
-                                        </div>
-                                        <div class="input-group">
-                                            <label for="TypPst">Poste:</label>
-                                            @if (_lsPsts.Count > 0)
-                                            {
-                                                <InputSelect @bind-Value="_invModel.Ipst" id="TypPst">
-                                                    <option value="0">Aucun</option>
-                                                    @foreach (var divo in _lsPsts)
-                                                    {
-                                                        <option value="@divo.Ipst">@divo.Liba</option>
-                                                    }
-                                                </InputSelect>
-                                            }
-                                            else
-                                            {
-                                                <p>Loading/ou absent</p>
-                                            }
-                                        </div>
-                                        <div>
-                                            <Button Color="ButtonColor.Primary" Class="btn btn-primary" @onclick="() => PrepareInviteEmailForApi(1)">
-                                                Envoyer Invitation Individuelle
-                                            </Button>
-                                        </div>
-                                    }
-                                </Content>
-                  </Tab>
-                  <Tab Title="De groupe">
-                      <Content>
-                                    @* <div>
-                                        <label for="tiev1">Validite du... :</label>
-                                        <InputDate id="tiev1" @bind-Value="_invModel.Datdu">
-                                            placeholder="du..."
-                                        </InputDate>
                                     </div>
-                                    <div>
-                                        <label for="tiev2"> au... :</label>
-                                        <InputDate id="tiev2" @bind-Value="_invModel.Datau">
-                                            placeholder="au..."
-                                        </InputDate>
-                                    </div> *@
-                                    <div>
-                                        <label for="Tiedos">Ref.appel:</label>
-                                        <InputText id="tiedos" @bind-Value="_invModel.Refapl" required
-                                                   placeholder="Enter call reference" />
-                                    </div>
-                                <div>
-                                    <label for="TieBrol">Role:</label>
-                                    @if (_invRoles.Count > 0)
-                                    {
-                                        <InputSelect @bind-Value="_invModel.Irole" id="TieBrol">
-                                            <option value="0">role?</option>
-                                            @foreach (var uro in _invRoles)
-                                            {
-                                                <option value="@uro.Level">@uro.Name</option>
-                                            }
-                                        </InputSelect>
-                                    }
                                 </div>
-                                    <div>
-                                        <label for="TieIrole">Quality:</label>
-                                        <InputSelect @bind-Value="_invModel.Utyp" id="TieUtyp">
-                                            <option value="0">quality?</option>
-                                            @foreach (var ut in LsFixes.Where(uf => uf.Gvars == 36 && uf.Itb == 6 && uf.Elea != 0))
-                                            {
-                                                <option value="@ut.Elea">@ut.Liba</option>
-                                            }
-                                        </InputSelect>
-                                    </div>
-                                    @if (_invModel.Irole > 0 && _invModel.Utyp > 0)
-                                    {
-                                        <div class="input-group">
-                                            <label for="TypBDiv">Services:</label>
-                                            @if (_lsDivs.Count > 0)
-                                            {
-                                                <InputSelect @bind-Value="_invModel.Ihie" id="TypBDiv">
-                                                    <option value="0">Aucun</option>
-                                                    @foreach (var divo in _lsDivs)
-                                                    {
-                                                        <option value="@divo.Ihie">@divo.Liba</option>
-                                                    }
-                                                </InputSelect>
-                                            }
-                                            else
-                                            {
-                                                <p>Loading/ou absent</p>
-                                            }
-                                        </div>
-                                        <div class="row">
-                                            <div class="mb-3">
-                                                <label for="emails" class="form-label">Recipients (email - name)</label>
-                                                <textarea id="emails" class="form-control"
-                                                @bind="emailsInput" rows="6"
-                                                placeholder="Enter one per line: email - name"></textarea>
-                                            </div>
-
-                                        </div>
-                                        <div>
-                                            <Button Color="ButtonColor.Primary" Class="btn btn-primary" @onclick="() => PrepareInviteEmailForApi(2)">
-                                                Envoyer Invitation de Groupe
-                                            </Button>
-                                        </div>
-                                    }
-                                </Content>
-                  </Tab>
-           </Tabs>  
-        }
-        </EditForm>
+                                <div class="mt-4">
+                                    <Button color="ButtonColor.Primary" @onclick="()=> SendGroupInvite()"
+                                            disabled="!CanSendGroupInvite()">
+                                        Envoyer Invitations Groupe (@ValidGroupEmails.Count)
+                                    </Button>
+                                </div>
+                            </Content>
+                        </Tab>
+                    </Tabs>
+                </EditForm>
                 @if (invalidEmails.Any())
                 {
                     <Alert Color="AlertColor.Danger">
@@ -275,15 +219,12 @@ else
                         </ul>
                     </Alert>
                 }
-
-
     </div>
     </Authorized>
     <NotAuthorized>        
         <label>Non Autorise</label>
     </NotAuthorized>
 </AuthorizeView>
-}
 <style>
     .inputfl {
     opacity: 0;
@@ -314,6 +255,7 @@ else
 
 @code {
     private bool isLoading = true;
+    private string Imessage = "";
 
     [CascadingParameter]
     private Task<AuthenticationState>? AuthState { get; set; }
@@ -324,70 +266,51 @@ else
 
     private MyODataContext curODContext;
     private Gxorga curOrga = new Gxorga();
-    
-    private UsrOgSetModel _invModel = new();
-
-    private RegisterDto infosModel = new();
-    private string emailsInput = string.Empty;
+    private InviteRequest _invModel = new();
+    private string emailsInput = "";
     private List<string> invalidEmails = new();
-    private List<string> invalidLines = new();
-
-    private bool success, errors, isSubmitting = false;
-    private string successmsg = "", searchstr="", strPoint = "", strmeta = "";
-    private List<string> errorList = new List<string>();
-
-    private string rolInv = "", isatmsg = "", Imessage="";
-    private string Adrlist = "";
-    private bool IsGenerated = false;
-    private string generatedLink = "";
-    //private int Ugpe = 1;
-
-    private string _codVends = "";
-    private bool isReadonly = true;
-    private bool isDisabled = true;
-
+    // Errors
+    private List<string> ErrorsList = new();
+    // Data
+    private List<Grole> _invRoles = new();
+    private List<Gpdivh> _lsDivs = new();
+    private List<Divpst> _lsPsts => _lsDivs
+        .Where(d => d.Ihie == _invModel.Ihie)
+        .SelectMany(d => d.Divpsts)
+        .ToList();
     //GlobModels
     public Userbag _usrBag = new Userbag();
+    int uMinrol = 0;
     public List<Gpfixe> LsFixes = new();
-
-    //Authentication
-    private List<Grole> LsRoles = new();
-    private List<Grole> _invRoles = new();
     private List<Grole> _usrRoles = new();
+    private List<string> invalidLines = new();    
+    private List<SimpleRecipient> ValidGroupEmails => ParseGroupEmails();
+    private bool CanSendGroupInvite() => ValidGroupEmails.Any();
 
-    private HttpClient _apiClient;
-    private HttpClient _locClient;
-
-    private IEnumerable<Gsapl> InApls = Enumerable.Empty<Gsapl>().AsQueryable();
-    private Tiersp mytiers = new Tiersp();
-    private List<Tiersp> lsTiers = new List<Tiersp>();
-    private List<Gpdivh> _lsDivs = new List<Gpdivh>();
-    private List<Divpst> _lsPsts => _lsDivs.Where(dv => dv.Ihie == _invModel.Ihie).SelectMany(dp => dp.Divpsts).ToList();
-    
     protected override async Task OnInitializedAsync()
     {
-        //prise utilisateur courant
         isLoading = true;
-        int uMinrol = 0;
         var authState = await AuthState;
         authUser = authState.User;
         isAuthenticated = authUser.Identity.IsAuthenticated;
         if (!isAuthenticated)
         {
-            Console.WriteLine("Authentication in Enrol Utilisateur ECHEC");
+            Console.WriteLine("Authentication in Astreintes Utilisateur ECHEC");
             return;
         }
         else
         {
-            Console.WriteLine("Authentication in Enrol SUCCESS");
+            Console.WriteLine("Authentication in Astreintes SUCCESS");
         }
-        _apiClient = _httpFactorer.CreateClient("AUTHClient");
-        _locClient = _httpFactorer.CreateClient("DefaultClient");
-        _usrBag = await _sessionContext.GetUserbagAsync();
+        await LoadInviteData();
+        isLoading = false;
+    }
+
+    private async Task LoadInviteData()
+    {
+        // Load roles, divisions, fixes (your existing logic)
+        _usrBag = await _sessionContext.GetUserbagAsync() ?? new Userbag();
         LsFixes = _usrBag.Ufixes.ToList();
-        //var idplnadm = _usrBag.Usorga.Schba;
-        // LsDivs = _usrBag.Usorga.Uhies
-        //     .Where(uh => uh.Idpln == idplnadm && uwaih.Sidiv == 1).ToList();
         _lsDivs = await _rendAgres.LoadOrgaPostes();
         var json = await _clieManager.SendRequestAsync("AUTHClient", HttpMethod.Get, "usercontext/session");
         var result = JsonConvert.DeserializeObject<SessionDto>(json);
@@ -404,7 +327,7 @@ else
         }
         else
         {
-            Console.WriteLine("Nb Roles : null");
+            Console.WriteLine("Session : nulle");
             return;
         }
         //all orga roles
@@ -412,16 +335,15 @@ else
         var lsRoles = clcRoles.OrderBy(r => r.Level).ToList();
         //saute lui-meme
         _invRoles = lsRoles.Where(ur => ur.Level > uMinrol && (ur.Level < 10 || ur.Level > 40))
-            .OrderBy(up => up.Level)  
+            .OrderBy(up => up.Level)
             .ToList();
+        Console.WriteLine($"bon roles : {_invRoles.Count()}");
         _invModel.Utyp = 0; //cible
         //Imessage = "Donnees Grilles chargees";
-        _navmanager.LocationChanged += OnLocationChanged;
         Console.WriteLine("Authentication ENTREE");
         try
         {
             curODContext = await _contextFactory.CreateAsync(); // Use factory
-            //var expand = "Tiewels,Tiewels($expand=Tiwafls),Tiersps,Tiersps($expand=Tieafls),Gsglnes";
             var expand = "Tiewels";
             var dxorgas = await curODContext.LoadFilteredAsync<Gxorga>(expand: expand);
             curOrga = dxorgas.FirstOrDefault();
@@ -440,497 +362,156 @@ else
         {
             Console.WriteLine($"stack trace : {ex.StackTrace} ex-mess : {ex.Message} and also in-mess: {ex.InnerException}");
         }
-        isLoading = false;
-
-    }
-    protected override async void OnParametersSet()
-    {
-        
     }
 
-    private async Task PrepareInviteEmailForApi(int gpe)
+    private async Task SendIndividualInvite()
     {
-        //gpe = individuel/groupe
-        isLoading = true;
-        bool IsErrors = await VerifInputs();
-        if (IsErrors)
+        Console.WriteLine("Sending Invite");
+        try
         {
-            Imessage += "Echec Generation : des issues persistent...";
+            Console.WriteLine("Envoie de Individuel");
+            // Verify _invModel inputs
+            bool siVerif = await VerifInputs(1);
+            if (!siVerif)
+            {
+                Imessage = "Verification : " + Imessage;
+                foreach(var uro in ErrorsList)
+                {
+                    Console.WriteLine($"verif issues : {uro}");
+                }
+                StateHasChanged();
+                return;
+            }
+            // Individual
+            Console.WriteLine("1 en cours....");
+            await _clieManager.SetAuthorizationHeaderAsync("AUTHClient");
+            var response = await _clieManager.SendRequestAsync("AUTHClient", HttpMethod.Post,
+                "usercontext/generate-invite", new IndividualInviteRequest
+                {
+                    InviteData = _invModel
+                });
+            Imessage = "Succes Individual invite";
             StateHasChanged();
+            // Success handling
+        }
+        catch (Exception ex)
+        {
+            // Error handling
+        }
+    }
+
+    private async void SendGroupInvite()
+    {
+        // Verify _invModel inputs
+        bool siVerif = await VerifInputs(2);
+        if (!siVerif)
+        {
+            return;
+        }
+        // De groupe
+        var validEmails = ValidGroupEmails;
+        if (!validEmails.Any())
+        {
+            invalidEmails = new List<string> { "Aucun email valide" };
             return;
         }
         try
         {
-            string inviteMessage = "Bienvenue au Test de Brevo Mail";
-            infosModel  = ModelHelper.MapTo<UsrOgSetModel, RegisterDto>(_invModel);
-            //RETOUR URL /voir si sur Api
-            var inpUrl = _apiClient.BaseAddress?.ToString().TrimEnd('/');
-            if (!inpUrl.StartsWith("http", StringComparison.OrdinalIgnoreCase))
-            inpUrl = "https://" + inpUrl;
-            inpUrl = inpUrl.TrimEnd('/');
-            inpUrl = inpUrl + "/usercontext/generate-invite";
-            // Replace with gxadm subdomain
-            var gxadmUrl = UrlParser.ReplaceWithSubdomain(inpUrl, "gxadm"); // → https://gxadm.a24soft.com
-            // Fill RegisterDto fields
-            infosModel.Idorg = curOrga.Idorg;
-            infosModel.Orig = 2;
-            infosModel.Toqui = _invModel.Irole; // 1.std / 2.hlp / 3.own
-            infosModel.Utyp = _invModel.Utyp;
-            infosModel.FbackUrl = gxadmUrl;
-            infosModel.WebUrl = curOrga.Weburl; //UrlParser.ReplaceWithSubdomain(inpUrl, "gxadm");
-            infosModel.Email = _invModel.Email;       // must be set
-            infosModel.Username = "";     // not yet set
-            infosModel.Nom = _invModel.Nom;
-            infosModel.Pnom = _invModel.Pnom;
-            infosModel.Rtype = EmailType.Invite;
-            //verification
-            Console.WriteLine($"Url Api pour invite : {inpUrl} et {gxadmUrl}");
-            // POST to 
-            if (gpe == 1)
-            { //individuel
-                infosModel.Brevman.Add(new BrevoRecipient
-                {
-                    Email = _invModel.Email,
-                    Name = "tu5e87suis"
-                });
-            }
-            else
-            { //par gpe
-                await HandleValidEmails();
-            }
-            var response = await _clieManager.SendRequestAsync(
-                "AUTHClient",
-                HttpMethod.Post,
-                "usercontext/generate-invite",
-                infosModel);
+            var groupInvite = new
+            {
+                Type = "Group",
+                Refapl = _invModel.Refapl,
+                Irole = _invModel.Irole,
+                Utyp = _invModel.Utyp,
+                Ihie = _invModel.Ihie,
+                Recipients = validEmails
+            };
+            await _clieManager.SetAuthorizationHeaderAsync("AUTHClient");
+            await _clieManager.SendRequestAsync("AUTHClient", HttpMethod.Post,
+                "usercontext/generate-invite", new GroupInviteRequest
+            {
+                InviteData = _invModel,
+                Recipients = ValidGroupEmails  // ✅ Compiles!
+            });
         }
-        catch (Exception)
+        catch (Exception ex)
         {
-            
+            // Error handling
         }
-        isLoading = false;
     }
-    
-    // private async Task GenerateEmailLink(int gpe)
-    // {
-    //     bool IsVerified = false;
-    //     IsVerified = await VerifInputs(); //reverification
-    //     if (!IsVerified)
-    //     {
-    //         Imessage = Imessage + "Echec Generation : des issues persistent..." + Imessage;
-    //         Console.WriteLine($"message : {Imessage}");
-    //         StateHasChanged();
-    //         return;
-    //     }
-    //     var inpUrl = _apiClient.BaseAddress?.ToString().TrimEnd('/');
-    //     if (!inpUrl.StartsWith("http", StringComparison.OrdinalIgnoreCase))
-    //         inpUrl = "https://" + inpUrl;
-    //     inpUrl = inpUrl.TrimEnd('/');
-    //     inpUrl = inpUrl + "/api/register"; //controller
-         
-    //     Console.WriteLine($"Backend Link : {inpUrl}");
-    //     // Replace with gxadm subdomain
-    //     var gxadmUrl = UrlParser.ReplaceWithSubdomain(inpUrl, "gxadm"); // → https://gxadm.a24soft.com
-    //     _invModel.Idorg = curOrga.Idorg;
-    //     _invModel.Orig = 2; 
-    //     _invModel.Toqui = gpe; //1.std/2.hlp/3.own
-    //     _invModel.Toqui = _invModel.Irole; 
-    //     _invModel.Utyp = _invModel.Irole;
-    //     _invModel.HlpWurl = curOrga.Hlpwurl;
-    //     _invModel.Weburl = gxadmUrl;
-    //     generatedLink = _linkSerialiser.EncodeAndSerialize(_invModel);
-    // }
 
-    // public async Task MakeAndSendBlazorInviteAsync(string email, string uname, int toQui, string invreturnUrl)
-    // {
-    //     var user = await _userManager.FindByEmailAsync(email);
-    //     if (user == null)
-    //         return NotFound();
-
-    //     var token = await _userManager.GenerateEmailConfirmationTokenAsync(user);
-    //     var encodedToken = Uri.EscapeDataString(token);
-
-    //     var invitationLink = Url.Action(
-    //         "Identity/Pages/Account",
-    //         "GxRegister",
-    //         new
-    //         {
-    //             token = encodedToken,
-    //             email = user.Email,
-    //             ownreturnUrl = invreturnUrl,
-    //             orig = 4
-    //         },
-    //         Request.Scheme
-    //     );
-
-    //     var recipients = new List<EmailRecipientDto>
-    //         {
-    //             new()
-    //             {
-    //                 Email = user.Email!,
-    //                 Username = user.UserName!,
-    //                 Nom = "",
-    //                 Pnom = ""
-    //             }
-    //         };
-    //     var mailReq = new StandardEmailRequest();
-    //     mailReq.To = recipients;
-    //     mailReq.InviteLink = invitationLink ?? "";
-    //     //mailReq.
-    //     var infoPlus = new RegisterDto();
-    //     infoPlus.Toqui = toQui;
-    //     infoPlus.SenderEmail = "gxsupport@a24soft.com";
-
-    //     infoPlus.FbackUrl = invreturnUrl;
-    //     infoPlus.SenderPhone = "";
-    //     bool oksent = await _autodaRegister.PrepreAndSendInviteAsync(_emailSender, _invtokenService, mailReq, infoPlus);
-    //     if (oksent)
-    //     {
-    //         return Ok("email sent successfully");
-    //     }
-    //     else
-    //     {
-    //         return BadRequest("email sent failed");
-    //     }
-    // }
-
- //    private async Task CmdCustSendEmail()
- //    {
- //        // var cdlink = _linkSerialiser.EncodeAndSerialize(new UsrOgSetModel
- //        // {
- //        //     Id = 1,
- //        //     Idorg = _curOrder.Oidorg,
- //        //     Email = _curOrder.Customer.Email,
- //        //     Phonenumber = _curOrder.Customer.Phonenumber,
- //        //     Orig = 1, //from support
- //        //     HlpWurl = _curGxdom.HlpWurl,
- //        //     Sdoma = _invModel.Sdoma,
- //        //     //Srole = "Admin",
- //        //     Utyp = 3,
- //        //     Weburl = gxadmUrl,
- //        //     Ipays = _curOrder.Customer.Country,
- //        //     Ilang = _curOrder.Customer.Ilang,
- //        //     Raison = _curOrder.Customer.Raison,
- //        //     Sigle = _curOrder.Customer.Sigle,
- //        //     Nom = _curOrder.Customer.Nom,
- //        //     Pnom = _curOrder.Customer.Pnom
- //        // }); // or GenerateLink if it returns just the payload
- //        // var ogqryplus = _LinkSerialiser.EncodeAndSerialize(new RegisterDto
- //        //     { ...
-
- //        //     });
- //        // Build final URL with query string
- //        //var fullUrl = $"{gxadmUrl}/register?cdlink={Uri.EscapeDataString(cdlink)}";
- //        var fullUrl = $"{_invModel.Weburl}/stdregis?cdlink={Uri.EscapeDataString(generatedLink)}"; //&ogqryplus={Uri.EscapeDataString(ogqryplus)}";
- //        //lien a envoyer par CxApi mailer
- //        RegisterDto mailReq = new();
- //        mailReq.InviteLink = fullUrl;
- //        mailReq.Ademail = curOrga.Hlpwurl;
-        
- //        // var recipients = mailReq.To?
- //        //         .Select(r => new EmailRecipientDto
- //        //         {
- //        //             Email = _invModel.Email,
- //        //             Username = ""
- //        //         })
- //        //         .ToList();
- //        // mailReq.To = recipients;
- //        // mailReq.Wcemail = _invModel.Username;
- //        // mailReq.Message = "Veuillez cliquer le lien pour joindre le webSite de votre logiciel";
- //        // mailReq.Subject = "Invite webSite";
-
-        
- //        // catch (Exception)
- //        // {
- //        //     isLoading = false;
- //        // }
-
- //    try{
- //        //var response = await _apiClient.PostAsJsonAsync<StandardEmailRequest>("email/sendinvite", mailReq);
- //        await _clieManager.SetAuthorizationHeaderAsync("AUTHClient");
- //        var response = await _clieManager.SendRequestAsync(
- //            "AUTHClient",
- //            HttpMethod.Post,
- //            "usercontext/generate-invite",
- //            mailReq);
- //            Imessage = "Customer Email sent successfully";
- //            Console.WriteLine("✅ Customer Email sent successfully!");
- //    }
- //    catch(Exception ex)
- //    {
- //            Imessage = $"Customer Email fail to sent ({response.StatusCode})";
- //            var error = await response.Content.ReadAsStringAsync();
- //            Console.WriteLine($"❌ Customer Email fail to sent ({response.StatusCode}): {error}");
- //    }
- //        //var mailUrl = $"{inpUrl}/api/usercontext?{cdlink}";  //api/controller
- //        //_navmanager.NavigateTo(inpUrl, forceLoad: true);
- // }
-    private async Task<bool> VerifInputs()
+    private List<SimpleRecipient> ParseGroupEmails()
     {
-        errors = false;
-        errorList = new List<string>();
-        if (_invModel.Irole < 1)
-        {
-            errors = true;
-            errorList.Add("Echec, Role obligatoire.");
-        }
-        if (_invModel.Utyp < 1)
-        {
-            errors = true;
-            errorList.Add("Echec, Qualite obligatoire.");
-        }
-        if (String.IsNullOrEmpty(_invModel.Nom))
-        {
-            errors = true;
-            errorList.Add("Echec, Nom obligatoire.");
-        }
-        if (String.IsNullOrEmpty(_invModel.Pnom))
-        {
-            errors = true;
-            errorList.Add("Echec, Prenom(s) obligatoire.");
-        }
-        if (String.IsNullOrEmpty(_invModel.Email))
-        {
-            errors = true;
-            errorList.Add("Echec, Email obligatoire.");
-        }
-        if (String.IsNullOrEmpty(_invModel.Phonenumber))
-        {
-            errors = true;
-            errorList.Add("Echec, Phone obligatoire.");
-        }
-        return errors;
-    }
-    private async Task HandleValidEmails()
-    {
-        invalidLines.Clear();
+        var emails = new List<SimpleRecipient>();
+        invalidEmails.Clear();
 
-        var lines = emailsInput
-            .Split(Environment.NewLine, StringSplitOptions.RemoveEmptyEntries)
-            .Select(l => l.Trim())
-            .Where(l => !string.IsNullOrWhiteSpace(l))
-            .ToList();
-
-        var regex = new System.Text.RegularExpressions.Regex(@"^[^\s@]+@[^\s@]+\.[^\s@]+$");
+        var lines = emailsInput.Split(Environment.NewLine, StringSplitOptions.RemoveEmptyEntries)
+            .Select(l => l.Trim()).Where(l => !string.IsNullOrWhiteSpace(l));
 
         foreach (var line in lines)
         {
             var parts = line.Split('-', 2, StringSplitOptions.TrimEntries);
-            var email = parts[0];
-            var name = parts.Length > 1 ? parts[1] : null;
-            if (!regex.IsMatch(email))
+            var email = parts[0].Trim();
+            var name = parts.Length > 1 ? parts[1].Trim() : "";
+
+            // ✅ Instance method call - works!
+            if (IsValidEmail(email))
+                emails.Add(new SimpleRecipient { Email = email, Name = name });
+            else
+                invalidEmails.Add(line);
+        }
+        return emails;
+    }
+
+    private bool IsValidEmail(string email)  // ✅ Instance method
+    {
+        if (string.IsNullOrWhiteSpace(email)) return false;
+        return System.Text.RegularExpressions.Regex.IsMatch(email, @"^[^@\s]+@[^@\s]+\.[^@\s]+$");
+    }
+    private async Task<bool> VerifInputs(int gpe)
+    {
+        ErrorsList = new();
+        //tous
+        if (_invModel.Irole < 1)
+        {
+            ErrorsList.Add("Echec, Role obligatoire.");
+        }
+        if (_invModel.Utyp < 1)
+        {
+            ErrorsList.Add("Echec, Qualite obligatoire.");
+        }
+        if (gpe == 1)
+        {
+            if (String.IsNullOrEmpty(_invModel.FirstName))
             {
-                invalidLines.Add(line);
-                continue;
+                ErrorsList.Add("Echec, Nom obligatoire.");
             }
-
-            infosModel.Brevman.Add(new BrevoRecipient
+            if (String.IsNullOrEmpty(_invModel.LastName))
             {
-                Email = email,
-                Name = string.IsNullOrWhiteSpace(name) ? "tu5e87suis" : name
-            });
+                ErrorsList.Add("Echec, Prenom(s) obligatoire.");
+            }   
+            if (!IsValidEmail(_invModel.Email))
+            {
+                ErrorsList.Add("Echec, Email obligatoire.");
+            }
+            if (String.IsNullOrEmpty(_invModel.PhoneNumber))
+            {
+                ErrorsList.Add("Echec, Phone obligatoire.");
+            }
+            if (_invModel.Utyp > 3 && _invModel.Utyp <= 6)
+            {
+                if (String.IsNullOrEmpty(_invModel.TRaison))
+                {
+                    ErrorsList.Add("Echec, Raison obligatoire.");
+                }
+            }
         }
-    }
-
-    private async Task CopyToClipboard() =>
-        await _jsRun.InvokeVoidAsync("navigator.clipboard.writeText", generatedLink);
-    
-    void NavigateBack()
-    {
-        _navmanager.NavigateTo("/");
-    }
-
-    // public async Task FabriqInviteLink()
-    // {
-    //     //Idhie pas obligatoire
-    //     _codVends = "";
-    //     string tqsrole = "", dqsrole = "";
-    //     var tqrol = _invRoles.FirstOrDefault(ur => ur.Level == _invModel.Irole);
-    //     if (tqrol != null) tqsrole = tqrol.Name;
-
-    //     string strchai = "", serversite = "";
-    //     _usrBag = await _sessionContext.GetUserbagAsync();
-    //     _invModel.Dequi = _usrBag.Usprof.Utyp;
-    //     _invModel.Toqui = _invModel.Irole;
-    //     _invModel.Srole = tqsrole;
-
-    //     if (_usrBag.Usorga != null)
-    //     {
-    //         var myOrga = _usrBag.Usorga;
-    //         ////#x£V@-vnd¥Ω#≥±≠Ω####
-    //         //#x£V/#x£A/#x£O = #x£V(origine=vendeur)#x£A(origine=admin)#x£O(origine=operateur)
-    //         int CodeLength = 5; //longueur du code aleatoire
-    //         string stralea = "";
-    //         //recuperation du nbre aleatoire
-    //         Random random = new Random();
-    //         StringBuilder output = new StringBuilder();
-    //         for (int i = 0; i < CodeLength; i++)
-    //         {
-    //             output.Append(random.Next(0, 10));
-    //         }
-    //         stralea = output.ToString();
-    //         int deQui = _invModel.Dequi;
-    //         int toQui = _invModel.Toqui;
-    //         Console.WriteLine($"dequi '{deQui} et toqui : {toQui}");
-    //         string? stOrga = myOrga.Idorg.ToString();
-    //         string? typdom = myOrga.Dom.ToString();
-    //         string? tyorg = myOrga.Torg.ToString();
-    //         string datope = "";
-    //         strchai = DateTime.Now.Year.ToString().Trim();
-    //         strchai = "9999".Substring(0, 4 - strchai.Length) + strchai;
-    //         datope = strchai;
-    //         strchai = DateTime.Now.Month.ToString().Trim();
-    //         strchai = "00".Substring(0, 2 - strchai.Length) + strchai;
-    //         datope = datope + strchai;
-    //         strchai = DateTime.Now.Day.ToString().Trim();
-    //         strchai = "00".Substring(0, 2 - strchai.Length) + strchai;
-    //         //datope = datope + strchai;
-    //         int lga = stralea.Length;
-    //         if (lga > 4)
-    //         {
-    //             lga = 4;
-    //             strchai = stralea.Substring(0, 4);
-    //         }
-    //         else
-    //         {
-    //             strchai = stralea;
-    //         }
-    //         // verifier /orga /hiera
-
-    //         string aleaupd = stOrga + strchai;
-    //         string kvdmail = _usrBag.Usprof.Uemail; //email inviteur
-    //         string kachmail = _invModel.Email; //email saisi
-    //         string kachtypt = myOrga.Torg.ToString();
-    //         string kraison = myOrga.Raison;//myCmde.Raison;
-    //         string kphone = _invModel.Phonenumber;
-    //         string kpays = myOrga.Pays.ToString(); // _usrBag.Usprof.Upays;
-    //         string stsite = myOrga.Stserver;
-    //         string stdoma = myOrga.Stdom;
-    //         string stsigle = myOrga.Sigle;
-    //         string achtypu = _invModel.Utyp.ToString();
-    //         string kcdeip = myOrga.CurIp;
-    //         //orig=2 /invite
-    //         var avtCode = "&icoda=xgVnCd" + "&datope=" + datope + "&orig=2"
-    //                     + "&dequi=" + deQui.ToString() + "&deqmail=" + kvdmail + "&deqid=" + _usrBag.Usprof.Userid + "&nodos=" + _invModel.Xmatri
-    //                     + "&dequname=" + _usrBag.Usprof.Username + "&deqpmail=" + kvdmail + "&deqphone=" + _usrBag.Usprof.Uphone + "&deqnom=" + _usrBag.Usprof.Unom + "&deqpnom=" + _usrBag.Usprof.Upnom
-    //                     + "&toqui=" + toQui.ToString() + "&toqmail=" + _invModel.Email + "&phone=" + _invModel.Phonenumber + "&toqid=1212441144"
-    //                     + "&opays=" + kpays + "&toqlang=fr" + "&typtie=" + _invModel.Utyp + "&dqirole=" + deQui.ToString() + "&tqirole=" + toQui.ToString()
-    //                     + "&dqsrole=" + dqsrole + "&tqsrole=" + tqsrole + "&toqnom=" + _invModel.Nom + "&toqpnoms=" + _invModel.Pnom
-    //                     + "&methp=1" + "&stsigle=" + stsigle
-    //                     + "&tydoma=" + typdom + "&stdoma=" + stdoma + "&datcde=" + DateTime.Now
-    //                     + "&tysite=1" + "&stsite=" + stsite
-    //                     + "&ivorga=" + stOrga + "&straison=" + kraison + "&hiera=" + _invModel?.Id + "@ipost" + _invModel.Idpst
-    //                     + "&nbalea=" + aleaupd;
-    //         var bytes = Encoding.UTF8.GetBytes(avtCode);
-    //         var avtEncode = $"{stsite}/register?cdlnk={WebEncoders.Base64UrlEncode(bytes)}";
-    //         //var avtRepara = $"https://localhost:7171/repareg?cdlnk={WebEncoders.Base64UrlEncode(bytes)}";
-    //         //var versRepara = Uri.UnescapeDataString(avtRepara); 
-    //         _codVends = Uri.UnescapeDataString(avtEncode);
-    //         Console.WriteLine(_codVends);
-    //         //creation ou modif gsapl (atyp=96)
-    //         var myapls = InApls.Where(ap => ap.Email == _invModel.Email && ap.Phonenumber == _invModel.Phonenumber).ToList();
-    //         if (myapls.Any())
-    //         {
-    //             strmeta = "Personne a deja ete invite";
-    //             _codVends = myapls.FirstOrDefault().Stcod;
-    //         }
-    //         else
-    //         {
-    //             var unapl = new Gsapl();
-    //             unapl.Idorg = _usrBag.Idorg;
-    //             unapl.Atyp = 96;
-    //             unapl.Stcod = _codVends;
-    //             unapl.Email = _invModel.Email;
-    //             unapl.Phonenumber = _invModel.Phonenumber;
-    //             unapl.Nom = _invModel.Nom;
-    //             unapl.Pnom = _invModel.Pnom;
-    //             unapl.Raison = _invModel.Raison;
-    //             unapl.Datc = DateTime.Now;
-    //             //_vcontext.AddToGsapl(unapl);
-    //             //await _entityManager.SaveChanges();
-    //         }
-    //         isMade = true;
-    //     }
-    // }
-    // public async Task EnvoieInviteAsync()
-    // {
-    //     isLoading = true;
-    //     errors = false; success = false;
-    //     errorList = new List<string>();
-        
-    //     //envoie mail
-    //     string strBody = "";
-    //     strBody = _strOrga + ": Invitation a vous inscrire";
-    //     strBody = strBody + "<p>Cliquez sur le lien ci-dessus pour repondre a invitation</p>";
-    //     strBody = strBody + _codVends; //code invite
-    //     strBody = strBody + "<p>Vous pouvez consulter les liens ci-dessous :</p>";
-    //     strBody = strBody + "<p>Telegram : jsduid.me.com</p>";
-    //     strBody = strBody + "<p>Facebook : jsduid.me.com</p>";
-    //     _usrMail.From = _usrBag.Usprof.Uemail;
-    //     _usrMail.To = _invModel.Email;
-    //     Console.WriteLine($"from : {_usrMail.From } et {_usrMail.To}");
-    //     if(string.IsNullOrEmpty(_usrMail.From) || string.IsNullOrEmpty(_usrMail.To))
-    //     {
-    //         errors = true;
-    //         errorList.Add("Email et destinataire obligatoire.");
-    //         return;
-    //     }
-    //     _usrMail.Ucode = _codVends;
-    //     _usrMail.Uorgv = _usrBag.Idorg;
-    //     string usrNom = _invModel.Nom;
-    //     string usrPnom = _invModel.Pnom;
-    //     string usrPhone = _invModel.Phonenumber;
-    //     //_usrMail.MailSubject = "Invitation a vous inscrire";
-    //     string infoplus = $" Nom : {usrNom }, Prenom(s) : {usrPnom} Telephone : {usrPhone}";
-    //     _usrMail.Uinfos = infoplus;
-    //     //envoie var response = await _logClient.PostAsJsonAsync("Lgauth/renvoiemail", usrMail);
-    //     var response = await _clieManager.SendRequestAsync("AUTHClient", HttpMethod.Post, $"lgauth/sendcodemail");
-    //     success = true;
-    //     successmsg = "Succes email INVITE envoye";
-    //     Console.WriteLine("Succes ENVOIE");
-    //     isLoading = false;
-    //     //isMade = false;
-    //     isSent = true;
-    //     StateHasChanged();
-    // }
-    //manage SAVING
-    public async Task EdtAll()
-    {
-        //allEnable = true;
-        //isTieEditing = false;
-    }
-    public async Task CncAll()
-    { //reload
-        //await LoadOrgaAsync();
-        //isTieEditing = false;
-        //allEnable = false;
-    }
-    private void OnLocationChanged(object sender, LocationChangedEventArgs e)
-    {
-        //allEnable = false;
-        SaveCurEntities();
-    }
-    public async Task<bool> SaveCurEntities()
-    {
-        try
+        if (ErrorsList.Any())
         {
-            // if (isTiwEditing)
-            // {
-            //     curODContext.UpdateObject<Tiewel>(curTiw);
-            //     await curODContext.SaveDataAsync();
-            //     isTiwEditing = false;
-            //     Console.WriteLine("Saved SUCCESS");
-            // }
-            //var wrkplns = curOrga.Plngens.Where(pl => pl.Ptyp == 3 && pl.Totyp == IMyAtr).ToList();
-            //MyDaPlans = wrkplns;
-            StateHasChanged();
-            return true;
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"Saved ISSUE {ex.Message}");
-            //Alert($"ECHEC Entities not SAVED");
             return false;
+        } else
+        {
+            return true;
         }
     }
 }

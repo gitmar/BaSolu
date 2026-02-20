@@ -340,12 +340,24 @@ else
         catch (Exception ex)
         {
             isLoading = false;
-            return;
+            //return;
         }
         if (!_yacors)
         {
             isLoading = false;
-            return;
+            //return;
         }
     }
+    // private async Task TestOgEmails()
+    // {
+    //     try
+    //     {
+    //         var response = await _dftClient.GetAsync("usercontext/testogmail");
+    //         Imessage = "Test Orga Email successfully";
+    //     }
+    //     catch (Exception ex)
+    //     {
+    //         Imessage = "Test Orga Email failed";
+    //     }
+    // }
 }

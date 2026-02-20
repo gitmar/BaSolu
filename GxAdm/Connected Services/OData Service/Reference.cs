@@ -8,7 +8,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-// Generation date: 18-Feb-26 10:57:20 AM
+// Generation date: 18-Feb-26 3:40:44 PM
 namespace GxWapi.DaModels
 {
     /// <summary>
@@ -508,6 +508,29 @@ namespace GxWapi.DaModels
         private global::System.Nullable<int> _Ordid;
         partial void OnOrdidChanging(global::System.Nullable<int> value);
         partial void OnOrdidChanged();
+        /// <summary>
+        /// There are no comments for Property Slang in the schema.
+        /// </summary>
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        [global::Microsoft.OData.Client.OriginalNameAttribute("Slang")]
+        public virtual string Slang
+        {
+            get
+            {
+                return this._Slang;
+            }
+            set
+            {
+                this.OnSlangChanging(value);
+                this._Slang = value;
+                this.OnSlangChanged();
+                this.OnPropertyChanged("Slang");
+            }
+        }
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        private string _Slang;
+        partial void OnSlangChanging(string value);
+        partial void OnSlangChanged();
         /// <summary>
         /// There are no comments for Property Iwurl in the schema.
         /// </summary>
@@ -1704,29 +1727,6 @@ namespace GxWapi.DaModels
         private string _Spaid;
         partial void OnSpaidChanging(string value);
         partial void OnSpaidChanged();
-        /// <summary>
-        /// There are no comments for Property Spays in the schema.
-        /// </summary>
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        [global::Microsoft.OData.Client.OriginalNameAttribute("Spays")]
-        public virtual string Spays
-        {
-            get
-            {
-                return this._Spays;
-            }
-            set
-            {
-                this.OnSpaysChanging(value);
-                this._Spays = value;
-                this.OnSpaysChanged();
-                this.OnPropertyChanged("Spays");
-            }
-        }
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        private string _Spays;
-        partial void OnSpaysChanging(string value);
-        partial void OnSpaysChanged();
         /// <summary>
         /// There are no comments for Property Sregio in the schema.
         /// </summary>
@@ -10973,28 +10973,28 @@ namespace GxWapi.DaModels
         partial void OnIpaidChanging(global::System.Nullable<int> value);
         partial void OnIpaidChanged();
         /// <summary>
-        /// There are no comments for Property Ipays in the schema.
+        /// There are no comments for Property Slang in the schema.
         /// </summary>
         [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        [global::Microsoft.OData.Client.OriginalNameAttribute("Ipays")]
-        public virtual global::System.Nullable<int> Ipays
+        [global::Microsoft.OData.Client.OriginalNameAttribute("Slang")]
+        public virtual string Slang
         {
             get
             {
-                return this._Ipays;
+                return this._Slang;
             }
             set
             {
-                this.OnIpaysChanging(value);
-                this._Ipays = value;
-                this.OnIpaysChanged();
-                this.OnPropertyChanged("Ipays");
+                this.OnSlangChanging(value);
+                this._Slang = value;
+                this.OnSlangChanged();
+                this.OnPropertyChanged("Slang");
             }
         }
         [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        private global::System.Nullable<int> _Ipays;
-        partial void OnIpaysChanging(global::System.Nullable<int> value);
-        partial void OnIpaysChanged();
+        private string _Slang;
+        partial void OnSlangChanging(string value);
+        partial void OnSlangChanged();
         /// <summary>
         /// There are no comments for Property Iregio in the schema.
         /// </summary>
@@ -11225,29 +11225,6 @@ namespace GxWapi.DaModels
         private string _Spaid;
         partial void OnSpaidChanging(string value);
         partial void OnSpaidChanged();
-        /// <summary>
-        /// There are no comments for Property Spays in the schema.
-        /// </summary>
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        [global::Microsoft.OData.Client.OriginalNameAttribute("Spays")]
-        public virtual string Spays
-        {
-            get
-            {
-                return this._Spays;
-            }
-            set
-            {
-                this.OnSpaysChanging(value);
-                this._Spays = value;
-                this.OnSpaysChanged();
-                this.OnPropertyChanged("Spays");
-            }
-        }
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        private string _Spays;
-        partial void OnSpaysChanging(string value);
-        partial void OnSpaysChanged();
         /// <summary>
         /// There are no comments for Property Sregio in the schema.
         /// </summary>
@@ -14547,6 +14524,29 @@ namespace GxWapi.DaModels
         partial void OnIpaidChanging(global::System.Nullable<int> value);
         partial void OnIpaidChanged();
         /// <summary>
+        /// There are no comments for Property Slang in the schema.
+        /// </summary>
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        [global::Microsoft.OData.Client.OriginalNameAttribute("Slang")]
+        public virtual string Slang
+        {
+            get
+            {
+                return this._Slang;
+            }
+            set
+            {
+                this.OnSlangChanging(value);
+                this._Slang = value;
+                this.OnSlangChanged();
+                this.OnPropertyChanged("Slang");
+            }
+        }
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        private string _Slang;
+        partial void OnSlangChanging(string value);
+        partial void OnSlangChanged();
+        /// <summary>
         /// There are no comments for Property Natio in the schema.
         /// </summary>
         [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
@@ -14845,29 +14845,6 @@ namespace GxWapi.DaModels
         private string _Spaid;
         partial void OnSpaidChanging(string value);
         partial void OnSpaidChanged();
-        /// <summary>
-        /// There are no comments for Property Spays in the schema.
-        /// </summary>
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        [global::Microsoft.OData.Client.OriginalNameAttribute("Spays")]
-        public virtual string Spays
-        {
-            get
-            {
-                return this._Spays;
-            }
-            set
-            {
-                this.OnSpaysChanging(value);
-                this._Spays = value;
-                this.OnSpaysChanged();
-                this.OnPropertyChanged("Spays");
-            }
-        }
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        private string _Spays;
-        partial void OnSpaysChanging(string value);
-        partial void OnSpaysChanged();
         /// <summary>
         /// There are no comments for Property Sregio in the schema.
         /// </summary>
@@ -22502,6 +22479,52 @@ namespace GxWapi.DaModels
         partial void OnCodsChanging(string value);
         partial void OnCodsChanged();
         /// <summary>
+        /// There are no comments for Property Slang in the schema.
+        /// </summary>
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        [global::Microsoft.OData.Client.OriginalNameAttribute("Slang")]
+        public virtual string Slang
+        {
+            get
+            {
+                return this._Slang;
+            }
+            set
+            {
+                this.OnSlangChanging(value);
+                this._Slang = value;
+                this.OnSlangChanged();
+                this.OnPropertyChanged("Slang");
+            }
+        }
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        private string _Slang;
+        partial void OnSlangChanging(string value);
+        partial void OnSlangChanged();
+        /// <summary>
+        /// There are no comments for Property Ilang in the schema.
+        /// </summary>
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        [global::Microsoft.OData.Client.OriginalNameAttribute("Ilang")]
+        public virtual string Ilang
+        {
+            get
+            {
+                return this._Ilang;
+            }
+            set
+            {
+                this.OnIlangChanging(value);
+                this._Ilang = value;
+                this.OnIlangChanged();
+                this.OnPropertyChanged("Ilang");
+            }
+        }
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        private string _Ilang;
+        partial void OnIlangChanging(string value);
+        partial void OnIlangChanged();
+        /// <summary>
         /// There are no comments for Property Natio in the schema.
         /// </summary>
         [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
@@ -22662,29 +22685,6 @@ namespace GxWapi.DaModels
         private global::System.Nullable<int> _Ipaid;
         partial void OnIpaidChanging(global::System.Nullable<int> value);
         partial void OnIpaidChanged();
-        /// <summary>
-        /// There are no comments for Property Ipays in the schema.
-        /// </summary>
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        [global::Microsoft.OData.Client.OriginalNameAttribute("Ipays")]
-        public virtual global::System.Nullable<int> Ipays
-        {
-            get
-            {
-                return this._Ipays;
-            }
-            set
-            {
-                this.OnIpaysChanging(value);
-                this._Ipays = value;
-                this.OnIpaysChanged();
-                this.OnPropertyChanged("Ipays");
-            }
-        }
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        private global::System.Nullable<int> _Ipays;
-        partial void OnIpaysChanging(global::System.Nullable<int> value);
-        partial void OnIpaysChanged();
         /// <summary>
         /// There are no comments for Property Iregio in the schema.
         /// </summary>
@@ -22892,29 +22892,6 @@ namespace GxWapi.DaModels
         private string _Spaid;
         partial void OnSpaidChanging(string value);
         partial void OnSpaidChanged();
-        /// <summary>
-        /// There are no comments for Property Spays in the schema.
-        /// </summary>
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        [global::Microsoft.OData.Client.OriginalNameAttribute("Spays")]
-        public virtual string Spays
-        {
-            get
-            {
-                return this._Spays;
-            }
-            set
-            {
-                this.OnSpaysChanging(value);
-                this._Spays = value;
-                this.OnSpaysChanged();
-                this.OnPropertyChanged("Spays");
-            }
-        }
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        private string _Spays;
-        partial void OnSpaysChanging(string value);
-        partial void OnSpaysChanged();
         /// <summary>
         /// There are no comments for Property Sregio in the schema.
         /// </summary>
@@ -32267,11 +32244,34 @@ namespace GxWapi.DaModels
         partial void OnWeltieChanging(global::System.Nullable<int> value);
         partial void OnWeltieChanged();
         /// <summary>
+        /// There are no comments for Property Slang in the schema.
+        /// </summary>
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        [global::Microsoft.OData.Client.OriginalNameAttribute("Slang")]
+        public virtual string Slang
+        {
+            get
+            {
+                return this._Slang;
+            }
+            set
+            {
+                this.OnSlangChanging(value);
+                this._Slang = value;
+                this.OnSlangChanged();
+                this.OnPropertyChanged("Slang");
+            }
+        }
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        private string _Slang;
+        partial void OnSlangChanging(string value);
+        partial void OnSlangChanged();
+        /// <summary>
         /// There are no comments for Property Natio in the schema.
         /// </summary>
         [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
         [global::Microsoft.OData.Client.OriginalNameAttribute("Natio")]
-        public virtual global::System.Nullable<int> Natio
+        public virtual string Natio
         {
             get
             {
@@ -32286,32 +32286,55 @@ namespace GxWapi.DaModels
             }
         }
         [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        private global::System.Nullable<int> _Natio;
-        partial void OnNatioChanging(global::System.Nullable<int> value);
+        private string _Natio;
+        partial void OnNatioChanging(string value);
         partial void OnNatioChanged();
         /// <summary>
-        /// There are no comments for Property Resid in the schema.
+        /// There are no comments for Property Rpays in the schema.
         /// </summary>
         [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        [global::Microsoft.OData.Client.OriginalNameAttribute("Resid")]
-        public virtual global::System.Nullable<int> Resid
+        [global::Microsoft.OData.Client.OriginalNameAttribute("Rpays")]
+        public virtual string Rpays
         {
             get
             {
-                return this._Resid;
+                return this._Rpays;
             }
             set
             {
-                this.OnResidChanging(value);
-                this._Resid = value;
-                this.OnResidChanged();
-                this.OnPropertyChanged("Resid");
+                this.OnRpaysChanging(value);
+                this._Rpays = value;
+                this.OnRpaysChanged();
+                this.OnPropertyChanged("Rpays");
             }
         }
         [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        private global::System.Nullable<int> _Resid;
-        partial void OnResidChanging(global::System.Nullable<int> value);
-        partial void OnResidChanged();
+        private string _Rpays;
+        partial void OnRpaysChanging(string value);
+        partial void OnRpaysChanged();
+        /// <summary>
+        /// There are no comments for Property Npays in the schema.
+        /// </summary>
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        [global::Microsoft.OData.Client.OriginalNameAttribute("Npays")]
+        public virtual string Npays
+        {
+            get
+            {
+                return this._Npays;
+            }
+            set
+            {
+                this.OnNpaysChanging(value);
+                this._Npays = value;
+                this.OnNpaysChanged();
+                this.OnPropertyChanged("Npays");
+            }
+        }
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        private string _Npays;
+        partial void OnNpaysChanging(string value);
+        partial void OnNpaysChanged();
         /// <summary>
         /// There are no comments for Property Tymut in the schema.
         /// </summary>
@@ -32450,29 +32473,6 @@ namespace GxWapi.DaModels
         private global::System.Nullable<int> _Ipaid;
         partial void OnIpaidChanging(global::System.Nullable<int> value);
         partial void OnIpaidChanged();
-        /// <summary>
-        /// There are no comments for Property Ipays in the schema.
-        /// </summary>
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        [global::Microsoft.OData.Client.OriginalNameAttribute("Ipays")]
-        public virtual global::System.Nullable<int> Ipays
-        {
-            get
-            {
-                return this._Ipays;
-            }
-            set
-            {
-                this.OnIpaysChanging(value);
-                this._Ipays = value;
-                this.OnIpaysChanged();
-                this.OnPropertyChanged("Ipays");
-            }
-        }
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        private global::System.Nullable<int> _Ipays;
-        partial void OnIpaysChanging(global::System.Nullable<int> value);
-        partial void OnIpaysChanged();
         /// <summary>
         /// There are no comments for Property Iregio in the schema.
         /// </summary>
@@ -32749,29 +32749,6 @@ namespace GxWapi.DaModels
         private string _Spaid;
         partial void OnSpaidChanging(string value);
         partial void OnSpaidChanged();
-        /// <summary>
-        /// There are no comments for Property Spays in the schema.
-        /// </summary>
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        [global::Microsoft.OData.Client.OriginalNameAttribute("Spays")]
-        public virtual string Spays
-        {
-            get
-            {
-                return this._Spays;
-            }
-            set
-            {
-                this.OnSpaysChanging(value);
-                this._Spays = value;
-                this.OnSpaysChanged();
-                this.OnPropertyChanged("Spays");
-            }
-        }
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        private string _Spays;
-        partial void OnSpaysChanging(string value);
-        partial void OnSpaysChanged();
         /// <summary>
         /// There are no comments for Property Sregio in the schema.
         /// </summary>
@@ -36504,11 +36481,34 @@ namespace GxWapi.DaModels
         partial void OnWeltieChanging(global::System.Nullable<int> value);
         partial void OnWeltieChanged();
         /// <summary>
+        /// There are no comments for Property Slang in the schema.
+        /// </summary>
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        [global::Microsoft.OData.Client.OriginalNameAttribute("Slang")]
+        public virtual string Slang
+        {
+            get
+            {
+                return this._Slang;
+            }
+            set
+            {
+                this.OnSlangChanging(value);
+                this._Slang = value;
+                this.OnSlangChanged();
+                this.OnPropertyChanged("Slang");
+            }
+        }
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        private string _Slang;
+        partial void OnSlangChanging(string value);
+        partial void OnSlangChanged();
+        /// <summary>
         /// There are no comments for Property Natio in the schema.
         /// </summary>
         [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
         [global::Microsoft.OData.Client.OriginalNameAttribute("Natio")]
-        public virtual global::System.Nullable<int> Natio
+        public virtual string Natio
         {
             get
             {
@@ -36523,32 +36523,55 @@ namespace GxWapi.DaModels
             }
         }
         [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        private global::System.Nullable<int> _Natio;
-        partial void OnNatioChanging(global::System.Nullable<int> value);
+        private string _Natio;
+        partial void OnNatioChanging(string value);
         partial void OnNatioChanged();
         /// <summary>
-        /// There are no comments for Property Resid in the schema.
+        /// There are no comments for Property Rpays in the schema.
         /// </summary>
         [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        [global::Microsoft.OData.Client.OriginalNameAttribute("Resid")]
-        public virtual global::System.Nullable<int> Resid
+        [global::Microsoft.OData.Client.OriginalNameAttribute("Rpays")]
+        public virtual string Rpays
         {
             get
             {
-                return this._Resid;
+                return this._Rpays;
             }
             set
             {
-                this.OnResidChanging(value);
-                this._Resid = value;
-                this.OnResidChanged();
-                this.OnPropertyChanged("Resid");
+                this.OnRpaysChanging(value);
+                this._Rpays = value;
+                this.OnRpaysChanged();
+                this.OnPropertyChanged("Rpays");
             }
         }
         [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        private global::System.Nullable<int> _Resid;
-        partial void OnResidChanging(global::System.Nullable<int> value);
-        partial void OnResidChanged();
+        private string _Rpays;
+        partial void OnRpaysChanging(string value);
+        partial void OnRpaysChanged();
+        /// <summary>
+        /// There are no comments for Property Npays in the schema.
+        /// </summary>
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        [global::Microsoft.OData.Client.OriginalNameAttribute("Npays")]
+        public virtual string Npays
+        {
+            get
+            {
+                return this._Npays;
+            }
+            set
+            {
+                this.OnNpaysChanging(value);
+                this._Npays = value;
+                this.OnNpaysChanged();
+                this.OnPropertyChanged("Npays");
+            }
+        }
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
+        private string _Npays;
+        partial void OnNpaysChanging(string value);
+        partial void OnNpaysChanged();
         /// <summary>
         /// There are no comments for Property Tymut in the schema.
         /// </summary>
@@ -36687,29 +36710,6 @@ namespace GxWapi.DaModels
         private global::System.Nullable<int> _Ipaid;
         partial void OnIpaidChanging(global::System.Nullable<int> value);
         partial void OnIpaidChanged();
-        /// <summary>
-        /// There are no comments for Property Ipays in the schema.
-        /// </summary>
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        [global::Microsoft.OData.Client.OriginalNameAttribute("Ipays")]
-        public virtual global::System.Nullable<int> Ipays
-        {
-            get
-            {
-                return this._Ipays;
-            }
-            set
-            {
-                this.OnIpaysChanging(value);
-                this._Ipays = value;
-                this.OnIpaysChanged();
-                this.OnPropertyChanged("Ipays");
-            }
-        }
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        private global::System.Nullable<int> _Ipays;
-        partial void OnIpaysChanging(global::System.Nullable<int> value);
-        partial void OnIpaysChanged();
         /// <summary>
         /// There are no comments for Property Iregio in the schema.
         /// </summary>
@@ -36986,29 +36986,6 @@ namespace GxWapi.DaModels
         private string _Spaid;
         partial void OnSpaidChanging(string value);
         partial void OnSpaidChanged();
-        /// <summary>
-        /// There are no comments for Property Spays in the schema.
-        /// </summary>
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        [global::Microsoft.OData.Client.OriginalNameAttribute("Spays")]
-        public virtual string Spays
-        {
-            get
-            {
-                return this._Spays;
-            }
-            set
-            {
-                this.OnSpaysChanging(value);
-                this._Spays = value;
-                this.OnSpaysChanged();
-                this.OnPropertyChanged("Spays");
-            }
-        }
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "#VersionNumber#")]
-        private string _Spays;
-        partial void OnSpaysChanging(string value);
-        partial void OnSpaysChanged();
         /// <summary>
         /// There are no comments for Property Sregio in the schema.
         /// </summary>

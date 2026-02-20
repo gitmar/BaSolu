@@ -118,10 +118,10 @@
                     {
                         if (_myCatal.Countries != null && _myCatal.Countries.Count > 0)
                         {
-                            <select id="ppays" @bind="_invModel.Ipays" disabled>
+                            <select id="ppays" @bind="_invModel.Npays" disabled>
                                 @foreach (var utp in _myCatal.Countries)
                                 {
-                                    <option value="@utp.Elea">@utp.Liba</option>
+                                    <option value="@utp.Abg">@utp.Liba</option>
                                 }
                             </select>
                         }
@@ -141,10 +141,10 @@
                     {
                         if (_myCatal.Langues != null && _myCatal.Langues.Count > 0)
                         {
-                            <select id="plang" @bind="_invModel.Ilang">
+                            <select id="plang" @bind="_invModel.Slang">
                                 @foreach (var utp in _myCatal.Langues)
                                 {
-                                    <option value="@utp.Elea">@utp.Liba</option>
+                                    <option value="@utp.Abg">@utp.Liba</option>
                                 }
                             </select>
                         } else
@@ -194,7 +194,7 @@
     private string UserLogged = "";
     private TableSet _myCatal = new();
 
-    private UsrOgSetModel _invModel = new();
+    private RegisterDto _invModel = new();
     private HttpClient _apiClient;
 
     private bool _siAllManager = false;
@@ -209,7 +209,7 @@
         if (!string.IsNullOrEmpty(cdlink))
         {
             //var _LinkSerialiser = new LinkSerialiser(_jsRun);
-            _invModel = _linkSerialiser.DecodeAndDeserialize<UsrOgSetModel>(cdlink);
+            _invModel = _linkSerialiser.DecodeAndDeserialize<RegisterDto>(cdlink);
             //tests
         }
         _apiClient = httpfacClient.CreateClient("AUTHClient");
@@ -246,8 +246,8 @@
         }
 
         // Prepare model
-        _invModel.SiSupport = true;
-        _invModel.Username = _invModel.HlpUname; // forcing
+        _invModel.Toqui = 3;
+        //_invModel.Username = _invModel.SenderUname; // forcing
         //string blzUrl = _locxClient.BaseAddress?.ToString().TrimEnd('/') + "/";
         _invModel.FbackUrl = "";
         //Console.WriteLine($"Frontend Link : {blzUrl}");
@@ -255,7 +255,7 @@
         //_dynClient.SetBaseUrl(_invModel.Weburl);  // Sets per-customer base URL
         //var client = _dynClient.GetClient();        // Gets factory client with handler
         // Build request envelope
-        var request = new ApiRequest<UsrOgSetModel>
+        var request = new ApiRequest<RegisterDto>
         {
             Action = "stdregis",   // endpoint action
             Payload = _invModel
@@ -264,8 +264,8 @@
         try
         {
             // Call API
-            var dto = ModelHelper.MapTo<UsrOgSetModel, RegisterDto>(_invModel);
-            var response = await _apiClient.PostAsJsonAsync("api/regis/stdregis", dto);
+            //var dto = ModelHelper.MapTo<UsrOgSetModel, RegisterDto>(_invModel);
+            var response = await _apiClient.PostAsJsonAsync("api/regis/stdregis", _invModel);
 
             if (!response.IsSuccessStatusCode)
             {
@@ -318,21 +318,21 @@
         //    yaerrors = true;
         //    errorList.Add("Agent is required.");
         //}
-        if (string.IsNullOrWhiteSpace(_invModel.HlpEmail))
+        if (string.IsNullOrWhiteSpace(_invModel.Username))
         {
             yaerrors = true;
             errorList.Add("Support Email is required.");
         }
         else
         {
-            var normalizedEmail = _invModel.HlpEmail.ToUpperInvariant();
+            var normalizedEmail = _invModel.SenderEmail.ToUpperInvariant();
             if (normalizedEmail == null)
             {
                 yaerrors = true;
                 errorList.Add("Email contains inacceptable characters.");
             }
         }
-        if (string.IsNullOrWhiteSpace(_invModel.HlpUname))
+        if (string.IsNullOrWhiteSpace(_invModel.Username))
         {
             yaerrors = true;
             errorList.Add("Username is required.");
@@ -353,12 +353,12 @@
             yaerrors = true;
             errorList.Add("Pnom is required.");
         }
-        if (_invModel.Ipays == 0)
+        if (string.IsNullOrEmpty(_invModel.Npays))
         {
             yaerrors = true;
             errorList.Add("Pays support obligatoire.");
         }
-        if (string.IsNullOrEmpty(_invModel.Weburl))
+        if (string.IsNullOrEmpty(_invModel.WebUrl))
         {
             yaerrors = true;
             errorList.Add("Adresse site client obligatoire.");
@@ -381,10 +381,10 @@
         if (!yaerrors)
         {
             //passage saisie a model _invModel
-            _invModel.Email = _invModel.HlpEmail;
-            _invModel.Username = _invModel.HlpUname;
-            _invModel.Phonenumber = _invModel.HlpPhone;
-            _invModel.Phon2 = _invModel.HlpPhon2;
+            _invModel.Email = _invModel.SenderEmail;
+            _invModel.Username = _invModel.Username;
+            _invModel.Phonenumber = _invModel.SenderPhone;
+            _invModel.Phon2 = _invModel.Phon2;
             //customer Weburl in _invModel.Weburl
             return true;
         }
