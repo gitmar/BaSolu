@@ -113,15 +113,14 @@ else
                         }
                         else if (_chxMenu == 3)
                         {
-                            <InviTiw @ref="myginv"
+                            <InvOper @ref="myginv"
                                      curOrga="@curOrga"
                                      allEnable="@allEnable"
-                                     _guard="_guard"
                                      curODContext="@curODContext">
                                 <ChildContent>
                                     <h2 class="child-box">Hello ACCUEIL</h2>
                                 </ChildContent>
-                            </InviTiw>
+                            </InvOper>
                         }
                         else if (_chxMenu == 4 && Ugpe != 0 && Tgpe != 0 && ParentOK)
                         {
@@ -147,25 +146,29 @@ else
     </div>
 </div>
     <div class="row mt-3">
-        <div class="col-12">
-            @if (_guard.HasPendingChanges())
-            {
-                <div class="alert alert-warning">
-                    <strong>@pendingCount changes pending across all tabs</strong>
+        @if (_guardVisible)
+        {
+            <div class="col-12">
+                @if (_guard.HasPendingChanges())
+                {
+                    <div class="alert alert-warning">
+                        <strong>@pendingCount changes pending across all tabs</strong>
+                    </div>
+                }
+                <div class="d-flex gap-2 justify-content-end">
+                    <Button Color="ButtonColor.Primary"
+                    @onclick="SaveAllAsync"
+                    Enabled="@_guard.HasPendingChanges()">
+                        Save All (@pendingCount changes)
+                    </Button>
+                    <Button Color="ButtonColor.Secondary"
+                    @onclick="CancelAllChanges">
+                        Cancel All Changes
+                    </Button>
                 </div>
-            }
-            <div class="d-flex gap-2 justify-content-end">
-                <Button Color="ButtonColor.Primary"
-                        @onclick="SaveAllAsync"
-                        Enabled="@_guard.HasPendingChanges()">
-                    Save All (@pendingCount changes)
-                </Button>
-                <Button Color="ButtonColor.Secondary"
-                        @onclick="CancelAllChanges">
-                    Cancel All Changes
-                </Button>
             </div>
-        </div>
+        }
+
     </div>
 }
 @code {
@@ -178,7 +181,7 @@ else
     //private EnrolTiw mygtiw;
     private ValdTie mygvld = new();
     private EnrolAcc myetiw = new();
-    private InviTiw myginv = new();
+    private InvOper myginv = new();
 
     private MyAuthStateProvider _authProvider { get; set; }
     public Userbag _usrBag = new();
@@ -199,6 +202,7 @@ else
     //Guard
     private int pendingCount => _guard.HasPendingChanges() ?
         curODContext.Context.Entities.Count(e => e.State != EntityStates.Unchanged) : 0;
+    private bool _guardVisible = true;
     // Operation VUE
     public bool ParentOK = false; //child formulaire visible
     public bool ParentEDT = false;
@@ -348,7 +352,7 @@ else
                 .Select(e => e.Entity)
                 .OfType<Gxorga>()
                 .SingleOrDefault(o => o.Idorg == _usrBag.Idorg);
-    
+
             if (curOrga == null)
             {
                 Console.WriteLine("No organization found for the current user.");
@@ -388,9 +392,21 @@ else
     private async Task SelMenu(int noM)
     {
         _chxMenu = noM;
-        if (_chxMenu == 1) strComp = $"Integration {gpeLiba}";
-        if (_chxMenu == 2) strComp = $"Accueil/Site  {gpeLiba}";
-        if (_chxMenu == 3) strComp = $"Invite/Online  {gpeLiba}";
+        if (_chxMenu == 1) 
+        {
+            _guardVisible = true;
+            strComp = $"Integration {gpeLiba}";
+        }
+        if (_chxMenu == 2)
+        {
+            _guardVisible = true;
+            strComp = $"Accueil/Site  {gpeLiba}";
+        }
+        if (_chxMenu == 3) 
+        {
+            _guardVisible = false;
+            strComp = $"Invite/Online  {gpeLiba}";
+        }
         //if (_chxMenu == 4) strComp = $"Atest  {gpeLiba}";
         //if (_chxMenu == 3) strComp = $"Invitation {gpeLiba}";
         //if (_chxMenu == 5) strComp = "Colonnes";

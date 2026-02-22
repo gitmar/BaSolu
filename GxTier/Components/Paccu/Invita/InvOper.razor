@@ -7,7 +7,7 @@
 @using System.Web
 @using BlazorBootstrap
 @using Blazored.LocalStorage
-@using GxAdm.Services
+@using GxTie.Services
 @using GxShared.Sess
 @using GxShared.Others
 @using GxShared.Identity
@@ -45,10 +45,10 @@
 <AuthorizeView Context="authContext">
     <Authorized>
     <div class="d-flex flex-row">
-        <EditForm Model="_invModel" OnValidSubmit="SendIndividualInvite" Context="invFormContext">
-            <DataAnnotationsValidator />
-                <ValidationSummary />
-                <Tabs>
+            <EditForm Model="_invModel" OnValidSubmit="SendIndividualInvite" Context="invFormContext">
+                <DataAnnotationsValidator />
+                    <ValidationSummary />
+                    <Tabs>
                     <Tab Title="Individuelle" Name="IndTab" onClick="() => OnTabChanged(1)">
                         <Content>
                             <div class="row g-3">
@@ -230,7 +230,6 @@
                             <EditForm Model="newRecipient">
                                 <DataAnnotationsValidator />
                                 <ValidationSummary />
-
                                 <!-- Title + Add button row -->
                                 <div class="row g-3 align-items-center">
                                     <div class="col-md-7">
@@ -311,20 +310,170 @@
                             </div>
                         </Content>
                     </Tab>
-                </Tabs>
-        </EditForm>
-        @if (invalidEmails.Any())
-        {
-            <Alert Color="AlertColor.Danger">
-                <strong>Invalid entries:</strong>
-                <ul>
-                    @foreach (var line in invalidLines)
-                    {
-                        <li>@line</li>
-                    }
-                </ul>
-            </Alert>
-        }
+                    <Tab Title="Affilies" Name="AflTab" onClick="() => OnTabChanged(3)">
+                        <Content>
+                            <div class="row g-3">
+                                <!-- Reference -->
+                                <div class="col-md-4">
+                                    <label>Ref.appel:</label>
+                                    <InputText @bind-Value="_invModel.Refapl" class="form-control" />
+                                </div>
+                                <!-- Services -->
+                                <div class="col-md-4">
+                                    <label>Services:</label>
+                                    <InputSelect @bind-Value="_invModel.Ihie" class="form-select">
+                                        <option value="0">Aucun</option>
+                                        @foreach (var idiv in _lsDivs)
+                                        {
+                                            <option value="@idiv.Ihie" @onclick="() => SelTiws(idiv)">@idiv.Liba</option>
+                                        }
+                                    </InputSelect>
+                                </div>
+                                <div class="col-md-4"></div>
+                                <!-- Role -->
+                                <div class="col-md-4">
+                                    <label>Role:</label>
+                                    <InputSelect @bind-Value="_invModel.Irole" class="form-select" disabled>
+                                        <option value="0">Sélectionner...</option>
+                                        @foreach (var role in _invRoles)
+                                        {
+                                            <option value="@role.Level">@role.Name</option>
+                                        }
+                                    </InputSelect>
+                                </div>
+                                <!-- Quality -->
+                                <div class="col-md-4">
+                                    <label>Qualité:</label>
+                                    <InputSelect @bind-Value="_invModel.Utyp" class="form-select" disabled>
+                                        <option value="0">Sélectionner...</option>
+                                        @foreach (var ut in LsFixes.Where(uf => uf.Gvars == 36 && uf.Itb == 11 && (uf.Gp1 == 1 || uf.Gp1 == 2) && uf.Elea != 0))
+                                        {
+                                            <option value="@ut.Elea" @onclick="() => SelUtyp(ut)">@ut.Liba</option>
+                                        }
+                                    </InputSelect>
+                                </div>
+                                <div class="col-md-4"></div>
+                                <!-- Cible -->
+                                <div class="col-md-4">
+                                    <label>Cible:</label>
+                                    <InputSelect @bind-Value="_invModel.Ivcible" class="form-select">
+                                        <option value="0">Sélectionner...</option>
+                                        @foreach (var tiw in _lsTiws)
+                                        {
+                                            <option value="@tiw.Id">@tiw.Xmatri @tiw.Nom @tiw.Pnom</option>
+                                        }
+                                    </InputSelect>
+                                </div>
+                                <!-- Affilie -->
+                                <div class="col-md-4">
+                                    <label>G.Affilie:</label>
+                                    <InputSelect @bind-Value="_invModel.IvGAfl" class="form-select">
+                                        <option value="0">Sélectionner...</option>
+                                        @foreach (var gfl in _lsGAfls)
+                                        {
+                                            <option value="@gfl.Xseq">@gfl.Liba</option>
+                                        }
+                                    </InputSelect>
+                                </div>
+                                <div class="col-md-4"></div>
+                            </div>
+                            <EditForm Model="newRecipient">
+                                <DataAnnotationsValidator />
+                                <ValidationSummary />
+                                <!-- Title + Add button row -->
+                                <div class="row g-3 align-items-center">
+                                    <div class="col-md-7">
+                                        <label>Liste Identites invites</label>
+                                        <button type="button"
+                                                class="btn btn-primary ms-2"
+                                                @onclick="AddOpeRecipient"
+                                                disabled="@(!CanAddRecipient)">
+                                            Add
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <!-- Input fields row -->
+                                <div class="d-flex gap-2 mt-2">
+                                    <InputText @bind-Value="newRecipient.Email"
+                                               class="form-control"
+                                               placeholder="Email"
+                                               @onblur="() => StateHasChanged()" />
+
+                                    <InputText @bind-Value="newRecipient.PhoneNumber"
+                                               class="form-control"
+                                               placeholder="Phone"
+                                               @onblur="() => StateHasChanged()" />
+
+                                    <InputText @bind-Value="newRecipient.FirstName"
+                                               class="form-control"
+                                               placeholder="First Name"
+                                               @onblur="() => StateHasChanged()" />
+
+                                    <InputText @bind-Value="newRecipient.LastName"
+                                               class="form-control"
+                                               placeholder="Last Name"
+                                               @onblur="() => StateHasChanged()" />
+                                </div>
+                            </EditForm>
+                            <div class="row g-2">
+                                <div class="col-md-2"></div>
+                                <div class="col-md-8">
+                                    @if (!string.IsNullOrEmpty(Imessage))
+                                    {
+                                        <div>
+                                            <p style="color:red;">@Imessage</p>
+                                        </div>
+                                    }
+                                </div>
+                                <div class="col-md-2"></div>
+                            </div>
+                            @if (operecipients.Any())
+                            {
+                                <h5 class="mt-3">Recipients valides:</h5>
+                                <ul class="list-group">
+                                    @foreach (var r in operecipients)
+                                    {
+                                        <li class="list-group-item">
+                                            @r.Email - @r.PhoneNumber - @r.FirstName @r.LastName
+                                        </li>
+                                    }
+                                </ul>
+                            }
+                            @if (invalidEntries.Any())
+                            {
+                                <div class="alert alert-warning mt-2">
+                                    <strong>Entrees invalides:</strong>
+                                    <ul>
+                                        @foreach (var e in invalidEntries)
+                                        {
+                                            <li>@e</li>
+                                        }
+                                    </ul>
+                                </div>
+                            }
+                            <div class="row g-3">
+                                <Button color="ButtonColor.Primary" @onclick="SendGroupInvite"
+                                        disabled="!operecipients.Any()">
+                                    Envoyer Invitations Groupe (@operecipients.Count)
+                                </Button>
+                            </div>
+                        </Content>
+                    </Tab>
+                    </Tabs>
+                </EditForm>
+                @if (invalidEmails.Any())
+                {
+                    <Alert Color="AlertColor.Danger">
+                        <strong>Invalid entries:</strong>
+                        <ul>
+                            @foreach (var line in invalidLines)
+                            {
+                                <li>@line</li>
+                            }
+                        </ul>
+                    </Alert>
+                }
     </div>
     </Authorized>
     <NotAuthorized>        
@@ -361,7 +510,6 @@
 
 @code {
     private bool isLoading = true;
-    private string Imessage = "";
 
     [CascadingParameter]
     private Task<AuthenticationState>? AuthState { get; set; }
@@ -369,14 +517,34 @@
     private bool isAuthenticated = false;
     [Parameter]
     public RenderFragment ChildContent { get; set; }
+    [Parameter]
+    public MyODataContext curODContext { get; set; }
+    [Parameter]
+    public Gxorga curOrga { get; set; }
+    [Parameter]
+    public bool allEnable { get; set; }
+    [Parameter]
+    public int toMenu { get; set; }
+    //guard
+    //[Parameter]
+    //public PendingChangesGuard _guard { get; set; }
+    //[Parameter]
+    //public EventCallback<PendingState> OnPendingStateChanged { get; set; }
+    [Parameter]
+    public int NbChanges { get; set; }
+    [Parameter]
+    public EventCallback<int> NbChangesChanged { get; set; }  // 🔥 CRITICAL
 
-    private MyODataContext curODContext;
-    private Gxorga curOrga = new Gxorga();
     private InviteRequest _invModel = new();
-    private string emailsInput = "";
+
+    //private RegisterDto infosModel = new();
+    private string emailsInput = string.Empty;
     private List<string> invalidEmails = new();
     private List<OpeRecipient> lastSavedRecipients = new();
     private bool operecipientsSaved = false;
+
+    private string Imessage = "";
+
     // Errors
     private List<string> ErrorsList = new();
     // Data
@@ -392,9 +560,11 @@
     private List<Gpfixe> LsFixes = new();
     private Gpfixe _curUtyp = new();
     private List<Grole> _usrRoles = new();
-    private List<string> invalidLines = new();    
-    private List<SimpleRecipient> ValidGroupEmails => ParseGroupEmails();
-    private bool CanSendGroupInvite() => ValidGroupEmails.Any();
+    private List<Tiewel> _lsTiws = new();
+    private List<Gpvar> _lsGAfls = new();
+    private List<string> invalidLines = new();
+    //private List<SimpleRecipient> ValidGroupEmails => ParseGroupEmails();
+    //private bool CanSendGroupInvite() => ValidGroupEmails.Any();
 
     private List<OpeRecipient> operecipients = new();
     private OpeRecipient newRecipient = new();
@@ -430,6 +600,7 @@
         // Load roles, divisions, fixes (your existing logic)
         _usrBag = await _sessionContext.GetUserbagAsync() ?? new Userbag();
         LsFixes = _usrBag.Ufixes.ToList();
+        //_lsGAfls = _usrBag.Uvars.Where
         _lsDivs = await _rendAgres.LoadOrgaPostes();
 
         //all orga roles
@@ -540,57 +711,60 @@
         // Optionally check if current recipients were saved before clearing
         // args.Tab gives you the tab being shown
      
-        // if (operecipients.Any() && !operecipientsSaved)
-        // {
-        //     Imessage = $"Recipients not yet sent. Please send before leaving current tab.";
-        //     // You can decide whether to clear or keep them
-        // }
-        // else
-        // {
-        //     // Reset recipients when switching
-        //     operecipients.Clear();
-        //     invalidEntries.Clear();
-        //     newRecipient = new OpeRecipient();
-        //     operecipientsSaved = false;
-        // }
+        if (operecipients.Any() && !operecipientsSaved)
+        {
+            Imessage = $"Recipients not yet sent. Please send before leaving current tab.";
+            // You can decide whether to clear or keep them
+        }
+        else
+        {
+            // Reset recipients when switching
+            operecipients.Clear();
+            invalidEntries.Clear();
+            newRecipient = new OpeRecipient();
+            operecipientsSaved = false;
+        }
 
         
-        // if (!operecipientsSaved && operecipients.Any())
-        // {
-        //     Imessage = "Please save or send current recipients before leaving.";
-        //     return; // block tab change or warn user
-        // }
+        if (!operecipientsSaved && operecipients.Any())
+        {
+            Imessage = "Please save or send current recipients before leaving.";
+            return; // block tab change or warn user
+        }
 
-        // operecipients.Clear();
-        // invalidEntries.Clear();
-        // newRecipient = new OpeRecipient();
+        operecipients.Clear();
+        invalidEntries.Clear();
+        newRecipient = new OpeRecipient();
     }
-    private async Task SelUtyp(Gpfixe utp)
+    private void SelUtyp(Gpfixe myfix)
     {
         _curUtyp = new();
-        if (utp != null) _curUtyp = utp;
+        if (myfix != null) _curUtyp = myfix;
     }
-
+    private void SelTiws(Gpdivh mydiv)
+    {
+        //prises des tiwels du div qui ont des Tiwafls
+        _lsTiws = curOrga.Tiewels.Where(ti => ti.Tiwafls.Count() > 0 && ti.Ihie == mydiv.Ihie).ToList();
+    }
     private void AddOpeRecipient()
-{
-    if (IsValidEmail(newRecipient.Email) && IsValidPhone(newRecipient.PhoneNumber))
     {
-        operecipients.Add(new OpeRecipient
+        if (IsValidEmail(newRecipient.Email) && IsValidPhone(newRecipient.PhoneNumber))
         {
-            Email = newRecipient.Email,
-            PhoneNumber = newRecipient.PhoneNumber,
-            FirstName = newRecipient.FirstName,
-            LastName = newRecipient.LastName
-        });
-        newRecipient = new OpeRecipient(); // reset form
+            operecipients.Add(new OpeRecipient
+            {
+                Email = newRecipient.Email,
+                PhoneNumber = newRecipient.PhoneNumber,
+                FirstName = newRecipient.FirstName,
+                LastName = newRecipient.LastName
+            });
+            newRecipient = new OpeRecipient(); // reset form
+        }
+        else
+        {
+            invalidEntries.Add($"{newRecipient.Email} - {newRecipient.PhoneNumber} - {newRecipient.FirstName} {newRecipient.LastName}");
+        }
+        StateHasChanged(); // force UI refresh
     }
-    else
-    {
-        invalidEntries.Add($"{newRecipient.Email} - {newRecipient.PhoneNumber} - {newRecipient.FirstName} {newRecipient.LastName}");
-    }
-
-    StateHasChanged(); // force UI refresh
-}
     private List<SimpleRecipient> ParseGroupEmails()
     {
         var emails = new List<SimpleRecipient>();
