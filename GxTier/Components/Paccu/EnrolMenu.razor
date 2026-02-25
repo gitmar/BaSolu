@@ -113,14 +113,14 @@ else
                         }
                         else if (_chxMenu == 3)
                         {
-                            <InvOper @ref="myginv"
+                            @* <InvOper @ref="myginv"
                                      curOrga="@curOrga"
                                      allEnable="@allEnable"
                                      curODContext="@curODContext">
                                 <ChildContent>
                                     <h2 class="child-box">Hello ACCUEIL</h2>
                                 </ChildContent>
-                            </InvOper>
+                            </InvOper> *@
                         }
                         else if (_chxMenu == 4 && Ugpe != 0 && Tgpe != 0 && ParentOK)
                         {
@@ -212,7 +212,7 @@ else
     {
         new GxMenuItem { Id = 1, Text = "Integration", Icon = "bi bi-box-arrow-in-down" },
         new GxMenuItem { Id = 2, Text = "Accueil/Site", Icon = "bi bi-house-door" },
-        new GxMenuItem { Id = 3, Text = "Invite/Online", Icon = "bi bi-envelope-paper" },
+        //new GxMenuItem { Id = 3, Text = "Invite/Online", Icon = "bi bi-envelope-paper" },
         //new GxMenuItem { Id = 4, Text = "ATest", Icon = "bi bi-envelope-paper" }
         //new MenuItem { Id = 4, Text = "Mutation", Icon = "bi bi-arrow-repeat" },
     };
@@ -402,11 +402,11 @@ else
             _guardVisible = true;
             strComp = $"Accueil/Site  {gpeLiba}";
         }
-        if (_chxMenu == 3) 
-        {
-            _guardVisible = false;
-            strComp = $"Invite/Online  {gpeLiba}";
-        }
+        // if (_chxMenu == 3) 
+        // {
+        //     _guardVisible = false;
+        //     strComp = $"Invite/Online  {gpeLiba}";
+        // }
         //if (_chxMenu == 4) strComp = $"Atest  {gpeLiba}";
         //if (_chxMenu == 3) strComp = $"Invitation {gpeLiba}";
         //if (_chxMenu == 5) strComp = "Colonnes";

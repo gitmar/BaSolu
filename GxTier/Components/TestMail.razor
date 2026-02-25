@@ -61,7 +61,7 @@
             var response = await _clieManager.SendRequestAsync(
                 "AUTHClient",
                 HttpMethod.Post,
-                "usercontext/generate-invite",
+                "regis/generate-invite",
                 rDto);
         }
         catch (Exception)
@@ -84,7 +84,7 @@
     //     if (!inpUrl.StartsWith("http", StringComparison.OrdinalIgnoreCase))
     //         inpUrl = "https://" + inpUrl;
     //     inpUrl = inpUrl.TrimEnd('/');
-    //     inpUrl = inpUrl + "/usercontext/generate-invite";
+    //     inpUrl = inpUrl + "/regis/generate-invite";
     //     // Replace with gxadm subdomain
     //     var gxadmUrl = UrlParser.ReplaceWithSubdomain(inpUrl, "gxadm"); // → https://gxadm.a24soft.com
     //     // Fill RegisterDto fields

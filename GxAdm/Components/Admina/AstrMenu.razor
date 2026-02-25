@@ -161,7 +161,7 @@
 @code {
 
     private int selectedMenu = 1;
-   
+
     private bool isLoading = true;
     public MyODataContext curODContext;
     public Gxorga curOrga = new Gxorga();
@@ -296,11 +296,12 @@
             curODContext = await _contextFactory.CreateAsync();
             _guard.AttachContext(curODContext);
             int key = _usrBag.Idorg;
-
-            string expand =
-                "Gsgfixes," +
-                "Gsglnes," +
-                "Plngens($expand=Rubvars)";
+            string expandPlngens = ODataQueryHelper.Expand<Gxorga, IEnumerable<Plngen>>(o => o.Plngens);
+            string expandPlngensNested = expandPlngens + "($expand=Rubvars)";
+            string expandGsgfixes = ODataQueryHelper.Expand<Gxorga, IEnumerable<Gsgfix>>(g => g.Gsgfixes);
+            string expandGsglnes = ODataQueryHelper.Expand<Gxorga, IEnumerable<Gsglne>>(g => g.Gsglnes);
+            
+            string expand = string.Join(",", expandPlngensNested, expandGsgfixes, expandGsglnes);
             curOrga = await curODContext.GetByKeyAsync<Gxorga>(
                 key,
                 "Gxorgas",
@@ -308,8 +309,6 @@
             );
 
             //Console.WriteLine(curOrga.Plngens.Count); // ✅ populated
-
-
             // ✅ Use key-based query instead of filtered collection
             // string expandGsgfixes = ODataQueryHelper.Expand<Gxorga, IEnumerable<Gsgfix>>(o => o.Gsgfixes);
             // string expandGsglnes = ODataQueryHelper.Expand<Gxorga, IEnumerable<Gsglne>>(o => o.Gsglnes);
