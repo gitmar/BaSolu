@@ -1,57 +1,23 @@
 ﻿@using System.Security.Authentication
 @using System.Security.Claims
 @using Microsoft.AspNetCore.Authorization
-@using GxTie.Profile
+@using Blazored.LocalStorage
 @using GxTie.Services
 @using GxShared.Sess
 
 @inject SessionContextService _sessionContext
+@inject IConfiguration _iconfig
+@inject NavigationManager _navManager
+@inject ILocalStorageService _localStorage
 
-<div class="d-flex flex-row bg-warning bg-opacity-25 mb-3">
-    <Tabs>
-        <Tab title="Profil" Active="true">
-            <Content>
-                <UserPage />
-            </Content>
-        </Tab>
-        <Tab title="Compte">
-            <Content>
-
-            </Content>
-        </Tab>
-        <Tab title="Preferences">
-            <Content>
-
-            </Content>
-        </Tab>
-        <Tab title="Activites">
-            <Content>
-
-            </Content>
-        </Tab>
-        @* @if (isOwner)
-                {
-                    @if (xiqmax > 1)
-                {
-                @attribute [Authorize(Roles = "Admin")]
-                    <Tab Title="Creation">
-                        <Content>
-                            <OrgCreate></OrgCreate>
-                        </Content>
-                    </Tab>
-                }
-                    @if (xothogs > 1)
-                {
-                @attribute [Authorize(Roles = "Admin")]
-                    <Tab Title="Suppression">
-                        <Content>
-                            <OrgDelete></OrgDelete>
-                        </Content>
-                    </Tab>
-                }
-           } *@
-    </Tabs>
-</div>
+<nav class="d-flex flex-row bg-warning bg-opacity-25 mb-3">
+    @foreach (var ipge in new[] { "Manage", "Manage/ChangePassword", "Manage/TwoFactor", "Manage/PersonalData" })
+    {
+        <NavLink class="nav-link nav-sub text-primary" @onclick="() => NavigateToIdentityPage(ipge)">
+            @ipge
+        </NavLink>
+    }
+</nav>
 @code {
     private bool isLoading = false;
     [CascadingParameter]
@@ -88,5 +54,19 @@
 
         _claims = authUser.Claims;
    
+    }
+
+    private async Task NavigateToIdentityPage(string page)
+    {
+        // Get token from localStorage
+        var token = await _localStorage.GetItemAsync<string>("blazToken");
+        if (string.IsNullOrWhiteSpace(token))
+        {
+            Console.WriteLine("No token found — skipping session sync.");
+            return;
+        }
+        var backendUrl = _iconfig["backendUrl"];
+        var targetUrl = $"{backendUrl}/Identity/Account/{page}?access_token={token}";
+        _navManager.NavigateTo(targetUrl, forceLoad: true);
     }
 }

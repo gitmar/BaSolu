@@ -55,6 +55,7 @@ builder.Services.AddScoped<ClieAppState>();
 builder.Services.AddScoped<SessionContextService>();
 builder.Services.AddScoped<SessionContextClient>();
 builder.Services.AddScoped<PendingChangesGuard>();
+builder.Services.AddSingleton<IMessageService,MessageService>();
 
 builder.Services.AddSingleton<LoadingService>();
 // Configure logging first

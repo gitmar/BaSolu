@@ -1,0 +1,57 @@
+﻿@page "/test-messages"
+@using GxAdm.Services
+@inject IMessageService MessageService
+<PageTitle>Test Messages</PageTitle>
+
+<h3>GlobalMessageHost Test</h3>
+
+<div class="mt-4 space-y-2">
+    <button class="btn btn-success" @onclick="TestSuccess">
+        Test Success
+    </button>
+
+    <button class="btn btn-danger" @onclick="TestDanger">
+        Test Danger
+    </button>
+
+    <button class="btn btn-warning" @onclick="TestWarning">
+        Test Warning
+    </button>
+
+    <button class="btn btn-info" @onclick="TestInfo">
+        Test Info
+    </button>
+    <button class="btn btn-success" @onclick="TestNormal">
+        Normal (5s)
+    </button>
+    <button class="btn btn-warning" @onclick="TestLong">
+        Long (30s)
+    </button>
+    <button class="btn btn-danger" @onclick="TestPermanent">
+        Permanent
+    </button>
+</div>
+
+<div class="mt-4 p-3 bg-light rounded">
+    <h5>Auth Test (simulates your original issue)</h5>
+    <button class="btn btn-primary" @onclick="TestAuthFailure">
+        Test Auth Failure
+    </button>
+</div>
+
+@code {
+    private void TestSuccess() => MessageService.Show("✅ Success message!", ToastType.Success);
+    private void TestDanger() => MessageService.Show("❌ User not authenticated", ToastType.Danger);
+    private void TestWarning() => MessageService.Show("⚠️ Warning: Check your data", ToastType.Warning);
+    private void TestInfo() => MessageService.Show("ℹ️ Info: This is informational", ToastType.Info);
+    private async Task TestAuthFailure()
+    {
+        // Simulate your auth check
+        await Task.Delay(100);
+        MessageService.Show("❌ Utilisateur non authentifié", ToastType.Danger);
+    }
+    private void TestNormal() => MessageService.Show("Normal - auto dismiss 5s", ToastType.Success);
+    private void TestLong() => MessageService.Show("Long - 30s", ToastType.Warning, 30);
+    private void TestPermanent() => MessageService.Show("PERMANENT - stays until manual close or page change", ToastType.Danger, null);
+}
+

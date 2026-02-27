@@ -589,6 +589,8 @@ else
 
     [CascadingParameter]
     private Task<AuthenticationState>? AuthState { get; set; }
+    [CascadingParameter]
+    public GlobalMessageHost? MessageHost { get; set; }
     [Parameter]
     public RenderFragment ChildContent { get; set; }
     [Parameter]

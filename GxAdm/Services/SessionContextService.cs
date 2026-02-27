@@ -3,8 +3,6 @@ using System.Security.Claims;
 
 using Blazored.LocalStorage;
 
-using GxAdm.Profile;
-
 using GxShared.Sess;
 using GxShared.Identity;
 

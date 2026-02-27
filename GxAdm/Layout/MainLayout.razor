@@ -3,12 +3,13 @@
 @using System.Text.RegularExpressions
 @using Blazored.LocalStorage
 @using GxAdm.Services
+@using GxShared.Identity
 @using GxShared.Helpers
 @using System.Security.Claims
 
+@inject ILocalStorageService _localStorage
 @inject IConfiguration _iconfig
 @inject NavigationManager _navManager
-@inject ILocalStorageService _localStorage
 @inject SessionContextService _sessionContext
 @inject ClieAppState _appState
 @inject IJSRuntime _JsRun
@@ -20,7 +21,6 @@
         <div class="sidebar" style="max-width: 200px; background: linear-gradient(180deg, rgb(5, 39, 103) 0%, #3a0647 70%);">
             <NavMenu />
         </div>
-
         <div class="main-content-wrapper d-flex flex-column" style="flex: 1;">
 
             <!-- ================= TOP BAR ================= -->
@@ -32,11 +32,10 @@
                     <AuthorizeView>
                         <Authorized>
                             <!-- Toggle User Menu -->
-                            <a class="nav-icon fw-bold text-dark fs-10 d-flex align-items-start m-0 p-0"
-                               href="#"
-                               @onclick="ToggleUserMenu">
+                            <button class="btn btn-sm nav-icon fw-bold text-dark fs-10 d-flex align-items-start m-0 p-0"
+                                    @onclick="NavigateToIdentityPage">
                                 <span>PrivateRoom</span>
-                            </a>
+                            </button>
                             <div class="truncated-text ms-3">@_appState.ogRaison</div>
                             <div class="truncated-text ms-3">@_appState.usFulnom</div>
                         </Authorized>
@@ -64,7 +63,7 @@
                     </div>
                 </div>
                 <!-- USER MENU BELOW BAR -->
-                <AuthorizeView>
+                @* <AuthorizeView>
                     <Authorized>
                         @if (collapseUserMenu)
                         {
@@ -73,7 +72,7 @@
                             </div>
                         }
                     </Authorized>
-                </AuthorizeView>
+                </AuthorizeView> *@
             </div>
             <!-- ================= END TOP BAR ================= -->
             <!-- ================= MAIN CONTENT ================= -->
@@ -123,10 +122,12 @@ else
 
     [Inject] private AuthenticationStateProvider _authProvider { get; set; }
 
-    private void ToggleUserMenu()
-    {
-        collapseUserMenu = !collapseUserMenu;
-    }
+
+    
+    // private async Task ToggleUserMenu()
+    // {
+    //     collapseUserMenu = !collapseUserMenu;
+    // }
 
     protected override async Task OnInitializedAsync()
     {
@@ -173,6 +174,19 @@ else
             StateHasChanged();
         };
         isLoading = true;
+    }
+    private async Task NavigateToIdentityPage()
+    {
+        // Get token from localStorage
+        var token = await _localStorage.GetItemAsync<string>("blazToken");
+        if (string.IsNullOrWhiteSpace(token))
+        {
+            Console.WriteLine("No token found — skipping session sync.");
+            return;
+        }
+        var backendUrl = _iconfig["backendUrl"];
+        var targetUrl = $"{backendUrl}/Identity/Account/JwtLandingPage?access_token={token}";
+        _navManager.NavigateTo(targetUrl, forceLoad: true);
     }
     // private async Task VerifAppVersion()
     // {

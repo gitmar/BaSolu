@@ -25,6 +25,7 @@
 @inject SessionContextService _sessionContext
 @inject RendAgres _rendAgres
 @inject PendingChangesGuard _guard
+@inject IMessageService _messageService
 
 @if (isLoading)
 {
@@ -52,7 +53,23 @@
                 <div class="row">
                     <div class="col-md-12 input-group align-middle">
                         <span class="text-uppercase text- text-success"><b>@strComp</b></span>
-                        &nbsp;&nbsp;
+                        @* @if (curOrga != null && toChild != null && curODContext != null)
+                        {
+                            <MessageHost>
+                                @if (_chxMenu == 1)
+                                {
+                                    <Gtables />
+                                }
+                                else if (_chxMenu == 2)
+                                {
+                                    <Gatribs />
+                                }
+                                else if (_chxMenu == 3)
+                                {
+                                    <Gconstes />
+                                }
+                            </MessageHost>
+                        } *@
                         <span class="separator">|| </span>
                         <Button class="btn btn-sm btn-secondary btnsz"
                                 style="@(!allEnable ? "" : "display:none;")"
@@ -69,11 +86,7 @@
                                 style="@(allEnable ? "" : "display:none;")"
                                 @onclick="ManSaveAll">
                             Enregistrer
-                        </Button>
-                        @if (!String.IsNullOrEmpty(MImessage))
-                        {
-                            <span class="bg-info bg-opacity-10" style="font-style:italic;color:red">&nbsp;--> @MImessage</span>
-                        }
+                        </Button>     
                     </div>
                 </div>
 
@@ -127,6 +140,7 @@
                             </ChildContent>
                         </ArubMenu>
                     } *@
+
                 }
         </div>
     </div>
@@ -163,17 +177,21 @@
     private int selectedMenu = 1;
 
     private bool isLoading = true;
-    public MyODataContext curODContext;
+    //public MyODataContext curODContext;
+    public MyODataContext? curODContext = null;
     public Gxorga curOrga = new Gxorga();
     public MyShareVars toChild = new MyShareVars();
     public RenderFragment ChildContent { get; set; }
     private bool allEnable = false;
-    private string MImessage = "";
+    private string Imessage = "", Jmessage = "";
 
     private Gtables mygtbl = new();
     private Gatribs mygatr = new();
     private Gconstes mygcst = new();
     private ArubMenu myamenu = new();
+
+    //message managment
+
     //private Gcolons mygcol;
 
     //private OrigGgrilles mygcatr;
@@ -226,121 +244,182 @@
         curODContext.Context.Entities.Count(e => e.State != EntityStates.Unchanged) : 0;
     private async Task SaveAllAsync()
     {
-        await _guard.FlushAsync();
+        try
+        {
+            await _guard.FlushAsync();
+            Imessage = "✅ Save successful";
+        } 
+        catch(Exception ex)
+        {
+            Imessage = $"❌ Save failed: {ex.Message}";
+            await _guard.CancelChangesAsync();
+        }
         StateHasChanged();
     }
-    private void CancelAllChanges()
+    private async void CancelAllChanges()
     {
-        _guard.CancelChangesAsync();
+        await _guard.CancelChangesAsync();
         StateHasChanged();
     }
     protected override async Task OnInitializedAsync()
     {
-        isLoading = true;
-        var authState = await AuthState;
-        authUser = authState.User;
-        isAuthenticated = authUser.Identity.IsAuthenticated;
-        if (!isAuthenticated)
+        try
         {
-            Console.WriteLine("Authentication in Astreintes Utilisateur ECHEC");
-            return;
-        }
-        else
-        {
-            Console.WriteLine("Authentication in Astreintes SUCCESS");
-        }
-        _usrBag = await _sessionContext.GetUserbagAsync();
-        _gIdTie = _usrBag.Usorga.Gdtie;
-        //var idplnadm = _usrBag.Usorga.Schba;
-        // LsDivs = _usrBag.Usorga.Uhies
-        //     .Where(uh => uh.Idpln == idplnadm && uwaih.Sidiv == 1).ToList();
-        LsFixes = _usrBag.Ufixes.ToList();
-        //LsGties = _usrBag.Ufixes
-        //    .Where(ut => ut.Gvars == 36 && ut.Elea != 0 && ut.Elea != 9)
-        //    .ToList();
-        //LsDoms = _usrBag.Ufixes
-        //    .Where(ut => ut.Gvars == 36 && ut.Itb == 4 && ut.Gp1 == 3 && ut.Elea != 0)
-        //    .ToList();
-        var allDivs = await _rendAgres.LoadOrgaPostes();
-        LsDivs = allDivs.Where(ud => ud.Pdom == 6 && ud.Patr == 1).ToList();
-        LsVars = _usrBag.Usorga.Uvars.ToList();
-        LsFixes = _usrBag.Ufixes.ToList();
-        LsPlans = _usrBag.Usorga.Uplns.ToList();
-        LtTabls = _usrBag.Usorga.Uvars.Where(tb => tb.Gvars == 4).ToList();
-        LsTabls = _usrBag.Usorga.Uvars.Where(tb => tb.Gvars == 5).ToList();
-        //LsCols = ColBag.Ucols.Where(uv => uv.Jtyp == 1).OrderBy(uv => uv.Ydpd).ToList();
-        //TbElems = _usrBag.Usorga.Uvars.Where(uv => uv.Gvars == 5 && uv.Ade == 1 && uv.Elea != 0).ToList();
-        //ensemble des roles
-        //var _allRoles = _usrBag.Allroles;
-        //var _usrRoles = _usrBag.Allroles.Where(ur => ur.Sicur == true).ToList();
-        //int minrol = _usrBag.Usprof.Rlmin;
-        await LoadSTROrgaAsync();
-        //pita = 5;
+            isLoading = true;
 
-        Console.WriteLine("TIERS A ETE TESTE");
-        toChild.authUser = authUser;
-        toChild.isAuthenticated = isAuthenticated;
-        toChild.LsDivs = LsDivs.ToList();
-        toChild.LsVars = LsVars.ToList();
-        toChild.LsFixes = LsFixes.ToList();
-        toChild.LsPlans = LsPlans.ToList();
-        toChild.LsTabls = LsTabls.ToList();
-        isLoading = false;
+            // 1. CRITICAL: AUTH FIRST
+            var authState = await AuthState!;
+            if (!authState.User.Identity.IsAuthenticated)
+            {
+                _messageService.Show("❌ Utilisateur non authentifié", ToastType.Danger);
+                return;  // STOP EXECUTION
+            }
+
+            // 2. Load user context
+            _usrBag = await _sessionContext.GetUserbagAsync();
+            if (_usrBag == null)
+            {
+                _messageService.Show("❌ Session utilisateur invalide", ToastType.Danger);
+                return;
+            }
+
+            _gIdTie = _usrBag.Usorga.Gdtie;
+            LsFixes = _usrBag.Ufixes.ToList();
+            LsVars = _usrBag.Usorga.Uvars.ToList();
+            LsPlans = _usrBag.Usorga.Uplns.ToList();
+            LtTabls = _usrBag.Usorga.Uvars.Where(tb => tb.Gvars == 4).ToList();
+            LsTabls = _usrBag.Usorga.Uvars.Where(tb => tb.Gvars == 5).ToList();
+
+            // 3. Parallel loads for performance
+            var allDivsTask = _rendAgres.LoadOrgaPostes();
+            var allDivs = await allDivsTask;
+            LsDivs = allDivs.Where(ud => ud.Pdom == 6 && ud.Patr == 1).ToList();
+
+            await LoadSTROrgaAsync();
+            // 4. NOW pass to child (all data ready)
+            toChild.authUser = authUser;
+            toChild.isAuthenticated = true;
+            toChild.LsDivs = LsDivs;
+            toChild.LsVars = LsVars;
+            toChild.LsFixes = LsFixes;
+            toChild.LsPlans = LsPlans;
+            toChild.LsTabls = LsTabls;
+            toChild.curOrga = curOrga;  // ADD THIS!
+        }
+        catch (Exception ex)
+        {
+            _messageService.Show($"❌ Erreur chargement: {ex.Message}", ToastType.Danger);
+            Console.WriteLine($"Load error: {ex}");
+        }
+        finally
+        {
+            isLoading = false;
+            StateHasChanged();
+        }
     }
-    //CRUD
     public async Task LoadSTROrgaAsync()
     {
         int pisa = 2;
         try
         {
-            curODContext = await _contextFactory.CreateAsync();
+            curODContext = await _contextFactory.CreateAsync();  // ✅ DISPOSES AUTOMATICALLY
             _guard.AttachContext(curODContext);
+
             int key = _usrBag.Idorg;
             string expandPlngens = ODataQueryHelper.Expand<Gxorga, IEnumerable<Plngen>>(o => o.Plngens);
             string expandPlngensNested = expandPlngens + "($expand=Rubvars)";
             string expandGsgfixes = ODataQueryHelper.Expand<Gxorga, IEnumerable<Gsgfix>>(g => g.Gsgfixes);
             string expandGsglnes = ODataQueryHelper.Expand<Gxorga, IEnumerable<Gsglne>>(g => g.Gsglnes);
-            
             string expand = string.Join(",", expandPlngensNested, expandGsgfixes, expandGsglnes);
-            curOrga = await curODContext.GetByKeyAsync<Gxorga>(
-                key,
-                "Gxorgas",
-                expand
-            );
 
-            //Console.WriteLine(curOrga.Plngens.Count); // ✅ populated
-            // ✅ Use key-based query instead of filtered collection
-            // string expandGsgfixes = ODataQueryHelper.Expand<Gxorga, IEnumerable<Gsgfix>>(o => o.Gsgfixes);
-            // string expandGsglnes = ODataQueryHelper.Expand<Gxorga, IEnumerable<Gsglne>>(o => o.Gsglnes);
-            // string expand = string.Join(",", expandGsgfixes, expandGsglnes);
-            // curOrga = await curODContext.GetByKeyAsync<Gxorga>(
-            //     key,
-            //     "Gxorgas",
-            //     expand
-            // );
-            
-            //curOrga = await curODContext.GetByKeyAsync<Gxorga>(key, "Gxorgas", "Gsgfixes,Gsglnes");
+            curOrga = await curODContext.GetByKeyAsync<Gxorga>(key, "Gxorgas", expand);
+
             if (curOrga == null)
             {
-                Console.WriteLine("No organization found for the current user.");
+                _messageService.Show("❌ Organisation non trouvée", ToastType.Danger);
                 return;
             }
-            Console.WriteLine($"orga recu {curOrga.Raison}");
-            //Console.WriteLine($"nb gsgfixes : {curOrga.Gsgfixes.Count()}");
-            //curOrga Plngens and rubvars
-            // var expand2 = "Rubvars";
-            // var dxplns = await curODContext.LoadFilteredAsync<Plngen>(expand: expand2);
-            ////pisa = 4;
-            Console.WriteLine($"nb plans curOrga {curOrga.Plngens.Count()}");
-        }catch(Exception ex)
+        }
+        catch (Exception ex)
         {
-            Console.WriteLine($"ICI TODAY stack trace : {ex.StackTrace} place : {pisa} ex-mess : {ex.Message} and also in-mess: {ex.InnerException}");
+            _messageService.Show($"❌ Erreur organisation: {ex.Message}", ToastType.Danger);
+            Console.WriteLine($"pisa {pisa}: {ex}");
         }
     }
 
+    // protected override async Task OnInitializedAsync()
+    // {
+    //     isLoading = true;
+    //     _usrBag = await _sessionContext.GetUserbagAsync();
+    //     _gIdTie = _usrBag.Usorga.Gdtie;
+    //     LsFixes = _usrBag.Ufixes.ToList();
+    //     var allDivs = await _rendAgres.LoadOrgaPostes();
+    //     LsDivs = allDivs.Where(ud => ud.Pdom == 6 && ud.Patr == 1).ToList();
+    //     LsVars = _usrBag.Usorga.Uvars.ToList();
+    //     LsFixes = _usrBag.Ufixes.ToList();
+    //     LsPlans = _usrBag.Usorga.Uplns.ToList();
+    //     LtTabls = _usrBag.Usorga.Uvars.Where(tb => tb.Gvars == 4).ToList();
+    //     LsTabls = _usrBag.Usorga.Uvars.Where(tb => tb.Gvars == 5).ToList();
+    //     await LoadSTROrgaAsync();
+  
+    //     Console.WriteLine("TIERS A ETE TESTE");
+    //     toChild.authUser = authUser;
+    //     toChild.isAuthenticated = isAuthenticated;
+    //     toChild.LsDivs = LsDivs.ToList();
+    //     toChild.LsVars = LsVars.ToList();
+    //     toChild.LsFixes = LsFixes.ToList();
+    //     toChild.LsPlans = LsPlans.ToList();
+    //     toChild.LsTabls = LsTabls.ToList();
+    //     isLoading = false;
+    // }
+    // //CRUD
+    // public async Task LoadSTROrgaAsync()
+    // {
+    //     int pisa = 2;
+    //     try
+    //     {
+    //         curODContext = await _contextFactory.CreateAsync();
+    //         _guard.AttachContext(curODContext);
+    //         int key = _usrBag.Idorg;
+    //         string expandPlngens = ODataQueryHelper.Expand<Gxorga, IEnumerable<Plngen>>(o => o.Plngens);
+    //         string expandPlngensNested = expandPlngens + "($expand=Rubvars)";
+    //         string expandGsgfixes = ODataQueryHelper.Expand<Gxorga, IEnumerable<Gsgfix>>(g => g.Gsgfixes);
+    //         string expandGsglnes = ODataQueryHelper.Expand<Gxorga, IEnumerable<Gsglne>>(g => g.Gsglnes);
+
+    //         string expand = string.Join(",", expandPlngensNested, expandGsgfixes, expandGsglnes);
+    //         curOrga = await curODContext.GetByKeyAsync<Gxorga>(
+    //             key,
+    //             "Gxorgas",
+    //             expand
+    //         );
+    //         if (curOrga == null)
+    //         {
+    //             Console.WriteLine("No organization found for the current user.");
+    //             return;
+    //         }
+    //         Console.WriteLine($"orga recu {curOrga.Raison}");
+    //         Console.WriteLine($"nb plans curOrga {curOrga.Plngens.Count()}");
+    //     }catch(Exception ex)
+    //     {
+    //         Console.WriteLine($"ICI TODAY stack trace : {ex.StackTrace} place : {pisa} ex-mess : {ex.Message} and also in-mess: {ex.InnerException}");
+    //     }
+    // }
+    // protected override async Task OnAfterRenderAsync(bool firstRender)
+    // {
+    //     if (firstRender)  // Old way
+    //     {                          // vs
+    //         var authState = await AuthState;
+    //         if (!authState.User.Identity.IsAuthenticated)  // New way - works everywhere
+    //         {
+    //             _messageService.Show("❌ Utilisateur non authentifié", ToastType.Danger);
+    //             return;
+    //         }
+    //     }
+    // }
+
     private async Task ManEditAll()
     {
-        MImessage = "Edition en preparation...";
+        Imessage = "Edition en preparation...";
         if (_chxMenu == 1)
         { //tables
             //await mygtbl.EdtAll();
@@ -361,12 +440,12 @@
         // { //colonnes
         //     await mygcol.EdtAll();
         // }
-        MImessage = "";
+        Imessage = "";
         allEnable = true;
     }
     private async Task ManCnclAll()
     {
-        MImessage = "annulation en cours...";
+        Imessage = "annulation en cours...";
         if (_chxMenu == 1)
         { //tables
             await mygtbl.CncAll();
@@ -389,13 +468,13 @@
         // }
         //reload
         await LoadSTROrgaAsync();
-        MImessage = "";
+        Imessage = "";
         allEnable = false;
     }
     private async Task ManSaveAll()
     {
         bool oksav = false;
-        MImessage = "enregistrement en cours...";
+        Imessage = "enregistrement en cours...";
         if(_chxMenu == 1)
         { //tables
             //oksav = await mygtbl.SaveCurEntities();
@@ -416,7 +495,7 @@
         // { //colonnes
         //     oksav = await mygcol.SaveCurEntities();
         // }
-        if (oksav) MImessage = "";
+        if (oksav) Imessage = "";
         allEnable = false;
     }
     // private async Task SelMenu(int noM)

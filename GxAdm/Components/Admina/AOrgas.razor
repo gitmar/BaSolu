@@ -54,7 +54,6 @@
                     <span>
                         &nbsp; @Imessage
                     </span>
-                    @* <button type="button" class="btn btn-sm btn-secondary btnsz @(!allEnable ? "" : "d-none")" style="font-size: small" @onclick="() => EdtAll()">Modifier</button> *@
                 </div>
             </div>
             <div class="container-fluid-fixed-top">
@@ -178,7 +177,7 @@
                                                             <option value="0">-- Select a country --</option>
                                                             @foreach (var tob in curOrga.Gsglnes.Where(ug => ug.Otyp == 4 && ug.Pitb == 31))
                                                             {
-                                                                <option value="@tob.Elea">@tob.Liba</option>
+                                                                <option value="@tob.Abg">@tob.Liba</option>
                                                             }
                                                         </InputSelect>
                                                     </td>

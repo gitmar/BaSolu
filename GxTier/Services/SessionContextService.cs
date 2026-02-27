@@ -4,7 +4,6 @@ using System.Security.Claims;
 using Blazored.LocalStorage;
 
 using GxTie.StaticHelpers;
-using GxTie.Profile;
 
 using GxShared.Sess;
 using GxShared.Identity;

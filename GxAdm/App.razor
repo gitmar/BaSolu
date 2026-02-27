@@ -1,4 +1,6 @@
 ﻿<CascadingAuthenticationState>
+    <!-- GLOBAL ALERTS: Visible on ALL pages -->
+    <GlobalMessageHost PositionClass="position-fixed top-0 end-0 p-3" />
     <Router AppAssembly="@typeof(App).Assembly">
         <Found Context="routeData">
             <AuthorizeRouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)">

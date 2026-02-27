@@ -18,6 +18,7 @@
 @inject NavigationManager _navmanager
 @inject HttpClientService _clieManager
 @inject IODataContextFactory _contextFactory
+@inject IMessageService _messageService
 
 <!-- InscTiewComponent.razor -->
 <PageTitle>Institution</PageTitle>
@@ -49,7 +50,7 @@ else
             <EditForm Context="edOrgContext" Model="@curOrga">
                 <DataAnnotationsValidator />
                 <ValidationSummary />
-                <div class="row">
+                @* <div class="row">
                     <div class="col-md-12 input-group align-middle">
                         @if (!String.IsNullOrEmpty(Imessage))
                         {    
@@ -57,7 +58,7 @@ else
                             <span class="bg-info bg-opacity-10" style="font-style:italic;color:red">&nbsp;--> @Imessage</span>
                         }
                     </div>
-                </div>
+                </div> *@
                     <div class="container-fluid-fixed-top">
                         <Tabs>
                             <Tab Title="Documents">
@@ -684,6 +685,8 @@ else
 
     [CascadingParameter]
     private Task<AuthenticationState>? AuthState { get; set; }
+    [CascadingParameter]
+    public GlobalMessageHost? GlobMessageHost { get; set; }
     [Parameter]
     public RenderFragment ChildContent { get; set; }
     [Parameter]
@@ -695,7 +698,7 @@ else
     [Parameter]
     public bool allEnable { get; set; }
 
-    private string Imessage = "";
+    //private string Imessage = "";
     private string Ierror = "";
 
     private ClaimsPrincipal authUser;
@@ -766,23 +769,36 @@ else
     {
         isLoading = true;
         dataLoaded = false;
-        Imessage = "";
+        //Imessage = "";
         Ierror = "";
         try
         {
             isLoading = true;
-            isAuthenticated = toChild.isAuthenticated;
-            authUser = toChild.authUser;
-            if (!isAuthenticated)
-            {
-                Imessage = "Erreur, Utilisateur non authentifie";
-                return;
-            }
+            // isAuthenticated = toChild.isAuthenticated;
+            // authUser = toChild.authUser;
+            // if (!isAuthenticated)
+            // {
+            //     if (MessageHost != null)
+            //     {
+            //         var toast = new ToastMessage
+            //         {
+            //             Type = ToastType.Danger,
+            //             Message = "❌ Utilisateur non authentifie",
+            //             Title = "Auth Error",  // Optional
+            //             HelpText = DateTime.Now.ToString()  // Optional
+            //         };
+            //         //MessageService?.ShowMessage(toast);  // Or whatever the exact method is; check component source
+            //     }
+
+            //     if (MessageHost != null)
+            //         MessageHost?.ShowMessage("❌ Utilisateur non authentifie", ToastType.Danger);
+            //     return;
+            // }
             LsVars = toChild.LsVars;
             LsFixes = toChild.LsFixes;
             LsGties = LsFixes.Where(ut => ut.Gvars == 36 && ut.Itb == 6 && ut.Elea != 0 && ut.Elea != 9).ToList();
             _navmanager.LocationChanged += OnLocationChanged;
-            Console.WriteLine("Authentication ENTREE");
+            //Console.WriteLine("Authentication ENTREE");
             if (curOrga != null)
             {
                 Console.WriteLine("curOrga charge");
@@ -810,6 +826,21 @@ else
             isLoading = false;
         }
     }
+    // Safe call with lifecycle guard
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender && GlobMessageHost != null)
+        {
+            // Await auth or data first
+            var authState = await AuthState!;
+            if (!authState.User.Identity.IsAuthenticated)
+            {
+                _messageService?.Show("❌ Utilisateur non authentifie!", ToastType.Danger);
+                //MessageService?.ShowMessage("❌ Utilisateur non authentifie", ToastType.Danger);
+            }
+        }
+    }
+
     //manage SAVING
     public async Task EdtAll()
     {
@@ -819,11 +850,12 @@ else
     }
     public async Task CncAll()
     { //reload to annul AddObject/UpdateObject/DeleteObjet
-        Imessage = "Annulation Operations, patience...";
+        //Imessage = "Annulation Operations, patience...";
+        _messageService?.Show("Annulation Operations, patience...", ToastType.Info);
         allEnable = false;
         isDocEditing = false;
         EditingFixRowGuid = Guid.Empty;
-        Imessage = "";
+        //Imessage = "";
     }
     void OpenAddPater(int tydoc)
     {
@@ -843,7 +875,8 @@ else
         isFixValid = false;
         if (!allEnable)
         {
-            Imessage = "REFUS, modification inacceptable";
+            _messageService?.Show("❌ modification", ToastType.Danger);
+            //Imessage = "REFUS, modification inacceptable";
             return;
         }
         var parentId = curOrga.Idorg;
@@ -934,12 +967,14 @@ else
             sinwPater = false;
             AddingFixRowGuid = Guid.Empty;
             StateHasChanged();
-            Imessage = "Success... parent ajoute";
+            _messageService?.Show("✅ parent ajoute", ToastType.Success);
+            //Imessage = "Success... parent ajoute";
         }
         else
         {
             mygf.Xadd1 = 0;
-            Imessage = "Deja ajoute";
+            _messageService?.Show("deja ajoute", ToastType.Info);
+            //Imessage = "Deja ajoute";
         }
         sinwPater = false;
     }
@@ -958,7 +993,8 @@ else
     private async Task ConfPModal()
     {
         //await SaveCurEntities();
-        Imessage = "Parent(s) SAVED";
+        //Imessage = "Parent(s) SAVED";
+        _messageService?.Show("✅ Parent(s) SAVED", ToastType.Success);
         await patModal.HideAsync();
         allEnable = false;
         StateHasChanged();
@@ -1285,7 +1321,8 @@ else
         }
         PaterRows = new();
         //await SaveCurEntities();
-        Imessage = "Parent(s) SAVED";
+        _messageService?.Show("✅ Parent(s) SAVED", ToastType.Success);
+        //Imessage = "Parent(s) SAVED";
         await patModal.HideAsync();
         allEnable = false;
         StateHasChanged();

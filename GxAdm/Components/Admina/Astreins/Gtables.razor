@@ -25,6 +25,7 @@
 @inject ILocalStorageService _localStorage
 @inject NavigationManager _navmanager
 @inject HttpClientService _clieManager
+@inject IMessageService _messageService
 
 <!-- InscTiewComponent.razor -->
 <PageTitle>Tables</PageTitle>
@@ -629,6 +630,9 @@ else
             </Modal>
         </Authorized>
     </AuthorizeView>
+    <button class="btn btn-primary" @onclick="ShowAwayAlert">
+        Show Alert From Away Component
+    </button>
 }
 <style>
     .compact-select {
@@ -654,6 +658,8 @@ else
 
     [CascadingParameter]
     private Task<AuthenticationState>? AuthState { get; set; }
+    [CascadingParameter] 
+    public GlobalMessageHost? GlobMessageHost { get; set; }
     [Parameter]
     public RenderFragment ChildContent { get; set; }
     [Parameter]
@@ -689,6 +695,8 @@ else
 
     private int _lgcdu = 0;
     private bool isFilteringEnabled = false;
+    private void ShowAwayAlert() =>
+        _messageService.Show("✅ Works from anywhere!", ToastType.Success);
     //private bool isGpeFilteringEnabled = false;
 
     //Global
@@ -780,34 +788,20 @@ else
         LsVars = toChild.LsVars;
         LsFixes = toChild.LsFixes;
         LsDoms = toChild.LsFixes.Where(ut => ut.Gvars == 36 && ut.Itb == 4 && ut.Gp1 == 3 && ut.Elea != 0).ToList();
-        //LsTabls = toChild.LsTabls.ToList();
         LsPlans = toChild.LsPlans.Where(pl => pl.Ptyp == 3).ToList();
-
         _lgcdu = 3;
         var noslims = LsVars.Where(uv => uv.Idhie == 0 && uv.Gvars == 21 && uv.Itb == 1 && uv.Elea == 1);
         if (noslims.Any()) _lgcdu = noslims.FirstOrDefault().Ivala;
-        //MyDaRubrs = new List<Gsgfix>();
-        //await LoadTablsAsync();
         gfixsMap.Clear();
         glnesMap.Clear();
         MyDaRubrs = new List<Gsgfix>(); // ObservableCollection<Gsgfix>();
-        //gfixsMap[curOrga.Idorg] = curOrga.Gsgfixes.Where(uf => uf.Gvars == 4 && uf.Elea != 0).ToList(); //new ObservableCollection<Gsgfix>(curOrga.Gsgfixes.Where(uf => uf.Gvars == 4 && uf.Elea != 0));
         MyDaChilds = curOrga.Gsglnes.Where(ln => ln.Otyp == 4).ToList();
         Console.WriteLine($"elements tables{MyDaChilds.Count()}");
-        // foreach (var uta in curOrga.Gsgfixes.Where(uv => uv.Gvars == 4 && uv.Elea != 0))
-        // {
-        //     List<Gsglne> tbcols = MyDaChilds.Where(ln => ln.Pseq == uta.Xseq).ToList();
-        //     glnesMap[uta.Xseq] = tbcols; //new ObservableCollection<Gsglne>(tbcols);
-        //     //Console.WriteLine($"Parent Xseq: {uta.Xseq}, Children count: {tbcols.Count}");
-        // }
         _navmanager.LocationChanged += OnLocationChanged;
         Imessage = "Donnees Tables chargees";
         isLoading = false;
     }
-    // private async Task LoadTablsAsync()
-    // {
 
-    // }
     void OnPaterRowClick(GridRowEventArgs<Gsgfix> args)
     {
         Console.WriteLine($"OnPaterRowClick Triggered : {args.Item.Xseq}");

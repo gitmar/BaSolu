@@ -33,12 +33,10 @@
                     <AuthorizeView>
                         <Authorized>
                             <!-- Toggle User Menu -->
-                            <a class="nav-icon fw-bold text-dark fs-10 d-flex align-items-center m-0 p-0"
-                               href="#"
-                               @onclick="ToggleUserMenu">
+                            <button class="btn btn-sm nav-icon fw-bold text-dark fs-10 d-flex align-items-start m-0 p-0"
+                                    @onclick="NavigateToIdentityPage">
                                 <span>PrivateRoom</span>
-                            </a>
-
+                            </button>
                             <div class="truncated-text ms-3">@_appState.ogRaison</div>
                             <div class="truncated-text ms-3">@_appState.usFulnom</div>
 
@@ -127,10 +125,10 @@ else
     private bool isAuthenticated = false;
     [Inject] private AuthenticationStateProvider _authProvider { get; set; }
 
-    private void ToggleUserMenu()
-    {
-        collapseUserMenu = !collapseUserMenu;
-    }
+    // private void ToggleUserMenu()
+    // {
+    //     collapseUserMenu = !collapseUserMenu;
+    // }
 
     protected override async Task OnInitializedAsync()
     {
@@ -165,14 +163,27 @@ else
 
         _layoutReady = true;
         _authProvider.AuthenticationStateChanged += async task =>
-    {
-        var authState = await task;
-        authUser = authState.User;
-        isAuthenticated = authUser.Identity?.IsAuthenticated ?? false;
-        StateHasChanged();
-    };
+        {
+            var authState = await task;
+            authUser = authState.User;
+            isAuthenticated = authUser.Identity?.IsAuthenticated ?? false;
+            StateHasChanged();
+        };
 
         isLoading = true;
+    }
+    private async Task NavigateToIdentityPage()
+    {
+        // Get token from localStorage
+        var token = await _localStorage.GetItemAsync<string>("blazToken");
+        if (string.IsNullOrWhiteSpace(token))
+        {
+            Console.WriteLine("No token found — skipping session sync.");
+            return;
+        }
+        var backendUrl = _iconfig["backendUrl"];
+        var targetUrl = $"{backendUrl}/Identity/Account/JwtLandingPage?access_token={token}";
+        _navManager.NavigateTo(targetUrl, forceLoad: true);
     }
     public void Dispose()
     {
