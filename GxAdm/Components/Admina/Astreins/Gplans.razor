@@ -229,7 +229,7 @@ else
                                                 @if (EditingPlnRowGuid == item.Rowguid)
                                                 { // show draftPln inputs
                                                   <label>@pstrFormu</label>
-                                                  <Button Color="ButtonColor.Secondary" Class="btn btn-default btn-sm" @onclick="() => showFrplnModal(draftPln)" Disabled="@(!allEnable)">
+                                                  <Button Color="ButtonColor.Secondary" Class="btn btn-default btn-sm" @onclick="() => showFrPlnModal(draftPln)" Disabled="@(!allEnable)">
                                                       <i class="bi bi-pencil-square"></i>Formu
                                                   </Button>
                                                 }
@@ -441,7 +441,7 @@ else
                     <div class="mb-3">
                         <label class="form-label">Formula</label>
                         <InputTextArea class="form-control"
-                                       @bind-Value="curPlan.Fpsource"
+                                       @bind-Value="curPlan.Fpsrc"
                                        rows="8"
                                        style="resize: vertical;" />
                     </div>
@@ -1105,6 +1105,12 @@ else
     //GTfl -- EDITING
     void PromptPlnEdit(Plngen mypln)
     {
+        var isNew = StaticMethods.IsNew(curODContext, mypln, e => e.Id);
+        if (isNew)
+        { //not saved yet
+            Imessage = "🚫 Cannot edit new Plan: Please save it first.";
+            return;
+        }
         mypln.Xedt1 = 0;
         editingPln = mypln;
         draftPln = new Plngen
@@ -1591,10 +1597,10 @@ else
     //     isPlnFilteringEnabled = !isPlnFilteringEnabled;
     // }
     //PLAN Formule modals
-    void showFrplnModal(Plngen mypln)
+    void showFrPlnModal(Plngen mypln)
     {
         pstrFormu = "";
-        if (!String.IsNullOrEmpty(mypln.Fpsource))
+        if (!String.IsNullOrEmpty(mypln.Fpsrc))
         {
             pstrFormu = mypln.Liba.Substring(0, 8);
         }
@@ -1602,10 +1608,10 @@ else
         pForuModal?.ShowAsync();
     }
     //RUBR Formule modals
-    // void showFrrubModal(Rubvar myrub)
+    // void showFrRubModal(Rubvar myrub)
     // {
     //     rstrFormu = "";
-    //     if (!String.IsNullOrEmpty(myrub.Frsource))
+    //     if (!String.IsNullOrEmpty(myrub.Frsrc))
     //     {
     //         rstrFormu = myrub.Liba.Substring(0, 8);
     //     }
@@ -1613,10 +1619,10 @@ else
     //     rForuModal?.ShowAsync();
     // }
     // //FMT Formule modals
-    // void showFrfmtModal(Rubfmt myfmt)
+    // void showFrFmtModal(Rubfmt myfmt)
     // {
     //     fstrFormu = "";
-    //     if (!String.IsNullOrEmpty(myfmt.Ftsource))
+    //     if (!String.IsNullOrEmpty(myfmt.Ftsrc))
     //     {
     //         fstrFormu = myfmt.Liba.Substring(0, 8);
     //     }

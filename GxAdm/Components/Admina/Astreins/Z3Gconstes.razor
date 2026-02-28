@@ -27,6 +27,9 @@
 <div>
     @Ierror
 </div>
+<div>
+    @Imessage
+</div>
 @if (isLoading)
 {
     <Progress class="progress mb-3">
@@ -699,7 +702,7 @@ else
     public bool allEnable { get; set; }
 
     //private string Imessage = "";
-    private string Ierror = "";
+    private string Ierror = "", Imessage = "";
 
     private ClaimsPrincipal authUser;
     private bool isAuthenticated = false;
@@ -1084,6 +1087,12 @@ else
     //GTfl -- EDITING
     void PromptGenEdit(Gsgfix myafil, int orig)
     {
+        var isNew = StaticMethods.IsNew(curODContext, myafil, e => e.Xseq);
+        if (isNew)
+        { //not saved yet
+            Imessage = "🚫 Cannot edit new Doc: Please save it first.";
+            return;
+        }
         myafil.Xedt1 = 0;
         if (orig == 1)
         {

@@ -154,17 +154,17 @@ else
                                                 @if (EdPlnRowguid == item.Rowguid)
                                                 { // show draftPln inputs
                                                   <Button Color="ButtonColor.Secondary" Class="btn btn-default btn-sm d-inline-flex align-items-center gap-1"
-                                                          @onclick="() => showFrplnModal(draftPln, 1)">
+                                                          @onclick="() => showFrPlnModal(draftPln, 1)">
                                                       <i class="bi bi-pencil-square"></i>
-                                                      <span class="text-truncate flex-grow-1">@draftPln?.Fpsource</span>
+                                                      <span class="text-truncate flex-grow-1">@draftPln?.Fpsrc</span>
                                                   </Button>
                                                 }
                                                 else
                                                 { // show item as read-only
                                                   <Button Color="ButtonColor.Secondary" Class="btn btn-default btn-sm d-inline-flex align-items-center gap-1"
-                                                          @onclick="() => showFrplnModal(item, 2)">
+                                                          @onclick="() => showFrPlnModal(item, 2)">
                                                       <i class="bi bi-pencil-square"></i>
-                                                      <span class="text-truncate flex-grow-1">@item.Fpsource</span>
+                                                      <span class="text-truncate flex-grow-1">@item.Fpsrc</span>
                                                   </Button>
                                                 }
                                             </ChildContent>
@@ -374,17 +374,17 @@ else
                                                                         @if (EdRubRowguid == item.Rowguid)
                                                                         { // show draftPln inputs
                                                                           <Button Color="ButtonColor.Secondary" Class="btn btn-default btn-sm d-inline-flex align-items-center gap-1"
-                                                                                  @onclick="() => showFrrubModal(draftRub, 1)">
+                                                                                  @onclick="() => showFrRubModal(draftRub, 1)">
                                                                               <i class="bi bi-pencil-square"></i>
-                                                                              <span class="text-truncate flex-grow-1">@draftRub?.Frsource</span>
+                                                                              <span class="text-truncate flex-grow-1">@draftRub?.Frsrc</span>
                                                                           </Button>
                                                                         }
                                                                         else
                                                                         { // show item as read-only
                                                                           <Button Color="ButtonColor.Secondary" Class="btn btn-default btn-sm d-inline-flex align-items-center gap-1"
-                                                                                  @onclick="() => showFrrubModal(item, 2)">
+                                                                                  @onclick="() => showFrRubModal(item, 2)">
                                                                               <i class="bi bi-pencil-square"></i>
-                                                                              <span class="text-truncate flex-grow-1">@item.Frsource</span>
+                                                                              <span class="text-truncate flex-grow-1">@item.Frsrc</span>
                                                                           </Button>
                                                                         }
                                                                     </ChildContent>
@@ -491,7 +491,7 @@ else
                     <div class="mb-3">
                         <label class="form-label">Formula</label>
                         <InputTextArea class="form-control"
-                                       @bind-Value="curPlan.Fpsource"
+                                       @bind-Value="curPlan.Fpsrc"
                                        rows="8"
                                        style="resize: vertical;" />
                     </div>
@@ -896,6 +896,12 @@ else
     }
     private async Task StartPlnEdit(Plngen item, Guid rowguid)
     {
+        var isNew = StaticMethods.IsNew(curODContext, item, e => e.Id);
+        if (isNew)
+        { //not saved yet
+            Imessage = "🚫 Cannot edit new Plan: Please save it first.";
+            return;
+        }
         if (rowguid == Guid.Empty) return;
         item.Xedt1 = -1;
         if (item.Iele != 0) item.Iui = (int)item.Iele;
@@ -938,7 +944,7 @@ else
                 Ydpd = null,
                 Weburl = curOrga.Weburl,
                 Adr = curOrga.Adr,
-                Adr2 = curOrga.Adr2,
+                //Adr2 = curOrga.Adr2,
                 Sigrid = 0, //grille
                 Ustyp = 0, //de base
                 Ddval = 0,
@@ -970,6 +976,12 @@ else
     }
     private async Task StartRubEdit(Rubhie item, Guid rowguid)
     {
+        var isNew = StaticMethods.IsNew(curODContext, item, e => e.Id);
+        if (isNew)
+        { //not saved yet
+           Imessage = "🚫 Cannot edit new Rubrique: Please save it first.";
+           return;
+        }
         if (rowguid == Guid.Empty) return;
 
         item.Xedt1 = -1;
@@ -1030,6 +1042,12 @@ else
     // }
     private async Task StartFmtEdit(Rubfmt item, Guid rowguid)
     {
+        var isNew = StaticMethods.IsNew(curODContext, item, e => e.Id);
+        if (isNew)
+        { //not saved yet
+            Imessage = "🚫 Cannot edit new Fmt: Please save it first.";
+            return;
+        }
         if (rowguid == Guid.Empty) return;
         item.Xedt1 = -1;
         if (item.Iele != 0) item.Iui = (int)item.Iele;
@@ -1232,7 +1250,7 @@ else
                 var pln = (Plngen)(object)gridItem;
                 pln.Liba = draftPln.Liba; //designation
                 pln.Abg = draftPln.Abg; //abrege
-                pln.Fpsource = draftPln.Fpsource; //formule-non valider
+                pln.Fpsrc = draftPln.Fpsrc; //formule-non valider
                 pln.Eta = draftPln.Eta; //etat
                 break;
             case nameof(Rubhie):
@@ -1243,7 +1261,7 @@ else
                 rub.Scdrub = draftRub.Scdrub; //code
                 rub.Xcod = draftRub.Xcod; //refer
                 rub.Atyp = draftRub.Atyp; //atyp
-                rub.Frsource = draftRub.Frsource; //formule
+                rub.Frsrc = draftRub.Frsrc; //formule
                 rub.Eta = draftRub.Eta; //etat
                 break;
             case nameof(Rubfmt):
@@ -1254,7 +1272,7 @@ else
                 fmt.Zcdrub = draftFmt.Zcdrub; //code
                 fmt.Xcod = draftFmt.Xcod; //refer
                 fmt.Ztyp = draftFmt.Ztyp; //ztyp
-                fmt.Ftsource = draftFmt.Ftsource; //formule
+                fmt.Ftsrc = draftFmt.Ftsrc; //formule
                 fmt.Col = draftFmt.Col; //col
                 fmt.Lne = draftFmt.Lne; //lne
                 fmt.Lgtf = draftFmt.Lgtf; //lgtf
@@ -1720,10 +1738,10 @@ else
     }
 
     //PLAN Formule modals
-    void showFrplnModal(Plngen mypln, int orig)
+    void showFrPlnModal(Plngen mypln, int orig)
     {
         pstrFormu = "";
-        if (!string.IsNullOrEmpty(mypln.Fpsource))
+        if (!string.IsNullOrEmpty(mypln.Fpsrc))
         {
             pstrFormu = mypln.Liba.Substring(0, 8);
         }
@@ -1737,10 +1755,10 @@ else
         }
     }
     //RUBR Formule modals
-    void showFrrubModal(Rubhie myrub, int orig)
+    void showFrRubModal(Rubhie myrub, int orig)
     {
         rstrFormu = "";
-        if (!string.IsNullOrEmpty(myrub.Frsource))
+        if (!string.IsNullOrEmpty(myrub.Frsrc))
         {
             rstrFormu = myrub.Liba.Substring(0, 8);
         }
@@ -1754,10 +1772,10 @@ else
         }
     }
     //FMT Formule modals
-    void showFrfmtModal(Rubfmt myfmt, int orig)
+    void showFrFmtModal(Rubfmt myfmt, int orig)
     {
         fstrFormu = "";
-        if (!string.IsNullOrEmpty(myfmt.Ftsource))
+        if (!string.IsNullOrEmpty(myfmt.Ftsrc))
         {
             fstrFormu = myfmt.Liba.Substring(0, 8);
         }

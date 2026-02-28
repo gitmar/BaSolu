@@ -1,6 +1,6 @@
 ﻿using Microsoft.OData.Client;
 
-namespace GxAdm.Services
+namespace GxTie.Services
 {
     public static class StaticMethods
     {

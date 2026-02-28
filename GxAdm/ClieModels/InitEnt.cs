@@ -31,7 +31,7 @@ namespace GxWapi.DaModels
         [JsonIgnore]
         public string Abg { get; set; } = string.Empty;
         [JsonIgnore]
-        public string Frsource { get; set; } = string.Empty;
+        public string Frsrc { get; set; } = string.Empty;
     }
     public partial class Actdet
     {
@@ -54,7 +54,7 @@ namespace GxWapi.DaModels
         [JsonIgnore]
         public int Lgtf { get; set; } = 0;
         [JsonIgnore]
-        public string Ftsource { get; set; } = string.Empty;
+        public string Ftsrc { get; set; } = string.Empty;
     }
     public partial class Resdon
     {
@@ -71,7 +71,7 @@ namespace GxWapi.DaModels
         [JsonIgnore]
         public string Abg { get; set; } = string.Empty;
         [JsonIgnore]
-        public string Frsource { get; set; } = string.Empty;
+        public string Frsrc { get; set; } = string.Empty;
     }
     public partial class Resdet
     {
@@ -87,7 +87,7 @@ namespace GxWapi.DaModels
         [JsonIgnore]
         public int Lgtf { get; set; } = 0;
         [JsonIgnore]
-        public string Ftsource { get; set; } = string.Empty;
+        public string Ftsrc { get; set; } = string.Empty;
     }
     public partial class Resbro
     {
@@ -104,7 +104,7 @@ namespace GxWapi.DaModels
         [JsonIgnore]
         public string Abg { get; set; } = string.Empty;
         [JsonIgnore]
-        public string Frsource { get; set; } = string.Empty;
+        public string Frsrc { get; set; } = string.Empty;
     }
     public partial class Gsgfix
     {

@@ -1,5 +1,5 @@
 ﻿@page "/ictposts"
-@layout IagrMenu
+@layout AstrMenu
 
 @using System
 @using System.Collections.ObjectModel
@@ -156,9 +156,9 @@ else
                                                                 <GridColumn TItem="Rubhie" HeaderText="Formule" Class="xcol1">
                                                                     <ChildContent Context="item">
                                                                               <Button Color="ButtonColor.Secondary" Class="btn btn-default btn-sm d-inline-flex align-items-center gap-1"
-                                                                                      @onclick="() => showFrrubModal(item, 2)">
+                                                                                      @onclick="() => showFrRubModal(item, 2)">
                                                                                   <i class="bi bi-pencil-square"></i>
-                                                                                  <span class="text-truncate flex-grow-1">@item.Frsource</span>
+                                                                                  <span class="text-truncate flex-grow-1">@item.Frsrc</span>
                                                                               </Button>
                                                                     </ChildContent>
                                                                 </GridColumn>
@@ -399,7 +399,7 @@ else
                     <div class="mb-3">
                         <label class="form-label">Formula</label>
                         <InputTextArea class="form-control"
-                                       @bind-Value="curPlan.Fpsource"
+                                       @bind-Value="curPlan.Fpsrc"
                                        rows="8"
                                        style="resize: vertical;" />
                     </div>
@@ -414,7 +414,7 @@ else
                     <div class="mb-3">
                         <label class="form-label">Formula</label>
                         <InputTextArea class="form-control"
-                                       @bind-Value="curRubr.Frsource"
+                                       @bind-Value="curRubr.Frsrc"
                                        rows="6"
                                        style="resize: vertical;" />
                     </div>
@@ -429,7 +429,7 @@ else
                     <div class="mb-3">
                         <label class="form-label">Formula</label>
                         <InputTextArea class="form-control"
-                                       @bind-Value="curFmat.Ftsource"
+                                       @bind-Value="curFmat.Ftsrc"
                                        rows="3"
                                        style="resize: vertical;" />
                     </div>
@@ -822,6 +822,12 @@ else
     }
     private async Task StartPlnEdit(Plngen item, Guid rowguid)
     {
+        var isNew = StaticMethods.IsNew(curODContext, item, e => e.Id);
+        if (isNew)
+        { //not saved yet
+            Imessage = "🚫 Cannot edit new Plan: Please save it first.";
+            return;
+        }
         if (rowguid == Guid.Empty) return;
         item.Xedt1 = -1;
         if (item.Iele != 0) item.Iui = (int)item.Iele;
@@ -886,6 +892,12 @@ else
     // }
     private async Task StartRubEdit(Rubhie item, Guid rowguid)
     {
+        var isNew = StaticMethods.IsNew(curODContext, item, e => e.Id);
+        if (isNew)
+        { //not saved yet
+           Imessage = "🚫 Cannot edit new Rubrique: Please save it first.";
+           return;
+        }
         if (rowguid == Guid.Empty) return;
 
         item.Xedt1 = -1;
@@ -949,6 +961,12 @@ else
     }
     private async Task StartFmtEdit(Rubpst item, Guid rowguid)
     {
+        var isNew = StaticMethods.IsNew(curODContext, item, e => e.Id);
+        if (isNew)
+        { //not saved yet
+            Imessage = "🚫 Cannot edit new Fmt: Please save it first.";
+            return;
+        }
         if (rowguid == Guid.Empty) return;
         item.Xedt1 = -1;
         if (item.Iele != 0) item.Iui = (int)item.Iele;
@@ -1150,7 +1168,7 @@ else
                 var pln = (Plngen)(object)gridItem;
                 pln.Liba = draftPln.Liba; //designation
                 pln.Abg = draftPln.Abg; //abrege
-                pln.Fpsource = draftPln.Fpsource; //formule-non valider
+                pln.Fpsrc = draftPln.Fpsrc; //formule-non valider
                 pln.Eta = draftPln.Eta; //etat
                 break;
             case nameof(Rubhie):
@@ -1161,7 +1179,7 @@ else
                 rub.Scdrub = draftRub.Scdrub; //code
                 rub.Xcod = draftRub.Xcod; //refer
                 rub.Atyp = draftRub.Atyp; //atyp
-                rub.Frsource = draftRub.Frsource; //formule
+                rub.Frsrc = draftRub.Frsrc; //formule
                 rub.Eta = draftRub.Eta; //etat
                 break;
             case nameof(Rubpst):
@@ -1172,7 +1190,7 @@ else
                 fmt.Zcdrub = draftFmt.Zcdrub; //code
                 fmt.Xcod = draftFmt.Xcod; //refer
                 fmt.Ztyp = draftFmt.Ztyp; //ztyp
-                //fmt.Ftsource = draftFmt.Ftsource; //formule
+                //fmt.Ftsrc = draftFmt.Ftsrc; //formule
                 fmt.Col = draftFmt.Col; //col
                 fmt.Lne = draftFmt.Lne; //lne
                 fmt.Lgtf = draftFmt.Lgtf; //lgtf
@@ -1628,10 +1646,10 @@ else
     }
     
     //PLAN Formule modals
-    void showFrplnModal(Plngen mypln, int orig)
+    void showFrPlnModal(Plngen mypln, int orig)
     {
         pstrFormu = "";
-        if (!string.IsNullOrEmpty(mypln.Fpsource))
+        if (!string.IsNullOrEmpty(mypln.Fpsrc))
         {
             pstrFormu = mypln.Liba.Substring(0, 8);
         }
@@ -1645,10 +1663,10 @@ else
         }
     }
     //RUBR Formule modals
-    void showFrrubModal(Rubhie myrub, int orig)
+    void showFrRubModal(Rubhie myrub, int orig)
     {
         rstrFormu = "";
-        if (!string.IsNullOrEmpty(myrub.Frsource))
+        if (!string.IsNullOrEmpty(myrub.Frsrc))
         {
             rstrFormu = myrub.Liba.Substring(0, 8);
         }
@@ -1662,10 +1680,10 @@ else
         }
     }
     //FMT Formule modals
-    void showFrfmtModal(Rubpst myfmt, int orig)
+    void showFrFmtModal(Rubpst myfmt, int orig)
     {
         fstrFormu = "";
-        // if (!string.IsNullOrEmpty(myfmt.Ftsource))
+        // if (!string.IsNullOrEmpty(myfmt.Ftsrc))
         // {
         //     fstrFormu = myfmt.Liba.Substring(0, 8);
         // }

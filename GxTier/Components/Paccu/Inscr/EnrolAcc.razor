@@ -30,9 +30,6 @@
 @using System.Text.RegularExpressions
 @using Blazored.LocalStorage
 
-
-
-
 @inject NavigationManager _navmanager
 @inject HttpClientService _cliemanager
 <!-- InscTiewComponent.razor -->
@@ -1482,6 +1479,12 @@
     }
     private async Task StartAflEdit(Tiwafl item, Guid rowguid)
     {
+        var isNew = StaticMethods.IsNew(curODContext, item, e => e.Id);
+        if (isNew)
+        { //not saved yet
+            Imessage = "🚫 Cannot edit new Affilie: Please save it first.";
+            return;
+        }
         if (rowguid == Guid.Empty) return;
 
         item.Xedt1 = -1;
