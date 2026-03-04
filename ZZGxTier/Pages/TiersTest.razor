@@ -1,0 +1,85 @@
+﻿@page "/tiers"
+
+@using Microsoft.Extensions.Http
+@using Microsoft.OData.Client
+@using GxWapi.DaModels
+@using Microsoft.Extensions.DependencyInjection
+@using Microsoft.JSInterop
+
+
+@inject Default.Container Context
+@inject IJSRuntime JSRun
+
+<PageTitle>Tiers test</PageTitle>
+
+<h1>Tiers ESSAI</h1>
+
+<p>This component demonstrates fetching data from the server.</p>
+<button class="btn btn-primary" @onclick="UpdateTiewel"></button>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Date</th>
+            <th aria-label="Temperature in Celsius">Nom</th>
+            <th aria-label="Temperature in Farenheit">Prenoms</th>
+            <th>Summary</th>
+        </tr>
+    </thead>
+    <tbody>
+
+        @foreach (var itw in lsTwels)
+        {
+            <tr>
+                <td>@itw.Datc</td>
+                <td>@itw.Nom</td>
+                <td>@itw.Pnom</td>
+                <td>Resume</td>
+            </tr>
+        }
+    </tbody>
+</table>
+@* } *@
+
+@code {
+    private HttpClient _odaClient;
+    private List<Tiewel> lsTwels = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            // Query entities (tracked by OData client)
+            var result = await Context.Tiewels.ExecuteAsync();
+            lsTwels = result.ToList();
+        }catch (Exception ex)
+        {
+            Console.WriteLine($" QUERY EXCEPTION {ex.Message}");
+        }
+    }
+    private async Task UpdateTiewel() //(Tiewel tiewel)
+    {
+        //Tiewel tiewel = lsTwels.Where(ut => ut.Nom == "Marcel").FirstOrDefault();
+        //tiewel.Nom = "OUEDRAOGO";
+        //tiewel.Pnom = "Marcel1";
+        //Context.UpdateObject(tiewel);
+        //await Context.SaveChangesAsync(); // Sends PATCH
+    }
+    
+    private async Task ManagPOUCH()
+    {
+        // Create database
+        await JSRun.InvokeVoidAsync("pouchdbBlazor.createDb", "csaiedb");
+
+        // Put document
+        var doc = new { _id = "001", name = "Marcel" };
+        await JSRun.InvokeVoidAsync("pouchdbBlazor.putDoc", doc);
+
+        // Get document
+        var result = await JSRun.InvokeAsync<object>("pouchdbBlazor.getDoc", "001");
+
+        // Get all documents
+        var allDocs = await JSRun.InvokeAsync<object>("pouchdbBlazor.allDocs");
+    }
+  
+}

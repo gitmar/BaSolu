@@ -12,6 +12,7 @@
 @using GxTie.Components.Paccu.Inscr
 @using GxTie.Components.Paccu.Invita
 @using GxTie.Components.Paccu.Valida
+@using GxTie.StaticHelpers
 @using GxWapi.DaModels
 @using Microsoft.OData.Client
 @using Newtonsoft.Json
@@ -86,9 +87,10 @@ else
                                      Ugpe="@Ugpe"
                                      Tgpe="@Tgpe"
                                      curOrga="@curOrga"
+                                     DicvCols="@dicvCols"
+                                     DicvACols="@dicvACols"
                                      _guard="_guard"
                                      toChild="@toChild"
-                                     allEnable="@allEnable"
                                      curODContext="@curODContext">
                                 <ChildContent>
                                     @* <h2 class="child-box">Hello INTEGRATION</h2> *@
@@ -97,19 +99,19 @@ else
                         }
                         else if (_chxMenu == 2 && Ugpe != 0) // && Tgpe != 0 && ParentOK)
                         {
-                            <EnrolAcc @ref="myetiw"
-                                      ParentEDT="@ParentEDT"
-                                      ParentOK="@ParentOK"
+                            <InscTiw @ref="myetiw"
                                       Ugpe="@Ugpe"
                                       Tgpe="@Tgpe"
                                       curOrga="@curOrga"
+                                      DicvCols="@dicvCols"
+                                      DicvACols="@dicvACols"
                                       _guard="_guard"
                                       toChild="@toChild"
                                       curODContext="@curODContext">
                                 <ChildContent>
                                     @* <h2 class="child-box">Hello ACCUEIL</h2> *@
                                 </ChildContent>
-                            </EnrolAcc>
+                            </InscTiw>
                         }
                         else if (_chxMenu == 3)
                         {
@@ -122,7 +124,7 @@ else
                                 </ChildContent>
                             </InvOper> *@
                         }
-                        else if (_chxMenu == 4 && Ugpe != 0 && Tgpe != 0 && ParentOK)
+                        else if (_chxMenu == 4 && Ugpe != 0 && Tgpe != 0)
                         {
                             @* <EnrolTiw @ref="myertiw"
                                      ParentEDT="@ParentEDT"
@@ -180,7 +182,7 @@ else
 
     //private EnrolTiw mygtiw;
     private ValdTie mygvld = new();
-    private EnrolAcc myetiw = new();
+    private InscTiw myetiw = new();
     private InvOper myginv = new();
 
     private MyAuthStateProvider _authProvider { get; set; }
@@ -204,8 +206,8 @@ else
         curODContext.Context.Entities.Count(e => e.State != EntityStates.Unchanged) : 0;
     private bool _guardVisible = true;
     // Operation VUE
-    public bool ParentOK = false; //child formulaire visible
-    public bool ParentEDT = false;
+    //public bool ParentOK = false; //child formulaire visible
+    //public bool ParentEDT = false;
 
     //menus
     public List<GxMenuItem> MenuItems = new()
@@ -238,8 +240,12 @@ else
     public List<Gpvar> LsVars = new();
     public List<Gplan> LsPlans = new();
     public List<Grole> Uroles = new();
-    public List<Gsglne> LsCols = new();
-    public List<Gsglne> TbElems = new();    
+
+    public Dictionary<int, string> dicvCols = new();
+    public Dictionary<int, string> dicvACols = new(); 
+
+    //public List<Gsglne> LsCols = new();
+    //public List<Gtvar> TbElems = new();    
     private List<Grole> LsRoles = new();
     //Navigation
     private int _gIdTie = 0, _chxGpe = 0, _chxMenu = 1;
@@ -251,8 +257,6 @@ else
     private bool IsOpen = true;
     private bool FirstLoadCompleted = false;
     private bool ContentLoaded = false;
-
-
 
     private async Task SaveAllAsync()
     {
@@ -290,6 +294,7 @@ else
         LsVars = _usrBag.Usorga.Uvars.ToList();
         Uroles = _usrBag.Uroles.ToList();
         LsPlans = _usrBag.Usorga.Uplns.ToList();
+        //TbElems = _usrBag.Usorga.Tbvars.ToList();
         //LsTabls = _usrBag.Usorga;
         LsDivs = await _rendAgres.LoadOrgaPostes();
         LsRoles = await _rendAgres.LoadOrgaRoles();
@@ -309,7 +314,7 @@ else
         Console.WriteLine("Authentication ENTREE");
         await LoadTieAplAsync();
         // Populate child data immediately
-        TbElems = curOrga.Gsglnes.Where(cl => cl.Pvars == 4).ToList(); //after loaded
+        //TbElems = curOrga.Gsglnes.Where(cl => cl.Pvars == 4).ToList(); //after loaded
         toChild = new MyShareVars
         {
             authUser = authState.User,
@@ -320,11 +325,13 @@ else
             LsPlans = LsPlans.ToList(),
             //LsTabls = LsTabls.ToList()
             //provisoire
-            LsCols = LsCols,
-            TbElems = TbElems,
+            //LsCols = LsCols,
+            //TbElems = TbElems,
         };
-        _guard.RegisterUnconfirmedPredicate<Tiewel>(p => p.Xadd1 == -1);
-        _guard.RegisterUnconfirmedPredicate<Tiwafl>(r => r.Xadd1 == -1);
+        _guard.RegisterUnconfirmedPredicate<Tiewel>(w => w.Xadd1 == -1);
+        _guard.RegisterUnconfirmedPredicate<Tiwafl>(wa => wa.Xadd1 == -1);
+        _guard.RegisterUnconfirmedPredicate<Tiersp>(e => e.Xadd1 == -1);
+        _guard.RegisterUnconfirmedPredicate<Tieafl>(ea => ea.Xadd1 == -1);
         _nbChanges = _guard.GetPendingChangesCount();  // Initial value
         // pita = 5;
         Console.WriteLine("TIERS A ETE TESTE");
@@ -338,56 +345,111 @@ else
     }
     private async Task LoadTieAplAsync()
     {
+        // Create context
+        curODContext = await _contextFactory.CreateAsync();
+        _guard.AttachContext(curODContext);
         try
         {
-            curODContext = await _contextFactory.CreateAsync(); // Use factory
-            _guard.AttachContext(curODContext);
-            var expand =
-                "Gsesios,Gsglnes," +
-                "Tiersps($expand=Tieafls)," +
-                "Tiewels($expand=Tiwafls)";
+            int key = _usrBag.Idorg;
+            string expandTiewels = ODataQueryHelper.Expand<Gxorga, IEnumerable<Tiewel>>(o => o.Tiewels)
+                + "($expand=Tiwafls)";
+            string expandTiersps = ODataQueryHelper.Expand<Gxorga, IEnumerable<Tiersp>>(o => o.Tiersps)
+                + "($expand=Tieafls)";
+            string expandGsesios = ODataQueryHelper.Expand<Gxorga, IEnumerable<Gsesio>>(o => o.Gsesios);
 
-            await curODContext.LoadFilteredAsync<Gxorga>(expand: expand);
-            curOrga = curODContext.Context.Entities
-                .Select(e => e.Entity)
-                .OfType<Gxorga>()
-                .SingleOrDefault(o => o.Idorg == _usrBag.Idorg);
-
+            // Combine them
+            string expand = string.Join(",", expandTiewels, expandTiersps,
+                    expandGsesios);
+            curOrga = await curODContext.GetByKeyAsync<Gxorga>(
+                key,
+                "Gxorgas",
+                expand
+            );
             if (curOrga == null)
             {
                 Console.WriteLine("No organization found for the current user.");
                 return;
             }
-            Ugpe = 1; //cible
-            Tgpe = 6;
-            _chxMenu = 1;
-            LsCols = curOrga.Gsglnes.Where(ug => ug.Otyp == 5 && ug.Dtyp == 6 && ug.Totyp == 1 && ug.Jacc == 1).ToList();
-            TbElems = curOrga.Gsglnes.Where(ug => ug.Otyp == 4 && ug.Pitb == 1).ToList();
-            Console.WriteLine($"From Enrol Menu Nb.cols :{LsCols.Count} et tbEle {TbElems.Count}");
-            Console.WriteLine($"orga recu {curOrga.Raison}");
-            Console.WriteLine($"nb ties test : {curOrga.Tiersps.Count()}");
-            Console.WriteLine($"nb tiwls test : {curOrga.Tiewels.Count()}");
         }
-        catch (Exception ex)
+        catch(Exception ex)
         {
-            Console.WriteLine($"stack trace : {ex.StackTrace} ex-mess : {ex.Message} and also in-mess: {ex.InnerException}");
+            Console.WriteLine($"Erreur Get Data : {ex.Message}");
         }
+        Ugpe = 1; //cible
+        Tgpe = 6;
+        _chxMenu = 1;
+        Console.WriteLine($"✅ COMPLETE: Tiersps={curOrga.Tiersps?.Count ?? 0}");
     }
+    // private async Task LoadTieAplAsync()
+    // {
+    //     try
+    //     {
+    //         curODContext = await _contextFactory.CreateAsync(); // Use factory
+    //         _guard.AttachContext(curODContext);
+    //         // 🔥 ONE CALL - ALL NAV PROPERTIES!
+    //         await curODContext.GetByKeyAsync<Gxorga>(key, "Gxorgas",
+    //             "Plngens($expand=Rubvars),Gsgfixes,Gsglnes,Tiersps($expand=Actsaies)");
+
+    //         // Refresh curOrga with ALL children
+    //         curOrga = await curODContext.GetByKeyAsync<Gxorga>(key, "Gxorgas");
+
+    //         Console.WriteLine($"✅ COMPLETE: Plngens={curOrga.Plngens?.Count ?? 0}, " +
+    //                           $"Gsgfixes={curOrga.Gsgfixes?.Count ?? 0}, " +
+    //                           $"Tiersps={curOrga.Tiersps?.Count ?? 0}");
+
+    //         isLoading = false;
+
+
+    //         var expand =
+    //             "Gsesios,Gsglnes," +
+    //             "Tiersps($expand=Tieafls)," +
+    //             "Tiewels($expand=Tiwafls)";
+
+    //         await curODContext.LoadFilteredAsync<Gxorga>(expand: expand);
+    //         curOrga = curODContext.Context.Entities
+    //             .Select(e => e.Entity)
+    //             .OfType<Gxorga>()
+    //             .SingleOrDefault(o => o.Idorg == _usrBag.Idorg);
+
+    //         if (curOrga == null)
+    //         {
+    //             Console.WriteLine("No organization found for the current user.");
+    //             return;
+    //         }
+    //         Ugpe = 1; //cible
+    //         Tgpe = 6;
+    //         _chxMenu = 1;
+    //         LsCols = curOrga.Gsglnes.Where(ug => ug.Otyp == 5 && ug.Dtyp == 6 && ug.Totyp == 1 && ug.Jacc == 1).ToList();
+    //         TbElems = curOrga.Gsglnes.Where(ug => ug.Otyp == 4 && ug.Pitb == 1).ToList();
+    //         Console.WriteLine($"From Enrol Menu Nb.cols :{LsCols.Count} et tbEle {TbElems.Count}");
+    //         Console.WriteLine($"orga recu {curOrga.Raison}");
+    //         Console.WriteLine($"nb ties test : {curOrga.Tiersps.Count()}");
+    //         Console.WriteLine($"nb tiwls test : {curOrga.Tiewels.Count()}");
+    //     }
+    //     catch (Exception ex)
+    //     {
+    //         Console.WriteLine($"stack trace : {ex.StackTrace} ex-mess : {ex.Message} and also in-mess: {ex.InnerException}");
+    //     }
+    // }
 
     //changes des selections
     void ChxGpeTiers(Gpfixe mygpe)
     {
         gpeLiba = "";
-        LsCols = curOrga.Gsglnes.Where(ug => ug.Otyp == 5 && ug.Dtyp == 6 && ug.Totyp == Ugpe && ug.Jacc == 1).ToList();
-        if (mygpe != null)
-        {
-            Ugpe = mygpe.Elea;
-            Tgpe = mygpe.Gp2;
-            gpeLiba = LsGties.Where(ut => ut.Elea == mygpe.Elea).FirstOrDefault().Liba.ToUpperInvariant();
-            StateHasChanged();
-            Console.WriteLine("PAS 2");
-        }
-        toChild.LsCols = LsCols;
+        //colonnes parent et elements
+        dicvCols = LsVars.Where(tc => tc.Gvars == 8 && tc.Itb == 1 && tc.Totyp == mygpe.Elea).ToDictionary(tc => tc.Elea, tc => tc.Liba);
+        dicvACols = LsVars.Where(tc => tc.Gvars == 8 && tc.Itb == 2 && tc.Totyp == 1).ToDictionary(tc => tc.Elea, tc => tc.Liba);
+
+        // LsCols = curOrga.Gsglnes.Where(ug => ug.Otyp == 5 && ug.Dtyp == 6 && ug.Totyp == Ugpe && ug.Jacc == 1).ToList();
+        // if (mygpe != null)
+        // {
+        //     Ugpe = mygpe.Elea;
+        //     Tgpe = mygpe.Gp2;
+        //     gpeLiba = LsGties.Where(ut => ut.Elea == mygpe.Elea).FirstOrDefault().Liba.ToUpperInvariant();
+        //     StateHasChanged();
+        //     Console.WriteLine("PAS 2");
+        // }
+        // toChild.LsCols = LsCols;
     }
     private async Task SelMenu(int noM)
     {
@@ -418,8 +480,10 @@ else
     {
         gpeLiba = "";
         if (noG == 0) return;
+
+
         var mygpe = LsGties.Where(gt => gt.Itb == 6 && gt.Elea == noG).FirstOrDefault();
-        LsCols = curOrga.Gsglnes.Where(ug => ug.Otyp == 5 && ug.Dtyp == 6 && ug.Totyp == Ugpe && ug.Jacc == 1).ToList();
+        //LsCols = curOrga.Gsglnes.Where(ug => ug.Otyp == 5 && ug.Dtyp == 6 && ug.Totyp == Ugpe && ug.Jacc == 1).ToList();
         Ugpe = noG;
         Tgpe = mygpe.Gp2;
         gpeLiba = LsGties.Where(ut => ut.Elea == mygpe.Elea).FirstOrDefault().Liba.ToUpperInvariant();

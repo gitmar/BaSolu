@@ -1,0 +1,408 @@
+﻿@page "/carrimenu"
+@inherits LayoutComponentBase
+@layout FreeLayout
+
+@using System.Security.Claims
+@using BlazorBootstrap
+@using Blazored.LocalStorage
+@using GxTie.ClieModels
+@using GxTie.Services
+@using GxTie.Components.Paccu.Carri
+@using GxShared.Sess
+@using GxShared.Others
+@using GxWapi.DaModels
+@using Microsoft.OData.Client
+@using Newtonsoft.Json
+
+@inject NavigationManager _navmanager
+@inject ILocalStorageService _localStorage
+@inject HttpClientService _cliemanager
+@inject IODataContextFactory _contextFactory
+@inject SessionContextService _sessionContext
+@inject RendAgres _rendAgres
+@inject PendingChangesGuard _guard
+@inject IJSRuntime _jsRun
+
+@if (isLoading)
+{
+    <div class="text-center">
+        <Spinner Color="SpinnerColor.Primary" Size="SpinnerSize.Large" />
+        <p>RH/CARRIERE Loading...</p>
+    </div>
+}
+else
+{
+    <div class="gx-screen-layout">
+        <div class="container gx-parent-container" style="height: 100vh;">
+            <div class="d-flex flex-column" style="height: 100%;">
+                <GxNavMenu BrandText="A24soft Gx-Solutions"
+                           MenuItems="@MenuItems"
+                           YaGroup="true"
+                           Groups="@Groupes"
+                           MenuSelected="@_chxMenu"
+                           MenuSelectedChanged="@SelMenu"
+                           GroupSelected="@_chxGpe"
+                           GroupSelectedChanged="@SelGpe"
+                           OnBack="@NavigateBack" />
+
+                @* <p>Selected Menu Id: @_selectedMenuId</p>
+                <p>Selected Group Id: @_selectedGroupId</p> *@
+
+                <div class="row">
+                    <div class="col-md-12 input-group align-middle">
+                        <span class="text-uppercase text- text-success"><b>@strComp</b></span>
+                        &nbsp;&nbsp;
+                        <span class="separator">|| </span>
+                        <Button class="btn btn-sm btn-secondary btnsz"
+                                style="@(!allEnable ? "" : "display:none;")"
+                                @onclick="ManEditAll">
+                            Modifier
+                        </Button>
+                        <Button class="btn btn-sm btn-secondary btnsz"
+                                style="@(allEnable ? "" : "display:none;")"
+                                @onclick="ManCnclAll">
+                            Annuler
+                        </Button>
+                        <span class="separator">|  </span>
+                        <Button class="btn btn-sm btn-secondary btnsz"
+                                style="@(allEnable ? "" : "display:none;")"
+                                @onclick="ManSaveAll">
+                            Enregistrer
+                        </Button>
+                        @if (!String.IsNullOrEmpty(MImessage))
+                        {
+                            <span class="bg-info bg-opacity-10" style="font-style:italic;color:red">&nbsp;--> @MImessage</span>
+                        }
+                    </div>
+                </div>
+
+                <!-- Main Content -->
+                <div class="row">
+                    @if (_chxMenu != 0 && toChild != null && curOrga != null && curODContext != null)
+                    {
+                        @if (_chxMenu == 1)
+                        {
+                            <Mutatio @ref="mymtie"
+                                     Ugpe="@Ugpe"
+                                     Tgpe="@Tgpe"
+                                     curOrga="@curOrga"
+                                     _guard ="_guard"
+                                     toChild="@toChild"
+                                     allEnable="@allEnable"
+                                     curODContext="@curODContext">
+                                <ChildContent>
+                                    @* <h2 class="child-box">Hello INTEGRATION</h2> *@
+                                </ChildContent>
+                            </Mutatio>
+                        }
+                        else if (_chxMenu == 2 && ParentOK)
+                        {
+
+                        }
+                        else if (_chxMenu == 3 && ParentOK)
+                        {
+
+                        }
+                        else if (_chxMenu == 4)
+                        {
+
+                        }
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+}
+@code {
+    private bool isLoading = true;
+    public MyODataContext curODContext;
+    public Gxorga curOrga = new Gxorga();
+    public MyShareVars toChild = new();
+    private bool allEnable = false;
+
+    private Mutatio mymtie = new();
+
+    [Inject]
+    private MyAuthStateProvider _authProvider { get; set; }
+    public Userbag _usrBag = new();
+
+    [Parameter]
+    public RenderFragment RecpTiw { get; set; }
+    [Parameter]
+    public RenderFragment InscTiw { get; set; }
+    [Parameter]
+    public RenderFragment InviTiw { get; set; }
+
+    [CascadingParameter]
+    private Task<AuthenticationState>? AuthState { get; set; }
+
+    private ClaimsPrincipal authUser;
+    private bool isAuthenticated = false;
+
+    // Operation VUE
+    public bool ParentOK = false; //child formulaire visible
+    public bool ParentEDT = false;
+
+    //menus
+    public List<GxMenuItem> MenuItems = new()
+    {
+        new GxMenuItem { Id = 1, Text = "Mutations", Icon = "bi bi-box-arrow-in-down" },
+        new GxMenuItem { Id = 2, Text = "Affectations", Icon = "bi bi-house-door" },
+        new GxMenuItem { Id = 3, Text = "Promotions", Icon = "bi bi-envelope-paper" },
+        new GxMenuItem { Id = 3, Text = "Sanctions", Icon = "bi bi-envelope-paper" }
+        //new MenuItem { Id = 4, Text = "Mutation", Icon = "bi bi-arrow-repeat" },
+    };
+    public List<GxGroupe> Groupes = new();
+
+    //public int _UorgId = 0;
+    public string _strOrga = "", _curSigle = "", MImessage = "", LoadLabel = "", strmeta = "", strmeta2 = "";
+
+    //entities load
+    private IEnumerable<Gxorga> _lsOrgas = new List<Gxorga>();
+    private List<Tiersp> InTiers = new List<Tiersp>();
+    public IQueryable<Gsapl> InApls = Enumerable.Empty<Gsapl>().AsQueryable();
+    public IEnumerable<Tiersp> ResTie;
+
+    public Tiewel opTwel = new();
+    public Tiersp opTier = new();
+
+    public List<Gpfixe> LsFixes = new();
+    public List<Gpfixe> LsGties = new();
+    public List<Gpdivh> LsDivs = new();
+    //public List<Rubpst> LsPsts = new();
+    public List<Gpvar> LsVars = new();
+    private List<Grole> LsRoles = new();
+    public List<Gplan> LsPlans = new();
+    //Navigation
+    private int _gIdTie = 0, _chxGpe = 0, _chxMenu = 1;
+    string gpeLiba = "";
+    private string strComp = $"Integration";
+    public int Ugpe = 0, Tgpe = 0; //gpe ref1..6/tiers type6..7
+    //modal management
+    private string SidebarStyle = "width: 200px;";
+    private bool IsOpen = true;
+    private bool FirstLoadCompleted = false;
+    private bool ContentLoaded = false;
+
+    //Guard
+    private int pendingCount => _guard.HasPendingChanges() ?
+        curODContext.Context.Entities.Count(e => e.State != EntityStates.Unchanged) : 0;
+
+    private async Task SaveAllAsync()
+    {
+        await _guard.FlushAsync();
+        StateHasChanged();
+    }
+    private async Task CancelAllChanges()
+    {
+        await _guard.CancelChangesAsync();
+        StateHasChanged();
+    }
+    protected override async Task OnInitializedAsync()
+    {
+        //prise valeurs parent
+        isLoading = true;
+        LoadLabel = "data is loading";
+        SetLoadingState(); // 75, "Fetching data...");
+        var authState = await AuthState;
+        authUser = authState.User;
+        isAuthenticated = authUser.Identity.IsAuthenticated;
+        if (!isAuthenticated)
+        {
+            Console.WriteLine("Authentication in Enrol Utilisateur ECHEC");
+            return;
+        }
+        else
+        {
+            Console.WriteLine("Authentication in Enrol SUCCESS");
+        }
+        _usrBag = await _sessionContext.GetUserbagAsync();
+        LsVars = _usrBag.Usorga.Uvars.ToList();
+        LsDivs = await _rendAgres.LoadOrgaPostes();
+        LsRoles = await _rendAgres.LoadOrgaRoles();
+        LsFixes = _usrBag.Ufixes.ToList();
+        LsPlans = _usrBag.Usorga.Uplns.ToList();
+        LsGties = _usrBag.Ufixes
+            .Where(ut => ut.Gvars == 36 && ut.Elea != 0 && ut.Elea != 9)
+            .ToList();
+        Groupes.Clear();
+        foreach (var gr in LsGties.Where(gr => gr.Itb == 6))
+        {
+            Groupes.Add(new GxGroupe { Itb = gr.Itb, Elea = gr.Elea, Liba = gr.Liba });
+        }
+        //LsDoms = _usrBag.Ufixes
+        //    .Where(ut => ut.Gvars == 36 && ut.Itb == 4 && ut.Gp1 == 3 && ut.Elea != 0)
+        //    .ToList();
+        Console.WriteLine("Authentication ENTREE");
+        await LoadTieAplAsync();
+        //_varsTous.Ugpe = 1; //initial Cible
+        toChild.authUser = authUser;
+        toChild.isAuthenticated = isAuthenticated;
+        toChild.LsVars = LsVars.ToList();
+        toChild.LsFixes = LsFixes.ToList();
+        toChild.LsPlans = LsPlans;
+        toChild.LsDivs = LsDivs;
+        Console.WriteLine("TIERS A ETE TESTE");
+        //option initiale
+        strComp = $"Affectations {gpeLiba}";
+        isLoading = false;
+        ParentOK = true;
+        //await _loadingService.Hide();
+
+
+        StateHasChanged();
+        isLoading = false;
+    }
+    private async Task LoadTieAplAsync()
+    {
+        try
+        {
+            curODContext = await _contextFactory.CreateAsync(); // Use factory
+            _guard.AttachContext(curODContext);
+            
+            var expand =
+                "Gsesios," +
+                "Tiersps($expand=Tiemvts)";
+
+            await curODContext.LoadFilteredAsync<Gxorga>(expand: expand);
+            curOrga = curODContext.Context.Entities
+                .Select(e => e.Entity)
+                .OfType<Gxorga>()
+                .SingleOrDefault(o => o.Idorg == _usrBag.Idorg);
+
+
+            // //var expand = "Tiewels,Tiewels($expand=Tiwafls),Tiersps,Tiersps($expand=Tieafls),Gsglnes";
+            // var expand = "Gsesios," + "Tiersps," +
+            //  "Tiersps($expand=Tiemvts)";
+            // var dxorgas = await curODContext.LoadFilteredAsync<Gxorga>(expand: expand);
+            // curOrga = dxorgas.FirstOrDefault();
+
+            if (curOrga == null)
+            {
+                Console.WriteLine("No organization found for the current user.");
+                return;
+            }
+            //prise des colonnes //default/Ugpe = 1;
+            Ugpe = 1;
+            _chxMenu = 1;
+            Console.WriteLine($"orga recu {curOrga.Raison}");
+            Console.WriteLine($"nb ties test : {curOrga.Tiersps.Count()}");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"stack trace : {ex.StackTrace} ex-mess : {ex.Message} and also in-mess: {ex.InnerException}");
+        }
+    }
+    //changes des selections
+    void ChxGpeTiers(Gpfixe mygpe)
+    {
+        gpeLiba = "";
+        if (mygpe != null)
+        {
+            Ugpe = mygpe.Elea;
+            Tgpe = mygpe.Gp2;
+            gpeLiba = LsGties.Where(ut => ut.Elea == mygpe.Elea).FirstOrDefault().Liba.ToUpperInvariant();
+            StateHasChanged();
+            Console.WriteLine("PAS 2");
+        }
+    }
+    private async Task SelMenu(int noM)
+    {
+        _chxMenu = noM;
+        if (_chxMenu == 1) strComp = $"Mutations {gpeLiba}";
+        if (_chxMenu == 2) strComp = $"Affectations {gpeLiba}";
+        if (_chxMenu == 3) strComp = $"Promotions {gpeLiba}";
+        if (_chxMenu == 4) strComp = $"Sanctions {gpeLiba}";
+        //if (_chxMenu == 5) strComp = "Colonnes";
+        allEnable = false;
+        StateHasChanged();
+        await Task.Delay(1);
+    }
+    private async Task SelGpe(int noG)
+    {
+        gpeLiba = "";
+        if (noG == 0) return;
+        var mygpe = LsGties.Where(gt => gt.Itb == 6 && gt.Elea == noG).FirstOrDefault();
+        //LsCols = curOrga.Gsglnes.Where(ug => ug.Otyp == 5 && ug.Dtyp == 6 && ug.Totyp == Ugpe && ug.Jacc == 1).ToList();
+        Ugpe = noG;
+        Tgpe = mygpe.Gp2;
+        gpeLiba = LsGties.Where(ut => ut.Elea == mygpe.Elea).FirstOrDefault().Liba.ToUpperInvariant();
+        StateHasChanged();
+        Console.WriteLine("PAS 2");
+        await Task.Delay(1);
+    }
+    void NavigateBack()
+    {
+        _navmanager.NavigateTo("/");
+    }
+    private async Task ManEditAll()
+    {
+        if (Ugpe == 0)
+        {
+            MImessage = "Groupe obligatoire";
+            return;
+        }
+        ParentEDT = true;
+        MImessage = "Edition en preparation...";
+        if (_chxMenu == 1)
+        { //validation
+            await mymtie.EdtAll();
+        }
+        // if (_chxMenu == 2)
+        // { //accueil
+        //     await mygtiw.EdtAll();
+        // }
+        // if (_chxMenu == 3)
+        // { //invitation
+        //     await myginv.EdtAll();
+        // }
+        MImessage = "";
+        allEnable = true;
+    }
+    private async Task ManCnclAll()
+    {
+        MImessage = "annulation en cours...";
+
+        if (_chxMenu == 1)
+        { //validation
+            await mymtie.CncAll();
+        }
+        // if (_chxMenu == 2)
+        // { //accueil
+        //     await mygtiw.CncCHILD();
+        // }
+        // if (_chxMenu == 3)
+        // { //invitation
+        //     await myginv.CncAll();
+        // }
+        //reload
+        await LoadTieAplAsync();
+        MImessage = "";
+        allEnable = false;
+    }
+    private async Task ManSaveAll()
+    {
+        bool oksav = false;
+        MImessage = "enregistrement en cours...";
+        if (_chxMenu == 1)
+        { //validation
+            oksav = await mymtie.SaveCurEntities();
+        }
+        // if (_chxMenu == 2)
+        // { //accueil
+        //     oksav = await mygtiw.SaveCurEntities();
+        // }
+        // if (_chxMenu == 3)
+        // { //invitation
+        //     oksav = await myginv.SaveCurEntities();
+        // }
+        if (oksav) MImessage = "";
+        allEnable = false;
+    }
+    private async Task SetLoadingState()
+    {
+        await _jsRun.InvokeVoidAsync("eval",
+        "document.documentElement.style.setProperty('--blazor-load-percentage', '100');" +
+        "document.documentElement.style.setProperty('--blazor-load-percentage-text', '\"Loading data...\"');");
+    }
+}

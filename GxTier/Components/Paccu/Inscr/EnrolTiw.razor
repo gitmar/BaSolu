@@ -598,8 +598,8 @@
     public List<Gpfixe> LsFixes { get; set; }
     public List<Gpfixe> LsTgpes { get; set; }
     public List<Gpvar> LsVars { get; set; }
-    public List<Gsglne> LsCols = new();
-    public List<Gsglne> TbElems = new();
+    //public List<Gsglne> LsCols = new();
+    public List<Gtvar> TbElems = new();
     //liste attente de save
     private List<Tiewel> LsTAtts = new List<Tiewel>();
     private UsrMail _usrMail = new UsrMail();
@@ -686,7 +686,7 @@
         //Console.WriteLine($"TUafls {TUafls.Count} // {Ugpe}");
         LsFixes = toChild.LsFixes;
         //LsPlans = toChild.LsPlans.Where(pl => pl.Ptyp == 4).ToList();
-        LsCols = toChild.LsCols;
+        //LsCols = toChild.LsCols;
         TbElems = toChild.TbElems;
         _lgcdu = 3;
         var noslims = LsVars.Where(uv => uv.Idhie == 0 && uv.Gvars == 21 && uv.Itb == 1 && uv.Elea == 1);
@@ -1224,31 +1224,31 @@
     }
     void PromptAflEdit(Tiwafl myafl)
     {
-        myafl.Xedt1 = 0;
-        editingAfl = myafl;
+        // myafl.Xedt1 = 0;
+        // editingAfl = myafl;
 
-        draftAfl = new Tiwafl();
+        // draftAfl = new Tiwafl();
 
-        // List of property names to copy, e.g. from your available names
-        var propertyNamesToCopy = new List<string>();
-        foreach (var ucol in LsCols.Where(uv => uv.Totyp == Ugpe && uv.Tstyp == myafl.Tyafl && uv.Jacc == 1))
-        {
-            string propname = ucol.Scdrub + ",";
-            propertyNamesToCopy.Add(ucol.Scdrub);
-        }
-        var type = typeof(Tiwafl);
-        foreach (var propName in propertyNamesToCopy)
-        {
-            var prop = type.GetProperty(propName);
-            if (prop != null && prop.CanRead && prop.CanWrite)
-            {
-                var value = prop.GetValue(myafl);
-                prop.SetValue(draftAfl, value);
-            }
-        }
-        //init edition
-        myafl.Xedt1 = -1;
-        EditingAflRowGuid = myafl.Rowguid;
+        // // List of property names to copy, e.g. from your available names
+        // var propertyNamesToCopy = new List<string>();
+        // foreach (var ucol in LsCols.Where(uv => uv.Totyp == Ugpe && uv.Tstyp == myafl.Tyafl && uv.Jacc == 1))
+        // {
+        //     string propname = ucol.Scdrub + ",";
+        //     propertyNamesToCopy.Add(ucol.Scdrub);
+        // }
+        // var type = typeof(Tiwafl);
+        // foreach (var propName in propertyNamesToCopy)
+        // {
+        //     var prop = type.GetProperty(propName);
+        //     if (prop != null && prop.CanRead && prop.CanWrite)
+        //     {
+        //         var value = prop.GetValue(myafl);
+        //         prop.SetValue(draftAfl, value);
+        //     }
+        // }
+        // //init edition
+        // myafl.Xedt1 = -1;
+        // EditingAflRowGuid = myafl.Rowguid;
     }
     void CancelAflEding(Tiwafl myafl)
     {
@@ -1266,32 +1266,32 @@
         if (editingAfl != null)
         {
             // List of property names to copy, e.g. from your available names
-            var propertyNamesToCopy = new List<string>();
-            foreach (var ucol in LsCols.Where(uv => uv.Totyp == Ugpe && uv.Tstyp == myafl.Tyafl && uv.Jacc == 1))
-            {
-                string propname = ucol.Scdrub + ",";
-                propertyNamesToCopy.Add(ucol.Scdrub);
-            }
-            var type = typeof(Tiwafl);
+            // var propertyNamesToCopy = new List<string>();
+            // foreach (var ucol in LsCols.Where(uv => uv.Totyp == Ugpe && uv.Tstyp == myafl.Tyafl && uv.Jacc == 1))
+            // {
+            //     string propname = ucol.Scdrub + ",";
+            //     propertyNamesToCopy.Add(ucol.Scdrub);
+            // }
+            // var type = typeof(Tiwafl);
 
-            // Assuming you want to copy the same set of property names as before,
-            // or you can dynamically load those names as needed instead of hardcoding:
+            // // Assuming you want to copy the same set of property names as before,
+            // // or you can dynamically load those names as needed instead of hardcoding:
 
-            foreach (var propName in propertyNamesToCopy)
-            {
-                var prop = type.GetProperty(propName);
-                if (prop != null && prop.CanRead && prop.CanWrite)
-                {
-                    var value = prop.GetValue(myafl);
-                    prop.SetValue(editingAfl, value);
-                }
-            }
+            // foreach (var propName in propertyNamesToCopy)
+            // {
+            //     var prop = type.GetProperty(propName);
+            //     if (prop != null && prop.CanRead && prop.CanWrite)
+            //     {
+            //         var value = prop.GetValue(myafl);
+            //         prop.SetValue(editingAfl, value);
+            //     }
+            // }
 
-            // Now attach or update in context as you do:
-            if (!curODContext.GetAllTrackedEntities().Any(e => e.Entity == editingAfl))
-                curODContext.AttachTo("Tiwafls", editingAfl);
+            // // Now attach or update in context as you do:
+            // if (!curODContext.GetAllTrackedEntities().Any(e => e.Entity == editingAfl))
+            //     curODContext.AttachTo("Tiwafls", editingAfl);
 
-            curODContext.UpdateObject(editingAfl);
+            // curODContext.UpdateObject(editingAfl);
         }
 
         myafl.Xedt1 = 0;
@@ -1535,9 +1535,9 @@
         //     errorList.Add("Echec, Responsabilite obligatoire.");
         //     return false;
         // }
-        if (String.IsNullOrEmpty(mytiw.Usremail))
+        if (String.IsNullOrEmpty(mytiw.Email))
         {
-            strmeta = mytiw.Usremail;
+            strmeta = mytiw.Email;
             errors = true;
             errorList.Add("Echec, Email obligatoire.");
             return false;

@@ -233,12 +233,12 @@ namespace GxTie.Services
         public int Order { get; set; }
     }
     // In _Imports.razor or component top
-public static class DictionaryExtensions
-{
-    public static TValue GetValueOrDefault<TKey, TValue>(this Dictionary<TKey, TValue> dict, 
-        TKey key, TValue defaultValue = default)
+    public static class DictionaryExtensions
     {
-        return dict.TryGetValue(key, out var value) ? value : defaultValue;
+        public static TValue GetValueOrDefault<TKey, TValue>(this Dictionary<TKey, TValue> dict, 
+            TKey key, TValue defaultValue = default)
+        {
+            return dict.TryGetValue(key, out var value) ? value : defaultValue;
+        }
     }
-}
 }

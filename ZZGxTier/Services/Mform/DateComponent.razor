@@ -1,0 +1,141 @@
+﻿@using System.Reflection
+@using Microsoft.AspNetCore.Components.Forms
+
+<!-- DateComponent.razor -->
+
+<InputDate @bind-Value="CurrentDate"
+           @oninput="HandleInput"
+           placeholder="@Placeholder" />
+
+@code {
+    [Parameter] public object Obj { get; set; }
+    [Parameter] public string PropertyName { get; set; }
+    [Parameter] public EventCallback<object> ObjChanged { get; set; }
+    [Parameter] public string Placeholder { get; set; }
+
+    private DateTime _currentDate;
+
+    protected override void OnInitialized() => CurrentDate = GetCurrentValue();
+
+    protected override void OnParametersSet() => CurrentDate = GetCurrentValue();
+
+    private async void HandleInput(ChangeEventArgs e)
+    {
+        if (DateTime.TryParse(e.Value?.ToString(), out var date))
+        {
+            CurrentDate = date;
+            await SetPropertyValue(Obj, PropertyName, CurrentDate);
+        }
+    }
+
+    public DateTime CurrentDate
+    {
+        get => _currentDate;
+        set
+        {
+            if (_currentDate != value)
+            {
+                _currentDate = value;
+                StateHasChanged();
+            }
+        }
+    }
+
+    private DateTime GetCurrentValue()
+    {
+        if (Obj == null || string.IsNullOrEmpty(PropertyName))
+            return DateTime.MinValue;
+        var prop = Obj.GetType().GetProperty(PropertyName, BindingFlags.Public | BindingFlags.Instance);
+        if (prop != null && (prop.PropertyType == typeof(DateTime) || prop.PropertyType == typeof(DateTime?)))
+        {
+            var val = prop.GetValue(Obj);
+            if (val != null)
+                return (DateTime)val;
+        }
+        return DateTime.MinValue;
+    }
+
+    private async Task SetPropertyValue(object obj, string propName, object val)
+    {
+        if (obj == null || string.IsNullOrEmpty(propName))
+            return;
+        var prop = obj.GetType().GetProperty(propName, BindingFlags.Public | BindingFlags.Instance);
+        if (prop != null && prop.CanWrite)
+        {
+            prop.SetValue(obj, val);
+            Console.WriteLine($"Date prop {propName} set to {val}");
+
+            await ObjChanged.InvokeAsync(obj);
+        }
+        StateHasChanged();
+    }
+}
+
+@* <InputDate @bind-Value="CurrentDate"
+           @oninput="HandleInput"
+           placeholder="@Placeholder">
+</InputDate>
+
+@code {
+    [Parameter] public object Obj { get; set; }
+    [Parameter] public string PropertyName { get; set; }
+    [Parameter] public string Placeholder { get; set; }
+
+    private DateTime _currentDate;
+
+    protected override void OnInitialized() => CurrentDate = GetCurrentValue();
+
+    protected override void OnParametersSet() => CurrentDate = GetCurrentValue();
+
+    private void HandleInput(ChangeEventArgs e)
+    {
+        if (DateTime.TryParse(e.Value?.ToString(), out var date))
+        {
+            CurrentDate = date;
+            SetPropertyValue(Obj, PropertyName, CurrentDate);
+        }
+    }
+
+    public DateTime CurrentDate
+    {
+        get => _currentDate;
+        set
+        {
+            if (_currentDate != value)
+            {
+                _currentDate = value;
+                StateHasChanged();
+            }
+        }
+    }
+
+    private DateTime GetCurrentValue()
+    {
+        if (Obj == null || string.IsNullOrEmpty(PropertyName))
+            return DateTime.MinValue;
+
+        var prop = Obj.GetType().GetProperty(PropertyName, BindingFlags.Public | BindingFlags.Instance);
+        if (prop != null && (prop.PropertyType == typeof(DateTime) || prop.PropertyType == typeof(DateTime?)))
+        {
+            var val = prop.GetValue(Obj);
+            if (val != null)
+                return (DateTime)val;
+        }
+        return DateTime.MinValue;
+    }
+
+    private void SetPropertyValue(object obj, string propname, object val)
+    {
+        if (obj == null || string.IsNullOrEmpty(propname))
+            return;
+
+        var prop = obj.GetType().GetProperty(propname, BindingFlags.Public | BindingFlags.Instance);
+        if (prop != null && prop.CanWrite)
+        {
+            prop.SetValue(obj, val);
+            Console.WriteLine($"Date prop {propname} set to {val}");
+        }
+        StateHasChanged();
+    }
+} *@
+

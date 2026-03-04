@@ -49,6 +49,24 @@ namespace GxTie.Services
                 return new();
             }
         }
-
+        public async Task<Ttvar> LoadOrgaTables()
+        {
+            //All tables lists
+            var json = await _clieManager.SendRequestAsync(
+                "AUTHClient",
+                HttpMethod.Get,
+                "lgauth/tbelmts");
+            return JsonConvert.DeserializeObject<Ttvar>(json);
+            //if (result.Any())
+            //{
+            //    Console.WriteLine($"Nb Tables : {result.Count}");
+            //    return result.ToList();
+            //}
+            //else
+            //{
+            //    Console.WriteLine("Nb Roles : null");
+            //    return new();
+            //}
+        }
     }
 }

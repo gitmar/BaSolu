@@ -95,8 +95,8 @@ else
                            </IctPosts>
                         }
                         else if (_chxMenu == 4)
-                        { //CALCULS
-                          //ref="mygclc"
+                        { //APLANS
+                          //ref="myapln"
                         }
                     }
                 }
@@ -203,14 +203,8 @@ else
                 return;
             }
             Console.WriteLine($"✅ COMPLETE: Plngens={curOrga.Plngens?.Count ?? 0}, " +
-                          //$"Gsgfixes={curOrga.Gsgfixes?.Count ?? 0}, " +
                           $"Tiersps={curOrga.Tiersps?.Count ?? 0}");
-            // Populate child data immediately
             Console.WriteLine($"Usrbag plans : {_usrBag.Usorga.Uplns.Count()}");
-            // foreach (var ipl in LsPlans)
-            // {
-            //     Console.WriteLine($"before : pliba {ipl.Liba} et ptyp {ipl.Ptyp}");
-            // }
             toChild = new MyShareVars
             {
                 authUser = authState.User,
@@ -221,12 +215,6 @@ else
                 LsPlans = LsPlans.ToList(),
                 LsTabls = LsTabls.ToList()
             };
-            // foreach(var ipl in LsPlans)
-            // {
-            //     Console.WriteLine($"after : pliba {ipl.Liba} et ptyp {ipl.Ptyp}");
-            // }
-            //_guard.RegisterUnconfirmedPredicate<Plngen>(p => p.Xadd1 == -1);
-            //_guard.RegisterUnconfirmedPredicate<Rubvar>(r => r.Xadd1 == -1);
             _guard.RegisterUnconfirmedPredicate<Rubhie>(p => p.Xadd1 == -1);
             _guard.RegisterUnconfirmedPredicate<Rubpst>(f => f.Xadd1 == -1);
             _guard.RegisterUnconfirmedPredicate<Actsaie>(a => a.Xadd1 == -1);
@@ -239,30 +227,30 @@ else
         }
     }
 
-    private async Task LoadChildrenAsync(int key)
-    {
-        // 🔥 ONE CALL - ALL NAV PROPERTIES!
-        await curODContext.GetByKeyAsync<Gxorga>(key, "Gxorgas",
-            "Plngens($expand=Rubvars),Gsgfixes,Gsglnes,Tiersps($expand=Actsaies)");
+    // private async Task LoadChildrenAsync(int key)
+    // {
+    //     // 🔥 ONE CALL - ALL NAV PROPERTIES!
+    //     await curODContext.GetByKeyAsync<Gxorga>(key, "Gxorgas",
+    //         "Plngens($expand=Rubvars),Gsgfixes,Gsglnes,Tiersps($expand=Actsaies)");
 
-        // Refresh curOrga with ALL children
-        curOrga = await curODContext.GetByKeyAsync<Gxorga>(key, "Gxorgas");
+    //     // Refresh curOrga with ALL children
+    //     curOrga = await curODContext.GetByKeyAsync<Gxorga>(key, "Gxorgas");
 
-        Console.WriteLine($"✅ COMPLETE: Plngens={curOrga.Plngens?.Count ?? 0}, " +
-                          $"Gsgfixes={curOrga.Gsgfixes?.Count ?? 0}, " +
-                          $"Tiersps={curOrga.Tiersps?.Count ?? 0}");
+    //     Console.WriteLine($"✅ COMPLETE: Plngens={curOrga.Plngens?.Count ?? 0}, " +
+    //                       $"Gsgfixes={curOrga.Gsgfixes?.Count ?? 0}, " +
+    //                       $"Tiersps={curOrga.Tiersps?.Count ?? 0}");
 
-        isLoading = false;
-        await InvokeAsync(StateHasChanged);
+    //     isLoading = false;
+    //     await InvokeAsync(StateHasChanged);
 
-        // await curODContext.GetByKeyAsync<Gxorga>(key, "Gxorgas", "Gsgfixes,Gsglnes");
-        // await curODContext.GetByKeyAsync<Gxorga>(key, "Gxorgas", "Plngens($expand=Rubvars)");
-        // //await curODContext.GetByKeyAsync<Gxorga>(key, "Gxorgas", "Gsgfixes,Gsglnes");
-        // await curODContext.GetByKeyAsync<Gxorga>(key, "Gxorgas", "Tiersps($expand=Actsaies)");
+    //     // await curODContext.GetByKeyAsync<Gxorga>(key, "Gxorgas", "Gsgfixes,Gsglnes");
+    //     // await curODContext.GetByKeyAsync<Gxorga>(key, "Gxorgas", "Plngens($expand=Rubvars)");
+    //     // //await curODContext.GetByKeyAsync<Gxorga>(key, "Gxorgas", "Gsgfixes,Gsglnes");
+    //     // await curODContext.GetByKeyAsync<Gxorga>(key, "Gxorgas", "Tiersps($expand=Actsaies)");
 
-        // // Refresh curOrga with children
-        // curOrga = await curODContext.GetByKeyAsync<Gxorga>(key, "Gxorgas");
-    }
+    //     // // Refresh curOrga with children
+    //     // curOrga = await curODContext.GetByKeyAsync<Gxorga>(key, "Gxorgas");
+    // }
 
 
     protected override void OnAfterRender(bool firstRender)
