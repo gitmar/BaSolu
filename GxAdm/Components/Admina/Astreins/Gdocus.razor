@@ -111,16 +111,15 @@ else
                                             <ChildContent Context="item">
                                                 @if (EdFixRowguid == item?.Rowguid)
                                                 { // show draftPln inputs
-                                                  <InputNumber @bind-Value="draftFix.Liba"
-                                                               style="font-weight:bold; width:60px" />
+                                                  <InputText @bind-Value="draftFix.Liba" />
                                                 }
                                                 else
                                                 { // show item as read-only
-                                                  <input @bind="item.Liba" style="font-weight:bold;width:60px" disabled />
+                                                  @item.Liba
                                                 }
                                             </ChildContent>
                                         </GridColumn>
-                                        <GridColumn TItem="Gsgfix" HeaderText="Taille">
+                                        <GridColumn TItem="Gsgfix" HeaderText="Taille" class="xcol1" >
                                             <ChildContent Context="item">
                                                 @if (EdFixRowguid == item?.Rowguid)
                                                 { // show draftPln inputs
@@ -129,13 +128,13 @@ else
                                                 }
                                                 else
                                                 { // show item as read-only
-                                                  <input @bind="item.Ivala" style="font-weight:bold;width:60px" disabled />
+                                                  @item.Ivala
                                                 }
                                             </ChildContent>
                                         </GridColumn>
                                         <GridColumn TItem="Gsgfix" HeaderText="Methode" IsVisible="ITyDoc == 3" Class="xcol1">
                                             <ChildContent Context="item">
-                                                <InputSelect id="stadm" @bind-Value="item.Ityp" disabled>
+                                                <InputSelect id="stad1" @bind-Value="item.Ityp" disabled>
                                                     @foreach (var tob in LsFixes.Where(ut => ut.Gvars == 33 && ut.Itb == 8 && ut.Gp1 == 1 && ut.Elea != 0))
                                                     {
                                                         <option value="@tob.Elea">@tob.Liba</option>
@@ -1086,6 +1085,7 @@ else
         {
            MyDaDocus = new ObservableCollection<Gsgfix>();
         }
+        StateHasChanged();
     }
 
     // ✅ 6. HELPERS - Mark Count and Clone

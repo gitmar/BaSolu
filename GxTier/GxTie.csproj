@@ -5,11 +5,13 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <ServiceWorkerAssetsManifest>service-worker-assets.js</ServiceWorkerAssetsManifest>
   </PropertyGroup>
-
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
-    <Optimize>True</Optimize>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|AnyCPU'">
+    <Optimize>true</Optimize>
   </PropertyGroup>
-
+  <PropertyGroup Condition="'$(Configuration)' == 'Release'">
+    <SubsitePath>$(SubsitePath)</SubsitePath>
+  </PropertyGroup>
+  
   <ItemGroup>
     <Compile Remove="Components\Admina\**" />
     <Compile Remove="Components\InAdmTest\**" />
@@ -94,7 +96,13 @@
     <Content Include="Connected Services\OData Service\ConnectedService.json" />
     <EmbeddedResource Include="Connected Services\OData Service\OData ServiceCsdl.xml" />
   </ItemGroup>
-  
+
+  <ItemGroup>
+    <None Update="wwwroot\manifest\manifest.webmanifest">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+    </None>
+  </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Blazor.Bootstrap" Version="3.4.0" />
     <PackageReference Include="BlazorDownloadFile" Version="2.4.0.2" />

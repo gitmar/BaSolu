@@ -50,39 +50,58 @@
                            GroupSelectedChanged="@SelGpe"
                            OnBack="@NavigateBack" />
                
-                <div class="row">
-                    <div class="col-md-12 input-group align-middle">
-                        <span class="text-uppercase text- text-success"><b>@strComp</b></span>
-                        &nbsp;&nbsp;
-                        <label>Exercice :</label>
+                <!-- Top Menu Info -->
+                <div class="row mb-2">
+                    <div class="d-flex align-items-center gap-2">
+                        <label>Exercice:</label>
+                        <InputSelect id="exoId" @bind-Value="froMenu.Uexo">
+                            <option value="0">exo?</option>
+                            @foreach (var exo in EnsExos)
+                            {
+                                <option value="@exo.Id">@exo.Sref</option>
+                            }
+                        </InputSelect>
+                        <label>Session:</label>
+                        <InputSelect id="sesId" @bind-Value="froMenu.Usesio">
+                            <option value="0">session?</option>
+                            @foreach (var ses in EnsSess)
+                            {
+                                <option value="@ses.Id">@ses.Sref</option>
+                            }
+                        </InputSelect>
+                    </div>
+                </div>
+                <div class="row mb-2">
+                    <div class="d-flex align-items-center gap-2">
+                        <label>Programme :</label>
                         <div class="text-center">
-                            <InputSelect id="sesId" @bind-Value="froMenu.Uexo">
-                                <option value="0">exo?</option>
-                                @foreach (var oses in EnsExos)
+                            <InputSelect id="pgrId" @bind-Value="ImyProg">
+                                <option value="0">progr?</option>
+                                @foreach (var pgr in LsProgs)
                                 {
-                                    <option value="@oses.Id" @onclick="() => GetSelectedExos(oses)">@oses.Sref</option>
+                                    <option value="@pgr.Id" @onclick="() => GetSelectedProg(pgr)">@pgr.Liba</option>
                                 }
                             </InputSelect>
                         </div>
-                        <label>Session : </label>
-                        <div class="text-center">
-                            <select id="sesId" @bind="froMenu.Usesio">
-                                <option value="0">session?</option>
-                                @foreach (var oses in EnsSess)
+                        <label for="TypDiv">Service :</label>
+                        <div>
+                            <InputSelect id="TypDiv" @bind-Value="ImyDiv">
+                                <option value="0">Aucun</option>
+                                @foreach (var divo in LsDivs)
                                 {
-                                    <option value="@oses.Id" @onclick="() => GetSelectedSesio(oses)">@oses.Sref</option>
+                                    <option value="@divo.Ihie" @onclick="@trierTiers">@divo.Abg-@divo.Liba</option>
                                 }
-                            </select>
+                            </InputSelect>
                         </div>
 
-                        @if (!String.IsNullOrEmpty(MImessage))
-                        {
-                            <span class="bg-info bg-opacity-10" style="font-style:italic;color:red">&nbsp;--> @MImessage</span>
-                        }
                     </div>
-                </div>
-                <div class="row">
-                    <label>==========</label>
+
+                    @if (!string.IsNullOrEmpty(Imessage))
+                    {
+                        <span class="bg-info bg-opacity-10 text-danger px-2" style="font-style: italic;">
+                            &nbsp;--> @Imessage
+                        </span>
+                    }
                 </div>
 
                 <!-- Main Content //a integer froMenu -->
@@ -101,15 +120,15 @@
                                     </ChildContent>
                         </CalcResLnes>
 
-                        <CalcResLnes @ref="mygcalc"
+                        @* <CalcResLnes @ref="mygcalc"
                                      curOrga="@curOrga"
                                      toChild="@toChild"
                                      allEnable="@allEnable"
                                      curODContext="@curODContext">
                             <ChildContent>
-                                @* <h2 class="child-box">Hello GRILLES</h2> *@
+                                <h2 class="child-box">Hello GRILLES</h2>
                             </ChildContent>
-                        </CalcResLnes>
+                        </CalcResLnes> *@
                     }
                     else if (_chxMenu == 2)
                     {
@@ -157,9 +176,13 @@
     public MyShareVars toChild = new();
     public MyMenuVars froMenu = new();
     private bool allEnable = false;
-    private string MImessage = "";
+    private string Imessage = "";
 
     private CalcResLnes mygcalc;
+    public int ImyDiv = 0;
+    public int ImyProg = 0;
+
+    public List<Gplan> LsProgs = new();
 
     [Parameter]
     public RenderFragment Atributs { get; set; }
@@ -174,9 +197,9 @@
     public bool isAuthenticated = false;
 
     public Plngen curProg = new Plngen();
-
-    public List<Tiersp> EnsTiers { get; set; }
-    public List<Plngen> EnsProgs { get; set; }
+    public List<Tiersp> EnsTiers { get; set; } = new();
+    public List<Plngen> EnsProgs { get; set; } = new();
+    public List<Tiersp> PreTiers { get; set; } = new();
 
     public string _strOrga = "", _curSigle = "", strmeta = "", strmeta2 = "";
     private int Ugpe = 0;
@@ -203,6 +226,7 @@
 
     public List<Gpvar> LsVars = new();
     public List<Gplan> LsPlans = new();
+    public List<Gpdivh> LsDivs = new();
     //public List<Gplan> LsProgs = new List<Gplan>();
     public List<Gpvar> LsTabls = new();
     public List<Gpfixe> LsGties = new();
@@ -565,6 +589,50 @@
             toChild.curSesio = EnsSess.Where(us => us.Id == froMenu.Usesio).FirstOrDefault();
             StateHasChanged();
         }
+    }
+    private async Task GetSelectedProg(Gplan bropln)
+    {
+        //Console.WriteLine($"ICI PROGRAMMES : {EnsProgs.Count()}");
+        curProg = new();
+        EnsRubrs = new();
+        if (EnsProgs.Any())
+        {
+            curProg = EnsProgs.Where(pl => pl.Id == bropln.Id).FirstOrDefault();
+            if (curProg != null)
+            {
+                //Console.WriteLine($"ICI prog Id : {curProg.Idorg}");
+                toChild.curProg = curProg;
+                EnsRubrs = curProg.Rubvars.ToList();
+                //_rubvarResolver = new RubvarResolver(curProg.Rubvars.ToList());
+                var curDivpln = curOrga.Plngens.Where(pl => pl.Id == curProg.Plsdiv).FirstOrDefault();
+                if (curDivpln != null)
+                {
+                    List<Gpdivh> inDivs = await _rendAgres.LoadOrgaPostes();
+                    LsDivs = inDivs?.Where(ud => ud.Ihie == curDivpln.Id && ud.Sidiv == 1).ToList();
+                }
+                else
+                {
+                    LsDivs = new();
+                }
+            }
+        }
+        //Console.WriteLine($"ICI RUBRIQUES : {curProg.Rubvars.Count()}");
+    }
+    private void trierTiers()
+    {
+        Console.WriteLine("TRIE Commence");
+        if (ImyDiv != 0)
+        {
+            Console.WriteLine($"TRIE Prepare : {EnsTiers.Count}");
+            Imessage = "Preparation de la liste en cours";
+            PreTiers = EnsTiers.Where(t => t.Ihie == ImyDiv)
+                .OrderByDescending(um => um.Smatri)
+                .ToList();
+            Imessage = "Liste des tiers prete";
+            Console.WriteLine($"TRIE termine : {PreTiers.Count}");
+            StateHasChanged();
+        }
+        Console.WriteLine("TRIE Fini");
     }
     private async Task SelMenu(int noM)
     {

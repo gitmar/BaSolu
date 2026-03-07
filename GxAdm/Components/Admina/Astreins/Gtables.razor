@@ -1405,6 +1405,7 @@ else
                 Console.WriteLine("Rubriques tables vide");
                 MyDaRubrs = new ObservableCollection<Gsgfix>();
             }
+            StateHasChanged();
             Console.WriteLine($"Rubriques attendues nb : {curOrga.Gsglnes.Count}");
         }
         catch (Exception ex)

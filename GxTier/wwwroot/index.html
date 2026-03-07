@@ -1,6 +1,26 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <!-- 🛡️ Dynamic Manifest + Service Worker Fix -->
+    <script>
+        (function () {
+            const pathSegments = window.location.pathname.split('/');
+            const subsite = pathSegments.length > 1 && pathSegments[1] ? pathSegments[1] : '';
+            const basePath = subsite ? `/${subsite}/` : '/';
+
+            let manifestLink = document.querySelector('link[rel="manifest"]');
+            if (!manifestLink) {
+                manifestLink = document.createElement('link');
+                manifestLink.setAttribute('rel', 'manifest');
+                document.head.appendChild(manifestLink);
+            }
+            manifestLink.setAttribute('href', `${basePath}manifest.webmanifest`);
+
+            console.log("Manifest URL set to:", manifestLink.href);
+        })();
+    </script>
+
+    <!-- other <link> tags follow -->
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>GxTie</title>
@@ -10,11 +30,12 @@
     <link rel="stylesheet" href="css/app.css" />
     <link rel="icon" type="image/png" href="favicon.png" />
     <link href="GxTie.styles.css" rel="stylesheet" />
-    <link href="manifest.webmanifest" rel="manifest" />
+    <!-- Manifest will be dynamically adjusted -->
+    <!--<link rel="manifest" id="dynamic-manifest" />-->
+    <!--<link rel="manifest" href="manifest.webmanifest" />-->
     <link href="lib/bootstrap/css/bootstrap.min.css" rel="stylesheet" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
     <link href="_content/Blazor.Bootstrap/blazor.bootstrap.css" rel="stylesheet" />
-
     <link href="_content/Gx.Components/rzpge/nav-menu.css" rel="stylesheet" />
     <link href="_content/Gx.Components/rzpge/inp-check.css" rel="stylesheet" />
 
@@ -40,7 +61,7 @@
 
     <!-- 🔄 Version Check and Cache Clear -->
     <script>
-    (async function () {
+        (async function () {
             if (window.location.search.includes("forceClear=true")) {
                 localStorage.removeItem("appVersion");
             }
@@ -78,23 +99,35 @@
                 localStorage.setItem('appVersion', currentVersion);
                 location.reload();
             }
-        })();</script>
+        })();
+    </script>
 
     <!-- Blazor & Dependencies -->
     <script src="_content/Microsoft.AspNetCore.Components.WebAssembly.Authentication/AuthenticationService.js"></script>
     <script src="_framework/blazor.webassembly.js"></script>
     <script src="lib/bootstrap/js/bootstrap.bundle.min.js"></script>
     <script src="_content/Blazor.Bootstrap/blazor.bootstrap.js"></script>
+    <script>
+        (function () {
+            const pathSegments = window.location.pathname.split('/');
+            const subsite = pathSegments.length > 1 && pathSegments[1] ? pathSegments[1] : '';
+            const basePath = subsite ? `/${subsite}/` : '/';
+
+            if ('serviceWorker' in navigator) {
+                window.addEventListener('load', () => {
+                    navigator.serviceWorker.register(`${basePath}service-worker.js`, { scope: basePath })
+                        .then(reg => console.log('Service worker registered with scope:', reg.scope))
+                        .catch(err => console.error('Service worker registration failed:', err));
+                });
+            }
+        })();
+    </script>
     <script src="interop.js"></script>
+    <script src="js/grid.js"></script>
+    <script src="js/confirm.js"></script>
     <script src="js/pouchblazor.js"></script>
+    <script src="js/printHelper.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script src="js/printHelper.js"></script>
-
-    <!-- 🛡️ Safe Service Worker Registration -->
-    <script>
-    window.addEventListener('load', () => {
-            navigator.serviceWorker.register('service-worker.js');
-        });</script>
 </body>
 </html>

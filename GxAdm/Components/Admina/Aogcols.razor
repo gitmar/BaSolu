@@ -9,15 +9,6 @@
 @using Newtonsoft.Json;
 
 <div class="card">
-    @* <div class="card-header">
-        <div class="form-group">
-            <label class="fw-bold">Formulaire :</label>
-            <InputSelect @bind-Value="@GrdName" class="me-3" style="width:auto">
-                <option class="jchx" value="Tiewel">Tiers Accueil</option>
-                <option class="jchx" value="Tiersp">Tiers Validat</option>
-            </InputSelect>
-        </div>
-    </div> *@
     <div class="card-body">
         <Grid TItem="LSelCol"
              Data="@Columns"
@@ -64,12 +55,6 @@
 @code {
     [Parameter]
     public Gxorga curOrga { get; set; }
-    //[Parameter]
-    //public MyODataContext curODContext { get; set; }
-    // [Parameter]
-    // public string UserId { get; set; } = string.Empty;
-    // [Parameter] 
-    // public Dictionary<int, string> Dtblcols { get; set; } = new();
     [Parameter]
     public int EtRef { get; set; } = 0;
     [Parameter]
@@ -88,14 +73,6 @@
 
     protected override async Task OnInitializedAsync()
     {
-        // Load from DB (replace with your service)
-        ////var stored = await DbContext.GetPreferencesStringAsync(UserId, GridName);
-        ////Columns = DeserializePreferences(stored)
-        ////    .Where(p => p.GridName == GridName && p.UserId == UserId)
-        ////    .ToList();
-        //TEST
-        //var stored = await curODContext.GetPreferencesStringAsync(UserId, GrdName);
-        //StrStore = Dtblcols;
         Columns = DeserializePreferences(StrStore)
             //.Where(p => p.ColNo == ColNo && p.ColName == ColName)
             .ToList();
@@ -164,8 +141,6 @@
         public string Olabel { get; set; } = string.Empty;
         public string Ulabel { get; set; } = string.Empty;
     }
-
-
 
     // public class UserGridPreference
     // {

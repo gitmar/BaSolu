@@ -48,7 +48,9 @@
     <Authorized>
             <div class="row">
                 <div class="col-md-10 justify-content-center">
-                    <button class="navbar-brand text-left text-white bg-dark bg-opacity-75 me-2 py-0 px-1" style="height:44px;" @onclick="NavigateBack">
+                    <button class="navbar-brand text-left text-white bg-dark bg-opacity-75 me-2 py-0 px-1" 
+                            style="height:44px;"
+                            @onclick="NavigateBack">
                         A24soft Gx-Solutions
                     </button>
                     <span>
@@ -397,7 +399,7 @@
                                         <div class="mb-3">
                                             <!-- Filiation grid -->
                                         <div class="row">
-                                            <label style="font-weight:bold"> Filiation -> Base</label>
+                                            <span style="font-weight:bold"> Filiation -> Base</span>
                                         </div>
                                         <Grid Data="@curOrga.Gsgfixes.Where(uf => uf.Gvars == 3 && uf.Itb == 5 && uf.Elea != 0).OrderBy(uo => uo.Elea)"
                                                 TItem="Gsgfix"
@@ -413,7 +415,7 @@
                                                 </GridColumn>
                                                 <GridColumn TItem="Gsgfix" HeaderText="Libelle">
                                                     <ChildContent Context="item">
-                                                            <InputText @bind-Value="@item.Sliba" style="width:100%"
+                                                            <InputText id="ao1" @bind-Value="@item.Sliba" style="width:100%"
                                                                    readonly="@(item.Rowguid == EdAflRowguid ? null : "readonly")" />
                                                     </ChildContent>
                                                 </GridColumn>
@@ -441,7 +443,7 @@
                                                 </GridColumn>
                                                 <GridColumn TItem="Gsgfix" HeaderText="max.">
                                                     <ChildContent Context="item">
-                                                        <InputNumber class="my-input" @bind-Value="item.Mtyp"
+                                                        <InputNumber id="ao2" class="my-input" @bind-Value="item.Mtyp"
                                                                      style="font-weight:bold;width:60px" readonly="@(item.Rowguid == EdAflRowguid ? null : "readonly")" />
                                                     </ChildContent>
                                                 </GridColumn>
@@ -483,13 +485,13 @@
                                         <div class="row">
                                             <div class="form-group">
                                                 <label style="font-weight:bold">Formulaire :</label>
-                                                <InputSelect id="ogfo" @bind-Value="IMyDest">
+                                                <InputSelect id="ogfog" @bind-Value="IMyDest">
                                                     <option value="0">ou?</option>
                                                     <option value="1">Accueil</option>
                                                     <option value="2">Validation</option>
                                                 </InputSelect>
                                                 <label style="font-weight:bold">Groupe :</label>
-                                                <InputSelect id="oglim" @bind-Value="IMyGpe">
+                                                <InputSelect id="oggpe" @bind-Value="IMyGpe">
                                                     @foreach (var tob in ClGties)
                                                     {
                                                         <option value="@tob.Elea" @onclick="() => SelDomCol()">@tob.Liba</option>
@@ -498,7 +500,7 @@
                                                 @if(IMyGpe == 1)
                                                 { //cible
                                                     <label style="font-weight:bold">Affilie :</label>
-                                                    <InputSelect id="oglim" @bind-Value="IMyAfl">
+                                                    <InputSelect id="oggp2" @bind-Value="IMyAfl">
                                                     @foreach (var tob in LsFixes.Where(uf => uf.Gvars == 53 && uf.Itb == 6 && (uf.Gp1 == 1 || uf.Gp1 == 2) && uf.Elea != 0).OrderBy(uo => uo.Elea))
                                                         {
                                                         <option value="@tob.Elea" @onclick="() => SelDomCol()">@tob.Liba</option>
@@ -526,11 +528,11 @@
                          style="background-color: transparent; z-index: 1050; max-width: 400px;">
                         <div class="d-flex gap-2 align-items-center">
                             <Button class="w-auto flex-grow-0 flex-shrink-0" Color="ButtonColor.Info" @onclick="SaveAllChanges"
-                                    Enabled="@_guard.HasPendingChanges()">
+                                    id="b1" Enabled="@_guard.HasPendingChanges()">
                                 Save All (@_guard.GetPendingChangesCount() changes)
                             </Button>
                             <Button class="w-auto flex-grow-0 flex-shrink-0" Color="ButtonColor.Secondary" @onclick="CancelAllChanges"
-                                    Enabled="@_guard.HasPendingChanges()">
+                                    id="b2" Enabled="@_guard.HasPendingChanges()">
                                 Cancel All
                             </Button>
                         </div>
@@ -760,7 +762,10 @@
             curODContext = await _contextFactory.CreateAsync();
             _guard.AttachContext(curODContext);
             int key = _usrBag.Idorg;
-            curOrga = await curODContext.GetByKeyAsync<Gxorga>(key, "Gxorgas", "Gsgfixes,Gsglnes");
+            curOrga = await curODContext.GetByKeyAsync<Gxorga>(
+                key, 
+                "Gxorgas", 
+                "Gsgfixes,Gsglnes");
             if (curOrga != null)
             {
                 Console.WriteLine("curOrga loaded by key");
@@ -790,11 +795,12 @@
                 var firstCol = curOrga.Gsglnes?.FirstOrDefault();
                 edColContext = new EditContext(firstCol ?? new Gsglne() { Idorg = key });
                 Console.WriteLine($"FINAL nb gfixes : {curOrga.Gsgfixes?.Count ?? 0}");
-                var gsgfix = new Gsgfix();  // Your entity
-                Console.WriteLine(gsgfix.GetType().GetProperties()
-                    .Where(p => p.PropertyType == typeof(Gxorga))
-                    .Select(p => p.Name)
-                    .FirstOrDefault() ?? "NO NAVIGATION PROPERTY!");
+                Console.WriteLine($"FINAL nb gslnes : {curOrga.Gsglnes?.Count ?? 0}");
+                //var gsgfix = new Gsgfix();  // Your entity
+                //Console.WriteLine(gsgfix.GetType().GetProperties()
+                //    .Where(p => p.PropertyType == typeof(Gxorga))
+                //    .Select(p => p.Name)
+                //    .FirstOrDefault() ?? "NO NAVIGATION PROPERTY!");
                 // Register "add-edit-delete mode" predicate for existing entities
                 _guard.RegisterUnconfirmedPredicate<Gxorga>(o => o.Xedt1 == -1);
                 _guard.RegisterUnconfirmedPredicate<Gsgfix>(x => x.Xadd1 == -1 || x.Xedt1 == -1 || x.Xdel1 == -1);
@@ -887,7 +893,7 @@
         StateHasChanged();
         await Task.Delay(1);
     }
-    
+
     private async ValueTask OnLocationChangingAsync(LocationChangingContext context)
     {
         Console.WriteLine($"🌐 Intercepted: {context.TargetLocation}");
@@ -1006,6 +1012,8 @@
                 } 
                 OptColValid = true;
             }
+            Console.WriteLine($"EST ARRIVE ICI : {colstore} et {aflcolstore}");
+            StateHasChanged();
         }
     }
     //EDITING Gxorga (orga)

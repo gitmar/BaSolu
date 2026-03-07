@@ -5,9 +5,11 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <ServiceWorkerAssetsManifest>service-worker-assets.js</ServiceWorkerAssetsManifest>
   </PropertyGroup>
-
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
-    <Optimize>True</Optimize>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|AnyCPU'">
+    <Optimize>true</Optimize>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)' == 'Release'">
+    <SubsitePath>$(SubsitePath)</SubsitePath>
   </PropertyGroup>
 
   <ItemGroup>
@@ -34,8 +36,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Remove="ClieModels\CalcModel.cs" />
-    <Compile Remove="ClieModels\outModels.cs" />
     <Compile Remove="Components\Admina\AOrgas.razor.cs" />
     <Compile Remove="Components\GridWrapper.razor.cs" />
     <Compile Remove="oldProgram.cs" />
@@ -92,7 +92,12 @@
   <ItemGroup>
     <EmbeddedResource Include="Connected Services\OData Service\OData ServiceCsdl.xml" />
   </ItemGroup>
-  
+  <ItemGroup>
+    <None Update="wwwroot\manifest.webmanifest">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+    </None>
+  </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Blazor.Bootstrap" Version="3.4.0" />
     <PackageReference Include="BlazorDownloadFile" Version="2.4.0.2" />
@@ -136,6 +141,12 @@
   <ItemGroup>
     <ProjectReference Include="..\..\GxShared\GxShared.csproj" />
     <ProjectReference Include="..\..\GxSmenu\Gx.Components.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Update="wwwroot\manifest.webmanifest">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
 
   <ProjectExtensions><VisualStudio><UserProperties /></VisualStudio></ProjectExtensions>

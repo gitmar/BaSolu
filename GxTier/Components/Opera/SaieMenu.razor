@@ -56,41 +56,67 @@
                            OnBack="@NavigateBack" />
                 <!-- Top Menu Info -->
                 <div class="row mb-2">
-                    <div class="col-md-12 d-flex align-items-center gap-3 flex-wrap">
-                        <span class="text-uppercase text-success"><b>@strComp</b></span>
-
-                        <div class="d-flex align-items-center gap-2">
-                            <label>Exercice:</label>
-                            <InputSelect id="exoId" @bind-Value="froMenu.Uexo" class="form-select">
-                                <option value="0">exo?</option>
-                                @foreach (var exo in EnsExos)
-                                {
-                                    <option value="@exo.Id">@exo.Sref</option>
-                                }
-                            </InputSelect>
-                        </div>
-
-                        <div class="d-flex align-items-center gap-2">
-                            <label>Session:</label>
-                            <InputSelect id="sesId" @bind-Value="froMenu.Usesio" class="form-select">
-                                <option value="0">session?</option>
-                                @foreach (var ses in EnsSess)
-                                {
-                                    <option value="@ses.Id">@ses.Sref</option>
-                                }
-                            </InputSelect>
-                        </div>
-
-                        @if (!string.IsNullOrEmpty(MImessage))
+                    <div class="d-flex align-items-center gap-2">
+                        <label>Exercice:</label>
+                        <InputSelect id="exoId" @bind-Value="froMenu.Uexo">
+                            <option value="0">exo?</option>
+                            @foreach (var exo in EnsExos)
+                            {
+                                <option value="@exo.Id">@exo.Sref</option>
+                            }
+                        </InputSelect>
+                        <label>Session:</label>
+                        <InputSelect id="sesId" @bind-Value="froMenu.Usesio">
+                            <option value="0">session?</option>
+                            @foreach (var ses in EnsSess)
+                            {
+                                <option value="@ses.Id">@ses.Sref</option>
+                            }
+                        </InputSelect>
+                        @if (_chxMenu == 1)
                         {
-                            <span class="bg-info bg-opacity-10 text-danger px-2" style="font-style: italic;">
-                                &nbsp;--> @MImessage
-                            </span>
+                            <InputSelect id="optId" @bind-Value="ImyOrient">
+                                <option value="0">aucun</option>
+                                @foreach (var uf in LsFixes.Where(xf => xf.Gvars == 33 && xf.Itb == 7 && xf.Gp1 == 4))
+                                {
+                                    <option value="@uf.Elea" @onclick="() => GetSelectedOption(uf)">par @uf.Liba</option>
+                                }
+                            </InputSelect>
                         }
                     </div>
                 </div>
+                <div class="row mb-2">
+                        <div class="d-flex align-items-center gap-2">
+                            <label>Programme :</label>
+                            <div class="text-center">
+                                <InputSelect id="pgrId" @bind-Value="ImyProg">
+                                    <option value="0">progr?</option>
+                                    @foreach (var pgr in LsProgs)
+                                    {
+                                        <option value="@pgr.Id" @onclick="() => GetSelectedProg(pgr)">@pgr.Liba</option>
+                                    }
+                                </InputSelect>
+                            </div>
+                            <label for="TypDiv">Service :</label>
+                            <div>
+                                <InputSelect id="TypDiv" @bind-Value="ImyDiv">
+                                    <option value="0">Aucun</option>
+                                    @foreach (var divo in LsDivs)
+                                    {
+                                        <option value="@divo.Ihie" @onclick="@trierTiers">@divo.Abg-@divo.Liba</option>
+                                    }
+                                </InputSelect>
+                            </div>
+                            
+                        </div>
 
-                <hr />
+                        @if (!string.IsNullOrEmpty(Imessage))
+                        {
+                            <span class="bg-info bg-opacity-10 text-danger px-2" style="font-style: italic;">
+                                &nbsp;--> @Imessage
+                            </span>
+                        }
+                </div>
 
                 <!-- Main Content Section -->
                 <div class="flex-fill overflow-auto">
@@ -103,6 +129,9 @@
                                     curOrga="@curOrga"
                                     _guard="@_guard"
                                     toChild="@toChild"
+                                    ImyDiv="@ImyDiv"
+                                    ImyOrient="@ImyOrient"
+                                    PreTiers="@PreTiers"
                                     allEnable="@allEnable"
                                     curODContext="@curODContext">
                                         <ChildContent>
@@ -188,9 +217,13 @@
     public MyShareVars toChild = new();
     public MyMenuVars froMenu = new();
     private bool allEnable = false;
-    private string MImessage = "";
+    private string Imessage = "";
 
     private SaieActLnes mygsaie = new();
+    public int ImyOrient = 0;
+    public int ImyDiv = 0;
+    public int ImyProg = 0;
+    public List<Gplan> LsProgs = new();
 
     //Formula service
     //private FormulaEvalService _formulaEvalService;
@@ -245,6 +278,7 @@
 
     public List<Tiersp> EnsTiers { get; set; } = new();
     public List<Plngen> EnsProgs { get; set; } = new();
+    public List<Tiersp> PreTiers { get; set; } = new();
 
     public int _GIdTie = 0;
     public string _strOrga = "", _curSigle = "", strmeta = "", strmeta2 = "";
@@ -267,16 +301,17 @@
 
     //GlobModels
     public Userbag _usrBag = new Userbag();
-    public List<Gpfixe> LsFixes = new List<Gpfixe>();
-    public List<Rubvar> EnsRubrs = new List<Rubvar>();
-    private List<Gsesio> EnsExos = new List<Gsesio>();
-    private List<Gsesio> EnsSess = new List<Gsesio>();
+    public List<Gpfixe> LsFixes = new();
+    public List<Rubvar> EnsRubrs = new();
+    public List<Gsesio> EnsExos = new();
+    public List<Gsesio> EnsSess = new();
 
-    public List<Gpvar> LsVars = new List<Gpvar>();
-    public List<Gplan> LsPlans = new List<Gplan>();
+    public List<Gpvar> LsVars = new();
+    public List<Gplan> LsPlans = new();
+    public List<Gpdivh> LsDivs = new();
     //public List<Gplan> LsProgs = new List<Gplan>();
-    public List<Gpvar> LsTabls = new List<Gpvar>();
-    public List<Gpfixe> LsGties = new List<Gpfixe>();
+    public List<Gpvar> LsTabls = new();
+    public List<Gpfixe> LsGties = new();
     // public List<Gpvar> TbElems = new List<Gpvar>();
     // public List<Clvar> LsCols = new List<Clvar>();
     //public List<Rubhie> LsDivs = new List<Rubhie>();
@@ -327,6 +362,8 @@
         LsVars = _usrBag.Usorga.Uvars.ToList();
         LsFixes = _usrBag.Ufixes.ToList();
         LsPlans = _usrBag.Usorga.Uplns.ToList();
+        LsProgs = _usrBag.Usorga.Uplns.Where(pl => pl.Ptyp == 5).ToList();
+        Console.WriteLine($"Programmes en cours : {LsProgs.Count}");
         //LsProgs = _usrBag.Usorga.Uplns.Where(pl => pl.Ptyp == 5).ToList();
         //var idplnadm = _usrBag.Usorga.Schba;
         //LtTabls = _usrBag.Usorga.Uvars.Where(tb => tb.Gvars == 4).ToList();
@@ -519,6 +556,57 @@
         }
 
         return calcLines;
+    }
+    private async Task GetSelectedProg(Gplan bropln)
+    {
+        //Console.WriteLine($"ICI PROGRAMMES : {EnsProgs.Count()}");
+        curProg = new();
+        EnsRubrs = new();
+        if (EnsProgs.Any())
+        {
+            curProg = EnsProgs.Where(pl => pl.Id == bropln.Id).FirstOrDefault();
+            if (curProg != null)
+            {
+                //Console.WriteLine($"ICI prog Id : {curProg.Idorg}");
+                toChild.curProg = curProg;
+                EnsRubrs = curProg.Rubvars.ToList();
+                //_rubvarResolver = new RubvarResolver(curProg.Rubvars.ToList());
+                var curDivpln = curOrga.Plngens.Where(pl => pl.Id == curProg.Plsdiv).FirstOrDefault();
+                if (curDivpln != null)
+                {
+                    List<Gpdivh> inDivs = await _rendAgres.LoadOrgaPostes();
+                    LsDivs = inDivs?.Where(ud => ud.Ihie == curDivpln.Id && ud.Sidiv == 1).ToList();
+                }
+                else
+                {
+                    LsDivs = new();
+                }
+            }
+        }
+        //Console.WriteLine($"ICI RUBRIQUES : {curProg.Rubvars.Count()}");
+    }
+    //Others Selections//si isSesSaieOpen
+    private void GetSelectedOption(Gpfixe myuf)
+    {
+        //preparer data pour formulaire H/V
+
+        StateHasChanged();
+    }
+    private void trierTiers()
+    {
+        Console.WriteLine("TRIE Commence");
+        if (ImyDiv != 0)
+        {
+            Console.WriteLine($"TRIE Prepare : {EnsTiers.Count}");
+            Imessage = "Preparation de la liste en cours";
+            PreTiers = EnsTiers.Where(t => t.Ihie == ImyDiv)
+                .OrderByDescending(um => um.Smatri)
+                .ToList();
+            Imessage = "Liste des tiers prete";
+            Console.WriteLine($"TRIE termine : {PreTiers.Count}");
+            StateHasChanged();
+        }
+        Console.WriteLine("TRIE Fini");
     }
     // // private async Task LoadSaieTiersAsync()
     // // {

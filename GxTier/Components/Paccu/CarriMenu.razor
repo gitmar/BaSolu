@@ -69,9 +69,9 @@ else
                                 @onclick="ManSaveAll">
                             Enregistrer
                         </Button>
-                        @if (!String.IsNullOrEmpty(MImessage))
+                        @if (!String.IsNullOrEmpty(Imessage))
                         {
-                            <span class="bg-info bg-opacity-10" style="font-style:italic;color:red">&nbsp;--> @MImessage</span>
+                            <span class="bg-info bg-opacity-10" style="font-style:italic;color:red">&nbsp;--> @Imessage</span>
                         }
                     </div>
                 </div>
@@ -155,7 +155,7 @@ else
     public List<GxGroupe> Groupes = new();
 
     //public int _UorgId = 0;
-    public string _strOrga = "", _curSigle = "", MImessage = "", LoadLabel = "", strmeta = "", strmeta2 = "";
+    public string _strOrga = "", _curSigle = "", Imessage = "", LoadLabel = "", strmeta = "", strmeta2 = "";
 
     //entities load
     private IEnumerable<Gxorga> _lsOrgas = new List<Gxorga>();
@@ -339,11 +339,11 @@ else
     {
         if (Ugpe == 0)
         {
-            MImessage = "Groupe obligatoire";
+            Imessage = "Groupe obligatoire";
             return;
         }
         ParentEDT = true;
-        MImessage = "Edition en preparation...";
+        Imessage = "Edition en preparation...";
         if (_chxMenu == 1)
         { //validation
             await mymtie.EdtAll();
@@ -356,12 +356,12 @@ else
         // { //invitation
         //     await myginv.EdtAll();
         // }
-        MImessage = "";
+        Imessage = "";
         allEnable = true;
     }
     private async Task ManCnclAll()
     {
-        MImessage = "annulation en cours...";
+        Imessage = "annulation en cours...";
 
         if (_chxMenu == 1)
         { //validation
@@ -377,13 +377,13 @@ else
         // }
         //reload
         await LoadTieAplAsync();
-        MImessage = "";
+        Imessage = "";
         allEnable = false;
     }
     private async Task ManSaveAll()
     {
         bool oksav = false;
-        MImessage = "enregistrement en cours...";
+        Imessage = "enregistrement en cours...";
         if (_chxMenu == 1)
         { //validation
             oksav = await mymtie.SaveCurEntities();
@@ -396,7 +396,7 @@ else
         // { //invitation
         //     oksav = await myginv.SaveCurEntities();
         // }
-        if (oksav) MImessage = "";
+        if (oksav) Imessage = "";
         allEnable = false;
     }
     private async Task SetLoadingState()

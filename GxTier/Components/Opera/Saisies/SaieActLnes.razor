@@ -43,98 +43,12 @@
 }
 else
 {
-    @if (SessOpen)
-    {
-        <div class="input-group">
-            <label>Programme :</label>
-            <div class="text-center">
-                <InputSelect id="pgrId" @bind-Value="ImyProg">
-                <option value="0">progr?</option>
-                @foreach (var pgr in LsProgs)
-                {
-                    <option value="@pgr.Id" @onclick="() => GetSelectedProg(pgr)">@pgr.Liba</option>
-                }
-            </InputSelect>
-            </div>
-            <label for="TypDiv">Service :</label>
-            <div>
-                <InputSelect id="TypDiv" @bind-Value="ImyDiv">
-                    <option value="0">Aucun</option>
-                    @foreach (var divo in _lsDivs)
-                    {
-                        <option value="@divo.Ihie" onclick="@trierTiers">@divo.Abg-@divo.Liba</option>
-                    }
-                </InputSelect>
-            </div>
-        </div>
-    }
-    <div class="input-group">
-        @if(ProgOpen)
-        {
-            <div class="text-center">
-                <InputSelect id="optId" @bind-Value="ImyOpti">
-                    <option value="0">aucun</option>
-                    @foreach (var uf in LsFixes.Where(xf => xf.Gvars == 33 && xf.Itb == 7 && xf.Gp1 == 4))
-                    {
-                        <option value="@uf.Elea" @onclick="() => GetSelectedOption(uf)">par @uf.Liba</option>
-                    }
-                </InputSelect>
-            </div>
-        }
-        @if (ProgOpen)
-        {
-            @if (ImyOpti == 1)
-            {
-                <label>matricule :</label>
-                <div class="text-center">
-                    <InputSelect id="Idtie" @bind-Value="ImyTier">
-                        <option value="0">tiers?</option>
-                        @foreach (var tie in PreTiers)
-                        {
-                            <option value="@tie.Id" @onclick="() => GetSelectedTier(tie)">@tie.Smatri</option>
-                        }
-                    </InputSelect>
-                </div>
-                <label class="text-center">nom : </label>
-                <div class="text-center">
-                    <InputSelect id="Idtie2" @bind-Value="ImyTier">
-                        <option value="0">tiers?</option>
-                        @foreach (var tie in PreTiers)
-                        {
-                            <option value="@tie.Id" @onclick="() => GetSelectedTier(tie)">@($"{tie.Nom} {tie.Pnom}")</option>
-                        }
-                    </InputSelect>
-                </div>
-            }
-            @if (ImyOpti == 2)
-            {
-                <label>Code : </label>
-                <div class="text-center">
-                    <InputSelect id="rubrid" @bind-Value="ImyRubr">
-                        <option value="0">rubrique?</option>
-                        @foreach (var rub in EnsRubrs)
-                        {
-                            <option value="@rub.Id" @onclick="() => GetSelectedRubr(rub)">@rub.Scdrub</option>
-                        }
-                    </InputSelect>
-                </div>
-                <label>Libelle : </label>
-                <div class="text-center">
-                    <InputSelect id="rubrid" @bind-Value="ImyRubr">
-                        <option value="0">rubrique?</option>
-                        @foreach (var rub in EnsRubrs)
-                        {
-                            <option value="@rub.Id" @onclick="() => GetSelectedRubr(rub)">@rub.Liba</option>
-                        }
-                    </InputSelect>
-                </div>
-            }
-        }
+    <div class="d-flex align-items-center gap-2">
         @if (CanSaie)
         {
             <Button class="btn btn-sm btn-secondary btnsz"
                     style="@(!allEnable ? "" : "display:none;")"
-                    @onclick="() => PrepOpeSaie(ImyOpti)">
+                    @onclick="() => PrepOpeSaie(ImyOrient)">
                 OuvrirSaisie 
             </Button>
                 @if (FinPreparer == true)
@@ -150,7 +64,7 @@ else
                 }
             <div>
                 &nbsp;&nbsp;
-                <button class="btn btn-warning btn-sm" @onclick="() => OuvrirFiche(ImyOpti)">@stopenFich</button>
+                <button class="btn btn-warning btn-sm" @onclick="() => OuvrirFiche(ImyOrient)">@stopenFich</button>
             </div>
         }
     </div>
@@ -158,67 +72,158 @@ else
 <!--Actsaie Portrait-->
 @if (!isLoading)
 {
-<!--VISIBLE SAISIE-->
-@if (isFicheVisible)
-{
-    <RtS11Fic @ref="myfsaie"
+    <!--VISIBLE SAISIE-->
+    @if (isFicheVisible)
+    {
+        <RtS11Fic @ref="myfsaie"
         curOrga="@curOrga"
         toChild="@toChild"
         curODContext="@curODContext"
         _curTier="@_curTier">
-        <ChildContent>
-           <h2 class="child-box">Fiche de @curProg.Liba</h2>
-        </ChildContent>
-    </RtS11Fic>
-}
-<div class="d-flex flex-row">
-    <EditForm Context="invform" Model="curOrga">
-        <DataAnnotationsValidator />
-        <ValidationSummary />
-            <div class="p-1" style="max-height: 400px; overflow-y: auto;">
-                <Grid TItem="FormulaLine"
-                      Data="@MissionLines"
-                      AllowFiltering="@isFilteringEnabled"
-                      AllowPaging="true"
-                      Responsive="true">
-                    <GridColumns>
-                        <GridColumn TItem="FormulaLine" HeaderText="No">
-                            <ChildContent Context="item">@item.Id</ChildContent>
-                        </GridColumn>
-                        <GridColumn TItem="FormulaLine" HeaderText="Code" IsVisible="@(ImyOpti == 1)">
-                            <ChildContent Context="item">@item.LineNumber</ChildContent>
-                        </GridColumn>
-                        <GridColumn TItem="FormulaLine" HeaderText="Designation" IsVisible="@(ImyOpti == 1)">
-                            <ChildContent Context="item">@item.Liba</ChildContent>
-                        </GridColumn>
-                        <GridColumn TItem="FormulaLine" HeaderText="Matricule" IsVisible="@(ImyOpti == 2)">
-                            <ChildContent Context="item">@item.Smatri</ChildContent>
-                        </GridColumn>
-                        <GridColumn TItem="FormulaLine" HeaderText="Nom" IsVisible="@(ImyOpti == 2)">
-                            <ChildContent Context="item">@item.Nom</ChildContent>
-                        </GridColumn>
-                        <GridColumn TItem="FormulaLine" HeaderText="PNom" IsVisible="@(ImyOpti == 2)">
-                            <ChildContent Context="item">@item.Pnom</ChildContent>
-                        </GridColumn>
-                        <GridColumn TItem="FormulaLine" HeaderText="MtCalcule">
-                            <ChildContent Context="item">
-                                @item.Result
-                            </ChildContent>
-                        </GridColumn>
-                        <GridColumn TItem="FormulaLine" HeaderText="MtSaisie">
-                            <ChildContent Context="item">
-                                <ValidatedInput Atyp="2"
-                                                @bind-Value="item.Valsaie"
-                                                ErrorMessage="Please enter a valid integer"
-                                                OnValidInput="val => HandleValidInput(item, val)" />
-                            </ChildContent>
-                        </GridColumn>
-                    </GridColumns>
-                </Grid>
-            </div>
-    </EditForm>
-</div>
-}
+            <ChildContent>
+                <h2 class="child-box">Fiche de @curProg.Liba</h2>
+            </ChildContent>
+        </RtS11Fic>
+    }
+        <div class="d-flex flex-row">
+            <EditForm Context="invform" Model="curOrga">
+                <DataAnnotationsValidator />
+                <ValidationSummary />
+                @if (ImyOrient == 1)
+                { // par rubrique
+                <div class="p-1" style="max-height: 400px; overflow-y: auto;">
+                  <div class="d-flex align-items-center gap-2">
+                      <label>Code : </label>
+                      <div class="text-center">
+                          <InputSelect id="rubrid" @bind-Value="ImyRubr">
+                              <option value="0">rubrique?</option>
+                                @foreach (var rub in EnsRubrs)
+                                {
+                                    <option value="@rub.Id" @onclick="() => GetSelectedRubr(rub)">@rub.Scdrub</option>
+                                }
+                            </InputSelect>
+                        </div>
+                        <label>Libelle : </label>
+                        <div class="text-center">
+                            <InputSelect id="rubrid" @bind-Value="ImyRubr">
+                                <option value="0">rubrique?</option>
+                                @foreach (var rub in EnsRubrs)
+                                {
+                                    <option value="@rub.Id" @onclick="() => GetSelectedRubr(rub)">@rub.Liba</option>
+                                }
+                            </InputSelect>
+                        </div>
+                    </div>
+                    <Grid TItem="FormulaLine"
+                    Data="@MissionLines"
+                    AllowFiltering="@isFilteringEnabled"
+                    AllowPaging="true"
+                    Responsive="true">
+                        <GridColumns>
+                            <GridColumn TItem="FormulaLine" HeaderText="No">
+                                <ChildContent Context="item">@item.Id</ChildContent>
+                            </GridColumn>
+                          <GridColumn TItem="FormulaLine" HeaderText="Matricule">
+                              <ChildContent Context="item">@item.Smatri</ChildContent>
+                          </GridColumn>
+                          <GridColumn TItem="FormulaLine" HeaderText="Nom">
+                              <ChildContent Context="item">@item.Nom</ChildContent>
+                          </GridColumn>
+                          <GridColumn TItem="FormulaLine" HeaderText="PNom">
+                              <ChildContent Context="item">@item.Pnom</ChildContent>
+                          </GridColumn>
+                            @* <GridColumn TItem="FormulaLine" HeaderText="Code" IsVisible="@(ImyOrient == 1)">
+                                <ChildContent Context="item">@item.LineNumber</ChildContent>
+                            </GridColumn>
+                            <GridColumn TItem="FormulaLine" HeaderText="Designation" IsVisible="@(ImyOrient == 1)">
+                                <ChildContent Context="item">@item.Liba</ChildContent>
+                            </GridColumn> *@
+                            <GridColumn TItem="FormulaLine" HeaderText="MtCalcule">
+                                <ChildContent Context="item">
+                                    @item.Result
+                                </ChildContent>
+                            </GridColumn>
+                            <GridColumn TItem="FormulaLine" HeaderText="MtSaisie">
+                                <ChildContent Context="item">
+                                    <ValidatedInput Atyp="2"
+                                    @bind-Value="item.Valsaie"
+                                    ErrorMessage="Please enter a valid integer"
+                                    OnValidInput="val => HandleValidInput(item, val)" />
+                                </ChildContent>
+                            </GridColumn>
+                        </GridColumns>
+                    </Grid>
+                </div>
+                }
+                else
+                { // par personne
+                <div class="p-1" style="max-height: 400px; overflow-y: auto;">
+                  <div class="d-flex align-items-center gap-2">
+                      <label>matricule :</label>
+                      <div class="text-center">
+                          <InputSelect id="Idtie" @bind-Value="ImyTier">
+                              <option value="0">tiers?</option>
+                                @foreach (var tie in PreTiers)
+                                {
+                                    <option value="@tie.Id" @onclick="() => GetSelectedTier(tie)">@tie.Smatri</option>
+                                }
+                            </InputSelect>
+                        </div>
+                        <label class="text-center">nom/prenoms : </label>
+                        <div class="text-center">
+                            <InputSelect id="Idtie2" @bind-Value="ImyTier">
+                                <option value="0">tiers?</option>
+                                @foreach (var tie in PreTiers)
+                                {
+                                    <option value="@tie.Id" @onclick="() => GetSelectedTier(tie)">@($"{tie.Nom} {tie.Pnom}")</option>
+                                }
+                            </InputSelect>
+                        </div>
+                    </div>
+                    <Grid TItem="FormulaLine"
+                    Data="@MissionLines"
+                    AllowFiltering="@isFilteringEnabled"
+                    AllowPaging="true"
+                    Responsive="true">
+                        <GridColumns>
+                            <GridColumn TItem="FormulaLine" HeaderText="No">
+                                <ChildContent Context="item">@item.Id</ChildContent>
+                            </GridColumn>
+                            <GridColumn TItem="FormulaLine" HeaderText="Code">
+                                <ChildContent Context="item">@item.LineNumber</ChildContent>
+                            </GridColumn>
+                            <GridColumn TItem="FormulaLine" HeaderText="Designation">
+                                <ChildContent Context="item">@item.Liba</ChildContent>
+                            </GridColumn>
+                           @*  <GridColumn TItem="FormulaLine" HeaderText="Matricule" IsVisible="@(ImyOrient == 2)">
+                                <ChildContent Context="item">@item.Smatri</ChildContent>
+                            </GridColumn>
+                            <GridColumn TItem="FormulaLine" HeaderText="Nom" IsVisible="@(ImyOrient == 2)">
+                                <ChildContent Context="item">@item.Nom</ChildContent>
+                            </GridColumn>
+                            <GridColumn TItem="FormulaLine" HeaderText="PNom" IsVisible="@(ImyOrient == 2)">
+                                <ChildContent Context="item">@item.Pnom</ChildContent>
+                            </GridColumn> *@
+                            <GridColumn TItem="FormulaLine" HeaderText="MtCalcule">
+                                <ChildContent Context="item">
+                                    @item.Result
+                                </ChildContent>
+                            </GridColumn>
+                            <GridColumn TItem="FormulaLine" HeaderText="MtSaisie">
+                                <ChildContent Context="item">
+                                    <ValidatedInput Atyp="2"
+                                    @bind-Value="item.Valsaie"
+                                    ErrorMessage="Please enter a valid integer"
+                                    OnValidInput="val => HandleValidInput(item, val)" />
+                                </ChildContent>
+                            </GridColumn>
+                        </GridColumns>
+                    </Grid>
+                </div>
+                }
+            </EditForm>
+        </div>
+    }
 <style>
     .inputfl {
         opacity: 0;
@@ -245,6 +250,14 @@ else
     [Parameter]
     public MyShareVars toChild { get; set; }
     [Parameter]
+    public int ImyProg { get; set; }
+    [Parameter]
+    public int ImyDiv { get ; set; }
+    [Parameter]
+    public int ImyOrient { get; set; }
+    [Parameter]
+    public List<Tiersp> PreTiers { get; set; }
+    [Parameter]
     public bool allEnable { get; set; }
     [Parameter]
     public int toMenu { get; set; }
@@ -257,7 +270,7 @@ else
     public int NbChanges { get; set; }
     [Parameter]
     public EventCallback<int> NbChangesChanged { get; set; }  // 🔥 CRITICAL
-  
+
     private bool isAuthenticated { get; set; }
     private ClaimsPrincipal authUser;
     private IEnumerable<Claim> claims = Enumerable.Empty<Claim>();
@@ -280,8 +293,7 @@ else
     private List<Tiersp> EnsTiers = new();
     private List<Plngen> EnsProgs = new();
     private List<Rubvar> EnsRubrs = new();
-    private List<Gpdivh> _lsDivs = new();
-
+    
     //  private Actsaie curAct = new();
     private Plngen curProg = new();
 
@@ -295,27 +307,26 @@ else
 
     private List<Gpfixe> LsFixes = new List<Gpfixe>();
     private List<Gpvar> LsVars = new();
-    private List<Gplan> LsProgs = new();
-
+    
     private bool success, errors, isSubmitting = false;
     private string[] errorList = [];
     private string rolInv = "", userName = "", isatmsg = "";
 
-    private List<Tiersp> PreTiers = new();
+    
     private List<Tiersp> SaieTiers = new();
 
     private ReqgnModel qryModel = new ReqgnModel();
 
     //private bool isExoSaieOpen => toChild.MainOptsOk; //exo et site
-    private bool isSesSaieOpen => toChild.MainOptsOk && ImyProg != 0 && ImyOpti != 0;
+    private bool isSesSaieOpen => toChild.MainOptsOk && ImyProg != 0 && ImyOrient != 0;
     //Options Calculation workflow
     private bool SaveMarked = false;
     private bool CalcMarked = false;
     private bool autoSave = false;
     private bool SessOpen => toChild.curExo != null && toChild.curExo.Id != 0
                     && toChild.curSesio != null && toChild.curSesio.Id != 0;
-    private bool ProgOpen => SessOpen && ImyProg != 0 && ImyDiv != 0;
-    private bool CanSaie => ProgOpen && ImyOpti != 0 && (ImyRubr != 0 || ImyTier != 0);
+    private bool ProgOpen => SessOpen && ImyProg != 0;
+    private bool CanSaie => ProgOpen && (ImyRubr != 0 || ImyTier != 0);
     //->can Edit-can OpenSaie
     //->can Saie and Save
     //jusqu-a fermer
@@ -330,8 +341,8 @@ else
 
     //private string opseudo = "", opnomp = "";
     //private int opfonc = 0, opgrad = 0, opafec = 0;
-    private int ImyTier = 0, ImyProg = 0, ImyRubr = 0;
-    private int ImyExo = 0, ImyDiv = 0; //ImySes = 0,
+    private int ImyTier = 0, ImyRubr = 0;
+    private int ImyExo = 0; //ImySes = 0,
     private string kmessage = "";
     private string _errorMessage = "";
     private int itRub = 0;
@@ -339,8 +350,7 @@ else
     private int itTie = 0;
     private int itPgr = 0;
     private int itGpe = 0;
-    private int ImyOpti = 0; // par tiers
-
+  
     //variables PLANS
     Modal edAModal;
     Actsaie actItem = new();
@@ -425,8 +435,6 @@ else
         //curOrga = toChild.curOrga;
         LsVars = toChild.LsVars;
         LsFixes = toChild.LsFixes;
-        LsProgs = toChild.LsPlans.Where(pl => pl.Ptyp == 5).ToList();
-        Console.WriteLine($"Programmes en cours : {LsProgs.Count}");
         //LsProgs = toChild.LsProgs;
         //LsSites = toChild.LsSites
         //indata
@@ -439,7 +447,7 @@ else
         var noslims = LsVars.Where(uv => uv.Idhie == 0 && uv.Gvars == 21 && uv.Itb == 1 && uv.Elea == 1);
         if (noslims.Any()) _lgcdu = noslims.FirstOrDefault().Ivala;
 
-        _lsDivs = await _rendAgres.LoadOrgaPostes(); 
+       
         //toChild.LsDivs.Where(uh => uh.Sidiv == 1).ToList();
 
 
@@ -467,55 +475,7 @@ else
             stopenFich = "OuvrirFiche";
         }
     }
-    //Others Selections//si isSesSaieOpen
-    private void GetSelectedOption(Gpfixe myuf)
-    {
-
-        StateHasChanged();
-    }
-    private async Task GetSelectedProg(Gplan bropln)
-    {
-        //Console.WriteLine($"ICI PROGRAMMES : {EnsProgs.Count()}");
-        curProg = new();
-        EnsRubrs = new();
-        if (EnsProgs.Any())
-        {
-            curProg = EnsProgs.Where(pl => pl.Id == bropln.Id).FirstOrDefault();
-            if (curProg != null)
-            {
-                //Console.WriteLine($"ICI prog Id : {curProg.Idorg}");
-                toChild.curProg = curProg;
-                EnsRubrs = curProg.Rubvars.ToList();
-                //_rubvarResolver = new RubvarResolver(curProg.Rubvars.ToList());
-                var curDivpln = curOrga.Plngens.Where(pl => pl.Id == curProg.Plsdiv).FirstOrDefault();
-                if (curDivpln != null)
-                {
-                    List<Gpdivh> inDivs = await _rendAgres.LoadOrgaPostes();
-                    _lsDivs = inDivs?.Where(ud => ud.Ihie == curDivpln.Id && ud.Sidiv == 1).ToList();
-                } else
-                {
-                    _lsDivs = new();
-                }
-            }
-        }
-        //Console.WriteLine($"ICI RUBRIQUES : {curProg.Rubvars.Count()}");
-    }
-    private void trierTiers()
-    {
-        Console.WriteLine("TRIE Commence");
-        if (ImyDiv != 0)
-        {
-            Console.WriteLine($"TRIE Prepare : {EnsTiers.Count}");
-            Imessage = "Preparation de la liste en cours";
-            PreTiers = EnsTiers.Where(t => t.Ihie == ImyDiv)
-                .OrderByDescending(um => um.Smatri)
-                .ToList();
-            Imessage = "Liste des tiers prete";
-            Console.WriteLine($"TRIE termine : {PreTiers.Count}");
-            StateHasChanged();
-        }
-        Console.WriteLine("TRIE Fini");
-    }
+    
     private void GetSelectedTier(Tiersp mytier)
     {
         if (mytier != null)
@@ -546,6 +506,63 @@ else
                 //can Input;
             }
         }
+    }
+    private void GetSelectedTActs(int orig, Tiersp mytier, Rubvar myrub)
+    {
+        //LsDaActs = new();
+        DateTime sessionDate = Convert.ToDateTime(_curSes.Datses); // session current date
+        if (orig == 1 && mytier != null) //personne
+        {
+            if (mytier.Actsaies.Any())
+            {
+                var lsRubs = curProg.Rubvars.ToList();
+
+                var icurActs = _curTier.Actsaies
+                    .Where(ac => ac.Itie == mytier.Id && lsRubs.Any(r => r.Id == ac.IrubNavigation.Id))
+                    //ADJUST LATER
+                    // .Where(ac =>
+                    //     (ac.Tperi == 0) ||
+                    //     (ac.Tperi == 1 && ac.Dfval <= sessionDate) ||
+                    //     (ac.Tperi == 2 && ac.Dfval == sessionDate)
+                    // )
+                    .ToList();
+                foreach (var ac in icurActs)
+                {
+                    var icurRub = curProg.Rubvars.Where(ur => ur.Ipln == ac.IrubNavigation.Ipln).FirstOrDefault();
+                    ac.Liba = icurRub.Liba;
+                    ac.Abg = icurRub.Abg;
+                }
+                //LsDaActs = icurActs;
+            }
+        }
+        else if (orig == 2 && myrub != null) //par rubrique
+        {
+            if (myrub.Id != 0)
+            {
+                var lsTiers = curOrga.Tiersps.ToList(); //Where(te => te.Idhie == froMenu.Usite).ToList();
+                Console.WriteLine($"AVANT RECUP ACTS : {lsTiers.Count}");
+                var icurActs = lsTiers
+                    .SelectMany(tier => tier.Actsaies)
+                    .Where(ac => ac.Irub == myrub.Id)  // Filter by selected Rubvar
+                                                       //ADJUST LATER
+                                                       // .Where(ac =>
+                                                       //     (ac.Tperi == 0) ||
+                                                       //     (ac.Tperi == 1 && ac.Dfval <= sessionDate) ||
+                                                       //     (ac.Tperi == 2 && ac.Dfval == sessionDate)
+                                                       // )
+                    .ToList();
+                foreach (var ac in icurActs)
+                {
+                    var icurRub = curProg.Rubvars.Where(ur => ur.Rowguid == ac.Rowguid).FirstOrDefault();
+                    ac.Liba = icurRub.Liba;
+                    ac.Abg = icurRub.Abg;
+                }
+                //LsDaActs = icurActs;
+                //Console.WriteLine($"APRES RECUP ACTS : {LsDaActs.Count}");
+            }
+        }
+        var updated = _curTier.Actsaies.Where(a => !string.IsNullOrEmpty(a.Liba) || !string.IsNullOrEmpty(a.Abg)).ToList();
+        Console.WriteLine($"Verified Liba Set : {_curTier.Actsaies.FirstOrDefault().Liba}");
     }
     private async Task EvaluateSaisie()
     {
@@ -579,63 +596,7 @@ else
 
 
 
-    private void GetSelectedTActs(int orig, Tiersp mytier, Rubvar myrub)
-    {
-        //LsDaActs = new();
-        DateTime sessionDate = Convert.ToDateTime(_curSes.Datses); // session current date
-        if (orig == 1 && mytier != null) //personne
-        {
-            if (mytier.Actsaies.Any())
-            {
-                var lsRubs = curProg.Rubvars.ToList();
-
-                var icurActs = _curTier.Actsaies
-                    .Where(ac => ac.Itie == mytier.Id && lsRubs.Any(r => r.Id == ac.IrubNavigation.Id))
-                    //ADJUST LATER
-                    // .Where(ac =>
-                    //     (ac.Tperi == 0) ||
-                    //     (ac.Tperi == 1 && ac.Dfval <= sessionDate) ||
-                    //     (ac.Tperi == 2 && ac.Dfval == sessionDate)
-                    // )
-                    .ToList();
-                foreach(var ac in icurActs)
-                {
-                    var icurRub = curProg.Rubvars.Where(ur => ur.Ipln == ac.IrubNavigation.Ipln).FirstOrDefault();
-                    ac.Liba = icurRub.Liba;
-                    ac.Abg = icurRub.Abg;
-                }
-                //LsDaActs = icurActs;
-            }
-        }
-        else if (orig == 2 && myrub != null) //par rubrique
-        {
-            if (myrub.Id != 0)
-            {
-                var lsTiers = curOrga.Tiersps.ToList(); //Where(te => te.Idhie == froMenu.Usite).ToList();
-                Console.WriteLine($"AVANT RECUP ACTS : {lsTiers.Count}");
-                var icurActs = lsTiers
-                    .SelectMany(tier => tier.Actsaies)
-                    .Where(ac => ac.Irub == myrub.Id)  // Filter by selected Rubvar
-                    //ADJUST LATER
-                    // .Where(ac =>
-                    //     (ac.Tperi == 0) ||
-                    //     (ac.Tperi == 1 && ac.Dfval <= sessionDate) ||
-                    //     (ac.Tperi == 2 && ac.Dfval == sessionDate)
-                    // )
-                    .ToList();
-                foreach (var ac in icurActs)
-                {
-                    var icurRub = curProg.Rubvars.Where(ur => ur.Rowguid == ac.Rowguid).FirstOrDefault();
-                    ac.Liba = icurRub.Liba;
-                    ac.Abg = icurRub.Abg;
-                }
-                //LsDaActs = icurActs;
-                //Console.WriteLine($"APRES RECUP ACTS : {LsDaActs.Count}");
-            }
-        }
-        var updated = _curTier.Actsaies.Where(a => !string.IsNullOrEmpty(a.Liba) || !string.IsNullOrEmpty(a.Abg)).ToList();
-        Console.WriteLine($"Verified Liba Set : {_curTier.Actsaies.FirstOrDefault().Liba}");
-    }
+    
 
     //manage SAVING
     public async Task EdtAll()
