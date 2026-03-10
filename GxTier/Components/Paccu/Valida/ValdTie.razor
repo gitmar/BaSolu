@@ -29,15 +29,16 @@
 @inject HttpClientService _cliemanager
 @inject RendAgres _rendAgres
 
-<PageTitle>RECEPTION</PageTitle>
+<PageTitle>Saisie.Enrollement</PageTitle>
 <div>
     @Imessage
 </div>
 @if (isLoading)
 {
-    <Progress class="progress mb-3">
-        <ProgressBar Width="100" Label="Persos/Accueil Loading..." Type="ProgressType.StripedAndAnimated" Color="ProgressColor.Primary" />
-    </Progress>
+    <div class="text-center">
+        <Spinner Color="SpinnerColor.Primary" Size="SpinnerSize.Medium" />
+        <p>Saisie.Enrollement Loading...</p>
+    </div>
 }
 <!--downmodal-->
 @if (curTie != null && isModalVisible == true)
@@ -526,6 +527,45 @@
                                                                     }
                                                                 </div>
                                                             }
+                                                            <!-- FIELD Tiewel.Tiwatr -->
+                                                            @foreach(var uat in selectedTiw.Tieatrs)
+                                                            { 
+                                                                    //rubrique Gsgfix (attribut/Aeta-Aztyp)
+                                                                    if (uat.Ajacc == 1)
+                                                                    { //actif = visible
+                                                                        @if (EdTiwRowguid == draftTiw.Rowguid)
+                                                                        {
+                                                                            if (uat.Aztyp == 1)
+                                                                            { //string
+                                                                              <InputText @bind-Value="uat.Svala" class="form-control flex-grow-1" />
+                                                                            }
+                                                                            else if (uat.Aztyp == 2 || uat.Aztyp == 3 || uat.Aztyp == 4 || uat.Aztyp == 5)
+                                                                            { //int-long
+                                                                                <InputNumber @bind-Value="uat.Ivala" class="form-control flex-grow-1" />
+                                                                            }
+                                                                            else if (uat.Aztyp == 4 || uat.Aztyp == 5)
+                                                                            { //decimal-reel
+                                                                                <InputNumber @bind-Value="uat.Rvala" class="form-control flex-grow-1" />
+                                                                            }
+                                                                            else if (uat.Aztyp == 6)
+                                                                            { //boolean
+                                                                                <InputNumber @bind-Value="uat.Bvala" class="form-control flex-grow-1" />
+                                                                            }
+                                                                            else if (uat.Aztyp == 7)
+                                                                            { //date
+                                                                                <InputDate @bind-Value="uat.Dvala" class="form-control flex-grow-1" />
+                                                                            }
+                                                                            else
+                                                                            { //string
+                                                                              <InputText @bind-Value="uat.Svala" class="form-control flex-grow-1" />
+                                                                            }
+                                                                        }
+                                                                        else
+                                                                        { //standard
+                                                                            @uat.Svala
+                                                                        }
+                                                                    }
+                                                                }
                                                         </ChildContent>
                                                     </GridColumn>
                                                 </GridColumns>
@@ -1431,15 +1471,22 @@
                 Console.WriteLine("Tiersps null/empty - initializing empty collections");
                 MyDaTies = new ObservableCollection<Tiersp>();
             }
-            //Dictionnaires de visibilite
+            //Dictionnaire de visibilite principal
             TiwVisibility = new();
-            AflVisibility = new();
-            var LsAcols = LsVars.Where(v => v.Gvars == 8 && v.Itb == 1 && v.Totyp == Ugpe && v.Elea != 0).ToList();
+            AflVisibility = new(); //reporte in selection
+            Console.WriteLine($"Gvars 8 {LsVars.Count(uv => uv.Gvars == 8 && uv.Itb == 1)}");
+            var LsAcols = LsVars.Where(v => v.Gvars == 8 && v.Itb == 1 && v.Totyp == Ugpe && v.Etyp == 0).ToList();
             if (LsAcols.Any())
             {
                 string StrStore = LsAcols.FirstOrDefault().Fgsrc; //ColName;IsVisible;
                 List<LSelCol> Pcolumns = ColsPreferences.DeserializePreferences(StrStore);
-                TiwVisibility = Pcolumns.Where(pc => pc.EtRef == "2").ToDictionary(tc => tc.ColName, tc => tc.IsVisible);
+                Console.WriteLine($"nb cols {Pcolumns.Count} et {StrStore}");
+                TiwVisibility = Pcolumns.Where(pc => pc.SsDom == 1 && pc.EtRef == 2).ToDictionary(tc => tc.ColName, tc => tc.IsVisible);
+            }
+            Console.WriteLine($"totyp {Ugpe} et cols Tiw in : {LsAcols.Count} et visibles : {TiwVisibility.Values.Count}");
+            foreach(var uco in TiwVisibility)
+            {
+                Console.WriteLine($"col: {uco.Key} visible: {uco.Value}");
             }
             atrTitle = "Saisie";
         }
@@ -2159,14 +2206,19 @@
         AflVisibility = new();
         if (Ugpe == 1)
         {
-            var LsAcols = LsVars.Where(v => v.Gvars == 8 && v.Itb == 1 && v.Totyp == 1 && v.Etyp == IMyGAfl && v.Elea != 0).ToList();
+            var LsAcols = LsVars.Where(v => v.Gvars == 8 && v.Itb == 1 && v.Totyp == 1 && v.Etyp == IMyGAfl).ToList();
             if (LsAcols.Any())
             {
                 string StrStore = LsAcols.FirstOrDefault().Fgsrc; //ColName;IsVisible;
                 List<LSelCol> Pcolumns = ColsPreferences.DeserializePreferences(StrStore);
-                AflVisibility = Pcolumns.Where(pc => pc.EtRef == "2").ToDictionary(tc => tc.ColName, tc => tc.IsVisible);
+                AflVisibility = Pcolumns.Where(pc => pc.SsDom == 1 && pc.EtRef == 2).ToDictionary(tc => tc.ColName, tc => tc.IsVisible);
             }
-         }
+        }
+        Console.WriteLine($"cols Afl visibles : {AflVisibility.Values.Count}");
+        foreach (var uco in AflVisibility)
+        {
+            Console.WriteLine($"col: {uco.Key} visible: {uco.Value}");
+        }
     }
     // private void SelPlanDom(int xdom)
     // {

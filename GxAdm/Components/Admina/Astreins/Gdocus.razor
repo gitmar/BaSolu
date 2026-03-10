@@ -32,9 +32,10 @@
 
 @if (isLoading)
 {
-    <Progress class="progress mb-3">
-        <ProgressBar Width="30" Label="Table.Documents Loading..." Type="ProgressType.StripedAndAnimated" Color="ProgressColor.Primary" />
-    </Progress>
+    <div class="text-center">
+        <Spinner Color="SpinnerColor.Primary" Size="SpinnerSize.Medium" />
+        <p>Table.Documents Loading...</p>
+    </div>
 }
 else
 {
@@ -61,12 +62,26 @@ else
             <div class="form-group">
                 <label class="fw-bold">Gpe document :</label>
                 <InputSelect @bind-Value="ITyDoc" class="me-3" style="width:auto">
+                    <option value="0">?gpdoc</option>
+                    @foreach (var tob in LsDocs)
+                    {
+                        <option value="@tob.Key">@tob.Value</option>
+                    }
+                </InputSelect>
+                @* <InputSelect @bind-Value="ITyDoc" class="me-3" style="width:auto" @onchange="OnDocChanged">
+                    <option value="0">?gpdoc</option>
+                    @foreach (var tob in LsDocs)
+                    {
+                        <option value="@tob.Key">@tob.Value</option>
+                    }
+                </InputSelect> *@
+                @* <InputSelect @bind-Value="ITyDoc" class="me-3" style="width:auto">
                     <option class="jchx" value="0">?gpdoc</option>
                     @foreach (var tob in LsDocs) //LsFixes.Where(ut => ut.Gvars == 61 && ut.Itb == 1 & ut.Elea != 0))
                     {
                         <option value="@tob.Key" @onclick="() => SelTypDoc(tob.Key)">@tob.Value</option>
                     }
-                </InputSelect>
+                </InputSelect> *@
             </div>
             <div class="container-fluid-fixed-top">
                 @if (curOrga == null)
@@ -115,7 +130,7 @@ else
                                                 }
                                                 else
                                                 { // show item as read-only
-                                                  @item.Liba
+                                                  @item?.Liba
                                                 }
                                             </ChildContent>
                                         </GridColumn>
@@ -128,13 +143,13 @@ else
                                                 }
                                                 else
                                                 { // show item as read-only
-                                                  @item.Ivala
+                                                  @item?.Ivala
                                                 }
                                             </ChildContent>
                                         </GridColumn>
                                         <GridColumn TItem="Gsgfix" HeaderText="Methode" IsVisible="ITyDoc == 3" Class="xcol1">
                                             <ChildContent Context="item">
-                                                <InputSelect id="stad1" @bind-Value="item.Ityp" disabled>
+                                                <InputSelect @bind-Value="item.Ityp" disabled>
                                                     @foreach (var tob in LsFixes.Where(ut => ut.Gvars == 33 && ut.Itb == 8 && ut.Gp1 == 1 && ut.Elea != 0))
                                                     {
                                                         <option value="@tob.Elea">@tob.Liba</option>
@@ -144,7 +159,7 @@ else
                                         </GridColumn>
                                         <GridColumn TItem="Gsgfix" HeaderText="Frequence" IsVisible="ITyDoc == 3" Class="xcol1">
                                             <ChildContent Context="item">
-                                                <InputSelect id="stad2" @bind-Value="item.Jtyp" disabled>
+                                                <InputSelect @bind-Value="item.Jtyp" disabled>
                                                     @foreach (var tob in LsFixes.Where(ut => ut.Gvars == 33 && ut.Itb == 8 && ut.Gp1 == 2 && ut.Elea != 0))
                                                     {
                                                         <option value="@tob.Elea">@tob.Liba</option>
@@ -154,7 +169,7 @@ else
                                         </GridColumn>
                                         <GridColumn TItem="Gsgfix" HeaderText="jeton" IsVisible="ITyDoc == 3" Class="xcol1">
                                             <ChildContent Context="item">
-                                                <InputSelect id="stad3" @bind-Value="item.Ktyp" disabled>
+                                                <InputSelect @bind-Value="item.Ktyp" disabled>
                                                     <option value="0">sans</option>
                                                     <option value="1">oui</option>
                                                     <option value="2">non</option>
@@ -466,8 +481,17 @@ else
   
     //Global
     private int _lgcdu = 0;
-    private int ITyDoc = 1; //1Actes
-  
+    //private int ITyDoc = 1; //1Actes
+    private int _iTyDoc = 1; //1Actes
+    public int ITyDoc
+    {
+        get => _iTyDoc;
+        set
+        {
+            _iTyDoc = value;
+            SelTypDoc(value);
+        }
+    }
     private string atrTitle = "";
 
     //data
@@ -1069,6 +1093,13 @@ else
     // {
 
     // }
+    private void OnDocChanged(ChangeEventArgs e)
+    {
+        if (int.TryParse(e.Value?.ToString(), out int selectedKey))
+        {
+            SelTypDoc(selectedKey);
+        }
+    }
     private void SelTypDoc(int xdom)
     {
         if (xdom == 1 || xdom == 2)
@@ -1085,9 +1116,10 @@ else
         {
            MyDaDocus = new ObservableCollection<Gsgfix>();
         }
+        Console.WriteLine($"Nb. documents : {MyDaDocus.Count}");
         StateHasChanged();
     }
-
+    
     // ✅ 6. HELPERS - Mark Count and Clone
 
     private void MarkAsModified(object entity)

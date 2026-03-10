@@ -159,6 +159,7 @@
         <Property Name="Liba" Type="Edm.String" Nullable="false" />
         <Property Name="Abg" Type="Edm.String" />
         <Property Name="Fpsrc" Type="Edm.String" />
+        <Property Name="Fpexe" Type="Edm.String" />
         <Property Name="Siplg" Type="Edm.Int32" />
         <Property Name="Fpisrc" Type="Edm.Int32" />
         <Property Name="Styp" Type="Edm.Int32" />
@@ -256,6 +257,9 @@
         <Property Name="Ntyp" Type="Edm.Int32" />
         <Property Name="Otyp" Type="Edm.Int32" />
         <Property Name="Hrtyp" Type="Edm.Int32" />
+        <Property Name="Jacc" Type="Edm.Int32" />
+        <Property Name="Jenr" Type="Edm.Int32" />
+        <Property Name="Jdiv" Type="Edm.Int32" />
         <Property Name="Xsac" Type="Edm.Int32" />
         <Property Name="Psac" Type="Edm.Int32" />
         <Property Name="Scdrub" Type="Edm.String" />
@@ -298,28 +302,6 @@
         <Property Name="Rowguid" Type="Edm.Guid" Nullable="false" />
         <Property Name="IsProcessed" Type="Edm.Boolean" Nullable="false" />
         <Property Name="Atyp" Type="Edm.Int32" />
-        <Property Name="Anom" Type="Edm.String" />
-        <Property Name="Apnom" Type="Edm.String" />
-        <Property Name="Adr1" Type="Edm.String" />
-        <Property Name="Adr2" Type="Edm.String" />
-        <Property Name="Adr3" Type="Edm.String" />
-        <Property Name="Email" Type="Edm.String" />
-        <Property Name="Apays" Type="Edm.Int32" />
-        <Property Name="Aregio" Type="Edm.Int32" />
-        <Property Name="Phone" Type="Edm.String" />
-        <Property Name="Phon2" Type="Edm.String" />
-        <Property Name="Whats" Type="Edm.String" />
-        <Property Name="Siteweb" Type="Edm.String" />
-        <Property Name="Aprovi" Type="Edm.Int32" />
-        <Property Name="Acomu" Type="Edm.Int32" />
-        <Property Name="Acity" Type="Edm.Int32" />
-        <Property Name="Aquart" Type="Edm.Int32" />
-        <Property Name="Afami" Type="Edm.Int32" />
-        <Property Name="Sprovi" Type="Edm.String" />
-        <Property Name="Scomu" Type="Edm.String" />
-        <Property Name="Scity" Type="Edm.String" />
-        <Property Name="Squart" Type="Edm.String" />
-        <Property Name="Sfami" Type="Edm.String" />
         <Property Name="Obsv" Type="Edm.String" />
         <NavigationProperty Name="IdorgNavigation" Type="GxWapi.DaModels.Gxorga">
           <ReferentialConstraint Property="Idorg" ReferencedProperty="Idorg" />
@@ -448,11 +430,9 @@
         <Property Name="Putyp" Type="Edm.Int32" />
         <Property Name="Ustyp" Type="Edm.Int32" />
         <Property Name="Atyp" Type="Edm.Int32" />
-        <Property Name="Jacc" Type="Edm.Int32" />
-        <Property Name="Jrej" Type="Edm.Int32" />
-        <Property Name="Jint" Type="Edm.Int32" />
-        <Property Name="Jnot" Type="Edm.Int32" />
         <Property Name="Jwlc" Type="Edm.Int32" />
+        <Property Name="Jnot" Type="Edm.Int32" />
+        <Property Name="Jdiv" Type="Edm.Int32" />
         <Property Name="Dnais" Type="Edm.DateTimeOffset" />
         <Property Name="Demb" Type="Edm.DateTimeOffset" />
         <Property Name="Dinscr" Type="Edm.DateTimeOffset" />
@@ -589,11 +569,9 @@
         <Property Name="Putyp" Type="Edm.Int32" />
         <Property Name="Ustyp" Type="Edm.Int32" />
         <Property Name="Atyp" Type="Edm.Int32" />
-        <Property Name="Jacc" Type="Edm.Int32" />
-        <Property Name="Jrej" Type="Edm.Int32" />
-        <Property Name="Jint" Type="Edm.Int32" />
-        <Property Name="Jnot" Type="Edm.Int32" />
         <Property Name="Jwlc" Type="Edm.Int32" />
+        <Property Name="Jnot" Type="Edm.Int32" />
+        <Property Name="Jdiv" Type="Edm.Int32" />
         <Property Name="Dnais" Type="Edm.DateTimeOffset" />
         <Property Name="Demb" Type="Edm.DateTimeOffset" />
         <Property Name="Dinscr" Type="Edm.DateTimeOffset" />
@@ -836,6 +814,7 @@
         <Property Name="Liba" Type="Edm.String" />
         <Property Name="Abg" Type="Edm.String" />
         <Property Name="Frsrc" Type="Edm.String" />
+        <Property Name="Frexe" Type="Edm.String" />
         <Property Name="Sirlg" Type="Edm.Int32" />
         <Property Name="Frisrc" Type="Edm.Int32" />
         <Property Name="Utyp" Type="Edm.Int32" />
@@ -926,6 +905,7 @@
         <Property Name="Liba" Type="Edm.String" />
         <Property Name="Abg" Type="Edm.String" />
         <Property Name="Frsrc" Type="Edm.String" />
+        <Property Name="Frexe" Type="Edm.String" />
         <Property Name="Sirlg" Type="Edm.Int32" />
         <Property Name="Frisrc" Type="Edm.Int32" />
         <Property Name="Optcols" Type="Edm.String" />
@@ -1084,6 +1064,7 @@
         <Property Name="Liba" Type="Edm.String" Nullable="false" />
         <Property Name="Abg" Type="Edm.String" />
         <Property Name="Ftsrc" Type="Edm.String" />
+        <Property Name="Ftexe" Type="Edm.String" />
         <Property Name="Sitlg" Type="Edm.Int32" />
         <Property Name="Frisrc" Type="Edm.Int32" />
         <Property Name="Ihie" Type="Edm.Int32" />
@@ -1277,6 +1258,7 @@
         <Property Name="Liba" Type="Edm.String" Nullable="false" />
         <Property Name="Abg" Type="Edm.String" />
         <Property Name="Ftsrc" Type="Edm.String" />
+        <Property Name="Ftexe" Type="Edm.String" />
         <Property Name="Sitlg" Type="Edm.Int32" />
         <Property Name="Frisrc" Type="Edm.Int32" />
         <Property Name="Udpd" Type="Edm.Guid" />
@@ -2407,6 +2389,10 @@
         <Property Name="Liba" Type="Edm.String" />
         <Property Name="Abg" Type="Edm.String" />
         <Property Name="Lib2" Type="Edm.String" />
+        <Property Name="Ktyp" Type="Edm.Int32" />
+        <Property Name="Jwlc" Type="Edm.Int32" />
+        <Property Name="Jnot" Type="Edm.Int32" />
+        <Property Name="Jdiv" Type="Edm.Int32" />
         <Property Name="Da1" Type="Edm.Int32" />
         <Property Name="Da2" Type="Edm.Int32" />
         <Property Name="Datc" Type="Edm.DateTimeOffset" />

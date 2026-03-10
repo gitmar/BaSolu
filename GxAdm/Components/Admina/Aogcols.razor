@@ -4,6 +4,8 @@
 @using System.Text.Json
 @using GxWapi.DaModels
 @using GxAdm.Services
+@using GxShared.Others
+@using GxShared.Helpers
 @using GxShared.Sess
 
 @using Newtonsoft.Json;
@@ -56,39 +58,45 @@
     [Parameter]
     public Gxorga curOrga { get; set; }
     [Parameter]
-    public int EtRef { get; set; } = 0;
+    public int SsDom { get; set; } = 0; //1tiers2mati
     [Parameter]
-    public string StrStore { get; set; } = string.Empty;
+    public int EtRef { get; set; } = 0; //1accueil2enrol
     [Parameter]
-    public List<Gpvar> LsStores { get; set; } = new();
+    public int IMyGpe { get; set; } = 0; //1cible2oper3clie
+    [Parameter]
+    public int IMyAfl { get; set; } = 0; //1cnj2par3enf4pair
     [Parameter]
     public List<Gpfixe> LsOcols { get; set; } = new();
+    [Parameter]
+    public List<Gpvar> LsGcols { get; set; } = new();
+    [Parameter]  // Event callback if you want parent to react
+    public EventCallback<string> OnPreferencesSaved { get; set; }
+
     // This list drives the checkboxes
     public List<LSelCol> Columns { get; set; } = new();
-    public string GrdName { get; set; } = "Tiewel";
-    // Event callback if you want parent to react
-    [Parameter] public EventCallback<string> OnPreferencesSaved { get; set; }
-
-    //private string GrdName = "Tiewel";
 
     protected override async Task OnInitializedAsync()
     {
-        Columns = DeserializePreferences(StrStore)
-            //.Where(p => p.ColNo == ColNo && p.ColName == ColName)
-            .ToList();
-        // If no stored prefs, initialize defaults
-        if (!Columns.Any())
+        var selectedCol = LsGcols.FirstOrDefault(uc => uc.Itb == EtRef && uc.Totyp == IMyGpe && uc.Etyp == IMyAfl);
+        Console.WriteLine($"Valeur colonnes entrees : {EtRef} et/{IMyGpe} et/{IMyAfl} puis//-{selectedCol?.Fgsrc}");
+        string strStore = selectedCol != null ? selectedCol.Fgsrc : string.Empty;
+        Columns = ColsPreferences.DeserializePreferences(strStore);
+        Columns = Columns.Where(cl => cl.SsDom == SsDom && cl.EtRef == EtRef).ToList();
+        foreach(var ocol in LsOcols)
         {
-            foreach(var st in LsOcols)
+            //column non incrite
+            var icol = Columns.FirstOrDefault(c => c.ColNo == ocol.Elea && string.Compare(c.ColName, ocol.Scdrub) == 0);
+            if (icol == null)
             {
                 var cola = new LSelCol
                 {
-                    EtRef = EtRef.ToString(),
-                    ColNo = st.Elea,
-                    ColName = st.Scdrub,
-                    IsVisible = true,
-                    Olabel = st.Liba,
-                    Ulabel = st.Liba
+                    SsDom = SsDom,
+                    EtRef = EtRef,
+                    ColNo = ocol.Elea,
+                    ColName = ocol.Scdrub,
+                    IsVisible = ocol.Gp4 == 1,
+                    Olabel = ocol.Liba,
+                    Ulabel = ocol.Liba
                 };
                 Columns.Add(cola);
             }
@@ -97,61 +105,8 @@
 
     private async Task SavePreferences()
     {
-        var serialized = SerializePreferences(Columns);
+        var serialized = ColsPreferences.SerializePreferences(Columns);
         if (OnPreferencesSaved.HasDelegate)
             await OnPreferencesSaved.InvokeAsync(serialized);
     }
-
-    // --- Serialization helpers ---
-    public static string SerializePreferences(IEnumerable<LSelCol> prefs)
-    {
-        return string.Join("/", prefs.Select(p =>
-            $"{p.EtRef};{p.ColNo};{p.ColName};{p.IsVisible};{p.Olabel};{p.Ulabel}"));
-    }
-
-    public static List<LSelCol> DeserializePreferences(string data)
-    {
-        var prefs = new List<LSelCol>();
-        if (string.IsNullOrWhiteSpace(data)) return prefs;
-
-        foreach (var entry in data.Split('/', StringSplitOptions.RemoveEmptyEntries))
-        {
-            var parts = entry.Split(';');
-            if (parts.Length == 5)
-            {
-                prefs.Add(new LSelCol
-                {
-                    EtRef = parts[0],
-                    ColNo = Int16.Parse(parts[1]),
-                    ColName = parts[2],
-                    IsVisible = bool.Parse(parts[3]),
-                    Olabel = parts[4],
-                    Ulabel = parts[5]
-                });
-            }
-        }
-        return prefs;
-    }
-    public class LSelCol
-    {
-        public string EtRef { get; set; } = string.Empty;    
-        public int ColNo { get; set; } = 0; //irang
-        public string ColName { get; set; } = string.Empty;
-        public bool IsVisible { get; set; } = false;
-        public string Olabel { get; set; } = string.Empty;
-        public string Ulabel { get; set; } = string.Empty;
-    }
-
-    // public class UserGridPreference
-    // {
-    //     public string UserId { get; set; } = string.Empty;
-    //     public string GrdName { get; set; } = string.Empty;
-    //     public string ColName { get; set; } = string.Empty;
-    //     [JsonIgnore]
-    //     public string CLabel { get; set; } = string.Empty;
-    //     [JsonIgnore]
-    //     public string UCLabel { get; set; } = string.Empty;
-    //     public int ColNo { get; set; } = 0;
-    //     public bool IsVisible { get; set; }
-    // }
 }

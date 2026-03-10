@@ -36,9 +36,10 @@
 <!--tiers/search et/ou creation? -->
 @if (isLoading)
 {
-    <Progress class="progress mb-3">
-        <ProgressBar Width="30" Label="Calculs/Calcul Loading..." Type="ProgressType.StripedAndAnimated" Color="ProgressColor.Primary" />
-    </Progress>
+    <div class="text-center">
+        <Spinner Color="SpinnerColor.Primary" Size="SpinnerSize.Medium" />
+        <p>Calculs/Calcul Loading...</p>
+    </div>
 }
 else
 {
@@ -51,36 +52,37 @@ else
                     <option value="0">progr?</option>
                     @foreach (var pgr in LsProgs)
                     {
-                        <option value="@pgr.Id" @onclick="() => GetSelectedProg(pgr)">@pgr.Liba</option>
+                        <option value="@pgr.Id">@pgr.Liba</option>
                     }
                 </InputSelect>
             </div>
+
             <label for="TypDiv">Service :</label>
             <div>
                 <InputSelect id="TypDiv" @bind-Value="ImyDiv">
                     <option value="0">Aucun</option>
                     @foreach (var divo in _lsDivs)
                     {
-                        <option value="@divo.Id" @onclick="trierTiers">@divo.Abg-@divo.Liba</option>
+                        <option value="@divo.Id">@divo.Abg-@divo.Liba</option>
                     }
                 </InputSelect>
             </div>
         </div>
-    }
+        <div class="input-group mt-1">
+            @if (ProgOpen)
+            {
+                <div class="text-center">
+                    <InputSelect id="optId" @bind-Value="ImyOpti">
+                        <option value="0">aucun</option>
+                        @foreach (var uf in LsFixes.Where(xf => xf.Gvars == 33 && xf.Itb == 7 && xf.Gp1 == 5))
+                        {
+                            <option value="@uf.Elea">par @uf.Liba</option>
+                        }
+                    </InputSelect>
+                </div>
+            }
+        </div>
     <div class="input-group mt-1">
-        @if (ProgOpen)
-        {
-            <div class="text-center">
-                <InputSelect id="optId" @bind-Value="ImyOpti">
-                    <option value="0">aucun</option>
-                    @foreach (var uf in LsFixes.Where(xf => xf.Gvars == 33 && xf.Itb == 7 && xf.Gp1 == 5))
-                    {
-                        <option value="@uf.Elea" @onclick="()=> SelTypGpe(uf.Elea)">par @uf.Liba</option>
-                    }
-                </InputSelect>
-            </div>
-        }
-        &nbsp;&nbsp;
         @if (CalcOpen)
         {
             <Button class="btn btn-sm btn-secondary btnsz"
@@ -100,6 +102,7 @@ else
             <Button class="btn btn-warning btn-sm" @onclick="() => OuvrirFiche(ImyOpti)">@stopenFich</Button>
         }
     </div>
+    }
     @if (ProgOpen)
     {
         @if (ImyOpti == 2)

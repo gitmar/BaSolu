@@ -779,7 +779,7 @@
                                                 <ChildContent Context="item">
                                                     <div @key="item.Rowguid"></div>
                                                     <InputCheckbox @bind-Value="item.IsJaccChecked"
-                                                                   @onchange="e => { item.Jacc = (bool)e.Value ? 1 : 0; }"
+                                                                   @onchange="e => { item.Jwlc = (bool)e.Value ? 1 : 0; }"
                                                                    class="form-check-input">
                                                     </InputCheckbox>
                                                 </ChildContent>
@@ -795,7 +795,7 @@
                                                 </HeaderContent>
                                                 <ChildContent Context="item">
                                                     <InputCheckbox @bind-Value="item.IsJrejChecked"
-                                                                   @onchange="e => { item.Jrej = (bool)e.Value ? 1 : 0; }"
+                                                                   @onchange="e => { item.Jwlc = (bool)e.Value ? 2 : 1; }"
                                                                    class="form-check-input">
                                                     </InputCheckbox>
                                                 </ChildContent>
@@ -811,7 +811,7 @@
                                                 </HeaderContent>
                                                 <ChildContent Context="item">
                                                     <InputCheckbox @bind-Value="item.IsJnotChecked"
-                                                                   @onchange="e => { item.Jrej = (bool)e.Value ? 1 : 0; }"
+                                                                   @onchange="e => { item.Jwlc = (bool)e.Value ? 2 : 1; }"
                                                                    class="form-check-input">
                                                     </InputCheckbox>
                                                 </ChildContent>
@@ -1446,7 +1446,7 @@
         var newAfl = new Tiwafl
         { /* init */
             Rowguid = Guid.NewGuid(),
-            Itie = curTiw?.Id,
+            Itie = curTiw?.Id ?? 0,
             Iui = lsnb, //nextSeq(2),
             Ttyp = Ugpe,
             Tyafl = afltyp,
@@ -2163,8 +2163,8 @@
     // CheckBoxes
     private bool isChecked
     {
-        get => curTiw.Jacc == 1;
-        set => curTiw.Jacc = value ? 1 : 0;
+        get => curTiw.Jwlc == 1;
+        set => curTiw.Jwlc = value ? 1 : 0;
     }
     //CRUD Tiewel
     private EntityStates? GetState(object entity)
@@ -2205,13 +2205,13 @@
             if (origchk == 1)
             {
                 //tw.Ivalid = isChecked ? 9 : 0;
-                tw.Jacc = isChecked ? 1 : 0;
+                tw.Jwlc = isChecked ? 1 : 0;
             }
             else
             if (origchk == 2)
             {
                 //tw.Ivalid = isChecked ? 9 : 0;
-                tw.Jrej = isChecked ? 1 : 0;
+                tw.Jwlc = isChecked ? 2 : 1;
             }
             else
             if (origchk == 3)
@@ -2219,7 +2219,7 @@
                 //tw.Ivalid = isChecked ? 9 : 0;
                 tw.Jnot = isChecked ? 1 : 0;
             }
-            Console.WriteLine($"Global Valid  / {tw.Jacc} / {tw.Jrej} / {tw.Jnot}");
+            Console.WriteLine($"Global Valid  / {tw.Jwlc} / {tw.Jnot}");
         }
         StateHasChanged();
     }

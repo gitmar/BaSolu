@@ -37,9 +37,10 @@
 <!--tiers/search et/ou creation? -->
 @if (isLoading)
 {
-    <Progress class="progress mb-3">
-        <ProgressBar Width="30" Label="Saisies/Saisie Loading..." Type="ProgressType.StripedAndAnimated" Color="ProgressColor.Primary" />
-    </Progress>
+    <div class="text-center">
+        <Spinner Color="SpinnerColor.Primary" Size="SpinnerSize.Medium" />
+        <p>Saisies/Saisie Loading...</p>
+    </div>
 }
 else
 {
@@ -93,23 +94,24 @@ else
                 { // par rubrique
                 <div class="p-1" style="max-height: 400px; overflow-y: auto;">
                   <div class="d-flex align-items-center gap-2">
-                      <label>Code : </label>
+                      <label>Code :</label>
                       <div class="text-center">
-                          <InputSelect id="rubrid" @bind-Value="ImyRubr">
+                          <InputSelect id="rubrid-code" @bind-Value="ImyRubr">
                               <option value="0">rubrique?</option>
                                 @foreach (var rub in EnsRubrs)
                                 {
-                                    <option value="@rub.Id" @onclick="() => GetSelectedRubr(rub)">@rub.Scdrub</option>
+                                    <option value="@rub.Id">@rub.Scdrub</option>
                                 }
                             </InputSelect>
                         </div>
-                        <label>Libelle : </label>
+
+                        <label>Libelle :</label>
                         <div class="text-center">
-                            <InputSelect id="rubrid" @bind-Value="ImyRubr">
+                            <InputSelect id="rubrid-lib" @bind-Value="ImyRubr">
                                 <option value="0">rubrique?</option>
                                 @foreach (var rub in EnsRubrs)
                                 {
-                                    <option value="@rub.Id" @onclick="() => GetSelectedRubr(rub)">@rub.Liba</option>
+                                    <option value="@rub.Id">@rub.Liba</option>
                                 }
                             </InputSelect>
                         </div>
@@ -165,17 +167,17 @@ else
                               <option value="0">tiers?</option>
                                 @foreach (var tie in PreTiers)
                                 {
-                                    <option value="@tie.Id" @onclick="() => GetSelectedTier(tie)">@tie.Smatri</option>
+                                    <option value="@tie.Id">@tie.Smatri</option>
                                 }
                             </InputSelect>
                         </div>
-                        <label class="text-center">nom/prenoms : </label>
+                        <label class="text-center">nom/prenoms :</label>
                         <div class="text-center">
                             <InputSelect id="Idtie2" @bind-Value="ImyTier">
                                 <option value="0">tiers?</option>
                                 @foreach (var tie in PreTiers)
                                 {
-                                    <option value="@tie.Id" @onclick="() => GetSelectedTier(tie)">@($"{tie.Nom} {tie.Pnom}")</option>
+                                    <option value="@tie.Id">@($"{tie.Nom} {tie.Pnom}")</option>
                                 }
                             </InputSelect>
                         </div>
@@ -341,8 +343,51 @@ else
 
     //private string opseudo = "", opnomp = "";
     //private int opfonc = 0, opgrad = 0, opafec = 0;
-    private int ImyTier = 0, ImyRubr = 0;
+    //private int ImyTier = 0; //, ImyRubr = 0;
     private int ImyExo = 0; //ImySes = 0,
+    private int _imyRubr = 0;
+    public int ImyRubr
+    {
+        get => _imyRubr;
+        set
+        {
+            _imyRubr = value;
+            var selected = EnsRubrs.FirstOrDefault(r => r.Id == value);
+            if (selected != null)
+            {
+                // If GetSelectedRubr is async, call helper
+                _ = HandleSelectedRubrAsync(selected);
+            }
+        }
+    }
+    private async Task HandleSelectedRubrAsync(Rubvar selected)
+    {
+        await GetSelectedRubr(selected);
+    }
+    private int _imyTier = 0;
+    public int ImyTier
+    {
+        get => _imyTier;
+        set
+        {
+            _imyTier = value;
+            var selected = PreTiers.FirstOrDefault(t => t.Id == value);
+            if (selected != null)
+            {
+                // If GetSelectedTier is synchronous:
+                GetSelectedTier(selected);
+
+                // If GetSelectedTier is async:
+                // _ = HandleSelectedTierAsync(selected);
+            }
+        }
+    }
+
+    // Async helper if needed
+    private async Task HandleSelectedTierAsync(Tiersp selected)
+    {
+        await GetSelectedTier(selected);
+    }
     private string kmessage = "";
     private string _errorMessage = "";
     private int itRub = 0;
@@ -476,7 +521,7 @@ else
         }
     }
     
-    private void GetSelectedTier(Tiersp mytier)
+    private async Task GetSelectedTier(Tiersp mytier)
     {
         if (mytier != null)
         {
@@ -492,7 +537,7 @@ else
             //can Input      
         }
     }
-    private void GetSelectedRubr(Rubvar myrub)
+    private async Task GetSelectedRubr(Rubvar myrub)
     {
         //Console.WriteLine($"ENTREE DANS PLN : {curProg.Liba}");
         if (myrub != null)

@@ -238,6 +238,11 @@ namespace GxTie.Services
         public static TValue GetValueOrDefault<TKey, TValue>(this Dictionary<TKey, TValue> dict, 
             TKey key, TValue defaultValue = default)
         {
+            Console.WriteLine($"dictio values count {dict.Values.Count}");
+            foreach (var uk in dict)
+            {
+                Console.WriteLine($"dictionnaire key {uk.Key} et values {uk.Value}");
+            }
             return dict.TryGetValue(key, out var value) ? value : defaultValue;
         }
     }

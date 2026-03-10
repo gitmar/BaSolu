@@ -32,9 +32,10 @@
 
 @if (isLoading)
 {
-    <Progress class="progress mb-3">
-        <ProgressBar Width="30" Label="Table.Attributs Loading..." Type="ProgressType.StripedAndAnimated" Color="ProgressColor.Primary" />
-    </Progress>
+    <div class="text-center">
+        <Spinner Color="SpinnerColor.Primary" Size="SpinnerSize.Medium" />
+        <p>Table.Attributs Loading...</p>
+    </div>
 }
 else
 {
@@ -62,26 +63,26 @@ else
                 <div class="btn btn-group">
                     <label class="mb-0 me-2">Groupe :</label>
                     <InputSelect @bind-Value="IMyGatr" class="me-3" style="width:auto">
-                        <option class="jchx" value="0">?choisir</option>
+                        <option value="0">?choisir</option>
                         @foreach (var utb in LsFixes.Where(u => u.Gvars == 35 && u.Itb == 1 && u.Elea != 0))
                         {
-                            <option value="@utb.Elea" @onclick="() => SelDomTabl(1)">@utb.Liba</option>
+                            <option value="@utb.Elea">@utb.Liba</option>
                         }
                     </InputSelect>
                     <label> Base : </label>
                     <InputSelect @bind-Value="IMyBas">
-                        <option class="jchx" value="0">?base</option>
+                        <option value="0">?base</option>
                         @foreach (var utb in LsDoms)
                         {
-                            <option value="@utb.Gp2" @onclick="() => SelDomTabl(2)">@utb.Liba </option>
+                            <option value="@utb.Gp2">@utb.Liba</option>
                         }
                     </InputSelect>
-                    <label style="font-weight:bold"> G.Tiers :</label>
+                    <label> G.Tiers : </label>
                     <InputSelect @bind-Value="IMyGtie">
-                        <option class="jchx" value="0">?g.tiers</option>
+                        <option value="0">?g.tiers</option>
                         @foreach (var utb in LsGties.Where(tie => tie.Itb == IMyBas))
                         {
-                            <option value="@utb.Elea" @onclick="() => SelDomTabl(3)">@utb.Liba</option>
+                            <option value="@utb.Elea">@utb.Liba</option>
                         }
                     </InputSelect>
                 </div>
@@ -151,8 +152,7 @@ else
                                                     @item.Abg
                                                 }
                                             </ChildContent>
-                                        </GridColumn>
-                                        
+                                        </GridColumn>               
                                         <GridColumn TItem="Gsgfix" HeaderText="Source">
                                             <ChildContent Context="item">
                                                 @if (EdFixRowguid == item.Rowguid)
@@ -275,7 +275,60 @@ else
                                                 }
                                             </ChildContent>
                                         </GridColumn>
-
+                                        <GridColumn TItem="Gsgfix" HeaderText="Accueil">
+                                            <ChildContent Context="item">
+                                                @if (EdFixRowguid == item.Rowguid)
+                                                {
+                                                    <InputSelect @bind-Value="draftFix.Jacc">
+                                                        <option value="0">non</option>
+                                                        <option value="1">oui</option>
+                                                    </InputSelect>
+                                                }
+                                                else
+                                                {
+                                                    <InputSelect @bind-Value="item.Jacc" disabled="true">
+                                                        <option value="0">non</option>
+                                                        <option value="1">oui</option>
+                                                    </InputSelect>
+                                                }
+                                            </ChildContent>
+                                        </GridColumn>
+                                        <GridColumn TItem="Gsgfix" HeaderText="Enrol">
+                                            <ChildContent Context="item">
+                                                @if (EdFixRowguid == item.Rowguid)
+                                                {
+                                                    <InputSelect @bind-Value="draftFix.Jenr">
+                                                        <option value="0">non</option>
+                                                        <option value="1">oui</option>
+                                                    </InputSelect>
+                                                }
+                                                else
+                                                {
+                                                    <InputSelect @bind-Value="item.Jenr" disabled="true">
+                                                        <option value="0">non</option>
+                                                        <option value="1">oui</option>
+                                                    </InputSelect>
+                                                }
+                                            </ChildContent>
+                                        </GridColumn>
+                                        <GridColumn TItem="Gsgfix" HeaderText="Divers">
+                                            <ChildContent Context="item">
+                                                @if (EdFixRowguid == item.Rowguid)
+                                                {
+                                                    <InputSelect @bind-Value="draftFix.Jdiv">
+                                                        <option value="0">non</option>
+                                                        <option value="1">oui</option>
+                                                    </InputSelect>
+                                                }
+                                                else
+                                                {
+                                                    <InputSelect @bind-Value="item.Jdiv" disabled="true">
+                                                        <option value="0">non</option>
+                                                        <option value="1">oui</option>
+                                                    </InputSelect>
+                                                }
+                                            </ChildContent>
+                                        </GridColumn>
                                         <GridColumn TItem="Gsgfix" HeaderText="Eta" Class="xcol1">
                                             <HeaderContent>
                                                 @if (IMyGatr != 1)
@@ -584,9 +637,38 @@ else
   
     //Global
     private int _lgcdu = 0;
-    //private int ITyDoc = 1; //1Actes
-    private int IMyGatr = 0, IMyGtie = 0, IMyBas = 0;
-   
+    //private int IMyGatr = 0, IMyGtie = 0, IMyBas = 0;
+    private int _myGatr = 0;
+    public int IMyGatr
+    {
+        get => _myGatr;
+        set
+        {
+            _myGatr = value;
+            SelDomTabl(1);
+        }
+    }
+
+    private int _myBas = 0;
+    public int IMyBas
+    {
+        get => _myBas;
+        set
+        {
+            _myBas = value;
+            SelDomTabl(2);
+        }
+    }
+    private int _myGtie = 0;
+    public int IMyGtie
+    {
+        get => _myGtie;
+        set
+        {
+            _myGtie = value;
+            SelDomTabl(3);
+        }
+    }
     private string atrTitle = "";
 
     //data

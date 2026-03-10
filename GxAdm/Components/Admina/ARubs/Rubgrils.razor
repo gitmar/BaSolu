@@ -28,13 +28,14 @@
 @inject IJSRuntime _jsRun
 
 <!-- InscTiewComponent.razor -->
-<PageTitle>Prog.Grille</PageTitle>
+<PageTitle>Plan.Grille</PageTitle>
 
 @if (isLoading)
 {
-    <Progress class="progress mb-3">
-        <ProgressBar Width="30" Label="Prog.Grille Loading..." Type="ProgressType.StripedAndAnimated" Color="ProgressColor.Primary" />
-    </Progress>
+    <div class="text-center">
+        <Spinner Color="SpinnerColor.Primary" Size="SpinnerSize.Medium" />
+        <p>Plan.Grille Loading...</p>
+    </div>
 }
 else
 {
@@ -61,34 +62,37 @@ else
             <div class="form-group">
                 <label class="fw-bold">Domaine :</label>
                 <InputSelect @bind-Value="ItkDom" class="me-3" style="width:auto">
-                    <option class="jchx" value="0">?domaine</option>
-                    @foreach (var tob in LsDoms) //LsFixes.Where(ut => ut.Gvars == 61 && ut.Itb == 1 & ut.Elea != 0))
+                    <option value="0">?domaine</option>
+                    @foreach (var tob in LsDoms)
                     {
-                        <option value="@tob.Gp2" @onclick="() => SelPlanDom(tob.Gp2)">@tob.Liba</option>
+                        <option value="@tob.Gp2">@tob.Liba</option>
                     }
                 </InputSelect>
+
                 <label class="fw-bold">G.Tiers :</label>
                 <InputSelect @bind-Value="IMyGtie" class="me-3" style="width:auto">
-                    <option class="jchx" value="0">?gtiers</option>
+                    <option value="0">?gtiers</option>
                     @foreach (var tob in LsGties)
                     {
-                        <option value="@tob.Elea" @onclick="() => SelPlanTier(tob.Elea)">@tob.Liba</option>
+                        <option value="@tob.Elea">@tob.Liba</option>
                     }
                 </InputSelect>
+
                 <label class="fw-bold">Attribut :</label>
                 <InputSelect @bind-Value="IMyAtr" class="me-3" style="width:auto">
-                    <option class="jchx" value="0">?util</option>
-                    @foreach (var tob in LsAtrs) //.Where(ut => ut.Gvars == 62 && ut.Itb == 1 && ut.Elea != 0 && ut.Gp2 == IMyDom))
+                    <option value="0">?util</option>
+                    @foreach (var tob in LsAtrs)
                     {
-                        <option value="@tob.Elea" @onclick="() => SelPlanAtr(tob.Elea)">@tob.Liba</option>
+                        <option value="@tob.Elea">@tob.Liba</option>
                     }
                 </InputSelect>
+
                 <label class="fw-bold">Base :</label>
                 <InputSelect @bind-Value="IMyVue" class="me-3" style="width:auto">
-                    <option class="jchx" value="0">?util</option>
-                    @foreach (var tob in LsVues) //.Where(ut => ut.Gvars == 62 && ut.Itb == 1 && ut.Elea != 0 && ut.Gp2 == IMyDom))
+                    <option value="0">?util</option>
+                    @foreach (var tob in LsVues)
                     {
-                        <option value="@tob.Gp2" @onclick="() => SelPlanVue(tob.Elea)">@tob.Liba</option>
+                        <option value="@tob.Gp2">@tob.Liba</option>
                     }
                 </InputSelect>
             </div>
@@ -725,12 +729,51 @@ else
     private int _lgcdu = 0;
     private int IMyGpln = 3; //3Grille
     private int IMyDom = 1; //1Saisie
-    private int ItkDom = 0; //?6Tiers7Mat
-    private int IMyAtr = 0; //?1Categ/2Fonct...
-    private int IMyGtie = 0; //?1Cible/2Operat...
-    private int IMyVue = 1; //?1Reel2Virtuel
+    //private int ItkDom = 0; //?6Tiers7Mat
+    //private int IMyAtr = 0; //?1Categ/2Fonct...
+    //private int IMyGtie = 0; //?1Cible/2Operat...
+    //private int IMyVue = 1; //?1Reel2Virtuel
+    private int _itkDom = 0; //?6Tiers7Mat
+    public int ItkDom
+    {
+        get => _itkDom;
+        set
+        {
+            _itkDom = value;
+            SelPlanDom(value);
+        }
+    }
+    private int _myGtie = 0; //?1Cible/2Operat...
+    public int IMyGtie
+    {
+        get => _myGtie;
+        set
+        {
+            _myGtie = value;
+            SelPlanTier(value);
+        }
+    }
+    private int _myAtr = 0; //?1Categ/2Fonct...
+    public int IMyAtr
+    {
+        get => _myAtr;
+        set
+        {
+            _myAtr = value;
+            SelPlanAtr(value);
+        }
+    }
+    private int _myVue; //?1Reel2Virtuel
+    public int IMyVue
+    {
+        get => _myVue;
+        set
+        {
+            _myVue = value;
+            SelPlanVue(value);
+        }
+    }
     private string atrTitle = "";
-
     private string atrDest = "Programmes de Saisie";
     //pour modals formulas
     private Plngen curPlan = new();

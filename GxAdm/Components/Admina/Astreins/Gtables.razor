@@ -32,9 +32,10 @@
 
 @if (isLoading)
 {
-    <Progress class="progress mb-3">
-        <ProgressBar Width="30" Label="Table.Tables Loading..." Type="ProgressType.StripedAndAnimated" Color="ProgressColor.Primary" />
-    </Progress>
+    <div class="text-center">
+        <Spinner Color="SpinnerColor.Primary" Size="SpinnerSize.Medium" />
+        <p>Table.Tables Loading...</p>
+    </div>
 }
 else
 {
@@ -62,18 +63,18 @@ else
                 <div class="btn btn-group">
                     <label class="mb-0 me-2">Groupe :</label>
                     <InputSelect @bind-Value="IMyGtbl" class="me-3" style="width:auto">
-                        <option class="jchx" value="0">?choisir</option>
+                        <option value="0">?choisir</option>
                         @foreach (var utb in LsFixes.Where(u => u.Gvars == 35 && u.Itb == 1 && u.Elea != 0))
                         {
-                            <option value="@utb.Elea" @onclick="() => SelDomTabl(1)">@utb.Liba</option>
+                            <option value="@utb.Elea">@utb.Liba</option>
                         }
                     </InputSelect>
                     <label> Base : </label>
                     <InputSelect @bind-Value="IMyBas">
-                        <option class="jchx" value="0">?base</option>
+                        <option value="0">?base</option>
                         @foreach (var utb in LsDoms)
                         {
-                            <option value="@utb.Gp2" @onclick="() => SelDomTabl(2)">@utb.Liba </option>
+                            <option value="@utb.Gp2">@utb.Liba</option>
                         }
                     </InputSelect>
                 </div>
@@ -700,8 +701,27 @@ else
 
     //Global
     private int _lgcdu = 0;
-    //private int ITyDoc = 1; //1Actes
-    private int IMyGtbl = 0, IMyBas = 0;
+    //private int IMyGtbl = 0, IMyBas = 0;
+    private int _myGtbl = 0;
+    public int IMyGtbl
+    {
+        get => _myGtbl;
+        set
+        {
+            _myGtbl = value;
+            SelDomTabl(1); // run your logic when group changes
+        }
+    }
+    private int _myBas = 0;
+    public int IMyBas
+    {
+        get => _myBas;
+        set
+        {
+            _myBas = value;
+            SelDomTabl(2); // run your logic when base changes
+        }
+    }
 
     private string atrTitle = "";
 

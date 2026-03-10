@@ -30,12 +30,9 @@
 @inject RendAgres _rendAgres
 
 <!-- InscTiewComponent.razor -->
-<PageTitle>Tables</PageTitle>
+<PageTitle>Saisie.Carriere</PageTitle>
 
-@if (allEnable)
-{
-    
-}
+
 <div class="row">
     <div class="col-md-12 input-group align-middle">
         @if (Ugpe != 0)
@@ -90,9 +87,10 @@
 }
 @if (isLoading)
 {
-    <Progress class="progress mb-3">
-        <ProgressBar Width="30" Label="Integration/Tiers Loading..." Type="ProgressType.StripedAndAnimated" Color="ProgressColor.Primary" />
-    </Progress>
+    <div class="text-center">
+        <Spinner Color="SpinnerColor.Primary" Size="SpinnerSize.Medium" />
+        <p>Saisie.Carriere Loading...</p>
+    </div>
 }
 else
 {

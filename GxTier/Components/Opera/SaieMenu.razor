@@ -47,7 +47,7 @@
                 <!-- Top Navigation Menu -->
                 <GxNavMenu BrandText="A24soft Gx-Solutions"
                            MenuItems="@MenuItems"
-                           YaGroup="false"
+                           YaGroup="true"
                            Groups="@Groupes"
                            MenuSelected="@_chxMenu"
                            MenuSelectedChanged="@SelMenu"
@@ -73,43 +73,39 @@
                                 <option value="@ses.Id">@ses.Sref</option>
                             }
                         </InputSelect>
-                        @if (_chxMenu == 1)
-                        {
-                            <InputSelect id="optId" @bind-Value="ImyOrient">
-                                <option value="0">aucun</option>
-                                @foreach (var uf in LsFixes.Where(xf => xf.Gvars == 33 && xf.Itb == 7 && xf.Gp1 == 4))
-                                {
-                                    <option value="@uf.Elea" @onclick="() => GetSelectedOption(uf)">par @uf.Liba</option>
-                                }
-                            </InputSelect>
-                        }
+                        <InputSelect id="optId" @bind-Value="ImyOrient">
+                            <option value="0">aucun</option>
+                            @foreach (var uf in LsFixes.Where(xf => xf.Gvars == 33 && xf.Itb == 7 && xf.Gp1 == 4))
+                            {
+                                <option value="@uf.Elea" @onclick="() => GetSelectedOption(uf)">par @uf.Liba</option>
+                            }
+                        </InputSelect>
                     </div>
                 </div>
                 <div class="row mb-2">
-                        <div class="d-flex align-items-center gap-2">
-                            <label>Programme :</label>
-                            <div class="text-center">
-                                <InputSelect id="pgrId" @bind-Value="ImyProg">
-                                    <option value="0">progr?</option>
-                                    @foreach (var pgr in LsProgs)
-                                    {
-                                        <option value="@pgr.Id" @onclick="() => GetSelectedProg(pgr)">@pgr.Liba</option>
-                                    }
-                                </InputSelect>
-                            </div>
-                            <label for="TypDiv">Service :</label>
-                            <div>
-                                <InputSelect id="TypDiv" @bind-Value="ImyDiv">
-                                    <option value="0">Aucun</option>
-                                    @foreach (var divo in LsDivs)
-                                    {
-                                        <option value="@divo.Ihie" @onclick="@trierTiers">@divo.Abg-@divo.Liba</option>
-                                    }
-                                </InputSelect>
-                            </div>
-                            
+                    <div class="d-flex align-items-center gap-2">
+                        <label>Programme :</label>
+                        <div class="text-center">
+                            <InputSelect id="pgrId" @bind-Value="ImyProg">
+                                <option value="0">progr?</option>
+                                @foreach (var pgr in LsProgs)
+                                {
+                                    <option value="@pgr.Id" @onclick="() => GetSelectedProg(pgr)">@pgr.Liba</option>
+                                }
+                            </InputSelect>
+                        </div>
+                        <label for="TypDiv">Service :</label>
+                        <div>
+                            <InputSelect id="TypDiv" @bind-Value="ImyDiv">
+                                <option value="0">Aucun</option>
+                                @foreach (var divo in LsDivs)
+                                {
+                                    <option value="@divo.Ihie" @onclick="@trierTiers">@divo.Abg-@divo.Liba</option>
+                                }
+                            </InputSelect>
                         </div>
 
+                    </div>
                         @if (!string.IsNullOrEmpty(Imessage))
                         {
                             <span class="bg-info bg-opacity-10 text-danger px-2" style="font-style: italic;">
@@ -221,8 +217,37 @@
 
     private SaieActLnes mygsaie = new();
     public int ImyOrient = 0;
-    public int ImyDiv = 0;
-    public int ImyProg = 0;
+    //public int ImyDiv = 0;
+    //public int ImyProg = 0;
+    private int _imyProg = 0;
+    public int ImyProg
+    {
+        get => _imyProg;
+        set
+        {
+            _imyProg = value;
+            var selected = LsProgs.FirstOrDefault(p => p.Id == value);
+            if (selected != null)
+            {
+                // fire-and-forget
+                _ = HandleSelectedProgAsync(selected);
+            }
+        }
+    }
+    private async Task HandleSelectedProgAsync(Gplan selected)
+    {
+        await GetSelectedProg(selected);
+    }
+    private int _imyDiv = 0;
+    public int ImyDiv
+    {
+        get => _imyDiv;
+        set
+        {
+            _imyDiv = value;
+            trierTiers(); // your existing method, adjust if it needs the selected Id
+        }
+    }
     public List<Gplan> LsProgs = new();
 
     //Formula service
@@ -332,7 +357,7 @@
     //Guard
     private int pendingCount => _guard.HasPendingChanges() ?
         curODContext.Context.Entities.Count(e => e.State != EntityStates.Unchanged) : 0;
-    
+
     private async Task SaveAllAsync()
     {
         await _guard.FlushAsync();
@@ -749,9 +774,7 @@
             Ugpe = fixno;
             toChild.Ugpe = Ugpe;
             gpeLiba = LsGties.Where(ut => ut.Elea == fixno).FirstOrDefault().Liba.ToUpperInvariant();
-            //if (_inTwels.Count() > 0) {
-            //    _LsTiers = _inTwels.Where(ut => ut.Ttyp == Ugpe).ToList();
-            //}
+            EnsTiers = curOrga.Tiersps.Where(t => t.Utyp == fixno).ToList();
         }
     }
     // private async Task SelMenu(int noM)

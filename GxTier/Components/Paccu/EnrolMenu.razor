@@ -366,6 +366,23 @@ else
                 Console.WriteLine("No organization found for the current user.");
                 return;
             }
+            ////attributs//Lvars deja charge
+            foreach (var tie in curOrga.Tiersps)
+            {
+                foreach (var tat in tie.Tieatrs)
+                {
+                    var curat = LsVars.FirstOrDefault(at => at.Totyp == tie.Utyp);
+                    tat.Ajacc = curat?.Jacc ?? 0; //formulaire accueil
+                }
+            }
+            foreach (var tiw in curOrga.Tiewels)
+            {
+                foreach (var tat in tiw.Tiwatrs)
+                {
+                    var curat = LsVars.FirstOrDefault(at => at.Totyp == tiw.Utyp);
+                    tat.Ajacc = curat?.Jacc ?? 0; //formulaire acceuil
+                }
+            }
         }
         catch(Exception ex)
         {

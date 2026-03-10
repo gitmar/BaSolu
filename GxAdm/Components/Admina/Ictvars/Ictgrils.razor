@@ -28,13 +28,14 @@
 @inject IJSRuntime _jsRun
 
 <!-- InscTiewComponent.razor -->
-<PageTitle>Prog.Saisie</PageTitle>
+<PageTitle>Saisie.Grille</PageTitle>
 
 @if (isLoading)
 {
-    <Progress class="progress mb-3">
-        <ProgressBar Width="30" Label="Prog.Saisie Loading..." Type="ProgressType.StripedAndAnimated" Color="ProgressColor.Primary" />
-    </Progress>
+    <div class="text-center">
+        <Spinner Color="SpinnerColor.Primary" Size="SpinnerSize.Medium" />
+        <p>Saisie.Grille Loading...</p>
+    </div>
 }
 else
 {
@@ -59,13 +60,13 @@ else
                 </div>
             </div>
             <div class="form-group">
-                <div class="btn btn-group">   
+                <div class="btn btn-group">
                     <label class="me-2">Plan :</label>
                     <InputSelect @bind-Value="IMyPlan" class="me-3" style="width:auto">
-                        <option class="jchx" value="0">?plan</option>
+                        <option value="0">?plan</option>
                         @foreach (var upl in LsPlans)
                         {
-                            <option value="@upl.Id" @onclick="() => SelPlanDom(1)">@upl.Liba</option>
+                            <option value="@upl.Id">@upl.Liba</option>
                         }
                     </InputSelect>
                     <label class="fw-bold">@splnDom</label>
@@ -139,7 +140,6 @@ else
                                                                     {
                                                                         <InputText @bind-Value="draftRub.Scdrub"
                                                                                    placeholder="code"
-                                                                                   id="rucode"
                                                                                    class="w-100"
                                                                                    maxlength="@_lgcdu"
                                                                                    @* @onblur="@(() => OnChlBlurHandler(item.IrubNavigation, draftRub))"
@@ -717,9 +717,19 @@ else
     private int IMyDom = 1; //1Saisie
     private int ItkDom = 6; //6Tiers7Mat
     private int IMyVue = 1; //1Reel2Virtuel
+    private int _myPlan; //curplan no
+    public int IMyPlan
+    {
+        get => _myPlan;
+        set
+        {
+            _myPlan = value;
+            SelPlanDom(value); // run your logic when plan changes
+        }
+    }
     private string atrTitle = "";
-
-    private string atrDest = "Programmes de Saisie"; 
+    private string atrDest = "Programmes de Saisie";
+    private Plngen selPlan = new();
     //pour modals formulas
     private Plngen curPlan = new();
     private Actsaie curRubr = new();
@@ -737,11 +747,8 @@ else
     private List<Plngen> LsPlsDivs => curOrga.Plngens.Where(pl => pl.Ptyp == 4).ToList();
     //add/edit options
     private bool AllowMultipleEdits { get; set; } = false;
-    private bool isFiltre { get; set; } = false;    
-    //PLAN
+    private bool isFiltre { get; set; } = false;
     private Tiersp gridTier = new();
-    private int IMyPlan = 0; //curplan no
-    private Plngen selPlan = new();
 
     private Guid? PlanRenderKey = null;
     private Dictionary<Guid, Plngen> _edPlnOriginals = new();

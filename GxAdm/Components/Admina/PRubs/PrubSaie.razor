@@ -32,9 +32,10 @@
 
 @if (isLoading)
 {
-    <Progress class="progress mb-3">
-        <ProgressBar Width="30" Label="Prog.Saisie Loading..." Type="ProgressType.StripedAndAnimated" Color="ProgressColor.Primary" />
-    </Progress>
+    <div class="text-center">
+        <Spinner Color="SpinnerColor.Primary" Size="SpinnerSize.Medium" />
+        <p>Prog.Saisie Loading...</p>
+    </div>
 }
 else
 {
@@ -59,7 +60,15 @@ else
                 </div>
             </div>
             <div class="form-group">
-                <div class="btn btn-group">   
+                <label class="fw-bold">Base :</label>
+                <InputSelect @bind-Value="IMyVue" class="me-3" style="width:auto">
+                    <option value="0">?util</option>
+                    @foreach (var tob in LsVues)
+                    {
+                        <option value="@tob.Elea">@tob.Liba</option>
+                    }
+                </InputSelect>
+                @* <div class="btn btn-group">   
                     <label class="fw-bold">Base :</label>
                     <InputSelect @bind-Value="IMyVue" class="me-3" style="width:auto">
                         @foreach (var tob in LsVues) //.Where(ut => ut.Gvars == 62 && ut.Itb == 1 && ut.Elea != 0 && ut.Gp2 == IMyDom))
@@ -67,7 +76,7 @@ else
                             <option value="@tob.Elea" @onclick="() => SelPlanVue(tob.Elea)">@tob.Liba</option>
                         }
                     </InputSelect>
-                </div>
+                </div> *@
             </div>
             <div class="container-fluid-fixed-top">
                 @if (curOrga == null)
@@ -364,7 +373,6 @@ else
                                                                             {
                                                                                 <InputText @bind-Value="draftRub.Scdrub"
                                                                                            placeholder="code"
-                                                                                           id="rucode"
                                                                                            class="w-100"
                                                                                            maxlength="@_lgcdu"
                                                                                            @onblur="@(() => OnChlBlurHandler(selectedPln, draftRub))"
@@ -1025,7 +1033,17 @@ else
     private int _lgcdu = 0;
     private int IMyGpln = 5; //5Programme
     private int IMyDom = 1; //1Saisie
-    private int IMyVue = 1; //1Reel2Virtuel
+    //private int IMyVue = 1; //1Reel2Virtuel
+    private int _myVue = 1; //1Reel2Virtuel
+    public int IMyVue
+    {
+        get => _myVue;
+        set
+        {
+            _myVue = value;
+            SelPlanVue(value);
+        }
+    }
     private string atrTitle = "";
 
     private string atrDest = "Programmes de Saisie"; 

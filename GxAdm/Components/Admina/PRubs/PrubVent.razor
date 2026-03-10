@@ -32,9 +32,10 @@
 
 @if (isLoading)
 {
-    <Progress class="progress mb-3">
-        <ProgressBar Width="30" Label="Prog.Ventilation Loading..." Type="ProgressType.StripedAndAnimated" Color="ProgressColor.Primary" />
-    </Progress>
+    <div class="text-center">
+        <Spinner Color="SpinnerColor.Primary" Size="SpinnerSize.Medium" />
+        <p>Prog.Ventilation Loading...</p>
+    </div>
 }
 else
 {
@@ -62,17 +63,19 @@ else
                 <div class="btn btn-group">
                     <label class="me-2">Domaine :</label>
                     <InputSelect @bind-Value="IMyDom" class="me-3" style="width:auto">
-                        <option class="jchx" value="0">?domaine</option>
-                        @foreach (var tob in LsDoms) //LsFixes.Where(ut => ut.Gvars == 61 && ut.Itb == 1 & ut.Elea != 0))
+                        <option value="0">?domaine</option>
+                        @foreach (var tob in LsDoms)
                         {
-                            <option value="@tob.Gp2" @onclick="() => SelPlanDom(tob.Gp2)">@tob.Liba</option>
+                            <option value="@tob.Gp2">@tob.Liba</option>
                         }
                     </InputSelect>
+
                     <label class="fw-bold">Base :</label>
                     <InputSelect @bind-Value="IMyVue" class="me-3" style="width:auto">
-                        @foreach (var tob in LsVues) //.Where(ut => ut.Gvars == 62 && ut.Itb == 1 && ut.Elea != 0 && ut.Gp2 == IMyDom))
+                        <option value="0">?util</option>
+                        @foreach (var tob in LsVues)
                         {
-                            <option value="@tob.Elea" @onclick="() => SelPlanVue(tob.Elea)">@tob.Liba</option>
+                            <option value="@tob.Elea">@tob.Liba</option>
                         }
                     </InputSelect>
                 </div>
@@ -375,7 +378,6 @@ else
                                                                             {
                                                                                 <InputText @bind-Value="draftRub.Scdrub"
                                                                                            placeholder="code"
-                                                                                           id="rucode"
                                                                                            class="w-100"
                                                                                            maxlength="@_lgcdu"
                                                                                            @onblur="@(() => OnChlBlurHandler(selectedPln, draftRub))"
@@ -940,9 +942,29 @@ else
     //Global
     private int _lgcdu = 0;
     private int IMyGpln = 5; //5Programme
-    private int IMyDom = 3; //3Compta4Cumul
-    private int IMyVue = 1; //1Reel2Virtuel
+    //private int IMyDom = 3; //3Compta4Cumul
+    //private int IMyVue = 1; //1Reel2Virtuel
     private int IMyCtprog = 0, IMyCtrub = 0;
+    private int _myDom = 3; //3Compta4Cumul
+    public int IMyDom
+    {
+        get => _myDom;
+        set
+        {
+            _myDom = value;
+            SelPlanDom(value);
+        }
+    }
+    private int _myVue = 1; //1Reel2Virtuel
+    public int IMyVue
+    {
+        get => _myVue;
+        set
+        {
+            _myVue = value;
+            SelPlanVue(value);
+        }
+    }
     private string atrTitle = "";
 
     private string atrDest = "Programmes Compta"; 

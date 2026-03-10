@@ -91,91 +91,91 @@
                                                 <tr>
                                                     <td>Raison sociale:</td>
                                                     <td class="text-right">
-                                                        <InputText class="my-input" id="ograis" @bind-Value="curOrga.Raison" required
+                                                        <InputText class="my-input" @bind-Value="curOrga.Raison" required
                                                                    style="font-weight:bold" readonly="@(isEdOrg ? null : "readonly")" placeholder="Enter sigle" />
                                                     </td>
                                                 </tr>
                                                 <tr>
                                                     <td>Sigle:</td>
                                                     <td class="text-right">
-                                                        <InputText class="my-input" id="ogsig" @bind-Value="curOrga.Sigle" required
+                                                        <InputText class="my-input" @bind-Value="curOrga.Sigle" required
                                                                    style="font-weight:bold" readonly="@(isEdOrg ? null : "readonly")" placeholder="Enter sigle" />
                                                     </td>
                                                 </tr>
                                                 <tr>
                                                     <td>Nom Cible:</td>
                                                     <td class="text-right">
-                                                        <InputText class="my-input" id="ogsigl" @bind-Value="curOrga.Stcible" required
+                                                        <InputText class="my-input" @bind-Value="curOrga.Stcible" required
                                                                    style="font-weight:bold" readonly="@(isEdOrg ? null : "readonly")" placeholder="Enter sigle" />
                                                     </td>
                                                 </tr>
                                                 <tr>
                                                     <td>Noeud Cible:</td>
                                                     <td class="text-right">
-                                                        <InputNumber class="my-input" id="ognoeud" @bind-Value="curOrga.Jpoint" required
+                                                        <InputNumber class="my-input" @bind-Value="curOrga.Jpoint" required
                                                                      style="font-weight:bold" readonly="@(isEdOrg ? null : "readonly")" placeholder="Enter sigle" />
                                                     </td>
                                                 </tr>
                                                 <tr>
                                                     <td>Si jeton:</td>
                                                     <td class="text-right">
-                                                        <InputNumber class="my-input" id="ogjeta" @bind-Value="curOrga.Sijet" required
+                                                        <InputNumber class="my-input" @bind-Value="curOrga.Sijet" required
                                                                      style="font-weight:bold" readonly="@(isEdOrg ? null : "readonly")" />
                                                     </td>
                                                 </tr>
                                                 <tr>
                                                     <td>No RCM:</td>
                                                     <td class="text-right">
-                                                        <InputText class="my-input" id="ogrcm" @bind-Value="curOrga.Rcm"
+                                                        <InputText class="my-input" @bind-Value="curOrga.Rcm"
                                                                    style="font-weight:bold" readonly="@(isEdOrg ? null : "readonly")" placeholder="Enter RCM" />
                                                     </td>
                                                 </tr>
                                                 <tr>
                                                     <td>No IFU:</td>
                                                     <td class="text-right">
-                                                        <InputText class="my-input" id="ogifu" @bind-Value="curOrga.Rifu"
+                                                        <InputText class="my-input" @bind-Value="curOrga.Rifu"
                                                                    style="font-weight:bold" readonly="@(isEdOrg ? null : "readonly")" placeholder="Enter IFU" />
                                                     </td>
                                                 </tr>
                                                 <tr>
                                                     <td>Adresse:</td>
                                                     <td class="text-right">
-                                                        <InputText class="my-input" id="ogadr" @bind-Value="curOrga.Adr"
+                                                        <InputText class="my-input" @bind-Value="curOrga.Adr"
                                                                    style="font-weight:bold" readonly="@(isEdOrg ? null : "readonly")" placeholder="Enter Adresse" />
                                                     </td>
                                                 </tr>
                                                 <tr>
                                                     <td>Adresse2:</td>
                                                     <td class="text-right">
-                                                        <InputText class="my-input" id="ogadr2" @bind-Value="curOrga.Adr2"
+                                                        <InputText class="my-input" @bind-Value="curOrga.Adr2"
                                                                    style="font-weight:bold" readonly="@(isEdOrg ? null : "readonly")" placeholder="Enter Adresse2" />
                                                     </td>
                                                 </tr>
                                                 <tr>
                                                     <td>Ville:</td>
                                                     <td class="text-right">
-                                                        <InputNumber class="my-input" id="ogcity" @bind-Value="curOrga.Icity"
+                                                        <InputNumber class="my-input" @bind-Value="curOrga.Icity"
                                                                    style="font-weight:bold" readonly="@(isEdOrg ? null : "readonly")" placeholder="Enter CITY" />
                                                     </td>
                                                 </tr>
                                                 <tr>
                                                     <td>Province:</td>
                                                     <td class="text-right">
-                                                        <InputNumber class="my-input" id="ogprov" @bind-Value="curOrga.Iprovi"
+                                                        <InputNumber class="my-input" @bind-Value="curOrga.Iprovi"
                                                                    style="font-weight:bold" readonly="@(isEdOrg ? null : "readonly")" placeholder="Enter PROVI" />
                                                     </td>
                                                 </tr>
                                                 <tr>
                                                     <td>Region:</td>
                                                     <td class="text-right">
-                                                        <InputNumber class="my-input" id="ogreg" @bind-Value="curOrga.Iregio"
+                                                        <InputNumber class="my-input" @bind-Value="curOrga.Iregio"
                                                                    style="font-weight:bold" readonly="@(isEdOrg ? null : "readonly")" placeholder="Enter REGION" />
                                                     </td>
                                                 </tr>
                                                 <tr>
                                                     <td>Pays:</td>
                                                     <td class="text-right">
-                                                        <InputSelect id="ogpays" @bind-Value="curOrga.Npays" disabled="@(!isEdOrg)">
+                                                        <InputSelect @bind-Value="curOrga.Npays" disabled="@(!isEdOrg)">
                                                             <option value="0">-- Select a country --</option>
                                                             @foreach (var tob in curOrga.Gsglnes.Where(ug => ug.Otyp == 4 && ug.Pitb == 31))
                                                             {
@@ -187,21 +187,21 @@
                                                 <tr>
                                                     <td>Telephone:</td>
                                                     <td class="text-right">
-                                                        <InputText class="my-input" id="ogtele" @bind-Value="curOrga.Phone"
+                                                        <InputText class="my-input" @bind-Value="curOrga.Phone"
                                                                    style="font-weight:bold" readonly="@(isEdOrg ? null : "readonly")" placeholder="Enter TELE" />
                                                     </td>
                                                 </tr>
                                                 <tr>
                                                     <td>WhatsApp:</td>
                                                     <td class="text-right">
-                                                        <InputText class="my-input" id="ogwhats" @bind-Value="curOrga.Whatsapp"
+                                                        <InputText class="my-input" @bind-Value="curOrga.Whatsapp"
                                                                    style="font-weight:bold" readonly="@(isEdOrg ? null : "readonly")" placeholder="Enter WhatsApp" />
                                                     </td>
                                                 </tr>
                                                 <tr>
                                                     <td>Siteweb:</td>
                                                     <td class="text-right">
-                                                        <InputText class="my-input" id="ogsite" @bind-Value="curOrga.Weburl"
+                                                        <InputText class="my-input" @bind-Value="curOrga.Weburl"
                                                                    style="font-weight:bold" readonly placeholder="Enter SITEWEB" />
                                                     </td>
                                                 </tr>
@@ -287,7 +287,7 @@
                                         <div class="row">
                                             <div class="form-group">
                                                 <label style="font-weight:bold">Limites :</label>
-                                                <InputSelect id="oglim" @bind-Value="Rubtto">
+                                                <InputSelect @bind-Value="Rubtto">
                                                     @foreach (var tob in LsFixes.Where(ut => ut.Gvars == 39 && ut.Itb == 1 && ut.Elea != 0))
                                                     {
                                                         <option value="@tob.Elea">@tob.Liba</option>
@@ -415,13 +415,13 @@
                                                 </GridColumn>
                                                 <GridColumn TItem="Gsgfix" HeaderText="Libelle">
                                                     <ChildContent Context="item">
-                                                            <InputText id="ao1" @bind-Value="@item.Sliba" style="width:100%"
+                                                            <InputText @bind-Value="@item.Sliba" style="width:100%"
                                                                    readonly="@(item.Rowguid == EdAflRowguid ? null : "readonly")" />
                                                     </ChildContent>
                                                 </GridColumn>
                                                 <GridColumn TItem="Gsgfix" HeaderText="Opt.">
                                                     <ChildContent Context="item">
-                                                        <InputSelect id="ntop" @bind-Value="item.Ityp" disabled="@(!isEdAfl)">
+                                                        <InputSelect @bind-Value="item.Ityp" disabled="@(!isEdAfl)">
                                                                     @foreach (var tob in LsFixes.Where(ut => ut.Gvars == 31 && ut.Itb == 2))
                                                                     {
                                                                         <option value="@tob.Elea">@tob.Liba</option>
@@ -432,7 +432,7 @@
                                                 <GridColumn TItem="Gsgfix" HeaderText="Avis">
                                                     <ChildContent Context="item">
                                                         <div class="col-1">
-                                                            <InputSelect id="ntav" @bind-Value="item.Jtyp" disabled="@(!isEdAfl)">
+                                                            <InputSelect @bind-Value="item.Jtyp" disabled="@(!isEdAfl)">
                                                                 @foreach (var tob in LsFixes.Where(ut => ut.Gvars == 31 && ut.Itb == 6 && ut.Gp1 == 1))
                                                                 {
                                                                     <option value="@tob.Elea">@tob.Liba</option>
@@ -443,13 +443,13 @@
                                                 </GridColumn>
                                                 <GridColumn TItem="Gsgfix" HeaderText="max.">
                                                     <ChildContent Context="item">
-                                                        <InputNumber id="ao2" class="my-input" @bind-Value="item.Mtyp"
+                                                        <InputNumber class="my-input" @bind-Value="item.Mtyp"
                                                                      style="font-weight:bold;width:60px" readonly="@(item.Rowguid == EdAflRowguid ? null : "readonly")" />
                                                     </ChildContent>
                                                 </GridColumn>
                                                 <GridColumn TItem="Gsgfix" HeaderText="notif.">
                                                     <ChildContent Context="item">
-                                                            <InputSelect id="ntnf" @bind-Value="item.Ntyp" disabled="@(!isEdAfl)" style="width:100%">
+                                                            <InputSelect @bind-Value="item.Ntyp" disabled="@(!isEdAfl)" style="width:100%">
                                                                 @foreach (var tob in LsFixes.Where(ut => ut.Gvars == 31 && ut.Itb == 4 && ut.Gp1 == 1))
                                                                 {
                                                                     <option value="@tob.Elea">@tob.Liba</option>
@@ -480,46 +480,63 @@
                             </Tab>
                             <Tab Title="Colonnes">
                                 <Content>
-                                    <div class="mb-3">
-                                        <!-- Colonnes options -->
-                                        <div class="row">
-                                            <div class="form-group">
-                                                <label style="font-weight:bold">Formulaire :</label>
-                                                <InputSelect id="ogfog" @bind-Value="IMyDest">
-                                                    <option value="0">ou?</option>
-                                                    <option value="1">Accueil</option>
-                                                    <option value="2">Validation</option>
-                                                </InputSelect>
-                                                <label style="font-weight:bold">Groupe :</label>
-                                                <InputSelect id="oggpe" @bind-Value="IMyGpe">
-                                                    @foreach (var tob in ClGties)
+                                    <!-- Colonnes options -->
+                                    <div class="d-flex align-items-end gap-3 flex-wrap">
+                                        <div>
+                                            <label class="fw-bold">Domaine :</label>
+                                            <InputSelect @bind-Value="IMyDom">
+                                                <option value="1">Tiers</option>
+                                                <option value="2">Matiere</option>
+                                            </InputSelect>
+                                        </div>
+                                        <div>
+                                            <label class="fw-bold">Formulaire :</label>
+                                            <InputSelect @bind-Value="IMyDest">
+                                                <option value="1">Accueil</option>
+                                                <option value="2">Validation</option>
+                                            </InputSelect>
+                                        </div>
+                                        <div>
+                                            <label class="fw-bold">Groupe :</label>
+                                            <InputSelect @bind-Value="IMyGpe" @onchange="OnGpeChanged">
+                                                @foreach (var tob in ClGties)
+                                                {
+                                                    <option value="@tob.Elea">@tob.Liba</option>
+                                                }
+                                            </InputSelect>
+                                        </div>
+
+                                        @if (IMyGpe == 1)
+                                        {
+                                            <div>
+                                                <label class="fw-bold">Affilié :</label>
+                                                <InputSelect @bind-Value="IMyAfl">
+                                                    <option value="0">cible</option>
+                                                    @foreach (var tob in LsFixes
+                                                        .Where(uf => uf.Gvars == 53 && uf.Itb == 6 && uf.Gp1 == 1 && uf.Elea != 0)
+                                                        .OrderBy(uo => uo.Elea))
                                                     {
-                                                        <option value="@tob.Elea" @onclick="() => SelDomCol()">@tob.Liba</option>
+                                                        <option value="@tob.Elea">@tob.Liba</option>
                                                     }
                                                 </InputSelect>
-                                                @if(IMyGpe == 1)
-                                                { //cible
-                                                    <label style="font-weight:bold">Affilie :</label>
-                                                    <InputSelect id="oggp2" @bind-Value="IMyAfl">
-                                                    @foreach (var tob in LsFixes.Where(uf => uf.Gvars == 53 && uf.Itb == 6 && (uf.Gp1 == 1 || uf.Gp1 == 2) && uf.Elea != 0).OrderBy(uo => uo.Elea))
-                                                        {
-                                                        <option value="@tob.Elea" @onclick="() => SelDomCol()">@tob.Liba</option>
-                                                        }
-                                                    </InputSelect>
-                                                }
                                             </div>
-                                        </div>
-                                        @if (OptColValid)
-                                        {
-                                            <Aogcols @ref="myicols"
-                                                curOrga="@curOrga"
-                                                EtRef="@IMyDest"
-                                                LsOcols="@LsOcols"
-                                                LsStores="@LsStores"
-                                                OnPreferencesSaved="@OnOptcolsSave">
-                                            </Aogcols>
                                         }
                                     </div>
+                                    @if (canColsOpen)
+                                    {
+                                        <div class="row">
+                                        <Aogcols @ref="myicols"
+                                                 curOrga="@curOrga"
+                                                 SsDom="@IMyDom"
+                                                 EtRef="@IMyDest"
+                                                 IMyGpe="IMyGpe"
+                                                 IMyAfl="IMyAfl"
+                                                 LsOcols="@LsOcols"
+                                                 LsGcols="@LsGcols"
+                                                 OnPreferencesSaved="@OnOptcolsSave">
+                                        </Aogcols>
+                                        </div>
+                                    }
                                 </Content>
                             </Tab>
                         </Tabs>
@@ -528,11 +545,11 @@
                          style="background-color: transparent; z-index: 1050; max-width: 400px;">
                         <div class="d-flex gap-2 align-items-center">
                             <Button class="w-auto flex-grow-0 flex-shrink-0" Color="ButtonColor.Info" @onclick="SaveAllChanges"
-                                    id="b1" Enabled="@_guard.HasPendingChanges()">
+                                    Enabled="@_guard.HasPendingChanges()">
                                 Save All (@_guard.GetPendingChangesCount() changes)
                             </Button>
                             <Button class="w-auto flex-grow-0 flex-shrink-0" Color="ButtonColor.Secondary" @onclick="CancelAllChanges"
-                                    id="b2" Enabled="@_guard.HasPendingChanges()">
+                                    Enabled="@_guard.HasPendingChanges()">
                                 Cancel All
                             </Button>
                         </div>
@@ -635,7 +652,7 @@
 
     private Aogcols myicols;
     private string colstore = "", aflcolstore = "";
-    private bool OptColValid = false;
+    //private bool OptColValid = false;
     public Gxorga curOrga = new Gxorga();
 
     public string Title { get; set; }
@@ -650,6 +667,7 @@
     private List<Gpfixe> LsDoms = new();
     private List<Gpdivh> LsDivs = new();
     private List<Gpfixe> LsOcols = new();
+    private List<Gpvar> LsGcols = new();
     private List<Gpvar> LsStores = new();
 
     private List<MyRolTable> _inRoles = new();
@@ -661,9 +679,30 @@
     private bool allEnable = false;
 
     private int selTyp = 0;
+    private int IMyDom = 1; //1tiers2matiere
+    private int IMyDest = 0; //1accueil2enrol
     private int IMyBas = 0;
-    private int IMyDest = 0, IMyGpe = 0, IMyAfl = 0;
-
+    private int _iMyGpe = 0;
+    public int IMyGpe
+    {
+        get => _iMyGpe;
+        set
+        {
+            _iMyGpe = value;
+            SelDomCol();
+        }
+    }
+    private int _iMyAfl = 0;
+    public int IMyAfl
+    {
+        get => _iMyAfl;
+        set
+        {
+            _iMyAfl = value;
+            SelDomCol();
+        }
+    }
+    private bool canColsOpen => IMyDest > 0 && IMyGpe > 0;
     private int Rubtto = 1;
 
     private string Imessage = "", Ierror = "";
@@ -753,8 +792,8 @@
             .Where(ut => ut.Gvars == 36 && ut.Itb == 6 && (ut.Gp1 == 1 || ut.Gp1 == 4))
             .ToList();
         LsOcols = LsFixes.Where(uv => uv.Gvars == 65 && uv.Itb == 1).ToList();
-        LsStores = _usrBag.Usorga.Uvars.Where(tc => tc.Gvars == 8 && (tc.Itb == 1 || tc.Itb == 2)).ToList();
-
+        LsGcols = _usrBag.Usorga.Uvars.Where(tc => tc.Gvars == 8 && (tc.Itb == 1 || tc.Itb == 2)).ToList();
+        Console.WriteLine($"Colonnes disponibles : {LsOcols.Count} ET {LsGcols.Count}");
         _invRoles = await _rendAgres.LoadOrgaRoles();
         Console.WriteLine($"Roles disponibles : {_invRoles.Count}");
         try
@@ -959,63 +998,34 @@
             IMyBas = 7;
         }
     }
+    private void OnGpeChanged(ChangeEventArgs e)
+    {
+        IMyGpe = int.Parse(e.Value.ToString());
+        if (IMyDom == 0 || IMyDest == 0 || IMyGpe == 0)
+        {
+            Imessage = "Veuillez sélectionner Domaine, Destination et Groupe.";
+            if (IMyGpe == 1 && IMyAfl == 0)
+            {
+                Imessage += " Pour le groupe 'Cible', veuillez sélectionner un affilié.";
+            }
+            return;
+        }
+        SelDomCol();
+    }
     void SelDomCol()
     {
-        OptColValid = false;
-        colstore = ""; aflcolstore = "";
-        if (IMyDest != 0 && IMyGpe != 0)
+        if (IMyGpe != 1 && IMyAfl != 0)
         {
-            var selsto = LsStores.FirstOrDefault(s => s.Itb == IMyDest && s.Totyp == IMyGpe);
-            if (IMyGpe > 1)
-            {
-                IMyAfl = 0;
-                if (selsto != null) 
-                {
-                    colstore = selsto.Fgsrc;
-                } else 
-                {
-                    colstore = ";";
-                    foreach (var uc in LsOcols)
-                    {
-                        colstore = colstore + $"{IMyDest};{uc.Gp3};{uc.Scdrub};{true};{uc.Liba};{uc.Liba}";
-                    }
-                }
-                aflcolstore = "";
-                OptColValid = true;
-            }
-            if (IMyGpe == 1 && IMyAfl >= 1)
-            {
-                if (selsto != null) 
-                { 
-                    colstore = selsto.Fgsrc;
-                } else 
-                {
-                    colstore = ";";
-                    foreach(var uc in LsOcols)
-                    {
-                        colstore = colstore + $"{IMyDest};{uc.Gp3};{uc.Scdrub};{true};{uc.Liba};{uc.Liba}";
-                    }
-                }
-
-                var selafl = LsStores.FirstOrDefault(s => s.Itb == IMyAfl && s.Totyp == 1 && s.Etyp == IMyAfl);
-                if (selafl != null) 
-                {
-                    aflcolstore = selafl.Fgsrc;
-                }
-                else
-                {
-                    aflcolstore = ";";
-                    foreach (var uc in LsOcols)
-                    {
-                        aflcolstore = aflcolstore + $"{IMyDest};{uc.Gp3};{uc.Scdrub};{true};{uc.Liba};{uc.Liba}";
-                    }
-                } 
-                OptColValid = true;
-            }
-            Console.WriteLine($"EST ARRIVE ICI : {colstore} et {aflcolstore}");
-            StateHasChanged();
+            IMyAfl = 0;
         }
     }
+    // void SelDomCol()
+    // {
+    //     if (IMyGpe != 1)
+    //     {
+    //         IMyAfl = 0;            
+    //     }
+    // }
     //EDITING Gxorga (orga)
     public async Task StartOrgEdit()
     {

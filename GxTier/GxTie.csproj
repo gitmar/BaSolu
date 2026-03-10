@@ -8,9 +8,6 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|AnyCPU'">
     <Optimize>true</Optimize>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)' == 'Release'">
-    <SubsitePath>$(SubsitePath)</SubsitePath>
-  </PropertyGroup>
   
   <ItemGroup>
     <Compile Remove="Components\Admina\**" />
@@ -98,7 +95,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Update="wwwroot\manifest\manifest.webmanifest">
+    <None Update="wwwroot\manifest.webmanifest">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
     </None>

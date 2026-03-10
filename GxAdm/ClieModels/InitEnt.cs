@@ -208,14 +208,20 @@ namespace GxWapi.DaModels
         [JsonIgnore]
         public bool IsJaccChecked
         {
-            get => Jacc == 1;
-            set => Jacc = value ? 1 : 0;
+            get => Jwlc == 1;
+            set => Jwlc = value ? 1 : 0;
         }
         [JsonIgnore]
         public bool IsJrejChecked
         {
-            get => Jrej == 1;
-            set => Jrej = value ? 1 : 0;
+            get => Jwlc == 2;
+            set => Jwlc = value ? 2 : 1;
+        }
+        [JsonIgnore]
+        public bool IsJdivChecked
+        {
+            get => Jdiv == 1;
+            set => Jdiv = value ? 1 : 0;
         }
         [JsonIgnore]
         public bool IsJnotChecked
@@ -239,14 +245,20 @@ namespace GxWapi.DaModels
         [JsonIgnore]
         public bool IsJaccChecked
         {
-            get => Jacc == 1;
-            set => Jacc = value ? 1 : 0;
+            get => Jwlc == 1;
+            set => Jwlc = value ? 1 : 0;
         }
         [JsonIgnore]
         public bool IsJrejChecked
         {
-            get => Jrej == 1;
-            set => Jrej = value ? 1 : 0;
+            get => Jwlc == 2;
+            set => Jwlc = value ? 2 : 1;
+        }
+        [JsonIgnore]
+        public bool IsJdivChecked
+        {
+            get => Jdiv == 1;
+            set => Jdiv = value ? 1 : 0;
         }
         [JsonIgnore]
         public bool IsJnotChecked
@@ -267,39 +279,6 @@ namespace GxWapi.DaModels
         public int Xdel1 { get; set; } = 0;
         [JsonIgnore]
         public int Xgen1 { get; set; } = 0;
-
-        [JsonIgnore]
-        private bool isValCheck = false;
-        [JsonIgnore]
-        private bool isRejCheck = false;
-        [JsonIgnore]
-        public bool IsValCheck
-        {
-            get => isValCheck;
-            set
-            {
-                if (value)
-                {
-                    if (isRejCheck) isRejCheck = false;
-                }
-                isValCheck = value;
-            }
-        }
-        [JsonIgnore]
-        public bool IsRejCheck
-        {
-            get => isRejCheck;
-            set
-            {
-                if (value)
-                {
-                    if (isValCheck) isValCheck = false;
-                }
-                isRejCheck = value;
-            }
-        }
-        [JsonIgnore]
-        public bool IsNotCheck { get; set; } = false;
     }
     public partial class Tiwafl
     {
@@ -313,38 +292,28 @@ namespace GxWapi.DaModels
         public int Xdel1 { get; set; } = 0;
         [JsonIgnore]
         public int Xgen1 { get; set; } = 0;
+    }
+    public partial class Tieatr
+    {
         [JsonIgnore]
-        private bool isValCheck = false;
+        public int Ajacc { get; set; } = 0;
         [JsonIgnore]
-        private bool isRejCheck = false;
+        public int Ajrej { get; set; } = 0;
         [JsonIgnore]
-        public bool IsValCheck
-        {
-            get => isValCheck;
-            set
-            {
-                if (value)
-                {
-                    if (isRejCheck) isRejCheck = false;
-                }
-                isValCheck = value;
-            }
-        }
+        public int Ajnot { get; set; } = 0;
         [JsonIgnore]
-        public bool IsRejCheck
-        {
-            get => isRejCheck;
-            set
-            {
-                if (value)
-                {
-                    if (isValCheck) isValCheck = false;
-                }
-                isRejCheck = value;
-            }
-        }
+        public int Aztyp { get; set; } = 0;
+    }
+    public partial class Tiwatr
+    {
         [JsonIgnore]
-        public bool IsNotCheck { get; set; } = false;
+        public int Ajacc { get; set; } = 0;
+        [JsonIgnore]
+        public int Ajrej { get; set; } = 0;
+        [JsonIgnore]
+        public int Ajnot { get; set; } = 0;
+        [JsonIgnore]
+        public int Aztyp { get; set; } = 0;
     }
     public partial class Gsesio
     {
