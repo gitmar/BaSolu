@@ -49,24 +49,37 @@ namespace GxTie.Services
                 return new();
             }
         }
-        public async Task<Ttvar> LoadOrgaTables()
+        public async Task<List<Gptbl>> LoadOrgaTables()
         {
-            //All tables lists
-            var json = await _clieManager.SendRequestAsync(
-                "AUTHClient",
-                HttpMethod.Get,
-                "lgauth/tbelmts");
-            return JsonConvert.DeserializeObject<Ttvar>(json);
-            //if (result.Any())
-            //{
-            //    Console.WriteLine($"Nb Tables : {result.Count}");
-            //    return result.ToList();
-            //}
-            //else
-            //{
-            //    Console.WriteLine("Nb Roles : null");
-            //    return new();
-            //}
+            //FmtPsts
+            var json = await _clieManager.SendRequestAsync("AUTHClient", HttpMethod.Get, "lgauth/alltables");
+            var result = JsonConvert.DeserializeObject<List<Gptbl>>(json);
+            if (result.Any())
+            {
+                Console.WriteLine($"Nb tables : {result.Count}");
+                return result.ToList();
+            }
+            else
+            {
+                Console.WriteLine("Nb tables : null");
+                return new();
+            }
+        }
+        public async Task<List<Gpcol>> LoadOrgaColons()
+        {
+            //FmtPsts
+            var json = await _clieManager.SendRequestAsync("AUTHClient", HttpMethod.Get, "lgauth/allcolons");
+            var result = JsonConvert.DeserializeObject<List<Gpcol>>(json);
+            if (result.Any())
+            {
+                Console.WriteLine($"Nb colonnes : {result.Count}");
+                return result.ToList();
+            }
+            else
+            {
+                Console.WriteLine("Nb colonnes : null");
+                return new();
+            }
         }
     }
 }

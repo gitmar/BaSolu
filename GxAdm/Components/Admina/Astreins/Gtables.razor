@@ -265,7 +265,7 @@ else
                                     </GridColumns>
                                     <GridDetailView TItem="Gsgfix" Context="selectedFix">
                                         <Grid TItem="Gsglne"
-                                              Data="@MyDaChlds.Where(uc => uc.Pseq == selectedFix.Xseq).ToList()"
+                                              Data="selectedFix.Gsglnes.ToList()"
                                               AllowPaging="true"
                                               Responsive="true">
                                             <GridColumns>
@@ -805,14 +805,14 @@ else
                 Console.WriteLine("Gsgfixes null/empty - initializing empty collections");
                 MyDaRubrs = new ObservableCollection<Gsgfix>();
             }
-            if (curOrga.Gsglnes != null && curOrga.Gsglnes.Any())
-            {
-                MyDaChlds = new ObservableCollection<Gsglne>(curOrga.Gsglnes.Where(ln => ln.Otyp == 4).ToList());
-            }
-            else 
-            {
-                MyDaChlds = new ObservableCollection<Gsglne>();
-            }
+            // if (curOrga.Gsglnes != null && curOrga.Gsglnes.Any())
+            // {
+            //     MyDaChlds = new ObservableCollection<Gsglne>(curOrga.Gsglnes.Where(ln => ln.Otyp == 4).ToList());
+            // }
+            // else 
+            // {
+            //     MyDaChlds = new ObservableCollection<Gsglne>();
+            // }
 
             Console.WriteLine($"elements tables{MyDaChlds.Count()}");
             // Guard registration (safe)
@@ -1426,7 +1426,7 @@ else
                 MyDaRubrs = new ObservableCollection<Gsgfix>();
             }
             StateHasChanged();
-            Console.WriteLine($"Rubriques attendues nb : {curOrga.Gsglnes.Count}");
+            //Console.WriteLine($"Rubriques attendues nb : {curOrga.Gsglnes.Count}");
         }
         catch (Exception ex)
         {

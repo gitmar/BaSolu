@@ -129,7 +129,6 @@
         <Property Name="Obsv" Type="Edm.String" />
         <NavigationProperty Name="Plngens" Type="Collection(GxWapi.DaModels.Plngen)" />
         <NavigationProperty Name="Gsgfixes" Type="Collection(GxWapi.DaModels.Gsgfix)" />
-        <NavigationProperty Name="Gsglnes" Type="Collection(GxWapi.DaModels.Gsglne)" />
         <NavigationProperty Name="Tiersps" Type="Collection(GxWapi.DaModels.Tiersp)" />
         <NavigationProperty Name="Tiewels" Type="Collection(GxWapi.DaModels.Tiewel)" />
         <NavigationProperty Name="Gscpts" Type="Collection(GxWapi.DaModels.Gscpt)" />
@@ -224,6 +223,7 @@
         <Property Name="Gvars" Type="Edm.Int32" Nullable="false" />
         <Property Name="Itb" Type="Edm.Int32" Nullable="false" />
         <Property Name="Elea" Type="Edm.Int32" Nullable="false" />
+        <Property Name="Xcod" Type="Edm.Int32" />
         <Property Name="Jele" Type="Edm.Int32" />
         <Property Name="Tovers" Type="Edm.Int32" />
         <Property Name="Idhie" Type="Edm.Int32" />
@@ -234,6 +234,8 @@
         <Property Name="Totyp" Type="Edm.Int32" />
         <Property Name="Tstyp" Type="Edm.Int32" />
         <Property Name="Etyp" Type="Edm.Int32" />
+        <Property Name="Otyp" Type="Edm.Int32" />
+        <Property Name="Atyp" Type="Edm.Int32" />
         <Property Name="Xdocu" Type="Edm.String" />
         <Property Name="Emdl" Type="Edm.Int32" />
         <Property Name="Epai" Type="Edm.Int32" />
@@ -255,7 +257,6 @@
         <Property Name="Ktyp" Type="Edm.Int32" />
         <Property Name="Mtyp" Type="Edm.Int32" />
         <Property Name="Ntyp" Type="Edm.Int32" />
-        <Property Name="Otyp" Type="Edm.Int32" />
         <Property Name="Hrtyp" Type="Edm.Int32" />
         <Property Name="Jacc" Type="Edm.Int32" />
         <Property Name="Jenr" Type="Edm.Int32" />
@@ -301,86 +302,8 @@
         <Property Name="EleaAuto" Type="Edm.Boolean" />
         <Property Name="Rowguid" Type="Edm.Guid" Nullable="false" />
         <Property Name="IsProcessed" Type="Edm.Boolean" Nullable="false" />
-        <Property Name="Atyp" Type="Edm.Int32" />
         <Property Name="Obsv" Type="Edm.String" />
-        <NavigationProperty Name="IdorgNavigation" Type="GxWapi.DaModels.Gxorga">
-          <ReferentialConstraint Property="Idorg" ReferencedProperty="Idorg" />
-        </NavigationProperty>
-      </EntityType>
-      <EntityType Name="Gsglne">
-        <Key>
-          <PropertyRef Name="Id" />
-        </Key>
-        <Property Name="Id" Type="Edm.Int32" Nullable="false" />
-        <Property Name="Idorg" Type="Edm.Int32" />
-        <Property Name="Pseq" Type="Edm.Int32" />
-        <Property Name="Elea" Type="Edm.Int32" />
-        <Property Name="Iele" Type="Edm.Int32" />
-        <Property Name="Yrng" Type="Edm.Int32" />
-        <Property Name="Totyp" Type="Edm.Int32" />
-        <Property Name="Tstyp" Type="Edm.Int32" />
-        <Property Name="Dtyp" Type="Edm.Int32" />
-        <Property Name="Otyp" Type="Edm.Int32" Nullable="false" />
-        <Property Name="Ztyp" Type="Edm.Int32" />
-        <Property Name="Ydpd" Type="Edm.Int32" />
-        <Property Name="Pvars" Type="Edm.Int32" />
-        <Property Name="Pitb" Type="Edm.Int32" />
-        <Property Name="Pele" Type="Edm.Int32" />
-        <Property Name="Sitb" Type="Edm.Int32" />
-        <Property Name="Zdpd" Type="Edm.Int32" />
-        <Property Name="Ztbl" Type="Edm.Int32" />
-        <Property Name="Siex1" Type="Edm.Boolean" />
-        <Property Name="Siex2" Type="Edm.Boolean" />
-        <Property Name="Oliba" Type="Edm.String" />
-        <Property Name="Oabg" Type="Edm.String" />
-        <Property Name="Liba" Type="Edm.String" />
-        <Property Name="Abg" Type="Edm.String" />
-        <Property Name="Scdrub" Type="Edm.String" />
-        <Property Name="Inx1" Type="Edm.Int32" />
-        <Property Name="Inx2" Type="Edm.Int32" />
-        <Property Name="Inx3" Type="Edm.Int32" />
-        <Property Name="Inx4" Type="Edm.Int32" />
-        <Property Name="Inx5" Type="Edm.Int32" />
-        <Property Name="Zgpe" Type="Edm.Int32" />
-        <Property Name="Gtyp" Type="Edm.Int32" />
-        <Property Name="Jtyp" Type="Edm.Int32" />
-        <Property Name="Ktyp" Type="Edm.Int32" />
-        <Property Name="Zfro" Type="Edm.Int32" />
-        <Property Name="Xtyp" Type="Edm.Int32" />
-        <Property Name="Ytyp" Type="Edm.Int32" />
-        <Property Name="Utyp" Type="Edm.Int32" />
-        <Property Name="Vtyp" Type="Edm.Int32" />
-        <Property Name="Xsiz" Type="Edm.Int32" />
-        <Property Name="Ysiz" Type="Edm.Int32" />
-        <Property Name="Xdpd" Type="Edm.Int32" />
-        <Property Name="Vdpd" Type="Edm.Int32" />
-        <Property Name="Svala" Type="Edm.String" />
-        <Property Name="Ivala" Type="Edm.Int32" />
-        <Property Name="Dvala" Type="Edm.DateTimeOffset" />
-        <Property Name="Bvala" Type="Edm.Boolean" />
-        <Property Name="Jacc" Type="Edm.Int32" />
-        <Property Name="Jenr" Type="Edm.Int32" />
-        <Property Name="Jinv" Type="Edm.Int32" />
-        <Property Name="Jges" Type="Edm.Int32" />
-        <Property Name="Jdv2" Type="Edm.Int32" />
-        <Property Name="Jdv3" Type="Edm.Int32" />
-        <Property Name="Kcnj" Type="Edm.Int32" />
-        <Property Name="Kpar" Type="Edm.Int32" />
-        <Property Name="Kenf" Type="Edm.Int32" />
-        <Property Name="Kpai" Type="Edm.Int32" />
-        <Property Name="Kflh" Type="Edm.Int32" />
-        <Property Name="Kcnt" Type="Edm.Int32" />
-        <Property Name="It1" Type="Edm.Int32" />
-        <Property Name="It2" Type="Edm.Int32" />
-        <Property Name="It3" Type="Edm.Int32" />
-        <Property Name="It4" Type="Edm.Int32" />
-        <Property Name="Datx" Type="Edm.DateTimeOffset" />
-        <Property Name="Datc" Type="Edm.DateTimeOffset" />
-        <Property Name="Eaut" Type="Edm.Int32" />
-        <Property Name="Eta" Type="Edm.Int32" />
-        <Property Name="EleaAuto" Type="Edm.Boolean" />
-        <Property Name="Rowguid" Type="Edm.Guid" Nullable="false" />
-        <Property Name="Obsv" Type="Edm.String" />
+        <NavigationProperty Name="Gsglnes" Type="Collection(GxWapi.DaModels.Gsglne)" />
         <NavigationProperty Name="IdorgNavigation" Type="GxWapi.DaModels.Gxorga">
           <ReferentialConstraint Property="Idorg" ReferencedProperty="Idorg" />
         </NavigationProperty>
@@ -1312,6 +1235,94 @@
         <Property Name="Obsv" Type="Edm.String" />
         <NavigationProperty Name="IhieNavigation" Type="GxWapi.DaModels.Rubhie">
           <ReferentialConstraint Property="Ihie" ReferencedProperty="Id" />
+        </NavigationProperty>
+      </EntityType>
+      <EntityType Name="Gsglne">
+        <Key>
+          <PropertyRef Name="Id" />
+        </Key>
+        <Property Name="Id" Type="Edm.Int32" Nullable="false" />
+        <Property Name="Igsg" Type="Edm.Int32" />
+        <Property Name="Otyp" Type="Edm.Int32" Nullable="false" />
+        <Property Name="Etyp" Type="Edm.Int32" />
+        <Property Name="Iele" Type="Edm.Int32" />
+        <Property Name="Totyp" Type="Edm.Int32" />
+        <Property Name="Pxcod" Type="Edm.Int32" />
+        <Property Name="Xcod" Type="Edm.Int32" />
+        <Property Name="Idorg" Type="Edm.Int32" Nullable="false" />
+        <Property Name="Pvars" Type="Edm.Int32" />
+        <Property Name="Pitb" Type="Edm.Int32" />
+        <Property Name="Pele" Type="Edm.Int32" />
+        <Property Name="Liba" Type="Edm.String" />
+        <Property Name="Abg" Type="Edm.String" />
+        <Property Name="Scdrub" Type="Edm.String" />
+        <Property Name="Fgsrc" Type="Edm.String" />
+        <Property Name="Fgexe" Type="Edm.String" />
+        <Property Name="Efrm" Type="Edm.Int32" />
+        <Property Name="Uliba" Type="Edm.String" />
+        <Property Name="Uabg" Type="Edm.String" />
+        <Property Name="Zfro" Type="Edm.Int32" />
+        <Property Name="Ztyp" Type="Edm.Int32" />
+        <Property Name="Yrng" Type="Edm.Int32" />
+        <Property Name="Tstyp" Type="Edm.Int32" />
+        <Property Name="Hdpd" Type="Edm.Int32" />
+        <Property Name="Xdpd" Type="Edm.Int32" />
+        <Property Name="Ydpd" Type="Edm.Int32" />
+        <Property Name="Vdpd" Type="Edm.Int32" />
+        <Property Name="Jacc" Type="Edm.Int32" />
+        <Property Name="Jenr" Type="Edm.Int32" />
+        <Property Name="Jinv" Type="Edm.Int32" />
+        <Property Name="Jges" Type="Edm.Int32" />
+        <Property Name="Datc" Type="Edm.DateTimeOffset" />
+        <Property Name="Eaut" Type="Edm.Int32" />
+        <Property Name="Eta" Type="Edm.Int32" />
+        <Property Name="Rowguid" Type="Edm.Guid" Nullable="false" />
+        <Property Name="EleaAuto" Type="Edm.Boolean" />
+        <Property Name="Elea" Type="Edm.Int32" />
+        <Property Name="Obsv" Type="Edm.String" />
+        <Property Name="Pseq" Type="Edm.Int32" />
+        <Property Name="Dtyp" Type="Edm.Int32" />
+        <Property Name="Sitb" Type="Edm.Int32" />
+        <Property Name="Zdpd" Type="Edm.Int32" />
+        <Property Name="Oliba" Type="Edm.String" />
+        <Property Name="Oabg" Type="Edm.String" />
+        <Property Name="Ztbl" Type="Edm.Int32" />
+        <Property Name="Siex1" Type="Edm.Boolean" />
+        <Property Name="Siex2" Type="Edm.Boolean" />
+        <Property Name="Inx1" Type="Edm.Int32" />
+        <Property Name="Inx2" Type="Edm.Int32" />
+        <Property Name="Inx3" Type="Edm.Int32" />
+        <Property Name="Inx4" Type="Edm.Int32" />
+        <Property Name="Inx5" Type="Edm.Int32" />
+        <Property Name="Zgpe" Type="Edm.Int32" />
+        <Property Name="Gtyp" Type="Edm.Int32" />
+        <Property Name="Jtyp" Type="Edm.Int32" />
+        <Property Name="Ktyp" Type="Edm.Int32" />
+        <Property Name="Xtyp" Type="Edm.Int32" />
+        <Property Name="Ytyp" Type="Edm.Int32" />
+        <Property Name="Utyp" Type="Edm.Int32" />
+        <Property Name="Vtyp" Type="Edm.Int32" />
+        <Property Name="Xsiz" Type="Edm.Int32" />
+        <Property Name="Ysiz" Type="Edm.Int32" />
+        <Property Name="Svala" Type="Edm.String" />
+        <Property Name="Ivala" Type="Edm.Int32" />
+        <Property Name="Dvala" Type="Edm.DateTimeOffset" />
+        <Property Name="Bvala" Type="Edm.Boolean" />
+        <Property Name="Jdv2" Type="Edm.Int32" />
+        <Property Name="Jdv3" Type="Edm.Int32" />
+        <Property Name="Kcnj" Type="Edm.Int32" />
+        <Property Name="Kpar" Type="Edm.Int32" />
+        <Property Name="Kenf" Type="Edm.Int32" />
+        <Property Name="Kpai" Type="Edm.Int32" />
+        <Property Name="Kflh" Type="Edm.Int32" />
+        <Property Name="Kcnt" Type="Edm.Int32" />
+        <Property Name="It1" Type="Edm.Int32" />
+        <Property Name="It2" Type="Edm.Int32" />
+        <Property Name="It3" Type="Edm.Int32" />
+        <Property Name="It4" Type="Edm.Int32" />
+        <Property Name="Datx" Type="Edm.DateTimeOffset" />
+        <NavigationProperty Name="IgsgNavigation" Type="GxWapi.DaModels.Gsgfix">
+          <ReferentialConstraint Property="Igsg" ReferencedProperty="Xseq" />
         </NavigationProperty>
       </EntityType>
       <EntityType Name="Tieatr">
@@ -2611,7 +2622,6 @@
           <NavigationPropertyBinding Path="Gsdocs" Target="Gsdoc" />
           <NavigationPropertyBinding Path="Gsesios" Target="Gsesios" />
           <NavigationPropertyBinding Path="Gsgfixes" Target="Gsgfixes" />
-          <NavigationPropertyBinding Path="Gsglnes" Target="Gsglnes" />
           <NavigationPropertyBinding Path="Gsjets" Target="Gsjets" />
           <NavigationPropertyBinding Path="Gstores" Target="Gstores" />
           <NavigationPropertyBinding Path="Plngens" Target="Plngens" />
@@ -2624,9 +2634,7 @@
           <NavigationPropertyBinding Path="Rubvars" Target="Rubvars" />
         </EntitySet>
         <EntitySet Name="Gsgfixes" EntityType="GxWapi.DaModels.Gsgfix">
-          <NavigationPropertyBinding Path="IdorgNavigation" Target="Gxorgas" />
-        </EntitySet>
-        <EntitySet Name="Gsglnes" EntityType="GxWapi.DaModels.Gsglne">
+          <NavigationPropertyBinding Path="Gsglnes" Target="Gsglnes" />
           <NavigationPropertyBinding Path="IdorgNavigation" Target="Gxorgas" />
         </EntitySet>
         <EntitySet Name="Tiersps" EntityType="GxWapi.DaModels.Tiersp">
@@ -2676,6 +2684,9 @@
         </EntitySet>
         <EntitySet Name="Rubpsts" EntityType="GxWapi.DaModels.Rubpst">
           <NavigationPropertyBinding Path="IhieNavigation" Target="Rubhies" />
+        </EntitySet>
+        <EntitySet Name="Gsglnes" EntityType="GxWapi.DaModels.Gsglne">
+          <NavigationPropertyBinding Path="IgsgNavigation" Target="Gsgfixes" />
         </EntitySet>
         <EntitySet Name="Resdons" EntityType="GxWapi.DaModels.Resdon">
           <NavigationPropertyBinding Path="ItieNavigation" Target="Tiersps" />

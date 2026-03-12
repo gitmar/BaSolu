@@ -19,6 +19,7 @@
 @using GxShared.Others
 @using GxShared.Identity
 @using GxWapi.DaModels
+@using GxAdm.StaticHelpers
 @using GxAdm.ClieModels
 @using GxAdm.Services
 @using GxAdm.Services.Mform
@@ -177,7 +178,7 @@
                                                     <td class="text-right">
                                                         <InputSelect @bind-Value="curOrga.Npays" disabled="@(!isEdOrg)">
                                                             <option value="0">-- Select a country --</option>
-                                                            @foreach (var tob in curOrga.Gsglnes.Where(ug => ug.Otyp == 4 && ug.Pitb == 31))
+                                                            @foreach (var tob in TbItems.Where(ug => ug.Pxcod == 31))
                                                             {
                                                                 <option value="@tob.Abg">@tob.Liba</option>
                                                             }
@@ -397,11 +398,11 @@
                                     <EditForm EditContext="edFixContext">
                                         <DataAnnotationsValidator />
                                         <div class="mb-3">
-                                            <!-- Filiation grid -->
+                                        <!-- Filiation base -->
                                         <div class="row">
                                             <span style="font-weight:bold"> Filiation -> Base</span>
                                         </div>
-                                        <Grid Data="@curOrga.Gsgfixes.Where(uf => uf.Gvars == 3 && uf.Itb == 5 && uf.Elea != 0).OrderBy(uo => uo.Elea)"
+                                        <Grid Data="@curOrga.Gsgfixes.Where(uf => uf.Gvars == 3 && uf.Itb == 5 && uf.Atyp == 1 && uf.Elea != 0).OrderBy(uo => uo.Elea)"
                                                 TItem="Gsgfix"
                                                 Responsive="true">
                                             <GridColumns>
@@ -422,11 +423,21 @@
                                                 <GridColumn TItem="Gsgfix" HeaderText="Opt.">
                                                     <ChildContent Context="item">
                                                         <InputSelect @bind-Value="item.Ityp" disabled="@(!isEdAfl)">
-                                                                    @foreach (var tob in LsFixes.Where(ut => ut.Gvars == 31 && ut.Itb == 2))
+                                                                    @foreach (var tob in LsFixes.Where(ut => ut.Gvars == 31 && ut.Itb == 2 && ut.Gp1 == 1))
                                                                     {
                                                                         <option value="@tob.Elea">@tob.Liba</option>
                                                                     }
                                                                 </InputSelect>
+                                                    </ChildContent>
+                                                </GridColumn>
+                                                <GridColumn TItem="Gsgfix" HeaderText="Genr.">
+                                                    <ChildContent Context="item">
+                                                        <InputSelect @bind-Value="item.Ktyp" disabled="@(!isEdAfl)">
+                                                            @foreach (var tob in LsFixes.Where(ut => ut.Gvars == 31 && ut.Itb == 2 && ut.Gp1 == 1))
+                                                            {
+                                                                <option value="@tob.Elea">@tob.Liba</option>
+                                                            }
+                                                        </InputSelect>
                                                     </ChildContent>
                                                 </GridColumn>
                                                 <GridColumn TItem="Gsgfix" HeaderText="Avis">
@@ -444,7 +455,7 @@
                                                 <GridColumn TItem="Gsgfix" HeaderText="max.">
                                                     <ChildContent Context="item">
                                                         <InputNumber class="my-input" @bind-Value="item.Mtyp"
-                                                                     style="font-weight:bold;width:60px" readonly="@(item.Rowguid == EdAflRowguid ? null : "readonly")" />
+                                                                     style="font-weight:bold;width:80px" readonly="@(item.Rowguid == EdAflRowguid ? null : "readonly")" />
                                                     </ChildContent>
                                                 </GridColumn>
                                                 <GridColumn TItem="Gsgfix" HeaderText="notif.">
@@ -472,7 +483,99 @@
                                                         </div>
                                                     </ChildContent>
                                                 </GridColumn>
+                                                <GridDetailView TItem="Gsgfix" Context="selectedPln">
+
+                                                </GridDetailView>
                                             </GridColumns>
+
+                                            </Grid>
+                                        <!-- Filiation affilies -->
+                                        <div class="row">
+                                            <span style="font-weight:bold"> Filiation -> Affilies</span>
+                                        </div>
+                                        <Grid Data="@curOrga.Gsgfixes.Where(uf => uf.Gvars == 3 && uf.Itb == 6 && uf.Atyp == 1 && uf.Elea != 0).OrderBy(uo => uo.Elea)"
+                                                TItem="Gsgfix"
+                                                Responsive="true">
+                                            <GridColumns>
+                                                <GridColumn TItem="Gsgfix" HeaderText="No">
+                                                    <ChildContent Context="ita">@ita.Elea</ChildContent>
+                                                </GridColumn>
+                                                <GridColumn TItem="Gsgfix" HeaderText="Avec">
+                                                    <ChildContent Context="ita">
+                                                        @ita.Liba
+                                                    </ChildContent>
+                                                </GridColumn>
+                                                <GridColumn TItem="Gsgfix" HeaderText="Libelle">
+                                                    <ChildContent Context="ita">
+                                                            <InputText @bind-Value="@ita.Sliba" style="width:100%"
+                                                                   readonly="@(ita.Rowguid == EdAflRowguid ? null : "readonly")" />
+                                                    </ChildContent>
+                                                </GridColumn>
+                                                <GridColumn TItem="Gsgfix" HeaderText="Opt.">
+                                                    <ChildContent Context="ita">
+                                                        <InputSelect @bind-Value="ita.Ityp" disabled="@(!isEdAfl)">
+                                                                    @foreach (var tob in LsFixes.Where(ut => ut.Gvars == 31 && ut.Itb == 2 && ut.Gp1 == 1))
+                                                                    {
+                                                                        <option value="@tob.Elea">@tob.Liba</option>
+                                                                    }
+                                                                </InputSelect>
+                                                    </ChildContent>
+                                                </GridColumn>
+                                                <GridColumn TItem="Gsgfix" HeaderText="Genr.">
+                                                    <ChildContent Context="ita">
+                                                        <InputSelect @bind-Value="ita.Ktyp" disabled="@(!isEdAfl)">
+                                                            @foreach (var tob in LsFixes.Where(ut => ut.Gvars == 31 && ut.Itb == 2 && ut.Gp1 == 1))
+                                                            {
+                                                                <option value="@tob.Elea">@tob.Liba</option>
+                                                            }
+                                                        </InputSelect>
+                                                    </ChildContent>
+                                                </GridColumn>
+                                                <GridColumn TItem="Gsgfix" HeaderText="Avis">
+                                                    <ChildContent Context="ita">
+                                                        <div class="col-1">
+                                                            <InputSelect @bind-Value="ita.Jtyp" disabled="@(!isEdAfl)">
+                                                                @foreach (var tob in LsFixes.Where(ut => ut.Gvars == 31 && ut.Itb == 6 && ut.Gp1 == 1))
+                                                                {
+                                                                    <option value="@tob.Elea">@tob.Liba</option>
+                                                                }
+                                                            </InputSelect>
+                                                        </div>
+                                                    </ChildContent>
+                                                </GridColumn>
+                                                <GridColumn TItem="Gsgfix" HeaderText="max.">
+                                                    <ChildContent Context="ita">
+                                                        <InputNumber class="my-input" @bind-Value="ita.Mtyp"
+                                                                     style="font-weight:bold;width:80px" readonly="@(ita.Rowguid == EdAflRowguid ? null : "readonly")" />
+                                                    </ChildContent>
+                                                </GridColumn>
+                                                <GridColumn TItem="Gsgfix" HeaderText="notif.">
+                                                    <ChildContent Context="ita">
+                                                            <InputSelect @bind-Value="ita.Ntyp" disabled="@(!isEdAfl)" style="width:100%">
+                                                                @foreach (var tob in LsFixes.Where(ut => ut.Gvars == 31 && ut.Itb == 4 && ut.Gp1 == 1))
+                                                                {
+                                                                    <option value="@tob.Elea">@tob.Liba</option>
+                                                                }
+                                                            </InputSelect>
+                                                    </ChildContent>
+                                                </GridColumn>
+                                                <GridColumn TItem="Gsgfix" HeaderText="Actions">
+                                                    <ChildContent Context="ita">
+                                                        <div class="col-md-2 d-flex gap-2">
+                                                            @if (EdAflRowguid  != ita.Rowguid)
+                                                            {
+                                                                <button class="btn btn-warning btn-sm @(!isEdAfl && EdAflRowguid != ita.Rowguid ? "" : "disabled-action")" @onclick="() => StartAflEdit(ita)">Edit</button>
+                                                            }
+                                                            else
+                                                            {
+                                                                <button class="btn btn-warning btn-sm @(EdAflRowguid  == ita.Rowguid ? "" : "disabled-action")" @onclick="() => ConfGafl(ita)">Confirm</button>
+                                                                <button class="btn btn-danger btn-sm @(EdAflRowguid  == ita.Rowguid ? "" : "disabled-action")" @onclick="() => CancGafl(ita)">Annul</button>
+                                                            }
+                                                        </div>
+                                                    </ChildContent>
+                                                </GridColumn>
+                                            </GridColumns>
+
                                             </Grid>
                                         </div>
                                     </EditForm>
@@ -506,7 +609,7 @@
                                             </InputSelect>
                                         </div>
 
-                                        @if (IMyGpe == 1)
+                                        @* @if (IMyGpe == 1)
                                         {
                                             <div>
                                                 <label class="fw-bold">Affilié :</label>
@@ -520,20 +623,20 @@
                                                     }
                                                 </InputSelect>
                                             </div>
-                                        }
+                                        } *@
                                     </div>
                                     @if (canColsOpen)
                                     {
                                         <div class="row">
                                         <Aogcols @ref="myicols"
                                                  curOrga="@curOrga"
-                                                 SsDom="@IMyDom"
+                                                 IMyDom="@IMyDom"
                                                  EtRef="@IMyDest"
                                                  IMyGpe="IMyGpe"
-                                                 IMyAfl="IMyAfl"
                                                  LsOcols="@LsOcols"
-                                                 LsGcols="@LsGcols"
-                                                 OnPreferencesSaved="@OnOptcolsSave">
+                                                 LsPcols="@LsPcols"
+                                                 LsFcols="@LsFcols"
+                                                 LsAfils="@LsAfils">
                                         </Aogcols>
                                         </div>
                                     }
@@ -638,6 +741,7 @@
 </style>
 
 @code {
+    bool isLoading = true;
     [CascadingParameter]
     private Task<AuthenticationState>? AuthState { get; set; }
     private ClaimsPrincipal authUser;
@@ -648,7 +752,7 @@
 
     private EditContext edOrgContext;
     private EditContext edFixContext;
-    private EditContext edColContext;
+    //private EditContext edColContext;
 
     private Aogcols myicols;
     private string colstore = "", aflcolstore = "";
@@ -667,41 +771,44 @@
     private List<Gpfixe> LsDoms = new();
     private List<Gpdivh> LsDivs = new();
     private List<Gpfixe> LsOcols = new();
-    private List<Gpvar> LsGcols = new();
+    private List<Gpcol> LsPcols = new();
+    private List<Gpcol> LsFcols = new();
+    private List<Gpvar> LsAfils = new();
     private List<Gpvar> LsStores = new();
+    private List<Gptbl> TbItems = new();
 
     private List<MyRolTable> _inRoles = new();
     private List<Grole> _invRoles = new();
 
     private bool selDisabled => allEnable ? false: true;
-
-    private bool isLoading = false, icOpening = false;
     private bool allEnable = false;
-
+    //
     private int selTyp = 0;
-    private int IMyDom = 1; //1tiers2matiere
-    private int IMyDest = 0; //1accueil2enrol
+    private int IMyDom = 1; //Zfro 1tiers2matiere
+    private int IMyDest = 0; //Etyp 1accueil2enrol
+    //Itb/1princ2affil
+
     private int IMyBas = 0;
-    private int _iMyGpe = 0;
+    private int _iMyGpe = 0; //Totyp
     public int IMyGpe
     {
         get => _iMyGpe;
         set
         {
             _iMyGpe = value;
-            SelDomCol();
+            //SelDomCol();
         }
     }
-    private int _iMyAfl = 0;
-    public int IMyAfl
-    {
-        get => _iMyAfl;
-        set
-        {
-            _iMyAfl = value;
-            SelDomCol();
-        }
-    }
+    // private int _iMyAfl = 0; //Tstyp
+    // public int IMyAfl
+    // {
+    //     get => _iMyAfl;
+    //     set
+    //     {
+    //         _iMyAfl = value;
+    //         SelDomCol();
+    //     }
+    // }
     private bool canColsOpen => IMyDest > 0 && IMyGpe > 0;
     private int Rubtto = 1;
 
@@ -791,9 +898,20 @@
         ClGties = _usrBag.Ufixes
             .Where(ut => ut.Gvars == 36 && ut.Itb == 6 && (ut.Gp1 == 1 || ut.Gp1 == 4))
             .ToList();
+        //dom tiers zfro=1
         LsOcols = LsFixes.Where(uv => uv.Gvars == 65 && uv.Itb == 1).ToList();
-        LsGcols = _usrBag.Usorga.Uvars.Where(tc => tc.Gvars == 8 && (tc.Itb == 1 || tc.Itb == 2)).ToList();
-        Console.WriteLine($"Colonnes disponibles : {LsOcols.Count} ET {LsGcols.Count}");
+        var lscols = await _rendAgres.LoadOrgaColons();
+        //Otyp == 1parent/2afil..4tables
+        //Totyp(1cibl2oper3clie...
+        //Efrm(1accu/2enrol/3suite)
+        //Zfro(1tiers/2mat)
+        //Ityp(2cnj3par4enf..//dans gsgfixes
+        LsPcols = lscols.Where(tc => tc.Otyp == 1).ToList();
+        LsFcols = lscols.Where(tc => tc.Otyp == 2 && tc.Totyp == IMyGpe && tc.Efrm == IMyDest && tc.Zfro == IMyDom).ToList();
+        //LsPcols = _usrBag.Usorga.Uvars.Where(tc => tc.Gvars == 8 && tc.Itb == 1).ToList();
+        //LsFcols = _usrBag.Usorga.Uvars.Where(tc => tc.Gvars == 8 && tc.Itb == 2).ToList();
+        LsAfils = _usrBag.Usorga.Uvars.Where(tc => tc.Gvars ==  3 && tc.Itb == 6 && tc.Elea != 0).ToList();
+        Console.WriteLine($"Colonnes disponibles : {LsOcols.Count} ET {LsPcols.Count}");
         _invRoles = await _rendAgres.LoadOrgaRoles();
         Console.WriteLine($"Roles disponibles : {_invRoles.Count}");
         try
@@ -801,10 +919,13 @@
             curODContext = await _contextFactory.CreateAsync();
             _guard.AttachContext(curODContext);
             int key = _usrBag.Idorg;
+            // Typed expansion for Plngens -> Rubvars -> Rubfmts
+            string expand = ODataQueryHelper.Expand<Gxorga, IEnumerable<Gsgfix>>(
+                o => o.Gsgfixes) + "($expand=Gsglnes)";
             curOrga = await curODContext.GetByKeyAsync<Gxorga>(
-                key, 
-                "Gxorgas", 
-                "Gsgfixes,Gsglnes");
+                key,
+                "Gxorgas",
+                expand);
             if (curOrga != null)
             {
                 Console.WriteLine("curOrga loaded by key");
@@ -819,28 +940,28 @@
                     Console.WriteLine("Gsgfixes empty - initializing List");
                     curOrga.Gsgfixes = new();
                 }
-                if (curOrga.Gsglnes is DataServiceCollection<Gsglne> gsglnesCollection)
-                {
-                    Console.WriteLine($"Gsglnes collection count: {gsglnesCollection.Count}");
-                }
-                else if (curOrga.Gsglnes == null || !curOrga.Gsglnes.Any())
-                {
-                    curOrga.Gsglnes = new();
-                }
+                //tables
+
+                // if (curOrga.Gsglnes is DataServiceCollection<Gsglne> gsglnesCollection)
+                // {
+                //     Console.WriteLine($"Gsglnes collection count: {gsglnesCollection.Count}");
+                // }
+                // else if (curOrga.Gsglnes == null || !curOrga.Gsglnes.Any())
+                // {
+                //     curOrga.Gsglnes = new();
+                // }
+                //all orga tables
+                TbItems = await _rendAgres.LoadOrgaTables();
                 edOrgContext = new EditContext(curOrga);
                 // ✅ Use first item or create dummy for EditContext
                 var firstFix = curOrga.Gsgfixes?.FirstOrDefault();
                 edFixContext = new EditContext(firstFix ?? new Gsgfix() { Idorg = key });
-                var firstCol = curOrga.Gsglnes?.FirstOrDefault();
-                edColContext = new EditContext(firstCol ?? new Gsglne() { Idorg = key });
+
+                //var firstCol = curOrga.Gsglnes?.FirstOrDefault();
+                //edColContext = new EditContext(firstCol ?? new Gsglne() { Idorg = key });
+
                 Console.WriteLine($"FINAL nb gfixes : {curOrga.Gsgfixes?.Count ?? 0}");
-                Console.WriteLine($"FINAL nb gslnes : {curOrga.Gsglnes?.Count ?? 0}");
-                //var gsgfix = new Gsgfix();  // Your entity
-                //Console.WriteLine(gsgfix.GetType().GetProperties()
-                //    .Where(p => p.PropertyType == typeof(Gxorga))
-                //    .Select(p => p.Name)
-                //    .FirstOrDefault() ?? "NO NAVIGATION PROPERTY!");
-                // Register "add-edit-delete mode" predicate for existing entities
+                //Console.WriteLine($"FINAL nb gslnes : {curOrga.Gsglnes?.Count ?? 0}");
                 _guard.RegisterUnconfirmedPredicate<Gxorga>(o => o.Xedt1 == -1);
                 _guard.RegisterUnconfirmedPredicate<Gsgfix>(x => x.Xadd1 == -1 || x.Xedt1 == -1 || x.Xdel1 == -1);
                 _guard.RegisterUnconfirmedPredicate<Gsglne>(e => e.Xadd1 == -1 || e.Xedt1 == -1 || e.Xdel1 == -1);
@@ -901,37 +1022,26 @@
 
         StateHasChanged();
     }
-    private async Task OnOptcolsSave(string svcolos)
-    {
-        //calcul Itb/ Gvars = 8
-        int curItb = 1; //tout groupe
-        if (IMyGpe == 1)
-        { //cible
-            if (IMyAfl == 1)
-            { //cible lui-meme
-                curItb = 1;
-            }
-            else
-            { //autre affilie
-                curItb = 2;
-            }
-        }
-        ColsToSave ctosave = new();
-        ctosave.Idorg = _usrBag.Idorg;
-        ctosave.Itb = curItb;
-        ctosave.Totyp = IMyGpe;
-        ctosave.Etyp = IMyAfl;
-        ctosave.Strcols = svcolos;
-        await _clieManager.SetAuthorizationHeaderAsync("AUTHClient");
-        var response = await _clieManager.SendRequestAsync(
-            "AUTHClient",
-            HttpMethod.Post,
-            "regis/save-cols", ctosave);
-        Imessage = "Succes Colonnes options saved ";
-        //operecipientsSaved = true;
-        StateHasChanged();
-        await Task.Delay(1);
-    }
+    // private async Task OnOptcolsSave(string svcolos, int curItb, int inAfl)
+    // {
+    //     ColsToSave ctosave = new();
+    //     ctosave.Idorg = _usrBag.Idorg;
+    //     ctosave.Zfro = IMyDom; //1tiers/2mat
+    //     ctosave.Itb = curItb; //1princ/2afil
+    //     ctosave.Totyp = IMyGpe; //1cibl2oper3sout...
+    //     ctosave.Ityp = inAfl; //2cnj3par4enf..
+    //     ctosave.Etyp = IMyDest; //1accu2enrol
+    //     ctosave.Strcols = svcolos;
+    //     await _clieManager.SetAuthorizationHeaderAsync("AUTHClient");
+    //     var response = await _clieManager.SendRequestAsync(
+    //         "AUTHClient",
+    //         HttpMethod.Post,
+    //         "regis/save-cols", ctosave);
+    //     Imessage = "Succes Colonnes options saved ";
+    //     //operecipientsSaved = true;
+    //     StateHasChanged();
+    //     await Task.Delay(1);
+    // }
 
     private async ValueTask OnLocationChangingAsync(LocationChangingContext context)
     {
@@ -975,13 +1085,13 @@
 
     void OnGfixRowClick(GridRowEventArgs<Gsgfix> args)
     {
-        icOpening = true;
-        Console.WriteLine($"OnGfixRowClick: {args.Item.Xseq}");
-        curGfix = args.Item;
-        if (curGfix?.Xseq == 0) return;
-        gsgCols = curOrga.Gsglnes.Where(ug => ug.Otyp == 5 && ug.Totyp == selTyp && ug.Tstyp == curGfix.Etyp).ToList();
-        icOpening = false;
-        StateHasChanged();
+        // icOpening = true;
+        // Console.WriteLine($"OnGfixRowClick: {args.Item.Xseq}");
+        // curGfix = args.Item;
+        // if (curGfix?.Xseq == 0) return;
+        // gsgCols = curOrga.Gsglnes.Where(ug => ug.Otyp == 5 && ug.Totyp == selTyp && ug.Tstyp == curGfix.Etyp).ToList();
+        // icOpening = false;
+        // StateHasChanged();
     }
     void SelDomGtie(Gpfixe myfix)
     {
@@ -1004,26 +1114,15 @@
         if (IMyDom == 0 || IMyDest == 0 || IMyGpe == 0)
         {
             Imessage = "Veuillez sélectionner Domaine, Destination et Groupe.";
-            if (IMyGpe == 1 && IMyAfl == 0)
-            {
-                Imessage += " Pour le groupe 'Cible', veuillez sélectionner un affilié.";
-            }
             return;
         }
-        SelDomCol();
-    }
-    void SelDomCol()
-    {
-        if (IMyGpe != 1 && IMyAfl != 0)
-        {
-            IMyAfl = 0;
-        }
+        //SelDomCol();
     }
     // void SelDomCol()
     // {
-    //     if (IMyGpe != 1)
+    //     if (IMyGpe != 1 && IMyAfl != 0)
     //     {
-    //         IMyAfl = 0;            
+    //         IMyAfl = 0;
     //     }
     // }
     //EDITING Gxorga (orga)
@@ -1400,33 +1499,34 @@
         GenerRowguid = myacol.Rowguid;
         isGenAddTfl = true;
     }
-    private async Task ConfOneGener(Gsgfix myacol)
-    {
-        if (myacol == null || myacol.Etyp == 0)
-        {
-            mesAflGen = new MarkupString("type affilie absent");
-            return;
-        }
-        Imessage = $"Generation de colonnes pour {myacol.Liba}...patience...";
-        ReqgnModel reqModel = new ReqgnModel();
-        reqModel.Idorg = curOrga.Idorg;
-        reqModel.Orig = 2; //vient de user ajout
-        reqModel.Pdomtie = IMyBas; //6tiers7produits
-        reqModel.Ptyptie = selTyp; //1cible2operat3client4fournis5patern
-        reqModel.Psupafl = myacol.Elea; //1cible2cnj3par4enf5pai6flh
-        await _clieManager.SetAuthorizationHeaderAsync("AUTHClient");
-        var cblcall = await _clieManager.SendRequestAsync("AUTHClient", HttpMethod.Post, "usercontext/creaflcols", reqModel);
-        var cblresp = JsonConvert.DeserializeObject<ResgnModel>(cblcall);
-        if (cblresp != null)
-        {
+    // private async Task ConfOneGener(Gsgfix myacol)
+    // {
+    //     if (myacol == null || myacol.Etyp == 0)
+    //     {
+    //         mesAflGen = new MarkupString("type affilie absent");
+    //         return;
+    //     }
+    //     Imessage = $"Generation de colonnes pour {myacol.Liba}...patience...";
+    //     ReqgnModel reqModel = new ReqgnModel();
+    //     reqModel.Idorg = curOrga.Idorg;
+    //     reqModel.Orig = 2; //vient de user ajout
+    //     reqModel.Pdomtie = IMyBas; //6tiers7produits
+    //     reqModel.Ptyptie = selTyp; //1cible2operat3client4fournis5patern
+    //     reqModel.Psupafl = myacol.Elea; //1cible2cnj3par4enf5pai6flh
+    //     await _clieManager.SetAuthorizationHeaderAsync("AUTHClient");
+    //     var cblcall = await _clieManager.SendRequestAsync("AUTHClient", HttpMethod.Post, "usercontext/creaflcols", reqModel);
+    //     var cblresp = JsonConvert.DeserializeObject<ResgnModel>(cblcall);
+    //     if (cblresp != null)
+    //     {
 
-        }
-        myacol.Xgen1 = 0;
-        GenerRowguid = null;
-        isGenAddTfl = false;
-        mesAflGen = new MarkupString("");
-        //NavigateBack();
-    }
+    //     }
+    //     myacol.Xgen1 = 0;
+    //     GenerRowguid = null;
+    //     isGenAddTfl = false;
+    //     mesAflGen = new MarkupString("");
+    //     //NavigateBack();
+    // }
+          
     private async Task CncOneGener(Gsgfix myacol)
     {
         myacol.Xgen1 = 0;
