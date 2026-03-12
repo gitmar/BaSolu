@@ -46,31 +46,10 @@ else
                            MenuSelected="@_chxMenu"
                            MenuSelectedChanged="@SelMenu"
                            OnBack="@NavigateBack" />
-
-                @* <p>Selected Menu Id: @_selectedMenuId</p>
-                <p>Selected Group Id: @_selectedGroupId</p> *@
-
+               
                 <div class="row">
                     <div class="col-md-12 input-group align-middle">
                         <span class="text-uppercase text- text-success"><b>@strComp</b></span>
-                       @*  &nbsp;&nbsp;
-                        <span class="separator">|| </span>
-                        <Button class="btn btn-sm btn-secondary btnsz"
-                                style="@(!allEnable ? "" : "display:none;")"
-                                @onclick="ManEditAll">
-                            Modifier
-                        </Button>
-                        <Button class="btn btn-sm btn-secondary btnsz"
-                                style="@(allEnable ? "" : "display:none;")"
-                                @onclick="ManCnclAll">
-                            Annuler
-                        </Button>
-                        <span class="separator">|  </span>
-                        <Button class="btn btn-sm btn-secondary btnsz"
-                                style="@(allEnable ? "" : "display:none;")"
-                                @onclick="ManSaveAll">
-                            Enregistrer
-                        </Button> *@
                         @if (!String.IsNullOrEmpty(Imessage))
                         {
                             <span class="bg-info bg-opacity-10" style="font-style:italic;color:red">&nbsp;--> @Imessage</span>
@@ -292,11 +271,10 @@ else
             Console.WriteLine("Authentication in Enrol SUCCESS");
         }
         _usrBag = await _sessionContext.GetUserbagAsync();
+
         LsVars = _usrBag.Usorga.Uvars.ToList();
         Uroles = _usrBag.Uroles.ToList();
         LsPlans = _usrBag.Usorga.Uplns.ToList();
-        //TbElems = _usrBag.Usorga.Tbvars.ToList();
-        //LsTabls = _usrBag.Usorga;
         LsDivs = await _rendAgres.LoadOrgaPostes();
         LsRoles = await _rendAgres.LoadOrgaRoles();
         LsFixes = _usrBag.Ufixes.ToList();
@@ -309,32 +287,18 @@ else
             Groupes.Add(new GxGroupe { Itb = gr.Itb, Elea = gr.Elea, Liba = gr.Liba });
         };
         var lscols = await _rendAgres.LoadOrgaColons();
-        //Console.WriteLine($"Gvars 8 {LsVars.Count(uv => uv.Gvars == 8 && uv.Itb == 1)}");
-        //var LsAcols = LsVars.Where(v => v.Gvars == 8 && v.Itb == 1 && v.Totyp == Ugpe && v.Etyp == 0).ToList();
-        
-        //Zfro(1tiers/2mat)
-        //Otyp(1parent2afil)
         LsPcols = lscols.Where(tc => tc.Otyp == 1 && tc.Totyp == Ugpe && tc.Zfro == 1).ToList();
         LsFcols = lscols.Where(tc => tc.Otyp == 2 && tc.Totyp == Ugpe && tc.Zfro == 1).ToList();
-        //LsDoms = _usrBag.Ufixes
-        //    .Where(ut => ut.Gvars == 36 && ut.Itb == 4 && ut.Gp1 == 3 && ut.Elea != 0)
-        //    .ToList();
         Console.WriteLine("Authentication ENTREE");
         await LoadTieAplAsync();
-        // Populate child data immediately
-        //TbElems = curOrga.Gsglnes.Where(cl => cl.Pvars == 4).ToList(); //after loaded 
         toChild = new MyShareVars
         {
             authUser = authState.User,
             isAuthenticated = true,
-            LsDivs = await _rendAgres.LoadOrgaPostes(),
+            LsDivs = LsDivs.ToList(),
             LsVars = LsVars.ToList(),
             LsFixes = LsFixes.ToList(),
             LsPlans = LsPlans.ToList(),
-            //LsTabls = LsTabls.ToList()
-            //provisoire
-            //LsCols = LsCols,
-            //TbElems = TbElems,
         };
         _guard.RegisterUnconfirmedPredicate<Tiewel>(w => w.Xadd1 == -1);
         _guard.RegisterUnconfirmedPredicate<Tiwafl>(wa => wa.Xadd1 == -1);
@@ -375,7 +339,7 @@ else
             );
             if (curOrga == null)
             {
-                Console.WriteLine("No organization found for the current user.");
+                Console.WriteLine($"No organization found for the current user. {expand}");
                 return;
             }
             ////attributs//Lvars deja charge
@@ -405,77 +369,12 @@ else
         _chxMenu = 1;
         Console.WriteLine($"✅ COMPLETE: Tiersps={curOrga.Tiersps?.Count ?? 0}");
     }
-    // private async Task LoadTieAplAsync()
-    // {
-    //     try
-    //     {
-    //         curODContext = await _contextFactory.CreateAsync(); // Use factory
-    //         _guard.AttachContext(curODContext);
-    //         // 🔥 ONE CALL - ALL NAV PROPERTIES!
-    //         await curODContext.GetByKeyAsync<Gxorga>(key, "Gxorgas",
-    //             "Plngens($expand=Rubvars),Gsgfixes,Gsglnes,Tiersps($expand=Actsaies)");
-
-    //         // Refresh curOrga with ALL children
-    //         curOrga = await curODContext.GetByKeyAsync<Gxorga>(key, "Gxorgas");
-
-    //         Console.WriteLine($"✅ COMPLETE: Plngens={curOrga.Plngens?.Count ?? 0}, " +
-    //                           $"Gsgfixes={curOrga.Gsgfixes?.Count ?? 0}, " +
-    //                           $"Tiersps={curOrga.Tiersps?.Count ?? 0}");
-
-    //         isLoading = false;
-
-
-    //         var expand =
-    //             "Gsesios,Gsglnes," +
-    //             "Tiersps($expand=Tieafls)," +
-    //             "Tiewels($expand=Tiwafls)";
-
-    //         await curODContext.LoadFilteredAsync<Gxorga>(expand: expand);
-    //         curOrga = curODContext.Context.Entities
-    //             .Select(e => e.Entity)
-    //             .OfType<Gxorga>()
-    //             .SingleOrDefault(o => o.Idorg == _usrBag.Idorg);
-
-    //         if (curOrga == null)
-    //         {
-    //             Console.WriteLine("No organization found for the current user.");
-    //             return;
-    //         }
-    //         Ugpe = 1; //cible
-    //         Tgpe = 6;
-    //         _chxMenu = 1;
-    //         LsCols = curOrga.Gsglnes.Where(ug => ug.Otyp == 5 && ug.Dtyp == 6 && ug.Totyp == 1 && ug.Jacc == 1).ToList();
-    //         TbElems = curOrga.Gsglnes.Where(ug => ug.Otyp == 4 && ug.Pitb == 1).ToList();
-    //         Console.WriteLine($"From Enrol Menu Nb.cols :{LsCols.Count} et tbEle {TbElems.Count}");
-    //         Console.WriteLine($"orga recu {curOrga.Raison}");
-    //         Console.WriteLine($"nb ties test : {curOrga.Tiersps.Count()}");
-    //         Console.WriteLine($"nb tiwls test : {curOrga.Tiewels.Count()}");
-    //     }
-    //     catch (Exception ex)
-    //     {
-    //         Console.WriteLine($"stack trace : {ex.StackTrace} ex-mess : {ex.Message} and also in-mess: {ex.InnerException}");
-    //     }
-    // }
-
     //changes des selections
     void ChxGpeTiers(Gpfixe mygpe)
     {
         gpeLiba = "";
         //colonnes parent et elements
 
-        //dicvCols = LsVars.Where(tc => tc.Gvars == 8 && tc.Itb == 1 && tc.Totyp == mygpe.Elea).ToDictionary(tc => tc.Elea, tc => tc.Liba);
-        //dicvACols = LsVars.Where(tc => tc.Gvars == 8 && tc.Itb == 2 && tc.Totyp == 1).ToDictionary(tc => tc.Elea, tc => tc.Liba);
-
-        // LsCols = curOrga.Gsglnes.Where(ug => ug.Otyp == 5 && ug.Dtyp == 6 && ug.Totyp == Ugpe && ug.Jacc == 1).ToList();
-        // if (mygpe != null)
-        // {
-        //     Ugpe = mygpe.Elea;
-        //     Tgpe = mygpe.Gp2;
-        //     gpeLiba = LsGties.Where(ut => ut.Elea == mygpe.Elea).FirstOrDefault().Liba.ToUpperInvariant();
-        //     StateHasChanged();
-        //     Console.WriteLine("PAS 2");
-        // }
-        // toChild.LsCols = LsCols;
     }
     private async Task SelMenu(int noM)
     {
@@ -490,14 +389,6 @@ else
             _guardVisible = true;
             strComp = $"Accueil/Site  {gpeLiba}";
         }
-        // if (_chxMenu == 3) 
-        // {
-        //     _guardVisible = false;
-        //     strComp = $"Invite/Online  {gpeLiba}";
-        // }
-        //if (_chxMenu == 4) strComp = $"Atest  {gpeLiba}";
-        //if (_chxMenu == 3) strComp = $"Invitation {gpeLiba}";
-        //if (_chxMenu == 5) strComp = "Colonnes";
         allEnable = false;
         StateHasChanged();
         await Task.Delay(1);
@@ -506,10 +397,7 @@ else
     {
         gpeLiba = "";
         if (noG == 0) return;
-
-
         var mygpe = LsGties.Where(gt => gt.Itb == 6 && gt.Elea == noG).FirstOrDefault();
-        //LsCols = curOrga.Gsglnes.Where(ug => ug.Otyp == 5 && ug.Dtyp == 6 && ug.Totyp == Ugpe && ug.Jacc == 1).ToList();
         Ugpe = noG;
         Tgpe = mygpe.Gp2;
         gpeLiba = LsGties.Where(ut => ut.Elea == mygpe.Elea).FirstOrDefault().Liba.ToUpperInvariant();
@@ -519,85 +407,13 @@ else
     }
     async void InitChildData()
     {
-        //await ManEditAll();
-        //ParentEDT = true;
         StateHasChanged();
     }
     void NavigateBack()
     {
         _navmanager.NavigateTo("/");
     }  
-    // private async Task ManEditAll()
-    // {
-    //     //if 
-    //     Imessage = "Edition en preparation...";
-    //     if (_chxMenu == 1)
-    //     { //validation
-    //         await mygvld.EdtAll();
-    //     }
-    //     if (_chxMenu == 2)
-    //     { //accueil/site
-    //         await myetiw.EdtAll();
-    //     }
-    //     if (_chxMenu == 3)
-    //     { //invite/online
-    //         await myginv.EdtAll();
-    //     }
-    //     Imessage = "";
-    //     if (Ugpe != 0)
-    //     {
-    //         Console.WriteLine($"Ugpe exists before {Ugpe} et {ParentOK} et {ParentEDT}");
-    //         ParentOK = true;
-    //         ParentEDT = true;
-    //         Console.WriteLine($"Ugpe after {Ugpe} et {ParentOK} et {ParentEDT}");
-    //     } else
-    //     {
-    //         Console.WriteLine("Ugpe not exist");
-    //     }
-    //     allEnable = true;
-    // }
-    // private async Task ManCnclAll()
-    // {
-    //     Imessage = "annulation en cours...";
-
-    //     if (_chxMenu == 1)
-    //     { //validation
-    //         await mygvld.CncAll();
-    //     }
-    //     if (_chxMenu == 2)
-    //     { //accueil
-    //         await myetiw.CncCHILD();
-    //         NavigateBack();
-    //     }
-    //     if (_chxMenu == 3)
-    //     { //invitation
-    //         await myginv.CncAll();
-    //         NavigateBack();
-    //     }
-    //     //reload
-    //     //await LoadTieAplAsync();
-    //     Imessage = "";
-    //     allEnable = false;
-    // }
-    // private async Task ManSaveAll()
-    // {
-    //     bool oksav = false;
-    //     Imessage = "enregistrement en cours...";
-    //     if (_chxMenu == 1)
-    //     { //validation
-    //         oksav = await mygvld.SaveCurEntities();
-    //     }
-    //     if (_chxMenu == 2)
-    //     { //accueil
-    //         oksav = await myetiw.SaveCurEntities();
-    //     }
-    //     if (_chxMenu == 3)
-    //     { //invitation
-    //         oksav = await myginv.SaveCurEntities();
-    //     }
-    //     if (oksav) Imessage = "";
-    //     allEnable = false;
-    // }
+    
     private async Task SetLoadingState()
     {
         await _jsRun.InvokeVoidAsync("eval",

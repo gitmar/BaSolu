@@ -65,7 +65,7 @@
             <label class="fw-bold">Affilié :</label>
             <InputSelect @bind-Value="IMyAfl" @bind-Value:after="ChargeAflCols">
                 <option value="0">chx?</option>
-                @foreach (var tob in LsAfils.Where(af => af.Atyp == 1).ToList())
+                @foreach (var tob in LsAfils.Where(af => af.Atyp == 1 && af.Ityp == 1).ToList())
                 {
                     <option value="@tob.Elea">@tob.Liba</option>
                 }

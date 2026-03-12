@@ -417,12 +417,12 @@
                                                 <GridColumn TItem="Gsgfix" HeaderText="Libelle">
                                                     <ChildContent Context="item">
                                                             <InputText @bind-Value="@item.Sliba" style="width:100%"
-                                                                   readonly="@(item.Rowguid == EdAflRowguid ? null : "readonly")" />
+                                                                   readonly="@(item.Rowguid == EdAptRowguid ? null : "readonly")" />
                                                     </ChildContent>
                                                 </GridColumn>
                                                 <GridColumn TItem="Gsgfix" HeaderText="Opt.">
                                                     <ChildContent Context="item">
-                                                        <InputSelect @bind-Value="item.Ityp" disabled="@(!isEdAfl)">
+                                                        <InputSelect @bind-Value="item.Ityp" disabled="@(!isEdApt)">
                                                                     @foreach (var tob in LsFixes.Where(ut => ut.Gvars == 31 && ut.Itb == 2 && ut.Gp1 == 1))
                                                                     {
                                                                         <option value="@tob.Elea">@tob.Liba</option>
@@ -432,7 +432,7 @@
                                                 </GridColumn>
                                                 <GridColumn TItem="Gsgfix" HeaderText="Genr.">
                                                     <ChildContent Context="item">
-                                                        <InputSelect @bind-Value="item.Ktyp" disabled="@(!isEdAfl)">
+                                                        <InputSelect @bind-Value="item.Ktyp" disabled="@(!isEdApt)">
                                                             @foreach (var tob in LsFixes.Where(ut => ut.Gvars == 31 && ut.Itb == 2 && ut.Gp1 == 1))
                                                             {
                                                                 <option value="@tob.Elea">@tob.Liba</option>
@@ -443,7 +443,7 @@
                                                 <GridColumn TItem="Gsgfix" HeaderText="Avis">
                                                     <ChildContent Context="item">
                                                         <div class="col-1">
-                                                            <InputSelect @bind-Value="item.Jtyp" disabled="@(!isEdAfl)">
+                                                            <InputSelect @bind-Value="item.Jtyp" disabled="@(!isEdApt)">
                                                                 @foreach (var tob in LsFixes.Where(ut => ut.Gvars == 31 && ut.Itb == 6 && ut.Gp1 == 1))
                                                                 {
                                                                     <option value="@tob.Elea">@tob.Liba</option>
@@ -455,12 +455,12 @@
                                                 <GridColumn TItem="Gsgfix" HeaderText="max.">
                                                     <ChildContent Context="item">
                                                         <InputNumber class="my-input" @bind-Value="item.Mtyp"
-                                                                     style="font-weight:bold;width:80px" readonly="@(item.Rowguid == EdAflRowguid ? null : "readonly")" />
+                                                                     style="font-weight:bold;width:80px" readonly="@(item.Rowguid == EdAptRowguid ? null : "readonly")" />
                                                     </ChildContent>
                                                 </GridColumn>
                                                 <GridColumn TItem="Gsgfix" HeaderText="notif.">
                                                     <ChildContent Context="item">
-                                                            <InputSelect @bind-Value="item.Ntyp" disabled="@(!isEdAfl)" style="width:100%">
+                                                            <InputSelect @bind-Value="item.Ntyp" disabled="@(!isEdApt)" style="width:100%">
                                                                 @foreach (var tob in LsFixes.Where(ut => ut.Gvars == 31 && ut.Itb == 4 && ut.Gp1 == 1))
                                                                 {
                                                                     <option value="@tob.Elea">@tob.Liba</option>
@@ -471,14 +471,14 @@
                                                 <GridColumn TItem="Gsgfix" HeaderText="Actions">
                                                     <ChildContent Context="item">
                                                         <div class="col-md-2 d-flex gap-2">
-                                                            @if (EdAflRowguid  != item.Rowguid)
+                                                            @if (EdAptRowguid  != item.Rowguid)
                                                             {
-                                                                <button class="btn btn-warning btn-sm @(!isEdAfl && EdAflRowguid != item.Rowguid ? "" : "disabled-action")" @onclick="() => StartAflEdit(item)">Edit</button>
+                                                                <button class="btn btn-warning btn-sm @(!isEdApt && EdAptRowguid != item.Rowguid ? "" : "disabled-action")" @onclick="() => StartAptEdit(item)">Edit</button>
                                                             }
                                                             else
                                                             {
-                                                                <button class="btn btn-warning btn-sm @(EdAflRowguid  == item.Rowguid ? "" : "disabled-action")" @onclick="() => ConfGafl(item)">Confirm</button>
-                                                                <button class="btn btn-danger btn-sm @(EdAflRowguid  == item.Rowguid ? "" : "disabled-action")" @onclick="() => CancGafl(item)">Annul</button>
+                                                                <button class="btn btn-warning btn-sm @(EdAptRowguid  == item.Rowguid ? "" : "disabled-action")" @onclick="() => ConfGapt(item)">Confirm</button>
+                                                                <button class="btn btn-danger btn-sm @(EdAptRowguid  == item.Rowguid ? "" : "disabled-action")" @onclick="() => CancGapt(item)">Annul</button>
                                                             }
                                                         </div>
                                                     </ChildContent>
@@ -608,22 +608,6 @@
                                                 }
                                             </InputSelect>
                                         </div>
-
-                                        @* @if (IMyGpe == 1)
-                                        {
-                                            <div>
-                                                <label class="fw-bold">Affilié :</label>
-                                                <InputSelect @bind-Value="IMyAfl">
-                                                    <option value="0">cible</option>
-                                                    @foreach (var tob in LsFixes
-                                                        .Where(uf => uf.Gvars == 53 && uf.Itb == 6 && uf.Gp1 == 1 && uf.Elea != 0)
-                                                        .OrderBy(uo => uo.Elea))
-                                                    {
-                                                        <option value="@tob.Elea">@tob.Liba</option>
-                                                    }
-                                                </InputSelect>
-                                            </div>
-                                        } *@
                                     </div>
                                     @if (canColsOpen)
                                     {
@@ -819,12 +803,18 @@
 
     //editing Org
     bool isEdOrg = false;
+    
     bool isEdDom = false;
     Guid? EdDomRowguid = null;
+    
     bool isEdAfl = false;
     Guid? EdAflRowguid = null;
-    bool isEdCol = false;
-    Guid? EdColRowguid = null;
+    
+    bool isEdApt = false;
+    Guid? EdAptRowguid = null;
+    
+    //bool isEdCol = false;
+    //Guid? EdColRowguid = null;
     //Gener format
     private MarkupString mesAflGen = new MarkupString(""), mesAflSup = new MarkupString("");
     //Generating Tfl
@@ -832,10 +822,21 @@
     bool isGenDelTfl = false;
     Guid? GenerRowguid = null;
 
+    //editing Dom
+    Gsgfix? editingDom = null;
+    bool isEdingDom = false;
+    bool isDelingTdo = false;
+    //editing Apt
+    Gsgfix? editingApt = null;
+    bool isEdingApt = false;
+    bool isDelingTpt = false;
     //editing AFL
     Gsgfix? editingAfl = null;
     bool isEdingAfl = false;
     bool isDelingTfl = false;
+
+    
+
     //editing COL
     Gsglne? editingCol = null;
     bool isEdingCol = false;
@@ -845,15 +846,15 @@
     Guid? GfixEdRowguid = null;
 
     //row GLNE
-    Gsglne curGlne = new();
-    Guid? GlneEdRowguid = null;
-    Gsglne curColVM = new();
-    List<Gsglne> gsgCols = new();
+    //Gsglne curGlne = new();
+    //Guid? GlneEdRowguid = null;
+    //Gsglne curColVM = new();
+    //List<Gsglne> gsgCols = new();
 
-    bool isEdingGlne = false;
-    bool adingGlne = false;
-    Gsglne? editingGlne = null;
-    private bool isGlneFilteringEnabled = false;
+    //bool isEdingGlne = false;
+    //bool adingGlne = false;
+    //Gsglne? editingGlne = null;
+    //private bool isGlneFilteringEnabled = false;
     private string savOliba = "", savOabg = "";
     private int? savYrng = 0, savJacc = 0, savJenr = 0, savEta = 0;
 
@@ -1166,31 +1167,32 @@
         if (myafil.Gvars == 21 && (myafil.Itb == 1 || myafil.Itb == 2 || myafil.Itb == 3))
         { //lim
             RefilGdom(myafil);
-        } else if (myafil.Gvars == 3 && myafil.Itb == 5)
-        { //afil
-            RefilGafl(myafil);
-        } else if (myafil.Gvars == 3 && myafil.Itb == 4)
-        { //relat tiers
-            RefilGrel(myafil);
-        } else {
+        } 
+        // else if (myafil.Gvars == 3 && myafil.Itb == 5)
+        // { //afil
+        //     RefilGafl(myafil);
+        // } else if (myafil.Gvars == 3 && myafil.Itb == 4)
+        // { //relat tiers
+        //     RefilGrel(myafil);
+        else {
             return;
         }
-        isEdingAfl = true;
+        isEdingDom = true;
         isEdDom = true;
         EdDomRowguid = myafil.Rowguid;
-        GfixEdRowguid = myafil.Rowguid;
+        //GfixEdRowguid = myafil.Rowguid;
     }
     void CancGdom(Gsgfix mytfl)
     {
         mytfl.Xadd1 = 0;
         mytfl.Xedt1 = 0;
-        EmptyGfix();
-        GfixEdRowguid = null;
+        EmptyGdom();
+        //GfixEdRowguid = null;
         isEdDom = false;
         EdDomRowguid = null;
-        isEdingAfl = false;
-        editingAfl = null;
-        curGfix = new();
+        isEdingDom = false;
+        editingDom = null;
+        //curGfix = new();
     }
     private async Task ConfGdom(Gsgfix myfix)
     {
@@ -1208,27 +1210,88 @@
                 // Already tracked, safe to ignore
             }
             curODContext.Context.UpdateObject(myfix);
-            GfixEdRowguid = null;
-
+            //GdomEdRowguid = null;
             isEdDom = false;
             EdDomRowguid = null;
 
-            isEdingAfl = false;
-            editingAfl = null;
-            isEdingAfl = false;
+            isEdingDom = false;
+            editingDom = null;
             Console.WriteLine("Gsgfix marked as Modified");
         }
     }
-    //EDITING Gsgfix (afl)
+    //EDITING Gsgfix (apt)
+    void StartAptEdit(Gsgfix myapt)
+    {
+        myapt.Xedt1 = 0; //editing
+        //curGfix = myapt;
+        //if (myapt.Gvars == 21 && (myapt.Itb == 1 || myapt.Itb == 2 || myapt.Itb == 3))
+        //{ //lim
+        //    RefilGdom(myapt);
+        //}
+        if (myapt.Gvars == 3 && myapt.Itb == 5)
+        { //afil
+            RefilGapt(myapt);
+        }
+        else
+        {
+            return;
+        }
+        isEdingApt = true;
+        isEdApt = true;
+        EdAptRowguid = myapt.Rowguid;
+
+        //GaptEdRowguid = myapt.Rowguid;
+    }
+    void CancGapt(Gsgfix mytfl)
+    {
+        mytfl.Xadd1 = 0;
+        mytfl.Xedt1 = 0;
+        //EmptyGapt();
+
+        //GaptEdRowguid = null;
+
+        isEdApt = false;
+        EdAptRowguid = null;
+        isEdingApt = false;
+        editingApt = null;
+        //curGapt = new();
+
+    }
+    private async Task ConfGapt(Gsgfix myfix)
+    {
+        if (myfix.Xseq > 0)
+        {
+            myfix.Xedt1 = 0;
+            myfix.Xadd1 = 0;
+            myfix.Xdel1 = 0;
+            try
+            {
+                curODContext.Context.AttachTo("Gsgfixes", myfix);
+            }
+            catch (InvalidOperationException)
+            {
+                // Already tracked, safe to ignore
+            }
+            curODContext.Context.UpdateObject(myfix);
+            //GaptEdRowguid = null;
+            isEdApt = false;
+            EdAptRowguid = null;
+            isEdingApt = false;
+            editingApt = null;
+            Console.WriteLine("Gsgfix marked as Modified");
+        }
+    }
+
+    //EDITING Gsgfix (apl)
     void StartAflEdit(Gsgfix myafil)
     {
         myafil.Xedt1 = 0; //editing
-        curGfix = myafil;
-        if (myafil.Gvars == 21 && (myafil.Itb == 1 || myafil.Itb == 2 || myafil.Itb == 3))
-        { //lim
-            RefilGdom(myafil);
-        }
-        else if (myafil.Gvars == 3 && myafil.Itb == 5)
+        //curGfix = myafil;
+        //if (myafil.Gvars == 21 && (myafil.Itb == 1 || myafil.Itb == 2 || myafil.Itb == 3))
+        //{ //lim
+        //    RefilGdom(myafil);
+        //}
+        if (myafil.Gvars == 3 && myafil.Itb == 6)
         { //afil
             RefilGafl(myafil);
         }
@@ -1241,24 +1304,25 @@
         isEdAfl = true;
         EdAflRowguid = myafil.Rowguid;
 
-        GfixEdRowguid = myafil.Rowguid;
+        //GfixEdRowguid = myafil.Rowguid;
     }
     void CancGafl(Gsgfix mytfl)
     {
         mytfl.Xadd1 = 0;
         mytfl.Xedt1 = 0;
-        EmptyGfix();
+        EmptyGafl();
 
-        GfixEdRowguid = null;
+        //GAflEdRowguid = null;
 
         isEdAfl = false;
         EdAflRowguid = null;
 
         isEdingAfl = false;
         editingAfl = null;
-        curGfix = new();
+        //curGAfl = new();
 
     }
+
     private async Task ConfGafl(Gsgfix myfix)
     {
         if (myfix.Xseq > 0)
@@ -1275,99 +1339,13 @@
                 // Already tracked, safe to ignore
             }
             curODContext.Context.UpdateObject(myfix);
-            GfixEdRowguid = null;
+            //GaflEdRowguid = null;
             isEdAfl = false;
             EdAflRowguid = null;
             isEdingAfl = false;
             editingAfl = null;
-            isEdingAfl = false;
             Console.WriteLine("Gsgfix marked as Modified");
         }
-    }
-    void StartColEdit(Gsglne mycol)
-    {
-        mycol.Xedt1 = -1; //editing
-        editingCol = mycol;
-        savOliba = mycol.Oliba;
-        savOabg = mycol.Oabg;
-        savYrng = mycol.Yrng;
-        savJacc = mycol.Jacc;
-        savJenr = mycol.Jenr;
-        savEta = mycol.Eta;
-        isEdCol = true;
-        EdColRowguid = mycol.Rowguid;
-        isEdingCol = true;
-        GlneEdRowguid = mycol.Rowguid;
-    }
-    void CancGcol(Gsglne mycol)
-    {
-        mycol.Xedt1 = 0;
-        mycol.Xadd1 = 0;
-        isEdCol = false;
-        EdColRowguid = null;
-        isEdingCol = false;
-        editingCol = null;
-        GlneEdRowguid = null;
-    }
-    void ConfGcol(Gsglne mycol)
-    {
-        mycol.Xedt1 = 0;
-        mycol.Xadd1 = 0;
-        if (isEdingCol)
-        {
-
-            Console.WriteLine("ICI1");
-            bool yaeuModif = false;
-            Console.WriteLine("ICI2");
-            if (string.Compare(savOliba, mycol.Oliba) != 0)
-            {
-                //existcol.Oliba = mycol.Oliba;
-                yaeuModif = true;
-            }
-            if (string.Compare(savOabg, mycol.Oabg) != 0)
-            {
-                //existcol.Oabg = mycol.Oabg;
-                yaeuModif = true;
-            }
-            if (savYrng != mycol.Yrng)
-            {
-                //existcol.Yrng = mycol.Yrng; //rang colonne
-                yaeuModif = true;
-            }
-            if (savJacc != mycol.Jacc)
-            {
-                //existcol.Jacc = mycol.Jacc; //rang colonne
-                yaeuModif = true;
-            }
-            if (savJenr != mycol.Jenr)
-            {
-                //existcol.Jenr = mycol.Jenr; //rang colonne
-                yaeuModif = true;
-            }
-            if (savEta != mycol.Eta)
-            {
-                //existcol.Eta = mycol.Eta; //rang colonne
-                yaeuModif = true;
-            }
-            if (!yaeuModif)
-            {
-                return;
-            }
-            if (yaeuModif)
-            {
-                if (!curODContext.GetAllTrackedEntities().Any(e => e.Entity == mycol))
-                {
-                    curODContext.AttachTo("Gsglnes", mycol);
-                }
-                curODContext.UpdateObject(mycol);
-            }
-        }
-        isEdCol = false;
-        EdColRowguid = null;
-        isEdingCol = false;
-        GlneEdRowguid = null;
-        editingCol = null;
-        //Console.WriteLine("A ETE MODIFIE");
     }
 
     static void CopyScalarProperties<T>(T source, T target)
@@ -1378,11 +1356,34 @@
         foreach (var p in props)
             p.SetValue(target, p.GetValue(source));
     }
-    void EmptyGfix()
+    
+    void EmptyGdom()
     {
         curGfix = new();
     }
+    void EmptyGapt()
+    {
+        //curGafl = new();
+    }
+    void EmptyGafl()
+    {
+        //curGafl = new();
+    }
     void RefilGdom(Gsgfix myfix) //dom
+    {
+        curGfix = new Gsgfix
+        {
+            Liba = myfix.Liba,
+            Sliba = myfix.Sliba,
+            Abg = myfix.Abg,
+            Ityp = myfix.Ityp,
+            Jtyp = myfix.Jtyp,
+            Mtyp = myfix.Mtyp,
+            Ntyp = myfix.Ntyp,
+            Eta = myfix.Eta,
+        };
+    }
+    void RefilGapt(Gsgfix myfix) //afil
     {
         curGfix = new Gsgfix
         {
@@ -1410,74 +1411,8 @@
             Eta = myfix.Eta,
         };
     }
-    void RefilGrel(Gsgfix myfix) //relat tiers
-    {
-        curGfix = new Gsgfix
-        {
-            Liba = myfix.Liba,
-            Sliba = myfix.Sliba,
-            Abg = myfix.Abg,
-            Ityp = myfix.Ityp,
-            Jtyp = myfix.Jtyp,
-            Mtyp = myfix.Mtyp,
-            Ntyp = myfix.Ntyp,
-            Eta = myfix.Eta,
-        };
-    }
-    //EDITING Gsglne (colonne)
-    void EditGlne(Gsglne myclne)
-    {
-        myclne.Xadd1 = 0; //editing
-        curGlne = myclne;
-        RefilGlne(myclne);
-        curColVM.Xadd1 = 0; //editing
-        isEdingCol = true;
-        GlneEdRowguid = myclne.Rowguid;
-    }
-    void CancGlne(Gsglne myclne)
-    {
-        EmptyGlne();
-
-        GlneEdRowguid = null;
-
-        myclne.Xadd1 = 0;
-        isEdingCol = false;
-        editingCol = null;
-        curColVM = new();
-
-    }
-    void AddGlneWithNav(Gsglne newGlne)
-    {
-        if (!curODContext.Context.Entities.Any(e => e.Entity == curGfix))
-        {
-            curODContext.AttachTo("Gsgfixes", curGfix);
-        }
-
-        curODContext.Context.AddRelatedObject(
-            curOrga,
-            "Gsglnes",
-            newGlne
-        );
-        //_guard.MarkDirty();
-    }
-    void EmptyGlne()
-    {
-        curColVM = new();
-    }
-    void RefilGlne(Gsglne myclne)
-    {
-        curColVM = new Gsglne
-            {
-                Liba = myclne.Liba,
-                Oliba = myclne.Oliba,
-                Abg = myclne.Abg,
-            //Ityp = myclne.Ityp,
-                Jtyp = myclne.Jtyp,
-            //Mtyp = myclne.Mtyp,
-            //Ntyp = myclne.Ntyp,
-                Eta = myclne.Eta,
-            };
-    }
+    
+   
     // GENERATION
     private async Task PromptAddOneGener(Gsgfix myacol)
     {
@@ -1499,33 +1434,6 @@
         GenerRowguid = myacol.Rowguid;
         isGenAddTfl = true;
     }
-    // private async Task ConfOneGener(Gsgfix myacol)
-    // {
-    //     if (myacol == null || myacol.Etyp == 0)
-    //     {
-    //         mesAflGen = new MarkupString("type affilie absent");
-    //         return;
-    //     }
-    //     Imessage = $"Generation de colonnes pour {myacol.Liba}...patience...";
-    //     ReqgnModel reqModel = new ReqgnModel();
-    //     reqModel.Idorg = curOrga.Idorg;
-    //     reqModel.Orig = 2; //vient de user ajout
-    //     reqModel.Pdomtie = IMyBas; //6tiers7produits
-    //     reqModel.Ptyptie = selTyp; //1cible2operat3client4fournis5patern
-    //     reqModel.Psupafl = myacol.Elea; //1cible2cnj3par4enf5pai6flh
-    //     await _clieManager.SetAuthorizationHeaderAsync("AUTHClient");
-    //     var cblcall = await _clieManager.SendRequestAsync("AUTHClient", HttpMethod.Post, "usercontext/creaflcols", reqModel);
-    //     var cblresp = JsonConvert.DeserializeObject<ResgnModel>(cblcall);
-    //     if (cblresp != null)
-    //     {
-
-    //     }
-    //     myacol.Xgen1 = 0;
-    //     GenerRowguid = null;
-    //     isGenAddTfl = false;
-    //     mesAflGen = new MarkupString("");
-    //     //NavigateBack();
-    // }
           
     private async Task CncOneGener(Gsgfix myacol)
     {
@@ -1583,57 +1491,7 @@
         GenerRowguid = null;
         isGenDelTfl = false;
     }
-    
-    private async Task ConfEAfl(Gsgfix myfix)
-    {
-        if (myfix.Xseq > 0)
-        {
-            try
-            {
-                myfix.Xadd1 = 0;
-                myfix.Xedt1 = 0;
-                myfix.Xdel1 = 0;
-                curODContext.Context.AttachTo("Gsgfixes", myfix);
-            }
-            catch (InvalidOperationException)
-            {
-                // Already tracked, safe to ignore
-            }
-            curODContext.Context.UpdateObject(myfix);
-            GfixEdRowguid = null;
-            myfix.Xadd1 = 0;
-            isEdingAfl = false;
-            editingAfl = null;
-            Console.WriteLine("Gsgfix marked as Modified");
-        }
-    }
-    public async Task ConfECol(Gsglne mycol)
-    {
-        if (mycol.Id > 0)
-        {
-            mycol.Xedt1 = 0;
-            mycol.Xadd1 = 0;
-            mycol.Xdel1 = 0;
-            try
-            {
-                curODContext.Context.AttachTo("Gsglnes", mycol);
-            }
-            catch (InvalidOperationException)
-            {
-                // Already tracked, safe to ignore
-            }
-
-            curODContext.Context.UpdateObject(mycol);
-            GlneEdRowguid = null;
-            mycol.Xadd1 = 0;
-            isEdingCol = false;
-            editingCol = null;
-            isEdingCol = false;
-            Console.WriteLine("Gsglne marked as Modified");
-        }      
-    }
-
-    
+       
     public async Task SavAllAsync()
     {
         await _guard.FlushAsync();
@@ -1644,10 +1502,6 @@
         await _guard.DisposeAsync();
     }
 
-    private void ToggleGlneFiltering()
-    {
-        isGlneFilteringEnabled = !isGlneFilteringEnabled;
-    }
     private void DoTabTitle(int noT, string stTitle)
     {
         if (noT == 0) tbTitle = "Cible";
@@ -1705,16 +1559,7 @@
             //_guard.MarkDirty();
         }
     }
-    private void HandleFieldColChanged(object sender, FieldChangedEventArgs e)
-    {
-        //to display Confirm/Cancel
-        if (e.FieldIdentifier.Model is Gsglne) isEdingCol = true;
-        if (e.FieldIdentifier.Model is Gsglne)
-        {
-            isEdingCol = true;
-            //_guard.MarkDirty();
-        }
-    }
+    
     
     private async Task Save()
     {
@@ -1724,4 +1569,164 @@
     {
         _navManager.NavigateTo("/");
     }
+
+    // private void HandleFieldColChanged(object sender, FieldChangedEventArgs e)
+    // {
+    //     //to display Confirm/Cancel
+    //     if (e.FieldIdentifier.Model is Gsglne) isEdingCol = true;
+    //     if (e.FieldIdentifier.Model is Gsglne)
+    //     {
+    //         isEdingCol = true;
+    //         //_guard.MarkDirty();
+    //     }
+    // }
+    // void RefilGrel(Gsgfix myfix) //relat tiers
+    // {
+    //     curGfix = new Gsgfix
+    //     {
+    //         Liba = myfix.Liba,
+    //         Sliba = myfix.Sliba,
+    //         Abg = myfix.Abg,
+    //         Ityp = myfix.Ityp,
+    //         Jtyp = myfix.Jtyp,
+    //         Mtyp = myfix.Mtyp,
+    //         Ntyp = myfix.Ntyp,
+    //         Eta = myfix.Eta,
+    //     };
+    // }
+        // private async Task ConfEAfl(Gsgfix myfix)
+    // {
+    //     if (myfix.Xseq > 0)
+    //     {
+    //         try
+    //         {
+    //             myfix.Xadd1 = 0;
+    //             myfix.Xedt1 = 0;
+    //             myfix.Xdel1 = 0;
+    //             curODContext.Context.AttachTo("Gsgfixes", myfix);
+    //         }
+    //         catch (InvalidOperationException)
+    //         {
+    //             // Already tracked, safe to ignore
+    //         }
+    //         curODContext.Context.UpdateObject(myfix);
+    //         GfixEdRowguid = null;
+    //         myfix.Xadd1 = 0;
+    //         isEdingAfl = false;
+    //         editingAfl = null;
+    //         Console.WriteLine("Gsgfix marked as Modified");
+    //     }
+    // }
+    // private async Task ConfOneGener(Gsgfix myacol)
+    // {
+    //     if (myacol == null || myacol.Etyp == 0)
+    //     {
+    //         mesAflGen = new MarkupString("type affilie absent");
+    //         return;
+    //     }
+    //     Imessage = $"Generation de colonnes pour {myacol.Liba}...patience...";
+    //     ReqgnModel reqModel = new ReqgnModel();
+    //     reqModel.Idorg = curOrga.Idorg;
+    //     reqModel.Orig = 2; //vient de user ajout
+    //     reqModel.Pdomtie = IMyBas; //6tiers7produits
+    //     reqModel.Ptyptie = selTyp; //1cible2operat3client4fournis5patern
+    //     reqModel.Psupafl = myacol.Elea; //1cible2cnj3par4enf5pai6flh
+    //     await _clieManager.SetAuthorizationHeaderAsync("AUTHClient");
+    //     var cblcall = await _clieManager.SendRequestAsync("AUTHClient", HttpMethod.Post, "usercontext/creaflcols", reqModel);
+    //     var cblresp = JsonConvert.DeserializeObject<ResgnModel>(cblcall);
+    //     if (cblresp != null)
+    //     {
+
+    //     }
+    //     myacol.Xgen1 = 0;
+    //     GenerRowguid = null;
+    //     isGenAddTfl = false;
+    //     mesAflGen = new MarkupString("");
+    //     //NavigateBack();
+    // }
+    // void StartColEdit(Gsglne mycol)
+    // {
+    //     mycol.Xedt1 = -1; //editing
+    //     editingCol = mycol;
+    //     savOliba = mycol.Oliba;
+    //     savOabg = mycol.Oabg;
+    //     savYrng = mycol.Yrng;
+    //     savJacc = mycol.Jacc;
+    //     savJenr = mycol.Jenr;
+    //     savEta = mycol.Eta;
+    //     isEdCol = true;
+    //     EdColRowguid = mycol.Rowguid;
+    //     isEdingCol = true;
+    //     GlneEdRowguid = mycol.Rowguid;
+    // }
+    // void CancGcol(Gsglne mycol)
+    // {
+    //     mycol.Xedt1 = 0;
+    //     mycol.Xadd1 = 0;
+    //     isEdCol = false;
+    //     EdColRowguid = null;
+    //     isEdingCol = false;
+    //     editingCol = null;
+    //     GlneEdRowguid = null;
+    // }
+    // void ConfGcol(Gsglne mycol)
+    // {
+    //     mycol.Xedt1 = 0;
+    //     mycol.Xadd1 = 0;
+    //     if (isEdingCol)
+    //     {
+
+    //         Console.WriteLine("ICI1");
+    //         bool yaeuModif = false;
+    //         Console.WriteLine("ICI2");
+    //         if (string.Compare(savOliba, mycol.Oliba) != 0)
+    //         {
+    //             //existcol.Oliba = mycol.Oliba;
+    //             yaeuModif = true;
+    //         }
+    //         if (string.Compare(savOabg, mycol.Oabg) != 0)
+    //         {
+    //             //existcol.Oabg = mycol.Oabg;
+    //             yaeuModif = true;
+    //         }
+    //         if (savYrng != mycol.Yrng)
+    //         {
+    //             //existcol.Yrng = mycol.Yrng; //rang colonne
+    //             yaeuModif = true;
+    //         }
+    //         if (savJacc != mycol.Jacc)
+    //         {
+    //             //existcol.Jacc = mycol.Jacc; //rang colonne
+    //             yaeuModif = true;
+    //         }
+    //         if (savJenr != mycol.Jenr)
+    //         {
+    //             //existcol.Jenr = mycol.Jenr; //rang colonne
+    //             yaeuModif = true;
+    //         }
+    //         if (savEta != mycol.Eta)
+    //         {
+    //             //existcol.Eta = mycol.Eta; //rang colonne
+    //             yaeuModif = true;
+    //         }
+    //         if (!yaeuModif)
+    //         {
+    //             return;
+    //         }
+    //         if (yaeuModif)
+    //         {
+    //             if (!curODContext.GetAllTrackedEntities().Any(e => e.Entity == mycol))
+    //             {
+    //                 curODContext.AttachTo("Gsglnes", mycol);
+    //             }
+    //             curODContext.UpdateObject(mycol);
+    //         }
+    //     }
+    //     isEdCol = false;
+    //     EdColRowguid = null;
+    //     isEdingCol = false;
+    //     GlneEdRowguid = null;
+    //     editingCol = null;
+    //     //Console.WriteLine("A ETE MODIFIE");
+    // }
 }
