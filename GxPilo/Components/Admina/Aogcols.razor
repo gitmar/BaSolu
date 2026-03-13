@@ -1,0 +1,310 @@
+﻿@page "/aogcols"
+
+@using System.Text
+@using System.Text.Json
+@using GxWapi.DaModels
+@using GxPilo.Services
+@using GxShared.Others
+@using GxShared.Helpers
+@using GxShared.Sess
+
+@using Newtonsoft.Json;
+
+@inject HttpClientService _clieManager
+
+<div class="card">
+    <div class="card-header">
+        @if(!string.IsNullOrEmpty(Imessage))
+        {
+            <label>@Imessage</label>
+        }
+    </div>
+    <div class="card-body">
+        <Grid TItem="LSelCol"
+             Data="@Columns"
+             AllowPaging="true"
+             Responsive="true">
+            <GridColumns>
+                <GridColumn TItem="LSelCol" HeaderText="No">
+                    <ChildContent Context="item">
+                        @item.ColNo
+                    </ChildContent>
+                </GridColumn>
+                <GridColumn TItem="LSelCol" HeaderText="Nom interne">
+                    <ChildContent Context="item">
+                        @item.ColName
+                    </ChildContent>
+                </GridColumn>
+                <GridColumn TItem="LSelCol" HeaderText="Visible?">
+                    <ChildContent Context="item">
+                        <InputCheckbox @bind-Value="item.IsVisible" />
+                    </ChildContent>
+                </GridColumn>
+                <GridColumn TItem="LSelCol" HeaderText="Original">
+                    <ChildContent Context="item">
+                        @item.Olabel
+                    </ChildContent>
+                </GridColumn>
+                <GridColumn TItem="LSelCol" HeaderText="Adaptee">
+                    <HeaderContent>
+                        <span>Adaptee</span> &nbsp;
+                        <button class="btn btn-primary mt-2"
+                                @onclick="SavePrefParent">
+                            Save
+                        </button>
+                    </HeaderContent>
+                    <ChildContent Context="item">
+                        @item.Ulabel
+                    </ChildContent>
+                </GridColumn>
+            </GridColumns>
+        </Grid>
+        @* @if(IMyGpe == 1)
+        { *@
+        <div>
+            <label class="fw-bold">Affilié :</label>
+            <InputSelect @bind-Value="IMyAfl" @bind-Value:after="ChargeAflCols">
+                <option value="0">chx?</option>
+                @foreach (var tob in LsAfils.Where(af => af.Atyp == 1 && af.Ityp == 1).ToList())
+                {
+                    <option value="@tob.Elea">@tob.Liba</option>
+                }
+            </InputSelect>
+            <Grid TItem="LSelCol"
+                  Data="@AflColumns"
+                  AllowPaging="true"
+                  Responsive="true">
+                <GridColumns>
+                    <GridColumn TItem="LSelCol" HeaderText="No">
+                        <ChildContent Context="item">@item.ColNo</ChildContent>
+                    </GridColumn>
+                    <GridColumn TItem="LSelCol" HeaderText="Nom interne">
+                        <ChildContent Context="item">@item.ColName</ChildContent>
+                    </GridColumn>
+                    <GridColumn TItem="LSelCol" HeaderText="Visible?">
+                        <ChildContent Context="item">
+                            <InputCheckbox @bind-Value="item.IsVisible" />
+                        </ChildContent>
+                    </GridColumn>
+                    <GridColumn TItem="LSelCol" HeaderText="Original">
+                        <ChildContent Context="item">@item.Olabel</ChildContent>
+                    </GridColumn>
+                    <GridColumn TItem="LSelCol" HeaderText="Adaptee">
+                        <HeaderContent>
+                            <span>Adaptee</span> &nbsp;
+                            <button class="btn btn-primary mt-2"
+                                    @onclick="SavePrefAfil">
+                                Save
+                            </button>
+                        </HeaderContent>
+                        <ChildContent Context="item">@item.Ulabel</ChildContent>
+                    </GridColumn>
+                </GridColumns>
+            </Grid>
+        </div>
+        @* } *@
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public Gxorga curOrga { get; set; }
+    [Parameter]
+    public int IMyDom { get; set; } = 0; //1tiers2mati
+    [Parameter]
+    public int EtRef { get; set; } = 0; //1accueil2enrol
+    [Parameter]
+    public int IMyGpe { get; set; } = 0; //1cible2oper3clie
+    [Parameter]
+    public List<Gpfixe> LsOcols { get; set; } = new();
+    [Parameter]
+    public List<Gpcol> LsPcols { get; set; } = new();
+    [Parameter]
+    public List<Gpcol> LsFcols { get; set; } = new();
+    [Parameter]
+    public List<Gpvar> LsAfils { get; set; } = new();
+
+    //[Parameter]  // Event callback if you want parent to react
+    //public EventCallback<string> OnPreferencesSaved { get; set; }
+
+    // This list drives the checkboxes
+    public int IMyAfl { get; set; } = 0; //1cnj2par3enf4pair
+    public List<LSelCol> Columns { get; set; } = new();
+    public List<LSelCol> AflColumns { get; set; } = new();
+    private string Imessage = "";
+
+    protected override async Task OnInitializedAsync()
+    {
+        //Zfro(1tiers/2mat)
+        //Itb(1princ/2afil
+        //Totyp(1cibl2oper3clie...
+        //Tstyp(2cnj3par4enf..
+        //Efrm(1accu2enrol)
+        var selectedCol = LsPcols.FirstOrDefault(uc =>  uc.Totyp == IMyGpe && uc.Efrm == EtRef 
+            && uc.Zfro == IMyDom);
+        Console.WriteLine($"Valeur colonnes entrees : {EtRef} et/{IMyGpe} et/{IMyAfl} puis//-{selectedCol?.Fgsrc}");
+        string strStore = selectedCol != null ? selectedCol.Fgsrc : string.Empty;
+        Columns = ColsPreferences.DeserializePreferences(strStore);
+        //Columns = Columns.Where(cl => cl.SsDom == SsDom && cl.EtRef == EtRef).ToList();
+        foreach(var ocol in LsOcols)
+        {
+            //column non incrite
+            var icol = Columns.FirstOrDefault(c => c.ColNo == ocol.Elea && string.Compare(c.ColName, ocol.Scdrub) == 0);
+            if (icol == null)
+            {
+                var cola = new LSelCol
+                {
+                    ColNo = ocol.Elea,
+                    ColName = ocol.Scdrub,
+                    IsVisible = ocol.Gp4 == 1,
+                    Olabel = ocol.Liba,
+                    Ulabel = ocol.Liba
+                };
+                Columns.Add(cola);
+            }
+        }
+    }
+    private void ChargeAflCols()
+    {
+        if (IMyAfl == 0)
+        {
+            AflColumns = new();
+            return;
+        }
+        var selectedCol = LsFcols.FirstOrDefault(uc =>
+            uc.Totyp == IMyAfl && uc.Efrm == EtRef && uc.Zfro == IMyDom);
+        string strStore = selectedCol?.Fgsrc ?? string.Empty;
+        AflColumns = ColsPreferences.DeserializePreferences(strStore);
+        foreach (var ocol in LsOcols)
+        {
+            var icol = AflColumns.FirstOrDefault(c =>
+                c.ColNo == ocol.Elea && c.ColName == ocol.Scdrub);
+
+            if (icol == null)
+            {
+                AflColumns.Add(new LSelCol
+                {
+                    ColNo = ocol.Elea,
+                    ColName = ocol.Scdrub,
+                    IsVisible = ocol.Gp5 == 1,
+                    Olabel = ocol.Liba,
+                    Ulabel = ocol.Liba
+                });
+            }
+        }
+    }
+    private async Task SavePrefParent()
+    {
+        var serialized = ColsPreferences.SerializePreferences(Columns);
+        await OnOptcolsSave(serialized, 1, 0);
+    }
+    private async Task SavePrefAfil()
+    {
+        var serialized = ColsPreferences.SerializePreferences(AflColumns);
+        await OnOptcolsSave(serialized, 2, IMyAfl);
+    }
+    private async Task OnOptcolsSave(string svcolos, int curItb, int inAfl)
+    {
+        ColsToSave ctosave = new();
+        ctosave.Idorg = curOrga.Idorg;
+        ctosave.Zfro = IMyDom; //1tiers/2mat
+        ctosave.Otyp = curItb; //1princ/2afil
+        //ctosave.Itb = curItb; //1princ/2afil
+        if (curItb == 2)
+        {
+            ctosave.Totyp = inAfl; //1cibl2oper3sout...
+        } else
+        {
+            ctosave.Totyp = IMyGpe; //1cibl2oper3sout...
+        }
+        ctosave.Efrm = EtRef; //1accueil2enrol
+        ctosave.Strcols = svcolos;
+        await _clieManager.SetAuthorizationHeaderAsync("AUTHClient");
+        var response = await _clieManager.SendRequestAsync(
+            "AUTHClient",
+            HttpMethod.Post,
+            "regis/save-cols", ctosave);
+        Imessage = "Succes Colonnes options saved ";
+        //operecipientsSaved = true;
+        StateHasChanged();
+        await Task.Delay(1);
+    }
+
+    private async Task ConfOnePrinGener(Gsgfix mygtie)
+    {
+        if (mygtie == null)
+        {
+            Imessage = "type groupe cible absent";
+            return;
+        }
+        //création des colonnes de base
+        // --- Main cible ---
+        int svelea = 1;
+        var nwlscolsCible = new List<LSelCol>();
+        foreach (var cfx in LsOcols)
+        {
+            nwlscolsCible.Add(new LSelCol
+            {
+                ColNo = cfx?.Gp3 ?? 0,
+                ColName = cfx?.Scdrub ?? "",
+                IsVisible = cfx.Gp4 == 1,
+                Olabel = cfx.Liba,
+                Ulabel = cfx.Liba
+            });
+        }
+        string storecolsCible = ColsPreferences.SerializePreferences(nwlscolsCible);
+        var curGsg = curOrga.Gsgfixes.FirstOrDefault(gs => gs.Xseq == mygtie.Xseq);
+        if (curGsg != null)
+        {
+            //efrm=1accu/1er formulaire
+            await OnOptcolsSave(storecolsCible, 1, IMyGpe);
+            // var svgcol = curGsg.Gsglnes.FirstOrDefault(gl => gl.Idorg == curOrga.Idorg
+            //     && gl.Otyp == 1 && gl.Totyp == IMyGpe  //otyp1parent
+            //     && gl.Efrm == EtRef && gl.Zfro == IMyDom); //zfro1tiers2mat
+            // if (svgcol != null)
+            // {
+            //     svgcol.Fgsrc = storecolsCible;
+            //     curODContext.UpdateObject(svgcol);
+            // }
+            // else
+            // {
+            //     Gsglne nwcol = new();
+            //     nwcol.Rowguid = Guid.NewGuid();
+            //     nwcol.Idorg = curOrga.Idorg;
+            //     nwcol.Otyp = 1;
+            //     nwcol.Totyp = IMyGpe; //cible
+            //     nwcol.Efrm = EtRef; //accueil
+            //     nwcol.Zfro = IMyDom; //tiers
+            //     nwcol.Elea = svelea;
+            //     nwcol.Fgsrc = storecolsCible;
+            //     nwcol.Eta = 1;
+            //     curODContext.AddObject("Gsglnes", nwcol);
+            // }
+        }
+    }
+    private async Task ConfOneAfilGener(Gsgfix mygafl)
+    {
+        if (mygafl == null)
+        {
+            Imessage = "type affilie absent";
+            return;
+        }
+        //création des colonnes de base
+        // --- Affiliates ---
+        int svelea = 1;
+        var nwlscolsAff = new List<LSelCol>();
+        foreach (var cfx in LsOcols)
+        {
+            nwlscolsAff.Add(new LSelCol
+            {
+                ColNo = cfx?.Gp3 ?? 0,
+                ColName = cfx?.Scdrub ?? "",
+                IsVisible = cfx.Gp5 == 1,
+                Olabel = cfx.Liba,
+                Ulabel = cfx.Liba
+            });
+        }
+        string storecolsAff = ColsPreferences.SerializePreferences(nwlscolsAff);
+        await OnOptcolsSave(storecolsAff, 2, mygafl.Elea);
+    }
+}

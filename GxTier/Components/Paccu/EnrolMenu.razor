@@ -26,6 +26,7 @@
 @inject RendAgres _rendAgres
 @inject PendingChangesGuard _guard
 @inject IJSRuntime _jsRun
+@inject IMessageService _messageService
 
 @if (isLoading)
 {
@@ -50,9 +51,9 @@ else
                 <div class="row">
                     <div class="col-md-12 input-group align-middle">
                         <span class="text-uppercase text- text-success"><b>@strComp</b></span>
-                        @if (!String.IsNullOrEmpty(Imessage))
+                        @if (!String.IsNullOrEmpty(Jmessage))
                         {
-                            <span class="bg-info bg-opacity-10" style="font-style:italic;color:red">&nbsp;--> @Imessage</span>
+                            <span class="bg-info bg-opacity-10" style="font-style:italic;color:red">&nbsp;--> @Jmessage</span>
                         }
                     </div>
                 </div>
@@ -157,7 +158,6 @@ else
     public MyODataContext curODContext;
     public Gxorga curOrga = new Gxorga();
     public MyShareVars toChild = new();
-    private bool allEnable = false;
 
     //private EnrolTiw mygtiw;
     private ValdTie mygvld = new();
@@ -200,8 +200,8 @@ else
     public List<GxGroupe> Groupes = new();
 
     //public int _UorgId = 0;
-    public string _strOrga = "", _curSigle = "", Imessage = "", LoadLabel = "", strmeta = "", strmeta2 = "";
-
+    public string _strOrga = "", _curSigle = "", LoadLabel = "", strmeta = "", strmeta2 = "";
+    private string Jmessage = "";
     //entities load
     private IEnumerable<Gxorga> _lsOrgas = new List<Gxorga>();
     private List<Tiewel> InTwels = new List<Tiewel>();
@@ -389,7 +389,6 @@ else
             _guardVisible = true;
             strComp = $"Accueil/Site  {gpeLiba}";
         }
-        allEnable = false;
         StateHasChanged();
         await Task.Delay(1);
     }

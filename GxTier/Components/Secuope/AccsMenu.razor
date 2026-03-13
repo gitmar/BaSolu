@@ -18,6 +18,7 @@
 @inject HttpClientService _cliemanager
 @inject IODataContextFactory _contextFactory
 @inject SessionContextService _sessionContext
+@inject IMessageService _messageService
 
 @if (isLoading)
 {
@@ -88,9 +89,9 @@
                                 @onclick="ManSaveAll">
                             Enregistrer
                         </Button>
-                        @if (!String.IsNullOrEmpty(MImessage))
+                        @if (!String.IsNullOrEmpty(Jmessage))
                         {
-                        <span class="bg-info bg-opacity-10" style="font-style:italic;color:red">&nbsp;--> @MImessage</span>
+                        <span class="bg-info bg-opacity-10" style="font-style:italic;color:red">&nbsp;--> @Jmessage</span>
                         }
                     </div>
                 </div>
@@ -177,7 +178,7 @@
     ();
 
     public int _GIdTie = 0;
-    public string _strOrga = "", _curSigle = "", MImessage = "", strmeta = "", strmeta2 = "";
+    public string _strOrga = "", _curSigle = "", Jmessage = "", strmeta = "", strmeta2 = "";
 
     //menus
     public List<GxNavMenu.MenuItem>
@@ -206,7 +207,7 @@
                 ();
                 //Gestion CRUD Entete
                 public bool EnrEnable = false;
-                public string Imessage = "";
+                public string Jmessage = "";
 
                 //GlobModels
                 public Userbag _usrBag = new Userbag();
@@ -318,34 +319,34 @@
 
     private async Task ManEditAll()
     {
-    MImessage = "Edition en preparation...";
+    Jmessage = "Edition en preparation...";
     if (chxMenu == 2)
     { //sessions
     await mygses.EdtAll();
     }
-    MImessage = "";
+    Jmessage = "";
     allEnable = true;
     }
     private async Task ManCnclAll()
     {
-    MImessage = "annulation en cours...";
+    Jmessage = "annulation en cours...";
     if (chxMenu == 2)
     { //sessions
     await mygses.CncAll();
     }
     //reload
     LoadSTROrgaAsync();
-    MImessage = "";
+    Jmessage = "";
     allEnable = false;
     }
     private async Task ManSaveAll()
     {
-    MImessage = "enregistrement en cours...";
+    Jmessage = "enregistrement en cours...";
     if (chxMenu == 2)
     { //sessions
     //await mygses.SaveCurEntities();
     }
-    MImessage = "";
+    Jmessage = "";
     allEnable = false;
     }
     /*private async Task SelMenu(int noM)

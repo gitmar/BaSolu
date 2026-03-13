@@ -1,0 +1,253 @@
+﻿@using GxPilo.Services
+@using GxShared.Sess
+@using BlazorBootstrap
+@using Blazored.LocalStorage
+@using System.Security.Claims
+@using GxPilo.Components.Identity
+
+@inject NavigationManager _navManager
+@inject ILocalStorageService _localStorage
+
+<div class="top-row mb-0 navbar navbar-dark bg-success shadow-sm bg-opacity-25 mt-0 navbar-slim">
+    <a class="navbar-brand text-white fw-bold" href="">
+        <i class="bi bi-gear-fill me-1"></i> Gx-Solutions
+    </a>
+    <button class="navbar-toggler btn btn-sm" type="button" @onclick="ToggleNavMenu">
+        <span class="navbar-toggler-icon"></span>
+    </button>
+</div>
+
+<div class="@NavMenuCssClass bg-dark vh-100" style="overflow-y: auto;">
+    <nav class="nav flex-column">
+
+        <!-- HOME -->
+        <NavLink class="nav-link nav-main text-light small" href="" Match="NavLinkMatch.All">
+            <i class="bi bi-house-door-fill me-2"></i> Home
+        </NavLink>
+        @* <NavLink class="nav-link nav-main text-light small" href="testmenu" Match="NavLinkMatch.All">
+            <i class="bi bi-house-door-fill me-2"></i> TestMenu
+        </NavLink> *@
+        <AuthorizeView>
+            <Authorized>
+
+                <!-- INSTITUTION -->
+                <NavLink class="nav-link nav-main text-light small" href="aorgas">
+                    <i class="bi bi-building-gear me-2"></i> Institution
+                </NavLink>
+
+                <!-- PARAMETRAGE -->
+                <NavLink class="nav-link nav-main text-light small" @onclick="ToggleSubPara">
+                    <i class="bi bi-sliders2-vertical me-2"></i> Paramétrage
+                </NavLink>
+
+                <div class="submenu @(isSubParaVisible ? "open" : "")">
+                    <nav class="nav flex-column">
+
+                        <NavLink class="nav-link nav-sub text-light small ps-4" href="atblmenu">
+                            <i class="bi bi-table me-2"></i> Tables
+                        </NavLink>
+
+                        <NavLink class="nav-link nav-sub text-light small ps-4" href="astrmenu">
+                            <i class="bi bi-diagram-3-fill me-2"></i> Astreintes
+                        </NavLink>
+
+                        <NavLink class="nav-link nav-sub text-light small ps-4" href="invoper">
+                            <i class="bi bi-envelope-plus me-2"></i> Operateurs
+                        </NavLink>
+
+                    </nav>
+                </div>
+
+                <!-- PROGRAMMES -->
+                <NavLink class="nav-link nav-main text-light small" @onclick="ToggleSubProg">
+                    <i class="bi bi-journal-code me-2"></i> Programmes
+                </NavLink>
+
+                <div class="submenu @(isSubProgVisible ? "open" : "")">
+                    <nav class="nav flex-column">
+
+                        <NavLink class="nav-link nav-sub text-light small ps-4" href="prubmenu">
+                            <i class="bi bi-pin-map-fill me-2"></i> Plans
+                        </NavLink>
+
+                        <NavLink class="nav-link nav-sub text-light small ps-4" href="edtmenu">
+                            <i class="bi bi-pencil-square me-2"></i> Écriture
+                        </NavLink>
+
+                    </nav>
+                </div>
+
+                <!-- SECURITES -->
+                <NavLink class="nav-link nav-main text-light small" @onclick="ToggleSubSecu">
+                    <i class="bi bi-shield-lock-fill me-2"></i> Sécurités
+                </NavLink>
+
+                <div class="submenu @(isSubSecuVisible ? "open" : "")">
+                    <nav class="nav flex-column">
+
+                        <NavLink class="nav-link nav-sub text-light small ps-4" href="accsmenu">
+                            <i class="bi bi-unlock-fill me-2"></i> Autorisations
+                        </NavLink>
+
+                        <NavLink class="nav-link nav-sub text-light small ps-4" href="donamenu">
+                            <i class="bi bi-database-fill-gear me-2"></i> Données
+                        </NavLink>
+
+                        <NavLink class="nav-link nav-sub text-light small ps-4" href="subitem2">
+                            <i class="bi bi-tools me-2"></i> Outils
+                        </NavLink>
+
+                        <NavLink class="nav-link nav-sub text-light small ps-4" href="ownerpage">
+                            <i class="bi bi-person-badge-fill me-2"></i> Owner Page
+                        </NavLink>
+
+                    </nav>
+                </div>
+                
+                <!-- Test message displaying -->
+                @* <NavLink class="nav-link nav-main text-light" href="test-messages">
+                    <i class="bi bi-bar-chart-line-fill me-2"></i> Test Messages
+                </NavLink> *@
+
+               <!-- Analyses -->
+                <NavLink class="nav-link nav-main text-light" href="about">
+                    <i class="bi bi-bar-chart-line-fill me-2"></i> Analyses
+                </NavLink>
+
+                <!-- SUPPORT -->
+                <NavLink class="nav-link nav-main text-light small" href="about">
+                    <i class="bi bi-graph-up-arrow me-2"></i> Support
+                </NavLink>
+
+            </Authorized>
+        </AuthorizeView>
+
+        <!-- AGENDAS -->
+        <NavLink class="nav-link nav-main text-light small" href="about">
+            <i class="bi bi-calendar3 me-2"></i> Agendas
+        </NavLink>
+
+        <!-- ABOUT -->
+        <NavLink class="nav-link nav-main text-light" href="about">
+            <i class="bi bi-info-circle-fill me-2"></i> About
+        </NavLink>
+
+    </nav>
+</div>
+
+<style>
+    .top-row.navbar {
+        padding-left: 0 !important;
+        padding-right: 0 !important;
+        --bs-navbar-padding-y: 0.25rem; /* reduce vertical padding */
+    }
+
+    .top-row .navbar-brand {
+        margin-left: 0 !important;
+        padding-left: 0 !important;
+        font-size: 0.9rem; /* smaller text */
+        line-height: 1.2; /* tighter line spacing */
+    }
+
+    /* ========== SUBMENU ANIMATION ========== */
+    .submenu {
+        max-height: 0;
+        overflow: hidden;
+        opacity: 0;
+        transition: max-height 0.35s ease-out, opacity 0.25s ease-out, padding-left 0.3s ease-out;
+        padding-left: 0rem;
+    }
+
+        /* When open, expand submenu */
+        .submenu.open {
+            max-height: 500px; /* Enough for many items */
+            opacity: 1;
+            padding-left: 0.5rem;
+        }
+
+    /* Style submenu links */
+    .nav-sub {
+        padding-left: 1.5rem !important;
+        transition: padding-left 0.25s ease;
+    }
+
+        /* Hover effect on submenu items */
+        .nav-sub:hover {
+            padding-left: 1.7rem !important;
+            background-color: rgba(255, 255, 255, 0.08);
+            border-radius: 4px;
+        }
+
+    /* ========== ARROW ANIMATION (optional) ========== */
+    /* Place an arrow icon inside main menu items if needed */
+    .nav-main .arrow {
+        transition: transform 0.3s ease;
+        font-size: 0.8rem;
+    }
+
+    /* Rotate arrow when submenu is open */
+    .submenu.open ~ .nav-main .arrow,
+    .nav-main.open .arrow {
+        transform: rotate(90deg);
+    }
+
+</style>
+@code {
+    [CascadingParameter]
+    private Task<AuthenticationState>? AuthState { get; set; }
+
+    private bool success, errors, isSubmitting = false;
+    private string[] errorList = [];
+    private bool collapseNavMenu = false;
+    private string? NavMenuCssClass => collapseNavMenu ? "collapse" : null;
+
+    private Userbag _usrBag = new();
+
+    private bool isSubManagVisible = false;
+    private bool isSubSecuVisible = false;
+    private bool isSubOperVisible = false;
+    private bool isSubParaVisible = false;
+    private bool isSubProgVisible = false;
+    //private void ToggleNavMenu() => collapseNavMenu = !collapseNavMenu;
+    protected override async Task OnInitializedAsync()
+    {
+        //_appState.OnChange += StateHasChanged;
+    }
+
+    public void Dispose()
+    {
+        //_appState.OnChange -= StateHasChanged;
+    }
+    private void ToggleNavMenu()
+    {
+        collapseNavMenu = !collapseNavMenu;
+    }
+    private void ToggleSubManag()
+    {
+        isSubManagVisible = !isSubManagVisible;
+    }
+    private void ToggleSubSecu()
+    {
+        isSubSecuVisible = !isSubSecuVisible;
+    }
+    private void ToggleSubOper()
+    {
+        isSubOperVisible = !isSubOperVisible;
+    }
+
+    //Admin
+    private void ToggleSubPara()
+    {
+        isSubParaVisible = !isSubParaVisible;
+    }
+    private void ToggleSubProg()
+    {
+        isSubProgVisible = !isSubProgVisible;
+    }
+    private bool Entest = false;
+
+    // protected override async Task OnAfterRenderAsync(bool firstRender)
+    // {
+    //     Entest = false;
+    // }
+ }

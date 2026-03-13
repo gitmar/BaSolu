@@ -20,9 +20,9 @@
 
 <PageTitle>Login</PageTitle>
 
-@if (!string.IsNullOrEmpty(Imessage))
+@if (!string.IsNullOrEmpty(Jmessage))
 {
-    <div class="alert alert-danger">@Imessage</div>
+    <div class="alert alert-danger">@Jmessage</div>
 }
 @if (isLoading)
 {
@@ -78,7 +78,7 @@ else
     private MyAuthStateProvider _authProvider { get; set; }
 
     private LoginModel loginModel = new();
-    private string Imessage = "";
+    private string Jmessage = "";
 
     private bool isBusy = false;
     private string? Error;
@@ -117,15 +117,15 @@ else
         Error = null;
         isBusy = true;
         bool yaErrors = false;
-        Imessage = "";
+        Jmessage = "";
         if (string.IsNullOrEmpty(loginModel.UsernameOrEmail))
         {
-            Imessage = "Email ou UserName obligatoire";
+            Jmessage = "Email ou UserName obligatoire";
             yaErrors = true;
         }
         if (string.IsNullOrEmpty(loginModel.Password))
         {
-            Imessage = Imessage + " /Mot de passe obligatoire";
+            Jmessage = Jmessage + " /Mot de passe obligatoire";
             yaErrors = true;
         }
         if (yaErrors)
@@ -155,7 +155,7 @@ else
             {
                 isBusy = false;
                 Error = "Login failed. Check credentials.";
-                Imessage = Imessage + " Invalid login response.";
+                Jmessage = Jmessage + " Invalid login response.";
                 isLoading = false;
                 return;
             }
@@ -179,7 +179,7 @@ else
                     isBusy = false;
                     Error = "Login failed. Check credentials.";
                     isLoading = false;
-                    Imessage = Imessage + " /Failed to load user context.";
+                    Jmessage = Jmessage + " /Failed to load user context.";
                     return;
                 }
                 var identity = new ClaimsIdentity(claims, "jwt");
@@ -208,7 +208,7 @@ else
         {
             Error = "Login failed. Check credentials.";
             isBusy = false;
-            Imessage = $"Login failed: {ex.Message}";
+            Jmessage = $"Login failed: {ex.Message}";
         }
         isLoading = false;
     }

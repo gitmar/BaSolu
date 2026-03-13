@@ -1,0 +1,141 @@
+﻿using System.Net.Http.Headers;
+using System.Text.Json;
+
+using BlazorDownloadFile;
+
+using Blazored.LocalStorage;
+
+using GxPilo;
+using GxPilo.ClieModels;
+using GxPilo.Services;
+
+using GxShared.Helpers;
+using GxShared.Sess;
+
+using Microsoft.AspNetCore.Components.Authorization;
+using Microsoft.AspNetCore.Components.Web;
+using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
+
+var builder = WebAssemblyHostBuilder.CreateDefault(args);
+var backUrl = new Uri(builder.Configuration["BackendUrl"]);
+
+builder.RootComponents.Add<App>("#app");
+builder.RootComponents.Add<HeadOutlet>("head::after");
+
+builder.Services.AddBlazoredLocalStorage();
+// ✅ 2. Auth Handler (injects token automatically)
+builder.Services.AddTransient<AuthDelegatingHandler>();
+//loading configuration in a json file
+builder.Services.AddSingleton(builder.Configuration);
+builder.Configuration.AddJsonFile("appsettings.json", optional: true, reloadOnChange: true);
+builder.Services.Configure<ApiSettings>(builder.Configuration.GetSection("ApiSettings"));
+
+// Configure logging first
+builder.Logging.SetMinimumLevel(LogLevel.Information);
+// Register services
+builder.Services.AddHttpClient();
+//builder.Services.AddTransient<CookieHandler>();
+
+builder.Services.AddBlazorBootstrap();
+builder.Services.AddBlazorDownloadFile();
+
+builder.Services.AddAuthorizationCore();
+builder.Services.AddCascadingAuthenticationState();
+builder.Services.AddScoped<MyAuthStateProvider>();
+builder.Services.AddScoped<AuthenticationStateProvider>(provider => provider.GetRequiredService<MyAuthStateProvider>());
+
+//builder.Services.AddTransient<FormulaEvalService>();
+builder.Services.AddScoped<Userbag>();
+//builder.Services.AddScoped<IGridActionService, GridActionService>();
+builder.Services.AddScoped<IPuzzleSyncService, PuzzleSyncService>();
+//builder.Services.AddScoped<Usaibag>();
+builder.Services.AddScoped<MyShareVars>();
+builder.Services.AddScoped<RendAgres>();
+builder.Services.AddScoped<ClieAppState>();
+builder.Services.AddScoped<SessionContextService>();
+builder.Services.AddScoped<SessionContextClient>();
+builder.Services.AddScoped<PendingChangesGuard>();
+builder.Services.AddSingleton<IMessageService,MessageService>();
+
+builder.Services.AddSingleton<LoadingService>();
+// Configure logging first
+builder.Logging.SetMinimumLevel(LogLevel.Information);
+// Register CLIENT SERVICES
+builder.Services.AddScoped<HttpClientService>();
+builder.Services.AddScoped<TokenAwareClientManager>();
+
+// Register named clients
+//AUTHClient
+builder.Services.AddHttpClient("AUTHClient", client =>
+{
+    client.BaseAddress = new Uri($"{builder.Configuration["BackendUrl"]}/api/");
+    // Optional: add default headers like Accept if needed
+});
+//OfflineCLIENT
+builder.Services.AddHttpClient("OFFLClient", client =>
+{
+    var backUrl = builder.Configuration["BackendUrl"];
+    if (!backUrl.EndsWith("/"))
+    {
+        backUrl += "/";
+    }
+    backUrl += "api/";
+    client.BaseAddress = new Uri(backUrl);
+    client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+    client.DefaultRequestHeaders.Add("X-Requested-With", "Fetch");
+});
+//ODATAClient
+
+builder.Services.AddScoped<PendingChangesGuard>();
+// 🔥 1. HTTP CLIENT for parallel batch saves (ROOT base address)
+// Register named OData client
+builder.Services.AddHttpClient("ODataClient", client =>
+{
+    var backUrl = builder.Configuration["BackendUrl"];
+    if (!backUrl.EndsWith("/")) backUrl += "/";
+    backUrl += "odata/";   // ✅ Ensure /odata is part of the base address
+
+    client.BaseAddress = new Uri(backUrl);
+})
+.AddHttpMessageHandler<AuthDelegatingHandler>();
+// 🔥 2. OData Context Factory (loads token + creates context)
+builder.Services.AddScoped<IODataContextFactory, ODataContextFactory>();
+
+builder.Services.AddScoped<TblJsonRender>();
+builder.Services.AddScoped<LinkSerialiser>();
+
+builder.Services.AddHttpClient("DefaultClient", client =>
+{
+    client.BaseAddress = new Uri(builder.HostEnvironment.BaseAddress);
+    client.DefaultRequestHeaders.Add("Accept", "application/json");
+});
+// test odata client ✅ CORRECT
+builder.Services.AddHttpClient("ODaTestClient", client =>
+{
+    client.BaseAddress = new Uri("https://localhost:7095/");  // Root = /odata routes work
+});
+//pouch services 
+builder.Services.AddSingleton<PouchDbService>();
+// Build the host
+var host = builder.Build();
+// Get webApi is online or not
+var localStorage = host.Services.GetRequiredService<ILocalStorageService>();
+var authProvider = host.Services.GetRequiredService<MyAuthStateProvider>();
+var reset = await localStorage.GetItemAsync<bool>("force-reset");
+if (reset)
+{
+    await localStorage.ClearAsync();
+    await authProvider.NotifyUserLogout();
+}
+await host.RunAsync();
+
+public class ApiSettings
+{
+    public string BackendUrl { get; set; } = string.Empty;
+    public string ApiUrl { get; set; } = string.Empty;
+    public string FrontendUrl { get; set; } = string.Empty;
+    public string BackendUrl22 { get; set; } = string.Empty;
+    public string ApiUrl22 { get; set; } = string.Empty;
+    public string FrontendUrl22 { get; set; } = string.Empty;
+}
+

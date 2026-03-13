@@ -1,7 +1,6 @@
 ﻿@page "/logout"
 @using Blazored.LocalStorage
-@using GxTie.Services
-@using GxTie.Services
+@using GxPilo.Services
 
 @inject ILocalStorageService _localStorage
 @inject IServiceProvider _serviceProvider
@@ -21,7 +20,6 @@
 </AuthorizeView>
 
 @code {
-    private string Jmessage = "";
 
     protected override async Task OnInitializedAsync()
     {

@@ -1,0 +1,152 @@
+﻿<CascadingValue Value="this">
+    <div class="@PositionClass">
+        @if (CurrentMessage != null)
+        {
+            <div class="alert @GetAlertClass() alert-dismissible fade show" role="alert">
+                @CurrentMessage.Text
+                <button type="button" class="btn-close" @onclick="ClearMessage"></button>
+            </div>
+        }
+    </div>
+</CascadingValue>
+
+@code {
+    [Parameter] public string PositionClass { get; set; } = "";
+    private PageMessage? CurrentMessage;
+
+    public static event Action<PageMessage>? OnGlobalMessage;
+
+    protected override void OnInitialized()
+    {
+        OnGlobalMessage += OnMessageReceived;
+    }
+
+    // private void OnMessageReceived(PageMessage msg)
+    // {
+    //     CurrentMessage = msg;
+    //     StateHasChanged();
+    //     // Auto-clear after 5 seconds
+    //     _ = Task.Delay(5000).ContinueWith(_ =>
+    //     {
+    //         CurrentMessage = null;
+    //         InvokeAsync(StateHasChanged);
+    //     });
+    // }
+
+    public static void TriggerMessage(string text, ToastType type = ToastType.Info, int? durationSeconds = 5)
+    {
+        OnGlobalMessage?.Invoke(new PageMessage
+        {
+            Text = text,
+            Type = type,
+            DurationSeconds = durationSeconds  // null = permanent
+        });
+    }
+
+    private void OnMessageReceived(PageMessage msg)
+    {
+        CurrentMessage = msg;
+        StateHasChanged();
+
+        // Only auto-clear if duration specified (not null)
+        if (msg.DurationSeconds.HasValue)
+        {
+            _ = Task.Delay(msg.DurationSeconds.Value * 1000).ContinueWith(_ =>
+            {
+                CurrentMessage = null;
+                InvokeAsync(StateHasChanged);
+            });
+        }
+    }
+
+    private void ClearMessage()
+    {
+        CurrentMessage = null;
+        StateHasChanged();
+    }
+
+    private string GetAlertClass() => CurrentMessage?.Type switch
+    {
+        ToastType.Success => "alert-success",
+        ToastType.Danger => "alert-danger",
+        ToastType.Warning => "alert-warning",
+        _ => "alert-info"
+    };
+
+    public void Dispose()
+    {
+        OnGlobalMessage -= OnMessageReceived;
+    }
+    public class PageMessage
+    {
+        public string Text { get; set; } = "";
+        public ToastType Type { get; set; } = ToastType.Info;
+        public int? DurationSeconds { get; set; } = 5;  // null = permanent
+    }
+    // [Parameter] public string PositionClass { get; set; } = "position-fixed top-0 end-0 p-3 m-3"; // Bootstrap toast position
+
+    // private PageMessage? CurrentMessage;
+
+    // public static event Action<PageMessage>? OnGlobalMessage;
+
+    // public void ShowMessage(string text, ToastType type = ToastType.Info)
+    // {
+    //     CurrentMessage = new PageMessage { Text = text, Type = type };
+    //     StateHasChanged();
+    // }
+
+    // // Static method for service to call
+    // public static void TriggerMessage(string text, ToastType type = ToastType.Info)
+    // {
+    //     OnGlobalMessage?.Invoke(new PageMessage { Text = text, Type = type });
+    // }
+
+    // private void ClearMessage() => CurrentMessage = null;
+
+    // protected override void OnInitialized()
+    // {
+    //     OnGlobalMessage += msg =>
+    //     {
+    //         CurrentMessage = msg;
+    //         StateHasChanged();
+    //     };
+    // }
+
+
+    // ////[Parameter] public RenderFragment? ChildContent { get; set; }
+    // /// </summary>
+    // /// <returns></returns> <summary>
+    // /// 
+
+    // // private PageMessage? CurrentMessage;
+    // // // Add to MessageHost
+    // // public static event Action<PageMessage>? MessageReceived;  // Or use service locator
+    // private string GetAlertClass() => CurrentMessage?.Type switch
+    // {
+    //     ToastType.Success => "alert-success",
+    //     ToastType.Danger => "alert-danger",
+    //     ToastType.Warning => "alert-warning",
+    //     _ => "alert-info"
+    // };
+    // // NEW: Static event for global triggers
+    // public static event Action<PageMessage>? OnMessage;
+
+    // // public new void ShowMessage(string text, ToastType type = ToastType.Info)
+    // // {
+    // //     CurrentMessage = new PageMessage { Text = text, Type = type };
+    // //     StateHasChanged();
+    // //     OnMessage?.Invoke(CurrentMessage);  // Optional: Notify service
+    // // }
+
+    // // Static trigger method (used by service)
+    // public static void Trigger(PageMessage msg)
+    // {
+    //     OnMessage?.Invoke(msg);
+    // }
+
+    // public class PageMessage
+    // {
+    //     public string Text { get; set; } = string.Empty;
+    //     public ToastType Type { get; set; } = ToastType.Info;
+    // }
+}

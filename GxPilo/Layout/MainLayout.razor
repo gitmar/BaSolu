@@ -1,0 +1,229 @@
+﻿@inherits LayoutComponentBase
+
+@using System.Text.RegularExpressions
+@using Blazored.LocalStorage
+@using GxPilo.Services
+@using GxShared.Identity
+@using GxShared.Helpers
+@using System.Security.Claims
+
+@inject ILocalStorageService _localStorage
+@inject IConfiguration _iconfig
+@inject NavigationManager _navManager
+@inject SessionContextService _sessionContext
+@inject ClieAppState _appState
+@inject IJSRuntime _JsRun
+
+@if (_layoutReady)
+{
+    <div class="page-wrapper" style="display: flex; height: 100vh;">
+
+        <div class="sidebar" style="max-width: 200px; background: linear-gradient(180deg, rgb(5, 39, 103) 0%, #3a0647 70%);">
+            <NavMenu />
+        </div>
+        <div class="main-content-wrapper d-flex flex-column" style="flex: 1;">
+
+            <!-- ================= TOP BAR ================= -->
+            <div class="bg-light border-bottom">
+                <!-- BAR ROW (ALWAYS RENDERS) -->
+                <div class="d-flex align-items-center px-3 py-2">
+                    <span class="fw-bold text-muted">(Pilotage)</span>
+                    &nbsp;
+                    <AuthorizeView>
+                        <Authorized>
+                            <!-- Toggle User Menu -->
+                            <button class="btn btn-sm nav-icon fw-bold text-dark fs-10 d-flex align-items-start m-0 p-0"
+                                    @onclick="NavigateToIdentityPage">
+                                <span>PrivateRoom</span>
+                            </button>
+                            <div class="truncated-text ms-3">@_appState.ogRaison</div>
+                            <div class="truncated-text ms-3">@_appState.usFulnom</div>
+                        </Authorized>
+                        <NotAuthorized>
+                            <!-- Optional placeholder or branding -->
+                        </NotAuthorized>
+                    </AuthorizeView>
+                    <!-- RIGHT SIDE (ALWAYS PRESENT) -->
+                    <div class="ms-auto d-flex align-items-center gap-3">
+                        <label class="mb-0">Help ?</label>
+                        <AuthorizeView>
+                            <Authorized>
+                                <a href="logout">
+                                    <span class="bi bi-door-closed-fill" style="vertical-align:middle"></span>
+                                    Logout
+                                </a>
+                            </Authorized>
+                            <NotAuthorized>
+                                <a href="login">
+                                    <span class="bi bi-door-open" style="vertical-align:middle"></span>
+                                    Login
+                                </a>
+                            </NotAuthorized>
+                        </AuthorizeView>
+                    </div>
+                </div>
+                <!-- USER MENU BELOW BAR -->
+                @* <AuthorizeView>
+                    <Authorized>
+                        @if (collapseUserMenu)
+                        {
+                            <div class="px-3 py-2 border-top bg-white">
+                                <UsrMenu />
+                            </div>
+                        }
+                    </Authorized>
+                </AuthorizeView> *@
+            </div>
+            <!-- ================= END TOP BAR ================= -->
+            <!-- ================= MAIN CONTENT ================= -->
+            <main class="flex-fill overflow-auto">
+                <article class="content px-4">
+                    @Body
+                </article>
+            </main>
+        </div>
+    </div>
+}
+else
+{
+    <div class="d-flex justify-content-center align-items-center" style="height: 100vh;">
+        <span>Loading session...</span>
+    </div>
+}
+<style>
+    .flex-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        max-width: 100%;
+        overflow-x: hidden;
+    }
+
+    .truncated-text {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        flex: 1 1 auto;
+        max-width: 30vw; /* relative to viewport */
+        font-size: clamp(0.8rem, 1vw, 1.2rem); /* adaptive but readable */
+    }
+</style>
+@code {
+    private bool _layoutReady = false, isLoading = false;
+    private bool collapseUserMenu = false, canAdminLog = false;
+    [CascadingParameter]
+    private Task<AuthenticationState>? AuthState { get; set; }
+
+    private bool isHelpLogin = false;
+    private ClaimsPrincipal authUser;
+    private bool isAuthenticated = false;
+
+    //private HttpClient _brzClient;
+
+    [Inject] private AuthenticationStateProvider _authProvider { get; set; }
+
+
+    
+    // private async Task ToggleUserMenu()
+    // {
+    //     collapseUserMenu = !collapseUserMenu;
+    // }
+
+    protected override async Task OnInitializedAsync()
+    {
+        canAdminLog = false;
+        isLoading = false;
+       //_brzClient = _clieFactorer.CreateClient("DefaultClient");
+       
+        //await VerifAppVersion();
+
+        _appState.OnChange += StateHasChanged;
+        //_layoutReady = true;
+        var token = await _localStorage.GetItemAsync<string>("blazToken");
+        if (string.IsNullOrWhiteSpace(token))
+        {
+            Console.WriteLine("No token found — skipping session sync.");
+            _layoutReady = true;
+            return;
+        }
+        await _sessionContext.InitializeAsync();
+
+        // Wait for AuthenticationStateProvider to reflect the new token
+        //await Task.Delay(100); // Give NotifyUserAuthentication time to propagate
+
+        var authState = await AuthState;
+        authUser = authState.User;
+        isAuthenticated = authUser.Identity?.IsAuthenticated ?? false;
+
+        if (!isAuthenticated)
+        {
+            Console.WriteLine("Authentication in Main Layout ECHEC");
+        }
+        else
+        {
+            if (authUser.IsInRole("Support") || authUser.IsInRole("Admin")) canAdminLog = true;
+            Console.WriteLine("Authentication in Main Layout SUCCESS");
+        }
+
+        _layoutReady = true;
+        _authProvider.AuthenticationStateChanged += async task =>
+        {
+            var authState = await task;
+            authUser = authState.User;
+            isAuthenticated = authUser.Identity?.IsAuthenticated ?? false;
+            StateHasChanged();
+        };
+        isLoading = true;
+    }
+    private async Task NavigateToIdentityPage()
+    {
+        // Get token from localStorage
+        var token = await _localStorage.GetItemAsync<string>("blazToken");
+        if (string.IsNullOrWhiteSpace(token))
+        {
+            Console.WriteLine("No token found — skipping session sync.");
+            return;
+        }
+        var backendUrl = _iconfig["backendUrl"];
+        var targetUrl = $"{backendUrl}/Identity/Account/JwtLandingPage?access_token={token}";
+        _navManager.NavigateTo(targetUrl, forceLoad: true);
+    }
+    // private async Task VerifAppVersion()
+    // {
+    //     var currentVersion = await _brzClient.GetStringAsync("version.json");
+    //     var storedVersion = await _JsRun.InvokeAsync<string>("localStorage.getItem", "appVersion");
+    //     if (storedVersion != currentVersion)
+    //     {
+    //         // Clear service worker cache
+    //         await _JsRun.InvokeVoidAsync("eval", @"
+    //         caches.keys().then(function(names) {
+    //             for (let name of names)
+    //                 caches.delete(name);
+    //         });
+
+    //         // Clear cookies
+    //         document.cookie.split(';').forEach(function(c) {
+    //             document.cookie = c.trim().split('=')[0] + '=;expires=Thu, 01 Jan 1970 00:00:00 UTC;path=/';
+    //         });
+
+    //         // Clear localStorage and sessionStorage
+    //         localStorage.clear();
+    //         sessionStorage.clear();
+
+    //         // Delete IndexedDB
+    //         indexedDB.databases().then(dbs => {
+    //             for (const db of dbs)
+    //                 indexedDB.deleteDatabase(db.name);
+    //         });
+
+    //         // Reload app
+    //         location.reload();
+    //     ");
+    //         await _JsRun.InvokeVoidAsync("localStorage.setItem", "appVersion", currentVersion);
+    //     }
+    // }
+    public void Dispose()
+    {
+        _appState.OnChange -= StateHasChanged; 
+    }
+}
