@@ -216,10 +216,10 @@ else
                 LsPlans = LsPlans.ToList(),
                 LsTabls = LsTabls.ToList()
             };
-            _guard.RegisterUnconfirmedPredicate<Rubhie>(p => p.Xadd1 == -1);
-            _guard.RegisterUnconfirmedPredicate<Rubpst>(f => f.Xadd1 == -1);
-            _guard.RegisterUnconfirmedPredicate<Actsaie>(a => a.Xadd1 == -1);
-            _guard.RegisterUnconfirmedPredicate<Actdet>(d => d.Xadd1 == -1);
+            _guard.RegisterUnconfirmedPredicate<Rubhie>(p => p.Xadd1 == -1 || p.Xedt1 == -1 || p.Xdel1 == -1);
+            _guard.RegisterUnconfirmedPredicate<Rubpst>(f => f.Xadd1 == -1 || f.Xedt1 == -1 || f.Xdel1 == -1);
+            _guard.RegisterUnconfirmedPredicate<Actsaie>(a => a.Xadd1 == -1 || a.Xedt1 == -1 || a.Xdel1 == -1);
+            _guard.RegisterUnconfirmedPredicate<Actdet>(d => d.Xadd1 == -1 || d.Xedt1 == -1 || d.Xdel1 == -1);
             _nbChanges = _guard.GetPendingChangesCount();  // Initial value
         }
         finally

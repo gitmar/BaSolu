@@ -20,11 +20,11 @@ namespace GxTie.Services
         private HttpClient? _httpClient;
         private bool _isUpdating = false;
         public event Action? OnChanges;
-        // 🔥 GENERALIZED - Replaces Plngen-specific methods
+        // 🔥 GENERALIZED 
         private readonly Dictionary<Type, Func<object, bool>> _unconfirmedPredicates = new();
         private readonly HashSet<Guid> _unconfirmedRowguids = new();
         private readonly HashSet<object> _unconfirmedAdds = new();
-        private int _childPendingCount = 0;        
+        private int _childPendingCount = 0;
         public PendingChangesGuard(
             IODataContextFactory contextFactory,
             NavigationManager navManager,
@@ -37,14 +37,13 @@ namespace GxTie.Services
             _httpClientFactory = httpClientFactory;
             _httpClient = httpClientFactory.CreateClient("ODataClient");
         }
-
         public void AttachContext(MyODataContext ctx) => _ctx = ctx;
 
         public bool IsUnconfirmedAdd<T>(T entity) where T : class
         {
             return _unconfirmedPredicates.TryGetValue(typeof(T), out var predicate) && predicate(entity);
         }
-        // 🔥 NEW: Generic version for Rubvar + others
+        // 🔥 NEW: Generic version
         public void MarkUnconfirmedAdd<T>(T entity) where T : class
         {
             _unconfirmedAdds.Add(entity);
@@ -85,33 +84,6 @@ namespace GxTie.Services
 
             NotifyChanges();
         }
-
-        //public void DiscardAllUnconfirmedAdds()
-        //{
-        //    if (_ctx?.Context?.Entities == null) return;
-
-        //    // 🔥 UNIVERSAL: ALL registered predicates (Plngen/Rubvar/Rubfmt/...)
-        //    foreach (var kvp in _unconfirmedPredicates)
-        //    {
-        //        var entityType = kvp.Key;
-        //        var predicate = kvp.Value;
-
-        //        var unconfirmed = _ctx.Context.Entities
-        //            .Where(e => e.Entity != null &&
-        //                       entityType.IsInstanceOfType(e.Entity) &&
-        //                       predicate(e.Entity))
-        //            .ToList();
-
-        //        foreach (var entityDesc in unconfirmed)
-        //        {
-        //            _ctx.Context.Detach(entityDesc);
-        //            Console.WriteLine($"🚫 Discarded unconfirmed {entityType.Name}");
-        //        }
-        //    }
-
-        //    NotifyChanges();
-        //}
-        // 🔥 Your existing methods - UNCHANGED
         public static bool IsPendingState(EntityStates state) =>
             state == EntityStates.Added || state == EntityStates.Modified || state == EntityStates.Deleted;
 
@@ -158,29 +130,15 @@ namespace GxTie.Services
                 Console.WriteLine($"❌ ClearPendingChangesAsync FAILED: {ex.Message}");
             }
         }
-        //public bool HasConfirmedPendingChanges()
-        //{
-        //    if (_ctx?.Context == null) return _childPendingCount > 0;
-        //    //return _ctx.Context.Entities.Any(e => IsPendingState(e.State) &&
-        //    //       !(e.Entity is Plngen p && (p.Xadd1 == -1 || p.Xedt1 == -1)));
-        //    // 🔥 GENERALIZED: Use predicates instead of Plngen-specific check
-        //    return _ctx.Context.Entities.Any(e => IsPendingState(e.State) &&
-        //           !_unconfirmedPredicates.Values.Any(pred => pred(e.Entity)));
-        //}
-        //public bool HasConfirmedPendingChanges()
-        //{
-        //    if (_ctx?.Context == null) return _childPendingCount > 0;
-
-        //    // 🔥 GENERALIZED: Check ALL registered predicates
-        //    return _ctx.Context.Entities.Any(e => IsPendingState(e.State) &&
-        //           !_unconfirmedPredicates.Values.Any(pred => pred(e.Entity)));
-        //}
         public void RegisterUnconfirmedPredicate<T>(Func<T, bool> isUnconfirmed) where T : class
         {
+            Console.WriteLine("prob1");
             _unconfirmedPredicates[typeof(T)] = obj =>
             {
+                Console.WriteLine("prob2");
                 if (obj is T entity)  // 🔥 SAFE CAST FIRST
                     return isUnconfirmed(entity);
+                Console.WriteLine("prob3");
                 return false;  // Not this type → not unconfirmed
             };
             //Console.WriteLine($"✅ Registered {typeof(T).Name}: Xxxx == -1");
@@ -249,21 +207,6 @@ namespace GxTie.Services
             Console.WriteLine($"3- After save: {GetPendingChangesCount()}");
         }
 
-        // 🔥 Your existing FlushAsync - ENHANCED
-        //public async Task FlushAsync()
-        //{
-        //    Console.WriteLine($"1- {GetPendingChangesCount()}");
-        //    DiscardAllUnconfirmedAdds();  // All entity types twice verification
-
-        //    if (!HasConfirmedPendingChanges())
-        //    {
-        //        Console.WriteLine("✅ No confirmed changes to flush");
-        //        return;
-        //    }
-        //    Console.WriteLine($"2- {GetPendingChangesCount()}");
-        //    await _ctx.Context.SaveChangesAsync();
-        //    Console.WriteLine($"3- {GetPendingChangesCount()}");
-        //}
         public async Task FlushConfirmedChangesOnlyAsync()
         {
             ////Console.WriteLine($"Saving ONLY confirmed changes: {GetConfirmedPendingChangesCount()}");
@@ -280,7 +223,7 @@ namespace GxTie.Services
         }
         // 🔥 Navigation guard - Uses HasConfirmedPendingChanges
 
-        
+
 
         //private void NotifyChanges() => OnChanges?.Invoke();
         public event Action<int>? OnChildPendingChanged;

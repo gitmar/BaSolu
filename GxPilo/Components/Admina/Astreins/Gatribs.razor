@@ -108,6 +108,7 @@ else
                             {
                                 <!--Contenu des tables-->
                                 <Grid TItem="Gsgfix"
+                                      @ref="atgrid"
                                       Data="@MyDaRubrs"
                                       @key="FixeRenderKey"
                                       AllowDetailView="true"
@@ -140,7 +141,7 @@ else
                                                 }
                                             </ChildContent>
                                         </GridColumn>
-                                        <GridColumn TItem="Gsgfix" HeaderText="abrege" Class="xcol2">
+                                        <GridColumn TItem="Gsgfix" HeaderText="abrege" Class="xcol1">
                                             <ChildContent Context="item">
                                                 @if (EdFixRowguid == item.Rowguid)
                                                 {
@@ -153,11 +154,11 @@ else
                                                 }
                                             </ChildContent>
                                         </GridColumn>               
-                                        <GridColumn TItem="Gsgfix" HeaderText="Source">
+                                        <GridColumn TItem="Gsgfix" HeaderText="Source" Class="xcol1">
                                             <ChildContent Context="item">
                                                 @if (EdFixRowguid == item.Rowguid)
                                                 {
-                                                    <InputSelect @bind-Value=draftFix.Zfro>
+                                                    <InputSelect @bind-Value=item.Zfro>
                                                         <option value=1>conste</option>
                                                         <option value=2>table</option>
                                                         <option value=3>client</option>
@@ -173,7 +174,7 @@ else
                                                 }
                                             </ChildContent>
                                         </GridColumn>
-                                        <GridColumn TItem="Gsgfix" HeaderText="Valeur">
+                                        <GridColumn TItem="Gsgfix" HeaderText="Valeur" Class="xcol2">
                                             <ChildContent Context="item">
                                                 @if (EdFixRowguid == item.Rowguid)
                                                 {
@@ -227,31 +228,7 @@ else
                                                 }
                                             </ChildContent>
                                         </GridColumn>
-                                        <GridColumn TItem="Gsgfix" HeaderText="Dpdce">
-                                            <ChildContent Context="item">
-                                                @if (EdFixRowguid == item.Rowguid)
-                                                {
-                                                    <InputSelect @bind-Value="draftFix.Ydpd">
-                                                        <option value=0>choisir</option>
-                                                        @foreach (var udp in MyDaRubrs.Where(udp => udp.Xseq < item.Xseq))
-                                                        {
-                                                            <option value=@udp.Xseq>@udp.Liba</option>
-                                                        }
-                                                    </InputSelect>
-                                                }
-                                                else
-                                                {
-                                                    <InputSelect @bind-Value="item.Ydpd" disabled="true">
-                                                        <option value=0>choisir</option>
-                                                        @foreach (var udp in MyDaRubrs.Where(udp => udp.Xseq < item.Xseq))
-                                                        {
-                                                            <option value=@udp.Xseq>@udp.Liba</option>
-                                                        }
-                                                    </InputSelect>
-                                                }
-                                            </ChildContent>
-                                        </GridColumn>
-                                        <GridColumn TItem="Gsgfix" HeaderText="Type">
+                                        <GridColumn TItem="Gsgfix" HeaderText="Type" Class="xcol1">
                                             <ChildContent Context="item">
                                                 @if (EdFixRowguid == item.Rowguid)
                                                 {
@@ -271,60 +248,6 @@ else
                                                         {
                                                             <option value="@utb.Elea">@utb.Liba</option>
                                                         }
-                                                    </InputSelect>
-                                                }
-                                            </ChildContent>
-                                        </GridColumn>
-                                        <GridColumn TItem="Gsgfix" HeaderText="Accueil">
-                                            <ChildContent Context="item">
-                                                @if (EdFixRowguid == item.Rowguid)
-                                                {
-                                                    <InputSelect @bind-Value="draftFix.Jacc">
-                                                        <option value="0">non</option>
-                                                        <option value="1">oui</option>
-                                                    </InputSelect>
-                                                }
-                                                else
-                                                {
-                                                    <InputSelect @bind-Value="item.Jacc" disabled="true">
-                                                        <option value="0">non</option>
-                                                        <option value="1">oui</option>
-                                                    </InputSelect>
-                                                }
-                                            </ChildContent>
-                                        </GridColumn>
-                                        <GridColumn TItem="Gsgfix" HeaderText="Enrol">
-                                            <ChildContent Context="item">
-                                                @if (EdFixRowguid == item.Rowguid)
-                                                {
-                                                    <InputSelect @bind-Value="draftFix.Jenr">
-                                                        <option value="0">non</option>
-                                                        <option value="1">oui</option>
-                                                    </InputSelect>
-                                                }
-                                                else
-                                                {
-                                                    <InputSelect @bind-Value="item.Jenr" disabled="true">
-                                                        <option value="0">non</option>
-                                                        <option value="1">oui</option>
-                                                    </InputSelect>
-                                                }
-                                            </ChildContent>
-                                        </GridColumn>
-                                        <GridColumn TItem="Gsgfix" HeaderText="Divers">
-                                            <ChildContent Context="item">
-                                                @if (EdFixRowguid == item.Rowguid)
-                                                {
-                                                    <InputSelect @bind-Value="draftFix.Jdiv">
-                                                        <option value="0">non</option>
-                                                        <option value="1">oui</option>
-                                                    </InputSelect>
-                                                }
-                                                else
-                                                {
-                                                    <InputSelect @bind-Value="item.Jdiv" disabled="true">
-                                                        <option value="0">non</option>
-                                                        <option value="1">oui</option>
                                                     </InputSelect>
                                                 }
                                             </ChildContent>
@@ -411,6 +334,133 @@ else
                                             </ChildContent>
                                         </GridColumn>
                                     </GridColumns>
+                                    <GridDetailView TItem="Gsgfix" Context="Parent">
+                                        <div class="row">
+                                            <div class="col-md-2"></div>
+                                            <div class="col-md-3">
+                                                Dependce
+                                            </div>
+                                            <div class="col-md-1">
+                                                Accueil
+                                            </div>
+                                            <div class="col-md-1">
+                                                Enroll
+                                            </div>
+                                            <div class="col-md-1">
+                                                Divers
+                                            </div>
+                                        </div>
+                                        <div class="row">
+                                            @if (draftFix != null)
+                                            {
+                                                <div class="col-md-2"></div>
+                                                <div class="col-md-3">
+                                                    <InputSelect @bind-Value="draftFix.Ydpd">
+                                                        <option value=0>choisir</option>
+                                                        @foreach (var udp in MyDaRubrs.Where(udp => udp.Xseq < Parent.Xseq))
+                                                        {
+                                                            <option value=@udp.Xseq>@udp.Liba</option>
+                                                        }
+                                                    </InputSelect>
+                                                </div>
+                                                <div class="col-md-1">
+                                                    <InputSelect @bind-Value="draftFix.Jacc">
+                                                        <option value="0">non</option>
+                                                        <option value="1">oui</option>
+                                                    </InputSelect>
+                                                </div>
+                                                <div class="col-md-1">
+                                                    <InputSelect @bind-Value="draftFix.Jenr">
+                                                        <option value="0">non</option>
+                                                        <option value="1">oui</option>
+                                                    </InputSelect>
+                                                </div>
+                                                <div class="col-md-1">
+                                                    <InputSelect @bind-Value="draftFix.Jdiv">
+                                                        <option value="0">non</option>
+                                                        <option value="1">oui</option>
+                                                    </InputSelect>
+                                                </div>
+                                            }
+                                            else
+                                            {
+                                                <div class="col-md-2"></div>
+                                                <div class="col-md-3">
+                                                    <InputSelect @bind-Value="Parent.Ydpd" disabled="true">
+                                                        <option value=0>choisir</option>
+                                                        @foreach (var udp in MyDaRubrs.Where(udp => udp.Xseq < Parent?.Xseq))
+                                                        {
+                                                            <option value=@udp.Xseq>@udp.Liba</option>
+                                                        }
+                                                    </InputSelect>
+                                                </div>
+                                                <div class="col-md-1">
+                                                    <InputSelect @bind-Value="Parent.Jacc" disabled="true">
+                                                        <option value="0">non</option>
+                                                        <option value="1">oui</option>
+                                                    </InputSelect>
+                                                </div>
+                                                <div class="col-md-1">
+                                                    <InputSelect @bind-Value="Parent.Jenr" disabled="true">
+                                                        <option value="0">non</option>
+                                                        <option value="1">oui</option>
+                                                    </InputSelect>
+                                                </div>
+                                                <div class="col-md-1">
+                                                    <InputSelect @bind-Value="Parent.Jdiv" disabled="true">
+                                                        <option value="0">non</option>
+                                                        <option value="1">oui</option>
+                                                    </InputSelect>
+                                                </div>
+                                            }
+                                        </div>
+
+                                        @* Accueil
+                                        @if (EdFixRowguid == item.Rowguid)
+                                                {
+                                                    <InputSelect @bind-Value="draftFix.Jacc">
+                                                        <option value="0">non</option>
+                                                        <option value="1">oui</option>
+                                                    </InputSelect>
+                                                }
+                                                else
+                                                {
+                                                    <InputSelect @bind-Value="item.Jacc" disabled="true">
+                                                        <option value="0">non</option>
+                                                        <option value="1">oui</option>
+                                                    </InputSelect>
+                                                }
+                                        Enrol
+                                        @if (EdFixRowguid == item.Rowguid)
+                                        {
+                                            <InputSelect @bind-Value="draftFix.Jenr">
+                                                <option value="0">non</option>
+                                                <option value="1">oui</option>
+                                            </InputSelect>
+                                        }
+                                        else
+                                        {
+                                            <InputSelect @bind-Value="item.Jenr" disabled="true">
+                                                <option value="0">non</option>
+                                                <option value="1">oui</option>
+                                            </InputSelect>
+                                        }
+                                        Divers
+                                        @if (EdFixRowguid == item.Rowguid)
+                                        {
+                                            <InputSelect @bind-Value="draftFix.Jdiv">
+                                                <option value="0">non</option>
+                                                <option value="1">oui</option>
+                                            </InputSelect>
+                                        }
+                                        else
+                                        {
+                                            <InputSelect @bind-Value="item.Jdiv" disabled="true">
+                                                <option value="0">non</option>
+                                                <option value="1">oui</option>
+                                            </InputSelect>
+                                        } *@
+                                    </GridDetailView>
                                 </Grid>
                             }
                         </div>
@@ -591,6 +641,8 @@ else
     private Userbag _usrBag = new Userbag();
     private string _UserId = "";
     private int _UorgId = 0;
+    //Grid
+    private Grid<Gsgfix> atgrid;
 
     private Dictionary<int, bool> EdState = new Dictionary<int, bool>();
     private Dictionary<Guid, RowState> _rowStates = new();
@@ -634,7 +686,7 @@ else
     // };
 
     private bool isFixFilteringEnabled = false;
-  
+
     //Global
     private int _lgcdu = 0;
     //private int IMyGatr = 0, IMyGtie = 0, IMyBas = 0;
@@ -678,7 +730,7 @@ else
     private bool isFiltre { get; set; } = false;
     //FIX
     private Guid? FixeRenderKey = null;
-  
+
     //fixes
     private Dictionary<Guid, Gsgfix> _edFixOriginals = new();
     private Gsgfix? draftFix = null;
@@ -688,13 +740,13 @@ else
     private Guid? EdFixRowguid = null;// Currently editing row ID
     private Guid? DlFixRowguid = null;
     //child
-  
+
     bool IsFixRowLocked(Guid rowGuid) =>
         !AllowMultipleEdits &&
         (EdFixRowguid.HasValue || DlFixRowguid.HasValue) &&
         EdFixRowguid != rowGuid &&
         DlFixRowguid != rowGuid;
-   
+
     protected override async Task OnInitializedAsync()
     {
         isLoading = true;
@@ -754,6 +806,12 @@ else
             isLoading = false;
             StateHasChanged();
         }
+    }
+
+    private async Task ExpandAtr(Gsgfix item)
+    {
+        StateHasChanged();
+        //_jsRun.InvokeVoidAsync();
     }
 
     private async Task StartFixeNew()
@@ -841,82 +899,78 @@ else
     private async Task ProcessEntity<T>(T entity, bool isConfirm, string entitySet, Func<T, bool> validate)
     where T : class
     {
-        Console.WriteLine($"🔄 Process{(typeof(T).Name)}: {(isConfirm ? "CONFIRM" : "CANCEL")}");
+        Console.WriteLine($"🔄 Process{typeof(T).Name}: {(isConfirm ? "CONFIRM" : "CANCEL")}");
+    
         if (entity == null)
         {
             Imessage = "entity nulle";
             StateHasChanged();
             return;
         }
+
         if (isConfirm)
         {
-            CopyDraftToGridItem<T>(entity);
-            // 🔥 1. VALIDATE FIRST - uses your ValidateXXX() helpers
+            // 🔥 1. Copy draft → entity (for validation)
+            CopyDraftToGridItem(entity);
+        
+            // 🔥 2. VALIDATE (now has updated values)
             if (!validate(entity))
             {
-                // Imessage already set by ValidatePln/ValidateRub/ValidateFmt
                 Console.WriteLine($"❌ Validation failed: {Imessage}");
                 StateHasChanged();
                 return;
             }
-            // 🔥 2. NEW vs EXISTING LOGIC
-            bool isNewAdd = GetXadd1(entity) == -1;
-            if (isNewAdd)
+        
+            // 🔥 3. NEW vs EXISTING (SINGLE operation)
+            bool isNew = GetXadd1(entity) == -1;  // Assumes GetXadd1<T>
+            if (isNew)
             {
-                // 🔥 NEW ADD: AddObject (not tracked yet)
-                curODContext.AddObject(entitySet, entity);
+                curODContext.AddObject(entitySet, entity);  // Tracks + prepares INSERT
                 Console.WriteLine($"➕ NEW {typeof(T).Name} → AddObject");
             }
             else
             {
-                // 🔥 EXISTING: Attach + UpdateObject
-                if (!curODContext.IsEntityTracked(entity))
-                {
-                    curODContext.Context.AttachTo(entitySet, entity);
-                    Console.WriteLine($"📥 Attached existing {entitySet}");
-                }
-                curODContext.Context.UpdateObject(entity);
-                Console.WriteLine($"✏️ EXISTING {typeof(T).Name} → UpdateObject");
+                curODContext.SafeAttachOrUpdate(entity, entitySet, false);  // Your method!
+                Console.WriteLine($"✏️ EXISTING → SafeAttachOrUpdate");
             }
-            // 🔥 2. Container: Attach → Update → Flags
-            if (!curODContext.IsEntityTracked(entity))
-            {
-                curODContext.Context.AttachTo(entitySet, entity);
-                Console.WriteLine($"📥 Attached {entitySet}");
-            }
-
-            SetFlags(entity, 0, -1, 0);  // Confirmed: Xadd1=0, Xedt1=-1
-            curODContext.Context.UpdateObject(entity);
-
+        
+            // 🔥 4. Confirm flags ONCE
+            SetFlags(entity, 0, -1, 0);  // Xadd1=0 confirmed
+        
+            // 🔥 5. SINGLE UpdateObject (applies flags + changes)
+            curODContext.UpdateObject(entity);
             Console.WriteLine($"✅ {typeof(T).Name} confirmed → tracked");
 
-            // 🔥 3. UI cleanup
-            ResetRowState((Guid)typeof(T).GetProperty("Rowguid")!.GetValue(entity)!);
-            SetLightBackground((Guid)typeof(T).GetProperty("Rowguid")!.GetValue(entity)!, false);
+            // 🔥 6. UI + notify
+            var rowguid = GetRowguid(entity);  // Generic helper
+            ResetRowState(rowguid);
+            SetLightBackground(rowguid, false);
             ResetEntityUIState<T>();
             await NotifyPendingChanges();
             Imessage = $"✅ {typeof(T).Name} confirmed";
         }
-        else  // CANCEL
+        else  // CANCEL (unchanged - perfect)
         {
-            if (GetXadd1(entity) == -1)  // New add
+            if (GetXadd1(entity) == -1)  // New only
             {
                 if (curODContext.IsEntityTracked(entity))
-                    curODContext.Context.Detach(entity);
+                    curODContext.Detach(entity);
                 RemoveFromParentCollection(entity);
-                Console.WriteLine($"🗑️ New {typeof(T).Name} canceled");
             }
             else
             {
                 ClearDraft<T>();
             }
-            ResetRowState((Guid)typeof(T).GetProperty("Rowguid")!.GetValue(entity)!);
+            var rowguid = GetRowguid(entity);
+            ResetRowState(rowguid);
             ResetEntityUIState<T>();
             Imessage = "";
         }
-
         StateHasChanged();
     }
+    // 🔥 Generic Rowguid (no reflection)
+    private static Guid GetRowguid<T>(T entity) where T : class
+        => ((dynamic)entity).Rowguid;  // Or property expression
 
     // Generic flag setter
     private void SetFlags<T>(T entity, int xadd1, int xedt1, int xdel1)

@@ -177,7 +177,7 @@
                                                 <tr>
                                                     <td>Pays:</td>
                                                     <td class="text-right">
-                                                        <InputSelect @bind-Value="curOrga.Npays" disabled="@(!isEdOrg)">
+                                                        <InputSelect @bind-Value="curOrga.Npays" disabled="@(!isEdOrg)" style="font-weight:bold">
                                                             <option value="0">-- Select a country --</option>
                                                             @foreach (var tob in TbItems.Where(ug => ug.Pxcod == 31))
                                                             {
@@ -286,7 +286,7 @@
                                         <DataAnnotationsValidator />
                                     <div class="mb-3">
                                         <!-- Domaines grid -->
-                                        <div class="row">
+                                        <div class="row mt-2">
                                             <div class="form-group">
                                                 <label style="font-weight:bold">Limites :</label>
                                                 <InputSelect @bind-Value="Rubtto">
@@ -392,6 +392,23 @@
                                                 </GridColumn>
                                             </GridColumns>
                                         </Grid>
+                                        <!-- Filiation affilies -->
+                                        <div class="row mt-3">
+                                            <label style="font-weight:bold">Autres options :</label>
+                                        </div>
+                                        <div class="row">
+                                            <label>Numerotation candidat :</label>
+                                        </div>
+                                        <div class="row">
+                                            <label>Immatriculation :</label>
+                                        </div>
+                                        <DropdownDivider />
+                                        <div class="row">
+                                            <label>Numerotation article :</label>
+                                        </div>
+                                        <div class="row">
+                                            <label>Nomenclature :</label>
+                                        </div>
                                     </div>
                                     </EditForm>
                                 </Content>
@@ -400,9 +417,9 @@
                                 <Content>
                                     <EditForm EditContext="edFixContext">
                                         <DataAnnotationsValidator />
-                                        <div class="mb-3">
+                                        @* <div class="mb-3"> *@
                                         <!-- Filiation base -->
-                                        <div class="row">
+                                        <div class="row mt-2">
                                             <span style="font-weight:bold"> Filiation -> Base</span>
                                         </div>
                                         <Grid Data="@curOrga.Gsgfixes.Where(uf => uf.Gvars == 3 && uf.Itb == 5 && uf.Atyp == 1 && uf.Elea != 0).OrderBy(uo => uo.Elea)"
@@ -493,7 +510,7 @@
 
                                             </Grid>
                                         <!-- Filiation affilies -->
-                                        <div class="row">
+                                        <div class="row mt-3">
                                             <span style="font-weight:bold"> Filiation -> Affilies</span>
                                         </div>
                                         <Grid Data="@curOrga.Gsgfixes.Where(uf => uf.Gvars == 3 && uf.Itb == 6 && uf.Atyp == 1 && uf.Elea != 0).OrderBy(uo => uo.Elea)"
@@ -580,7 +597,7 @@
                                             </GridColumns>
 
                                             </Grid>
-                                        </div>
+                                        @* </div> *@
                                     </EditForm>
                                 </Content>
                             </Tab>

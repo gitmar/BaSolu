@@ -50,7 +50,6 @@
                EntyTie="@curTie"
                LsmVars="@LsVars"
                LsmFixes="@LsFixes"
-               OnTiwSave="@HandleTiwSave"
                OnTieSave="@HandleTieSave"
                Oparent="2">
     </GlobModal>
@@ -72,11 +71,10 @@
                     <ValidationSummary />
                     <div class="container">
                         <Tabs>
-                            <Tab Title="Candidats">
-                                <Content>
-                                    <div class="row">
-                                        <!--Tiersp contents-->
-                                        <div class="col-md-6">
+                            <div class="container">
+                                <Tabs>
+                                    <Tab Title="Membres">
+                                        <Content>
                                             <div class="d-flex align-items-center gap-2">
                                                 <Button Color="ButtonColor.Primary"
                                                         Size="ButtonSize.Small"
@@ -93,12 +91,14 @@
                                                             @onclick="ShowModal">
                                                         piece(s)
                                                     </Button>
+
                                                     <Button Color="ButtonColor.Success"
                                                             Size="ButtonSize.Small"
                                                             Class="px-2 py-1 small-btn"
                                                             @onclick="() => ConfirmEdit(curTie, EntityLevel.Plan)">
                                                         ✅ Confirm
                                                     </Button>
+
                                                     <Button Color="ButtonColor.Secondary"
                                                             Size="ButtonSize.Small"
                                                             Class="px-2 py-1 small-btn"
@@ -107,1064 +107,303 @@
                                                     </Button>
                                                 }
                                             </div>
-                                            @if(draftTiw != null)
+                                            <div class="d-flex align-items-center gap-2">
+                                                <MainGridHelper FilteredData="@PersonsForGrid"
+                                                                EdRowguid="@EdTiwRowguid"
+                                                                Visibility="@TiwVisibility"
+                                                                RenderKey="persons-grid"
+                                                                DraftEntity="@draftPers"
+                                                                SelectedEntity="@curPerson"
+                                                                TbItems="@TbItems" />
+                                            </div>
+                                            <!--Attributs plus-->
+                                            <div class="d-flex align-items-center gap-2">
+                                                @foreach (var ua in LsVars.Where(a => a.Gvars == 6 && a.Itb == Ugpe))
+                                                {
+                                                    //cur atr
+                                                    Tieatr icatr = curTie.Tieatrs.FirstOrDefault(tat => tat.Igsg == ua.Xseq);
+                                                    if (icatr == null)
+                                                    {
+                                                        icatr = new();
+                                                        icatr.Xadd1 = -1;
+                                                        icatr.Igsg = ua.Xseq;
+                                                        icatr.Itie = curTie.Id;
+                                                        icatr.Atyp = ua.Atyp;
+                                                        icatr.Aztyp = ua.Ztyp;
+                                                        icatr.Svala = "";
+                                                        icatr.AtState = AEntState.NewAdded;
+                                                    }
+                                                    <div class="row mb-2">
+                                                        <label class="fw-bold col-md-3 col-form-label text-nowrap">@ua.Liba:</label>
+                                                        <div class="col-md-9">
+                                                        @if (isEdtTiw || isAddTiw)
+                                                        {
+                                                            if (ua.Zfro == 2)
+                                                            { //table - ztyp = 2 numerique
+                                                                <InputSelect @bind-Value="icatr.Svala" class="form-select col-md-9">
+                                                                    <option value="0">?choisir</option>
+                                                                    @foreach (var tob in TbItems.Where(ut => ut.Pxcod == ua.Xdpd))
+                                                                    {
+                                                                        <option value="@tob.Elea">@tob.Liba</option>
+                                                                    }
+                                                                </InputSelect>
+                                                            }
+                                                            else
+                                                            { //string/a convertir in trigger
+                                                              <InputText @bind-Value="icatr.Svala" class="form-control col-md-9" />
+                                                            }
+                                                        }
+                                                        else
+                                                        {
+                                                            if (ua.Zfro == 2)
+                                                            { //
+                                                                <InputSelect @bind-Value="icatr.Svala" disabled="true" class="form-select col-md-9">
+                                                                    <option value="0">?choisir</option>
+                                                                    @foreach (var tob in TbItems.Where(ut => ut.Pxcod == ua.Xdpd))
+                                                                    {
+                                                                        <option value="@tob.Elea">@tob.Liba</option>
+                                                                    }
+                                                                </InputSelect>
+                                                            }
+                                                            else
+                                                            {
+                                                                <span>@icatr.Svala</span>
+                                                            }
+                                                        }
+                                                        </div>
+                                                    </div>
+                                                }
+                                            </div>
+                                        </Content>
+                                    </Tab>
+                                    <Tab title="Affilies">
+                                        <Content>
+                                            @if (CanEditChildren)
                                             {
-                                            <Grid TItem="Tiersp"
-                                                  Data="@MyDaTies.Where(ut => ut.Xadd1 == -1).ToList()"
-                                                  Responsive="true">
-                                                <GridColumns>
-                                                    <GridColumn TItem="Tiersp" HeaderText="">
-                                                        <!-- 🔥 HEADER: Direct child of GridColumn -->
-                                                        <ChildContent Context="selectedTiw">
-                                                            <!-- 🔥 VERTICAL FORM - Each label+value = 1 ROW -->
-                                                            <!-- FIELD 1: ID (Read-only) -->
-                                                            <div style="display: flex; align-items: center; gap: 1rem;">
-                                                                <label class="fw-bold col-form-label col-md-3 text-nowrap" style="min-width: 120px;">ID:</label>
-                                                                <div class="form-control-plaintext col-md-9">@selectedTiw.Id</div>
-                                                            </div>
-                                                            <!-- FIELD 2: Dossier -->
-                                                            @if (TiwVisibility.GetValueOrDefault("dossier", true))
-                                                            {
-                                                                <div style="display: flex; align-items: center; gap: 1rem;">
-                                                                    <label class="fw-bold col-form-label col-md-3 text-nowrap" style="min-width: 120px;">Dossier:</label>
-                                                                    @if (EdTiwRowguid == draftTiw?.Rowguid)
-                                                                    {
-                                                                        <InputText @bind-Value="draftTiw.Xmatri" class="form-control flex-grow-1" style="min-width: 200px;" />
-                                                                    }
-                                                                    else
-                                                                    {
-                                                                        <div class="form-control-plaintext flex-grow-1">@selectedTiw.Xmatri</div>
-                                                                    }
-                                                                </div>
-                                                            }
-                                                            <!-- FIELD 3: Nom -->
-                                                            @if (TiwVisibility.GetValueOrDefault("nom", true))
-                                                            {
-                                                                <div style="display: flex; align-items: center; gap: 1rem;">
-                                                                    <label class="fw-bold col-form-label col-md-3 text-nowrap" style="min-width: 120px;">Nom:</label>
-                                                                    @if (EdTiwRowguid == draftTiw.Rowguid)
-                                                                    {
-                                                                        <InputText @bind-Value="draftTiw.Nom" class="form-control flex-grow-1" style="min-width: 200px;" />
-                                                                    }
-                                                                    else
-                                                                    {
-                                                                        <div class="form-control-plaintext flex-grow-1">@selectedTiw.Nom</div>
-                                                                    }
-                                                                </div>
-                                                            }
-                                                            <!-- FIELD 4: Pnom -->
-                                                            @if (TiwVisibility.GetValueOrDefault("pnom", true))
-                                                            {
-                                                                <div style="display: flex; align-items: center; gap: 1rem;">
-                                                                    <label class="fw-bold col-form-label col-md-3 text-nowrap" style="min-width: 120px;">Pnom:</label>
-                                                                    @if (EdTiwRowguid == draftTiw.Rowguid)
-                                                                    {
-                                                                        <InputText @bind-Value="draftTiw.Pnom" class="form-control flex-grow-1" style="min-width: 200px;" />
-                                                                    }
-                                                                    else
-                                                                    {
-                                                                        <div class="form-control-plaintext flex-grow-1">@selectedTiw.Pnom</div>
-                                                                    }
-                                                                </div>
-                                                            }
-                                                            <!-- FIELD 5: Nomb / de jeune fille -->
-                                                            @if (TiwVisibility.GetValueOrDefault("bnom", true))
-                                                            {
-                                                                <div style="display: flex; align-items: center; gap: 1rem;">
-                                                                    <label class="fw-bold col-form-label col-md-3 text-nowrap" style="min-width: 120px;">Nom de Jeune fille:</label>
-                                                                    @if (EdTiwRowguid == draftTiw.Rowguid)
-                                                                    {
-                                                                        <InputText @bind-Value="draftTiw.Bnom" class="form-control flex-grow-1" style="min-width: 200px;" />
-                                                                    }
-                                                                    else
-                                                                    {
-                                                                        <div class="form-control-plaintext flex-grow-1">@selectedTiw.Bnom</div>
-                                                                    }
-                                                                </div>
-                                                            }
-                                                            <!-- FIELD 6: Statut -->
-                                                            @if (TiwVisibility.GetValueOrDefault("statut", true))
-                                                            {
-                                                                <div style="display: flex; align-items: center; gap: 1rem;">
-                                                                    <label class="fw-bold col-form-label col-md-3 text-nowrap" style="min-width: 120px;">Statut:</label>
-                                                                    @if (EdTiwRowguid == draftTiw.Rowguid)
-                                                                    {
-                                                                        <InputSelect @bind-Value="draftTiw.Statut">
-                                                                            <option class="jchx" value="0">?choisir</option>
-                                                                                @foreach (var tob in TbItems.Where(ut => ut.Pxcod == 11))
-                                                                            {
-                                                                                <option value="@tob.Elea">@tob.Liba</option>
-                                                                            }
-                                                                        </InputSelect>
-                                                                    }
-                                                                    else
-                                                                    {
-                                                                        <InputSelect @bind-Value="selectedTiw.Statut" disabled="true">
-                                                                            <option class="jchx" value="0">?choisir</option>
-                                                                                @foreach (var tob in TbItems.Where(ut => ut.Pxcod == 11))
-                                                                            {
-                                                                                <option value="@tob.Elea">@tob.Liba</option>
-                                                                            }
-                                                                        </InputSelect>
-                                                                    }
-                                                                </div>
-                                                            }
-                                                            <!-- FIELD 7: Relat -->
-                                                            @if (TiwVisibility.GetValueOrDefault("relat", true))
-                                                            {
-                                                                <div style="display: flex; align-items: center; gap: 1rem;">
-                                                                    <label class="fw-bold col-form-label col-md-3 text-nowrap" style="min-width: 120px;">Relat:</label>
-                                                                    @if (EdTiwRowguid == draftTiw.Rowguid)
-                                                                    {
-                                                                        <InputSelect @bind-Value="draftTiw.Relat">
-                                                                            <option class="jchx" value="0">?choisir</option>
-                                                                            @foreach (var tob in TbItems.Where(ut => ut.Pxcod == 18))
-                                                                            {
-                                                                                <option value="@tob.Elea">@tob.Liba</option>
-                                                                            }
-                                                                        </InputSelect>
-                                                                    }
-                                                                    else
-                                                                    {
-                                                                        <InputSelect @bind-Value="selectedTiw.Relat" disabled="true">
-                                                                            <option class="jchx" value="0">?choisir</option>
-                                                                                @foreach (var tob in TbItems.Where(ut => ut.Pxcod == 18))
-                                                                            {
-                                                                                <option value="@tob.Elea">@tob.Liba</option>
-                                                                            }
-                                                                        </InputSelect>
-                                                                    }
-                                                                </div>
-                                                            }
-                                                            <!-- FIELD 8: Sexe -->
-                                                            @if (TiwVisibility.GetValueOrDefault("sexe", true))
-                                                            {
-                                                                <div style="display: flex; align-items: center; gap: 1rem;">
-                                                                    <label class="fw-bold col-form-label col-md-3 text-nowrap" style="min-width: 120px;">Sexe:</label>
-                                                                    @if (EdTiwRowguid == draftTiw.Rowguid)
-                                                                    {
-                                                                        <InputSelect @bind-Value="draftTiw.Sexe">
-                                                                            <option class="jchx" value="0">?choisir</option>
-                                                                            @foreach (var tob in TbItems.Where(ut => ut.Pxcod == 12))
-                                                                            {
-                                                                                <option value="@tob.Elea">@tob.Liba</option>
-                                                                            }
-                                                                        </InputSelect>
-                                                                    }
-                                                                    else
-                                                                    {
-                                                                        <InputSelect @bind-Value="selectedTiw.Sexe" disabled="true">
-                                                                            <option class="jchx" value="0">?choisir</option>
-                                                                                @foreach (var tob in TbItems.Where(ut => ut.Pxcod == 12))
-                                                                            {
-                                                                                <option value="@tob.Elea">@tob.Liba</option>
-                                                                            }
-                                                                        </InputSelect>
-                                                                    }
-                                                                </div>
-                                                            }
-                                                            <!-- FIELD 9: Sitmat -->
-                                                            @if (TiwVisibility.GetValueOrDefault("sitmat", true))
-                                                            {
-                                                                <div style="display: flex; align-items: center; gap: 1rem;">
-                                                                    <label class="fw-bold col-form-label col-md-3 text-nowrap" style="min-width: 120px;">Sitmat:</label>
-                                                                    @if (EdTiwRowguid == draftTiw.Rowguid)
-                                                                    {
-                                                                        <InputSelect @bind-Value="draftTiw.Sitmat">
-                                                                            <option class="jchx" value="0">?choisir</option>
-                                                                            @foreach (var tob in TbItems.Where(ut => ut.Pxcod == 13))
-                                                                            {
-                                                                                <option value="@tob.Elea">@tob.Liba</option>
-                                                                            }
-                                                                        </InputSelect>
-                                                                    }
-                                                                    else
-                                                                    {
-                                                                        <InputSelect @bind-Value="selectedTiw.Sitmat" disabled="true">
-                                                                            <option class="jchx" value="0">?choisir</option>
-                                                                                @foreach (var tob in TbItems.Where(ut => ut.Pxcod == 13))
-                                                                            {
-                                                                                <option value="@tob.Elea">@tob.Liba</option>
-                                                                            }
-                                                                        </InputSelect>
-                                                                    }
-                                                                </div>
-                                                            }
-                                                            <!-- FIELD 10: fonction -->
-                                                            @if (TiwVisibility.GetValueOrDefault("ifonc", true))
-                                                            {
-                                                                <div style="display: flex; align-items: center; gap: 1rem;">
-                                                                    <label class="fw-bold col-form-label col-md-3 text-nowrap" style="min-width: 120px;">Fonction:</label>
-                                                                    @if (EdTiwRowguid == draftTiw.Rowguid)
-                                                                    {
-                                                                        <InputSelect @bind-Value="draftTiw.Ifonc">
-                                                                            <option class="jchx" value="0">?choisir</option>
-                                                                            @foreach (var tob in TbItems.Where(ut => ut.Pxcod == 14))
-                                                                            {
-                                                                                <option value="@tob.Elea">@tob.Liba</option>
-                                                                            }
-                                                                        </InputSelect>
-                                                                    }
-                                                                    else
-                                                                    {
-                                                                        <InputSelect @bind-Value="selectedTiw.Ifonc" disabled="true">
-                                                                            <option class="jchx" value="0">?choisir</option>
-                                                                                @foreach (var tob in TbItems.Where(ut => ut.Pxcod == 14))
-                                                                            {
-                                                                                <option value="@tob.Elea">@tob.Liba</option>
-                                                                            }
-                                                                        </InputSelect>
-                                                                    }
-                                                                </div>
-                                                            }
-                                                            <!-- FIELD 11: grade -->
-                                                            @if (TiwVisibility.GetValueOrDefault("igrad", true))
-                                                            {
-                                                                <div style="display: flex; align-items: center; gap: 1rem;">
-                                                                    <label class="fw-bold col-form-label col-md-3 text-nowrap" style="min-width: 120px;">Grade:</label>
-                                                                    @if (EdTiwRowguid == draftTiw.Rowguid)
-                                                                    {
-                                                                        <InputSelect @bind-Value="draftTiw.Igrad">
-                                                                            <option class="jchx" value="0">?choisir</option>
-                                                                            @foreach (var tob in TbItems.Where(ut => ut.Pxcod == 15))
-                                                                            {
-                                                                                <option value="@tob.Elea">@tob.Liba</option>
-                                                                            }
-                                                                        </InputSelect>
-                                                                    }
-                                                                    else
-                                                                    {
-                                                                        <InputSelect @bind-Value="selectedTiw.Igrad" disabled="true">
-                                                                            <option class="jchx" value="0">?choisir</option>
-                                                                                @foreach (var tob in TbItems.Where(ut => ut.Pxcod == 15))
-                                                                            {
-                                                                                <option value="@tob.Elea">@tob.Liba</option>
-                                                                            }
-                                                                        </InputSelect>
-                                                                    }
-                                                                </div>
-                                                            }
-                                                            <!-- FIELD 12: usremail -->
-                                                            @if (TiwVisibility.GetValueOrDefault("email", true))
-                                                            {
-                                                                <div style="display: flex; align-items: center; gap: 1rem;">
-                                                                    <label class="fw-bold col-form-label col-md-3 text-nowrap" style="min-width: 120px;">Email:</label>
-                                                                    @if (EdTiwRowguid == draftTiw.Rowguid)
-                                                                    {
-                                                                        <InputText @bind-Value="draftTiw.Email" class="form-control flex-grow-1" style="min-width: 200px;" />
-                                                                    }
-                                                                    else
-                                                                    {
-                                                                        <div class="form-control-plaintext flex-grow-1">@selectedTiw.Email</div>
-                                                                    }
-                                                                </div>
-                                                            }
-                                                            <!-- FIELD 13: Phone -->
-                                                            @if (TiwVisibility.GetValueOrDefault("phone", true))
-                                                            {
-                                                                <div style="display: flex; a13lign-items: center; gap: 1rem;">
-                                                                    <label class="fw-bold col-form-label col-md-3 text-nowrap" style="min-width: 120px;">Phone:</label>
-                                                                    @if (EdTiwRowguid == draftTiw.Rowguid)
-                                                                    {
-                                                                        <InputText @bind-Value="draftTiw.Phone" class="form-control flex-grow-1" style="min-width: 200px;" />
-                                                                    }
-                                                                    else
-                                                                    {
-                                                                        <div class="form-control-plaintext flex-grow-1">@selectedTiw.Phone</div>
-                                                                    }
-                                                                </div>
-                                                            }
-                                                            <!-- FIELD 14: Dnais -->
-                                                            @if (TiwVisibility.GetValueOrDefault("dnais", true))
-                                                            {
-                                                                <div style="display: flex; align-items: center; gap: 1rem;">
-                                                                    <label class="fw-bold col-form-label col-md-3 text-nowrap" style="min-width: 120px;">Date nais.:</label>
-                                                                    @if (EdTiwRowguid == draftTiw.Rowguid)
-                                                                    {
-                                                                        <InputDate @bind-Value="draftTiw.Dnais" class="form-control flex-grow-1" style="min-width: 200px;" />
-                                                                    }
-                                                                    else
-                                                                    {
-                                                                        <div class="form-control-plaintext flex-grow-1">@selectedTiw.Dnais</div>
-                                                                    }
-                                                                </div>
-                                                            }
-                                                            <!-- FIELD 15: Demb -->
-                                                            @if (TiwVisibility.GetValueOrDefault("demb", true))
-                                                            {
-                                                                <div style="display: flex; align-items: center; gap: 1rem;">
-                                                                    <label class="fw-bold col-form-label col-md-3 text-nowrap" style="min-width: 120px;">Date emb.:</label>
-                                                                    @if (EdTiwRowguid == draftTiw.Rowguid)
-                                                                    {
-                                                                        <InputDate @bind-Value="draftTiw.Demb" class="form-control flex-grow-1" style="min-width: 200px;" />
-                                                                    }
-                                                                    else
-                                                                    {
-                                                                        <div class="form-control-plaintext flex-grow-1">@selectedTiw.Demb</div>
-                                                                    }
-                                                                </div>
-                                                            }
-                                                            <!-- FIELD 16: Nenf -->
-                                                            @if (TiwVisibility.GetValueOrDefault("nenf", true))
-                                                            {
-                                                                <div style="display: flex; align-items: center; gap: 1rem;">
-                                                                    <label class="fw-bold col-form-label col-md-3 text-nowrap" style="min-width: 120px;">Nb enf.:</label>
-                                                                    @if (EdTiwRowguid == draftTiw.Rowguid)
-                                                                    {
-                                                                        <InputNumber @bind-Value="draftTiw.Nenf" class="form-control flex-grow-1" style="min-width: 200px;" />
-                                                                    }
-                                                                    else
-                                                                    {
-                                                                        <div class="form-control-plaintext flex-grow-1">@selectedTiw.Nenf</div>
-                                                                    }
-                                                                </div>
-                                                            }
-                                                            <!-- FIELD 17: resp. -->
-                                                            @if (TiwVisibility.GetValueOrDefault("respon", true))
-                                                            {
-                                                                <div style="display: flex; align-items: center; gap: 1rem;">
-                                                                    <label class="fw-bold col-form-label col-md-3 text-nowrap" style="min-width: 120px;">Responsabilite:</label>
-                                                                    @if (EdTiwRowguid == draftTiw.Rowguid)
-                                                                    {
-                                                                        <InputSelect @bind-Value="draftTiw.Respon">
-                                                                            <option class="jchx" value="0">?choisir</option>
-                                                                            @foreach (var tob in TbItems.Where(ut => ut.Pxcod == 17))
-                                                                            {
-                                                                                <option value="@tob.Elea">@tob.Liba</option>
-                                                                            }
-                                                                        </InputSelect>
-                                                                    }
-                                                                    else
-                                                                    {
-                                                                        <InputSelect @bind-Value="selectedTiw.Respon" disabled="true">
-                                                                            <option class="jchx" value="0">?choisir</option>
-                                                                                @foreach (var tob in TbItems.Where(ut => ut.Pxcod == 17))
-                                                                            {
-                                                                                <option value="@tob.Elea">@tob.Liba</option>
-                                                                            }
-                                                                        </InputSelect>
-                                                                    }
-                                                                </div>
-                                                            }
-                                                            <!-- FIELD 18: resid/pays. -->
-                                                            @if (TiwVisibility.GetValueOrDefault("rpays", true))
-                                                            {
-                                                                <div style="display: flex; align-items: center; gap: 1rem;">
-                                                                    <label class="fw-bold col-form-label col-md-3 text-nowrap" style="min-width: 120px;">P.residence:</label>
-                                                                    @if (EdTiwRowguid == draftTiw.Rowguid)
-                                                                    {
-                                                                        <InputSelect @bind-Value="draftTiw.Rpays">
-                                                                            <option class="jchx" value="0">?choisir</option>
-                                                                            @foreach (var tob in TbItems.Where(ut => ut.Pxcod == 31))
-                                                                            {
-                                                                                <option value="@tob.Abg">@tob.Liba</option>
-                                                                            }
-                                                                        </InputSelect>
-                                                                    }
-                                                                    else
-                                                                    {
-                                                                        <InputSelect @bind-Value="selectedTiw.Rpays" disabled="true">
-                                                                            <option class="jchx" value="0">?choisir</option>
-                                                                            @foreach (var tob in TbItems.Where(ut => ut.Pxcod == 31))
-                                                                            {
-                                                                                <option value="@tob.Abg">@tob.Liba</option>
-                                                                            }
-                                                                        </InputSelect>
-                                                                    }
-                                                                </div>
-                                                            }
-                                                            <!-- FIELD 19: natio/pays. -->
-                                                            @if (TiwVisibility.GetValueOrDefault("natio", true))
-                                                            {
-                                                                <div style="display: flex; align-items: center; gap: 1rem;">
-                                                                    <label class="fw-bold col-form-label col-md-3 text-nowrap" style="min-width: 120px;">Nationalite:</label>
-                                                                    @if (EdTiwRowguid == draftTiw.Rowguid)
-                                                                    {
-                                                                        <InputSelect @bind-Value="draftTiw.Natio">
-                                                                            <option class="jchx" value="0">?choisir</option>
-                                                                                @foreach (var tob in TbItems.Where(ut => ut.Pxcod == 31))
-                                                                            {
-                                                                                <option value="@tob.Abg">@tob.Liba</option>
-                                                                            }
-                                                                        </InputSelect>
-                                                                    }
-                                                                    else
-                                                                    {
-                                                                        <InputSelect @bind-Value="selectedTiw.Natio" disabled="true">
-                                                                            <option class="jchx" value="0">?choisir</option>
-                                                                                @foreach (var tob in TbItems.Where(ut => ut.Pxcod == 31))
-                                                                            {
-                                                                                <option value="@tob.Abg">@tob.Liba</option>
-                                                                            }
-                                                                        </InputSelect>
-                                                                    }
-                                                                </div>
-                                                            }
-                                                            <!-- FIELD 20: methP. -->
-                                                            @if (TiwVisibility.GetValueOrDefault("ipaid", true))
-                                                            {
-                                                                <div style="display: flex; align-items: center; gap: 1rem;">
-                                                                    <label class="fw-bold col-form-label col-md-3 text-nowrap" style="min-width: 120px;">M.Paiement:</label>
-                                                                    @if (EdTiwRowguid == draftTiw.Rowguid)
-                                                                    {
-                                                                        <InputSelect @bind-Value="draftTiw.Ipaid">
-                                                                            <option class="jchx" value="0">?choisir</option>
-                                                                            @foreach (var tob in TbItems.Where(ut => ut.Pxcod == 24))
-                                                                            {
-                                                                                <option value="@tob.Elea">@tob.Liba</option>
-                                                                            }
-                                                                        </InputSelect>
-                                                                    }
-                                                                    else
-                                                                    {
-                                                                        <InputSelect @bind-Value="selectedTiw.Ipaid" disabled="true">
-                                                                            <option class="jchx" value="0">?choisir</option>
-                                                                                @foreach (var tob in TbItems.Where(ut => ut.Pxcod == 24))
-                                                                            {
-                                                                                <option value="@tob.Elea">@tob.Liba</option>
-                                                                            }
-                                                                        </InputSelect>
-                                                                    }
-                                                                </div>
-                                                            }
-                                                            <!-- FIELD Tiewel.Tiwatr -->
-                                                            @foreach(var uat in selectedTiw.Tieatrs)
-                                                            { 
-                                                                    //rubrique Gsgfix (attribut/Aeta-Aztyp)
-                                                                    if (uat.Ajacc == 1)
-                                                                    { //actif = visible
-                                                                        @if (EdTiwRowguid == draftTiw.Rowguid)
-                                                                        {
-                                                                            if (uat.Aztyp == 1)
-                                                                            { //string
-                                                                              <InputText @bind-Value="uat.Svala" class="form-control flex-grow-1" />
-                                                                            }
-                                                                            else if (uat.Aztyp == 2 || uat.Aztyp == 3 || uat.Aztyp == 4 || uat.Aztyp == 5)
-                                                                            { //int-long
-                                                                                <InputNumber @bind-Value="uat.Ivala" class="form-control flex-grow-1" />
-                                                                            }
-                                                                            else if (uat.Aztyp == 4 || uat.Aztyp == 5)
-                                                                            { //decimal-reel
-                                                                                <InputNumber @bind-Value="uat.Rvala" class="form-control flex-grow-1" />
-                                                                            }
-                                                                            else if (uat.Aztyp == 6)
-                                                                            { //boolean
-                                                                                <InputNumber @bind-Value="uat.Bvala" class="form-control flex-grow-1" />
-                                                                            }
-                                                                            else if (uat.Aztyp == 7)
-                                                                            { //date
-                                                                                <InputDate @bind-Value="uat.Dvala" class="form-control flex-grow-1" />
-                                                                            }
-                                                                            else
-                                                                            { //string
-                                                                              <InputText @bind-Value="uat.Svala" class="form-control flex-grow-1" />
-                                                                            }
-                                                                        }
-                                                                        else
-                                                                        { //standard
-                                                                            @uat.Svala
-                                                                        }
-                                                                    }
-                                                                }
-                                                        </ChildContent>
-                                                    </GridColumn>
-                                                </GridColumns>
-                                            </Grid>
+                                                <div class="d-flex align-items-center gap-2 mb-2">
+                                                    <label>Group:</label>
+                                                    <InputSelect id="gpId" @bind-Value="IMyGAfl">
+                                                        <option value="0">Select group...</option>
+                                                        @foreach (var afl in LsGAfls)
+                                                        {
+                                                            <option value="@afl.Elea">@afl.Liba</option>
+                                                        }
+                                                    </InputSelect>
+                                                    <Button Color="ButtonColor.Primary"
+                                                            Size="ButtonSize.Small"
+                                                            Disabled="@(IMyGAfl < 1)"
+                                                            @onclick="() => StartRubNew(curTie, IMyGAfl)">
+                                                        ➕ Add Child
+                                                    </Button>
+                                                    @if (draftAfls is not null)
+                                                    {
+                                                        <Button Color="ButtonColor.Secondary"
+                                                                Size="ButtonSize.Small"
+                                                                Disabled="@(IMyGAfl < 1)"
+                                                                @onclick="() => CancelRubNew(curTie)">
+                                                            ✖ Cancel
+                                                        </Button>
+                                                    }
+                                                </div>
+                                                <div class="d-flex align-items-center gap-2">
+                                                    <ChildGridHelper FilteredData="@AfilsForGrid"
+                                                                     EdRowguid="@EdRubRowguid"
+                                                                     Visibility="@AflVisibility"
+                                                                     RenderKey="afils-grid"
+                                                                     DraftEntity="@draftAfls"
+                                                                     SelectedEntity="@curAfil"
+                                                                     SelectedGroup="@IMyGAfl"
+                                                                     TbItems="@TbItems"
+                                                                     RowStates="@_rowStates"
+                                                                     ConfirmEdit="@(p => ConfirmEdit(p, EntityLevel.Rub))"
+                                                                     CancelEdit="@(p => CancelEdit(p, EntityLevel.Rub))"
+                                                                     ConfirmDelete="@(p => ConfirmDelete(p, EntityLevel.Rub))"
+                                                                     CancelDelete="@(p => CancelDelete(p, EntityLevel.Rub))"
+                                                                     StartRubEdit="@(p => StartRubEdit(p, p.Rowguid))"
+                                                                     StartRowDelete="@(id => StartRowDelete(id, EntityLevel.Rub))" />
+                                                </div>
                                             }
-                                        </div>
-                                        <!--Tieafl contents-->
-                                        <div class="col-md-6">
-                                            @if (draftRub != null)
+                                            else
                                             {
-                                            <Grid TItem="Tieafl"
-                                                  Data="@curTie.Tieafls.Where(tf => tf.Xadd1 == -1).ToList()"
-                                                  AllowPaging="true"
-                                                  Responsive="true">
-                                                <GridColumns>
-                                                    <GridColumn TItem="Tieafl" HeaderText="">
-                                                        <!-- 🔥 HEADER: Direct child of GridColumn -->
-                                                        @* <HeaderContent>
-                                                        </HeaderContent> *@
-                                                        <ChildContent Context="selectedAfl">
-                                                            <!-- 🔥 VERTICAL FORM - Each label+value = 1 ROW -->
-                                                                <div class="d-flex align-items-center gap-2">
-                                                                    @if (curTie != null && curTie.Xedt1 == -1)
-                                                                    {
-                                                                        <label>Gpe Afil :</label>
-                                                                        <InputSelect id="gpId" @bind-Value="IMyGAfl">
-                                                                            <option value="0">g.afl?</option>
-                                                                            @foreach (var afl in LsGAfls)
-                                                                            {
-                                                                                <option value="@afl.Elea" @onclick="SelDomAfil">@afl.Liba</option>
-                                                                            }
-                                                                        </InputSelect>
-                                                                        <Button Color="ButtonColor.Primary"
-                                                                                Size="ButtonSize.Small"
-                                                                                Class="px-2 py-1 small-btn"
-                                                                                Disabled="@(!AllowMultipleEdits && isAddFmt)"
-                                                                                @onclick="() => StartRubNew(curTie, 1)">
-                                                                            ➕ Add
-                                                                        </Button>
-                                                                    }
-                                                                    @switch (GetRowState(selectedAfl.Rowguid))
-                                                                    {
-                                                                        case RowState.Locked:
-                                                                            <span class="text-muted">—</span>
-                                                                            break;
-                                                                        case RowState.DeletePending:
-                                                                            <Button Color="ButtonColor.Danger"
-                                                                                    Size="ButtonSize.Small"
-                                                                                    Class="px-2 py-1 small-btn"
-                                                                                    @onclick="() => ConfirmDelete(selectedAfl, EntityLevel.Rub)">
-                                                                                ⚠️ Confirm
-                                                                            </Button>
-                                                                            <Button Color="ButtonColor.Secondary"
-                                                                                    Size="ButtonSize.Small"
-                                                                                    Class="px-2 py-1 small-btn"
-                                                                                    @onclick="() => CancelDelete(selectedAfl, EntityLevel.Rub)">
-                                                                                ❎ Cancel
-                                                                            </Button>
-                                                                            break;
-                                                                        case RowState.EditPending:
-                                                                            <Button Color="ButtonColor.Success"
-                                                                                    Size="ButtonSize.Small"
-                                                                                    Class="px-2 py-1 small-btn"
-                                                                                    @onclick="() => ConfirmEdit(selectedAfl, EntityLevel.Rub)">
-                                                                                ✅ Confirm
-                                                                            </Button>
-                                                                            <Button Color="ButtonColor.Secondary"
-                                                                                    Size="ButtonSize.Small"
-                                                                                    Class="px-2 py-1 small-btn"
-                                                                                    @onclick="() => CancelEdit(selectedAfl, EntityLevel.Rub)">
-                                                                                ❌ Cancel
-                                                                            </Button>
-                                                                            break;
-
-                                                                        default:
-                                                                            <Button Color="ButtonColor.Warning"
-                                                                                    Size="ButtonSize.Small"
-                                                                                    Class="px-2 py-1 small-btn"
-                                                                                    @onclick="() => StartRubEdit(selectedAfl, selectedAfl.Rowguid)">
-                                                                                ✏️ Edit
-                                                                            </Button>
-                                                                            <Button Color="ButtonColor.Danger"
-                                                                                    Size="ButtonSize.Small"
-                                                                                    Class="px-2 py-1 small-btn"
-                                                                                    @onclick="() => StartRowDelete(selectedAfl.Rowguid, EntityLevel.Rub)">
-                                                                                🗑 Delete
-                                                                            </Button>
-                                                                            break;
-                                                                    }
-                                                                </div>
-                                                            <!-- FIELD 1: ID (Read-only) -->
-                                                            <div style="display: flex; align-items: center; gap: 1rem;">
-                                                                <label class="fw-bold col-form-label col-md-3 text-nowrap" style="min-width: 120px;">ID:</label>
-                                                                <div class="form-control-plaintext col-md-9">@selectedAfl.Id</div>
-                                                            </div>
-                                                            <!-- FIELD 2: Dossier -->
-                                                            @if (AflVisibility.GetValueOrDefault("dossier", true))
-                                                            {
-                                                                <div style="display: flex; align-items: center; gap: 1rem;">
-                                                                    <label class="fw-bold col-form-label col-md-3 text-nowrap" style="min-width: 120px;">Dossier:</label>
-                                                                    @if (EdRubRowguid == draftRub.Rowguid)
-                                                                    {
-                                                                        <InputText @bind-Value="draftRub.Xmatri" class="form-control flex-grow-1" style="min-width: 200px;" />
-                                                                    }
-                                                                    else
-                                                                    {
-                                                                        <div class="form-control-plaintext flex-grow-1">@selectedAfl.Xmatri</div>
-                                                                    }
-                                                                </div>
-                                                            }
-                                                            <!-- FIELD 3: Nom -->
-                                                            @if (AflVisibility.GetValueOrDefault("nom", true))
-                                                            {
-                                                                <div style="display: flex; align-items: center; gap: 1rem;">
-                                                                    <label class="fw-bold col-form-label col-md-3 text-nowrap" style="min-width: 120px;">Nom:</label>
-                                                                    @if (EdRubRowguid == draftRub.Rowguid)
-                                                                    {
-                                                                        <InputText @bind-Value="draftRub.Nom" class="form-control flex-grow-1" style="min-width: 200px;" />
-                                                                    }
-                                                                    else
-                                                                    {
-                                                                        <div class="form-control-plaintext flex-grow-1">@selectedAfl.Nom</div>
-                                                                    }
-                                                                </div>
-                                                            }
-                                                            <!-- FIELD 4: Pnom -->
-                                                            @if (AflVisibility.GetValueOrDefault("pnom", true))
-                                                            {
-                                                                <div style="display: flex; align-items: center; gap: 1rem;">
-                                                                    <label class="fw-bold col-form-label col-md-3 text-nowrap" style="min-width: 120px;">Pnom:</label>
-                                                                    @if (EdRubRowguid == draftRub.Rowguid)
-                                                                    {
-                                                                        <InputText @bind-Value="draftRub.Pnom" class="form-control flex-grow-1" style="min-width: 200px;" />
-                                                                    }
-                                                                    else
-                                                                    {
-                                                                        <div class="form-control-plaintext flex-grow-1">@selectedAfl.Pnom</div>
-                                                                    }
-                                                                </div>
-                                                            }
-                                                            <!-- FIELD 5: Nomb / de jeune fille -->
-                                                            @if (AflVisibility.GetValueOrDefault("bnom", true))
-                                                            {
-                                                                <div style="display: flex; align-items: center; gap: 1rem;">
-                                                                    <label class="fw-bold col-form-label col-md-3 text-nowrap" style="min-width: 120px;">Nom de Jeune fille:</label>
-                                                                    @if (EdRubRowguid == draftRub.Rowguid)
-                                                                    {
-                                                                        <InputText @bind-Value="draftRub.Bnom" class="form-control flex-grow-1" style="min-width: 200px;" />
-                                                                    }
-                                                                    else
-                                                                    {
-                                                                        <div class="form-control-plaintext flex-grow-1">@selectedAfl.Bnom</div>
-                                                                    }
-                                                                </div>
-                                                            }
-                                                            <!-- FIELD 6: Statut -->
-                                                            @if (AflVisibility.GetValueOrDefault("statut", true))
-                                                            {
-                                                                <div style="display: flex; align-items: center; gap: 1rem;">
-                                                                    <label class="fw-bold col-form-label col-md-3 text-nowrap" style="min-width: 120px;">Statut:</label>
-                                                                    @if (EdRubRowguid == draftRub.Rowguid)
-                                                                    {
-                                                                        <InputSelect @bind-Value="draftRub.Statut">
-                                                                            <option class="jchx" value="0">?choisir</option>
-                                                                            @foreach (var tob in TbItems.Where(ut => ut.Pxcod == 11))
-                                                                            {
-                                                                                <option value="@tob.Elea">@tob.Liba</option>
-                                                                            }
-                                                                        </InputSelect>
-                                                                    }
-                                                                    else
-                                                                    {
-                                                                        <InputSelect @bind-Value="selectedAfl.Statut" disabled="true">
-                                                                            <option class="jchx" value="0">?choisir</option>
-                                                                                @foreach (var tob in TbItems.Where(ut => ut.Pxcod == 11))
-                                                                            {
-                                                                                <option value="@tob.Elea">@tob.Liba</option>
-                                                                            }
-                                                                        </InputSelect>
-                                                                    }
-                                                                </div>
-                                                            }
-                                                            <!-- FIELD 7: Relat -->
-                                                            @if (AflVisibility.GetValueOrDefault("relat", true))
-                                                            {
-                                                                <div style="display: flex; align-items: center; gap: 1rem;">
-                                                                    <label class="fw-bold col-form-label col-md-3 text-nowrap" style="min-width: 120px;">Relat:</label>
-                                                                    @if (EdRubRowguid == draftRub.Rowguid)
-                                                                    {
-                                                                        <InputSelect @bind-Value="draftRub.Relat">
-                                                                            <option class="jchx" value="0">?choisir</option>
-                                                                            @foreach (var tob in TbItems.Where(ut => ut.Pxcod == 18))
-                                                                            {
-                                                                                <option value="@tob.Elea">@tob.Liba</option>
-                                                                            }
-                                                                        </InputSelect>
-                                                                    }
-                                                                    else
-                                                                    {
-                                                                        <InputSelect @bind-Value="selectedAfl.Relat" disabled="true">
-                                                                            <option class="jchx" value="0">?choisir</option>
-                                                                                @foreach (var tob in TbItems.Where(ut => ut.Pxcod == 18))
-                                                                            {
-                                                                                <option value="@tob.Elea">@tob.Liba</option>
-                                                                            }
-                                                                        </InputSelect>
-                                                                    }
-                                                                </div>
-                                                            }
-                                                            <!-- FIELD 8: Sexe -->
-                                                            @if (AflVisibility.GetValueOrDefault("sexe", true))
-                                                            {
-                                                                <div style="display: flex; align-items: center; gap: 1rem;">
-                                                                    <label class="fw-bold col-form-label col-md-3 text-nowrap" style="min-width: 120px;">Sexe:</label>
-                                                                    @if (EdRubRowguid == draftRub.Rowguid)
-                                                                    {
-                                                                        <InputSelect @bind-Value="draftRub.Sexe">
-                                                                            <option class="jchx" value="0">?choisir</option>
-                                                                            @foreach (var tob in TbItems.Where(ut => ut.Pxcod == 12))
-                                                                            {
-                                                                                <option value="@tob.Elea">@tob.Liba</option>
-                                                                            }
-                                                                        </InputSelect>
-                                                                    }
-                                                                    else
-                                                                    {
-                                                                        <InputSelect @bind-Value="selectedAfl.Sexe" disabled="true">
-                                                                            <option class="jchx" value="0">?choisir</option>
-                                                                                @foreach (var tob in TbItems.Where(ut => ut.Pxcod == 12))
-                                                                            {
-                                                                                <option value="@tob.Elea">@tob.Liba</option>
-                                                                            }
-                                                                        </InputSelect>
-                                                                    }
-                                                                </div>
-                                                            }
-                                                            <!-- FIELD 9: Sitmat -->
-                                                            @if (AflVisibility.GetValueOrDefault("sitmat", true))
-                                                            {
-                                                                <div style="display: flex; align-items: center; gap: 1rem;">
-                                                                    <label class="fw-bold col-form-label col-md-3 text-nowrap" style="min-width: 120px;">Sitmat:</label>
-                                                                    @if (EdRubRowguid == draftRub.Rowguid)
-                                                                    {
-                                                                        <InputSelect @bind-Value="draftRub.Sitmat">
-                                                                            <option class="jchx" value="0">?choisir</option>
-                                                                            @foreach (var tob in TbItems.Where(ut => ut.Pxcod == 13))
-                                                                            {
-                                                                                <option value="@tob.Elea">@tob.Liba</option>
-                                                                            }
-                                                                        </InputSelect>
-                                                                    }
-                                                                    else
-                                                                    {
-                                                                        <InputSelect @bind-Value="selectedAfl.Sitmat" disabled="true">
-                                                                            <option class="jchx" value="0">?choisir</option>
-                                                                                @foreach (var tob in TbItems.Where(ut => ut.Pxcod == 13))
-                                                                            {
-                                                                                <option value="@tob.Elea">@tob.Liba</option>
-                                                                            }
-                                                                        </InputSelect>
-                                                                    }
-                                                                </div>
-                                                            }
-                                                            <!-- FIELD 10: fonction -->
-                                                            @if (AflVisibility.GetValueOrDefault("ifonc", true))
-                                                            {
-                                                                <div style="display: flex; align-items: center; gap: 1rem;">
-                                                                    <label class="fw-bold col-form-label col-md-3 text-nowrap" style="min-width: 120px;">Fonction:</label>
-                                                                    @if (EdRubRowguid == draftRub.Rowguid)
-                                                                    {
-                                                                        <InputSelect @bind-Value="draftRub.Ifonc">
-                                                                            <option class="jchx" value="0">?choisir</option>
-                                                                            @foreach (var tob in TbItems.Where(ut => ut.Pxcod == 14))
-                                                                            {
-                                                                                <option value="@tob.Elea">@tob.Liba</option>
-                                                                            }
-                                                                        </InputSelect>
-                                                                    }
-                                                                    else
-                                                                    {
-                                                                        <InputSelect @bind-Value="selectedAfl.Ifonc" disabled="true">
-                                                                            <option class="jchx" value="0">?choisir</option>
-                                                                            @foreach (var tob in TbItems.Where(ut => ut.Pxcod == 14))
-                                                                            {
-                                                                                <option value="@tob.Elea">@tob.Liba</option>
-                                                                            }
-                                                                        </InputSelect>
-                                                                    }
-                                                                </div>
-                                                            }
-                                                            <!-- FIELD 11: grade -->
-                                                            @if (AflVisibility.GetValueOrDefault("igrad", true))
-                                                            {
-                                                                <div style="display: flex; align-items: center; gap: 1rem;">
-                                                                    <label class="fw-bold col-form-label col-md-3 text-nowrap" style="min-width: 120px;">Grade:</label>
-                                                                    @if (EdRubRowguid == draftRub.Rowguid)
-                                                                    {
-                                                                        <InputSelect @bind-Value="draftRub.Igrad">
-                                                                            <option class="jchx" value="0">?choisir</option>
-                                                                            @foreach (var tob in TbItems.Where(ut => ut.Pxcod == 15))
-                                                                            {
-                                                                                <option value="@tob.Elea">@tob.Liba</option>
-                                                                            }
-                                                                        </InputSelect>
-                                                                    }
-                                                                    else
-                                                                    {
-                                                                        <InputSelect @bind-Value="selectedAfl.Igrad" disabled="true">
-                                                                            <option class="jchx" value="0">?choisir</option>
-                                                                                @foreach (var tob in TbItems.Where(ut => ut.Pxcod == 15))
-                                                                            {
-                                                                                <option value="@tob.Elea">@tob.Liba</option>
-                                                                            }
-                                                                        </InputSelect>
-                                                                    }
-                                                                </div>
-                                                            }
-                                                            <!-- FIELD 12: usremail -->
-                                                            @if (AflVisibility.GetValueOrDefault("email", true))
-                                                            {
-                                                                <div style="display: flex; align-items: center; gap: 1rem;">
-                                                                    <label class="fw-bold col-form-label col-md-3 text-nowrap" style="min-width: 120px;">Email:</label>
-                                                                    @if (EdRubRowguid == draftRub.Rowguid)
-                                                                    {
-                                                                        <InputText @bind-Value="draftRub.Email" class="form-control flex-grow-1" style="min-width: 200px;" />
-                                                                    }
-                                                                    else
-                                                                    {
-                                                                        <div class="form-control-plaintext flex-grow-1">@selectedAfl.Email</div>
-                                                                    }
-                                                                </div>
-                                                            }
-                                                            <!-- FIELD 13: Phone -->
-                                                            @if (AflVisibility.GetValueOrDefault("phone", true))
-                                                            {
-                                                                <div style="display: flex; align-items: center; gap: 1rem;">
-                                                                    <label class="fw-bold col-form-label col-md-3 text-nowrap" style="min-width: 120px;">Phone:</label>
-                                                                    @if (EdRubRowguid == draftRub.Rowguid)
-                                                                    {
-                                                                        <InputText @bind-Value="draftRub.Phone" class="form-control flex-grow-1" style="min-width: 200px;" />
-                                                                    }
-                                                                    else
-                                                                    {
-                                                                        <div class="form-control-plaintext flex-grow-1">@selectedAfl.Phone</div>
-                                                                    }
-                                                                </div>
-                                                            }
-                                                            <!-- FIELD 14: Dnais -->
-                                                            @if (AflVisibility.GetValueOrDefault("dnais", true))
-                                                            {
-                                                                <div style="display: flex; align-items: center; gap: 1rem;">
-                                                                    <label class="fw-bold col-form-label col-md-3 text-nowrap" style="min-width: 120px;">Date nais.:</label>
-                                                                    @if (EdRubRowguid == draftRub.Rowguid)
-                                                                    {
-                                                                        <InputDate @bind-Value="draftRub.Dnais" class="form-control flex-grow-1" style="min-width: 200px;" />
-                                                                    }
-                                                                    else
-                                                                    {
-                                                                        <div class="form-control-plaintext flex-grow-1">@selectedAfl.Dnais</div>
-                                                                    }
-                                                                </div>
-                                                            }
-                                                            <!-- FIELD 15: Demb -->
-                                                            @if (AflVisibility.GetValueOrDefault("demb", true))
-                                                            {
-                                                                <div style="display: flex; align-items: center; gap: 1rem;">
-                                                                    <label class="fw-bold col-form-label col-md-3 text-nowrap" style="min-width: 120px;">Date emb.:</label>
-                                                                    @if (EdRubRowguid == draftRub.Rowguid)
-                                                                    {
-                                                                        <InputDate @bind-Value="draftRub.Demb" class="form-control flex-grow-1" style="min-width: 200px;" />
-                                                                    }
-                                                                    else
-                                                                    {
-                                                                        <div class="form-control-plaintext flex-grow-1">@selectedAfl.Demb</div>
-                                                                    }
-                                                                </div>
-                                                            }
-                                                            <!-- FIELD 16: Nenf -->
-                                                            @if (AflVisibility.GetValueOrDefault("nenf", true))
-                                                            {
-                                                                <div style="display: flex; align-items: center; gap: 1rem;">
-                                                                    <label class="fw-bold col-form-label col-md-3 text-nowrap" style="min-width: 120px;">Nb enf.:</label>
-                                                                    @if (EdRubRowguid == draftRub.Rowguid)
-                                                                    {
-                                                                        <InputNumber @bind-Value="draftRub.Nenf" class="form-control flex-grow-1" style="min-width: 200px;" />
-                                                                    }
-                                                                    else
-                                                                    {
-                                                                        <div class="form-control-plaintext flex-grow-1">@selectedAfl.Nenf</div>
-                                                                    }
-                                                                </div>
-                                                            }
-                                                            <!-- FIELD 17: resp. -->
-                                                            @if (AflVisibility.GetValueOrDefault("respon", true))
-                                                            {
-                                                                <div style="display: flex; align-items: center; gap: 1rem;">
-                                                                    <label class="fw-bold col-form-label col-md-3 text-nowrap" style="min-width: 120px;">Responsabilite:</label>
-                                                                    @if (EdRubRowguid == draftRub.Rowguid)
-                                                                    {
-                                                                        <InputSelect @bind-Value="draftRub.Respon">
-                                                                            <option class="jchx" value="0">?choisir</option>
-                                                                                @foreach (var tob in TbItems.Where(ut => ut.Pxcod == 17))
-                                                                            {
-                                                                                <option value="@tob.Elea">@tob.Liba</option>
-                                                                            }
-                                                                        </InputSelect>
-                                                                    }
-                                                                    else
-                                                                    {
-                                                                        <InputSelect @bind-Value="selectedAfl.Respon" disabled="true">
-                                                                            <option class="jchx" value="0">?choisir</option>
-                                                                                @foreach (var tob in TbItems.Where(ut => ut.Pxcod == 17))
-                                                                            {
-                                                                                <option value="@tob.Elea">@tob.Liba</option>
-                                                                            }
-                                                                        </InputSelect>
-                                                                    }
-                                                                </div>
-                                                            }
-                                                            <!-- FIELD 18: resid/pays. -->
-                                                            @if (AflVisibility.GetValueOrDefault("rpays", true))
-                                                            {
-                                                                <div style="display: flex; align-items: center; gap: 1rem;">
-                                                                    <label class="fw-bold col-form-label col-md-3 text-nowrap" style="min-width: 120px;">P.residence:</label>
-                                                                    @if (EdRubRowguid == draftRub.Rowguid)
-                                                                    {
-                                                                        <InputSelect @bind-Value="draftRub.Rpays">
-                                                                            <option class="jchx" value="0">?choisir</option>
-                                                                            @foreach (var tob in TbItems.Where(ut => ut.Pxcod == 31))
-                                                                            {
-                                                                                <option value="@tob.Abg">@tob.Liba</option>
-                                                                            }
-                                                                        </InputSelect>
-                                                                    }
-                                                                    else
-                                                                    {
-                                                                        <InputSelect @bind-Value="selectedAfl.Rpays" disabled="true">
-                                                                            <option class="jchx" value="0">?choisir</option>
-                                                                            @foreach (var tob in TbItems.Where(ut => ut.Pxcod == 31))
-                                                                            {
-                                                                                <option value="@tob.Abg">@tob.Liba</option>
-                                                                            }
-                                                                        </InputSelect>
-                                                                    }
-                                                                </div>
-                                                            }
-                                                            <!-- FIELD 19: natio/pays. -->
-                                                            @if (AflVisibility.GetValueOrDefault("natio", true))
-                                                            {
-                                                                <div style="display: flex; align-items: center; gap: 1rem;">
-                                                                    <label class="fw-bold col-form-label col-md-3 text-nowrap" style="min-width: 120px;">Nationalite:</label>
-                                                                    @if (EdRubRowguid == draftRub.Rowguid)
-                                                                    {
-                                                                        <InputSelect @bind-Value="draftRub.Natio">
-                                                                            <option class="jchx" value="0">?choisir</option>
-                                                                            @foreach (var tob in TbItems.Where(ut => ut.Pxcod == 31))
-                                                                            {
-                                                                                <option value="@tob.Abg">@tob.Liba</option>
-                                                                            }
-                                                                        </InputSelect>
-                                                                    }
-                                                                    else
-                                                                    {
-                                                                        <InputSelect @bind-Value="selectedAfl.Natio" disabled="true">
-                                                                            <option class="jchx" value="0">?choisir</option>
-                                                                                @foreach (var tob in TbItems.Where(ut => ut.Pxcod == 31))
-                                                                            {
-                                                                                <option value="@tob.Abg">@tob.Liba</option>
-                                                                            }
-                                                                        </InputSelect>
-                                                                    }
-                                                                </div>
-                                                            }
-                                                            <!-- FIELD 20: methP. -->
-                                                            @if (AflVisibility.GetValueOrDefault("ipaid", true))
-                                                            {
-                                                                <div style="display: flex; align-items: center; gap: 1rem;">
-                                                                    <label class="fw-bold col-form-label col-md-3 text-nowrap" style="min-width: 120px;">M.Paiement:</label>
-                                                                    @if (EdRubRowguid == draftRub.Rowguid)
-                                                                    {
-                                                                        <InputSelect @bind-Value="draftRub.Ipaid">
-                                                                            <option class="jchx" value="0">?choisir</option>
-                                                                            @foreach (var tob in TbItems.Where(ut => ut.Pxcod == 24))
-                                                                            {
-                                                                                <option value="@tob.Elea">@tob.Liba</option>
-                                                                            }
-                                                                        </InputSelect>
-                                                                    }
-                                                                    else
-                                                                    {
-                                                                        <InputSelect @bind-Value="selectedAfl.Ipaid" disabled="true">
-                                                                            <option class="jchx" value="0">?choisir</option>
-                                                                                @foreach (var tob in TbItems.Where(ut => ut.Pxcod == 24))
-                                                                            {
-                                                                                <option value="@tob.Elea">@tob.Liba</option>
-                                                                            }
-                                                                        </InputSelect>
-                                                                    }
-                                                                </div>
-                                                            }
-                                                        </ChildContent>
-                                                    </GridColumn>
-                                                </GridColumns>
-                                            </Grid>
+                                                <div class="alert alert-warning">
+                                                    🚫 Save the main record before adding children.
+                                                </div>
                                             }
-                                        </div>
-                                    </div>
-                                </Content>
-                            </Tab>
-                            <Tab Title="Verification">
-                                <Content>
+                                        </Content>
+                                    </Tab>
+                                    <Tab Title="Validation">
+                                        <Content>
 
-                                </Content>
-                            </Tab>
+                                        </Content>
+                                    </Tab>
+                                </Tabs>
+                            </div>
+                            <!--En bas ordinaire-->
+                            <div class="container row">
+                                <Grid TItem="Tiersp"
+                                      Data="@MyDaTies.Where(ut => ut.Xadd1 == -1).ToList()"
+                                      @key="TiwRenderKey"
+                                      AllowDetailView="true"
+                                      AllowPaging="true"
+                                      Responsive="true">
+                                    <GridColumns>
+                                        <GridColumn TItem="Tiersp" HeaderText="No">
+                                            <ChildContent Context="item">
+                                                <span>@(item.Xedt1 == -1 ? item?.Iui : (item?.Iui == 0 ? item?.Iele : item?.Iui))</span>
+                                            </ChildContent>
+                                        </GridColumn>
+                                        <GridColumn TItem="Tiersp" HeaderText="Dossier">
+                                            <ChildContent Context="item">
+                                                @item.Xmatri
+                                            </ChildContent>
+                                        </GridColumn>
+                                        <GridColumn TItem="Tiersp" HeaderText="Nom">
+                                            <ChildContent Context="item">
+                                                @item.Nom
+                                            </ChildContent>
+                                        </GridColumn>
+                                        <GridColumn TItem="Tiersp" HeaderText="Pnom">
+                                            <ChildContent Context="item">
+                                                @item.Pnom
+                                            </ChildContent>
+                                        </GridColumn>
+                                        <GridColumn TItem="Tiersp" HeaderText="etat" IsVisible="true">
+                                            <ChildContent Context="item">
+                                                <InputSelect @bind-Value="item.Eta" disabled="true">
+                                                    <option class="jchx" value="0">?choisir</option>
+                                                    @foreach (var tob in LsFixes.Where(ut => ut.Gvars == 32 && ut.Itb == 1 && ut.Elea != 0))
+                                                    {
+                                                        <option value="@tob.Elea">@tob.Liba</option>
+                                                    }
+                                                </InputSelect>
+                                            </ChildContent>
+                                        </GridColumn>
+                                        <GridColumn TItem="Tiersp" HeaderText="Actions" Filterable="false" Class="xcol2 actions-col">
+                                            <ChildContent Context="item">
+                                                @switch (GetRowState(item.Rowguid))
+                                                {
+                                                    case RowState.Locked:
+                                                        <span class="text-muted">—</span>
+                                                        break;
+
+                                                    case RowState.DeletePending:
+                                                        <Button Color="ButtonColor.Danger" Size="ButtonSize.Small"
+                                                                @onclick="() => ConfirmDelete(item, EntityLevel.Plan)">
+                                                            ⚠️ Confirm
+                                                        </Button>
+                                                        <Button Color="ButtonColor.Secondary" Size="ButtonSize.Small"
+                                                                @onclick="() => CancelDelete(item, EntityLevel.Plan)">
+                                                            ❎ Cancel
+                                                        </Button>
+                                                        break;
+                                                    case RowState.EditPending:
+                                                        <Button Color="ButtonColor.Success" Size="ButtonSize.Small"
+                                                                @onclick="() => ConfirmEdit(item, EntityLevel.Plan)">
+                                                            ✅ Confirm
+                                                        </Button>
+                                                        <Button Color="ButtonColor.Secondary" Size="ButtonSize.Small"
+                                                                @onclick="() => CancelEdit(item, EntityLevel.Plan)">
+                                                            ❌ Cancel
+                                                        </Button>
+                                                        break;
+                                                    default:
+                                                        <Button Color="ButtonColor.Warning" Size="ButtonSize.Small"
+                                                                @onclick="() => StartManTiwEdit(item, 1)">
+                                                            ✏️ Edit
+                                                        </Button>
+                                                        <Button Color="ButtonColor.Danger" Size="ButtonSize.Small"
+                                                                @onclick="() => StartRowDelete(item.Rowguid, EntityLevel.Plan)">
+                                                            🗑 Delete
+                                                        </Button>
+                                                        break;
+                                                }
+                                            </ChildContent>
+                                        </GridColumn>
+                                    </GridColumns>
+                                    <GridDetailView TItem="Tiersp" Context="selectedPln">
+                                        <Grid TItem="Tieafl"
+                                              Data="@selectedPln.Tieafls"
+                                              @key="RubRenderKey"
+                                              Responsive="true">
+                                            <GridColumns>
+                                                <GridColumn TItem="Tieafl" HeaderText="No">
+                                                    <ChildContent Context="item">
+                                                        <span>@(item.Xedt1 == -1 ? item?.Iui : (item?.Iui == 0 ? item?.Iele : item?.Iui))</span>
+                                                    </ChildContent>
+                                                </GridColumn>
+                                                <GridColumn TItem="Tieafl" HeaderText="Dossier">
+                                                    <ChildContent Context="item">
+                                                        @item.Xmatri
+                                                    </ChildContent>
+                                                </GridColumn>
+                                                <GridColumn TItem="Tieafl" HeaderText="Nom">
+                                                    <ChildContent Context="item">
+                                                        @item.Nom
+                                                    </ChildContent>
+                                                </GridColumn>
+                                                <GridColumn TItem="Tieafl" HeaderText="Pnom">
+                                                    <ChildContent Context="item">
+                                                        @item.Pnom
+                                                    </ChildContent>
+                                                </GridColumn>
+                                                <GridColumn TItem="Tieafl" HeaderText="etat" IsVisible="true">
+                                                    <ChildContent Context="item">
+                                                        <InputSelect @bind-Value="item.Eta" disabled="true">
+                                                            <option class="jchx" value="0">?choisir</option>
+                                                            @foreach (var tob in LsFixes.Where(ut => ut.Gvars == 32 && ut.Itb == 1 && ut.Elea != 0))
+                                                            {
+                                                                <option value="@tob.Elea">@tob.Liba</option>
+                                                            }
+                                                        </InputSelect>
+                                                    </ChildContent>
+                                                </GridColumn>
+                                                <GridColumn TItem="Tieafl" HeaderText="Actions" Filterable="false" Class="xcol2 actions-col">
+                                                    <ChildContent Context="item">
+                                                        @switch (GetRowState(item.Rowguid))
+                                                        {
+                                                            case RowState.Locked:
+                                                                <span class="text-muted">—</span>
+                                                                break;
+
+                                                            case RowState.DeletePending:
+                                                                <Button Color="ButtonColor.Danger" Size="ButtonSize.Small"
+                                                                        @onclick="() => ConfirmDelete(item, EntityLevel.Rub)">
+                                                                    ⚠️ Confirm
+                                                                </Button>
+                                                                <Button Color="ButtonColor.Secondary" Size="ButtonSize.Small"
+                                                                        @onclick="() => CancelDelete(item, EntityLevel.Rub)">
+                                                                    ❎ Cancel
+                                                                </Button>
+                                                                break;
+                                                            case RowState.EditPending:
+                                                                <Button Color="ButtonColor.Success" Size="ButtonSize.Small"
+                                                                        @onclick="() => ConfirmEdit(item, EntityLevel.Rub)">
+                                                                    ✅ Confirm
+                                                                </Button>
+                                                                <Button Color="ButtonColor.Secondary" Size="ButtonSize.Small"
+                                                                        @onclick="() => CancelEdit(item, EntityLevel.Rub)">
+                                                                    ❌ Cancel
+                                                                </Button>
+                                                                break;
+                                                            default:
+                                                                <Button Color="ButtonColor.Warning" Size="ButtonSize.Small"
+                                                                        @onclick="() => StartRubEdit(item, item.Rowguid)">
+                                                                    ✏️ Edit
+                                                                </Button>
+                                                                <Button Color="ButtonColor.Danger" Size="ButtonSize.Small"
+                                                                        @onclick="() => StartRowDelete(item.Rowguid, EntityLevel.Rub)">
+                                                                    🗑 Delete
+                                                                </Button>
+                                                                break;
+                                                        }
+                                                    </ChildContent>
+                                                </GridColumn>
+                                            </GridColumns>
+                                        </Grid>
+                                    </GridDetailView>
+                                </Grid>
+                            </div>
                         </Tabs>
-                    </div>
-                    <!--En bas ordinaire-->
-                    <div class="container row">
-                        <Grid TItem="Tiersp"
-                              Data="@MyDaTies.Where(tu => tu.Xadd1 != -1).ToList()"
-                              @key="TiwRenderKey"
-                              AllowDetailView="true"
-                              AllowPaging="true"
-                              Responsive="true">
-                            <GridColumns>
-                                <GridColumn TItem="Tiersp" HeaderText="No">
-                                    <ChildContent Context="item">
-                                        <span>@(item.Xedt1 == -1 ? item?.Iui : (item?.Iui == 0 ? item?.Iele : item?.Iui))</span>
-                                    </ChildContent>
-                                </GridColumn>
-                                <GridColumn TItem="Tiersp" HeaderText="Dossier">
-                                    <ChildContent Context="item">
-                                        @item.Xmatri
-                                    </ChildContent>
-                                </GridColumn>
-                                <GridColumn TItem="Tiersp" HeaderText="Nom">
-                                    <ChildContent Context="item">
-                                        @item.Nom
-                                    </ChildContent>
-                                </GridColumn>
-                                <GridColumn TItem="Tiersp" HeaderText="Pnom">
-                                    <ChildContent Context="item">
-                                        @item.Pnom
-                                    </ChildContent>
-                                </GridColumn>
-                                <GridColumn TItem="Tiersp" HeaderText="etat" IsVisible="true">
-                                    <ChildContent Context="item">
-                                        <InputSelect @bind-Value="item.Eta" disabled="true">
-                                            <option class="jchx" value="0">?choisir</option>
-                                            @foreach (var tob in LsFixes.Where(ut => ut.Gvars == 32 && ut.Itb == 1 && ut.Elea != 0))
-                                            {
-                                                <option value="@tob.Elea">@tob.Liba</option>
-                                            }
-                                        </InputSelect>
-                                    </ChildContent>
-                                </GridColumn>
-                                <GridColumn TItem="Tiersp" HeaderText="Actions" Filterable="false" Class="xcol2 actions-col">
-                                    <ChildContent Context="item">
-                                        @switch (GetRowState(item.Rowguid))
-                                        {
-                                            case RowState.Locked:
-                                                <span class="text-muted">—</span>
-                                                break;
-
-                                            case RowState.DeletePending:
-                                                <Button Color="ButtonColor.Danger" Size="ButtonSize.Small"
-                                                        @onclick="() => ConfirmDelete(item, EntityLevel.Plan)">
-                                                    ⚠️ Confirm
-                                                </Button>
-                                                <Button Color="ButtonColor.Secondary" Size="ButtonSize.Small"
-                                                        @onclick="() => CancelDelete(item, EntityLevel.Plan)">
-                                                    ❎ Cancel
-                                                </Button>
-                                                break;
-                                            case RowState.EditPending:
-                                                <Button Color="ButtonColor.Success" Size="ButtonSize.Small"
-                                                        @onclick="() => ConfirmEdit(item, EntityLevel.Plan)">
-                                                    ✅ Confirm
-                                                </Button>
-                                                <Button Color="ButtonColor.Secondary" Size="ButtonSize.Small"
-                                                        @onclick="() => CancelEdit(item, EntityLevel.Plan)">
-                                                    ❌ Cancel
-                                                </Button>
-                                                break;
-                                            default:
-                                                <Button Color="ButtonColor.Warning" Size="ButtonSize.Small"
-                                                        @onclick="() => StartManTiwEdit(item, 1)">
-                                                    ✏️ Edit
-                                                </Button>
-                                                <Button Color="ButtonColor.Danger" Size="ButtonSize.Small"
-                                                        @onclick="() => StartRowDelete(item.Rowguid, EntityLevel.Plan)">
-                                                    🗑 Delete
-                                                </Button>
-                                                break;
-                                        }
-                                    </ChildContent>
-                                </GridColumn>
-                            </GridColumns>
-                        </Grid>
                     </div>
                 </EditForm>
             </Authorized>
@@ -1314,26 +553,40 @@
     // Disable ALL actions when ANY row editing
     private Guid? _activeEditRowguid = null;
     private EntityLevel? _activeEditLevel = null;
-    private bool CanEditRows() => _activeEditRowguid == null;
-    private bool IsRowEditing(Guid rowguid) => _activeEditRowguid == rowguid;
+    //private bool CanEditRows() => _activeEditRowguid == null;
+    //private bool IsRowEditing(Guid rowguid) => _activeEditRowguid == rowguid;
     private bool IsAnyRowEditing => _activeEditRowguid != null;
+    // private bool IsEditingRow(EntPerson entity)
+    // {
+    //     return entity.Rowguid == EdTiwRowguid;
+    // }
 
-    public enum RowState
-    {
-        Normal,
-        EditPending,
-        DeletePending,
-        AddPending,  // 🔥 NEW for Add
-        Locked
-    }
-    public enum EntityLevel { Plan, Rub, Fmt }
+    // public enum RowState
+    // {
+    //     Normal,
+    //     EditPending,
+    //     DeletePending,
+    //     AddPending,  // 🔥 NEW for Add
+    //     Locked
+    // }
+    // public enum GridMode
+    // {
+    //     PersAdding,
+    //     PersEditing,
+    //     AflsAdding,
+    //     AflsEditing,
+    //     None
+    // }
+    // public enum EntityLevel { Plan, Rub, Fmt }
+
+    public GridMode GMode = GridMode.None;
 
     private List<Gplan> LsPlans = new();
     private List<Gpfixe> LsFixes = new();
     private List<Gpfixe> LsGAfls = new();
     //public List<Gtabl> TbGpes = new();
-    public List<Gpvar> TbCols = new();
     public List<Gptbl> TbItems = new();
+    //public List<Gpvar> TbCols = new();
     private List<Gpvar> LsVars = new();
     private List<Gpfixe> LsDoms = new();
     private List<Gpfixe> LsAtrs = new();
@@ -1354,7 +607,7 @@
     //pour modals formulas
     private Tiersp curTie = new();
     private Tieafl curRubr = new();
-    private Rubfmt curFmat = new();
+    //private Rubfmt curFmat = new();
 
     private bool isRubCodeValid = false; //child
     ////private string DisabledClass => !EdtDelVue ? "disabled" : "";
@@ -1364,6 +617,12 @@
     private bool isModalVisible = false;
     //data
     private ObservableCollection<Tiersp> MyDaTies { get; set; } = new();
+    private List<EntPerson> Persons = new();
+    private List<EntPerson> Affiles = new();
+    private EntPerson? curPerson = new();
+    private EntPerson? draftPers = new();
+    private EntPerson? curAfil = new();
+    private EntPerson? draftAfls = new();
     //private List<Tiersp> LsPlsEchs => curOrga.Tiersps.Where(pl => pl.Ptyp == 2).ToList();
     //private List<Tiersp> LsPlsGris => curOrga.Tiersps.Where(pl => pl.Ptyp == 3).ToList();
     //private List<Tiersp> LsPlsDivs => curOrga.Tiersps.Where(pl => pl.Ptyp == 4).ToList();
@@ -1412,13 +671,21 @@
         (EdRubRowguid.HasValue || DlRubRowguid.HasValue) &&
         EdRubRowguid != rowGuid &&
         DlRubRowguid != rowGuid;
-    //Modals formule
-    Modal pForuModal = new(); //plans
-    Modal rForuModal = new(); //rubriques
-    Modal gForuModal = new(); //formats
-    private string patTitle = "", chlTitle = "", gsnTitle = "";
-    private string patInitTitle = "", chlInitTitle = "", gsnInitTitle = "";
-    private string pstrFormu = "", rstrFormu = "", fstrFormu = "";
+
+    // When adding: only show the draft row
+
+    private IEnumerable<EntPerson> PersonsForGrid =>
+        GMode == GridMode.PersAdding
+            ? new List<EntPerson> { draftPers } //only one
+            : Persons;
+
+    private IEnumerable<EntPerson> AfilsForGrid =>
+        GMode == GridMode.AflsAdding
+            ? new List<EntPerson> { draftAfls } //only one
+            : Affiles;
+
+    private bool CanEditChildren =>
+        GMode != GridMode.PersAdding && curTie?.Id != 0;
 
     protected override async Task OnInitializedAsync()
     {
@@ -1440,15 +707,13 @@
             LsVars = toChild.LsVars;
             LsFixes = toChild.LsFixes;
             LsGAfls = toChild.LsFixes.Where(ua => ua.Gvars == 53 && ua.Itb == 6 && ua.Elea != 0).ToList();
-            //chargement des tables;
-            TbItems = await _rendAgres.LoadOrgaTables();
-            
             _lgcdu = 3;
             var noslims = LsVars.Where(uv => uv.Idhie == 0 && uv.Gvars == 21 && uv.Itb == 1 && uv.Elea == 1);
             if (noslims.Any()) _lgcdu = noslims.FirstOrDefault().Ivala;
             LsVues = LsFixes.Where(ut => ut.Gvars == 36 && ut.Itb == 4 && ut.Gp1 == 5 && ut.Elea != 0).ToList();
-            //LsTabls = toChild.LsTabls.ToList();
-
+            //chargement des tables;
+            TbItems = await _rendAgres.LoadOrgaTables();
+            //TbGpes = datbls?.Hdtbls ?? new List<Gtabl>();
             LsPlans = toChild.LsPlans;
             //LsSites = toChild.LsSites;
 
@@ -1457,24 +722,28 @@
             // 🔥 SAFE - Only initialize if Tiersps EXISTS
             //editcontext Model initialising
             curTie ??= new();  // Or load data here
+            // Load Tiersp list into EntPerson list for the grid
             if (curOrga.Tiersps != null && curOrga.Tiersps.Any())
             {
                 Console.WriteLine($"Tiersps loaded: {curOrga.Tiersps.Count}");
 
-                MyDaTies = new ObservableCollection<Tiersp>(
-                    curOrga.Tiersps
-                    .ToList());
-                if (MyDaTies.Any())
+                MyDaTies = new ObservableCollection<Tiersp>(curOrga.Tiersps.ToList());
+
+                // Convert to EntPerson list for the grid
+                Persons = ModelHelper.MapListTo<Tiersp, EntPerson>(MyDaTies);
+
+                if (Persons.Any())
                 {
-                    curTie = MyDaTies.FirstOrDefault();
+                    curPerson = Persons.FirstOrDefault();
                 }
             }
             else
             {
                 Console.WriteLine("Tiersps null/empty - initializing empty collections");
                 MyDaTies = new ObservableCollection<Tiersp>();
+                Persons = new List<EntPerson>();
             }
-            //Dictionnaire de visibilite principal
+
             if (LsPcols.Any())
             {
                 string StrStore = LsPcols.FirstOrDefault().Fgsrc; //ColName;IsVisible;
@@ -1482,12 +751,11 @@
                 Console.WriteLine($"nb cols {Pcolumns.Count} et {StrStore}");
                 TiwVisibility = Pcolumns.ToDictionary(tc => tc.ColName, tc => tc.IsVisible);
             }
-            Console.WriteLine($"totyp {Ugpe} et cols Tiw in : {LsPcols.Count} et visibles : {TiwVisibility.Values.Count}");
+            Console.WriteLine($"totyp {Ugpe} et cols Tiw in : {LsPcols?.Count} et visibles : {TiwVisibility?.Values?.Count}");
             foreach (var uco in TiwVisibility)
             {
                 Console.WriteLine($"col: {uco.Key} visible: {uco.Value}");
             }
-            atrTitle = "Saisie";
         }
         catch (Exception ex)
         {
@@ -1519,42 +787,163 @@
     {
         Console.WriteLine("🚨 StartPlnNew");
         var lsnb = NextSeq(MyDaTies, p => p.Iui);
-        //Console.WriteLine("1🚨Issue");
+
         var newTiw = new Tiersp
-        { /* init properties */
+        {
             Rowguid = Guid.NewGuid(),
-            Idorg = curOrga.Idorg, //pere Id
-            Iui = lsnb, //nextSeq(1),//Rowguid = Guid.NewGuid(),
+            Idorg = curOrga.Idorg,
+            Iui = lsnb,
             Utyp = Ugpe,
             Nom = "Martin ESSEC",
             Pnom = "Simpore",
             Datc = DateTime.Now,
             Eta = 1,
+            Ein = 3,
             Xadd1 = -1,
             Xedt1 = 0,
             Xdel1 = 0
         };
-        //Console.WriteLine("2🚨Issue");
+
         SetRowState(newTiw.Rowguid, RowState.AddPending);
-        //Console.WriteLine("3🚨Issue");
         SetLightBackground(newTiw.Rowguid, true);
-        //Console.WriteLine("4🚨Issue");
+
         MyDaTies.Insert(0, newTiw);
-        //Console.WriteLine("5🚨Issue");
+
+        // Refresh grid data source
+        Persons = ModelHelper.MapListTo<Tiersp, EntPerson>(MyDaTies);
+        GMode = GridMode.PersAdding;
+
         draftTiw = (Tiersp)DeepClone(newTiw);
-        //Console.WriteLine("6🚨Issue");
+        draftPers = ModelHelper.MapTo<Tiersp, EntPerson>(draftTiw);
+        draftPers.Rowguid = draftTiw.Rowguid; // ensure Rowguid is copied
+
         EdTiwRowguid = draftTiw.Rowguid;
-        //Console.WriteLine("7🚨Issue");
         isAddTiw = true;
         isEdtTiw = true;
-        SetRowState(draftTiw.Rowguid, RowState.EditPending);  // Shows Confirm/Cancel ✓
-        //Console.WriteLine("8🚨Issue");
+
+        SetRowState(draftTiw.Rowguid, RowState.EditPending);
         TiwRenderKey = draftTiw.Rowguid;
+
         Console.WriteLine($"✅ New row added to curOrga.Tiersps - Count: {curOrga.Tiersps.Count}");
         curTie = newTiw;
+
         StartRowEdit(draftTiw.Rowguid, EntityLevel.Plan);
-        Console.WriteLine("99🚨Issue");
-        //StateHasChanged();
+        StateHasChanged();
+    }
+
+    // private void StartChildAdd(Tieafl parent, int selectedGroup)
+    //     {
+    //         if (!CanEditChildren) return;
+
+    //         draftAfls = new EntPerson
+    //         {
+    //             Rowguid = Guid.NewGuid(),
+    //             ParentId = parent.Id,
+    //             GroupId = selectedGroup,
+    //             Nom = ""
+    //         };
+
+    //     EdRowguid = draftAfls.Rowguid;
+    // }
+
+    private void CancelRubNew(Tiersp parentTiw)
+    {
+        if (draftRub == null) return;
+
+        // Remove the draft from the domain collection if it was inserted
+        var existing = parentTiw.Tieafls?.FirstOrDefault(r => r.Rowguid == draftRub.Rowguid);
+        if (existing != null)
+        {
+            parentTiw.Tieafls.Remove(existing);
+        }
+
+        // Clear row state and UI hints
+        // ClearRowState(draftRub.Rowguid);
+        // Reset row state
+        SetRowState(draftRub.Rowguid, RowState.Normal);
+        SetLightBackground(draftRub.Rowguid, false);
+
+        // Reset draft variables
+        draftRub = null;
+        draftAfls = null;
+        EdRubRowguid = null;
+        isAddRub = false;
+        isEdtRub = false;
+
+        // Refresh grid data source
+        Affiles = ModelHelper.MapListTo<Tieafl, EntPerson>(parentTiw.Tieafls);
+
+        RubRenderKey = Guid.NewGuid(); // force re-render
+        StateHasChanged();
+
+        Console.WriteLine("✖ Cancelled new child record.");
+    }
+
+    private async Task StartRubNew(Tiersp parentTiw, int rubType)
+    {
+        //Ensure parent is persisted before adding children
+        if (parentTiw.Id <= 0)
+        {
+            Imessage = "🚫 Cannot add Affilie: Candidat must be saved first.";
+            return;
+        }
+
+        Console.WriteLine("🚨 StartRubNew");
+
+        // Compute next sequence
+        var nextSeq = NextSeq(parentTiw.Tieafls, p => p.Iui);
+
+        // Create new Rubrique
+        var newRub = new Tieafl
+        {
+            Rowguid = Guid.NewGuid(),
+            Itie = parentTiw.Id,
+            Ttyp = Ugpe,
+            Tyafl = rubType,
+            Irang = nextSeq,
+            Nom = "Fils Martin",
+            Pnom = "Ilboudo",
+            Datc = DateTime.Now,
+            Liba = "",
+            Abg = "",
+            Eta = 1,
+            Xadd1 = -1, // newly added
+            Xedt1 = 0,
+            Xdel1 = 0
+        };
+        // Row state + UI hints
+        SetRowState(newRub.Rowguid, RowState.AddPending);
+        SetLightBackground(newRub.Rowguid, true);
+
+        // Ensure child collection exists
+        if (parentTiw.Tieafls == null)
+            parentTiw.Tieafls = new DataServiceCollection<Tieafl>();
+
+        // Insert into domain collection
+        parentTiw.Tieafls.Insert(0, newRub);
+
+
+
+        // Refresh grid data source
+        Affiles = ModelHelper.MapListTo<Tieafl, EntPerson>(parentTiw.Tieafls);
+        GMode = GridMode.AflsAdding;
+
+        draftRub = (Tieafl)DeepClone(newRub);
+        draftAfls = ModelHelper.MapTo<Tieafl, EntPerson>(draftRub);
+        draftAfls.Rowguid = draftRub.Rowguid; // ensure Rowguid is copied
+
+        EdRubRowguid = draftRub.Rowguid;
+        isAddRub = true;
+        isEdtRub = true;
+
+        SetRowState(draftRub.Rowguid, RowState.EditPending);
+        RubRenderKey = draftRub.Rowguid;
+
+        Console.WriteLine($"✅ New row added to curOrga.Tiersps - Count: {parentTiw.Tieafls.Count}");
+        curRubr = newRub;
+
+        StartRowEdit(draftRub.Rowguid, EntityLevel.Rub);
+        StateHasChanged();
     }
     private async Task StartTiwEdit(Tiersp item, Guid rowguid)
     {
@@ -1575,60 +964,145 @@
         StartRowEdit(rowguid, EntityLevel.Plan);
         //StateHasChanged();
     }
-    private async Task StartRubNew(Tiersp mytie, int mytst)
-    {
-        if (mytie.Id <= 0)
-        {
-            Imessage = "🚫 Cannot add Rubrique: Plan must be saved first.";
-            return;
-        }
-        Console.WriteLine("🚨 StartRubNew");
-        var lsnb = NextSeq(mytie.Tieafls, p => p.Iui);
-        var newRub = new Tieafl
-        { /* init */
+    //     private async Task StartRubNew(Tiersp parentTiw, int rubType)
+    // {
+    //     // Ensure parent is persisted before adding children
+    //     if (parentTiw.Id <= 0)
+    //     {
+    //         Imessage = "🚫 Cannot add Affilie: Candidat must be saved first.";
+    //         return;
+    //     }
 
-            Rowguid = Guid.NewGuid(),
-            Itie = curTie.Id,
-            Ttyp = Ugpe,
-            Tyafl = mytst,
-            Irang = lsnb,
-            Nom = "Fils Martin",
-            Pnom = "Ilboudo",
-            Datc = DateTime.Now,
-            Liba = "",
-            Abg = "",
-            Eta = 1,
-            Xadd1 = -1, //newly added/edited
-            Xedt1 = 0,
-            Xdel1 = 0
-        };
-        SetRowState(newRub.Rowguid, RowState.AddPending);
-        SetLightBackground(newRub.Rowguid, true);
-        if (mytie.Tieafls == null)
-        {
-            mytie.Tieafls = new DataServiceCollection<Tieafl>();  // ✅ Correct type
-        }
-        mytie.Tieafls.Insert(0, newRub);
-        draftRub = (Tieafl)DeepClone(newRub);
-        EdRubRowguid = draftRub.Rowguid;
-        isAddRub = true;
-        isEdtRub = true;
-        SetRowState(draftRub.Rowguid, RowState.EditPending);  // 🔥 ADD
-        RubRenderKey = draftRub.Rowguid;  // Force grid refresh
-        Console.WriteLine($"✅ New row added to Tiersp.Tieafls - Count: {mytie.Tieafls.Count}");
-        StartRowEdit(draftRub.Rowguid, EntityLevel.Rub);
-        //StateHasChanged();
-    }
-    private async Task StartManTiwEdit(Tiersp mytie, int mytst)
-    {
-        curTie = mytie;
+    //     Console.WriteLine("🚨 StartRubNew");
 
+    //     // Compute next sequence
+    //     var nextSeq = NextSeq(parentTiw.Tieafls, p => p.Iui);
+
+    //     // Create new Rubrique
+    //     var newRub = new Tieafl
+    //     {
+    //         Rowguid = Guid.NewGuid(),
+    //         Itie = parentTiw.Id,
+    //         Ttyp = Ugpe,
+    //         Tyafl = rubType,
+    //         Irang = nextSeq,
+    //         Nom = "Fils Martin",
+    //         Pnom = "Ilboudo",
+    //         Datc = DateTime.Now,
+    //         Liba = "",
+    //         Abg = "",
+    //         Eta = 1,
+    //         Xadd1 = -1, // newly added
+    //         Xedt1 = 0,
+    //         Xdel1 = 0
+    //     };
+
+    //     // Row state + UI hints
+    //     SetRowState(newRub.Rowguid, RowState.AddPending);
+    //     SetLightBackground(newRub.Rowguid, true);
+
+    //     // Ensure child collection exists
+    //     if (parentTiw.Tieafls == null)
+    //         parentTiw.Tieafls = new DataServiceCollection<Tieafl>();
+
+    //     // Insert into domain collection
+    //     parentTiw.Tieafls.Insert(0, newRub);
+
+    //     // Refresh grid data source
+    //     Persons = ModelHelper.MapListTo<Tieafl, EntPerson>(parentTiw.Tieafls);
+    //     GMode = GridMode.Adding;
+
+    //     // Draft clone
+    //     draftRub = (Tieafl)DeepClone(newRub);
+    //     EdRubRowguid = draftRub.Rowguid;
+
+    //     // Flags
+    //     isAddRub = true;
+    //     isEdtRub = true;
+
+    //     // Mark row as editable
+    //     SetRowState(draftRub.Rowguid, RowState.EditPending);
+    //     RubRenderKey = draftRub.Rowguid;
+
+    //     Console.WriteLine($"✅ New row added to Tiersp.Tieafls - Count: {parentTiw.Tieafls.Count}");
+
+    //     // Trigger edit mode in grid
+    //     StartRowEdit(draftRub.Rowguid, EntityLevel.Rub);
+
+    //     StateHasChanged();
+    // }
+
+    // private async Task StartManTiwEdit(Tiersp mytiw, int mytst)
+    // {
+    //     curTie = mytiw;
+    // }
+    private async Task StartManTiwEdit(Tiersp mytiw, int mytst)
+    {
+        // Domain-level tracking
+        curTie = mytiw;
+
+        // Clone draft
+        draftTiw = (Tiersp)DeepClone(mytiw);
+        EdTiwRowguid = draftTiw.Rowguid;
+        SetRowState(draftTiw.Rowguid, RowState.EditPending);
+
+        // Map to EntPerson for grid
+        draftPers = ModelHelper.MapTo<Tiersp, EntPerson>(draftTiw);
+        curPerson = ModelHelper.MapTo<Tiersp, EntPerson>(mytiw);
+
+        // Trigger grid re-render
+        TiwRenderKey = draftTiw.Rowguid;
+        StartRowEdit(draftTiw.Rowguid, EntityLevel.Plan);
     }
+    // private async Task StartRubEdit(Tieafl item, Guid rowguid)
+    // {
+    //     var isNew = StaticMethods.IsNew(curODContext, item, e => e.Id);
+    //     if (isNew)
+    //     {
+    //         Imessage = "🚫 Cannot edit new Rubrique: Please save it first.";
+    //         return;
+    //     }
+    //     if (rowguid == Guid.Empty) return;
+
+    //     item.Xedt1 = -1;
+    //     if (item.Iele != 0) item.Iui = (int)item.Iele;
+
+    //     SetRowState(rowguid, RowState.EditPending);
+    //     _edRubOriginals[rowguid] = (Tieafl)DeepClone(item);
+    //     EdRubRowguid = AllowMultipleEdits ? null : rowguid;
+    //     draftRub = (Tieafl)DeepClone(item);
+    //     isEdtRub = true;
+
+    //     // If you define EntRub DTO, map here:
+    //     draftPers = ModelHelper.MapTo<Tieafl, EntPerson>(draftRub);
+    //     curPerson = ModelHelper.MapTo<Tieafl, EntPerson>(item);
+
+    //     StartRowEdit(rowguid, EntityLevel.Rub);
+    // }
+
+    // This is the method wired to ChildGridHelper
+    private async Task StartRubEdit<T>(T item, Guid rowguid) where T : class
+    {
+        switch (item)
+        {
+            case Tieafl tieafl:
+                await StartRubEdit(tieafl, rowguid); // your existing method
+                break;
+
+            // case Tieafl tieafl:
+            //     await StartRubEdit(tieafl, rowguid); // defined in another parent component
+            //     break;
+
+            default:
+                throw new InvalidOperationException($"Unsupported type {typeof(T).Name}");
+        }
+    }
+
     private async Task StartRubEdit(Tieafl item, Guid rowguid)
     {
         var isNew = StaticMethods.IsNew(curODContext, item, e => e.Id);
         if (isNew)
-        { //not saved yet
+        {
             Imessage = "🚫 Cannot edit new Rubrique: Please save it first.";
             return;
         }
@@ -1636,22 +1110,56 @@
 
         item.Xedt1 = -1;
         if (item.Iele != 0) item.Iui = (int)item.Iele;
-        SetRowState(rowguid, RowState.EditPending);  // Shows Confirm/Cancel buttons
+
+        SetRowState(rowguid, RowState.EditPending);
         _edRubOriginals[rowguid] = (Tieafl)DeepClone(item);
         EdRubRowguid = AllowMultipleEdits ? null : rowguid;
         draftRub = (Tieafl)DeepClone(item);
         isEdtRub = true;
+
+        // If you define EntRub DTO, map here:
+        draftPers = ModelHelper.MapTo<Tieafl, EntPerson>(draftRub);
+        curPerson = ModelHelper.MapTo<Tieafl, EntPerson>(item);
+
         StartRowEdit(rowguid, EntityLevel.Rub);
-        //StateHasChanged();
+    }
+    private async Task TieatSaveAsync()
+    {
+        foreach (var atr in curTie.Tieatrs)
+        {
+            if (atr.AtState == AEntState.NewAdded)
+            {
+                curODContext.AddObject("tieatrs", atr);  // Tracks + prepares INSERT
+                Console.WriteLine($"➕ NEW {typeof(Tieatr).Name} → AddObject");
+            }
+            else
+            {
+                curODContext.SafeAttachOrUpdate(atr, "tieatrs", false);  // Your method!
+                Console.WriteLine($"✏️ EXISTING → SafeAttachOrUpdate");
+            }
+            curODContext.UpdateObject(atr);
+            Console.WriteLine($"✅ {typeof(Tieatr).Name} confirmed → tracked");
+        }
     }
     // ✅ 2.1 CONFIRM OPERATIONS
-    private async Task ConfirmPlnEdit(Tiersp item) =>
-        await UnifiedEditAction(item, true, EntityLevel.Plan);
+    //private async Task ConfirmPlnEdit(Tiersp item)
+    private async Task ConfirmPlnEdit(EntPerson entPerson)
+    {
+        // Map EntPerson back to Tiersp
+        var tw = ModelHelper.MapTo<EntPerson, Tiersp>(entPerson);
+        await UnifiedEditAction(tw, true, EntityLevel.Plan);
+        await TieatSaveAsync();
+    }
+
     private async Task ConfirmRubEdit(Tieafl item) =>
         await UnifiedEditAction(item, true, EntityLevel.Rub);
     // ✅ 2.2 CANCEL OPERATIONS
-    private async Task CancelPlnEdit(Tiersp item) =>
-        await UnifiedEditAction(item, false, EntityLevel.Plan);
+    private async Task CancelPlnEdit(EntPerson entPerson)
+    {
+        var tw = ModelHelper.MapTo<EntPerson, Tiersp>(entPerson);
+        await UnifiedEditAction(tw, false, EntityLevel.Plan);
+        //TieatCancelAsync();
+    }
     private async Task CancelRubEdit(Tieafl item) =>
         await UnifiedEditAction(item, false, EntityLevel.Rub);
 
@@ -1670,7 +1178,6 @@
                 //     break;
         }
     }
-
     private async Task ProcessPlan(Tiersp pln, bool isConfirm)
     {
         await ProcessEntity(pln, isConfirm, "Tiersps", p => ValidatePln(p));
@@ -1683,82 +1190,79 @@
     private async Task ProcessEntity<T>(T entity, bool isConfirm, string entitySet, Func<T, bool> validate)
     where T : class
     {
-        Console.WriteLine($"🔄 Process{(typeof(T).Name)}: {(isConfirm ? "CONFIRM" : "CANCEL")}");
+        Console.WriteLine($"🔄 Process{typeof(T).Name}: {(isConfirm ? "CONFIRM" : "CANCEL")}");
+    
         if (entity == null)
         {
             Imessage = "entity nulle";
             StateHasChanged();
             return;
         }
+
         if (isConfirm)
         {
-            CopyDraftToGridItem<T>(entity);
-            // 🔥 1. VALIDATE FIRST - uses your ValidateXXX() helpers
+            // 🔥 1. Copy draft → entity (for validation)
+            CopyDraftToGridItem(entity);
+        
+            // 🔥 2. VALIDATE (now has updated values)
             if (!validate(entity))
             {
-                // Imessage already set by ValidatePln/ValidateRub/ValidateFmt
                 Console.WriteLine($"❌ Validation failed: {Imessage}");
                 StateHasChanged();
                 return;
             }
-            // 🔥 2. NEW vs EXISTING LOGIC
-            bool isNewAdd = GetXadd1(entity) == -1;
-            if (isNewAdd)
+        
+            // 🔥 3. NEW vs EXISTING (SINGLE operation)
+            bool isNew = GetXadd1(entity) == -1;  // Assumes GetXadd1<T>
+            if (isNew)
             {
-                // 🔥 NEW ADD: AddObject (not tracked yet)
-                curODContext.AddObject(entitySet, entity);
+                curODContext.AddObject(entitySet, entity);  // Tracks + prepares INSERT
                 Console.WriteLine($"➕ NEW {typeof(T).Name} → AddObject");
             }
             else
             {
-                // 🔥 EXISTING: Attach + UpdateObject
-                if (!curODContext.IsEntityTracked(entity))
-                {
-                    curODContext.Context.AttachTo(entitySet, entity);
-                    Console.WriteLine($"📥 Attached existing {entitySet}");
-                }
-                curODContext.Context.UpdateObject(entity);
-                Console.WriteLine($"✏️ EXISTING {typeof(T).Name} → UpdateObject");
+                curODContext.SafeAttachOrUpdate(entity, entitySet, false);  // Your method!
+                Console.WriteLine($"✏️ EXISTING → SafeAttachOrUpdate");
             }
-            // 🔥 2. Container: Attach → Update → Flags
-            if (!curODContext.IsEntityTracked(entity))
-            {
-                curODContext.Context.AttachTo(entitySet, entity);
-                Console.WriteLine($"📥 Attached {entitySet}");
-            }
-
-            SetFlags(entity, 0, -1, 0);  // Confirmed: Xadd1=0, Xedt1=-1
-            curODContext.Context.UpdateObject(entity);
-
+        
+            // 🔥 4. Confirm flags ONCE
+            SetFlags(entity, 0, -1, 0);  // Xadd1=0 confirmed
+        
+            // 🔥 5. SINGLE UpdateObject (applies flags + changes)
+            curODContext.UpdateObject(entity);
             Console.WriteLine($"✅ {typeof(T).Name} confirmed → tracked");
 
-            // 🔥 3. UI cleanup
-            ResetRowState((Guid)typeof(T).GetProperty("Rowguid")!.GetValue(entity)!);
-            SetLightBackground((Guid)typeof(T).GetProperty("Rowguid")!.GetValue(entity)!, false);
+            // 🔥 6. UI + notify
+            var rowguid = GetRowguid(entity);  // Generic helper
+            ResetRowState(rowguid);
+            SetLightBackground(rowguid, false);
             ResetEntityUIState<T>();
             await NotifyPendingChanges();
             Imessage = $"✅ {typeof(T).Name} confirmed";
         }
-        else  // CANCEL
+        else  // CANCEL (unchanged - perfect)
         {
-            if (GetXadd1(entity) == -1)  // New add
+            if (GetXadd1(entity) == -1)  // New only
             {
                 if (curODContext.IsEntityTracked(entity))
-                    curODContext.Context.Detach(entity);
+                    curODContext.Detach(entity);
                 RemoveFromParentCollection(entity);
-                Console.WriteLine($"🗑️ New {typeof(T).Name} canceled");
             }
             else
             {
                 ClearDraft<T>();
             }
-            ResetRowState((Guid)typeof(T).GetProperty("Rowguid")!.GetValue(entity)!);
+            var rowguid = GetRowguid(entity);
+            ResetRowState(rowguid);
             ResetEntityUIState<T>();
             Imessage = "";
         }
-
         StateHasChanged();
     }
+    // 🔥 Generic Rowguid (no reflection)
+    private static Guid GetRowguid<T>(T entity) where T : class
+        => ((dynamic)entity).Rowguid;  // Or property expression
+
 
     // Generic flag setter
     private void SetFlags<T>(T entity, int xadd1, int xedt1, int xdel1)
@@ -1900,10 +1404,10 @@
         if (_rowStates.TryGetValue(rowguid, out var state)) return state;
 
         // Context-aware lookup
-        if (parent is Tiersp mytie)
+        if (parent is Tiersp mytiw)
         {
-            if (mytie.Rowguid == rowguid && IsTiwRowLocked(rowguid)) return RowState.Locked;
-            var rub = mytie.Tieafls?.FirstOrDefault(r => r.Rowguid == rowguid);
+            if (mytiw.Rowguid == rowguid && IsTiwRowLocked(rowguid)) return RowState.Locked;
+            var rub = mytiw.Tieafls?.FirstOrDefault(r => r.Rowguid == rowguid);
             if (rub != null && IsRubRowLocked(rowguid)) return RowState.Locked;
         }
         // else if (parent is Tieafl myrub)
@@ -1957,8 +1461,10 @@
     }
     private void ResetRubUI()
     {
-        draftRub = null; EdRubRowguid = AdRubRowguid = null;
-        isEdtRub = isAddRub = false; RubRenderKey = null;
+        draftRub = null;
+        EdRubRowguid = AdRubRowguid = null;
+        isEdtRub = isAddRub = false;
+        RubRenderKey = null;
     }
     // private void ResetFmtUI()
     // {
@@ -1974,6 +1480,7 @@
         ));
 
         NbChanges = _guard.GetPendingChangesCount();
+        Console.WriteLine($"🔔 Pending changes: {NbChanges}");
         await NbChangesChanged.InvokeAsync(NbChanges);
         StateHasChanged();
     }
@@ -2089,25 +1596,25 @@
             _ => true
         };
     }
-    private bool ValidatePln(Tiersp? mytie)
+    private bool ValidatePln(Tiersp? mytiw)
     {
-        Console.WriteLine($"A verifier {mytie.Nom}");
+        Console.WriteLine($"A verifier {mytiw.Nom}");
         //liba
-        if (string.IsNullOrEmpty(mytie.Nom)
-            || mytie.Nom.Length < 4)
+        if (string.IsNullOrEmpty(mytiw.Nom)
+            || mytiw.Nom.Length < 4)
         {
             Imessage = "designation obligatoire/longueur";
             return false;
         }
         //abrege
-        if (string.IsNullOrEmpty(mytie.Pnom)
-            || mytie.Pnom.Length < 4)
+        if (string.IsNullOrEmpty(mytiw.Pnom)
+            || mytiw.Pnom.Length < 4)
         {
             Imessage = "abrege obligatoire/longueur";
             return false;
         }
         // //etat
-        // if (mytie.Eta < 0)
+        // if (mytiw.Eta < 0)
         // {
         //     Imessage = "etat obligatoire";
         //     return false;
@@ -2216,15 +1723,6 @@
             }
         }
     }
-    // private void SelPlanDom(int xdom)
-    // {
-    //     if (xdom != 0)
-    //     {
-
-    //     }
-    // }
-
-    // ✅ 6. HELPERS - Mark Count and Clone
 
     private void MarkAsModified(object entity)
     {
@@ -2267,42 +1765,7 @@
     {
         isRubFilteringEnabled = !isRubFilteringEnabled;
     }
-
-    //PLAN Formule modals
-    void showFrPlnModal(Tiersp mytie, int orig)
-    {
-        pstrFormu = "";
-        // if (!string.IsNullOrEmpty(mytie.Fpsrc))
-        // {
-        //     //pstrFormu = mytie.Liba.Substring(0, 8);
-        // }
-
-        curTie = mytie;
-
-        if (pForuModal != null)
-        {
-            pForuModal.BodyCssClass = (orig == 1) ? "editable" : "readonly";
-            pForuModal.ShowAsync();
-        }
-    }
-    //RUBR Formule modals
-    void showFrRubModal(Tieafl myrub, int orig)
-    {
-        rstrFormu = "";
-        // if (!string.IsNullOrEmpty(myrub.Frsrc))
-        // {
-        //     rstrFormu = myrub.Liba.Substring(0, 8);
-        // }
-
-        curRubr = myrub;
-
-        if (rForuModal != null)
-        {
-            rForuModal.BodyCssClass = (orig == 1) ? "editable" : "readonly";
-            rForuModal.ShowAsync();
-        }
-    }
-
+        
     private void ShowModal()
     {
         // Optionally, set the current entity to edit
@@ -2316,13 +1779,7 @@
         isModalVisible = isVisible;
         return Task.CompletedTask;
     }
-    private Task HandleTiwSave(Tiewel entity)
-    {
-        // Handle modal entity save
-        // For example, save to the database or update the UI
-        Console.WriteLine($"Entity saved: {entity.Nom}, {entity.Pnom}");
-        return Task.CompletedTask;
-    }
+    
     private Task HandleTieSave(Tiersp entity)
     {
         // Handle modal entity save
@@ -2330,13 +1787,6 @@
         Console.WriteLine($"Entity saved: {entity.Nom}, {entity.Pnom}");
         return Task.CompletedTask;
     }
-    // private Task HandleTiwSave(Tiewel entity)
-    // {
-    //     // Handle modal entity save
-    //     // For example, save to the database or update the UI
-    //     Console.WriteLine($"Entity saved: {entity.Nom}, {entity.Pnom}");
-    //     return Task.CompletedTask;
-    // }
     private void showPgLink()
     {
         yaPgLink = !yaPgLink;
@@ -2359,54 +1809,10 @@
         return EdState.TryGetValue(oId, out bool onEditing) && onEditing ? "Confirm" : "Edit";
     }
 
-    // private void OnChlBlurHandler(Tiersp mypl, Tieafl myvar)
-    // {
-    //     Console.WriteLine("ATTENTION : En Blur....");
-    //     ////isRubCodeValid = HandleChlInput(mypl, myvar);
-    //     Imessage = $"OnBlur active : {isRubCodeValid}";
-    //     // Optionally trigger UI refresh or logging
-    // }
     private void OnChlFocusHandler(Tiersp mypl, Tieafl myvar)
     {
 
     }
-    // private bool HandleChlInput(Tiersp mypl, Tieafl myvar)
-    // {
-    //     var input = myvar.Smatri?.Trim();
-    //     Jmessage = "";
-    //     Console.WriteLine($"code entre traiter {input}");
-    //     // Basic null/empty check
-    //     if (string.IsNullOrEmpty(input))
-    //     {
-    //         Jmessage = "Le code est requis.";
-    //         return false;
-    //     }
-    //     // Explicit length check
-    //     if (input.Length != _lgcdu)
-    //     {
-    //         Jmessage = $"Le code doit contenir exactement {_lgcdu} chiffres.";
-    //         return false;
-    //     }
-    //     // Digit-only check/No de poste peut ne pas etre numerique
-    //     if (!Regex.IsMatch(input, @"^[0-9]+$")) // @"^[a-zA-Z0-9_\-\/\\|{}]+$"))
-    //     {
-    //         //(!Regex.IsMatch(input, @"^\d+$")) /numeric
-    //         //(Regex.IsMatch(input, @"^[a-zA-Z0-9]+$")) /alphanumeric strict
-    //         //(Regex.IsMatch(input, @"^[a-zA-Z0-9_\-\/\\|{}]+$") /add some others characters
-    //         //(Regex.IsMatch(input, @"^[a-zA-Z0-9_\-\/\\|{}]{6}$")) //limit number to 6
-    //         //(Regex.IsMatch(input, @"^[a-zA-Z0-9_\-\/\\|{}]{4,10}$")) //limit a range 4-10
-    //         Jmessage = "Le code ne doit contenir que des chiffres.";
-    //         return false;
-    //     }
-    //     // Uniqueness check
-    //     var exists = mypl.Tieafls?.Any(uva => uva.Scdrub == input) ?? false;
-    //     if (exists)
-    //     {
-    //         Jmessage = "Ce code rubrique existe déjà.";
-    //         return false;
-    //     }
-    //     return true;
-    // }
     private void HandleFieldChanged(object sender, FieldChangedEventArgs e)
     {
         //ChildUPDING = true;

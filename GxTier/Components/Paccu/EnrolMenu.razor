@@ -18,7 +18,9 @@
 @using Newtonsoft.Json
 @using Gx.Components.Navigation
 
-@inject NavigationManager _navmanager
+@implements IDisposable
+
+@inject NavigationManager _navManager
 @inject ILocalStorageService _localStorage
 @inject HttpClientService _cliemanager
 @inject IODataContextFactory _contextFactory
@@ -69,6 +71,7 @@ else
                                      curOrga="@curOrga"
                                      LsPcols="@LsPcols"
                                      LsFcols="@LsFcols"
+                                     @bind-NbChanges="_nbChanges"
                                      _guard="_guard"
                                      toChild="@toChild"
                                      curODContext="@curODContext">
@@ -85,6 +88,7 @@ else
                                       curOrga="@curOrga"
                                       LsPcols="@LsPcols"
                                       LsFcols="@LsFcols"
+                                     @bind-NbChanges="_nbChanges"
                                       _guard="_guard"
                                       toChild="@toChild"
                                       curODContext="@curODContext">
@@ -128,7 +132,22 @@ else
     </div>
 </div>
     <div class="row mt-3">
-        @if (_guardVisible)
+        <div class="alert alert-warning d-flex justify-content-between align-items-center py-1 px-2 position-fixed bottom-0 end-0"
+             style="background-color: transparent; z-index: 1050; max-width: 400px;">
+            <div class="d-flex gap-2 align-items-center">
+                <Button class="w-auto flex-grow-0 flex-shrink-0" Color="ButtonColor.Info" @onclick="SaveAllChanges"
+                        Enabled="@_guard.HasPendingChanges()">
+                    Save All (@_guard.GetPendingChangesCount() changes)
+                </Button>
+                <Button class="w-auto flex-grow-0 flex-shrink-0" Color="ButtonColor.Secondary" @onclick="CancelAllChanges"
+                        Enabled="@_guard.HasPendingChanges()">
+                    Cancel All
+                </Button>
+            </div>
+        </div>
+
+
+        @* @if (_guardVisible)
         {
             <div class="col-12">
                 @if (_guard.HasPendingChanges())
@@ -149,7 +168,7 @@ else
                     </Button>
                 </div>
             </div>
-        }
+        } *@
 
     </div>
 }
@@ -183,7 +202,7 @@ else
     //Guard
     private int pendingCount => _guard.HasPendingChanges() ?
         curODContext.Context.Entities.Count(e => e.State != EntityStates.Unchanged) : 0;
-    private bool _guardVisible = true;
+    //private bool _guardVisible = true;
     // Operation VUE
     //public bool ParentOK = false; //child formulaire visible
     //public bool ParentEDT = false;
@@ -245,7 +264,25 @@ else
     }
     private async Task CancelAllChanges()
     {
-        await _guard.CancelChangesAsync();
+        Console.WriteLine("🗑️ CancelAllChanges START");
+        await _guard.CancelChangesAsync();  // 🔥 AWAIT - blocks until done
+        _messageService.Show("✅ CancelAllChanges successfully", ToastType.Success);
+        StateHasChanged();
+        Console.WriteLine($"✅ CancelAllChanges END - Pending: {_guard.GetPendingChangesCount()}");
+    }
+    private async Task SaveAllChanges()
+    {
+        //_guard.DiscardUnconfirmedAdds<Plngen>();
+        //_guard.DiscardUnconfirmedAdds<Rubvar>();
+        _guard.DiscardUnconfirmedAdds<Tiewel>();
+        _guard.DiscardUnconfirmedAdds<Tiwatr>();
+        _guard.DiscardUnconfirmedAdds<Tiwafl>();
+        if (_guard.HasPendingChanges())
+        {
+            await curODContext.Context.SaveChangesAsync();
+        }
+        _guard.NotifyChanges();
+        _messageService.Show("✅ Saved successfully", ToastType.Success);
         StateHasChanged();
     }
     //Guard
@@ -300,10 +337,13 @@ else
             LsFixes = LsFixes.ToList(),
             LsPlans = LsPlans.ToList(),
         };
-        _guard.RegisterUnconfirmedPredicate<Tiewel>(w => w.Xadd1 == -1);
-        _guard.RegisterUnconfirmedPredicate<Tiwafl>(wa => wa.Xadd1 == -1);
-        _guard.RegisterUnconfirmedPredicate<Tiersp>(e => e.Xadd1 == -1);
-        _guard.RegisterUnconfirmedPredicate<Tieafl>(ea => ea.Xadd1 == -1);
+        _guard.RegisterUnconfirmedPredicate<Tiewel>(w => w.Xadd1 == -1 || w.Xedt1 == -1 || w.Xdel1 == -1);
+        _guard.RegisterUnconfirmedPredicate<Tiwatr>(wa => wa.Xadd1 == -1 || wa.Xedt1 == -1 || wa.Xdel1 == -1);
+        _guard.RegisterUnconfirmedPredicate<Tiwafl>(wf => wf.Xadd1 == -1 || wf.Xedt1 == -1 || wf.Xdel1 == -1);
+        _guard.RegisterUnconfirmedPredicate<Tiersp>(e => e.Xadd1 == -1 || e.Xedt1 == -1 || e.Xdel1 == -1);
+        _guard.RegisterUnconfirmedPredicate<Tieatr>(ea => ea.Xadd1 == -1 || ea.Xedt1 == -1 || ea.Xdel1 == -1);
+        _guard.RegisterUnconfirmedPredicate<Tieafl>(ef => ef.Xadd1 == -1 || ef.Xedt1 == -1 || ef.Xdel1 == -1);
+
         _nbChanges = _guard.GetPendingChangesCount();  // Initial value
         // pita = 5;
         Console.WriteLine("TIERS A ETE TESTE");
@@ -324,9 +364,9 @@ else
         {
             int key = _usrBag.Idorg;
             string expandTiewels = ODataQueryHelper.Expand<Gxorga, IEnumerable<Tiewel>>(o => o.Tiewels)
-                + "($expand=Tiwafls)";
+                + "($expand=Tiwafls,Tiwatrs)";
             string expandTiersps = ODataQueryHelper.Expand<Gxorga, IEnumerable<Tiersp>>(o => o.Tiersps)
-                + "($expand=Tieafls)";
+                + "($expand=Tieafls,Tieatrs)";
             string expandGsesios = ODataQueryHelper.Expand<Gxorga, IEnumerable<Gsesio>>(o => o.Gsesios);
 
             // Combine them
@@ -343,22 +383,22 @@ else
                 return;
             }
             ////attributs//Lvars deja charge
-            foreach (var tie in curOrga.Tiersps)
-            {
-                foreach (var tat in tie.Tieatrs)
-                {
-                    var curat = LsVars.FirstOrDefault(at => at.Totyp == tie.Utyp);
-                    tat.Ajacc = curat?.Jacc ?? 0; //formulaire accueil
-                }
-            }
-            foreach (var tiw in curOrga.Tiewels)
-            {
-                foreach (var tat in tiw.Tiwatrs)
-                {
-                    var curat = LsVars.FirstOrDefault(at => at.Totyp == tiw.Utyp);
-                    tat.Ajacc = curat?.Jacc ?? 0; //formulaire acceuil
-                }
-            }
+            // foreach (var tie in curOrga.Tiersps)
+            // {
+            //     foreach (var tat in tie.Tieatrs)
+            //     {
+            //         var curat = LsVars.FirstOrDefault(at => at.Xseq == tat.Igsg);
+            //         if (curat != null) tat.LoadFromGsgfix(curat);
+            //     }
+            // }
+            // foreach (var tiw in curOrga.Tiewels)
+            // {
+            //     foreach (var tat in tiw.Tiwatrs)
+            //     {
+            //         var curat = LsVars.FirstOrDefault(at => at.Xseq == tat.Igsg);
+            //         if (curat != null) tat.LoadFromGsgfix(curat);
+            //     }
+            // }
         }
         catch(Exception ex)
         {
@@ -368,6 +408,52 @@ else
         Tgpe = 6;
         _chxMenu = 1;
         Console.WriteLine($"✅ COMPLETE: Tiersps={curOrga.Tiersps?.Count ?? 0}");
+    }
+    protected override void OnAfterRender(bool firstRender)
+    {
+        if (firstRender)
+        {
+            _locationHandler = _navManager.RegisterLocationChangingHandler(OnLocationChangingAsync);
+            //Console.WriteLine("📌 LocationChangingHandler registered");
+        }
+    }
+    private async ValueTask OnLocationChangingAsync(LocationChangingContext context)
+    {
+        Console.WriteLine($"🌐 Intercepted: {context.TargetLocation}");
+
+        if (!_guard.HasPendingChanges())
+        {
+            Console.WriteLine("✅ Clean - allowing navigation");
+            return;
+        }
+
+        context.PreventNavigation();  // BLOCK navigation
+        Console.WriteLine($"🚫 Showing confirm dialog {context.TargetLocation}");
+
+        try
+        {
+            var save = await _jsRun.InvokeAsync<bool>("confirm", "Save changes before leaving?");
+
+            if (save)
+            {
+                // 🔥 YES: SaveAllChanges() → Navigate away
+                await SaveAllChanges();
+                Console.WriteLine("💾 Saved - navigating away");
+                _navManager.NavigateTo(context.TargetLocation, forceLoad: false);
+            }
+            else
+            {
+                // 🔥 NO: STAY on page - NO CancelAllChanges()
+                Console.WriteLine("❌ User chose NO - staying on page");
+                // User stays - sees SaveAllChanges() / CancelAllChanges() buttons ENABLED
+                // They can now manually: SaveAllChanges() OR CancelAllChanges()
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"❌ Error: {ex.Message}");
+            // Safety: stay on page
+        }
     }
     //changes des selections
     void ChxGpeTiers(Gpfixe mygpe)
@@ -381,12 +467,12 @@ else
         _chxMenu = noM;
         if (_chxMenu == 1) 
         {
-            _guardVisible = true;
+            //_guardVisible = true;
             strComp = $"Integration {gpeLiba}";
         }
         if (_chxMenu == 2)
         {
-            _guardVisible = true;
+            //_guardVisible = true;
             strComp = $"Accueil/Site  {gpeLiba}";
         }
         StateHasChanged();
@@ -408,10 +494,22 @@ else
     {
         StateHasChanged();
     }
+    public void Dispose()
+    {
+        _locationHandler?.Dispose();
+        // Parent-level cleanup
+        _guard.DiscardUnconfirmedAdds<Tiewel>();
+        _guard.DiscardUnconfirmedAdds<Tiersp>();
+        _guard.DiscardUnconfirmedAdds<Tiwatr>();
+        _guard.DiscardUnconfirmedAdds<Tieatr>();
+        _guard.DiscardUnconfirmedAdds<Tiwafl>();
+        _guard.DiscardUnconfirmedAdds<Tieafl>();
+    }
+
     void NavigateBack()
     {
-        _navmanager.NavigateTo("/");
-    }  
+        _navManager.NavigateTo("/");
+    }
     
     private async Task SetLoadingState()
     {

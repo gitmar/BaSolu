@@ -1020,84 +1020,81 @@ else
         await ProcessEntity(fmt, isConfirm, "Actdets", f => ValidateFmt(f));
     }
 
-    private async Task ProcessEntity<T>(T entity, bool isConfirm, string entitySet, Func<T, bool> validate) 
+    private async Task ProcessEntity<T>(T entity, bool isConfirm, string entitySet, Func<T, bool> validate)
     where T : class
+{
+    Console.WriteLine($"🔄 Process{typeof(T).Name}: {(isConfirm ? "CONFIRM" : "CANCEL")}");
+    
+    if (entity == null)
     {
-        Console.WriteLine($"🔄 Process{(typeof(T).Name)}: {(isConfirm ? "CONFIRM" : "CANCEL")}");
-        if (entity == null) { 
-            Imessage = "entity nulle"; 
-            StateHasChanged(); 
-            return; 
-        }
-        if (isConfirm)
-        {
-            CopyDraftToGridItem<T>(entity);
-            // 🔥 1. VALIDATE FIRST - uses your ValidateXXX() helpers
-            if (!validate(entity))
-            {
-                // Imessage already set by ValidatePln/ValidateRub/ValidateFmt
-                Console.WriteLine($"❌ Validation failed: {Imessage}");
-                StateHasChanged();
-                return;
-            }
-            // 🔥 2. NEW vs EXISTING LOGIC
-            bool isNewAdd = GetXadd1(entity) == -1;
-            if (isNewAdd)
-            {
-                // 🔥 NEW ADD: AddObject (not tracked yet)
-                curODContext.AddObject(entitySet, entity);
-                Console.WriteLine($"➕ NEW {typeof(T).Name} → AddObject");
-            }
-            else
-            {
-                // 🔥 EXISTING: Attach + UpdateObject
-                if (!curODContext.IsEntityTracked(entity))
-                {
-                    curODContext.Context.AttachTo(entitySet, entity);
-                    Console.WriteLine($"📥 Attached existing {entitySet}");
-                }
-                curODContext.Context.UpdateObject(entity);
-                Console.WriteLine($"✏️ EXISTING {typeof(T).Name} → UpdateObject");
-            }
-            // 🔥 2. Container: Attach → Update → Flags
-            if (!curODContext.IsEntityTracked(entity))
-            {
-                curODContext.Context.AttachTo(entitySet, entity);
-                Console.WriteLine($"📥 Attached {entitySet}");
-            }
-
-            SetFlags(entity, 0, -1, 0);  // Confirmed: Xadd1=0, Xedt1=-1
-            curODContext.Context.UpdateObject(entity);
-
-            Console.WriteLine($"✅ {typeof(T).Name} confirmed → tracked");
-
-            // 🔥 3. UI cleanup
-            ResetRowState((Guid)typeof(T).GetProperty("Rowguid")!.GetValue(entity)!);
-            SetLightBackground((Guid)typeof(T).GetProperty("Rowguid")!.GetValue(entity)!, false);
-            ResetEntityUIState<T>();
-            await NotifyPendingChanges();
-            Imessage = $"✅ {typeof(T).Name} confirmed";
-        }
-        else  // CANCEL
-        {
-            if (GetXadd1(entity) == -1)  // New add
-            {
-                if (curODContext.IsEntityTracked(entity))
-                    curODContext.Context.Detach(entity);
-                RemoveFromParentCollection(entity);
-                Console.WriteLine($"🗑️ New {typeof(T).Name} canceled");
-            }
-            else
-            {
-                ClearDraft<T>();
-            }
-            ResetRowState((Guid)typeof(T).GetProperty("Rowguid")!.GetValue(entity)!);
-            ResetEntityUIState<T>();
-            Imessage = "";
-        }
-
+        Imessage = "entity nulle";
         StateHasChanged();
+        return;
     }
+
+    if (isConfirm)
+    {
+        // 🔥 1. Copy draft → entity (for validation)
+        CopyDraftToGridItem(entity);
+        
+        // 🔥 2. VALIDATE (now has updated values)
+        if (!validate(entity))
+        {
+            Console.WriteLine($"❌ Validation failed: {Imessage}");
+            StateHasChanged();
+            return;
+        }
+        
+        // 🔥 3. NEW vs EXISTING (SINGLE operation)
+        bool isNew = GetXadd1(entity) == -1;  // Assumes GetXadd1<T>
+        if (isNew)
+        {
+            curODContext.AddObject(entitySet, entity);  // Tracks + prepares INSERT
+            Console.WriteLine($"➕ NEW {typeof(T).Name} → AddObject");
+        }
+        else
+        {
+            curODContext.SafeAttachOrUpdate(entity, entitySet, false);  // Your method!
+            Console.WriteLine($"✏️ EXISTING → SafeAttachOrUpdate");
+        }
+        
+        // 🔥 4. Confirm flags ONCE
+        SetFlags(entity, 0, -1, 0);  // Xadd1=0 confirmed
+        
+        // 🔥 5. SINGLE UpdateObject (applies flags + changes)
+        curODContext.UpdateObject(entity);
+        Console.WriteLine($"✅ {typeof(T).Name} confirmed → tracked");
+
+        // 🔥 6. UI + notify
+        var rowguid = GetRowguid(entity);  // Generic helper
+        ResetRowState(rowguid);
+        SetLightBackground(rowguid, false);
+        ResetEntityUIState<T>();
+        await NotifyPendingChanges();
+        Imessage = $"✅ {typeof(T).Name} confirmed";
+    }
+    else  // CANCEL (unchanged - perfect)
+    {
+        if (GetXadd1(entity) == -1)  // New only
+        {
+            if (curODContext.IsEntityTracked(entity))
+                curODContext.Detach(entity);
+            RemoveFromParentCollection(entity);
+        }
+        else
+        {
+            ClearDraft<T>();
+        }
+        var rowguid = GetRowguid(entity);
+        ResetRowState(rowguid);
+        ResetEntityUIState<T>();
+        Imessage = "";
+    }
+    StateHasChanged();
+}
+// 🔥 Generic Rowguid (no reflection)
+private static Guid GetRowguid<T>(T entity) where T : class
+    => ((dynamic)entity).Rowguid;  // Or property expression
 
     // Generic flag setter
     private void SetFlags<T>(T entity, int xadd1, int xedt1, int xdel1)

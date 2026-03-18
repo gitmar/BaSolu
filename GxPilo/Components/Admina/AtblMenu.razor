@@ -304,7 +304,7 @@
             toChild.LsPlans = LsPlans;
             toChild.LsTabls = LsTabls;
             toChild.curOrga = curOrga;  // ADD THIS!
-            _guard.RegisterUnconfirmedPredicate<Gsgfix>(p => p.Xadd1 == -1);
+            _guard.RegisterUnconfirmedPredicate<Gsgfix>(g => g.Xadd1 == -1 || g.Xedt1 == -1 || g.Xdel1 == -1);
             _nbChanges = _guard.GetPendingChangesCount();  // Initial value
         }
         catch (Exception ex)

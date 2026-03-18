@@ -1,7 +1,12 @@
 ﻿using System.ComponentModel.DataAnnotations.Schema;
 
+using GxShared.Sess;
+
+using Microsoft.OData.Client;
+
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+
 namespace GxWapi.DaModels
 {
     public partial class Gxorga
@@ -32,6 +37,20 @@ namespace GxWapi.DaModels
         public string Abg { get; set; } = string.Empty;
         [JsonIgnore]
         public string Frsource { get; set; } = string.Empty;
+        //mrthode to populate the properties from Gsgfix
+        public void LoadFromRubvar(Rubvar myvar)
+        {
+            if (myvar == null) return;
+            Liba = myvar.Liba;
+            Abg = myvar.Abg;
+            Frsource = myvar.Frsrc;
+        }
+        public void LoadFromTiersp(Tiersp mytie)
+        {
+            KMatri = mytie.Smatri;
+            Nom = mytie.Nom;
+            Pnom = mytie.Pnom;       
+        }
     }
     public partial class Actdet
     {
@@ -47,6 +66,13 @@ namespace GxWapi.DaModels
         public string Liba { get; set; } = string.Empty;
         [JsonIgnore]
         public string Abg { get; set; } = string.Empty;
+        public void LoadFromRubvar(Rubvar myvar)
+        {
+            if (myvar == null) return;
+            Liba = myvar.Liba;
+            Abg = myvar.Abg;
+        }
+
         [JsonIgnore]
         public int Col { get; set; } = 0;
         [JsonIgnore]
@@ -296,24 +322,77 @@ namespace GxWapi.DaModels
     public partial class Tieatr
     {
         [JsonIgnore]
+        public int Iui { get; set; } = 0;
+        [JsonIgnore]
+        public int Xadd1 { get; set; } = 0;
+        [JsonIgnore]
+        public int Xedt1 { get; set; } = 0;
+        [JsonIgnore]
+        public int Xdel1 { get; set; } = 0;
+        [JsonIgnore]
+        public string Acode { get; set; } = "";
+        [JsonIgnore]
+        public string Aliba { get; set; } = "";
+        [JsonIgnore]
+        public string Alib2 { get; set; } = "";
+        [JsonIgnore]
+        public string Aabg { get; set; } = "";
+        //mrthode to populate the properties from Gsgfix
+        public void LoadFromGsgfix(Gpvar gsgvar)
+        {
+            if (gsgvar == null) return;
+            Iui = gsgvar.Xseq;
+            Acode = gsgvar.Code.ToString();
+            Aliba = gsgvar.Liba;
+            Alib2 = gsgvar.Sliba; 
+            Aabg = gsgvar.Abg;
+        }
+        [JsonIgnore]
+        public AEntState AtState { get; set; } = AEntState.Unchanged;
+
+        [JsonIgnore]
         public int Ajacc { get; set; } = 0;
         [JsonIgnore]
         public int Ajrej { get; set; } = 0;
         [JsonIgnore]
         public int Ajnot { get; set; } = 0;
-        [JsonIgnore]
-        public int Aztyp { get; set; } = 0;
     }
     public partial class Tiwatr
     {
         [JsonIgnore]
+        public int Iui { get; set; } = 0;
+        [JsonIgnore]
+        public int Xadd1 { get; set; } = 0;
+        [JsonIgnore]
+        public int Xedt1 { get; set; } = 0;
+        [JsonIgnore]
+        public int Xdel1 { get; set; } = 0;
+        [JsonIgnore]
+        public string Acode { get; set; } = "";
+        [JsonIgnore]
+        public string Aliba { get; set; } = "";
+        [JsonIgnore]
+        public string Alib2 { get; set; } = "";
+        [JsonIgnore]
+        public string Aabg { get; set; } = "";
+        //mrthode to populate the properties from Gsgfix
+        public void LoadFromGsgfix(Gpvar gsgvar)
+        {
+            if (gsgvar == null) return;
+            Iui = gsgvar.Xseq;
+            Acode = gsgvar.Code.ToString();
+            Aliba = gsgvar.Liba;
+            Alib2 = gsgvar.Sliba;
+            Aabg = gsgvar.Abg;
+        }
+        [JsonIgnore]
+        public AEntState AtState { get; set; } = AEntState.Unchanged;
+        [JsonIgnore]
         public int Ajacc { get; set; } = 0;
         [JsonIgnore]
         public int Ajrej { get; set; } = 0;
         [JsonIgnore]
         public int Ajnot { get; set; } = 0;
-        [JsonIgnore]
-        public int Aztyp { get; set; } = 0;
     }
     public partial class Gsesio
     {

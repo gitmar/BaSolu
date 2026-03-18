@@ -301,8 +301,6 @@ namespace GxWapi.DaModels
         public int Ajrej { get; set; } = 0;
         [JsonIgnore]
         public int Ajnot { get; set; } = 0;
-        [JsonIgnore]
-        public int Aztyp { get; set; } = 0;
     }
     public partial class Tiwatr
     {
@@ -312,8 +310,6 @@ namespace GxWapi.DaModels
         public int Ajrej { get; set; } = 0;
         [JsonIgnore]
         public int Ajnot { get; set; } = 0;
-        [JsonIgnore]
-        public int Aztyp { get; set; } = 0;
     }
     public partial class Gsesio
     {
