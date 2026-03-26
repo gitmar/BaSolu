@@ -1,0 +1,182 @@
+﻿@page "/register"
+@using System.ComponentModel.DataAnnotations
+@using GxShared.ShdServices
+
+@inject IHttpClientFactory _httpClientFactory
+@inject NavigationManager Nav
+
+<h3 class="mb-4">@SxOrig</h3>
+
+@if (!isLoaded)
+{
+    <p>Loading...</p>
+}
+else if (!isValid)
+{
+    <div class="alert alert-danger">Invalid or expired invite link.</div>
+}
+else
+{
+    <EditForm Model="@MyRegisDto" OnValidSubmit="HandleRegister">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+
+        <!-- Organisation info -->
+        <div class="row mb-2">
+            <label class="fw-bold">@Sigle</label>
+            <label class="fw-bold">@Raison</label>
+        </div>
+
+        <!-- Email (readonly) -->
+        <div class="mb-2">
+            <label>Email</label>
+            <InputText class="form-control" @bind-Value="MyRegisDto.Email" disabled />
+        </div>
+
+        <!-- Nom -->
+        <div class="mb-2">
+            <label>Nom</label>
+            <InputText class="form-control" @bind-Value="MyRegisDto.Nom" />
+        </div>
+
+        <!-- Pnom -->
+        <div class="mb-2">
+            <label>Pnom</label>
+            <InputText class="form-control" @bind-Value="MyRegisDto.Pnom" />
+        </div>
+
+        <!-- Username -->
+        <div class="mb-2">
+            <label>Username</label>
+            <InputText class="form-control" @bind-Value="MyRegisDto.Username" />
+        </div>
+
+        <!-- Password -->
+        <div class="mb-2">
+            <label>Password</label>
+            <InputText type="password" class="form-control" @bind-Value="MyRegisDto.Password" />
+        </div>
+
+        <!-- Confirm -->
+        <div class="mb-2">
+            <label>Confirm Password</label>
+            <InputText type="password" class="form-control" @bind-Value="MyRegisDto.ConfirmPassword" />
+        </div>
+
+        <button class="btn btn-primary" disabled="@isSubmitting">
+            @(isSubmitting ? "Registering..." : "Register")
+        </button>
+    </EditForm>
+
+    @if (!string.IsNullOrEmpty(message))
+    {
+        <div class="alert alert-info mt-3">@message</div>
+    }
+}
+
+@code {
+    [Parameter]
+    [SupplyParameterFromQuery(Name = "cdlink")]
+
+    public string? CdLink { get; set; }
+    private HttpClient _apiClient;
+    private RegisterDto MyRegisDto = new();
+    private InviteLinkData? InviteData;
+
+    private bool isLoaded = false;
+    private bool isValid = false;
+    private bool isSubmitting = false;
+    private string? message;
+
+    // UI fields
+    private string SxOrig = "";
+    private string Raison = "";
+    private string Sigle = "";
+
+    protected override async Task OnInitializedAsync()
+    {
+        Console.WriteLine("A BIEN ATTERRI");
+        _apiClient = _httpClientFactory.CreateClient("AUTHClient");
+
+        if (string.IsNullOrEmpty(CdLink))
+        {
+            isLoaded = true;
+            return;
+        }
+
+        // Use CdLink directly
+        var cdlink = CdLink;
+
+        Console.WriteLine($"cdlink  : {cdlink}");
+        if (string.IsNullOrEmpty(cdlink))
+        {
+            isLoaded = true;
+            return;
+        }
+
+        try
+        {
+            // 🔥 IMPORTANT: move decoding to API (recommended)
+            var response = await _apiClient.GetFromJsonAsync<InviteLinkData>(
+                $"regis/decode?cdlink={cdlink}");
+
+            if (response == null)
+                return;
+
+            InviteData = response;
+
+            // Prefill DTO (same as your OnGet)
+            MyRegisDto.Email = InviteData.Email;
+            MyRegisDto.Username = InviteData.Username;
+            MyRegisDto.Nom = InviteData.Nom;
+            MyRegisDto.Pnom = InviteData.Pnom;
+
+
+            // org info (you may also fetch via API)
+            //Raison = InviteData.Raison;
+            //Sigle = InviteData.Sigle;
+
+            isValid = true;
+        }
+        catch
+        {
+            isValid = false;
+        }
+
+        isLoaded = true;
+    }
+
+    private async Task HandleRegister()
+    {
+        isSubmitting = true;
+        message = null;
+
+        try
+        {
+            // merge invite data (like your OnPost)
+            MyRegisDto.Idorg = InviteData.Idorg;
+            MyRegisDto.Ivrole = InviteData.Ivrole;
+            MyRegisDto.Itoken = InviteData.Itoken;
+
+            var response = await _apiClient.PostAsJsonAsync(
+                "regis/register",
+                MyRegisDto);
+
+            if (!response.IsSuccessStatusCode)
+            {
+                message = await response.Content.ReadAsStringAsync();
+                return;
+            }
+
+            Nav.NavigateTo("/register-success");
+        }
+        catch
+        {
+            message = "Registration failed.";
+        }
+        finally
+        {
+            isSubmitting = false;
+        }
+    }
+}

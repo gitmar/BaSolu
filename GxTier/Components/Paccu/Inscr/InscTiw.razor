@@ -105,80 +105,83 @@
                                                     </Button>
                                                 }
                                         </div>
-                                        <div class="d-flex align-items-center gap-2">
-                                            <MainGridHelper FilteredData="@PersonsForGrid"
-                                                EdRowguid="@EdTiwRowguid"
-                                                Visibility="@TiwVisibility"
-                                                RenderKey="persons-grid"
-                                                DraftEntity="@draftPers"
-                                                SelectedEntity="@curPerson"
-                                                TbItems="@TbItems" />
-                                        </div>
+                                        @if(curTiw?.Xadd1 == -1 || curTiw?.Xedt1 == -1)
+                                        {
+                                            <div>
+                                                <MainGridHelper FilteredData="@PersonsForGrid"
+                                                    EdRowguid="@EdTiwRowguid"
+                                                    Visibility="@TiwVisibility"
+                                                    RenderKey="persons-grid"
+                                                    DraftEntity="@draftPers"
+                                                    SelectedEntity="@curPerson"
+                                                    TbItems="@TbItems" />
+                                            </div>
                                         <!--Attributs plus-->
-                                        <div class="d-flex align-items-center gap-2">
-                                            @foreach(var ua in LsVars.Where(a => a.Gvars == 6 && a.Itb == Ugpe))
-                                            {
-                                                //cur atr
-                                                Tiwatr icatr = curTiw.Tiwatrs.FirstOrDefault(tat => tat.Igsg == ua.Xseq);
-                                                if (icatr == null)
-                                                {
-                                                    icatr = new();
-                                                    icatr.Xadd1 = -1;
-                                                    icatr.Igsg = ua.Xseq;
-                                                    icatr.Itie = curTiw.Id;
-                                                    icatr.Atyp = ua.Atyp;
-                                                    icatr.Aztyp = ua.Ztyp;
-                                                    icatr.Svala = "";
-                                                    icatr.AtState = AEntState.NewAdded;
-                                                }
-                                                <div class="row mb-2">
-                                                    <label class="fw-bold col-md-3 col-form-label text-nowrap">@ua.Liba:</label>
-                                                    <div class="col-md-9">
-                                                    @if (isEdtTiw || isAddTiw)
-                                                    {
-                                                        if (ua.Zfro == 2)
-                                                            { //table - ztyp = 2 numerique
-                                                                <InputSelect @bind-Value="icatr.Svala" class="form-select col-md-9">
-                                                                    <option value="0">?choisir</option>
-                                                                    @foreach (var tob in TbItems.Where(ut => ut.Pxcod == ua.Xdpd))
-                                                                    {
-                                                                        <option value="@tob.Elea">@tob.Liba</option>
-                                                                    }
-                                                                </InputSelect>
-                                                            }
-                                                            else
-                                                            { //string/a convertir in trigger
-                                                               <InputText @bind-Value="icatr.Svala" class="form-control col-md-9" />
-                                                            }
-                                                        }
-                                                    else
-                                                    {
-                                                        if (ua.Zfro == 2)
-                                                        { //
-                                                            <InputSelect @bind-Value="icatr.Svala" disabled="true" class="form-select col-md-9">
-                                                                <option value="0">?choisir</option>
-                                                                @foreach (var tob in TbItems.Where(ut => ut.Pxcod == ua.Xdpd))
-                                                                {
-                                                                    <option value="@tob.Elea">@tob.Liba</option>
-                                                                }
-                                                            </InputSelect>
-                                                        }
-                                                        else
-                                                        {
-                                                            <span>@icatr.Svala</span>
-                                                        }
-                                                    }
-                                                    </div>
-                                                </div>
-                                            }
-                                        </div>
+                                            <div>
+    @foreach(var ua in LsVars.Where(a => a.Gvars == 6 && a.Itb == Ugpe))
+    {
+        Tiwatr icatr = curTiw.Tiwatrs.FirstOrDefault(tat => tat.Igsg == ua.Xseq);
+        if (icatr == null)
+        {
+            icatr = new();
+            icatr.Xadd1 = -1;
+            icatr.Igsg = ua.Xseq;
+            icatr.Itie = curTiw.Id;
+            icatr.Atyp = ua.Atyp;
+            icatr.Aztyp = ua.Ztyp;
+            icatr.Svala = "";
+            icatr.AtState = AEntState.NewAdded;
+        }
+
+        <div class="mb-2">
+            <!-- Label on top -->
+            <label class="form-label fw-bold ms-3">@ua.Liba:</label>
+
+            @if (isEdtTiw || isAddTiw)
+            {
+                if (ua.Zfro == 2)
+                {
+                    <InputSelect @bind-Value="icatr.Svala" class="form-select">
+                        <option value="0">?choisir</option>
+                        @foreach (var tob in TbItems.Where(ut => ut.Pxcod == ua.Xdpd))
+                        {
+                            <option value="@tob.Elea">@tob.Liba</option>
+                        }
+                    </InputSelect>
+                }
+                else
+                {
+                    <InputText @bind-Value="icatr.Svala" class="form-control" />
+                }
+            }
+            else
+            {
+                if (ua.Zfro == 2)
+                {
+                    <InputSelect @bind-Value="icatr.Svala" disabled class="form-select">
+                        <option value="0">?choisir</option>
+                        @foreach (var tob in TbItems.Where(ut => ut.Pxcod == ua.Xdpd))
+                        {
+                            <option value="@tob.Elea">@tob.Liba</option>
+                        }
+                    </InputSelect>
+                }
+                else
+                {
+                    <div class="form-control-plaintext">@icatr.Svala</div>
+                }
+            }
+        </div>
+    }
+</div>
+                                        }
                                     </Content>
                                 </Tab>
                                 <Tab title="Affilies">
                                     <Content>
                                          @if (CanEditChildren)
                                          {
-                                            <div class="d-flex align-items-center gap-2 mb-2">
+                                            <div class="d-flex row align-items-center gap-2 mb-2">
                                                 <label>Group:</label>
                                                 <InputSelect id="gpId" @bind-Value="IMyGAfl">
                                                     <option value="0">Select group...</option>
@@ -230,15 +233,79 @@
                                 </Tab>
                                 <Tab Title="Verification">
                                     <Content>
-
-                                    </Content>
+                                        @if (canbeVerified)
+                                         {
+                                        <div class="container row">
+                        <Grid TItem="Tiewel"
+                              Data="@WaitingTiewels"
+                              @key="TiwRenderKey"
+                              AllowSelection="true"
+                              SelectionMode="GridSelectionMode.Multiple"
+                              SelectedItemsChanged="OnSelectedItemsChanged"
+                              Responsive="true">
+                            <GridColumns>
+                                <GridColumn TItem="Tiewel" HeaderText="No">
+                                    <ChildContent Context="item">
+                                        <span>@(item.Xedt1 == -1 ? item?.Iui : (item?.Iui == 0 ? item?.Iele : item?.Iui))</span>
+                                    </ChildContent>
+                                </GridColumn>
+                                <GridColumn TItem="Tiewel" HeaderText="Dossier">
+                                    <ChildContent Context="item">
+                                        @item.Xmatri
+                                    </ChildContent>
+                                </GridColumn>
+                                <GridColumn TItem="Tiewel" HeaderText="Nom">
+                                    <ChildContent Context="item">
+                                        @item.Nom
+                                    </ChildContent>
+                                </GridColumn>
+                                <GridColumn TItem="Tiewel" HeaderText="Pnom">
+                                    <ChildContent Context="item">
+                                        @item.Pnom
+                                    </ChildContent>
+                                </GridColumn>
+                                <GridColumn TItem="Tiewel" HeaderText="etat" IsVisible="true">
+                                    <HeaderContent>
+                                                                    @if (siyaItem)
+                                                                    {
+                                                                        <button class="btn btn-primary btn-sm"
+                                                                                @onclick="() => ValiderSelection()">
+                                                                            ➕ Valider?
+                                                                        </button>
+                                                                    }
+                                                                    else
+                                                                    {
+                                                                        <span>Eta</span>
+                                                                    }
+                                                                </HeaderContent>
+                                    <ChildContent Context="item">
+                                            <InputSelect @bind-Value="item.Eta" disabled="true">
+                                                <option class="jchx" value="0">?choisir</option>
+                                                @foreach (var tob in LsFixes.Where(ut => ut.Gvars == 32 && ut.Itb == 1 && ut.Elea != 0))
+                                                {
+                                                    <option value="@tob.Elea">@tob.Liba</option>
+                                                }
+                                            </InputSelect>
+                                    </ChildContent>
+                                </GridColumn>
+                            </GridColumns>
+                            </Grid>
+                        </div>
+                                    }
+                                    else
+                                    {
+                                        <div class="alert alert-warning">
+                                              🚫 no saved records to verify.
+                                        </div>
+                                    }
+                                </Content>
                                 </Tab>
                             </Tabs>
                         </div>
                         <!--En bas ordinaire-->
                         <div class="container row">
                         <Grid TItem="Tiewel"
-                              Data="@MyDaTiws.Where(tu => tu.Xadd1 != -1).ToList()"
+                              Data="@WaitingTiewels"
                               @key="TiwRenderKey"
                               AllowDetailView="true"
                               AllowPaging="true"
@@ -295,11 +362,13 @@
                                                 break;
                                             case RowState.EditPending:
                                                 <Button Color="ButtonColor.Success" Size="ButtonSize.Small"
-                                                        @onclick="() => ConfirmEdit(item, EntityLevel.Plan)">
+                                                    Disabled="@(item.Xadd1 == -1)" 
+                                                    @onclick="() => ConfirmEdit(item, EntityLevel.Plan)">
                                                     ✅ Confirm
                                                 </Button>
                                                 <Button Color="ButtonColor.Secondary" Size="ButtonSize.Small"
-                                                        @onclick="() => CancelEdit(item, EntityLevel.Plan)">
+                                                    Disabled="@(item.Xadd1 == -1)"        
+                                                    @onclick="() => CancelEdit(item, EntityLevel.Plan)">
                                                     ❌ Cancel
                                                 </Button>
                                                 break;
@@ -363,7 +432,6 @@
                                                 case RowState.Locked:
                                                     <span class="text-muted">—</span>
                                                     break;
-
                                                 case RowState.DeletePending:
                                                     <Button Color="ButtonColor.Danger" Size="ButtonSize.Small"
                                                         @onclick="() => ConfirmDelete(item, EntityLevel.Rub)">
@@ -376,10 +444,12 @@
                                                     break;
                                                 case RowState.EditPending:
                                                     <Button Color="ButtonColor.Success" Size="ButtonSize.Small"
+                                                        Disabled="@(item.Xadd1 == -1)"    
                                                         @onclick="() => ConfirmEdit(item, EntityLevel.Rub)">
                                                         ✅ Confirm
                                                     </Button>
                                                     <Button Color="ButtonColor.Secondary" Size="ButtonSize.Small"
+                                                        Disabled="@(item.Xadd1 == -1)"
                                                         @onclick="() => CancelEdit(item, EntityLevel.Rub)">
                                                         ❌ Cancel
                                                     </Button>
@@ -578,18 +648,18 @@
     //pour modals formulas
     private Tiewel curTiw = new();
     private Tiwafl curRubr = new();
-    //private Rubfmt curFmat = new();
+    //private Rubfmt curFmat = new
 
-    private bool isRubCodeValid = false; //child
+
     ////private string DisabledClass => !EdtDelVue ? "disabled" : "";
     /// </summary> <summary>
     ///
-    //modals
-    private bool isModalVisible = false;
+
     //data
     private ObservableCollection<Tiewel> MyDaTiws { get; set; } = new();
     private List<EntPerson> Persons = new();
     private List<EntPerson> Affiles = new();
+    private HashSet<Tiewel> selectedTiewels = new();
     private EntPerson? curPerson = new();
     private EntPerson? draftPers = new();
     private EntPerson? curAfil = new();
@@ -600,6 +670,12 @@
     //add/edit options
     private bool AllowMultipleEdits { get; set; } = false;
     private bool isFiltre { get; set; } = false;
+    //modals
+    private bool isModalVisible = false;
+    private bool isRubCodeValid = false; //child
+    private List<Tiewel> WaitingTiewels => MyDaTiws.Where(tw => tw.Xadd1 != -1).ToList();
+    private bool canbeVerified => WaitingTiewels.Any();
+    private bool siyaItem => selectedTiewels.Any();
     //TABS
     private string ActiveTab { get; set; } = "Candidat";
 
@@ -657,7 +733,7 @@
 
     private bool CanEditChildren =>
         GMode != GridMode.PersAdding && curTiw?.Id != 0;
-
+        
 
     // For main entity grid
     // private bool IsMainEditingRow(EntPerson entity)
@@ -751,11 +827,11 @@
     }
     protected override void OnParametersSet()
     {
-        if (curTiw != null)
-        {
-            edTiwContext ??= new EditContext(curTiw);
-            // Or always recreate: edTiwContext = new EditContext(curTiw);
-        }
+        //if (curTiw != null)
+        //{
+        edTiwContext ??= new EditContext(curTiw);
+        // Or always recreate: edTiwContext = new EditContext(curTiw);
+        //}
         // if (curRubr != null)
         // {
         //     edAflContext ??= new EditContext(curRubr);
@@ -806,6 +882,7 @@
 
         Console.WriteLine($"✅ New row added to curOrga.Tiewels - Count: {curOrga.Tiewels.Count}");
         curTiw = newTiw;
+
 
         StartRowEdit(draftTiw.Rowguid, EntityLevel.Plan);
         StateHasChanged();
@@ -1747,6 +1824,13 @@
         var json = JsonConvert.SerializeObject(entity, settings);
         return JsonConvert.DeserializeObject(json, entity.GetType(), settings)!;
     }
+
+    private Task OnSelectedItemsChanged(HashSet<Tiewel> mytiws)
+    {
+        selectedTiewels = mytiws is not null && mytiws.Any() ? mytiws : new();
+        return Task.CompletedTask;
+    }
+
     bool AreRowsEqual(Tiwafl row1, Tiwafl row2) =>
         row1.Liba == row2.Liba && row1.Abg == row2.Abg;
     private int NextSeq<T>(IEnumerable<T> source, Func<T, int?> selector)

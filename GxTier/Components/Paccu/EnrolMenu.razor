@@ -146,30 +146,6 @@ else
             </div>
         </div>
 
-
-        @* @if (_guardVisible)
-        {
-            <div class="col-12">
-                @if (_guard.HasPendingChanges())
-                {
-                    <div class="alert alert-warning">
-                        <strong>@pendingCount changes pending across all tabs</strong>
-                    </div>
-                }
-                <div class="d-flex gap-2 justify-content-end">
-                    <Button Color="ButtonColor.Primary"
-                    @onclick="SaveAllAsync"
-                    Enabled="@_guard.HasPendingChanges()">
-                        Save All (@pendingCount changes)
-                    </Button>
-                    <Button Color="ButtonColor.Secondary"
-                    @onclick="CancelAllChanges">
-                        Cancel All Changes
-                    </Button>
-                </div>
-            </div>
-        } *@
-
     </div>
 }
 @code {
@@ -294,7 +270,7 @@ else
         //prise valeurs parent
         isLoading = true;
         LoadLabel = "data is loading";
-        SetLoadingState(); // 75, "Fetching data...");
+        await SetLoadingState(); // 75, "Fetching data...");
         var authState = await AuthState;
         authUser = authState.User;
         isAuthenticated = authUser.Identity.IsAuthenticated;
@@ -485,7 +461,7 @@ else
         var mygpe = LsGties.Where(gt => gt.Itb == 6 && gt.Elea == noG).FirstOrDefault();
         Ugpe = noG;
         Tgpe = mygpe.Gp2;
-        gpeLiba = LsGties.Where(ut => ut.Elea == mygpe.Elea).FirstOrDefault().Liba.ToUpperInvariant();
+        gpeLiba = mygpe.Liba.ToUpperInvariant(); //LsGties.Where(ut => ut.Elea == mygpe.Elea).FirstOrDefault().Liba.ToUpperInvariant();
         StateHasChanged();
         Console.WriteLine("PAS 2");
         await Task.Delay(1);

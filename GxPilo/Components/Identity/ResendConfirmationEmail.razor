@@ -1,0 +1,91 @@
+﻿@page "/resend-confirmation"
+@using System.ComponentModel.DataAnnotations
+@inject HttpClient Http
+@inject NavigationManager Nav
+@inject IConfiguration _iconfig
+
+<h3>Resend Confirmation Email</h3>
+
+<EditForm Model="@model" OnValidSubmit="HandleResend">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+
+    <div class="mb-3">
+        <label>Email address</label>
+        <InputText class="form-control" @bind-Value="model.Email" />
+    </div>
+
+    <button class="btn btn-primary" disabled="@isLoading">
+        @if (isLoading)
+        {
+            <span>Sending...</span>
+        }
+        else
+        {
+            <span>Resend confirmation email</span>
+        }
+    </button>
+</EditForm>
+
+@if (!string.IsNullOrEmpty(message))
+{
+    <div class="alert alert-info mt-3">
+        @message
+    </div>
+}
+
+@code {
+    private ResendModel model = new();
+    private bool isLoading = false;
+    private string? message;
+
+    protected override void OnInitialized()
+    {
+        // Optional: prefill email from query string
+        var uri = Nav.ToAbsoluteUri(Nav.Uri);
+        var query = System.Web.HttpUtility.ParseQueryString(uri.Query);
+
+        if (!string.IsNullOrEmpty(query["email"]))
+        {
+            model.Email = query["email"]!;
+        }
+    }
+
+    private async Task HandleResend()
+    {
+        isLoading = true;
+        message = null;
+
+        try
+        {
+            var backUrl = _iconfig["BackendUrl"];
+            if (!backUrl.EndsWith("/"))
+            {
+                backUrl += "/";
+            }
+            backUrl += "api/";
+            var response = await Http.PostAsJsonAsync("api/resendconfirm", new
+            {
+                email = model.Email
+            });
+
+            // Always show neutral message (security)
+            message = "If the account exists, a confirmation email has been sent.";
+        }
+        catch
+        {
+            message = "An error occurred. Please try again later.";
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    public class ResendModel
+    {
+        [Required]
+        [EmailAddress]
+        public string Email { get; set; } = string.Empty;
+    }
+}

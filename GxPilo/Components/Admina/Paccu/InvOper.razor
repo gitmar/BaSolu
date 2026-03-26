@@ -320,6 +320,28 @@ else
                                 </div>
                             </Content>
                         </Tab>
+                        <Tab Title="Renvoie" Name="RenvTab">
+                            <Content>
+                                <!-- Email -->
+                                <div class="col-md-4">
+                                    <label>Email:</label>
+                                    <InputText type="email" @bind-Value="_invModel.Email" class="form-control" />
+                                </div>
+                                <div class="col-md-4">
+                                    <label>Téléphone:</label>
+                                    <InputText @bind-Value="_invModel.PhoneNumber" class="form-control" />
+                                </div>
+                                <button class="btn btn-outline-danger btn-sm d-flex align-items-center" @onclick="() => ReInviteOperat()">
+                                    <i class="bi bi-envelope-plus me-1"></i>
+                                    Re-invite OPERATEUR
+                                </button>
+
+                                <button class="btn btn-outline-danger btn-sm d-flex align-items-center" @onclick="() => ReConfirmEmail()">
+                                    <i class="bi bi-envelope-check me-1"></i>
+                                    Re-confirm EMAIL
+                                </button>
+                            </Content>
+                        </Tab>
                     </Tabs>
                 </EditForm>
                 @if (invalidEmails.Any())
@@ -540,6 +562,49 @@ else
         // TODO: send invites
         operecipientsSaved = true;
         StateHasChanged();
+    }
+    private async Task<bool> ReInviteOperat()
+    {
+        OrgaCreateDto dto = new();
+        dto.Idorg = curOrga.Idorg;
+        dto.Email = _invModel.Email;
+
+        // dto.Ivrole = 2; //owner
+        // dto.Srole = "Owner";
+        // // Dynamic client per-customer
+        // var clieUrl = _inCustomer.Weburl;
+        // _dynClient.SetBaseUrl(clieUrl?.ToString().TrimEnd('/'));
+        // var client = _dynClient.GetClient();
+        // var response = await client.PostAsJsonAsync("api/usercontext/reinviteorga", dto);
+        // if (!response.IsSuccessStatusCode)
+        // {
+        //     var errorContent = await response.Content.ReadAsStringAsync();
+        //     Imessage = $"Failed: {response.StatusCode} - {errorContent}";
+        //     return false;
+        // }
+        return true;
+    }
+    private async Task<bool> ReConfirmEmail()
+    {
+        OrgaCreateDto dto = new();
+        dto.Idorg = curOrga.Idorg;
+        dto.Email = _invModel.Email;
+
+
+        // dto.Ivrole = 2; //owner
+        // dto.Srole = "Owner";
+        // // Dynamic client per-customer
+        // var clieUrl = _inCustomer.Weburl;
+        // _dynClient.SetBaseUrl(clieUrl?.ToString().TrimEnd('/'));
+        // var client = _dynClient.GetClient();
+        // var response = await client.PostAsJsonAsync("api/regis/resendconfirm", dto);
+        // if (!response.IsSuccessStatusCode)
+        // {
+        //     var errorContent = await response.Content.ReadAsStringAsync();
+        //     Imessage = $"Failed: {response.StatusCode} - {errorContent}";
+        //     return false;
+        // }
+        return true;
     }
     private void OnTabChanged(int tabIndex)
     {

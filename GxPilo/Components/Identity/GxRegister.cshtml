@@ -1,0 +1,420 @@
+﻿@page "{cdlink?}"
+@model GxWapi.Areas.Identity.Pages.Account.GxRegisterModel
+@{
+    ViewData["Title"] = "Owner Register";
+}
+<h3 class="mb-4">@Model.SxOrig</h3>
+<form method="post">
+    <div class="row mb-2">
+        <label class="fw-bold col-md-3 col-form-label text-nowrap">@Model.MyRegisDto.Refapl</label>
+        <label class="fw-bold col-md-5 col-form-label text-nowrap">@Model.Sigle</label>
+    </div>
+    <div class="row mb-2">
+        <label class="fw-bold col-md-3 col-form-label text-nowrap">@Model.Raison</label>
+        <label class="fw-bold col-md-5 col-form-label text-nowrap">@Model.Sidom</label>
+    </div>
+    <div class="row mb-2">
+        <label class="fw-bold col-md-5 col-form-label text-nowrap">@Model.WebUrl</label>
+    </div>
+    <div class="row mb-2">
+        <label class="fw-bold col-md-3 col-form-label text-nowrap">Role</label>
+        @if (Model._myRoles?.Any() == true)
+        {
+            <select asp-for="@Model.IxRole" class="col-md-3 form-select" disabled>
+                @foreach (var utp in @Model._myRoles)
+                {
+                    <option value="@utp.Level">
+                        @utp.Name
+                    </option>
+                }
+            </select>
+        }
+        else if (Model._myRoles == null)
+        {
+            <p>Loading...</p>
+        }
+        else
+        {
+            <p>role indisponible</p>
+        }
+    </div>
+    <div class="row mb-2">
+        <!-- Imessage -->
+        @if (!string.IsNullOrEmpty(Model.Imessage))
+        {
+            <div class="bg-danger bg-opacity-10">
+                <label asp-for="@Model.Imessage"
+                       class="form-label fw-bold text-danger">
+                    @Model.Imessage
+                </label>
+            </div>
+        }
+    </div>
+    <!-- Nom -->
+    <div class="row mb-2">
+        <label class="fw-bold col-md-3 col-form-label text-nowrap">Nom</label>
+        <input asp-for="MyRegisDto.Nom" class="form-control" />
+        <span asp-validation-for="MyRegisDto.Nom" class="text-danger"></span>
+    </div>
+
+    <!-- Pnom -->
+    <div class="row mb-2">
+        <label class="fw-bold col-md-3 col-form-label text-nowrap">Pnom</label>
+        <input asp-for="MyRegisDto.Pnom" class="form-control" />
+        <span asp-validation-for="MyRegisDto.Pnom" class="text-danger"></span>
+    </div>
+    <!-- Email -->
+    <div class="row mb-2">
+        <label class="fw-bold col-md-3 col-form-label text-nowrap">Email</label>
+        <span class="form-control-plaintext">@Model.MyRegisDto.Email</span>
+    </div>
+    <div class="row mb-2">
+        <label class="fw-bold col-md-3 col-form-label text-nowrap">PhoneNumber</label>
+        <input asp-for="MyRegisDto.PhoneNumber" class="form-control" />
+        <span asp-validation-for="MyRegisDto.PhoneNumber" class="text-danger"></span>
+    </div>
+    <!-- Whatsapp -->
+    <div class="row mb-2">
+        <label class="fw-bold col-md-3 col-form-label text-nowrap">WhatsApp</label>
+        <input asp-for="MyRegisDto.Whatsapp" class="form-control" />
+        <span asp-validation-for="MyRegisDto.Whatsapp" class="text-danger"></span>
+    </div>
+    <!-- Phone1 -->
+    <div class="row mb-2">
+        <label class="fw-bold col-md-3 col-form-label text-nowrap">Phone</label>
+        <input asp-for="MyRegisDto.Phone" class="form-control" />
+        <span asp-validation-for="MyRegisDto.Phone" class="text-danger"></span>
+    </div>
+    <!-- Phone2 -->
+    <div class="row mb-2">
+        <label class="fw-bold col-md-3 col-form-label text-nowrap">Phon2</label>
+        <input asp-for="MyRegisDto.Phon2" class="form-control" />
+        <span asp-validation-for="MyRegisDto.Phon2" class="text-danger"></span>
+    </div>
+    <!-- Naissance -->
+    <div class="row mb-2">
+        <label class="fw-bold col-md-3 col-form-label text-nowrap">Naissance</label>
+        @if (Model._myCatal?.Countries?.Any() == true)
+        {
+            <select asp-for="MyRegisDto.Npays"
+                    class="form-select">
+                @foreach (var utp in @Model._myCatal.Countries)
+                {
+                    <option value="@utp.Abg">
+                        @utp.Abg @utp.Liba
+                    </option>
+                }
+            </select>
+        }
+        else if (Model._myCatal == null)
+        {
+            <p>Loading...</p>
+        }
+        else
+        {
+            <p>naissance indisponible</p>
+        }
+    </div>
+    <!-- Nationalite -->
+    <div class="row mb-2">
+        <label class="fw-bold col-md-3 col-form-label text-nowrap">Nationalite</label>
+        @if (Model._myCatal?.Countries?.Any() == true)
+        {
+            <select asp-for="MyRegisDto.Natio"
+                    class="form-select">
+                @foreach (var utp in @Model._myCatal.Countries)
+                {
+                    <option value="@utp.Abg">
+                        @utp.Abg @utp.Liba
+                    </option>
+                }
+            </select>
+        }
+        else if (Model._myCatal == null)
+        {
+            <p>Loading...</p>
+        }
+        else
+        {
+            <p>nationalite indisponible</p>
+        }
+    </div>
+    <div class="row mb-2"></div>
+    <!-- Residence -->
+    <div class="col-md-4">
+        <label class="fw-bold col-md-3 col-form-label text-nowrap">Residence</label>
+        @if (Model._myCatal?.Countries?.Any() == true)
+        {
+            <select asp-for="MyRegisDto.Rpays"
+                    class="form-select">
+                @foreach (var utp in @Model._myCatal.Countries)
+                {
+                    <option value="@utp.Abg">
+                        @utp.Abg @utp.Liba
+                    </option>
+                }
+            </select>
+        }
+        else if (Model._myCatal == null)
+        {
+            <p>Loading...</p>
+        }
+        else
+        {
+            <p>residence indisponible</p>
+        }
+    </div>
+    <div class="row mb-2"></div>
+    <!-- Username -->
+    <div class="col-md-4">
+        <label class="fw-bold col-md-3 col-form-label text-nowrap">Username</label>
+        <input asp-for="MyRegisDto.Username" class="form-control" />
+        <span asp-validation-for="MyRegisDto.Username" class="text-danger"></span>
+    </div>
+    <!-- Password -->
+    <div class="row mb-2">
+        <label class="fw-bold col-md-3 col-form-label text-nowrap">Password</label>
+        <input asp-for="MyRegisDto.Password" type="password" class="form-control" />
+        <span asp-validation-for="MyRegisDto.Password" class="text-danger"></span>
+        <label class="fw-bold col-md-3 col-form-label text-nowrap">ConfirmPassword</label>
+        <input asp-for="MyRegisDto.ConfirmPassword" type="password" class="form-control" />
+        <span asp-validation-for="MyRegisDto.ConfirmPassword" class="text-danger"></span>
+    </div>
+   
+    <input type="hidden" asp-for="InviteData.Idorg" />
+    <input type="hidden" asp-for="InviteData.Email" />
+    <input type="hidden" asp-for="InviteData.Weburl" />
+    <input type="hidden" asp-for="InviteData.FbackUrl" />
+    <input type="hidden" asp-for="InviteData.Utyp" />
+    <input type="hidden" asp-for="InviteData.Ivrole" />
+    <input type="hidden" asp-for="InviteData.Itoken" />
+    <input type="hidden" asp-for="InviteData.Refapl" />
+    <input type="hidden" asp-for="InviteData.Ihie" />
+    <input type="hidden" asp-for="InviteData.Ipst" />
+    <input type="hidden" asp-for="MyRegisDto.Brevman" />
+    <input type="hidden" asp-for="MyRegisDto.RgType" />
+    <input type="hidden" asp-for="MyRegisDto.EmType" />
+
+
+@* <div class="row g-3">
+    <!-- Ref,Invite -->
+    <div class="col-md-2">
+        <label asp-for="MyRegisDto.Refapl" class="form-label fw-bold"></label>
+            <span class="form-control-plaintext">@Model.MyRegisDto.Refapl</span>
+    </div>
+    <!-- Sigle -->
+    <div class="col-md-4">
+        <label asp-for="Sigle" class="form-label fw-bold"></label>
+        <span class="form-control-plaintext">@Model.Sigle</span>
+    </div>
+
+    <!-- Raison -->
+    <div class="col-md-6">
+        <label asp-for="Raison" class="form-label fw-bold"></label>
+        <span class="form-control-plaintext">@Model.Raison</span>
+    </div>
+
+    <!-- Domaine -->
+    <div class="col-md-4">
+        <label asp-for="Sidom" class="form-label fw-bold"></label>
+        <span class="form-control-plaintext">@Model.Sidom</span>
+    </div>
+    <!-- Website -->
+    <div class="col-md-4">
+        <label asp-for="WebUrl" class="form-label fw-bold"></label>
+        <span class="form-control-plaintext">@Model.WebUrl</span>
+    </div>
+    <div class="col-md-4"></div>
+    <!-- Role -->
+    <div class="col-md-4">
+        <label asp-for="IxRole" class="form-label fw-bold">Role</label>
+        @if (Model._myRoles?.Any() == true)
+        {
+            <select asp-for="@Model.IxRole"
+                class="form-select" disabled>
+            @foreach (var utp in @Model._myRoles)
+            {
+                <option value="@utp.Level">
+                    @utp.Name
+                </option>
+            }
+        </select>
+        }
+        else if (Model._myRoles == null)
+        {
+            <p>Loading...</p>
+        }
+        else
+        {
+            <p>role indisponible</p>
+        }
+    </div>
+    <!-- Imessage -->
+    @if (!string.IsNullOrEmpty(Model.Imessage))
+    {
+        <div class="col-md-12 bg-danger bg-opacity-10">
+            <label asp-for="@Model.Imessage"
+            class="form-label fw-bold text-danger">
+                @Model.Imessage
+            </label>
+        </div>
+    }
+        <!-- Nom -->
+        <div class="col-md-4">
+            <label asp-for="MyRegisDto.Nom" class="form-label fw-bold"></label>
+            <input asp-for="MyRegisDto.Nom" class="form-control" />
+            <span asp-validation-for="MyRegisDto.Nom" class="text-danger"></span>
+        </div>
+
+        <!-- Pnom -->
+        <div class="col-md-4">
+            <label asp-for="MyRegisDto.Pnom" class="form-label fw-bold"></label>
+            <input asp-for="MyRegisDto.Pnom" class="form-control" />
+            <span asp-validation-for="MyRegisDto.Pnom" class="text-danger"></span>
+        </div>
+        <div class="col-md-4"></div>
+    <!-- Email -->
+        <div class="col-md-4">
+            <label asp-for="MyRegisDto.Email" class="form-label fw-bold"></label>
+            <span class="form-control-plaintext">@Model.MyRegisDto.Email</span>
+        </div>
+        <div class="col-md-8"></div> *@
+    @* <div class="col-md-4">
+        <label asp-for="MyRegisDto.Email" class="form-label fw-bold"></label>
+        <input asp-for="MyRegisDto.Email" class="form-control" />
+        <span asp-validation-for="MyRegisDto.Email" class="text-danger"></span>
+    </div> *@
+    <!-- Phone -->
+
+    @* <div class="col-md-4">
+        <label asp-for="MyRegisDto.PhoneNumber" class="form-label fw-bold"></label>
+        <input asp-for="MyRegisDto.PhoneNumber" class="form-control" />
+        <span asp-validation-for="MyRegisDto.PhoneNumber" class="text-danger"></span>
+    </div>
+        <!-- Whatsapp -->
+        <div class="col-md-4">
+            <label asp-for="MyRegisDto.Whatsapp" class="form-label fw-bold"></label>
+            <input asp-for="MyRegisDto.Whatsapp" class="form-control" />
+            <span asp-validation-for="MyRegisDto.Whatsapp" class="text-danger"></span>
+        </div>
+        <div class="col-md-4"></div>
+        <!-- Phone1 -->
+        <div class="col-md-4">
+            <label asp-for="MyRegisDto.Phone" class="form-label fw-bold"></label>
+            <input asp-for="MyRegisDto.Phone" class="form-control" />
+            <span asp-validation-for="MyRegisDto.Phone" class="text-danger"></span>
+        </div>
+        <!-- Phone2 -->
+        <div class="col-md-4">
+            <label asp-for="MyRegisDto.Phon2" class="form-label fw-bold"></label>
+            <input asp-for="MyRegisDto.Phon2" class="form-control" />
+            <span asp-validation-for="MyRegisDto.Phon2" class="text-danger"></span>
+        </div>
+        <div class="col-md-4"></div>
+    <!-- Naissance -->
+    <div class="col-md-4">
+        <label asp-for="MyRegisDto.Npays" class="form-label fw-bold">Naissance</label>
+        @if (Model._myCatal?.Countries?.Any() == true)
+        {
+            <select asp-for="MyRegisDto.Npays"
+                    class="form-select">
+                @foreach (var utp in @Model._myCatal.Countries)
+                {
+                    <option value="@utp.Abg">
+                        @utp.Abg @utp.Liba
+                    </option>
+                }
+            </select>
+        }
+        else if (Model._myCatal == null)
+        {
+            <p>Loading...</p>
+        }
+        else
+        {
+            <p>naissance indisponible</p>
+        }
+    </div>
+    <!-- Nationalite -->
+    <div class="col-md-4">
+        <label asp-for="MyRegisDto.Natio" class="form-label fw-bold">Nationalite</label>
+        @if (Model._myCatal?.Countries?.Any() == true)
+        {
+            <select asp-for="MyRegisDto.Natio"
+                    class="form-select">
+                @foreach (var utp in @Model._myCatal.Countries)
+                {
+                    <option value="@utp.Abg">
+                        @utp.Abg @utp.Liba
+                    </option>
+                }
+            </select>
+        }
+        else if (Model._myCatal == null)
+        {
+            <p>Loading...</p>
+        }
+        else
+        {
+            <p>nationalite indisponible</p>
+        }
+    </div>
+
+        <div class="col-md-4"></div>
+    <!-- Residence -->
+    <div class="col-md-4">
+        <label asp-for="MyRegisDto.Rpays" class="form-label fw-bold">Residence</label>
+        @if (Model._myCatal?.Countries?.Any() == true)
+        {
+            <select asp-for="MyRegisDto.Rpays"
+                    class="form-select">
+                @foreach (var utp in @Model._myCatal.Countries)
+                {
+                    <option value="@utp.Abg">
+                        @utp.Abg @utp.Liba
+                    </option>
+                }
+            </select>
+        }
+        else if (Model._myCatal == null)
+        {
+            <p>Loading...</p>
+        }
+        else
+        {
+            <p>residence indisponible</p>
+        }
+    </div>
+    <div class="col-md-8"></div>
+        <!-- Username -->
+        <div class="col-md-4">
+            <label asp-for="MyRegisDto.Username" class="form-label fw-bold"></label>
+            <input asp-for="MyRegisDto.Username" class="form-control" />
+            <span asp-validation-for="MyRegisDto.Username" class="text-danger"></span>
+        </div>
+        <!-- Password -->
+        <div class="col-md-4">
+            <label asp-for="MyRegisDto.Password" class="form-label fw-bold"></label>
+            <input asp-for="MyRegisDto.Password" type="password" class="form-control" />
+            <span asp-validation-for="MyRegisDto.Password" class="text-danger"></span>
+        </div>
+        <!-- ConfirmPassword -->
+        <div class="col-md-4">
+            <label asp-for="MyRegisDto.ConfirmPassword" class="form-label fw-bold"></label>
+            <input asp-for="MyRegisDto.ConfirmPassword" type="password" class="form-control" />
+            <span asp-validation-for="MyRegisDto.ConfirmPassword" class="text-danger"></span>
+        </div> *@
+        
+
+        <!-- etc. -->
+    </div>
+    <div class="row">
+        <div class="col-md-6"></div>
+        <div class="col-md-2">
+            <button class="btn btn-primary" type="submit">Enregister</button>
+        </div>
+    </div>
+</form>
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
