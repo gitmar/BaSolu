@@ -1,0 +1,28 @@
+﻿@using GxWapi.DaModels
+@using GxShared.Others
+
+<h3>CTiwGdHelper</h3>
+
+@code {
+    // Workflow flags
+    [Parameter] public Tiwafl Draft { get; set; }
+    [Parameter] public string Mode { get; set; } = "View";
+    [Parameter] public bool CanEdit { get; set; } = true;
+    [Parameter] public Dictionary<string, bool> AflVisibility { get; set; } = new();
+
+    private bool isEditing => Mode == "Add" || Mode == "Edit";
+
+    [Parameter] public List<Gptbl> TbItems { get; set; }
+    // Identifiers
+    [Parameter] public string RenderKey { get; set; }
+    [Parameter] public Guid? EdRowguid { get; set; }
+    // Actions passed in from parent
+    [Parameter] public EventCallback<Tiwafl> ConfirmEdit { get; set; }
+    [Parameter] public EventCallback<Tiwafl> CancelEdit { get; set; }
+
+    [Parameter] public EventCallback<Tiwafl> ConfirmDelete { get; set; }
+    [Parameter] public EventCallback<Tiwafl> CancelDelete { get; set; }
+    [Parameter] public EventCallback<Tiwafl> StartRubEdit { get; set; }
+    [Parameter] public EventCallback<Guid> StartRowDelete { get; set; }
+
+}

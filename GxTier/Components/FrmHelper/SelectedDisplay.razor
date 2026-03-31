@@ -1,0 +1,76 @@
+﻿@using GxShared.Others
+
+@typeparam TValue
+
+@if (Options?.Any() == true && GetOptionValue != null)
+{
+    @if (isEditing)
+    {
+        <InputSelect TValue="TValue"
+                     @bind-Value="Value"
+                     class="form-select">
+            <option value="">?choisir</option>
+            @foreach (var opt in Options)
+            {
+                <option value="@GetOptionValue(opt)">@GetOptionLabel(opt)</option>
+            }
+        </InputSelect>
+    }
+    else
+    {
+        <div class="form-control-plaintext">@GetSelectedLabel()</div>
+    }
+}
+else
+{
+    <select class="form-select" disabled>?loading...</select>
+}
+
+@code {
+    [Parameter] public bool isEditing { get; set; }
+    [Parameter] public TValue? Value { get; set; }
+    [Parameter] public EventCallback<TValue?> ValueChanged { get; set; }
+
+    [Parameter] public List<Gptbl>? Options { get; set; }
+    [Parameter] public Func<Gptbl, TValue>? GetOptionValue { get; set; }
+    [Parameter] public Func<Gptbl, string>? GetOptionLabel { get; set; } = t => t.Liba ?? "";
+
+    private string GetSelectedLabel()
+    {
+        if (Value == null || Options == null) return "?choisir";
+        var sel = Options.FirstOrDefault(o => GetOptionValue!(o)!.Equals(Value));
+        return sel != null ? GetOptionLabel!(sel) : "?choisir";
+    }
+}
+
+
+@* @code {
+    [Parameter] public bool isEditing { get; set; }
+
+    // ✅ Nullable support
+    [Parameter] public TValue? Value { get; set; }
+    [Parameter] public EventCallback<TValue?> ValueChanged { get; set; }
+
+    [Parameter] public List<Gptbl>? Options { get; set; }
+    [Parameter] public Func<Gptbl, TValue>? GetOptionValue { get; set; }
+    [Parameter] public Func<Gptbl, string>? GetOptionLabel { get; set; } = t => t.Liba ?? "";
+
+    protected override void OnParametersSet()
+    {
+        // Safe handling
+        if (ValueChanged.HasDelegate == false && Value != null)
+            ValueChanged.InvokeAsync(Value);
+        Console.WriteLine("SelectedDisplay OnParametersSet");
+    }
+
+    private string GetSelectedLabel()
+    {
+        if (Value == null || Options == null) return "?choisir";
+        return Options.FirstOrDefault(o => GetOptionValue!(o)!.Equals(Value))
+            is Gptbl sel ? GetOptionLabel!(sel) : "?choisir";
+    }
+} *@
+
+
+
+

@@ -1,0 +1,314 @@
+﻿@using GxTie.ClieModels
+@using GxShared.Others
+@using GxWapi.DaModels
+
+@if (draftAfl != null)
+{
+    <div class="card">
+        <div class="card-body p-3">
+            <!-- FIELD 3: Nom -->
+            <FormField Label="Nom" IsVisible="@AflVisibility.GetValueOrDefault("Nom", true)">
+                @if (isEditing)
+                {
+                    <InputText @bind-Value="draftAfl.Nom" class="form-control" />
+                }
+                else
+                {
+                    <span class="form-control-plaintext">@draftAfl.Nom</span>
+                }
+            </FormField>
+            <!-- FIELD 4: Pnom -->
+            <FormField Label="Pnom" IsVisible="@AflVisibility.GetValueOrDefault("Pnom", true)">
+                @if (isEditing)
+                {
+                    <InputText @bind-Value="draftAfl.Pnom" class="form-control" />
+                }
+                else
+                {
+                    <span class="form-control-plaintext">@draftAfl.Pnom</span>
+                }
+            </FormField>
+            <!-- FIELD 5: Nom de Jeune fille -->
+            <FormField Label="Bnom" IsVisible="@AflVisibility.GetValueOrDefault("Bnom", true)">
+                @if (isEditing)
+                {
+                    <InputText @bind-Value="draftAfl.Bnom" class="form-control" />
+                }
+                else
+                {
+                    <span class="form-control-plaintext">@draftAfl.Bnom</span>
+                }
+            </FormField>
+            <!-- FIELD 6: Statut (int) -->
+            <FormField Label="Statut" IsVisible="@AflVisibility.GetValueOrDefault("Statut", true)">
+                <SelectedDisplay TValue="int?" 
+                    @bind-Value="draftAfl!.Statut"
+                    isEditing="@isEditing"
+                    Options="@GetOptions(11)"
+                    GetOptionValue="@(t => t.Elea ?? 0)"
+                    GetOptionLabel="@(t => t.Liba ?? "")" />
+            </FormField>
+
+            <!-- FIELD 7: Relat (int) -->
+            <FormField Label="Relation" IsVisible="@AflVisibility.GetValueOrDefault("Relat", true)">
+                <SelectedDisplay TValue="int?" 
+                    @bind-Value="draftAfl!.Relat"
+                    isEditing="@isEditing"
+                    Options="@GetOptions(18)"
+                    GetOptionValue="@(t => t.Elea ?? 0)"
+                    GetOptionLabel="@(t => t.Liba ?? "")" />
+            </FormField>
+            <!-- FIELD 8: Sexe (int) -->
+            <FormField Label="Sexe" IsVisible="@AflVisibility.GetValueOrDefault("Sexe", true)">
+                <SelectedDisplay TValue="int?" 
+                    @bind-Value="draftAfl!.Sexe"
+                    isEditing="@isEditing"
+                    Options="@GetOptions(12)"
+                    GetOptionValue="@(t => t.Elea ?? 0)"
+                    GetOptionLabel="@(t => t.Liba ?? "")" />
+            </FormField>
+
+            <!-- FIELD 9: Sitmat (int) -->
+            
+            <FormField Label="Sit.Mat." IsVisible="@AflVisibility.GetValueOrDefault("Sitmat", true)">
+                <SelectedDisplay TValue="int?" 
+                    @bind-Value="draftAfl!.Sitmat"
+                    isEditing="@isEditing"
+                    Options="@GetOptions(13)"
+                    GetOptionValue="@(t => t.Elea ?? 0)"
+                    GetOptionLabel="@(t => t.Liba ?? "")" />
+            </FormField>
+
+            <!-- FIELD 10: Fonction -->
+            <FormField Label="Fonct." IsVisible="@AflVisibility.GetValueOrDefault("Ifonc", true)">
+                <SelectedDisplay TValue="int?" 
+                    @bind-Value="draftAfl!.Ifonc"
+                    isEditing="@isEditing"
+                    Options="@GetOptions(14)"
+                    GetOptionValue="@(t => t.Elea ?? 0)"
+                    GetOptionLabel="@(t => t.Liba ?? "")" />
+            </FormField>
+
+            <!-- FIELD 11: Grade -->
+            <FormField Label="Grade" IsVisible="@AflVisibility.GetValueOrDefault("Igrad", true)">
+                <SelectedDisplay TValue="int?" 
+                    @bind-Value="draftAfl!.Igrad"
+                    isEditing="@isEditing"
+                    Options="@GetOptions(15)"
+                    GetOptionValue="@(t => t.Elea ?? 0)"
+                    GetOptionLabel="@(t => t.Liba ?? "")" />
+            </FormField>
+   
+            <!-- FIELD 12: Email -->
+            <FormField Label="Email" IsVisible="@AflVisibility.GetValueOrDefault("Email", true)">
+                @if (isEditing)
+                {
+                    <InputText @bind-Value="draftAfl.Email" class="form-control" />
+                }
+                else
+                {
+                    <span class="form-control-plaintext">@draftAfl.Email</span>
+                }
+            </FormField>
+
+            <!-- FIELD 13: Phone -->
+            <FormField Label="Phone" IsVisible="@AflVisibility.GetValueOrDefault("Phone", true)">
+                @if (isEditing)
+                {
+                    <InputText @bind-Value="draftAfl.Phone" class="form-control" />
+                }
+                else
+                {
+                    <span class="form-control-plaintext">@draftAfl.Phone</span>
+                }
+            </FormField>
+
+            <!-- FIELD 14: Date de naissance -->
+            <FormField Label="Date Naiss." IsVisible="@AflVisibility.GetValueOrDefault("Dnais", true)">
+                @if (isEditing)
+                {
+                    <InputDate @bind-Value="draftAfl.Dnais" class="form-control" />
+                }
+                else
+                {
+                    <span class="form-control-plaintext">@draftAfl.Dnais</span>
+                }
+            </FormField>
+            
+            
+            <!-- FIELD 15: Date d’embauche -->
+            <FormField Label="Date Emb." IsVisible="@AflVisibility.GetValueOrDefault("Demb", true)">
+                @if (isEditing)
+                {
+                    <InputDate @bind-Value="draftAfl.Demb" class="form-control" />
+                }
+                else
+                {
+                    <span class="form-control-plaintext">@draftAfl.Demb</span>
+                }
+            </FormField>
+
+            <!-- FIELD 16: Nombre d’enfants -->
+            <FormField Label="Nb.Enf" IsVisible="@AflVisibility.GetValueOrDefault("Nenf", true)">
+                @if (isEditing)
+                {
+                    <InputNumber @bind-Value="draftAfl.Nenf" class="form-control" />
+                }
+                else
+                {
+                    <span class="form-control-plaintext">@draftAfl.Nenf</span>
+                }
+            </FormField>
+
+            <!-- FIELD 17: Responsabilité -->
+            <FormField Label="Responsable" IsVisible="@AflVisibility.GetValueOrDefault("Respon", true)">
+                <SelectedDisplay TValue="int?" 
+                    @bind-Value="draftAfl!.Respon"
+                    isEditing="@isEditing"
+                    Options="@GetOptions(17)" 
+                    GetOptionValue="@(t => t.Elea ?? 0)"
+                    GetOptionLabel="@(t => t.Liba ?? "")" />
+            </FormField>
+
+            <!-- FIELD 18: Pays de résidence -->
+            <FormField Label="Residence" IsVisible="@AflVisibility.GetValueOrDefault("Rpays", true)">
+                <SelectedDisplay TValue="string"
+                    @bind-Value="draftAfl!.Rpays"
+                    isEditing="@isEditing"
+                    Options="@GetOptions(31)"
+                    GetOptionValue="@(t => t.Abg ?? "")"
+                    GetOptionLabel="@(t => t.Liba ?? "")" />
+            </FormField>
+           
+            <!-- FIELD 19: Nationalité -->
+            <FormField Label="Natio" IsVisible="@AflVisibility.GetValueOrDefault("Natio", true)">
+                <SelectedDisplay TValue="string"
+                    @bind-Value="draftAfl!.Natio"
+                    isEditing="@isEditing"
+                    Options="@GetOptions(31)"
+                    GetOptionValue="@(t => t.Abg ?? "")"
+                    GetOptionLabel="@(t => t.Liba ?? "")" />
+            </FormField>
+  
+            <!-- FIELD 20: Méthode de paiement -->
+            <FormField Label="P.Meth" IsVisible="@AflVisibility.GetValueOrDefault("Ipaid", true)">
+                <SelectedDisplay TValue="int?" 
+                    @bind-Value="draftAfl!.Ipaid"
+                    isEditing="@isEditing"
+                    Options="@GetOptions(17)"
+                    GetOptionValue="@(t => t.Elea ?? 0)"
+                    GetOptionLabel="@(t => t.Liba ?? "")" />
+            </FormField>
+        </div>
+    </div>
+}
+@code {
+    [Parameter] public Dictionary<int, List<Gptbl>>? SelectOptions { get; set; } = new();
+    [Parameter] public IEnumerable<EntPerson> FilteredData { get; set; } = Enumerable.Empty<EntPerson>();
+    [CascadingParameter] public Dictionary<string, bool> AflVisibility { get; set; } = new();
+    [Parameter] public string RenderKey { get; set; } = "";
+
+    [Parameter] public Tieafl? draftAfl { get; set; }      // Single source
+    [Parameter] public string Mode { get; set; } = "View"; // "Add", "Edit", "View"
+    [Parameter] public List<Gptbl> TbItems { get; set; } = new();
+    [Parameter] public Guid? EdRowguid { get; set; }
+
+    // NO draftAfl → draftTiw only
+    //private bool isEditing => Mode == "Add" || Mode == "Edit";
+    // [Parameter] public Guid? EdRowguid { get; set; }
+    // [Parameter] public EntPerson? draftAfl { get; set; }
+    // [Parameter] public EntPerson? SelectedEntity { get; set; }
+
+    [Parameter] public int? SelectedGroup { get; set; }
+
+    //[Parameter] public IEnumerable<dynamic> TbItems { get; set; } = Enumerable.Empty<dynamic>();
+
+    // Actions passed in from parent
+    [Parameter] public EventCallback<Tieafl> ConfirmEdit { get; set; }
+    [Parameter] public EventCallback<Tieafl> CancelEdit { get; set; }
+
+    [Parameter] public EventCallback<Tieafl> ConfirmDelete { get; set; }
+    [Parameter] public EventCallback<Tieafl> CancelDelete { get; set; }
+    [Parameter] public EventCallback<Tieafl> StartRubEdit { get; set; }
+    [Parameter] public EventCallback<Guid> StartRowDelete { get; set; }
+
+    //bool isEditing => IsEditingRow(draftAfl, EdRowguid, draftAfl);
+    // [Parameter] public Dictionary<Guid, RowState> RowStates { get; set; } = new();
+
+    // private RowState ResolveRowState(Guid rowguid)
+    //     => RowStates.TryGetValue(rowguid, out var state) ? state : RowState.Normal;
+
+    // private bool IsEditingRow(EntPerson entity, Guid? edRowguid, EntPerson? draftAfl)
+    //     => entity.Rowguid == edRowguid && draftAfl != null;
+
+    // private EntPerson? draftAfl =>
+    //     draftAfl ??
+    //         (EdRowguid.HasValue
+    //             ? FilteredData.FirstOrDefault(p => p.Rowguid == EdRowguid)
+    //             : FilteredData.FirstOrDefault()); // or LastOrDefault()
+
+    private bool isEditing => Mode == "Add" || Mode == "Edit";
+    // Column management (keep as-is)
+    private Dictionary<int, List<Gptbl>> _cachedOptions = new();
+    private List<Gptbl> GetOptions(int pxcod)
+    {
+        _cachedOptions ??= SelectOptions.ToDictionary(
+            kvp => kvp.Key,
+            kvp => kvp.Value.ToList()
+        );
+
+        return _cachedOptions.TryGetValue(pxcod, out var cached)
+            ? cached
+            : [];
+    }
+    protected override void OnParametersSet()
+    {
+        foreach (var item in TbItems.OfType<Gptbl>())
+        {
+            if (!_cachedOptions.ContainsKey(item.Pxcod))
+                _cachedOptions[item.Pxcod] = new List<Gptbl>();
+            _cachedOptions[item.Pxcod].Add(item);
+        }
+    }
+    //private List<Gptbl> GetOptions(int pxcod) => SelectOptions.GetValueOrDefault(pxcod, new());
+ 
+    // INT fields
+    // private int GetBindIntValue(Func<int> editValue, Func<int> displayValue) => 
+    //     isEditing ? editValue() : displayValue();
+
+    // private async Task SetIntField(string fieldName, int value)
+    // {
+    //     switch (fieldName)
+    //     {
+    //         case "Statut": if (isEditing) draftAfl.Statut = value; else draftAfl.Statut = value; break;
+    //         case "Relat":  if (isEditing) draftAfl.Relat = value; else draftAfl.Relat = value; break;
+    //         case "Sexe":   if (isEditing) draftAfl.Sexe = value; else draftAfl.Sexe = value; break;
+    //         case "Sitmat": if (isEditing) draftAfl.Sitmat = value; else draftAfl.Sitmat = value; break;
+    //         case "Ifonc":  if (isEditing) draftAfl.Ifonc = value; else draftAfl.Ifonc = value; break;
+    //         case "Igrad":  if (isEditing) draftAfl.Igrad = value; else draftAfl.Igrad = value; break;
+    //         case "Respon":  if (isEditing) draftAfl.Respon = value; else draftAfl.Respon = value; break;
+    //     }
+    //     StateHasChanged();
+    // }
+
+    // STRING fields
+    // private string GetBindStringValue(Func<string> editValue, Func<string> displayValue) => 
+    //     isEditing ? editValue() : displayValue();
+
+    // private async Task SetStringField(string fieldName, string value)
+    // {
+    //     switch (fieldName)
+    //     {
+    //         case "Rpays":
+    //             if (isEditing) draftAfl.Rpays = value; 
+    //             else draftAfl.Rpays = value; 
+    //             break;
+    //         case "Natio":
+    //             if (isEditing) draftAfl.Rpays = value; 
+    //             else draftAfl.Rpays = value; 
+    //             break;
+    //     }
+    //     StateHasChanged();
+    // }
+}
+

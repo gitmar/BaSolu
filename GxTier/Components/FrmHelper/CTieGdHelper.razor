@@ -1,0 +1,32 @@
+﻿@using GxWapi.DaModels
+@using GxShared.Others
+@using GxTie.ClieModels
+
+<h3>CTieGdHelper</h3>
+
+@code {
+    // Workflow flags
+    [Parameter] public List<Tieafl> SubAfls { get; set; }
+    [Parameter] public GridMode GMode { get; set; } = GridMode.None;
+    [Parameter] public bool CanEdit { get; set; } = true;
+    [Parameter] public Dictionary<string, bool> AflVisibility { get; set; } = new();
+
+    //private bool isEditing => Mode == "Add" || Mode == "Edit";
+
+    [Parameter] public List<Gptbl> TbItems { get; set; }
+    [Parameter] public int? SelectedGroup { get; set; }
+    
+    private Tieafl Draft = new();
+    // Identifiers
+    [Parameter] public string RenderKey { get; set; }
+    [Parameter] public Guid? EdRowguid { get; set; }
+    // Actions passed in from parent
+    [Parameter] public EventCallback<Tieafl> ConfirmEdit { get; set; }
+    [Parameter] public EventCallback<Tieafl> CancelEdit { get; set; }
+
+    [Parameter] public EventCallback<Tieafl> ConfirmDelete { get; set; }
+    [Parameter] public EventCallback<Tieafl> CancelDelete { get; set; }
+    [Parameter] public EventCallback<Tieafl> StartRubEdit { get; set; }
+    [Parameter] public EventCallback<Guid> StartRowDelete { get; set; }
+
+}

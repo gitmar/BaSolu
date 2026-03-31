@@ -235,8 +235,11 @@ namespace GxTie.Services
     // In _Imports.razor or component top
     public static class DictionaryExtensions
     {
-        public static TValue GetValueOrDefault<TKey, TValue>(this Dictionary<TKey, TValue> dict, 
-            TKey key, TValue defaultValue = default)
+        public static TValue GetValueOrDefault<TKey, TValue>(
+            this Dictionary<TKey, TValue> dict,
+            TKey key,
+            TValue defaultValue = default
+        ) where TKey : notnull   // ✅ add this constraint
         {
             Console.WriteLine($"dictio values count {dict.Values.Count}");
             foreach (var uk in dict)

@@ -1,6 +1,7 @@
 ﻿@page "/globmodal";
 
 @using GxShared.Sess
+@using GxTie.ClieModels
 @using GxWapi.DaModels
 @using System.Net.Http.Headers
 
@@ -65,9 +66,9 @@
     public string Title { get; set; }   
     //to chose from parent
     [Parameter]
-    public GxWapi.DaModels.Tiersp EntyTie { get; set; } 
+    public Tiersp EntyTie { get; set; } 
     [Parameter]
-    public GxWapi.DaModels.Tiewel EntyTiw { get; set; }
+    public Tiewel EntyTiw { get; set; }
     [Parameter]
     public List<Gpvar> LsmVars { get; set; }
     [Parameter]
@@ -89,10 +90,10 @@
         // Optionally, perform any validation or processing here
         if (Oparent == 1)
         {
-            await OnTiwSave.InvokeAsync(EntyTiw);
+            //await OnTiwSave.InvokeAsync(EntyTiw);
         } else
         {
-            await OnTieSave.InvokeAsync(EntyTie);
+            //await OnTieSave.InvokeAsync(EntyTie);
         }
         CloseModal();
     }

@@ -4,6 +4,7 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <ServiceWorkerAssetsManifest>service-worker-assets.js</ServiceWorkerAssetsManifest>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|AnyCPU'">
     <Optimize>true</Optimize>
@@ -15,6 +16,7 @@
     <Compile Remove="Components\Secuope\**" />
     <Compile Remove="Connected Services\OData Service\**" />
     <Compile Remove="Formulas\**" />
+    <Compile Remove="MyApp.Tests\**" />
     <Compile Remove="Services\Mform\**" />
     <Compile Remove="wwwroot\lib\wrbootstrap\**" />
     <Compile Remove="YYYFormulas\**" />
@@ -23,6 +25,7 @@
     <Content Remove="Components\Secuope\**" />
     <Content Remove="Connected Services\OData Service\**" />
     <Content Remove="Formulas\**" />
+    <Content Remove="MyApp.Tests\**" />
     <Content Remove="Services\Mform\**" />
     <Content Remove="wwwroot\lib\wrbootstrap\**" />
     <Content Remove="YYYFormulas\**" />
@@ -31,6 +34,7 @@
     <EmbeddedResource Remove="Components\Secuope\**" />
     <EmbeddedResource Remove="Connected Services\OData Service\**" />
     <EmbeddedResource Remove="Formulas\**" />
+    <EmbeddedResource Remove="MyApp.Tests\**" />
     <EmbeddedResource Remove="Services\Mform\**" />
     <EmbeddedResource Remove="wwwroot\lib\wrbootstrap\**" />
     <EmbeddedResource Remove="YYYFormulas\**" />
@@ -39,6 +43,7 @@
     <None Remove="Components\Secuope\**" />
     <None Remove="Connected Services\OData Service\**" />
     <None Remove="Formulas\**" />
+    <None Remove="MyApp.Tests\**" />
     <None Remove="Services\Mform\**" />
     <None Remove="wwwroot\lib\wrbootstrap\**" />
     <None Remove="YYYFormulas\**" />
@@ -62,11 +67,17 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Content Remove="Components\FrmHelper\ChildGridHelper.razor" />
+    <Content Remove="Components\FrmHelper\ChildGridHelper8.razor" />
+    <Content Remove="Components\FrmHelper\MainGridHelper.razor" />
+    <Content Remove="Components\FrmHelper\MainGridHelper8.razor" />
+    <Content Remove="Components\FrmHelper\SelectedField.razor" />
     <Content Remove="Components\Identity\AdmLogin.razor" />
     <Content Remove="Components\Identity\BzmailConf.razor" />
     <Content Remove="Components\Identity\OldRegister.razor" />
     <Content Remove="Components\Identity\Register.razor" />
     <Content Remove="Components\Identity\Repareg.razor" />
+    <Content Remove="Components\Paccu\Inscr\InscTiw.razor" />
     <Content Remove="Components\Paccu\Inscr\Z3EnrolAcc.razor" />
     <Content Remove="Components\Paccu\Inscr\Z3EnrolTiw.razor" />
     <Content Remove="Components\Paccu\Inscr\Z3InscTiw.razor" />

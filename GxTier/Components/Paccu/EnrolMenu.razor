@@ -61,7 +61,7 @@ else
                 </div>
                 <!-- Main Content -->
                 <div class="row">
-                    @if (_chxMenu != 0 && toChild != null && curOrga != null && curODContext != null)
+                    @if (_chxMenu != 0 && toChild.LsFixes.Any() && curOrga != null && curODContext != null)
                     {
                         @if (_chxMenu == 1 && Ugpe != 0 && Tgpe != 0)
                         {
@@ -69,33 +69,31 @@ else
                                      Ugpe="@Ugpe"
                                      Tgpe="@Tgpe"
                                      curOrga="@curOrga"
-                                     LsPcols="@LsPcols"
-                                     LsFcols="@LsFcols"
                                      @bind-NbChanges="_nbChanges"
                                      _guard="_guard"
+                                     TbItems ="@TbItems"
                                      toChild="@toChild"
                                      curODContext="@curODContext">
                                 <ChildContent>
-                                    @* <h2 class="child-box">Hello INTEGRATION</h2> *@
+                                    <h2 class="child-box">Hello INTEGRATION</h2>
                                 </ChildContent>
                             </ValdTie>
                         }
                         else if (_chxMenu == 2 && Ugpe != 0) // && Tgpe != 0 && ParentOK)
                         {
-                            <InscTiw @ref="myetiw"
+                            @* <InscTiw @ref="myetiw"
                                       Ugpe="@Ugpe"
                                       Tgpe="@Tgpe"
-                                      curOrga="@curOrga"
-                                      LsPcols="@LsPcols"
-                                      LsFcols="@LsFcols"
+                                      curOrga="@curOrga"          
                                      @bind-NbChanges="_nbChanges"
                                       _guard="_guard"
+                                      TbItems ="@TbItems"
                                       toChild="@toChild"
                                       curODContext="@curODContext">
                                 <ChildContent>
-                                    @* <h2 class="child-box">Hello ACCUEIL</h2> *@
+                                    <h2 class="child-box">Hello ACCUEIL</h2>
                                 </ChildContent>
-                            </InscTiw>
+                            </InscTiw> *@
                         }
                         else if (_chxMenu == 3)
                         {
@@ -156,7 +154,7 @@ else
 
     //private EnrolTiw mygtiw;
     private ValdTie mygvld = new();
-    private InscTiw myetiw = new();
+    //private InscTiw myetiw = new();
     private InvOper myginv = new();
 
     private MyAuthStateProvider _authProvider { get; set; }
@@ -217,11 +215,12 @@ else
 
     //public Dictionary<int, string> dicvCols = new();
     //public Dictionary<int, string> dicvACols = new(); 
-    public List<Gpcol> LsPcols = new();
-    public List<Gpcol> LsFcols = new();
+    //public List<Gpcol> LsPcols = new();
+    //public List<Gpcol> LsFcols = new();
     //public List<Gsglne> LsCols = new();
     //public List<Gtvar> TbElems = new();    
     private List<Grole> LsRoles = new();
+    private List<Gptbl> TbItems = new();
     //Navigation
     private int _gIdTie = 0, _chxGpe = 0, _chxMenu = 1;
     private string strComp = $"Integration";
@@ -291,19 +290,6 @@ else
         LsDivs = await _rendAgres.LoadOrgaPostes();
         LsRoles = await _rendAgres.LoadOrgaRoles();
         LsFixes = _usrBag.Ufixes.ToList();
-        LsGties = _usrBag.Ufixes
-            .Where(ut => ut.Gvars == 36 && ut.Elea != 0 && ut.Elea != 9)
-            .ToList();
-        Groupes.Clear();
-        foreach(var gr in LsGties.Where(gr => gr.Itb == 6))
-        {
-            Groupes.Add(new GxGroupe { Itb = gr.Itb, Elea = gr.Elea, Liba = gr.Liba });
-        };
-        var lscols = await _rendAgres.LoadOrgaColons();
-        LsPcols = lscols.Where(tc => tc.Otyp == 1 && tc.Totyp == Ugpe && tc.Zfro == 1).ToList();
-        LsFcols = lscols.Where(tc => tc.Otyp == 2 && tc.Totyp == Ugpe && tc.Zfro == 1).ToList();
-        Console.WriteLine("Authentication ENTREE");
-        await LoadTieAplAsync();
         toChild = new MyShareVars
         {
             authUser = authState.User,
@@ -313,6 +299,24 @@ else
             LsFixes = LsFixes.ToList(),
             LsPlans = LsPlans.ToList(),
         };
+        Console.WriteLine($"nb. fixes {LsFixes.Count}");
+        LsGties = _usrBag.Ufixes
+            .Where(ut => ut.Gvars == 36 && ut.Elea != 0 && ut.Elea != 9)
+            .ToList();
+        Groupes.Clear();
+        foreach(var gr in LsGties.Where(gr => gr.Itb == 6))
+        {
+            Groupes.Add(new GxGroupe { Itb = gr.Itb, Elea = gr.Elea, Liba = gr.Liba });
+        };
+        //var lscols = await _rendAgres.LoadOrgaColons();
+        //LsPcols = lscols.Where(tc => tc.Otyp == 1 && tc.Totyp == Ugpe && tc.Zfro == 1).ToList();
+        //LsFcols = lscols.Where(tc => tc.Otyp == 2 && tc.Totyp == Ugpe && tc.Zfro == 1).ToList();
+        Console.WriteLine("Authentication ENTREE");
+        await LoadTieAplAsync();
+
+        TbItems = await _rendAgres.LoadOrgaTables();
+        Console.WriteLine($"nb. tbitems : {TbItems.Count}");
+        
         _guard.RegisterUnconfirmedPredicate<Tiewel>(w => w.Xadd1 == -1 || w.Xedt1 == -1 || w.Xdel1 == -1);
         _guard.RegisterUnconfirmedPredicate<Tiwatr>(wa => wa.Xadd1 == -1 || wa.Xedt1 == -1 || wa.Xdel1 == -1);
         _guard.RegisterUnconfirmedPredicate<Tiwafl>(wf => wf.Xadd1 == -1 || wf.Xedt1 == -1 || wf.Xdel1 == -1);
@@ -381,7 +385,7 @@ else
             Console.WriteLine($"Erreur Get Data : {ex.Message}");
         }
         Ugpe = 1; //cible
-        Tgpe = 6;
+        Tgpe = 6; //tiers 7matiere
         _chxMenu = 1;
         Console.WriteLine($"✅ COMPLETE: Tiersps={curOrga.Tiersps?.Count ?? 0}");
     }
@@ -412,7 +416,7 @@ else
 
             if (save)
             {
-                // 🔥 YES: SaveAllChanges() → Navigate away
+                // 🔥 YES: SaveAllChanges() → Navigate  away
                 await SaveAllChanges();
                 Console.WriteLine("💾 Saved - navigating away");
                 _navManager.NavigateTo(context.TargetLocation, forceLoad: false);

@@ -1,0 +1,141 @@
+﻿@using GxWapi.DaModels
+@using GxTie.Components.FrmHelper
+@using GxTie.StaticHelpers
+@using GxShared.Others
+@using System.Collections
+
+@typeparam TEntity where TEntity : GxWapi.DaModels.IBaseTier
+
+@if (Drafts != null && Drafts.Any())
+{
+    <div class="table-responsive">
+        <table class="table table-sm table-bordered align-middle">
+            <thead>
+                <tr>
+                    <th>Group</th>
+                    <th>Rowguid</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var child in Drafts)
+                {
+                    <tr>
+                        <td>
+                            @if (isEditing && CanEdit)
+                            {
+                                <InputSelect @bind-Value="child.Totyp" class="form-select">
+                                    <option value="0">Select group...</option>
+                                    @foreach (var opt in GetOptions(child.GroupCode))
+                                    {
+                                        <option value="@opt.Elea">@opt.Liba</option>
+                                    }
+                                </InputSelect>
+                            }
+                            else
+                            {
+                                <span class="form-control-plaintext">
+                                    @(GetOptions(child.GroupCode).FirstOrDefault(o => o.Elea == child.GroupId)?.Liba ?? "None")
+                                </span>
+                            }
+                        </td>
+                        <td>
+                            <span class="form-control-plaintext">@child.Rowguid</span>
+                        </td>
+                        <td>
+                            <div class="d-flex gap-1">
+                                <Button Color="ButtonColor.Success"
+                                        Size="ButtonSize.Small"
+                                        Disabled="@(!CanEdit)"
+                                        @onclick="() => ConfirmEdit.InvokeAsync(child)">
+                                    ✅
+                                </Button>
+                                <Button Color="ButtonColor.Secondary"
+                                        Size="ButtonSize.Small"
+                                        Disabled="@(!CanEdit)"
+                                        @onclick="() => CancelEdit.InvokeAsync(child)">
+                                    ❌
+                                </Button>
+                                <Button Color="ButtonColor.Danger"
+                                        Size="ButtonSize.Small"
+                                        Disabled="@(!CanEdit)"
+                                        @onclick="() => ConfirmDelete.InvokeAsync(child)">
+                                    🗑
+                                </Button>
+                                <Button Color="ButtonColor.Info"
+                                        Size="ButtonSize.Small"
+                                        Disabled="@(!CanEdit)"
+                                        @onclick="() => StartRubEdit.InvokeAsync(child)">
+                                    ✏
+                                </Button>
+                                <Button Color="ButtonColor.Warning"
+                                        Size="ButtonSize.Small"
+                                        Disabled="@(!CanEdit)"
+                                        @onclick="() => StartRowDelete.InvokeAsync(child.Rowguid)">
+                                    🚫
+                                </Button>
+                            </div>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}
+else
+{
+    <div class="alert alert-info">No child records available.</div>
+}
+
+@code {
+    // List of child draft entities
+    [Parameter] public IEnumerable<TEntity> Drafts { get; set; } = Enumerable.Empty<TEntity>();
+
+    // Identifiers
+    [Parameter] public string RenderKey { get; set; }
+    [Parameter] public Guid EdRowguid { get; set; }
+    [Parameter] public int SelectedGroup { get; set; }
+
+    // Options for dropdowns
+    [Parameter] public List<Gptbl> TbItems { get; set; } = new();
+    [Parameter] public IEnumerable<SelectOption> SelectOptions { get; set; } = Enumerable.Empty<SelectOption>();
+
+    // Action callbacks wired to parent methods
+    [Parameter] public EventCallback<TEntity> ConfirmEdit { get; set; }
+    [Parameter] public EventCallback<TEntity> CancelEdit { get; set; }
+    [Parameter] public EventCallback<TEntity> ConfirmDelete { get; set; }
+    [Parameter] public EventCallback<TEntity> CancelDelete { get; set; }
+    [Parameter] public EventCallback<TEntity> StartRubEdit { get; set; }
+    [Parameter] public EventCallback<Guid> StartRowDelete { get; set; }
+
+    // Workflow flags
+    [Parameter] public string Mode { get; set; } = "View";
+    [Parameter] public bool CanEdit { get; set; } = true;
+
+    private bool isEditing => Mode == "Add" || Mode == "Edit";
+
+    // Cached options for quick lookup
+    private Dictionary<int, List<Gptbl>> _cachedOptions = new();
+
+    protected override void OnParametersSet()
+    {
+        foreach (var gptbl in TbItems)
+        {
+            if (!_cachedOptions.TryGetValue(gptbl.Pxcod, out var list))
+            {
+                list = new List<Gptbl>();
+                _cachedOptions[gptbl.Pxcod] = list;
+            }
+            list.Clear();
+            list.Add(gptbl);
+        }
+    }
+
+    private List<Gptbl> GetOptions(int pxcod)
+    {
+        if (_cachedOptions.TryGetValue(pxcod, out var cached))
+            return cached;
+
+        return new List<Gptbl>();
+    }
+}

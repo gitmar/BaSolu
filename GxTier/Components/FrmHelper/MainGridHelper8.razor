@@ -1,0 +1,790 @@
+﻿@using GxWapi.DaModels
+@using GxTie.Components.FrmHelper
+@using GxTie.StaticHelpers
+@using GxShared.Others
+@using System.Collections
+
+@if (draftTiw != null)
+{
+    <div class="card">
+        <div class="card-body p-3">
+            <!-- FIELD 1: ID -->
+            <div class="row mb-2">
+                <label class="fw-bold col-1 col-form-label text-nowrap">ID:</label>
+                <div class="col-11">
+                    <div class="form-control-plaintext">@draftTiw.Id</div>
+                </div>
+            </div>
+             
+            <!-- FIELD 2: Dossier -->
+            <FormField Label="Dossier" IsVisible="@Visibility.GetValueOrDefault("Dossier", true)">
+                @if (isEditing)
+                {
+                    <InputText @bind-Value="draftTiw.Xmatri" class="form-control" />
+                }
+                else
+                {
+                    <span class="form-control-plaintext">@draftTiw.Xmatri</span>
+                }
+            </FormField>
+
+            <!-- FIELD 3: Nom -->
+            <FormField Label="Nom" IsVisible="@Visibility.GetValueOrDefault("Nom", true)">
+                @if (isEditing)
+                {
+                    <InputText @bind-Value="draftTiw.Nom" class="form-control" />
+                }
+                else
+                {
+                    <span class="form-control-plaintext">@draftTiw.Nom</span>
+                }
+            </FormField>
+            <!-- FIELD 4: Pnom -->
+            <FormField Label="Pnom" IsVisible="@Visibility.GetValueOrDefault("Pnom", true)">
+                @if (isEditing)
+                {
+                    <InputText @bind-Value="draftTiw.Pnom" class="form-control" />
+                }
+                else
+                {
+                    <span class="form-control-plaintext">@draftTiw.Pnom</span>
+                }
+            </FormField>
+            <!-- FIELD 5: Nom de Jeune fille -->
+            <FormField Label="Bnom" IsVisible="@Visibility.GetValueOrDefault("Bnom", true)">
+                @if (isEditing)
+                {
+                    <InputText @bind-Value="draftTiw.Bnom" class="form-control" />
+                }
+                else
+                {
+                    <span class="form-control-plaintext">@draftTiw.Bnom</span>
+                }
+            </FormField>
+
+            <!-- FIELD 6: Statut (int) -->
+            <FormField Label="Statut" IsVisible="@Visibility.GetValueOrDefault("Statut", true)">
+                <SelectedDisplay TValue="int?"
+                                 @bind-Value="draftTiw!.Statut"
+                                 isEditing="@isEditing"
+                                 Options="@GetOptions(11)"
+                                 GetOptionValue="StatutValue"
+                                 GetOptionLabel="StatutLabel" />
+            </FormField>
+
+
+            @* <p>Options count: @GetOptions(11).Count</p>
+            <FormField Label="Statut" IsVisible="@Visibility.GetValueOrDefault("Statut", true)">
+                <SelectedDisplay TValue="int?" 
+                    @bind-Value="draftTiw!.Statut"
+                    isEditing="@isEditing"
+                   Options="@GetOptions(11)"
+                   GetOptionValue="@(t => t.Elea ?? 0)"
+                   GetOptionLabel="@(t => t.Liba ?? "")" />
+            </FormField> *@
+            <!-- FIELD 7: Relat (int) -->
+            <FormField Label="Relation" IsVisible="@Visibility.GetValueOrDefault("Relat", true)">
+                <SelectedDisplay TValue="int?" 
+                    @bind-Value="draftTiw!.Relat"
+                    isEditing="@isEditing"
+                   Options="@GetOptions(18)"
+                   GetOptionValue="@(t => t.Elea ?? 0)"
+                   GetOptionLabel="@(t => t.Liba ?? "")" />
+            </FormField>
+            <!-- FIELD 8: Sexe (int) -->
+            <FormField Label="Sexe" IsVisible="@Visibility.GetValueOrDefault("Sexe", true)">
+                <SelectedDisplay TValue="int?" 
+                    @bind-Value="draftTiw!.Sexe"
+                    isEditing="@isEditing"
+                    Options="@GetOptions(12)"
+                                 GetOptionValue="SexeValue"
+                                 GetOptionLabel="SexeLabel" />
+            </FormField>
+
+            <!-- FIELD 9: Sitmat (int) -->
+            
+            <FormField Label="Sit.Mat." IsVisible="@Visibility.GetValueOrDefault("Sitmat", true)">
+                <SelectedDisplay TValue="int?" 
+                    @bind-Value="draftTiw!.Sitmat"
+                    isEditing="@isEditing"
+                    Options="@GetOptions(13)"
+                                 GetOptionValue="SitmatValue"
+                                 GetOptionLabel="SitmatLabel" />
+            </FormField>
+
+            <!-- FIELD 10: Fonction -->
+            <FormField Label="Fonct." IsVisible="@Visibility.GetValueOrDefault("Ifonc", true)">
+                <SelectedDisplay TValue="int?" 
+                    @bind-Value="draftTiw!.Ifonc"
+                    isEditing="@isEditing"
+                    Options="@GetOptions(14)"
+                                 GetOptionValue="IfoncValue"
+                                 GetOptionLabel="IfoncLabel" />
+            </FormField>
+
+            <!-- FIELD 11: Grade -->
+            <FormField Label="Grade" IsVisible="@Visibility.GetValueOrDefault("Igrad", true)">
+                <SelectedDisplay TValue="int?" 
+                    @bind-Value="draftTiw!.Igrad"
+                    isEditing="@isEditing"
+                    Options="@GetOptions(15)" 
+                                 GetOptionValue="IgradValue"
+                                 GetOptionLabel="IgradLabel" />
+            </FormField>
+   
+            <!-- FIELD 12: Email -->
+            <FormField Label="Email" IsVisible="@Visibility.GetValueOrDefault("Email", true)">
+                @if (isEditing)
+                {
+                    <InputText @bind-Value="draftTiw.Email" class="form-control" />
+                }
+                else
+                {
+                    <span class="form-control-plaintext">@draftTiw.Email</span>
+                }
+            </FormField>
+
+            <!-- FIELD 13: Phone -->
+            <FormField Label="Phone" IsVisible="@Visibility.GetValueOrDefault("Phone", true)">
+                @if (isEditing)
+                {
+                    <InputText @bind-Value="draftTiw.Phone" class="form-control" />
+                }
+                else
+                {
+                    <span class="form-control-plaintext">@draftTiw.Phone</span>
+                }
+            </FormField>
+
+            <!-- FIELD 14: Date de naissance -->
+            <FormField Label="Date Naiss." IsVisible="@Visibility.GetValueOrDefault("Dnais", true)">
+                @if (isEditing)
+                {
+                    <InputDate @bind-Value="draftTiw.Dnais" class="form-control" />
+                }
+                else
+                {
+                    <span class="form-control-plaintext">@draftTiw.Dnais</span>
+                }
+            </FormField>
+            
+            
+            <!-- FIELD 15: Date d’embauche -->
+            <FormField Label="Date Emb." IsVisible="@Visibility.GetValueOrDefault("Demb", true)">
+                @if (isEditing)
+                {
+                    <InputDate @bind-Value="draftTiw.Demb" class="form-control" />
+                }
+                else
+                {
+                    <span class="form-control-plaintext">@draftTiw.Demb</span>
+                }
+            </FormField>
+
+            <!-- FIELD 16: Nombre d’enfants -->
+            <FormField Label="Nb.Enf" IsVisible="@Visibility.GetValueOrDefault("Nenf", true)">
+                @if (isEditing)
+                {
+                    <InputNumber @bind-Value="draftTiw.Nenf" class="form-control" />
+                }
+                else
+                {
+                    <span class="form-control-plaintext">@draftTiw.Nenf</span>
+                }
+            </FormField>
+
+            <!-- FIELD 17: Responsabilité -->
+            <FormField Label="Responsable" IsVisible="@Visibility.GetValueOrDefault("Respon", true)">
+                <SelectedDisplay TValue="int?" 
+                    @bind-Value="draftTiw!.Respon"
+                    isEditing="@isEditing"
+                    Options="@GetOptions(17)"
+                                 GetOptionValue="ResponValue"
+                                 GetOptionLabel="ResponLabel" />
+            </FormField>
+
+            <!-- FIELD 18: Pays de résidence -->
+            <FormField Label="Residence" IsVisible="@Visibility.GetValueOrDefault("Rpays", true)">
+                <SelectedDisplay TValue="string"
+                    @bind-Value="draftTiw!.Rpays"
+                    isEditing="@isEditing"
+                    Options="@GetOptions(31)"
+                                 GetOptionValue="RpaysValue"
+                                 GetOptionLabel="RpaysLabel" />
+            </FormField>
+           
+            <!-- FIELD 19: Nationalité (string) -->
+            <FormField Label="Natio" IsVisible="@Visibility.GetValueOrDefault("Natio", true)">
+                <SelectedDisplay TValue="string"
+                    @bind-Value="draftTiw!.Natio"
+                    isEditing="@isEditing"
+                    Options="@GetOptions(31)"
+                                 GetOptionValue="NatioValue"
+                                 GetOptionLabel="NatioLabel" />
+            </FormField>
+  
+            <!-- FIELD 20: Méthode de paiement -->
+            <FormField Label="P.Meth" IsVisible="@Visibility.GetValueOrDefault("Ipaid", true)">
+                <SelectedDisplay TValue="int?"
+                    @bind-Value="draftTiw!.Ipaid"
+                    isEditing="@isEditing"
+                    Options="@GetOptions(17)"
+                                 GetOptionValue="IpaidValue"
+                                 GetOptionLabel="IpaidLabel" />
+            </FormField>
+        </div>
+    </div>
+}
+@code {
+    [Parameter] public Dictionary<int, List<Gptbl>>? SelectOptions { get; set; } = new();
+    [CascadingParameter] public Dictionary<string, bool> Visibility { get; set; } = new();
+    [Parameter] public string RenderKey { get; set; } = "";
+
+    [Parameter] public Tiersp? draftTiw { get; set; }      // Single source
+    [Parameter] public string Mode { get; set; } = "View"; // "Add", "Edit", "View"
+    [Parameter] public List<Gptbl> TbItems { get; set; } = new();
+    [Parameter] public Guid? EdRowguid { get; set; }
+
+    // Column management (keep as-is
+    //[Parameter] public string _valueSelectors { get; set;}
+    //[Parameter] public string _labelSelectors { get; set;}
+
+    // Statut (int?)
+    private Func<Gptbl, int?> StatutValue => g => g.Elea ?? 0;
+    private Func<Gptbl, string> StatutLabel => g => g.Liba ?? "";
+    // Relat (int?)
+    private Func<Gptbl, int?> RelatValue = g => g.Elea ?? 0;
+    private Func<Gptbl, string> RelatLabel = g => g.Liba ?? "";
+
+    // Sexe (int?)
+    private Func<Gptbl, int?> SexeValue = g => g.Elea ?? 0;
+    private Func<Gptbl, string> SexeLabel = g => g.Liba ?? "";
+
+    // Sitmat (int?)
+    private Func<Gptbl, int?> SitmatValue = g => g.Elea ?? 0;
+    private Func<Gptbl, string> SitmatLabel = g => g.Liba ?? "";
+
+    // Ifonc (int?)
+    private Func<Gptbl, int?> IfoncValue = g => g.Elea ?? 0;
+    private Func<Gptbl, string> IfoncLabel = g => g.Liba ?? "";
+
+    // Igrad (int?)
+    private Func<Gptbl, int?> IgradValue = g => g.Elea ?? 0;
+    private Func<Gptbl, string> IgradLabel = g => g.Liba ?? "";
+
+    // Respon (int?)
+    private Func<Gptbl, int?> ResponValue = g => g.Elea ?? 0;
+    private Func<Gptbl, string> ResponLabel = g => g.Liba ?? "";
+
+    // Rpays (string)
+    private Func<Gptbl, string> RpaysValue = g => g.Abg ?? "";
+    private Func<Gptbl, string> RpaysLabel = g => g.Liba ?? "";
+
+    // Nationalité (string)
+    private Func<Gptbl, string> NatioValue = g => g.Abg ?? "";
+    private Func<Gptbl, string> NatioLabel = g => g.Liba ?? "";
+
+    // Ipaid (int?)
+    private Func<Gptbl, int?> IpaidValue = g => g.Elea ?? 0;
+    private Func<Gptbl, string> IpaidLabel = g => g.Liba ?? "";
+
+    private bool isEditing => Mode == "Add" || Mode == "Edit";
+
+    private Dictionary<int, List<Gptbl>> _cachedOptions = new();
+
+    protected override void OnParametersSet()
+    {
+        foreach(var gptbl in TbItems.OfType<Gptbl>())
+        {
+            if (!_cachedOptions.TryGetValue(gptbl.Pxcod, out var list))
+            {
+                list = new List<Gptbl>();
+                _cachedOptions[gptbl.Pxcod] = list;
+            }
+            list.Clear(); // ✅ clear instead of replacing
+            list.Add(gptbl);
+        }
+
+        // Rebuild cache once per parameter set
+        // _cachedOptions.Clear();
+
+        // if (TbItems != null)
+        // {
+        //     foreach (var gptbl in TbItems.OfType<Gptbl>())
+        //     {
+        //         if (!_cachedOptions.TryGetValue(gptbl.Pxcod, out var list))
+        //         {
+        //             list = new List<Gptbl>();
+        //             _cachedOptions[gptbl.Pxcod] = list;
+        //         }
+        //         list.Add(gptbl);
+        //     }
+        // }
+    }
+
+    // Read‑only accessor
+    private List<Gptbl> GetOptions(int pxcod)
+    {
+        if (_cachedOptions.TryGetValue(pxcod, out var cached))
+            return cached;
+
+        // Return empty list if not found
+        return new List<Gptbl>();
+    }
+    // private List<Gptbl> GetOptions(int pxcod)
+    // {
+    //     Console.WriteLine("GetOptions has been triggered");
+    //     if (_cachedOptions.TryGetValue(pxcod, out var cached))
+    //         return cached;
+
+    //     // Don’t mutate here. Just return empty.
+    //     return new List<Gptbl>();
+    // }
+
+    // // Populate cache once in OnParametersSet
+    // protected override void OnParametersSet()
+    // {
+    //     foreach (var item in TbItems.OfType<Gptbl>())
+    //     {
+    //         if (!_cachedOptions.ContainsKey(item.Pxcod))
+    //             _cachedOptions[item.Pxcod] = new List<Gptbl>();
+    //         _cachedOptions[item.Pxcod].Add(item);
+    //     }
+    // }    
+
+    // private List<Gptbl> GetOptions(int pxcod)
+    // {
+    //     if (_cachedOptions.TryGetValue(pxcod, out var cached))
+    //         return cached;
+            
+    //     var result = new List<Gptbl>();
+    //     try 
+    //     {
+    //         foreach (var item in TbItems)
+    //         {
+    //             if (item is Gptbl gptbl && gptbl.Pxcod == pxcod)
+    //                 result.Add(gptbl);
+    //         }
+    //     }
+    //     catch { /* silent */ }
+        
+    //     _cachedOptions[pxcod] = result;
+    //     return result;
+    // }
+
+    // SIMPLIFIED - draftTiw only
+    // private async Task SetIntField(string fieldName, int value)
+    // {
+    //     switch (fieldName)
+    //     {
+    //         case "Statut": if (isEditing) draftTiw.Statut = value; else draftTiw.Statut = value; break;
+    //         case "Relat":  if (isEditing) draftTiw.Relat = value; else draftTiw.Relat = value; break;
+    //         case "Sexe":   if (isEditing) draftTiw.Sexe = value; else draftTiw.Sexe = value; break;
+    //         case "Sitmat": if (isEditing) draftTiw.Sitmat = value; else draftTiw.Sitmat = value; break;
+    //         case "Ifonc":  if (isEditing) draftTiw.Ifonc = value; else draftTiw.Ifonc = value; break;
+    //         case "Igrad":  if (isEditing) draftTiw.Igrad = value; else draftTiw.Igrad = value; break;
+    //         case "Respon":  if (isEditing) draftTiw.Respon = value; else draftTiw.Respon = value; break;
+    //     }
+    //     StateHasChanged();
+    // }
+
+    // private async Task SetStringField(string fieldName, string value)
+    // {
+    //     switch (fieldName)
+    //     {
+    //         case "Rpays":
+    //             if (isEditing) draftTiw.Rpays = value; 
+    //             else draftTiw.Rpays = value; 
+    //             break;
+    //         case "Natio":
+    //             if (isEditing) draftTiw.Rpays = value; 
+    //             else draftTiw.Rpays = value; 
+    //             break;
+    //     }
+    //     StateHasChanged();
+    // }
+}
+
+@* @code {
+    [CascadingParameter] public Dictionary<int, List<Gptbl>> SelectOptions { get; set; } = new();
+    [CascadingParameter] public Dictionary<string, bool> Visibility { get; set; } = new();
+
+    //[Parameter] public IEnumerable<EntPerson> FilteredData { get; set; } = Enumerable.Empty<EntPerson>();
+    [Parameter] public string RenderKey { get; set; } = "";
+
+    [Parameter] public Tiersp? DraftTiw { get; set; }
+    [Parameter] public string Mode { get; set; } = "View"; // "Add", "Edit", "View"
+    [Parameter] public List<Gptbl> TbItems { get; set; } = new();
+
+    //[Parameter] public List<Tiersp> FilteredData { get; set; } = new();
+    //[Parameter] public Tiersp? DraftTiw { get; set; } = null;
+    //[Parameter] public Tiersp? SelectedEntity { get; set; } = null;
+
+    [Parameter] public Guid? EdRowguid { get; set; }
+
+    //[Parameter] public IEnumerable<dynamic> TbItems { get; set; } = Enumerable.Empty<dynamic>();
+
+    // Actions passed in from parent
+    [Parameter] public EventCallback StartTiwNew { get; set; }
+    [Parameter] public EventCallback<Tiersp> ConfirmEdit { get; set; }
+    [Parameter] public EventCallback<Tiersp> CancelEdit { get; set; }
+
+    //private Dictionary<int, List<Gptbl>> _cachedOptions = new();
+    private readonly Dictionary<int, List<Gptbl>> _cachedOptions = new();
+    private bool _hasLoggedOptions = false;
+    private bool _optionsLogged;
+    private List<Gptbl>? _cachedTbItems;
+    private bool _hasRenderedOnce;
+
+    //[Parameter] public object? TbItems { get; set; }  // object to catch dynamic
+    
+    private object? _prevTbItems;
+    private bool _tbItemsChanged;
+    
+    // Track ALL changing params
+    //private object? _prevDraftTiw;
+    //private object? _prevCurrentMainRecord;
+
+    bool isEditing => IsEditingRow(CurrentMainRecord, EdRowguid, DraftTiw);
+
+    private bool IsEditingRow(Tiersp entity, Guid? edRowguid, Tiersp? DraftTiw)
+        => entity.Rowguid == edRowguid && DraftTiw != null;
+
+    private Tiersp? CurrentMainRecord =>
+        DraftTiw ??
+            (EdRowguid.HasValue
+                ? FilteredData.FirstOrDefault(p => p.Rowguid == EdRowguid)
+                : FilteredData.FirstOrDefault()); // or LastOrDefault()
+    List<Gptbl> gptbls;
+// FINAL GetOptions
+    private List<Gptbl> GetOptions(int pxcod)
+    {
+        var result = new List<Gptbl>();
+    
+        try
+        {
+            if (TbItems is IEnumerable enumerable)
+            {
+                // ✅ FOREACH - bulletproof vs circular refs
+                foreach (var item in enumerable)
+                {
+                    if (item is Gptbl gptbl && gptbl.Pxcod == pxcod)
+                    {
+                        result.Add(gptbl);
+                    }
+                }
+            }
+        }
+        catch
+        {
+            // Silent fail - empty list
+        }
+    
+        return result;
+    }
+
+
+
+    protected override void OnParametersSet()
+    {
+        // Compare references (fast)
+        _tbItemsChanged = !ReferenceEquals(TbItems, _prevTbItems);
+        
+        _prevTbItems = TbItems;
+        _prevDraftTiw = DraftTiw;
+        _prevCurrentMainRecord = CurrentMainRecord;
+    }
+    
+    protected override bool ShouldRender()
+    {
+        // Only render if data actually changed
+        return _tbItemsChanged || 
+               !ReferenceEquals(DraftTiw, _prevDraftTiw) ||
+               !ReferenceEquals(CurrentMainRecord, _prevCurrentMainRecord);
+    }
+
+ 
+    // INT fields
+    private int GetBindIntValue(Func<int> editValue, Func<int> displayValue) => 
+        isEditing ? editValue() : displayValue();
+
+    private async Task SetIntField(string fieldName, int value)
+    {
+        switch (fieldName)
+        {
+            case "Statut": if (isEditing) DraftTiw.Statut = value; else draftTiwStatut = value; break;
+            case "Relat":  if (isEditing) DraftTiw.Relat = value; else draftTiwRelat = value; break;
+            case "Sexe":   if (isEditing) DraftTiw.Sexe = value; else draftTiwSexe = value; break;
+            case "Sitmat": if (isEditing) DraftTiw.Sitmat = value; else draftTiwSitmat = value; break;
+            case "Ifonc":  if (isEditing) DraftTiw.Ifonc = value; else draftTiwIfonc = value; break;
+            case "Igrad":  if (isEditing) DraftTiw.Igrad = value; else draftTiwIgrad = value; break;
+            case "Respon":  if (isEditing) DraftTiw.Respon = value; else draftTiwRespon = value; break;
+        }
+        StateHasChanged();
+    }
+
+    // STRING fields
+    private string GetBindStringValue(Func<string> editValue, Func<string> displayValue) => 
+        isEditing ? editValue() : displayValue();
+
+    private async Task SetStringField(string fieldName, string value)
+    {
+        switch (fieldName)
+        {
+            case "Rpays":
+                if (isEditing) DraftTiw.Rpays = value; 
+                else draftTiwRpays = value; 
+                break;
+            case "Natio":
+                if (isEditing) DraftTiw.Rpays = value; 
+                else draftTiwRpays = value; 
+                break;
+        }
+        StateHasChanged();
+    }
+
+    // private List<Gptbl> GetOptions(int pxcod)
+    // {
+    //     if (TbItems is List<Gptbl> list)
+    //     {
+    //         return list.Where(t => t.Pxcod == pxcod).ToList();
+    //     }
+    //     return new List<Gptbl>();
+    // }
+
+    // private List<Gptbl> GetOptions(int pxcod)
+    // {
+    //     try
+    //     {
+    //         // ✅ IMMEDIATE LOG - before any LINQ
+    //         Console.WriteLine($"pxcod={pxcod} TbItems={TbItems?.GetType().Name ?? "null"}");
+        
+    //         if (TbItems == null) return new List<Gptbl>();
+        
+    //         // ✅ Cast + null check FIRST
+    //         if (!(TbItems is IEnumerable enumerable))
+    //         {
+    //             Console.WriteLine("Not IEnumerable");
+    //             return new List<Gptbl>();
+    //         }
+        
+    //         // ✅ FAST - no Where, just first match
+    //         foreach (var item in enumerable)
+    //         {
+    //             if (item is Gptbl gptbl && gptbl.Pxcod == pxcod)
+    //             {
+    //                 Console.WriteLine($"Found 1st match pxcod={pxcod}");
+    //                 return new List<Gptbl> { gptbl };
+    //             }
+    //         }
+        
+    //         Console.WriteLine($"No match pxcod={pxcod}");
+    //         return new List<Gptbl>();
+    //     }
+    //     catch (Exception ex)
+    //     {
+    //         Console.WriteLine($"GetOptions CRASH pxcod=18: {ex.Message}");
+    //         return new List<Gptbl>();
+    //     }
+    // }
+
+    // private List<Gptbl> GetOptions(int pxcod)
+    // {
+    //     Console.WriteLine($"🔥 GetOptions pxcod={pxcod} START");
+    //     Console.WriteLine($"🔥 GetOptions pxcod={pxcod} START");
+    
+    //     try
+    //     {
+    //         var list = TbItems as List<Gptbl> ?? new();
+        
+    //         // ✅ SAFE - Take first 100 to avoid cycles
+    //         var safeList = list.Take(100).ToList();
+    //         Console.WriteLine($"Safe list count: {safeList.Count}");
+        
+    //         var filtered = safeList.Where(t => t.Pxcod == pxcod).Take(50).ToList();
+    //         Console.WriteLine($"✅ pxcod={pxcod}: {filtered.Count}");
+        
+    //         _cachedOptions[pxcod] = filtered;
+    //         return filtered;
+    //     }
+    //     catch (Exception ex)
+    //     {
+    //         Console.WriteLine($"❌ GetOptions ERROR pxcod=18: {ex.Message}");
+    //         return new List<Gptbl>();
+    //     }
+    //   }
+    // try
+    // {
+    //     var list = TbItems as List<Gptbl> ?? new();
+    // Console.WriteLine($"All Pxcod: {string.Join(",", list.Select(t => t.Pxcod).Distinct())}");
+    
+    // var filtered = list.Where(t => t.Pxcod == pxcod).ToList();
+    // Console.WriteLine($"pxcod={pxcod}: {filtered.Count}");
+    // return filtered;
+    // //     if (TbItems is List<Gptbl> typedList && typedList.Count > 0)
+    // //     {
+    // //         Console.WriteLine($"✅ List<Gptbl> count: {typedList.Count}");
+    // //         var filtered = typedList.Where(t => t.Pxcod == pxcod).ToList();
+    // //         _cachedOptions[pxcod] = filtered;
+    // //         return filtered;
+    // //     }
+        
+    // //     // Legacy fallback
+    // //     if (TbItems is IEnumerable enumerable)
+    // //     {
+    // //         var gptbls = Enumerable.OfType<Gptbl>(enumerable).ToList();
+    // //         Console.WriteLine($"Fallback OfType count: {gptbls.Count}");
+    // //         var filtered = gptbls.Where(t => t.Pxcod == pxcod).ToList();
+    // //         _cachedOptions[pxcod] = filtered;
+    // //         return filtered;
+    // //     }
+    // //     var list = TbItems as List<Gptbl> ?? new();
+    // // Console.WriteLine($"All Pxcod: {string.Join(",", list.Select(t => t.Pxcod).Distinct())}");
+    // // var empty = new List<Gptbl>();
+    // //     _cachedOptions[pxcod] = empty;
+    // // var filtered5 = list.Where(t => t.Pxcod == pxcod).ToList();
+    // // Console.WriteLine($"pxcod={pxcod}: {filtered5.Count}");
+    // // return filtered5;
+    // }
+    // catch (Exception ex)
+    // {
+    //     Console.WriteLine($"❌ GetOptions ERROR: {ex.Message}");
+    //     return new List<Gptbl>();
+    // }
+    //}
+
+    // private List<Gptbl> GetOptions(int pxcod)
+    // {
+    //     var enumerable = TbItems as IEnumerable;
+    //     Console.WriteLine($"TbItems type: {TbItems?.GetType()}, enumerable: {enumerable?.GetType()}");
+    
+    //     var gptbls = enumerable != null
+    //         ? Enumerable.OfType<Gptbl>(enumerable).ToList()
+    //         : new List<Gptbl>();
+    
+    //     Console.WriteLine($"Raw Gptbl count: {gptbls.Count}, Pxcod={pxcod}");
+    
+    //     var filtered = gptbls.Where(t => t.Pxcod == pxcod).ToList();
+    //     Console.WriteLine($"Filtered count: {filtered.Count}");
+    
+    //     if (!_cachedOptions.TryGetValue(pxcod, out var cached))
+    //     {
+        
+        
+    //         // ✅ Direct cast if already List<Gptbl>
+    //         if (TbItems is List<Gptbl> typedList)
+    //         {
+    //             gptbls = typedList;
+    //             Console.WriteLine($"Direct List<Gptbl> count: {gptbls.Count}");
+    //         }
+    //         // ✅ OfType for mixed collections
+    //         else if (TbItems is IEnumerable enumerons)
+    //         {
+    //             gptbls = Enumerable.OfType<Gptbl>(enumerons).ToList();
+    //             Console.WriteLine($"OfType count: {gptbls.Count}");
+    //         }
+    //         else
+    //         {
+    //             gptbls = new List<Gptbl>();
+    //         }
+        
+    //         cached = gptbls.Where(t => t.Pxcod == pxcod).ToList();
+    //         Console.WriteLine($"Filtered Pxcod={pxcod}: {cached.Count}");
+    //         _cachedOptions[pxcod] = cached;
+    //     }
+    //     return _cachedOptions[pxcod];
+
+    //     // if (!_cachedOptions.TryGetValue(pxcod, out var cached))
+    //     // {
+    //     //     _cachedOptions[pxcod] = filtered;
+    //     // }
+    //     // return _cachedOptions[pxcod];
+    // }
+    // private IEnumerable<Gptbl> CastTbItems()
+    // {
+    //     if (TbItems == null) return Enumerable.Empty<Gptbl>();
+    
+    //     // ✅ Non-generic IEnumerable → OfType<Gptbl>
+    //     return Enumerable.OfType<Gptbl>((IEnumerable)TbItems);
+    // }
+    // private List<Gptbl> GetOptions(int pxcod)
+    // {
+    //     return _cachedOptions.TryGetValue(pxcod, out var cached)
+    //     ? cached
+    //     : _cachedOptions[pxcod] = _cachedTbItems?
+    //         .Where(t => t.Pxcod == pxcod)
+    //         .ToList() ?? new();
+    // return _cachedOptions.TryGetValue(pxcod, out var cached)
+    // ? cached
+    // : _cachedOptions[pxcod] = CastTbItems()
+    //     .Where(t => t.Pxcod == pxcod)
+    //     .ToList();
+    //}
+    // protected override void OnParametersSet()
+    // {
+    //     // ✅ Stable TbItems reference
+    // if (_cachedTbItems == null && TbItems != null)
+    // {
+    //     _cachedTbItems = TbItems.OfType<Gptbl>().ToList();
+    //     Console.WriteLine($"DEBUG: GetOptions(11) = {_cachedTbItems.Count} items");
+    // }
+        // ✅ Debug only - conditional log
+    //     if (!_optionsLogged && TbItems?.Any() == true)
+    // {
+    //     _optionsLogged = true;
+    //     var asi = GetOptions(11);
+    //     Console.WriteLine($"DEBUG: GetOptions(11) = {asi.Count} items");
+    // }
+        
+    // if (!_hasLoggedOptions)
+    // {
+    //     _hasLoggedOptions = true;
+    //     var asi = GetOptions(11);
+    //     Console.WriteLine($"DEBUG: GetOptions(11) = {GetOptions(11).Count} items");
+    //     foreach (var item in asi)
+    //     {
+    //         Console.WriteLine($"Option: {item.Elea} - {item.Liba}");
+    //     }
+    // }
+       // List<Gptbl> asi = GetOptions(11);
+       // foreach(var item in asi)
+       // {
+       //     Console.WriteLine($"Option: {item.Elea} - {item.Liba}");
+       // }
+       //Task.Delay(1); // Simulate async work
+    
+//     protected override bool ShouldRender()
+// {
+//     if (!_hasRenderedOnce)
+//     {
+//         _hasRenderedOnce = true;
+//         return true;
+//     }
+//     return TbItemsChanged;  // Only re-render if TbItems actually changed
+// }
+    // private int GetBindValue(Func<int> editValue, Func<int> displayValue) => 
+    //     isEditing ? editValue() : displayValue();
+
+    // private async Task SetIntField(string fieldName, int value)
+    // {
+    //     switch (fieldName)
+    //     {
+    //         case "Statut":
+    //             if (isEditing) DraftTiw.Statut = value; else draftTiwStatut = value; break;
+    //         case "Relat": 
+    //             if (isEditing) DraftTiw.Relat = value; else draftTiwRelat = value; break;
+    //     // ... Add cases
+    //     }
+    //     StateHasChanged();
+    // }
+
+    // private void SetStatutValue(int value)
+    // {
+    //     if (isEditing) DraftTiw.Statut = value;
+    //     else draftTiwStatut = value;  // Rare, but consistent
+    // }
+} *@
+
+
+
+

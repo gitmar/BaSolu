@@ -7,8 +7,8 @@ namespace GxTie.ClieModels
 {
     public class MyShareVars()
     {
-        public bool isAuthenticated { get; set; }
-        public ClaimsPrincipal authUser { get; set; }
+        public bool isAuthenticated { get; set; } = false;
+        public ClaimsPrincipal? authUser { get; set; }
         //public int Idorg { get; set; } = 0;
         //public string Usrid { get; set; } = string.Empty;
         public int Ugpe { get; set; } = 0;
@@ -30,9 +30,9 @@ namespace GxTie.ClieModels
     }   
     public class MyMenuVars()
     {
-        public int Ugpe { get; set; }
-        public int Uexo { get; set; }
-        public int Usesio { get; set; }
-        public int Usite { get; set; }
+        public int Ugpe { get; set; } = 0;
+        public int Uexo { get; set; } = 0;
+        public int Usesio { get; set; } = 0;
+        public int Usite { get; set; } = 0;
     }
 }

@@ -1,10 +1,14 @@
 ﻿
 using System.Net.NetworkInformation;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 
-using GxShared.Sess;
 using GxShared.Others;
-using Newtonsoft.Json;
+using GxShared.Sess;
+
 using GxWapi.DaModels;
+
+//using Newtonsoft.Json;
 
 namespace GxTie.Services
 {
@@ -19,7 +23,9 @@ namespace GxTie.Services
         {
             //FmtPsts
             var json = await _clieManager.SendRequestAsync("AUTHClient", HttpMethod.Get, "lgauth/allpostes");
-            var result = JsonConvert.DeserializeObject<List<Gpdivh>>(json);
+            //var result = JsonConvert.DeserializeObject<List<Gpdivh>>(json);
+            var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
+            var result = System.Text.Json.JsonSerializer.Deserialize<List<Gpdivh>>(json, options);
             if (result.Any())
             {
                 Console.WriteLine($"Nb Divs : {result.Count}");
@@ -37,7 +43,9 @@ namespace GxTie.Services
         {
             //FmtPsts
             var json = await _clieManager.SendRequestAsync("AUTHClient", HttpMethod.Get, "lgauth/allroles");
-            var result = JsonConvert.DeserializeObject<List<Grole>>(json);
+            var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
+            var result = System.Text.Json.JsonSerializer.Deserialize<List<Grole>>(json, options);
+            //var result = JsonConvert.DeserializeObject<List<Grole>>(json);
             if (result.Any())
             {
                 Console.WriteLine($"Nb Roles : {result.Count}");
@@ -49,27 +57,54 @@ namespace GxTie.Services
                 return new();
             }
         }
+        //public async Task<List<Gptbl>> LoadOrgaTables()
+        //{
+        //    //FmtPsts
+        //    var json = await _clieManager.SendRequestAsync("AUTHClient", HttpMethod.Get, "lgauth/alltables");
+        //    Console.WriteLine($"JSON length: {json?.Length ?? 0} chars");
+        //    //var result = JsonConvert.DeserializeObject<List<Gptbl>>(json);
+        //    var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
+        //    var result = System.Text.Json.JsonSerializer.Deserialize<List<Gptbl>>(json, options);
+        //    if (result.Any())
+        //    {
+        //        Console.WriteLine($"Nb tables : {result.Count}");
+        //        return result.ToList();
+        //    }
+        //    else
+        //    {
+        //        Console.WriteLine("Nb tables : null");
+        //        return new();
+        //    }
+        //}
         public async Task<List<Gptbl>> LoadOrgaTables()
         {
-            //FmtPsts
             var json = await _clieManager.SendRequestAsync("AUTHClient", HttpMethod.Get, "lgauth/alltables");
-            var result = JsonConvert.DeserializeObject<List<Gptbl>>(json);
-            if (result.Any())
+            Console.WriteLine($"JSON length: {json?.Length ?? 0} chars");
+
+            if (string.IsNullOrEmpty(json)) return new();
+
+            var options = new JsonSerializerOptions
             {
-                Console.WriteLine($"Nb tables : {result.Count}");
+                PropertyNameCaseInsensitive = true,  // Matches your API's null policy
+                DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull  // Optional, for symmetry
+            };
+            var result = System.Text.Json.JsonSerializer.Deserialize<List<Gptbl>>(json, options);
+
+            if (result?.Any() == true)
+            {
+                Console.WriteLine($"Nb tables: {result.Count}");
                 return result.ToList();
             }
-            else
-            {
-                Console.WriteLine("Nb tables : null");
-                return new();
-            }
+            Console.WriteLine("Nb tables: null/empty");
+            return new();
         }
         public async Task<List<Gpcol>> LoadOrgaColons()
         {
             //FmtPsts
             var json = await _clieManager.SendRequestAsync("AUTHClient", HttpMethod.Get, "lgauth/allcolons");
-            var result = JsonConvert.DeserializeObject<List<Gpcol>>(json);
+            var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
+            var result = System.Text.Json.JsonSerializer.Deserialize<List<Gpcol>>(json, options);
+            //var result = JsonConvert.DeserializeObject<List<Gpcol>>(json);
             if (result.Any())
             {
                 Console.WriteLine($"Nb colonnes : {result.Count}");

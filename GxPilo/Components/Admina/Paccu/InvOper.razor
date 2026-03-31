@@ -320,26 +320,23 @@ else
                                 </div>
                             </Content>
                         </Tab>
-                        <Tab Title="Renvoie" Name="RenvTab">
+                        <Tab Title="Re-Email" Name="RenvTab">
                             <Content>
                                 <!-- Email -->
-                                <div class="col-md-4">
+                                <div class="col-md-8">
                                     <label>Email:</label>
                                     <InputText type="email" @bind-Value="_invModel.Email" class="form-control" />
                                 </div>
-                                <div class="col-md-4">
+                                <div class="col-md-8">
                                     <label>Téléphone:</label>
                                     <InputText @bind-Value="_invModel.PhoneNumber" class="form-control" />
                                 </div>
-                                <button class="btn btn-outline-danger btn-sm d-flex align-items-center" @onclick="() => ReInviteOperat()">
-                                    <i class="bi bi-envelope-plus me-1"></i>
-                                    Re-invite OPERATEUR
-                                </button>
-
-                                <button class="btn btn-outline-danger btn-sm d-flex align-items-center" @onclick="() => ReConfirmEmail()">
-                                    <i class="bi bi-envelope-check me-1"></i>
-                                    Re-confirm EMAIL
-                                </button>
+                                <div class="col-md-8">
+                                    <button class="btn btn-outline-danger btn-sm d-flex align-items-center" @onclick="() => ReConfirmEmail()">
+                                        <i class="bi bi-envelope-check me-1"></i>
+                                        Re-confirm EMAIL
+                                    </button>
+                                </div>
                             </Content>
                         </Tab>
                     </Tabs>
@@ -563,49 +560,7 @@ else
         operecipientsSaved = true;
         StateHasChanged();
     }
-    private async Task<bool> ReInviteOperat()
-    {
-        OrgaCreateDto dto = new();
-        dto.Idorg = curOrga.Idorg;
-        dto.Email = _invModel.Email;
-
-        // dto.Ivrole = 2; //owner
-        // dto.Srole = "Owner";
-        // // Dynamic client per-customer
-        // var clieUrl = _inCustomer.Weburl;
-        // _dynClient.SetBaseUrl(clieUrl?.ToString().TrimEnd('/'));
-        // var client = _dynClient.GetClient();
-        // var response = await client.PostAsJsonAsync("api/usercontext/reinviteorga", dto);
-        // if (!response.IsSuccessStatusCode)
-        // {
-        //     var errorContent = await response.Content.ReadAsStringAsync();
-        //     Imessage = $"Failed: {response.StatusCode} - {errorContent}";
-        //     return false;
-        // }
-        return true;
-    }
-    private async Task<bool> ReConfirmEmail()
-    {
-        OrgaCreateDto dto = new();
-        dto.Idorg = curOrga.Idorg;
-        dto.Email = _invModel.Email;
-
-
-        // dto.Ivrole = 2; //owner
-        // dto.Srole = "Owner";
-        // // Dynamic client per-customer
-        // var clieUrl = _inCustomer.Weburl;
-        // _dynClient.SetBaseUrl(clieUrl?.ToString().TrimEnd('/'));
-        // var client = _dynClient.GetClient();
-        // var response = await client.PostAsJsonAsync("api/regis/resendconfirm", dto);
-        // if (!response.IsSuccessStatusCode)
-        // {
-        //     var errorContent = await response.Content.ReadAsStringAsync();
-        //     Imessage = $"Failed: {response.StatusCode} - {errorContent}";
-        //     return false;
-        // }
-        return true;
-    }
+    
     private void OnTabChanged(int tabIndex)
     {
         // Optionally check if current recipients were saved before clearing
@@ -689,6 +644,30 @@ else
                 invalidEmails.Add($"{line} (invalid format)");
         }
         return emails;
+    }
+    private async Task<bool> ReConfirmEmail()
+    {
+        OrgaCreateDto dto = new();
+        dto.Idorg = curOrga.Idorg;
+        dto.Email = _invModel.Email;
+
+
+        dto.Ivrole = 2; //owner
+        dto.Srole = "Owner";
+        // Dynamic client per-customer
+        var clieUrl = _invModel.Weburl;
+        await _clieManager.SetAuthorizationHeaderAsync("AUTHClient");
+        var response = await _clieManager.SendRequestAsync(
+                "AUTHClient",
+                HttpMethod.Post,
+                "regis/resendconfirm", _invModel);
+        // if (!response.IsSuccessStatusCode)
+        // {
+        //     var errorContent = await response.Content.ReadAsStringAsync();
+        //     Imessage = $"Failed: {response.StatusCode} - {errorContent}";
+        //     return false;
+        // }
+        return true;
     }
     private bool IsValidEmail(string email)  // ✅ Instance method
     {

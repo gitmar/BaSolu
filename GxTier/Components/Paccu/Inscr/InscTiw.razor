@@ -16,6 +16,7 @@
 @using GxShared.Helpers
 @using GxTie.ClieModels
 @using GxTie.Services
+@using GxTie.Components.FrmHelper
 @using GxTie.Components.Paccu.RtPer
 @* @using GxTie.Services.Mform *@
 @using GxWapi.DaModels
@@ -45,7 +46,7 @@
     <GlobModal IsVisible="@isModalVisible"
                IsVisibleChanged="@OnModalVisibilityChanged"
                Title="Chargement des documents"
-               EntyTiw="@curTiw"
+               EntyTiw="@draftPers"
                EntyTie="null"
                LsmVars="@LsVars"
                LsmFixes="@LsFixes"
@@ -108,21 +109,29 @@
                                         @if(curTiw?.Xadd1 == -1 || curTiw?.Xedt1 == -1)
                                         {
                                             <div>
-                                                <MainGridHelper FilteredData="@PersonsForGrid"
-                                                    EdRowguid="@EdTiwRowguid"
-                                                    Visibility="@TiwVisibility"
-                                                    RenderKey="persons-grid"
-                                                    DraftEntity="@draftPers"
-                                                    SelectedEntity="@curPerson"
-                                                    TbItems="@TbItems" />
+                                                <CascadingValue Value="SelectOptions" IsFixed="true">
+                                                <!-- ✅ Prevents re-cascade -->
+                                                <CascadingValue Value="Visibility" IsFixed="true">
+                                                    <!-- Cascade stable reference -->
+                                                    <CascadingValue Value="_stableTbItems ?? new List<Gptbl>()" IsFixed="true">
+                                                    <MainGridHelper DraftTiw="@draftTiw"
+                                                                    RenderKey="Tiws-grid"
+                                                                    EdRowguid="@EdTiwRowguid"
+                                                                    Mode="@(isAddTiw ? "Add" : "Edit")"
+                                                                    TbItems="@_stableTbItems" />
+                                                    </CascadingValue>
+                                                </CascadingValue>
+                                            </CascadingValue>
                                             </div>
                                         <!--Attributs plus-->
                                             <div>
     @foreach(var ua in LsVars.Where(a => a.Gvars == 6 && a.Itb == Ugpe))
     {
+        Console.WriteLine("ICI CA HANG1");
         Tiwatr icatr = curTiw.Tiwatrs.FirstOrDefault(tat => tat.Igsg == ua.Xseq);
         if (icatr == null)
         {
+            Console.WriteLine("ICI CA HANG2");
             icatr = new();
             icatr.Xadd1 = -1;
             icatr.Igsg = ua.Xseq;
@@ -721,15 +730,24 @@
 
     // When adding: only show the draft row
 
-    private IEnumerable<EntPerson> PersonsForGrid =>
-        GMode == GridMode.PersAdding
-            ? new List<EntPerson> { draftPers } //only one
-            : Persons;
+    // private IEnumerable<Tiersp> PersonsForGrid =>
+    //     GMode == GridMode.PersAdding
+    //         ? new List<Tiersp> { draftTiw } //only one
+    //         : Persons;
 
-    private IEnumerable<EntPerson> AfilsForGrid =>
-        GMode == GridMode.AflsAdding
-            ? new List<EntPerson> { draftAfls } //only one
-            : Affiles;
+    // private IEnumerable<Tieafl> AfilsForGrid =>
+    //     GMode == GridMode.AflsAdding
+    //         ? new List<Tieafl> { draftAfls } //only one
+    //         : Affiles;
+    // private Tiersp PersonsForGrid =>
+    //     GMode == GridMode.PersAdding
+    //         ? new Tiersp { draftTiw } //only one
+    //         : Persons;
+
+    // private Tieafl AfilsForGrid =>
+    //     GMode == GridMode.AflsAdding
+    //         ? Tieafl { draftAfls } //only one
+    //         : Affiles;
 
     private bool CanEditChildren =>
         GMode != GridMode.PersAdding && curTiw?.Id != 0;
@@ -838,7 +856,11 @@
         //     // Or always recreate: edTiwContext = new EditContext(curTiw);
         // }
     }
-
+    private async Task OnIMyGAflChanged(int value)
+    {
+        IMyGAfl = value;
+        StateHasChanged();  // Ensures OnParametersSetAsync()
+    }
     private async Task StartTiwNew()
     {
         Console.WriteLine("🚨 StartPlnNew");
@@ -1830,7 +1852,12 @@
         selectedTiewels = mytiws is not null && mytiws.Any() ? mytiws : new();
         return Task.CompletedTask;
     }
+    private async Task<bool> ValiderSelection()
+    {
 
+
+        return true;
+    }
     bool AreRowsEqual(Tiwafl row1, Tiwafl row2) =>
         row1.Liba == row2.Liba && row1.Abg == row2.Abg;
     private int NextSeq<T>(IEnumerable<T> source, Func<T, int?> selector)

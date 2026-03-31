@@ -1,0 +1,124 @@
+﻿@using GxWapi.DaModels
+@using GxTie.Components.FrmHelper
+@using GxTie.StaticHelpers
+@using GxShared.Others
+@using System.Collections
+
+@typeparam TEntity where TEntity : GxWapi.DaModels.IBaseTier
+
+@if (Draft != null)
+{
+    <div class="card">
+        <div class="card-body p-3">
+
+            <!-- Example field: ID -->
+            <FormField Label="ID">
+                <div class="form-control-plaintext">@Draft.Id</div>
+            </FormField>
+
+            <!-- Example field: Dossier -->
+            <FormField Label="Dossier">
+                @if (isEditing && CanEdit)
+                {
+                    <InputText @bind-Value="Draft.Xmatri" class="form-control" />
+                }
+                else
+                {
+                    <span class="form-control-plaintext">@Draft.Xmatri</span>
+                }
+            </FormField>
+
+            <!-- Example field: Statut -->
+            <InputSelect @bind-Value="Draft.Statut" class="form-select">
+                <option value="">?choisir</option>
+                @foreach (var opt in GetOptions(11))
+                {
+                    <option value="@opt.Elea">@opt.Liba</option>
+                }
+            </InputSelect>
+            <FormField Label="Statut">
+                @if (isEditing && CanEdit)
+                {
+                    <InputSelect @bind-Value="Draft.Statut" class="form-select">
+                        <option value="">?choisir</option>
+                        @foreach (var opt in GetOptions(11))
+                        {
+                            <option value="@opt.Elea">@opt.Liba</option>
+                        }
+                    </InputSelect>
+                }
+                else
+                {
+                    <span class="form-control-plaintext">
+                        @(GetOptions(11).FirstOrDefault(o => o.Elea == Draft.Statut)?.Liba ?? "?choisir")
+                    </span>
+                }
+            </FormField>
+
+            <!-- Example field: Residence -->
+            <FormField Label="Residence">
+                @if (isEditing && CanEdit)
+                {
+                    <InputSelect @bind-Value="Draft.Rpays" class="form-select">
+                        <option value="">?choisir</option>
+                        @foreach (var opt in GetOptions(31))
+                        {
+                            <option value="@opt.Abg">@opt.Liba</option>
+                        }
+                    </InputSelect>
+                }
+                else
+                {
+                    <span class="form-control-plaintext">
+                        @(GetOptions(31).FirstOrDefault(o => o.Abg == Draft.Rpays)?.Liba ?? "?choisir")
+                    </span>
+                }
+            </FormField>
+
+        </div>
+    </div>
+}
+
+@code {
+    // Core draft entity
+    [Parameter] public TEntity Draft { get; set; }
+
+    // Identifiers
+    [Parameter] public string RenderKey { get; set; }
+    [Parameter] public Guid EdRowguid { get; set; }
+
+    // Options for dropdowns
+    [Parameter] public IEnumerable<SelectOption> SelectOptions { get; set; } = Enumerable.Empty<SelectOption>();
+    [Parameter] public List<Gptbl> TbItems { get; set; } = new();
+
+    // Workflow flags
+    [Parameter] public string Mode { get; set; } = "View";
+    [Parameter] public bool CanEdit { get; set; } = true;
+
+    private bool isEditing => Mode == "Add" || Mode == "Edit";
+
+    // Cached options for quick lookup
+    private Dictionary<int, List<Gptbl>> _cachedOptions = new();
+
+    protected override void OnParametersSet()
+    {
+        foreach (var gptbl in TbItems)
+        {
+            if (!_cachedOptions.TryGetValue(gptbl.Pxcod, out var list))
+            {
+                list = new List<Gptbl>();
+                _cachedOptions[gptbl.Pxcod] = list;
+            }
+            list.Clear();
+            list.Add(gptbl);
+        }
+    }
+
+    private List<Gptbl> GetOptions(int pxcod)
+    {
+        if (_cachedOptions.TryGetValue(pxcod, out var cached))
+            return cached;
+
+        return new List<Gptbl>();
+    }
+}

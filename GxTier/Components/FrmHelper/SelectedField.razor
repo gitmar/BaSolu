@@ -1,0 +1,33 @@
+﻿@using GxShared.Others
+
+<FormField Label="@Label" IsVisible="@Visible">
+    @if (isEditing)
+    {
+        <InputSelect Value="@BindValue" ValueChanged="@((int v) => BindValueChanged.InvokeAsync(v))" 
+                     ValueExpression="@(() => BindValue)" class="form-select" Size="8">
+            <option value="0">?choisir</option>
+            @foreach (var opt in Options)
+            {
+                <option value="@opt.Elea">@opt.Liba</option>
+            }
+        </InputSelect>
+    }
+    else
+    {
+        <span class="form-control-plaintext">@SelectedLabel</span>
+    }
+</FormField>
+
+@code {
+    [Parameter] public int Pxcod { get; set; }
+    [Parameter] public bool isEditing { get; set; }
+    [Parameter] public int BindValue { get; set; }
+    [Parameter] public EventCallback<int> BindValueChanged { get; set; }
+    [Parameter] public RenderFragment ValueExpression { get; set; }
+    [Parameter] public bool Visible { get; set; } = true;
+    [Parameter] public string Label { get; set; }
+    
+    private List<Gptbl> Options => SelectOptions.GetValueOrDefault(Pxcod, new());
+    private string SelectedLabel => Options.FirstOrDefault(o => o.Elea == BindValue)?.Liba ?? "?";
+}
+

@@ -8,8 +8,13 @@
     {
         public Guid Rowguid { get; set; }
         public int Id { get; set; }
-
+        public int Iui { get; set; } = 0;
+        public int Xadd1 { get; set; } = 0;
+        public int Xedt1 { get; set; } = 0;
+        public int Xdel1 { get; set; } = 0;
         // Extended fields (2–5)
+        public string Liba { get; set; } = string.Empty;
+        public string KMatri { get; set; } = string.Empty;
         public string Xmatri { get; set; } = "";
         public string Nom { get; set; } = "";
         public string Pnom { get; set; } = "";
@@ -37,21 +42,4 @@
         public int Ipaid { get; set; }           // Méthode de paiement
 
     }
-    public enum RowState
-    {
-        Normal,
-        EditPending,
-        DeletePending,
-        AddPending,  // 🔥 NEW for Add
-        Locked
-    }
-    public enum GridMode
-    {
-        PersAdding,
-        PersEditing,
-        AflsAdding,
-        AflsEditing,
-        None
-    }
-    public enum EntityLevel { Plan, Rub, Fmt, Atr }
 }

@@ -18,6 +18,7 @@
 @using GxTie.ClieModels
 @using GxTie.Services
 @using GxTie.Components.Paccu.RtPer
+@using GxTie.Components.FrmHelper
 @using GxWapi.DaModels
 @using Microsoft.AspNetCore.Components.Forms
 @using Microsoft.AspNetCore.WebUtilities
@@ -25,7 +26,7 @@
 @using Newtonsoft.Json
 
 @inject NavigationManager _navmanager
-@inject HttpClientService _cliemanager
+@inject HttpClientService _clieManager
 @inject RendAgres _rendAgres
 @inject IMessageService _messageService
 
@@ -62,188 +63,182 @@
 </div>
 @if (!isLoading)
 {
-    @if (curTie != null && edTiwContext != null)
-    {
-        <AuthorizeView>
+    <AuthorizeView>
             <Authorized Context="authtiwcontext">
-                <EditForm EditContext="edTiwContext" @key="curTie">
-                    <DataAnnotationsValidator />
-                    <ValidationSummary />
-                    <div class="container">
-                        <Tabs>
-                            <div class="container">
-                                <Tabs>
-                                    <Tab Title="Membres">
-                                        <Content>
-                                            <div class="d-flex align-items-center gap-2">
-                                                <Button Color="ButtonColor.Primary"
-                                                        Size="ButtonSize.Small"
-                                                        Class="px-2 py-1 small-btn"
-                                                        Disabled="@(!AllowMultipleEdits && isAddTiw)"
-                                                        @onclick="StartTiwNew">
-                                                    ➕ Add
-                                                </Button>
-                                                @if (isAddTiw)
+            <div class="d-flex align-items-center gap-2">
+                <Button Color="ButtonColor.Primary"
+                        Size="ButtonSize.Small"
+                        Class="px-2 py-1 small-btn"
+                        Disabled="@(!AllowMultipleEdits && isAddTiw)"
+                        @onclick="StartTiwNew">
+                    ➕ Add
+                </Button>
+
+                @if (isAddTiw)
+                {
+                    <Button Color="ButtonColor.Info"
+                            Size="ButtonSize.Small"
+                            Class="px-2 py-1 small-btn"
+                            @onclick="ShowModal">
+                        piece(s)
+                    </Button>
+
+                    <Button Color="ButtonColor.Success"
+                            Size="ButtonSize.Small"
+                            Class="px-2 py-1 small-btn"
+                            @onclick="() => ConfirmEdit(curTie, EntityLevel.Plan)">
+                        ✅ Confirm
+                    </Button>
+
+                    <Button Color="ButtonColor.Secondary"
+                            Size="ButtonSize.Small"
+                            Class="px-2 py-1 small-btn"
+                            @onclick="() => CancelEdit(curTie, EntityLevel.Plan)">
+                        ❌ Cancel
+                    </Button>
+                }
+            </div>
+
+            @if (isAddTiw || isEdtTiw)
+            {
+                <div class="container">
+                    <Tabs>
+                        <Tab Title="Membres">
+                            <Content>
+                                <!-- ✅ EditForm per tab - no nesting issues -->
+                                <EditForm Model="curTie">
+                                    <DataAnnotationsValidator />
+                                    <ValidationSummary />
+                                    <div>
+                                        @if (draftTiw != null)
+                                        {
+                                            <PTieGdHelper Draft="@draftTiw"
+                                            RenderKey="parent-grid"
+                                            GMode="@GtieMode"
+                                            Visibility="@Visibility"
+                                            TbItems="@TbItems"
+                                            EdRowguid="@EdTiwRowguid" />
+                                        }
+                                    </div>
+
+                                    <!-- Additional dynamic attributes -->
+                                    <div>
+                                        @foreach (var ua in LsVars.Where(a => a.Gvars == 6 && a.Itb == Ugpe))
+                                        {
+                                            Tieatr icatr = curTie.Tieatrs.FirstOrDefault(tat => tat.Igsg == ua.Xseq)
+                                                            ?? new Tieatr
+                                                            {
+                                                                Xadd1 = -1,
+                                                                Igsg = ua.Xseq,
+                                                                Itie = curTie.Id,
+                                                                Atyp = ua.Atyp,
+                                                                Aztyp = ua.Ztyp,
+                                                                Svala = "",
+                                                                AtState = AEntState.NewAdded
+                                                            };
+
+                                            <div class="mb-2">
+                                                <label class="form-label fw-bold ms-3 text-capitalize">@ua.Liba:</label>
+                                                @if (isEdtTiw || isAddTiw)
                                                 {
-                                                    <Button Color="ButtonColor.Info"
-                                                            Size="ButtonSize.Small"
-                                                            Class="px-2 py-1 small-btn"
-                                                            @onclick="ShowModal">
-                                                        piece(s)
-                                                    </Button>
-
-                                                    <Button Color="ButtonColor.Success"
-                                                            Size="ButtonSize.Small"
-                                                            Class="px-2 py-1 small-btn"
-                                                            @onclick="() => ConfirmEdit(curTie, EntityLevel.Plan)">
-                                                        ✅ Confirm
-                                                    </Button>
-
-                                                    <Button Color="ButtonColor.Secondary"
-                                                            Size="ButtonSize.Small"
-                                                            Class="px-2 py-1 small-btn"
-                                                            @onclick="() => CancelEdit(curTie, EntityLevel.Plan)">
-                                                        ❌ Cancel
-                                                    </Button>
+                                                    if (ua.Zfro == 2)
+                                                    {
+                                                        <InputSelect @bind-Value="icatr.Svala" class="form-select">
+                                                            <option value="0">?choisir</option>
+                                                            @foreach (var tob in TbItems.Where(ut => ut.Pxcod == ua.Xdpd))
+                                                            {
+                                                                <option value="@tob.Elea">@tob.Liba</option>
+                                                            }
+                                                        </InputSelect>
+                                                    }
+                                                    else
+                                                    {
+                                                        <InputText @bind-Value="icatr.Svala" class="form-control" />
+                                                    }
+                                                }
+                                                else
+                                                {
+                                                    <div class="form-control-plaintext">@icatr.Svala</div>
                                                 }
                                             </div>
-                                            @if(curTie?.Xadd1 == -1 || curTie?.Xedt1 == -1)
-                                            {
-                                            <div>
-                                                <MainGridHelper FilteredData="@PersonsForGrid"
-                                                                EdRowguid="@EdTiwRowguid"
-                                                                Visibility="@TiwVisibility"
-                                                                RenderKey="persons-grid"
-                                                                DraftEntity="@draftPers"
-                                                                SelectedEntity="@curPerson"
-                                                                TbItems="@TbItems" />
-                                            </div>
-                                            <!--Attributs plus-->
-                                            <div>
-                                                    @foreach (var ua in LsVars.Where(a => a.Gvars == 6 && a.Itb == Ugpe))
-                                                    {
-                                                        Tieatr icatr = curTie.Tieatrs.FirstOrDefault(tat => tat.Igsg == ua.Xseq);
-                                                        if (icatr == null)
-                                                        {
-                                                            icatr = new();
-                                                            icatr.Xadd1 = -1;
-                                                            icatr.Igsg = ua.Xseq;
-                                                            icatr.Itie = curTie.Id;
-                                                            icatr.Atyp = ua.Atyp;
-                                                            icatr.Aztyp = ua.Ztyp;
-                                                            icatr.Svala = "";
-                                                            icatr.AtState = AEntState.NewAdded;
-                                                        }
-
-                                                        <div class="mb-2">
-                                                            <!-- Label on top -->
-                                                            <label class="form-label fw-bold ms-3 text-capitalize">@ua.Liba:</label>
-                                                            @if (isEdtTiw || isAddTiw)
-                                                            {
-                                                                if (ua.Zfro == 2)
-                                                                {
-                                                                    <InputSelect @bind-Value="icatr.Svala" class="form-select">
-                                                                        <option value="0">?choisir</option>
-                                                                        @foreach (var tob in TbItems.Where(ut => ut.Pxcod == ua.Xdpd))
-                                                                        {
-                                                                            <option value="@tob.Elea">@tob.Liba</option>
-                                                                        }
-                                                                    </InputSelect>
-                                                                }
-                                                                else
-                                                                {
-                                                                    <InputText @bind-Value="icatr.Svala" class="form-control" />
-                                                                }
-                                                            }
-                                                            else
-                                                            {
-                                                                if (ua.Zfro == 2)
-                                                                {
-                                                                    <InputSelect @bind-Value="icatr.Svala" disabled class="form-select">
-                                                                        <option value="0">?choisir</option>
-                                                                        @foreach (var tob in TbItems.Where(ut => ut.Pxcod == ua.Xdpd))
-                                                                        {
-                                                                            <option value="@tob.Elea">@tob.Liba</option>
-                                                                        }
-                                                                    </InputSelect>
-                                                                }
-                                                                else
-                                                                {
-                                                                    <div class="form-control-plaintext">@icatr.Svala</div>
-                                                                }
-                                                            }
-                                                        </div>
-                                                    }
-                                            </div>
-                                            }
-                                        </Content>
-                                    </Tab>
+                                        }
+                                    </div>
+                                </EditForm>
+                            </Content>
+                             </Tab>
                                     <Tab title="Affilies">
                                         <Content>
-                                            @if (CanEditChildren)
+                                    @if (CanEditChildren)
+                                    {
+                                        <div class="d-flex align-items-center gap-2 mb-2">
+                                            <label>Group:</label>
+                                            <InputSelect id="gpId" @bind-Value="@IMyGAfl">
+                                                <option value="0">Select group...</option>
+                                                @foreach (var afl in LsGAfls.Where(af =>af.Atyp == Ugpe))
+                                                {
+                                                    <option value="@afl.Elea">@afl.Liba</option>
+                                                }
+                                            </InputSelect>
+                                            <Button Color="ButtonColor.Primary"
+                                                    Size="ButtonSize.Small"
+                                                    Disabled="@(IMyGAfl < 1)"
+                                                    @onclick="() => StartRubNew(curTie, IMyGAfl)">
+                                                ➕ Add Child
+                                            </Button>
+                                            @if (curTie.Tieafls.Any())
                                             {
-                                                <div class="d-flex align-items-center gap-2 mb-2">
-                                                    <label>Group:</label>
-                                                    <InputSelect id="gpId" @bind-Value="IMyGAfl">
-                                                        <option value="0">Select group...</option>
-                                                        @foreach (var afl in LsGAfls)
-                                                        {
-                                                            <option value="@afl.Elea">@afl.Liba</option>
-                                                        }
-                                                    </InputSelect>
-                                                    <Button Color="ButtonColor.Primary"
-                                                            Size="ButtonSize.Small"
-                                                            Disabled="@(IMyGAfl < 1)"
-                                                            @onclick="() => StartRubNew(curTie, IMyGAfl)">
-                                                        ➕ Add Child
-                                                    </Button>
-                                                    @if (draftAfls is not null)
-                                                    {
-                                                        <Button Color="ButtonColor.Secondary"
-                                                                Size="ButtonSize.Small"
-                                                                Disabled="@(IMyGAfl < 1)"
-                                                                @onclick="() => CancelRubNew(curTie)">
-                                                            ✖ Cancel
-                                                        </Button>
-                                                    }
-                                                </div>
-                                                <div>
-                                                    <ChildGridHelper FilteredData="@AfilsForGrid"
-                                                                     EdRowguid="@EdRubRowguid"
-                                                                     Visibility="@AflVisibility"
-                                                                     RenderKey="afils-grid"
-                                                                     DraftEntity="@draftAfls"
-                                                                     SelectedEntity="@curAfil"
-                                                                     SelectedGroup="@IMyGAfl"
-                                                                     TbItems="@TbItems"
-                                                                     RowStates="@_rowStates"
-                                                                     ConfirmEdit="@(p => ConfirmEdit(p, EntityLevel.Rub))"
-                                                                     CancelEdit="@(p => CancelEdit(p, EntityLevel.Rub))"
-                                                                     ConfirmDelete="@(p => ConfirmDelete(p, EntityLevel.Rub))"
-                                                                     CancelDelete="@(p => CancelDelete(p, EntityLevel.Rub))"
-                                                                     StartRubEdit="@(p => StartRubEdit(p, p.Rowguid))"
-                                                                     StartRowDelete="@(id => StartRowDelete(id, EntityLevel.Rub))" />
-                                                </div>
+                                                <Button Color="ButtonColor.Success"
+                                                    Size="ButtonSize.Small"
+                                                    Class="px-2 py-1 small-btn"
+                                                    @onclick="() => ConfirmRubEdit(curAfl)">
+                                                    ✅ Confirm
+                                                </Button>
+                                                <Button Color="ButtonColor.Secondary"
+                                                        Size="ButtonSize.Small"
+                                                        Disabled="@(IMyGAfl < 1)"
+                                                        @onclick="() => CancelRubNew(curTie)">
+                                                    ✖ Cancel
+                                                </Button>
                                             }
-                                            else
+                                        </div>
+                                        <div>
+                                            @if (draftAfl != null)
                                             {
-                                                <div class="alert alert-warning">
-                                                    🚫 Save the main record before adding children.
-                                                </div>
+                                            <!-- Cascade stable reference -->
+                                                    <CTieGdHelper SubAfls ="@curTie.Tieafls.ToList()"
+                                                                RenderKey="child-grid"
+                                                                GMode="@GaflMode"
+                                                                AflVisibility="@AflVisibility"
+                                                                TbItems="@TbItems"
+                                                                EdRowguid="@EdAflRowguid"
+                                                                SelectedGroup="@IMyGAfl"
+                                                                ConfirmEdit="@(p => ConfirmEdit(p, EntityLevel.Rub))"
+                                                                CancelEdit="@(p => CancelEdit(p, EntityLevel.Rub))"
+                                                                ConfirmDelete="@(p => ConfirmDelete(p, EntityLevel.Rub))"
+                                                                CancelDelete="@(p => CancelDelete(p, EntityLevel.Rub))"
+                                                                StartRubEdit="@(p => StartRubEdit(p, p.Rowguid))"
+                                                                StartRowDelete="@(id => StartRowDelete(id, EntityLevel.Rub))" />
                                             }
+                                        </div>
+                                    }
+                                    else
+                                    {
+                                        <div class="alert alert-warning">
+                                            🚫 Save the main record before adding children.
+                                        </div>
+                                    }
                                         </Content>
                                     </Tab>
                                     <Tab Title="Validation">
                                         <Content>
                                             @if (canbeVerified)
                                             {
-                                            <div class="container row">
+                                                <div class="container row">
+                                    @* SelectedItemsChanged="OnSelectedItemsChanged" *@
                                 <Grid TItem="Tiersp"
                                       Data="@WaitingTiersps"
-                                      @key="TiwRenderKey"
                                       AllowSelection="true"
                                       SelectionMode="GridSelectionMode.Multiple"
-                                      SelectedItemsChanged="OnSelectedItemsChanged"
                                       Responsive="true">
                                     <GridColumns>
                                         <GridColumn TItem="Tiersp" HeaderText="No">
@@ -268,7 +263,7 @@
                                         </GridColumn>
                                         <GridColumn TItem="Tiersp" HeaderText="etat" IsVisible="true">
                                                                 <HeaderContent>
-                                                                    @if (siyaItem)
+                                                                    @* @if (siyaItem)
                                                                     {
                                                                         <button class="btn btn-primary btn-sm"
                                                                                 @onclick="() => ValiderSelection()">
@@ -278,7 +273,7 @@
                                                                     else
                                                                     {
                                                                         <span>Eta</span>
-                                                                    }
+                                                                    } *@
                                                                 </HeaderContent>
                                             <ChildContent Context="item">
                                                 <InputSelect @bind-Value="item.Eta" disabled="true">
@@ -467,21 +462,9 @@
                                     </GridDetailView>
                                 </Grid>
                             </div>
-                        </Tabs>
-                    </div>
-                </EditForm>
+                }
             </Authorized>
         </AuthorizeView>
-    }
-    else
-    {
-        <div class="text-center p-3">
-            <p>No records available.</p>
-            @* <button class="btn btn-primary" @onclick="() => InitializeData()">
-                    Initialize Data
-                </button> *@
-        </div>
-    }
 }
 <style>
     .inputfl {
@@ -577,9 +560,7 @@
     [Parameter]
     public int toMenu { get; set; }
     [Parameter]
-    public List<Gpcol> LsPcols { get; set; }
-    [Parameter]
-    public List<Gpcol> LsFcols { get; set; }
+    public List<Gptbl> TbItems { get; set; } // Dropdown options
     //guard
     [Parameter]
     public PendingChangesGuard _guard { get; set; }
@@ -603,53 +584,30 @@
     private Dictionary<int, bool> EdState = new Dictionary<int, bool>();
     private Dictionary<Guid, RowState> _rowStates = new();
     private Dictionary<Guid, bool> _isLightBg = new();  // Track light background
-    private Dictionary<string, bool> TiwVisibility = new();
-    private Dictionary<string, bool> AflVisibility = new();
+    //private Dictionary<string, bool> TiwVisibility = new();
+    // Computed/cascaded data (No longer params)
 
-    private void SetLightBackground(Guid rowguid, bool isLight)
-    {
-        _isLightBg[rowguid] = isLight;
-    }
-    private bool GetLightBackground(Guid rowguid)
-    {
-        return _isLightBg.GetValueOrDefault(rowguid, false);
-    }
+    //private Dictionary<string, bool> Visibility { get; set; } = new();
+    //private Dictionary<int, List<Gptbl>> SelectOptions { get; set; } = new();
+    //private Dictionary<int, List<Gptbl>> _cachedOptions = new();
+
+
+
+
+
+    //private bool IsAnyRowEditing => _activeEditRowguid != null;
     // Disable ALL actions when ANY row editing
     private Guid? _activeEditRowguid = null;
     private EntityLevel? _activeEditLevel = null;
-    //private bool CanEditRows() => _activeEditRowguid == null;
-    //private bool IsRowEditing(Guid rowguid) => _activeEditRowguid == rowguid;
     private bool IsAnyRowEditing => _activeEditRowguid != null;
-    // private bool IsEditingRow(EntPerson entity)
-    // {
-    //     return entity.Rowguid == EdTiwRowguid;
-    // }
 
-    // public enum RowState
-    // {
-    //     Normal,
-    //     EditPending,
-    //     DeletePending,
-    //     AddPending,  // 🔥 NEW for Add
-    //     Locked
-    // }
-    // public enum GridMode
-    // {
-    //     PersAdding,
-    //     PersEditing,
-    //     AflsAdding,
-    //     AflsEditing,
-    //     None
-    // }
-    // public enum EntityLevel { Plan, Rub, Fmt }
-
-    public GridMode GMode = GridMode.None;
+    public GridMode GtieMode = GridMode.None; 
+    public GridMode GaflMode = GridMode.None;
 
     private List<Gplan> LsPlans = new();
     private List<Gpfixe> LsFixes = new();
-    private List<Gpfixe> LsGAfls = new();
+    private List<Gpvar> LsGAfls = new();
     //public List<Gtabl> TbGpes = new();
-    public List<Gptbl> TbItems = new();
     //public List<Gpvar> TbCols = new();
     private List<Gpvar> LsVars = new();
     private List<Gpfixe> LsDoms = new();
@@ -659,36 +617,46 @@
     private bool isPlnFilteringEnabled = false;
     private bool isRubFilteringEnabled = false;
 
+    //private IEnumerable<SelectOption> SelectOptions = Enumerable.Empty<SelectOption>();
+    //private List<Gptbl> TbItems = new();      // shared options
+
+    //provisoire
+    private bool CanEditChildren => true;
+    //GMode != GridMode.TiersAdding;
+
     //Global
     private int _lgcdu = 0;
     private int IMyGpln = 5; //5Programme
     private int IMyDom = 1; //1Saisie
     private int IMyVue = 1; //1Reel2Virtuel
     private int IMyGAfl = 0; //1cn2par3enf4pai5flh
+    //.private int _previousIMyGAfl = 0;
     private string atrTitle = "";
 
     private string atrDest = "Programmes de Saisie";
     //pour modals formulas
     private Tiersp curTie = new();
-    private Tieafl curRubr = new();
+    private Tieafl curAfl = new();
     //private Rubfmt curFmat = new();
 
-    
+
     ////private string DisabledClass => !EdtDelVue ? "disabled" : "";
     /// </summary> <summary>
-    
+
     //data
-    private ObservableCollection<Tiersp> MyDaTies { get; set; } = new();
-    private List<EntPerson> Persons = new();
-    private List<EntPerson> Affiles = new();
-    private HashSet<Tiersp> selectedTiersps = new();
-    private EntPerson? curPerson = new();
-    private EntPerson? draftPers = new();
-    private EntPerson? curAfil = new();
-    private EntPerson? draftAfls = new();
-    //private List<Tiersp> LsPlsEchs => curOrga.Tiersps.Where(pl => pl.Ptyp == 2).ToList();
-    //private List<Tiersp> LsPlsGris => curOrga.Tiersps.Where(pl => pl.Ptyp == 3).ToList();
-    //private List<Tiersp> LsPlsDivs => curOrga.Tiersps.Where(pl => pl.Ptyp == 4).ToList();
+    private List<Tiersp> MyDaTies { get; set; } = new();
+    private List<Tieafl> MyDaAfls { get; set; } = new();  
+
+    // Workflow flags
+    private bool isTieAdd;
+    private bool isAflAdd;
+    //private Guid EdAflRowguid;
+
+    // Visibility dictionaries
+    private Dictionary<string, bool> Visibility = new();
+    private Dictionary<string, bool> AflVisibility = new();
+
+    private Tieafl? curAfil = new();
     //add/edit options
     private bool AllowMultipleEdits { get; set; } = false;
     private bool isFiltre { get; set; } = false;
@@ -697,9 +665,11 @@
     private bool isModalVisible = false;
     private List<Tiersp> WaitingTiersps => MyDaTies.Where(tw => tw.Xadd1 != -1).ToList();
     private bool canbeVerified => WaitingTiersps.Any();
+    private HashSet<Tiersp> selectedTiersps = new();
     private bool siyaItem => selectedTiersps.Any();
     //TABS
     private string ActiveTab { get; set; } = "Candidat";
+
 
     //PLAN
     private Guid? TiwRenderKey = null;
@@ -713,12 +683,12 @@
     //RUBRIQUE
     private Guid? RubRenderKey = null;
     private Dictionary<Guid, Tieafl> _edRubOriginals = new();
-    private Tieafl? draftRub = null;
-    private bool isAddRub = false;
+    private Tieafl? draftAfl = null;
+    private bool isAddAfl = false;
     private bool isEdtRub = false;
-    private Guid? AdRubRowguid = null;
-    private Guid? EdRubRowguid = null;// Currently editing row ID
-    private Guid? DlRubRowguid = null;
+    private Guid? AdAflRowguid = null;
+    private Guid? EdAflRowguid = null;// Currently editing row ID
+    private Guid? DlAflRowguid = null;
     //FORMAT
     private Guid? FmtRenderKey = null;
     private Dictionary<Guid, Rubfmt> _edFmtOriginals = new();
@@ -737,25 +707,11 @@
         DlTiwRowguid != rowGuid;
     bool IsRubRowLocked(Guid rowGuid) =>
         !AllowMultipleEdits &&
-        (EdRubRowguid.HasValue || DlRubRowguid.HasValue) &&
-        EdRubRowguid != rowGuid &&
-        DlRubRowguid != rowGuid;
+        (EdAflRowguid.HasValue || DlAflRowguid.HasValue) &&
+        EdAflRowguid != rowGuid &&
+        DlAflRowguid != rowGuid;
 
-    // When adding: only show the draft row
-
-    private IEnumerable<EntPerson> PersonsForGrid =>
-        GMode == GridMode.PersAdding
-            ? new List<EntPerson> { draftPers } //only one
-            : Persons;
-
-    private IEnumerable<EntPerson> AfilsForGrid =>
-        GMode == GridMode.AflsAdding
-            ? new List<EntPerson> { draftAfls } //only one
-            : Affiles;
-
-    private bool CanEditChildren =>
-        GMode != GridMode.PersAdding && curTie?.Id != 0;
-
+    //private int renderCount;
     protected override async Task OnInitializedAsync()
     {
         isLoading = true;
@@ -773,22 +729,21 @@
                 Imessage = "CONNEXION, Utilisateur non authentifie";
                 return;
             }
+            Console.WriteLine("ValdTie Initializing...");
             LsVars = toChild.LsVars;
             LsFixes = toChild.LsFixes;
-            LsGAfls = toChild.LsFixes.Where(ua => ua.Gvars == 53 && ua.Itb == 6 && ua.Elea != 0).ToList();
+            LsGAfls = LsVars.Where(uv => uv.Gvars == 3 && uv.Itb == 6 && uv.Ityp == 1 && uv.Elea != 0).ToList();
+            Console.WriteLine($"nb afil {LsGAfls.Count} et {Ugpe}");
+            //LsGAfls = toChild.LsFixes.Where(ua => ua.Gvars == 53 && ua.Itb == 6 && ua.Elea != 0).ToList();
             _lgcdu = 3;
             var noslims = LsVars.Where(uv => uv.Idhie == 0 && uv.Gvars == 21 && uv.Itb == 1 && uv.Elea == 1);
             if (noslims.Any()) _lgcdu = noslims.FirstOrDefault().Ivala;
             LsVues = LsFixes.Where(ut => ut.Gvars == 36 && ut.Itb == 4 && ut.Gp1 == 5 && ut.Elea != 0).ToList();
-            //chargement des tables;
-            TbItems = await _rendAgres.LoadOrgaTables();
-            //TbGpes = datbls?.Hdtbls ?? new List<Gtabl>();
-            LsPlans = toChild.LsPlans;
-            //LsSites = toChild.LsSites;
 
-            //ChargeParentData;
+            //TbGpes = datbls?.Hdtbls ?? new List<Gtabl>();
+            LsPlans = toChild?.LsPlans;
             Console.WriteLine($"Child init: Tiersps={curOrga.Tiersps?.Count ?? 0}");
-            // 🔥 SAFE - Only initialize if Tiersps EXISTS
+            Console.WriteLine($"nb. tbitems : {TbItems.Count}");
             //editcontext Model initialising
             curTie ??= new();  // Or load data here
             // Load Tiersp list into EntPerson list for the grid
@@ -796,66 +751,65 @@
             {
                 Console.WriteLine($"Tiersps loaded: {curOrga.Tiersps.Count}");
 
-                MyDaTies = new ObservableCollection<Tiersp>(curOrga.Tiersps.ToList());
-
-                // Convert to EntPerson list for the grid
-                Persons = ModelHelper.MapListTo<Tiersp, EntPerson>(MyDaTies);
-
-                if (Persons.Any())
+                MyDaTies = curOrga.Tiersps.ToList();
+        
+                if (MyDaTies.Any())
                 {
-                    curPerson = Persons.FirstOrDefault();
+                    curTie = MyDaTies.FirstOrDefault();
                 }
             }
             else
             {
                 Console.WriteLine("Tiersps null/empty - initializing empty collections");
-                MyDaTies = new ObservableCollection<Tiersp>();
-                Persons = new List<EntPerson>();
+                //MyDaTies = new ObservableCollection<Tiersp>();
+                MyDaTies = new();
             }
-            if (LsPcols.Any())
-            {
-                string StrStore = LsPcols.FirstOrDefault().Fgsrc; //ColName;IsVisible;
-                List<LSelCol> Pcolumns = ColsPreferences.DeserializePreferences(StrStore);
-                Console.WriteLine($"nb cols {Pcolumns.Count} et {StrStore}");
-                TiwVisibility = Pcolumns.ToDictionary(tc => tc.ColName, tc => tc.IsVisible);
-            }
-            Console.WriteLine($"totyp {Ugpe} et cols Tiw in : {LsPcols?.Count} et visibles : {TiwVisibility?.Values?.Count}");
-            foreach (var uco in TiwVisibility)
-            {
-                Console.WriteLine($"col: {uco.Key} visible: {uco.Value}");
-            }
+            // Load visibility rules
+            await LoadTieVisibilityAsync();
+            await LoadAflVisibilityAsync();
         }
         catch (Exception ex)
         {
             Console.WriteLine($"Child crash: {ex.Message}");
             Console.WriteLine($"Stack: {ex.StackTrace}");  // 🔥 More debug info
-            Imessage = $"Erreur chargement: {ex.Message}";
+            Imessage = $"Erreur7 chargement: {ex.Message}";
         }
-        finally
-        {
-            isLoading = false;
-            StateHasChanged();
-        }
+        // renderCount++;
+        // Console.WriteLine($"[MainGridHelper] AfterRender #{renderCount}");
+        isLoading = false;
     }
-    protected override void OnParametersSet()
+    private async Task LoadTieVisibilityAsync()
     {
-        if (curTie != null)
-        {
-            edTiwContext ??= new EditContext(curTie);
-            // Or always recreate: edTiwContext = new EditContext(curTie);
-        }
-        // if (curRubr != null)
-        // {
-        //     edAflContext ??= new EditContext(curRubr);
-        //     // Or always recreate: edTiwContext = new EditContext(curTie);
-        // }
+        Console.WriteLine("Visibility loaded 1");
+        // ✅ Fix 1: Await authorization (no .Wait())
+        await _clieManager.SetAuthorizationHeaderAsync("AUTHClient");
+
+        var urlPrinc = $"regis/colsvisibility/{curOrga.Idorg}/1/1/{Ugpe}/1";
+        var jsonPrinc = await _clieManager.SendRequestAsync("AUTHClient", HttpMethod.Get, urlPrinc);
+
+        Visibility = System.Text.Json.JsonSerializer.Deserialize<Dictionary<string, bool>>(jsonPrinc) ?? new();
+        Console.WriteLine("Visibility loaded 2");
     }
 
-    private async Task StartTiwNew()
+    private async Task LoadAflVisibilityAsync()
     {
-        Console.WriteLine("🚨 StartPlnNew");
+        Console.WriteLine("AflVisibility loaded 1");
+        // ✅ Fix 2: Same await pattern
+        await _clieManager.SetAuthorizationHeaderAsync("AUTHClient");
+
+        var url = $"regis/colsvisibility/{curOrga.Idorg}/1/2/{IMyGAfl}/2";
+        var json = await _clieManager.SendRequestAsync("AUTHClient", HttpMethod.Get, url);
+
+        AflVisibility = System.Text.Json.JsonSerializer.Deserialize<Dictionary<string, bool>>(json) ?? new();
+        Console.WriteLine("AflVisibility loaded 2");
+    }
+
+    public async Task StartTiwNew()
+    {
+        Console.WriteLine("🚨 StartTiwNew");
+
+        // 1. Create new entity
         var lsnb = NextSeq(MyDaTies, p => p.Iui);
-
         var newTiw = new Tiersp
         {
             Rowguid = Guid.NewGuid(),
@@ -872,74 +826,54 @@
             Xdel1 = 0
         };
 
+        // 2. Mutate data collection once
+        MyDaTies.Insert(0, newTiw);
+
+        // 3. Prepare stable UI mirror (only once per add)
+        draftTiw = (Tiersp)DeepClone(newTiw);
+        EdTiwRowguid = draftTiw.Rowguid;
+        GtieMode = GridMode.TiersAdding;
+        // 4. Set row states clearly (avoid double states)
         SetRowState(newTiw.Rowguid, RowState.AddPending);
         SetLightBackground(newTiw.Rowguid, true);
 
-        MyDaTies.Insert(0, newTiw);
-
-        // Refresh grid data source
-        Persons = ModelHelper.MapListTo<Tiersp, EntPerson>(MyDaTies);
-        GMode = GridMode.PersAdding;
-
-        draftTiw = (Tiersp)DeepClone(newTiw);
-        draftPers = ModelHelper.MapTo<Tiersp, EntPerson>(draftTiw);
-        draftPers.Rowguid = draftTiw.Rowguid; // ensure Rowguid is copied
-
-        EdTiwRowguid = draftTiw.Rowguid;
+        // If you want to immediately edit, do it in a separate step
         isAddTiw = true;
-        isEdtTiw = true;
-
-        SetRowState(draftTiw.Rowguid, RowState.EditPending);
+        isEdtTiw = false; // keep add separate from edit
         TiwRenderKey = draftTiw.Rowguid;
 
-        Console.WriteLine($"✅ New row added to curOrga.Tiersps - Count: {curOrga.Tiersps.Count}");
-        curTie = newTiw;
 
-        StartRowEdit(draftTiw.Rowguid, EntityLevel.Plan);
-        StateHasChanged();
+        Console.WriteLine($"✅ New row added - Count: {MyDaTies.Count}");
+
+        // 5. Schedule UI refresh safely
+        await InvokeAsync(StateHasChanged);
     }
-
-    // private void StartChildAdd(Tieafl parent, int selectedGroup)
-    //     {
-    //         if (!CanEditChildren) return;
-
-    //         draftAfls = new EntPerson
-    //         {
-    //             Rowguid = Guid.NewGuid(),
-    //             ParentId = parent.Id,
-    //             GroupId = selectedGroup,
-    //             Nom = ""
-    //         };
-
-    //     EdRowguid = draftAfls.Rowguid;
-    // }
 
     private void CancelRubNew(Tiersp parentTiw)
     {
-        if (draftRub == null) return;
+        if (draftAfl == null) return;
 
         // Remove the draft from the domain collection if it was inserted
-        var existing = parentTiw.Tieafls?.FirstOrDefault(r => r.Rowguid == draftRub.Rowguid);
+        var existing = parentTiw.Tieafls?.FirstOrDefault(r => r.Rowguid == draftAfl.Rowguid);
         if (existing != null)
         {
             parentTiw.Tieafls.Remove(existing);
         }
 
         // Clear row state and UI hints
-        // ClearRowState(draftRub.Rowguid);
+        // ClearRowState(draftAfl.Rowguid);
         // Reset row state
-        SetRowState(draftRub.Rowguid, RowState.Normal);
-        SetLightBackground(draftRub.Rowguid, false);
+        SetRowState(draftAfl.Rowguid, RowState.Normal);
+        SetLightBackground(draftAfl.Rowguid, false);
 
         // Reset draft variables
-        draftRub = null;
-        draftAfls = null;
-        EdRubRowguid = null;
-        isAddRub = false;
+        draftAfl = null;
+        EdAflRowguid = null;
+        isAddAfl = false;
         isEdtRub = false;
 
         // Refresh grid data source
-        Affiles = ModelHelper.MapListTo<Tieafl, EntPerson>(parentTiw.Tieafls);
+        //Affiles = ModelHelper.MapListTo<Tieafl, EntPerson>(parentTiw.Tieafls);
 
         RubRenderKey = Guid.NewGuid(); // force re-render
         StateHasChanged();
@@ -990,27 +924,26 @@
         // Insert into domain collection
         parentTiw.Tieafls.Insert(0, newRub);
 
-
-
         // Refresh grid data source
-        Affiles = ModelHelper.MapListTo<Tieafl, EntPerson>(parentTiw.Tieafls);
-        GMode = GridMode.AflsAdding;
+        // Affilies = ModelHelper.MapListTo<Tieafl, EntPerson>(parentTiw.Tieafls);
+        // GMode = GridMode.AflsAdding;
 
-        draftRub = (Tieafl)DeepClone(newRub);
-        draftAfls = ModelHelper.MapTo<Tieafl, EntPerson>(draftRub);
-        draftAfls.Rowguid = draftRub.Rowguid; // ensure Rowguid is copied
-
-        EdRubRowguid = draftRub.Rowguid;
-        isAddRub = true;
+        // draftAfl = (Tieafl)DeepClone(newRub);
+        // subAfls = ModelHelper.MapTo<Tieafl, EntPerson>(draftAfl);
+        // subAfls.Rowguid = draftAfl.Rowguid; // ensure Rowguid is copied
+        draftAfl = (Tieafl)DeepClone(newRub);
+        EdAflRowguid = draftAfl?.Rowguid;
+        GaflMode = GridMode.AflsAdding;
+        isAddAfl = true;
         isEdtRub = true;
 
-        SetRowState(draftRub.Rowguid, RowState.EditPending);
-        RubRenderKey = draftRub.Rowguid;
+        SetRowState(draftAfl.Rowguid, RowState.EditPending);
+        RubRenderKey = draftAfl.Rowguid;
 
         Console.WriteLine($"✅ New row added to curOrga.Tiersps - Count: {parentTiw.Tieafls.Count}");
-        curRubr = newRub;
+        curAfl = newRub;
 
-        StartRowEdit(draftRub.Rowguid, EntityLevel.Rub);
+        StartRowEdit(draftAfl.Rowguid, EntityLevel.Rub);
         StateHasChanged();
     }
     private async Task StartTiwEdit(Tiersp item, Guid rowguid)
@@ -1028,6 +961,7 @@
         _edPlnOriginals[rowguid] = (Tiersp)DeepClone(item);
         EdTiwRowguid = AllowMultipleEdits ? null : rowguid;
         draftTiw = (Tiersp)DeepClone(item);
+
         isEdtTiw = true;
         StartRowEdit(rowguid, EntityLevel.Plan);
         //StateHasChanged();
@@ -1081,21 +1015,21 @@
     //     GMode = GridMode.Adding;
 
     //     // Draft clone
-    //     draftRub = (Tieafl)DeepClone(newRub);
-    //     EdRubRowguid = draftRub.Rowguid;
+    //     draftAfl = (Tieafl)DeepClone(newRub);
+    //     EdAflRowguid = draftAfl.Rowguid;
 
     //     // Flags
-    //     isAddRub = true;
+    //     isAddAfl = true;
     //     isEdtRub = true;
 
     //     // Mark row as editable
-    //     SetRowState(draftRub.Rowguid, RowState.EditPending);
-    //     RubRenderKey = draftRub.Rowguid;
+    //     SetRowState(draftAfl.Rowguid, RowState.EditPending);
+    //     RubRenderKey = draftAfl.Rowguid;
 
     //     Console.WriteLine($"✅ New row added to Tiersp.Tieafls - Count: {parentTiw.Tieafls.Count}");
 
     //     // Trigger edit mode in grid
-    //     StartRowEdit(draftRub.Rowguid, EntityLevel.Rub);
+    //     StartRowEdit(draftAfl.Rowguid, EntityLevel.Rub);
 
     //     StateHasChanged();
     // }
@@ -1115,8 +1049,8 @@
         SetRowState(draftTiw.Rowguid, RowState.EditPending);
 
         // Map to EntPerson for grid
-        draftPers = ModelHelper.MapTo<Tiersp, EntPerson>(draftTiw);
-        curPerson = ModelHelper.MapTo<Tiersp, EntPerson>(mytiw);
+        //draftPers = ModelHelper.MapTo<Tiersp, EntPerson>(draftTiw);
+        //curPerson = ModelHelper.MapTo<Tiersp, EntPerson>(mytiw);
 
         // Trigger grid re-render
         TiwRenderKey = draftTiw.Rowguid;
@@ -1137,12 +1071,12 @@
 
     //     SetRowState(rowguid, RowState.EditPending);
     //     _edRubOriginals[rowguid] = (Tieafl)DeepClone(item);
-    //     EdRubRowguid = AllowMultipleEdits ? null : rowguid;
-    //     draftRub = (Tieafl)DeepClone(item);
+    //     EdAflRowguid = AllowMultipleEdits ? null : rowguid;
+    //     draftAfl = (Tieafl)DeepClone(item);
     //     isEdtRub = true;
 
     //     // If you define EntRub DTO, map here:
-    //     draftPers = ModelHelper.MapTo<Tieafl, EntPerson>(draftRub);
+    //     draftPers = ModelHelper.MapTo<Tieafl, EntPerson>(draftAfl);
     //     curPerson = ModelHelper.MapTo<Tieafl, EntPerson>(item);
 
     //     StartRowEdit(rowguid, EntityLevel.Rub);
@@ -1181,13 +1115,13 @@
 
         SetRowState(rowguid, RowState.EditPending);
         _edRubOriginals[rowguid] = (Tieafl)DeepClone(item);
-        EdRubRowguid = AllowMultipleEdits ? null : rowguid;
-        draftRub = (Tieafl)DeepClone(item);
+        EdAflRowguid = AllowMultipleEdits ? null : rowguid;
+        draftAfl = (Tieafl)DeepClone(item);
         isEdtRub = true;
 
         // If you define EntRub DTO, map here:
-        draftPers = ModelHelper.MapTo<Tieafl, EntPerson>(draftRub);
-        curPerson = ModelHelper.MapTo<Tieafl, EntPerson>(item);
+        //draftPers = ModelHelper.MapTo<Tieafl, EntPerson>(draftAfl);
+        //curPerson = ModelHelper.MapTo<Tieafl, EntPerson>(item);
 
         StartRowEdit(rowguid, EntityLevel.Rub);
     }
@@ -1259,7 +1193,7 @@
     where T : class
     {
         Console.WriteLine($"🔄 Process{typeof(T).Name}: {(isConfirm ? "CONFIRM" : "CANCEL")}");
-    
+
         if (entity == null)
         {
             Imessage = "entity nulle";
@@ -1271,7 +1205,7 @@
         {
             // 🔥 1. Copy draft → entity (for validation)
             CopyDraftToGridItem(entity);
-        
+
             // 🔥 2. VALIDATE (now has updated values)
             if (!validate(entity))
             {
@@ -1279,7 +1213,7 @@
                 StateHasChanged();
                 return;
             }
-        
+
             // 🔥 3. NEW vs EXISTING (SINGLE operation)
             bool isNew = GetXadd1(entity) == -1;  // Assumes GetXadd1<T>
             if (isNew)
@@ -1292,10 +1226,10 @@
                 curODContext.SafeAttachOrUpdate(entity, entitySet, false);  // Your method!
                 Console.WriteLine($"✏️ EXISTING → SafeAttachOrUpdate");
             }
-        
+
             // 🔥 4. Confirm flags ONCE
             SetFlags(entity, 0, -1, 0);  // Xadd1=0 confirmed
-        
+
             // 🔥 5. SINGLE UpdateObject (applies flags + changes)
             curODContext.UpdateObject(entity);
             Console.WriteLine($"✅ {typeof(T).Name} confirmed → tracked");
@@ -1339,10 +1273,6 @@
         typeof(T).GetProperty("Xedt1")?.SetValue(entity, xedt1);
         typeof(T).GetProperty("Xdel1")?.SetValue(entity, xdel1);
     }
-    // private void ResetFlags(object item)
-    // {
-    //     SetFlags(item, 0, 0, 0);  // Xadd1=0, Xedt1=0, Xdel1=0 (normal state)
-    // }
     // Generic Xadd1 getter
     private int GetXadd1<T>(T entity)
     {
@@ -1374,17 +1304,21 @@
                 pln.Pnom = draftTiw.Pnom;
                 pln.Raison = draftTiw.Raison;
                 pln.Eta = draftTiw.Eta; //etat
+                pln.Xadd1 = draftTiw.Xadd1;
+                pln.Xedt1 = draftTiw.Xedt1;
                 break;
             case nameof(Tieafl):
-                if (draftRub == null) return;
+                if (draftAfl == null) return;
                 var rub = (Tieafl)(object)gridItem;
-                rub.Irang = draftRub.Irang;
-                rub.Smatri = draftRub.Smatri; //designation
-                rub.Xmatri = draftRub.Xmatri; //abrege
-                rub.Nom = draftRub.Nom; //formule-non valider
-                rub.Pnom = draftRub.Pnom;
-                rub.Raison = draftRub.Raison;
-                rub.Eta = draftRub.Eta; //etat
+                rub.Irang = draftAfl.Irang;
+                rub.Smatri = draftAfl.Smatri; //designation
+                rub.Xmatri = draftAfl.Xmatri; //abrege
+                rub.Nom = draftAfl.Nom; //formule-non valider
+                rub.Pnom = draftAfl.Pnom;
+                rub.Raison = draftAfl.Raison;
+                rub.Eta = draftAfl.Eta; //etat
+                rub.Xadd1 = draftAfl.Xadd1;
+                rub.Xedt1 = draftAfl.Xedt1;
                 break;
                 // case nameof(Rubfmt):
                 //     if (draftFmt == null) return;
@@ -1399,6 +1333,8 @@
                 //     fmt.Lne = draftFmt.Lne; //lne
                 //     fmt.Lgtf = draftFmt.Lgtf; //lgtf
                 //     fmt.Eta = draftFmt.Eta; //etat
+                //     fmt.Xadd1 = draftFmt.Xadd1;
+                //     fmt.Xedt1 = draftFmt.Xedt1;
                 //     break;
         }
     }
@@ -1412,8 +1348,8 @@
                 EdTiwRowguid = null;
                 break;
             case nameof(Tieafl):
-                draftRub = null;
-                EdRubRowguid = null;
+                draftAfl = null;
+                EdAflRowguid = null;
                 break;
             case nameof(Rubfmt):
                 draftFmt = null;
@@ -1529,9 +1465,9 @@
     }
     private void ResetRubUI()
     {
-        draftRub = null;
-        EdRubRowguid = AdRubRowguid = null;
-        isEdtRub = isAddRub = false;
+        draftAfl = null;
+        EdAflRowguid = AdAflRowguid = null;
+        isEdtRub = isAddAfl = false;
         RubRenderKey = null;
     }
     // private void ResetFmtUI()
@@ -1594,6 +1530,16 @@
     // SINGLE method handles ALL cancel operations
     private async Task CancelEdit<T>(T item, EntityLevel level) where T : class
     {
+        if (GtieMode == GridMode.TiersAdding)
+        { //Adding
+            curTie.Xadd1 = 0;
+            isAddTiw = false;
+        }
+        if (GaflMode == GridMode.AflsAdding)
+        { //Adding
+            curAfl.Xadd1 = 0;
+            isAddAfl = false;
+        }
         await UnifiedEditAction(item, false, level);
         EndRowEdit();  // Close single edit mode
     }
@@ -1750,6 +1696,7 @@
         switch (state)
         {
             case RowState.AddPending:
+
             case RowState.EditPending when isNewAdd:
                 css.Add("border-start border-warning border-3");
                 //css.Add("new-add-indicator");
@@ -1767,6 +1714,14 @@
 
         return string.Join(" ", css);
     }
+    private void SetLightBackground(Guid rowguid, bool isLight)
+    {
+        _isLightBg[rowguid] = isLight;
+    }
+    private bool GetLightBackground(Guid rowguid)
+    {
+        return _isLightBg.GetValueOrDefault(rowguid, false);
+    }
     // ✅ 6. SELECTIONS
     private void SelPlanVue(int xdom)
     {
@@ -1775,22 +1730,22 @@
 
         }
     }
-    private void SelDomAfil()
-    {
-        AflVisibility = new();
-        if (LsFcols.Any())
-        {
-            string StrStore = LsFcols.FirstOrDefault(uc => uc.Totyp == IMyGAfl).Fgsrc; //ColName;IsVisible;
-            List<LSelCol> Pcolumns = ColsPreferences.DeserializePreferences(StrStore);
-            Console.WriteLine($"nb cols {Pcolumns.Count} et {StrStore}");
-            AflVisibility = Pcolumns.ToDictionary(tc => tc.ColName, tc => tc.IsVisible);
-            Console.WriteLine($"totyp {Ugpe} et cols Afl in : {LsFcols.Count} et visibles : {AflVisibility.Values.Count}");
-            foreach (var uco in AflVisibility)
-            {
-                Console.WriteLine($"col: {uco.Key} visible: {uco.Value}");
-            }
-        }
-    }
+    // private void SelDomAfil()
+    // {
+    //     AflVisibility = new();
+    //     if (LsFcols.Any())
+    //     {
+    //         string StrStore = LsFcols.FirstOrDefault(uc => uc.Totyp == IMyGAfl).Fgsrc; //ColName;IsVisible;
+    //         List<LSelCol> Pcolumns = ColsPreferences.DeserializePreferences(StrStore);
+    //         Console.WriteLine($"nb cols {Pcolumns.Count} et {StrStore}");
+    //         AflVisibility = Pcolumns.ToDictionary(tc => tc.ColName, tc => tc.IsVisible);
+    //         Console.WriteLine($"totyp {Ugpe} et cols Afl in : {LsFcols.Count} et visibles : {AflVisibility.Values.Count}");
+    //         foreach (var uco in AflVisibility)
+    //         {
+    //             Console.WriteLine($"col: {uco.Key} visible: {uco.Value}");
+    //         }
+    //     }
+    // }
 
     private void MarkAsModified(object entity)
     {
@@ -1821,7 +1776,12 @@
         selectedTiersps = myties is not null && myties.Any() ? myties : new();
         return Task.CompletedTask;
     }
+    private async Task<bool> ValiderSelection()
+    {
 
+
+        return true;
+    }
     bool AreRowsEqual(Tieafl row1, Tieafl row2) =>
         row1.Liba == row2.Liba && row1.Abg == row2.Abg;
     private int NextSeq<T>(IEnumerable<T> source, Func<T, int?> selector)
