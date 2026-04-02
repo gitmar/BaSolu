@@ -1,16 +1,16 @@
 ﻿@page "/etatmenu"
 @inherits LayoutComponentBase
+@layout FreeLayout
 
-@using Microsoft.OData.Client
 @using System.Security.Claims
-@using Blazored.LocalStorage
 @using BlazorBootstrap
-@using Newtonsoft.Json
-
-@using GxStk.Services
-@using GxWapi.DaModels
+@using Blazored.LocalStorage
 @using GxShared.Sess
 @using GxShared.Others
+@using GxStk.Services
+@using GxWapi.DaModels
+@using Microsoft.OData.Client
+@using Newtonsoft.Json
 @* @using GxStk.Components.Operatio.Saisies
 @using GxStk.Components.Operatio.Ordres *@
 
@@ -24,10 +24,9 @@
 
 @if (isLoading)
 {
-    <div class="text-center">
-        <Spinner Color="SpinnerColor.Primary" Size="SpinnerSize.Large" />
-        <p>ETATS/IMPRIMES Loading...</p>
-    </div>
+    <Progress class="progress mb-3">
+        <ProgressBar Width="30" Label="etats/imprimes Loading..." Type="ProgressType.StripedAndAnimated" Color="ProgressColor.Primary" />
+    </Progress>
 }
 @if (!isLoading)
 {
@@ -248,7 +247,7 @@
         try
         {
             var token = await _localStorage.GetItemAsync<string>("blazToken");
-            _gODContext = new MyODataContext(new Uri("https://localhost:7095/odata"), token);
+            ////_gODContext = new MyODataContext(new Uri("https://localhost:7095/odata"), token);
             var expand = "Actsaies,Actsaies($expand=Actdets)";
             var dxtiers = await _gODContext.LoadFilteredAsync<Tiersp>(expand: expand);
             EnsTiers = dxtiers.ToList();

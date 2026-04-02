@@ -1,0 +1,44 @@
+﻿@using GxShared.Others
+
+@page "/testnavmenu"
+
+<GxNavMenu BrandText="A24soft Gx-Solutions"
+           MenuItems="@MainMenuItems"
+           Groups="@GroupList"
+           MenuSelected="@OnMenuSelected"
+           GroupSelected="@OnGroupSelected" />
+
+<p>Selected Menu: @SelectedMenuLabel</p>
+<p>Selected Group: @SelectedGroupLabel</p>
+
+@code {
+    private string SelectedMenuLabel = "";
+    private string SelectedGroupLabel = "";
+
+    private List<GxNavMenu.MenuItem> MainMenuItems = new()
+    {
+        new() { Id = 1, Label = "Mutation", Icon = "bi bi-arrow-repeat" },
+        new() { Id = 2, Label = "Integration", Icon = "bi bi-box-arrow-in-down" },
+        new() { Id = 3, Label = "Accueil", Icon = "bi bi-house-door" },
+        new() { Id = 4, Label = "Invitation", Icon = "bi bi-envelope-paper" }
+    };
+
+    private List<GxNavMenu.GroupItem> GroupList = new()
+    {
+        new() { Id = 1, Name = "Group A" },
+        new() { Id = 2, Name = "Group B" }
+    };
+
+    private void OnMenuSelected(int id)
+    {
+        var item = MainMenuItems.FirstOrDefault(m => m.Id == id);
+        SelectedMenuLabel = item?.Label ?? "";
+    }
+
+    private void OnGroupSelected(int id)
+    {
+        var group = GroupList.FirstOrDefault(g => g.Id == id);
+        SelectedGroupLabel = group?.Name ?? "";
+    }
+}
+

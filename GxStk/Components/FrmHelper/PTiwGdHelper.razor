@@ -1,0 +1,275 @@
+﻿@using GxWapi.DaModels
+@using GxShared.Others
+@using GxStk.ClieModels
+
+<h3>PTiwGdHelper</h3>
+
+@if (Draft != null)
+{
+    <div class="card">
+        <div class="card-body p-3">
+            <!-- FIELD 1: ID -->
+            <div class="row mb-2">
+                <label class="fw-bold col-1 col-form-label text-nowrap">ID:</label>
+                <div class="col-11">
+                    <div class="form-control-plaintext">@Draft.Id</div>
+                </div>
+            </div>
+             
+            <!-- FIELD 2: Dossier -->
+            <FormField Label="Dossier" IsVisible="@Visibility.GetValueOrDefault("Dossier", true)">
+                @if (isEditing)
+                {
+                    <InputText @bind-Value="Draft.Xmatri" class="form-control" />
+                }
+                else
+                {
+                    <span class="form-control-plaintext">@Draft.Xmatri</span>
+                }
+            </FormField>
+
+            <!-- FIELD 3: Nom -->
+            <FormField Label="Nom" IsVisible="@Visibility.GetValueOrDefault("Nom", true)">
+                @if (isEditing)
+                {
+                    <InputText @bind-Value="Draft.Nom" class="form-control" />
+                }
+                else
+                {
+                    <span class="form-control-plaintext">@Draft.Nom</span>
+                }
+            </FormField>
+            <!-- FIELD 4: Pnom -->
+            <FormField Label="Pnom" IsVisible="@Visibility.GetValueOrDefault("Pnom", true)">
+                @if (isEditing)
+                {
+                    <InputText @bind-Value="Draft.Pnom" class="form-control" />
+                }
+                else
+                {
+                    <span class="form-control-plaintext">@Draft.Pnom</span>
+                }
+            </FormField>
+            <!-- FIELD 5: Nom de Jeune fille -->
+            <FormField Label="Bnom" IsVisible="@Visibility.GetValueOrDefault("Bnom", true)">
+                @if (isEditing)
+                {
+                    <InputText @bind-Value="Draft.Bnom" class="form-control" />
+                }
+                else
+                {
+                    <span class="form-control-plaintext">@Draft.Bnom</span>
+                }
+            </FormField>
+
+            <!-- FIELD 6: Statut (int) -->
+            <FormField Label="Statut" IsVisible="@Visibility.GetValueOrDefault("Statut", true)">
+                <InputSelect @bind-Value="Draft!.Statut"
+                             class="form-select"
+                             disabled="@(!isEditing)">
+                    <option value="0">?choisir</option>
+                    @foreach (var opt in GetOptions(11))
+                    {
+                        <option value="@opt.Elea">@opt.Liba</option>
+                    }
+                </InputSelect>
+            </FormField>
+            
+            <!-- FIELD 7: Relat (int) -->
+            <FormField Label="Relation" IsVisible="@Visibility.GetValueOrDefault("Relat", true)">
+                <InputSelect @bind-Value="Draft!.Relat"
+                             class="form-select"
+                             disabled="@(!isEditing)">
+                    <option value="0">?choisir</option>
+                    @foreach (var opt in GetOptions(18))
+                    {
+                        <option value="@opt.Elea">@opt.Liba</option>
+                    }
+                </InputSelect>
+            </FormField>
+            <!-- FIELD 8: Sexe (int) -->
+            <FormField Label="Sexe" IsVisible="@Visibility.GetValueOrDefault("Sexe", true)">
+                <InputSelect @bind-Value="Draft!.Sexe"
+                             class="form-select"
+                             disabled="@(!isEditing)">
+                    <option value="0">?choisir</option>
+                    @foreach (var opt in GetOptions(12))
+                    {
+                        <option value="@opt.Elea">@opt.Liba</option>
+                    }
+                </InputSelect>
+            </FormField>
+
+            <!-- FIELD 9: Sitmat (int) -->
+            <FormField Label="Sit.Mat." IsVisible="@Visibility.GetValueOrDefault("Sitmat", true)">
+                <InputSelect @bind-Value="Draft!.Sitmat"
+                             class="form-select"
+                             disabled="@(!isEditing)">
+                    <option value="0">?choisir</option>
+                    @foreach (var opt in GetOptions(13))
+                    {
+                        <option value="@opt.Elea">@opt.Liba</option>
+                    }
+                </InputSelect>
+            </FormField>
+        
+            <!-- FIELD 10: Fonction -->
+            <FormField Label="Fonction" IsVisible="@Visibility.GetValueOrDefault("Ifonc", true)">
+                <InputSelect @bind-Value="Draft!.Ifonc"
+                             class="form-select"
+                             disabled="@(!isEditing)">
+                    <option value="0">?choisir</option>
+                    @foreach (var opt in GetOptions(14))
+                    {
+                        <option value="@opt.Elea">@opt.Liba</option>
+                    }
+                </InputSelect>
+            </FormField>
+       
+            <!-- FIELD 11: Grade -->
+            <FormField Label="Grade" IsVisible="@Visibility.GetValueOrDefault("Igrad", true)">
+                <InputSelect @bind-Value="Draft!.Igrad"
+                             class="form-select"
+                             disabled="@(!isEditing)">
+                    <option value="0">?choisir</option>
+                    @foreach (var opt in GetOptions(15))
+                    {
+                        <option value="@opt.Elea">@opt.Liba</option>
+                    }
+                </InputSelect>
+            </FormField>
+   
+            <!-- FIELD 12: Email -->
+            <FormField Label="Email" IsVisible="@Visibility.GetValueOrDefault("Email", true)">
+                @if (isEditing)
+                {
+                    <InputText @bind-Value="Draft.Email" class="form-control" />
+                }
+                else
+                {
+                    <span class="form-control-plaintext">@Draft.Email</span>
+                }
+            </FormField>
+
+            <!-- FIELD 13: Phone -->
+            <FormField Label="Phone" IsVisible="@Visibility.GetValueOrDefault("Phone", true)">
+                @if (isEditing)
+                {
+                    <InputText @bind-Value="Draft.Phone" class="form-control" />
+                }
+                else
+                {
+                    <span class="form-control-plaintext">@Draft.Phone</span>
+                }
+            </FormField>
+
+            <!-- FIELD 14: Date de naissance -->
+            <FormField Label="Date Naiss." IsVisible="@Visibility.GetValueOrDefault("Dnais", true)">
+                @if (isEditing)
+                {
+                    <InputDate @bind-Value="Draft.Dnais" class="form-control" />
+                }
+                else
+                {
+                    <span class="form-control-plaintext">@Draft.Dnais</span>
+                }
+            </FormField>
+            
+            
+            <!-- FIELD 15: Date d’embauche -->
+            <FormField Label="Date Emb." IsVisible="@Visibility.GetValueOrDefault("Demb", true)">
+                @if (isEditing)
+                {
+                    <InputDate @bind-Value="Draft.Demb" class="form-control" />
+                }
+                else
+                {
+                    <span class="form-control-plaintext">@Draft.Demb</span>
+                }
+            </FormField>
+
+            <!-- FIELD 16: Nombre d’enfants -->
+            <FormField Label="Nb.Enf" IsVisible="@Visibility.GetValueOrDefault("Nenf", true)">
+                @if (isEditing)
+                {
+                    <InputNumber @bind-Value="Draft.Nenf" class="form-control" />
+                }
+                else
+                {
+                    <span class="form-control-plaintext">@Draft.Nenf</span>
+                }
+            </FormField>
+
+            <!-- FIELD 17: Responsabilité -->
+            <FormField Label="Responsable" IsVisible="@Visibility.GetValueOrDefault("Respon", true)">
+                <InputSelect @bind-Value="Draft!.Respon"
+                             class="form-select"
+                             disabled="@(!isEditing)">
+                    <option value="0">?choisir</option>
+                    @foreach (var opt in GetOptions(17))
+                    {
+                        <option value="@opt.Elea">@opt.Liba</option>
+                    }
+                </InputSelect>
+            </FormField>
+        
+            <!-- FIELD 18: Pays de résidence -->
+            <FormField Label="Residence" IsVisible="@Visibility.GetValueOrDefault("Rpays", true)">
+                <InputSelect @bind-Value="Draft!.Rpays"
+                             class="form-select"
+                             disabled="@(!isEditing)">
+                    <option value="">?choisir</option>
+                    @foreach (var opt in GetOptions(31))
+                    {
+                        <option value="@opt.Abg">@opt.Liba</option>
+                    }
+                </InputSelect>
+            </FormField>
+           
+            <!-- FIELD 19: Nationalité (string) -->
+            <FormField Label="Nationalite" IsVisible="@Visibility.GetValueOrDefault("Natio", true)">
+                <InputSelect @bind-Value="Draft!.Natio"
+                             class="form-select"
+                             disabled="@(!isEditing)">
+                    <option value="">?choisir</option>
+                    @foreach (var opt in GetOptions(31))
+                    {
+                        <option value="@opt.Abg">@opt.Liba</option>
+                    }
+                </InputSelect>
+            </FormField>
+  
+            <!-- FIELD 20: Méthode de paiement -->
+            <FormField Label="P.Meth" IsVisible="@Visibility.GetValueOrDefault("Ipaid", true)">
+                <InputSelect @bind-Value="Draft!.Ipaid"
+                             class="form-select"
+                             disabled="@(!isEditing)">
+                    <option value="0">?choisir</option>
+                    @foreach (var opt in GetOptions(17))
+                    {
+                        <option value="@opt.Elea">@opt.Liba</option>
+                    }
+                </InputSelect>
+            </FormField>
+        </div>
+    </div>
+}
+
+@code {
+    [Parameter] public Tiewel Draft { get; set; }
+    [Parameter] public GridMode GMode { get; set; } = GridMode.None;
+    [Parameter] public bool isEditing { get; set; } = false;
+    [Parameter] public Dictionary<string, bool> Visibility { get; set; } = new();
+
+    [Parameter] public List<Gptbl> TbItems { get; set; }
+    // Identifiers
+    [Parameter] public string RenderKey { get; set; }
+    [Parameter] public Guid? EdRowguid { get; set; }
+
+    private List<Gptbl> GetOptions(int pxcod)
+    {
+        return TbItems
+            .Where(t => t.Pxcod == pxcod)
+            .ToList();
+    }
+}

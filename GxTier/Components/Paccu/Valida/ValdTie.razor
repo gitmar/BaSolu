@@ -64,7 +64,7 @@
 @if (!isLoading)
 {
     <AuthorizeView>
-            <Authorized Context="authtiwcontext">
+        <Authorized Context="authtiwcontext">
             <div class="d-flex align-items-center gap-2">
                 <Button Color="ButtonColor.Primary"
                         Size="ButtonSize.Small"
@@ -113,157 +113,159 @@
                                         @if (draftTiw != null)
                                         {
                                             <PTieGdHelper Draft="@draftTiw"
-                                            RenderKey="parent-grid"
-                                            GMode="@GtieMode"
-                                            Visibility="@Visibility"
-                                            TbItems="@TbItems"
-                                            EdRowguid="@EdTiwRowguid" />
+                                                          RenderKey="parent-grid"
+                                                          GMode="@GtieMode"
+                                                          IsEditing="@isTieEditing"
+                                                          Visibility="@Visibility"
+                                                          TbItems="@TbItems"
+                                                          EdRowguid="@EdTiwRowguid" />
                                         }
                                     </div>
 
                                     <!-- Additional dynamic attributes -->
-                                    <div>
-                                        @foreach (var ua in LsVars.Where(a => a.Gvars == 6 && a.Itb == Ugpe))
-                                        {
-                                            Tieatr icatr = curTie.Tieatrs.FirstOrDefault(tat => tat.Igsg == ua.Xseq)
-                                                            ?? new Tieatr
-                                                            {
-                                                                Xadd1 = -1,
-                                                                Igsg = ua.Xseq,
-                                                                Itie = curTie.Id,
-                                                                Atyp = ua.Atyp,
-                                                                Aztyp = ua.Ztyp,
-                                                                Svala = "",
-                                                                AtState = AEntState.NewAdded
-                                                            };
-
-                                            <div class="mb-2">
-                                                <label class="form-label fw-bold ms-3 text-capitalize">@ua.Liba:</label>
-                                                @if (isEdtTiw || isAddTiw)
-                                                {
-                                                    if (ua.Zfro == 2)
-                                                    {
-                                                        <InputSelect @bind-Value="icatr.Svala" class="form-select">
-                                                            <option value="0">?choisir</option>
-                                                            @foreach (var tob in TbItems.Where(ut => ut.Pxcod == ua.Xdpd))
-                                                            {
-                                                                <option value="@tob.Elea">@tob.Liba</option>
-                                                            }
-                                                        </InputSelect>
+                                    <div class="card">
+                                        <div class="card-body p-3">
+                                            @foreach (var ua in LsVars.Where(a => a.Gvars == 6 && a.Itb == Ugpe))
+                                            {
+                                                Tieatr icatr = curTie.Tieatrs.FirstOrDefault(tat => tat.Igsg == ua.Xseq)
+                                                                ?? new Tieatr
+                                                                {
+                                                                    Xadd1 = -1,
+                                                                    Igsg = ua.Xseq,
+                                                                    Itie = curTie.Id,
+                                                                    Atyp = ua.Atyp,
+                                                                    Aztyp = ua.Ztyp,
+                                                                    Svala = "",
+                                                                    AtState = AEntState.NewAdded
+                                                                };
+                                                <FormField Label="@ua.Liba" IsVisible=true>
+                                                    @if ((isEdtTiw || isAddTiw) && ua.Eta == 1)
+                                                    { //et actif 
+                                                        if (ua.Zfro == 2)
+                                                        {
+                                                            <InputSelect @bind-Value="icatr.Svala" class="form-select">
+                                                                <option value="0">?choisir</option>
+                                                                @foreach (var tob in TbItems.Where(ut => ut.Pxcod == ua.Xdpd))
+                                                                {
+                                                                    <option value="@tob.Elea">@tob.Liba</option>
+                                                                }
+                                                            </InputSelect>
+                                                        }
+                                                        else
+                                                        {
+                                                            <InputText @bind-Value="icatr.Svala" class="form-control" />
+                                                        }
                                                     }
                                                     else
                                                     {
-                                                        <InputText @bind-Value="icatr.Svala" class="form-control" />
+                                                        <div class="form-control-plaintext">@icatr.Svala</div>
                                                     }
-                                                }
-                                                else
-                                                {
-                                                    <div class="form-control-plaintext">@icatr.Svala</div>
-                                                }
-                                            </div>
-                                        }
+                                                </FormField>
+                                            }
+                                        </div>
                                     </div>
                                 </EditForm>
                             </Content>
-                             </Tab>
-                                    <Tab title="Affilies">
-                                        <Content>
-                                    @if (CanEditChildren)
-                                    {
-                                        <div class="d-flex align-items-center gap-2 mb-2">
-                                            <label>Group:</label>
-                                            <InputSelect id="gpId" @bind-Value="@IMyGAfl">
-                                                <option value="0">Select group...</option>
-                                                @foreach (var afl in LsGAfls.Where(af =>af.Atyp == Ugpe))
-                                                {
-                                                    <option value="@afl.Elea">@afl.Liba</option>
-                                                }
-                                            </InputSelect>
-                                            <Button Color="ButtonColor.Primary"
-                                                    Size="ButtonSize.Small"
-                                                    Disabled="@(IMyGAfl < 1)"
-                                                    @onclick="() => StartRubNew(curTie, IMyGAfl)">
-                                                ➕ Add Child
-                                            </Button>
-                                            @if (curTie.Tieafls.Any())
+                        </Tab>
+                        <Tab title="Affilies">
+                            <Content>
+                                @if (CanEditChildren)
+                                {
+                                    <div class="d-flex align-items-center gap-2 mb-2">
+                                        <label>Group:</label>
+                                        <InputSelect id="gpId" @bind-Value="@IMyGAfl">
+                                            <option value="0">Select group...</option>
+                                            @foreach (var afl in LsGAfls.Where(af => af.Atyp == Ugpe))
                                             {
-                                                <Button Color="ButtonColor.Success"
+                                                <option value="@afl.Elea">@afl.Liba</option>
+                                            }
+                                        </InputSelect>
+                                        <Button Color="ButtonColor.Primary"
+                                                Size="ButtonSize.Small"
+                                                Disabled="@(IMyGAfl < 1)"
+                                                @onclick="() => StartRubNew(curTie, IMyGAfl)">
+                                            ➕ Add Child
+                                        </Button>
+                                        @if (curTie.Tieafls.Any())
+                                        {
+                                            <Button Color="ButtonColor.Success"
                                                     Size="ButtonSize.Small"
                                                     Class="px-2 py-1 small-btn"
                                                     @onclick="() => ConfirmRubEdit(curAfl)">
-                                                    ✅ Confirm
-                                                </Button>
-                                                <Button Color="ButtonColor.Secondary"
-                                                        Size="ButtonSize.Small"
-                                                        Disabled="@(IMyGAfl < 1)"
-                                                        @onclick="() => CancelRubNew(curTie)">
-                                                    ✖ Cancel
-                                                </Button>
-                                            }
-                                        </div>
-                                        <div>
-                                            @if (draftAfl != null)
-                                            {
+                                                ✅ Confirm
+                                            </Button>
+                                            <Button Color="ButtonColor.Secondary"
+                                                    Size="ButtonSize.Small"
+                                                    Disabled="@(IMyGAfl < 1)"
+                                                    @onclick="() => CancelRubNew(curTie)">
+                                                ✖ Cancel
+                                            </Button>
+                                        }
+                                    </div>
+                                    <div>
+                                        @if (draftAfl != null)
+                                        {
                                             <!-- Cascade stable reference -->
-                                                    <CTieGdHelper SubAfls ="@curTie.Tieafls.ToList()"
-                                                                RenderKey="child-grid"
-                                                                GMode="@GaflMode"
-                                                                AflVisibility="@AflVisibility"
-                                                                TbItems="@TbItems"
-                                                                EdRowguid="@EdAflRowguid"
-                                                                SelectedGroup="@IMyGAfl"
-                                                                ConfirmEdit="@(p => ConfirmEdit(p, EntityLevel.Rub))"
-                                                                CancelEdit="@(p => CancelEdit(p, EntityLevel.Rub))"
-                                                                ConfirmDelete="@(p => ConfirmDelete(p, EntityLevel.Rub))"
-                                                                CancelDelete="@(p => CancelDelete(p, EntityLevel.Rub))"
-                                                                StartRubEdit="@(p => StartRubEdit(p, p.Rowguid))"
-                                                                StartRowDelete="@(id => StartRowDelete(id, EntityLevel.Rub))" />
-                                            }
-                                        </div>
-                                    }
-                                    else
-                                    {
-                                        <div class="alert alert-warning">
-                                            🚫 Save the main record before adding children.
-                                        </div>
-                                    }
-                                        </Content>
-                                    </Tab>
-                                    <Tab Title="Validation">
-                                        <Content>
-                                            @if (canbeVerified)
-                                            {
-                                                <div class="container row">
-                                    @* SelectedItemsChanged="OnSelectedItemsChanged" *@
-                                <Grid TItem="Tiersp"
-                                      Data="@WaitingTiersps"
-                                      AllowSelection="true"
-                                      SelectionMode="GridSelectionMode.Multiple"
-                                      Responsive="true">
-                                    <GridColumns>
-                                        <GridColumn TItem="Tiersp" HeaderText="No">
-                                            <ChildContent Context="item">
-                                                <span>@(item.Xedt1 == -1 ? item?.Iui : (item?.Iui == 0 ? item?.Iele : item?.Iui))</span>
-                                            </ChildContent>
-                                        </GridColumn>
-                                        <GridColumn TItem="Tiersp" HeaderText="Dossier">
-                                            <ChildContent Context="item">
-                                                @item.Xmatri
-                                            </ChildContent>
-                                        </GridColumn>
-                                        <GridColumn TItem="Tiersp" HeaderText="Nom">
-                                            <ChildContent Context="item">
-                                                @item.Nom
-                                            </ChildContent>
-                                        </GridColumn>
-                                        <GridColumn TItem="Tiersp" HeaderText="Pnom">
-                                            <ChildContent Context="item">
-                                                @item.Pnom
-                                            </ChildContent>
-                                        </GridColumn>
-                                        <GridColumn TItem="Tiersp" HeaderText="etat" IsVisible="true">
-                                                                <HeaderContent>
-                                                                    @* @if (siyaItem)
+                                            <CTieGdHelper SubAfls="@curTie.Tieafls.ToList()"
+                                                          RenderKey="child-grid"
+                                                          GMode="@GaflMode"
+                                                          IsEditing="@isAflEditing"
+                                                          AflVisibility="@AflVisibility"
+                                                          TbItems="@TbItems"
+                                                          EdRowguid="@EdAflRowguid"
+                                                          SelectedGroup="@IMyGAfl"
+                                                          ConfirmEdit="@(p => ConfirmEdit(p, EntityLevel.Rub))"
+                                                          CancelEdit="@(p => CancelEdit(p, EntityLevel.Rub))"
+                                                          ConfirmDelete="@(p => ConfirmDelete(p, EntityLevel.Rub))"
+                                                          CancelDelete="@(p => CancelDelete(p, EntityLevel.Rub))"
+                                                          StartRubEdit="@(p => StartRubEdit(p, p.Rowguid))"
+                                                          StartRowDelete="@(id => StartRowDelete(id, EntityLevel.Rub))" />
+                                        }
+                                    </div>
+                                }
+                                else
+                                {
+                                    <div class="alert alert-warning">
+                                        🚫 Save the main record before adding children.
+                                    </div>
+                                }
+                            </Content>
+                        </Tab>
+                        <Tab Title="Validation">
+                            <Content>
+                                @if (canbeVerified)
+                                {
+                                    <div class="container row">
+                                        @* SelectedItemsChanged="OnSelectedItemsChanged" *@
+                                        <Grid TItem="Tiersp"
+                                              Data="@WaitingTiersps"
+                                              AllowSelection="true"
+                                              SelectionMode="GridSelectionMode.Multiple"
+                                              Responsive="true">
+                                            <GridColumns>
+                                                <GridColumn TItem="Tiersp" HeaderText="No">
+                                                    <ChildContent Context="item">
+                                                        <span>@(item.Xedt1 == -1 ? item?.Iui : (item?.Iui == 0 ? item?.Iele : item?.Iui))</span>
+                                                    </ChildContent>
+                                                </GridColumn>
+                                                <GridColumn TItem="Tiersp" HeaderText="Dossier">
+                                                    <ChildContent Context="item">
+                                                        @item.Xmatri
+                                                    </ChildContent>
+                                                </GridColumn>
+                                                <GridColumn TItem="Tiersp" HeaderText="Nom">
+                                                    <ChildContent Context="item">
+                                                        @item.Nom
+                                                    </ChildContent>
+                                                </GridColumn>
+                                                <GridColumn TItem="Tiersp" HeaderText="Pnom">
+                                                    <ChildContent Context="item">
+                                                        @item.Pnom
+                                                    </ChildContent>
+                                                </GridColumn>
+                                                <GridColumn TItem="Tiersp" HeaderText="etat" IsVisible="true">
+                                                    <HeaderContent>
+                                                        @* @if (siyaItem)
                                                                     {
                                                                         <button class="btn btn-primary btn-sm"
                                                                                 @onclick="() => ValiderSelection()">
@@ -274,136 +276,7 @@
                                                                     {
                                                                         <span>Eta</span>
                                                                     } *@
-                                                                </HeaderContent>
-                                            <ChildContent Context="item">
-                                                <InputSelect @bind-Value="item.Eta" disabled="true">
-                                                    <option class="jchx" value="0">?choisir</option>
-                                                    @foreach (var tob in LsFixes.Where(ut => ut.Gvars == 32 && ut.Itb == 1 && ut.Elea != 0))
-                                                    {
-                                                        <option value="@tob.Elea">@tob.Liba</option>
-                                                    }
-                                                </InputSelect>
-                                            </ChildContent>
-                                        </GridColumn>
-                                    </GridColumns>
-                                    </Grid>
-                                    </div>
-                                            }
-                                        </Content>
-                                    </Tab>
-                                </Tabs>
-                            </div>
-                            <!--En bas ordinaire-->
-                            <div class="container row">
-                                <Grid TItem="Tiersp"
-                                      Data="@WaitingTiersps"
-                                      @key="TiwRenderKey"
-                                      AllowDetailView="true"
-                                      AllowPaging="true"
-                                      Responsive="true">
-                                    <GridColumns>
-                                        <GridColumn TItem="Tiersp" HeaderText="No">
-                                            <ChildContent Context="item">
-                                                <span>@(item.Xedt1 == -1 ? item?.Iui : (item?.Iui == 0 ? item?.Iele : item?.Iui))</span>
-                                            </ChildContent>
-                                        </GridColumn>
-                                        <GridColumn TItem="Tiersp" HeaderText="Dossier">
-                                            <ChildContent Context="item">
-                                                @item.Xmatri
-                                            </ChildContent>
-                                        </GridColumn>
-                                        <GridColumn TItem="Tiersp" HeaderText="Nom">
-                                            <ChildContent Context="item">
-                                                @item.Nom
-                                            </ChildContent>
-                                        </GridColumn>
-                                        <GridColumn TItem="Tiersp" HeaderText="Pnom">
-                                            <ChildContent Context="item">
-                                                @item.Pnom
-                                            </ChildContent>
-                                        </GridColumn>
-                                        <GridColumn TItem="Tiersp" HeaderText="etat" IsVisible="true">
-                                            <ChildContent Context="item">
-                                                <InputSelect @bind-Value="item.Eta" disabled="true">
-                                                    <option class="jchx" value="0">?choisir</option>
-                                                    @foreach (var tob in LsFixes.Where(ut => ut.Gvars == 32 && ut.Itb == 1 && ut.Elea != 0))
-                                                    {
-                                                        <option value="@tob.Elea">@tob.Liba</option>
-                                                    }
-                                                </InputSelect>
-                                            </ChildContent>
-                                        </GridColumn>
-                                        <GridColumn TItem="Tiersp" HeaderText="Actions" Filterable="false" Class="xcol2 actions-col">
-                                            <ChildContent Context="item">
-                                                @switch (GetRowState(item.Rowguid))
-                                                {
-                                                    case RowState.Locked:
-                                                        <span class="text-muted">—</span>
-                                                        break;
-
-                                                    case RowState.DeletePending:
-                                                        <Button Color="ButtonColor.Danger" Size="ButtonSize.Small"
-                                                                @onclick="() => ConfirmDelete(item, EntityLevel.Plan)">
-                                                            ⚠️ Confirm
-                                                        </Button>
-                                                        <Button Color="ButtonColor.Secondary" Size="ButtonSize.Small"
-                                                                @onclick="() => CancelDelete(item, EntityLevel.Plan)">
-                                                            ❎ Cancel
-                                                        </Button>
-                                                        break;
-                                                    case RowState.EditPending:
-                                                        <Button Color="ButtonColor.Success" Size="ButtonSize.Small"
-                                                                Disabled="@(item.Xadd1 == -1)"
-                                                                @onclick="() => ConfirmEdit(item, EntityLevel.Plan)">
-                                                            ✅ Confirm
-                                                        </Button>
-                                                        <Button Color="ButtonColor.Secondary" Size="ButtonSize.Small"
-                                                                Disabled="@(item.Xadd1 == -1)"
-                                                                @onclick="() => CancelEdit(item, EntityLevel.Plan)">
-                                                            ❌ Cancel
-                                                        </Button>
-                                                        break;
-                                                    default:
-                                                        <Button Color="ButtonColor.Warning" Size="ButtonSize.Small"
-                                                                @onclick="() => StartManTiwEdit(item, 1)">
-                                                            ✏️ Edit
-                                                        </Button>
-                                                        <Button Color="ButtonColor.Danger" Size="ButtonSize.Small"
-                                                                @onclick="() => StartRowDelete(item.Rowguid, EntityLevel.Plan)">
-                                                            🗑 Delete
-                                                        </Button>
-                                                        break;
-                                                }
-                                            </ChildContent>
-                                        </GridColumn>
-                                    </GridColumns>
-                                    <GridDetailView TItem="Tiersp" Context="selectedPln">
-                                        <Grid TItem="Tieafl"
-                                              Data="@selectedPln.Tieafls"
-                                              @key="RubRenderKey"
-                                              Responsive="true">
-                                            <GridColumns>
-                                                <GridColumn TItem="Tieafl" HeaderText="No">
-                                                    <ChildContent Context="item">
-                                                        <span>@(item.Xedt1 == -1 ? item?.Iui : (item?.Iui == 0 ? item?.Iele : item?.Iui))</span>
-                                                    </ChildContent>
-                                                </GridColumn>
-                                                <GridColumn TItem="Tieafl" HeaderText="Dossier">
-                                                    <ChildContent Context="item">
-                                                        @item.Xmatri
-                                                    </ChildContent>
-                                                </GridColumn>
-                                                <GridColumn TItem="Tieafl" HeaderText="Nom">
-                                                    <ChildContent Context="item">
-                                                        @item.Nom
-                                                    </ChildContent>
-                                                </GridColumn>
-                                                <GridColumn TItem="Tieafl" HeaderText="Pnom">
-                                                    <ChildContent Context="item">
-                                                        @item.Pnom
-                                                    </ChildContent>
-                                                </GridColumn>
-                                                <GridColumn TItem="Tieafl" HeaderText="etat" IsVisible="true">
+                                                    </HeaderContent>
                                                     <ChildContent Context="item">
                                                         <InputSelect @bind-Value="item.Eta" disabled="true">
                                                             <option class="jchx" value="0">?choisir</option>
@@ -414,57 +287,186 @@
                                                         </InputSelect>
                                                     </ChildContent>
                                                 </GridColumn>
-                                                <GridColumn TItem="Tieafl" HeaderText="Actions" Filterable="false" Class="xcol2 actions-col">
-                                                    <ChildContent Context="item">
-                                                        @switch (GetRowState(item.Rowguid))
-                                                        {
-                                                            case RowState.Locked:
-                                                                <span class="text-muted">—</span>
-                                                                break;
-
-                                                            case RowState.DeletePending:
-                                                                <Button Color="ButtonColor.Danger" Size="ButtonSize.Small"
-                                                                        @onclick="() => ConfirmDelete(item, EntityLevel.Rub)">
-                                                                    ⚠️ Confirm
-                                                                </Button>
-                                                                <Button Color="ButtonColor.Secondary" Size="ButtonSize.Small"
-                                                                        @onclick="() => CancelDelete(item, EntityLevel.Rub)">
-                                                                    ❎ Cancel
-                                                                </Button>
-                                                                break;
-                                                            case RowState.EditPending:
-                                                                <Button Color="ButtonColor.Success" Size="ButtonSize.Small"
-                                                                        Disabled="@(item.Xadd1 == -1)"
-                                                                        @onclick="() => ConfirmEdit(item, EntityLevel.Rub)">
-                                                                    ✅ Confirm
-                                                                </Button>
-                                                                <Button Color="ButtonColor.Secondary" Size="ButtonSize.Small"
-                                                                        Disabled="@(item.Xadd1 == -1)"
-                                                                        @onclick="() => CancelEdit(item, EntityLevel.Rub)">
-                                                                    ❌ Cancel
-                                                                </Button>
-                                                                break;
-                                                            default:
-                                                                <Button Color="ButtonColor.Warning" Size="ButtonSize.Small"
-                                                                        @onclick="() => StartRubEdit(item, item.Rowguid)">
-                                                                    ✏️ Edit
-                                                                </Button>
-                                                                <Button Color="ButtonColor.Danger" Size="ButtonSize.Small"
-                                                                        @onclick="() => StartRowDelete(item.Rowguid, EntityLevel.Rub)">
-                                                                    🗑 Delete
-                                                                </Button>
-                                                                break;
-                                                        }
-                                                    </ChildContent>
-                                                </GridColumn>
                                             </GridColumns>
                                         </Grid>
-                                    </GridDetailView>
-                                </Grid>
-                            </div>
-                }
-            </Authorized>
-        </AuthorizeView>
+                                    </div>
+                                }
+                            </Content>
+                        </Tab>
+                    </Tabs>
+                </div>
+            }
+            <!--En bas ordinaire-->
+            <div class="container row">
+                <Grid TItem="Tiersp"
+                      Data="@WaitingTiersps"
+                      @key="TiwRenderKey"
+                      AllowDetailView="true"
+                      AllowPaging="true"
+                      Responsive="true">
+                    <GridColumns>
+                        <GridColumn TItem="Tiersp" HeaderText="No">
+                            <ChildContent Context="item">
+                                <span>@(item.Xedt1 == -1 ? item?.Iui : (item?.Iui == 0 ? item?.Iele : item?.Iui))</span>
+                            </ChildContent>
+                        </GridColumn>
+                        <GridColumn TItem="Tiersp" HeaderText="Dossier">
+                            <ChildContent Context="item">
+                                @item.Xmatri
+                            </ChildContent>
+                        </GridColumn>
+                        <GridColumn TItem="Tiersp" HeaderText="Nom">
+                            <ChildContent Context="item">
+                                @item.Nom
+                            </ChildContent>
+                        </GridColumn>
+                        <GridColumn TItem="Tiersp" HeaderText="Pnom">
+                            <ChildContent Context="item">
+                                @item.Pnom
+                            </ChildContent>
+                        </GridColumn>
+                        <GridColumn TItem="Tiersp" HeaderText="etat" IsVisible="true">
+                            <ChildContent Context="item">
+                                <InputSelect @bind-Value="item.Eta" disabled="true">
+                                    <option class="jchx" value="0">?choisir</option>
+                                    @foreach (var tob in LsFixes.Where(ut => ut.Gvars == 32 && ut.Itb == 1 && ut.Elea != 0))
+                                    {
+                                        <option value="@tob.Elea">@tob.Liba</option>
+                                    }
+                                </InputSelect>
+                            </ChildContent>
+                        </GridColumn>
+                        <GridColumn TItem="Tiersp" HeaderText="Actions" Filterable="false" Class="xcol2 actions-col">
+                            <ChildContent Context="item">
+                                @switch (GetRowState(item.Rowguid))
+                                {
+                                    case RowState.Locked:
+                                        <span class="text-muted">—</span>
+                                        break;
+
+                                    case RowState.DeletePending:
+                                        <Button Color="ButtonColor.Danger" Size="ButtonSize.Small"
+                                                @onclick="() => ConfirmDelete(item, EntityLevel.Plan)">
+                                            ⚠️ Confirm
+                                        </Button>
+                                        <Button Color="ButtonColor.Secondary" Size="ButtonSize.Small"
+                                                @onclick="() => CancelDelete(item, EntityLevel.Plan)">
+                                            ❎ Cancel
+                                        </Button>
+                                        break;
+                                    case RowState.EditPending:
+                                        <Button Color="ButtonColor.Success" Size="ButtonSize.Small"
+                                                Disabled="@(item.Xadd1 == -1)"
+                                                @onclick="() => ConfirmEdit(item, EntityLevel.Plan)">
+                                            ✅ Confirm
+                                        </Button>
+                                        <Button Color="ButtonColor.Secondary" Size="ButtonSize.Small"
+                                                Disabled="@(item.Xadd1 == -1)"
+                                                @onclick="() => CancelEdit(item, EntityLevel.Plan)">
+                                            ❌ Cancel
+                                        </Button>
+                                        break;
+                                    default:
+                                        <Button Color="ButtonColor.Warning" Size="ButtonSize.Small"
+                                                @onclick="() => StartManTiwEdit(item, 1)">
+                                            ✏️ Edit
+                                        </Button>
+                                        <Button Color="ButtonColor.Danger" Size="ButtonSize.Small"
+                                                @onclick="() => StartRowDelete(item.Rowguid, EntityLevel.Plan)">
+                                            🗑 Delete
+                                        </Button>
+                                        break;
+                                }
+                            </ChildContent>
+                        </GridColumn>
+                    </GridColumns>
+                    <GridDetailView TItem="Tiersp" Context="selectedPln">
+                        <Grid TItem="Tieafl"
+                              Data="@selectedPln.Tieafls"
+                              @key="RubRenderKey"
+                              Responsive="true">
+                            <GridColumns>
+                                <GridColumn TItem="Tieafl" HeaderText="No">
+                                    <ChildContent Context="item">
+                                        <span>@(item.Xedt1 == -1 ? item?.Iui : (item?.Iui == 0 ? item?.Iele : item?.Iui))</span>
+                                    </ChildContent>
+                                </GridColumn>
+                                <GridColumn TItem="Tieafl" HeaderText="Dossier">
+                                    <ChildContent Context="item">
+                                        @item.Xmatri
+                                    </ChildContent>
+                                </GridColumn>
+                                <GridColumn TItem="Tieafl" HeaderText="Nom">
+                                    <ChildContent Context="item">
+                                        @item.Nom
+                                    </ChildContent>
+                                </GridColumn>
+                                <GridColumn TItem="Tieafl" HeaderText="Pnom">
+                                    <ChildContent Context="item">
+                                        @item.Pnom
+                                    </ChildContent>
+                                </GridColumn>
+                                <GridColumn TItem="Tieafl" HeaderText="etat" IsVisible="true">
+                                    <ChildContent Context="item">
+                                        <InputSelect @bind-Value="item.Eta" disabled="true">
+                                            <option class="jchx" value="0">?choisir</option>
+                                            @foreach (var tob in LsFixes.Where(ut => ut.Gvars == 32 && ut.Itb == 1 && ut.Elea != 0))
+                                            {
+                                                <option value="@tob.Elea">@tob.Liba</option>
+                                            }
+                                        </InputSelect>
+                                    </ChildContent>
+                                </GridColumn>
+                                <GridColumn TItem="Tieafl" HeaderText="Actions" Filterable="false" Class="xcol2 actions-col">
+                                    <ChildContent Context="item">
+                                        @switch (GetRowState(item.Rowguid))
+                                        {
+                                            case RowState.Locked:
+                                                <span class="text-muted">—</span>
+                                                break;
+
+                                            case RowState.DeletePending:
+                                                <Button Color="ButtonColor.Danger" Size="ButtonSize.Small"
+                                                        @onclick="() => ConfirmDelete(item, EntityLevel.Rub)">
+                                                    ⚠️ Confirm
+                                                </Button>
+                                                <Button Color="ButtonColor.Secondary" Size="ButtonSize.Small"
+                                                        @onclick="() => CancelDelete(item, EntityLevel.Rub)">
+                                                    ❎ Cancel
+                                                </Button>
+                                                break;
+                                            case RowState.EditPending:
+                                                <Button Color="ButtonColor.Success" Size="ButtonSize.Small"
+                                                        Disabled="@(item.Xadd1 == -1)"
+                                                        @onclick="() => ConfirmEdit(item, EntityLevel.Rub)">
+                                                    ✅ Confirm
+                                                </Button>
+                                                <Button Color="ButtonColor.Secondary" Size="ButtonSize.Small"
+                                                        Disabled="@(item.Xadd1 == -1)"
+                                                        @onclick="() => CancelEdit(item, EntityLevel.Rub)">
+                                                    ❌ Cancel
+                                                </Button>
+                                                break;
+                                            default:
+                                                <Button Color="ButtonColor.Warning" Size="ButtonSize.Small"
+                                                        @onclick="() => StartRubEdit(item, item.Rowguid)">
+                                                    ✏️ Edit
+                                                </Button>
+                                                <Button Color="ButtonColor.Danger" Size="ButtonSize.Small"
+                                                        @onclick="() => StartRowDelete(item.Rowguid, EntityLevel.Rub)">
+                                                    🗑 Delete
+                                                </Button>
+                                                break;
+                                        }
+                                    </ChildContent>
+                                </GridColumn>
+                            </GridColumns>
+                        </Grid>
+                    </GridDetailView>
+                </Grid>
+            </div>
+        </Authorized>
+    </AuthorizeView>
 }
 <style>
     .inputfl {
@@ -571,11 +573,12 @@
     [Parameter]
     public EventCallback<int> NbChangesChanged { get; set; }  // 🔥 CRITICAL
 
-    private EditContext? edTiwContext;
-    //private EditContext? edAflContext;
     //author
     private ClaimsPrincipal authUser;
     private bool isAuthenticated = false;
+
+    private EditContext? edTiwContext;
+    //private EditContext? edAflContext;
     //usrbag
     private Userbag _usrBag = new Userbag();
     private string _UserId = "";
@@ -621,8 +624,13 @@
     //private List<Gptbl> TbItems = new();      // shared options
 
     //provisoire
-    private bool CanEditChildren => true;
-    //GMode != GridMode.TiersAdding;
+    private bool CanEditChildren => 
+        GtieMode != GridMode.TiersAdding && curTie.Xadd1 != -1;
+    private bool isTieEditing => GtieMode == GridMode.TiersAdding
+            || GtieMode == GridMode.TiersEditing;
+    private bool isAflEditing => GaflMode == GridMode.AflsAdding
+            || GaflMode == GridMode.AflsEditing;
+
 
     //Global
     private int _lgcdu = 0;
@@ -634,7 +642,6 @@
     private string atrTitle = "";
 
     private string atrDest = "Programmes de Saisie";
-    //pour modals formulas
     private Tiersp curTie = new();
     private Tieafl curAfl = new();
     //private Rubfmt curFmat = new();
@@ -746,13 +753,12 @@
             Console.WriteLine($"nb. tbitems : {TbItems.Count}");
             //editcontext Model initialising
             curTie ??= new();  // Or load data here
-            // Load Tiersp list into EntPerson list for the grid
             if (curOrga.Tiersps != null && curOrga.Tiersps.Any())
             {
                 Console.WriteLine($"Tiersps loaded: {curOrga.Tiersps.Count}");
 
                 MyDaTies = curOrga.Tiersps.ToList();
-        
+
                 if (MyDaTies.Any())
                 {
                     curTie = MyDaTies.FirstOrDefault();
@@ -833,15 +839,12 @@
         draftTiw = (Tiersp)DeepClone(newTiw);
         EdTiwRowguid = draftTiw.Rowguid;
         GtieMode = GridMode.TiersAdding;
+        isEdtTiw = false;
+        isAddTiw = true; // keep add separate from edit
         // 4. Set row states clearly (avoid double states)
         SetRowState(newTiw.Rowguid, RowState.AddPending);
-        SetLightBackground(newTiw.Rowguid, true);
-
-        // If you want to immediately edit, do it in a separate step
-        isAddTiw = true;
-        isEdtTiw = false; // keep add separate from edit
         TiwRenderKey = draftTiw.Rowguid;
-
+        SetLightBackground(newTiw.Rowguid, true);
 
         Console.WriteLine($"✅ New row added - Count: {MyDaTies.Count}");
 
@@ -849,37 +852,6 @@
         await InvokeAsync(StateHasChanged);
     }
 
-    private void CancelRubNew(Tiersp parentTiw)
-    {
-        if (draftAfl == null) return;
-
-        // Remove the draft from the domain collection if it was inserted
-        var existing = parentTiw.Tieafls?.FirstOrDefault(r => r.Rowguid == draftAfl.Rowguid);
-        if (existing != null)
-        {
-            parentTiw.Tieafls.Remove(existing);
-        }
-
-        // Clear row state and UI hints
-        // ClearRowState(draftAfl.Rowguid);
-        // Reset row state
-        SetRowState(draftAfl.Rowguid, RowState.Normal);
-        SetLightBackground(draftAfl.Rowguid, false);
-
-        // Reset draft variables
-        draftAfl = null;
-        EdAflRowguid = null;
-        isAddAfl = false;
-        isEdtRub = false;
-
-        // Refresh grid data source
-        //Affiles = ModelHelper.MapListTo<Tieafl, EntPerson>(parentTiw.Tieafls);
-
-        RubRenderKey = Guid.NewGuid(); // force re-render
-        StateHasChanged();
-
-        Console.WriteLine("✖ Cancelled new child record.");
-    }
 
     private async Task StartRubNew(Tiersp parentTiw, int rubType)
     {
@@ -923,20 +895,11 @@
 
         // Insert into domain collection
         parentTiw.Tieafls.Insert(0, newRub);
-
-        // Refresh grid data source
-        // Affilies = ModelHelper.MapListTo<Tieafl, EntPerson>(parentTiw.Tieafls);
-        // GMode = GridMode.AflsAdding;
-
-        // draftAfl = (Tieafl)DeepClone(newRub);
-        // subAfls = ModelHelper.MapTo<Tieafl, EntPerson>(draftAfl);
-        // subAfls.Rowguid = draftAfl.Rowguid; // ensure Rowguid is copied
         draftAfl = (Tieafl)DeepClone(newRub);
         EdAflRowguid = draftAfl?.Rowguid;
         GaflMode = GridMode.AflsAdding;
         isAddAfl = true;
         isEdtRub = true;
-
         SetRowState(draftAfl.Rowguid, RowState.EditPending);
         RubRenderKey = draftAfl.Rowguid;
 
@@ -944,7 +907,40 @@
         curAfl = newRub;
 
         StartRowEdit(draftAfl.Rowguid, EntityLevel.Rub);
+        //@curTie.Tieafls.Add(curAfl);
         StateHasChanged();
+    }
+    private void CancelRubNew(Tiersp parentTiw)
+    {
+        if (draftAfl == null) return;
+
+        // Remove the draft from the domain collection if it was inserted
+        var existing = parentTiw.Tieafls?.FirstOrDefault(r => r.Rowguid == draftAfl.Rowguid);
+        if (existing != null)
+        {
+            parentTiw.Tieafls.Remove(existing);
+        }
+
+        // Clear row state and UI hints
+        // ClearRowState(draftAfl.Rowguid);
+        // Reset row state
+        SetRowState(draftAfl.Rowguid, RowState.Normal);
+        SetLightBackground(draftAfl.Rowguid, false);
+
+        // Reset draft variables
+        draftAfl = null;
+        EdAflRowguid = null;
+        isAddAfl = false;
+        isEdtRub = false;
+
+        //Tiw etait en mode edit
+        CancelPlnEdit(curTie);
+        // Refresh grid data source
+
+        RubRenderKey = Guid.NewGuid(); // force re-render
+        StateHasChanged();
+
+        Console.WriteLine("✖ Cancelled new child record.");
     }
     private async Task StartTiwEdit(Tiersp item, Guid rowguid)
     {
@@ -957,131 +953,25 @@
         if (rowguid == Guid.Empty) return;
         item.Xedt1 = -1;
         if (item.Iele != 0) item.Iui = (int)item.Iele;
-        SetRowState(rowguid, RowState.EditPending);  // Shows Confirm/Cancel buttons
+
+        draftTiw = (Tiersp)DeepClone(item);
         _edPlnOriginals[rowguid] = (Tiersp)DeepClone(item);
         EdTiwRowguid = AllowMultipleEdits ? null : rowguid;
-        draftTiw = (Tiersp)DeepClone(item);
-
+        GtieMode = GridMode.TiersEditing;
+        isAddTiw = false;
         isEdtTiw = true;
         StartRowEdit(rowguid, EntityLevel.Plan);
+        SetRowState(rowguid, RowState.EditPending);  // Shows Confirm/Cancel buttons
+
         //StateHasChanged();
     }
-    //     private async Task StartRubNew(Tiersp parentTiw, int rubType)
-    // {
-    //     // Ensure parent is persisted before adding children
-    //     if (parentTiw.Id <= 0)
-    //     {
-    //         Imessage = "🚫 Cannot add Affilie: Candidat must be saved first.";
-    //         return;
-    //     }
 
-    //     Console.WriteLine("🚨 StartRubNew");
-
-    //     // Compute next sequence
-    //     var nextSeq = NextSeq(parentTiw.Tieafls, p => p.Iui);
-
-    //     // Create new Rubrique
-    //     var newRub = new Tieafl
-    //     {
-    //         Rowguid = Guid.NewGuid(),
-    //         Itie = parentTiw.Id,
-    //         Ttyp = Ugpe,
-    //         Tyafl = rubType,
-    //         Irang = nextSeq,
-    //         Nom = "Fils Martin",
-    //         Pnom = "Ilboudo",
-    //         Datc = DateTime.Now,
-    //         Liba = "",
-    //         Abg = "",
-    //         Eta = 1,
-    //         Xadd1 = -1, // newly added
-    //         Xedt1 = 0,
-    //         Xdel1 = 0
-    //     };
-
-    //     // Row state + UI hints
-    //     SetRowState(newRub.Rowguid, RowState.AddPending);
-    //     SetLightBackground(newRub.Rowguid, true);
-
-    //     // Ensure child collection exists
-    //     if (parentTiw.Tieafls == null)
-    //         parentTiw.Tieafls = new DataServiceCollection<Tieafl>();
-
-    //     // Insert into domain collection
-    //     parentTiw.Tieafls.Insert(0, newRub);
-
-    //     // Refresh grid data source
-    //     Persons = ModelHelper.MapListTo<Tieafl, EntPerson>(parentTiw.Tieafls);
-    //     GMode = GridMode.Adding;
-
-    //     // Draft clone
-    //     draftAfl = (Tieafl)DeepClone(newRub);
-    //     EdAflRowguid = draftAfl.Rowguid;
-
-    //     // Flags
-    //     isAddAfl = true;
-    //     isEdtRub = true;
-
-    //     // Mark row as editable
-    //     SetRowState(draftAfl.Rowguid, RowState.EditPending);
-    //     RubRenderKey = draftAfl.Rowguid;
-
-    //     Console.WriteLine($"✅ New row added to Tiersp.Tieafls - Count: {parentTiw.Tieafls.Count}");
-
-    //     // Trigger edit mode in grid
-    //     StartRowEdit(draftAfl.Rowguid, EntityLevel.Rub);
-
-    //     StateHasChanged();
-    // }
-
-    // private async Task StartManTiwEdit(Tiersp mytiw, int mytst)
-    // {
-    //     curTie = mytiw;
-    // }
     private async Task StartManTiwEdit(Tiersp mytiw, int mytst)
     {
         // Domain-level tracking
         curTie = mytiw;
-
-        // Clone draft
-        draftTiw = (Tiersp)DeepClone(mytiw);
-        EdTiwRowguid = draftTiw.Rowguid;
-        SetRowState(draftTiw.Rowguid, RowState.EditPending);
-
-        // Map to EntPerson for grid
-        //draftPers = ModelHelper.MapTo<Tiersp, EntPerson>(draftTiw);
-        //curPerson = ModelHelper.MapTo<Tiersp, EntPerson>(mytiw);
-
-        // Trigger grid re-render
-        TiwRenderKey = draftTiw.Rowguid;
-        StartRowEdit(draftTiw.Rowguid, EntityLevel.Plan);
+        await StartTiwEdit(mytiw, mytiw.Rowguid);
     }
-    // private async Task StartRubEdit(Tieafl item, Guid rowguid)
-    // {
-    //     var isNew = StaticMethods.IsNew(curODContext, item, e => e.Id);
-    //     if (isNew)
-    //     {
-    //         Imessage = "🚫 Cannot edit new Rubrique: Please save it first.";
-    //         return;
-    //     }
-    //     if (rowguid == Guid.Empty) return;
-
-    //     item.Xedt1 = -1;
-    //     if (item.Iele != 0) item.Iui = (int)item.Iele;
-
-    //     SetRowState(rowguid, RowState.EditPending);
-    //     _edRubOriginals[rowguid] = (Tieafl)DeepClone(item);
-    //     EdAflRowguid = AllowMultipleEdits ? null : rowguid;
-    //     draftAfl = (Tieafl)DeepClone(item);
-    //     isEdtRub = true;
-
-    //     // If you define EntRub DTO, map here:
-    //     draftPers = ModelHelper.MapTo<Tieafl, EntPerson>(draftAfl);
-    //     curPerson = ModelHelper.MapTo<Tieafl, EntPerson>(item);
-
-    //     StartRowEdit(rowguid, EntityLevel.Rub);
-    // }
-
     // This is the method wired to ChildGridHelper
     private async Task StartRubEdit<T>(T item, Guid rowguid) where T : class
     {
@@ -1119,10 +1009,6 @@
         draftAfl = (Tieafl)DeepClone(item);
         isEdtRub = true;
 
-        // If you define EntRub DTO, map here:
-        //draftPers = ModelHelper.MapTo<Tieafl, EntPerson>(draftAfl);
-        //curPerson = ModelHelper.MapTo<Tieafl, EntPerson>(item);
-
         StartRowEdit(rowguid, EntityLevel.Rub);
     }
     private async Task TieatSaveAsync()
@@ -1145,21 +1031,18 @@
     }
     // ✅ 2.1 CONFIRM OPERATIONS
     //private async Task ConfirmPlnEdit(Tiersp item)
-    private async Task ConfirmPlnEdit(EntPerson entPerson)
+    private async Task ConfirmPlnEdit(Tiersp item)
     {
-        // Map EntPerson back to Tiersp
-        var tw = ModelHelper.MapTo<EntPerson, Tiersp>(entPerson);
-        await UnifiedEditAction(tw, true, EntityLevel.Plan);
+        await UnifiedEditAction(item, true, EntityLevel.Plan);
         await TieatSaveAsync();
     }
 
     private async Task ConfirmRubEdit(Tieafl item) =>
         await UnifiedEditAction(item, true, EntityLevel.Rub);
     // ✅ 2.2 CANCEL OPERATIONS
-    private async Task CancelPlnEdit(EntPerson entPerson)
+    private async Task CancelPlnEdit(Tiersp item)
     {
-        var tw = ModelHelper.MapTo<EntPerson, Tiersp>(entPerson);
-        await UnifiedEditAction(tw, false, EntityLevel.Plan);
+        await UnifiedEditAction(item, false, EntityLevel.Plan);
         //TieatCancelAsync();
     }
     private async Task CancelRubEdit(Tieafl item) =>

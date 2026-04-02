@@ -1,5 +1,4 @@
 ﻿using Microsoft.JSInterop;
-
 using System.Threading.Tasks;
 
 namespace GxStk.Services
@@ -16,8 +15,8 @@ namespace GxStk.Services
             var doc = new
             {
                 _id = id,
-                name = name,
-                city = city
+                name,
+                city
             };
             await _jsRun.InvokeVoidAsync("SaveToPouchDB", doc);
         }

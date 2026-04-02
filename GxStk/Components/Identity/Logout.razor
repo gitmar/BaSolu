@@ -1,6 +1,7 @@
 ﻿@page "/logout"
-@using GxStk.Services
 @using Blazored.LocalStorage
+@using GxStk.Services
+@using GxStk.Services
 
 @inject ILocalStorageService _localStorage
 @inject IServiceProvider _serviceProvider
@@ -20,6 +21,7 @@
 </AuthorizeView>
 
 @code {
+    private string Jmessage = "";
 
     protected override async Task OnInitializedAsync()
     {
@@ -41,7 +43,7 @@
         var puzzleSync = _serviceProvider.GetService<IPuzzleSyncService>();
         if (puzzleSync != null)
             await puzzleSync.ClearPuzzleStateAsync();
-
+        // Dispose();
         _navManager.NavigateTo("/login");
     }
 }

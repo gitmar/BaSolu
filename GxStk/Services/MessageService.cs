@@ -6,9 +6,9 @@ using System.Threading.Tasks;
 
 using BlazorBootstrap;
 
-using GxPilo.Components;
+using GxStk.Components;
 
-namespace GxPilo.Services
+namespace GxStk.Services
 {
     public interface IMessageService
     {

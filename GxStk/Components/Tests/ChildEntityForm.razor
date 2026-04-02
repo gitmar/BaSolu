@@ -1,0 +1,20 @@
+﻿<!-- Components/ChildEntityForm.razor -->
+<EditForm Model="@Model" OnValidSubmit="HandleSave">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+
+    <InputText @bind-Value="Model.Label" class="form-control" placeholder="Child Label" />
+
+    <div class="mt-2">
+        <button class="btn btn-primary" type="submit">Save</button>
+        <button class="btn btn-secondary" type="button" @onclick="OnCancel">Cancel</button>
+    </div>
+</EditForm>
+
+@code {
+    [Parameter] public ChildDto Model { get; set; } = new();
+    [Parameter] public EventCallback<ChildDto> OnSave { get; set; }
+    [Parameter] public EventCallback OnCancel { get; set; }
+
+    private async Task HandleSave() => await OnSave.InvokeAsync(Model);
+}

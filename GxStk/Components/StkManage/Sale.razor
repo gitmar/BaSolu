@@ -1,0 +1,33 @@
+﻿@page "/sale"
+@using GxShared.StkDtos;
+@using GxStk.Services
+
+@inject SaleClientService SaleService
+
+<h3>Create Sale</h3>
+    
+<button @onclick="CreateSale">Sell</button>
+
+@code {
+    async Task CreateSale()
+    {
+        var dto = new CreateSaleDto
+        {
+            WarehouseId = 1,
+            Reference = "INV-001",
+            Lines = new List<CreateSaleLineDto>
+            {
+                new()
+                {
+                    ItemId = 1,
+                    Quantity = 5,
+                    UnitPrice = 3m
+                }
+            }
+        };
+
+        var id = await SaleService.CreateSaleAsync(dto);
+
+        Console.WriteLine($"Sale created: {id}");
+    }
+}

@@ -1,0 +1,42 @@
+﻿@page "/items"
+
+@using GxWapi.DaModels
+@using GxStk.Services
+
+@inject ItemClientService ItemService
+
+<h3>Items</h3>
+
+@if (items == null)
+{
+    <p>Loading...</p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Code</th>
+                <th>Name</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in items)
+            {
+                <tr>
+                    <td>@item.Xcod</td>
+                    <td>@item.Nom</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    private List<Stkitum>? items;
+
+    protected override async Task OnInitializedAsync()
+    {
+        items = await ItemService.GetItemsAsync();
+    }
+}

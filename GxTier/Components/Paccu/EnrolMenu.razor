@@ -49,7 +49,6 @@ else
                            MenuSelected="@_chxMenu"
                            MenuSelectedChanged="@SelMenu"
                            OnBack="@NavigateBack" />
-               
                 <div class="row">
                     <div class="col-md-12 input-group align-middle">
                         <span class="text-uppercase text- text-success"><b>@strComp</b></span>
@@ -75,25 +74,25 @@ else
                                      toChild="@toChild"
                                      curODContext="@curODContext">
                                 <ChildContent>
-                                    <h2 class="child-box">Hello INTEGRATION</h2>
+                                    @* <h2 class="child-box">Hello INTEGRATION</h2> *@
                                 </ChildContent>
                             </ValdTie>
                         }
                         else if (_chxMenu == 2 && Ugpe != 0) // && Tgpe != 0 && ParentOK)
                         {
-                            @* <InscTiw @ref="myetiw"
-                                      Ugpe="@Ugpe"
-                                      Tgpe="@Tgpe"
-                                      curOrga="@curOrga"          
+                            <InscTiw @ref="myetiw"
+                                     Ugpe="@Ugpe"
+                                     Tgpe="@Tgpe"
+                                     curOrga="@curOrga"
                                      @bind-NbChanges="_nbChanges"
-                                      _guard="_guard"
-                                      TbItems ="@TbItems"
-                                      toChild="@toChild"
-                                      curODContext="@curODContext">
+                                     _guard="_guard"
+                                     TbItems="@TbItems"
+                                     toChild="@toChild"
+                                     curODContext="@curODContext">
                                 <ChildContent>
-                                    <h2 class="child-box">Hello ACCUEIL</h2>
+                                    @* <h2 class="child-box">Hello ACCUEIL</h2> *@
                                 </ChildContent>
-                            </InscTiw> *@
+                            </InscTiw>
                         }
                         else if (_chxMenu == 3)
                         {
@@ -105,23 +104,6 @@ else
                                     <h2 class="child-box">Hello ACCUEIL</h2>
                                 </ChildContent>
                             </InvOper> *@
-                        }
-                        else if (_chxMenu == 4 && Ugpe != 0 && Tgpe != 0)
-                        {
-                            @* <EnrolTiw @ref="myertiw"
-                                     ParentEDT="@ParentEDT"
-                                     ParentOK="@ParentOK"
-                                     Ugpe="@Ugpe"
-                                     Tgpe="@Tgpe"
-                                     OnSaved="ManSaveAll"
-                                     allEnable="@allEnable"
-                                     curOrga="@curOrga"
-                                     toChild="@toChild"
-                                     curODContext="@curODContext">
-                                <ChildContent>
-                                    <h2 class="child-box">Hello ACCUEIL</h2>
-                                </ChildContent>
-                            </EnrolTiw> *@
                         }
                     }
                  }
@@ -152,9 +134,8 @@ else
     public Gxorga curOrga = new Gxorga();
     public MyShareVars toChild = new();
 
-    //private EnrolTiw mygtiw;
     private ValdTie mygvld = new();
-    //private InscTiw myetiw = new();
+    private InscTiw myetiw = new();
     private InvOper myginv = new();
 
     private MyAuthStateProvider _authProvider { get; set; }
@@ -213,12 +194,6 @@ else
     public List<Gplan> LsPlans = new();
     public List<Grole> Uroles = new();
 
-    //public Dictionary<int, string> dicvCols = new();
-    //public Dictionary<int, string> dicvACols = new(); 
-    //public List<Gpcol> LsPcols = new();
-    //public List<Gpcol> LsFcols = new();
-    //public List<Gsglne> LsCols = new();
-    //public List<Gtvar> TbElems = new();    
     private List<Grole> LsRoles = new();
     private List<Gptbl> TbItems = new();
     //Navigation
@@ -312,8 +287,7 @@ else
         //LsPcols = lscols.Where(tc => tc.Otyp == 1 && tc.Totyp == Ugpe && tc.Zfro == 1).ToList();
         //LsFcols = lscols.Where(tc => tc.Otyp == 2 && tc.Totyp == Ugpe && tc.Zfro == 1).ToList();
         Console.WriteLine("Authentication ENTREE");
-        await LoadTieAplAsync();
-
+        
         TbItems = await _rendAgres.LoadOrgaTables();
         Console.WriteLine($"nb. tbitems : {TbItems.Count}");
         
@@ -325,10 +299,13 @@ else
         _guard.RegisterUnconfirmedPredicate<Tieafl>(ef => ef.Xadd1 == -1 || ef.Xedt1 == -1 || ef.Xdel1 == -1);
 
         _nbChanges = _guard.GetPendingChangesCount();  // Initial value
+        
+        await LoadTieAplAsync();
+
         // pita = 5;
         Console.WriteLine("TIERS A ETE TESTE");
         //option initiale
-        strComp = $"Accueil {gpeLiba}";
+        strComp = $"Integration {gpeLiba}";
         //isLoading = false;
         //ParentOK = false;
         //await _loadingService.Hide();

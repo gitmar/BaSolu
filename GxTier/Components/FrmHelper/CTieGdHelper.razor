@@ -3,20 +3,246 @@
 @using GxTie.ClieModels
 
 <h3>CTieGdHelper</h3>
+<div class="card">
+    <div class="card-body p-3">
+        @foreach (var Adraft in SubAfls)
+        {
+            <!-- FIELD 3: Nom -->
+            <FormField Label="Nom" IsVisible="@AflVisibility.GetValueOrDefault("Nom", true)">
+                @if (isEditing)
+                {
+                    <InputText @bind-Value="Adraft.Nom" class="form-control" />
+                }
+                else
+                {
+                    <span class="form-control-plaintext">@Adraft.Nom</span>
+                }
+            </FormField>
+            <!-- FIELD 4: Pnom -->
+            <FormField Label="Pnom" IsVisible="@AflVisibility.GetValueOrDefault("Pnom", true)">
+                @if (isEditing)
+                {
+                    <InputText @bind-Value="Adraft.Pnom" class="form-control" />
+                }
+                else
+                {
+                    <span class="form-control-plaintext">@Adraft.Pnom</span>
+                }
+            </FormField>
+            <!-- FIELD 5: Nom de Jeune fille -->
+            <FormField Label="Bnom" IsVisible="@AflVisibility.GetValueOrDefault("Bnom", true)">
+                @if (isEditing)
+                {
+                    <InputText @bind-Value="Adraft.Bnom" class="form-control" />
+                }
+                else
+                {
+                    <span class="form-control-plaintext">@Adraft.Bnom</span>
+                }
+            </FormField>
+            <!-- FIELD 6: Statut (int) -->
+            <FormField Label="Statut" IsVisible="@AflVisibility.GetValueOrDefault("Statut", true)">
+                <InputSelect @bind-Value="Adraft!.Statut"
+                             class="form-select"
+                             disabled="@(!isEditing)">
+                    <option value="0">?choisir</option>
+                    @foreach (var opt in GetOptions(11))
+                    {
+                        <option value="@opt.Elea">@opt.Liba</option>
+                    }
+                </InputSelect>
+            </FormField>
+            
+            <!-- FIELD 7: Relat (int) -->
+            <FormField Label="Relation" IsVisible="@AflVisibility.GetValueOrDefault("Relat", true)">
+                <InputSelect @bind-Value="Adraft!.Relat"
+                             class="form-select"
+                             disabled="@(!isEditing)">
+                    <option value="0">?choisir</option>
+                    @foreach (var opt in GetOptions(18))
+                    {
+                        <option value="@opt.Elea">@opt.Liba</option>
+                    }
+                </InputSelect>
+            </FormField>
+            <!-- FIELD 8: Sexe (int) -->
+            <FormField Label="Sexe" IsVisible="@AflVisibility.GetValueOrDefault("Sexe", true)">
+                <InputSelect @bind-Value="Adraft!.Sexe"
+                             class="form-select"
+                             disabled="@(!isEditing)">
+                    <option value="0">?choisir</option>
+                    @foreach (var opt in GetOptions(12))
+                    {
+                        <option value="@opt.Elea">@opt.Liba</option>
+                    }
+                </InputSelect>
+            </FormField>
 
+            <!-- FIELD 9: Sitmat (int) -->
+            
+            <FormField Label="Sit.Mat." IsVisible="@AflVisibility.GetValueOrDefault("Sitmat", true)">
+                <InputSelect @bind-Value="Adraft!.Sitmat"
+                             class="form-select"
+                             disabled="@(!isEditing)">
+                    <option value="0">?choisir</option>
+                    @foreach (var opt in GetOptions(13))
+                    {
+                        <option value="@opt.Elea">@opt.Liba</option>
+                    }
+                </InputSelect>
+            </FormField>
+
+            <!-- FIELD 10: Fonction -->
+            <FormField Label="Fonct." IsVisible="@AflVisibility.GetValueOrDefault("Ifonc", true)">
+                <InputSelect @bind-Value="Adraft!.Ifonc"
+                             class="form-select"
+                             disabled="@(!isEditing)">
+                    <option value="0">?choisir</option>
+                    @foreach (var opt in GetOptions(14))
+                    {
+                        <option value="@opt.Elea">@opt.Liba</option>
+                    }
+                </InputSelect>
+            </FormField>
+
+            <!-- FIELD 11: Grade -->
+            <FormField Label="Grade" IsVisible="@AflVisibility.GetValueOrDefault("Igrad", true)">
+                <InputSelect @bind-Value="Adraft!.Igrad"
+                             class="form-select"
+                             disabled="@(!isEditing)">
+                    <option value="0">?choisir</option>
+                    @foreach (var opt in GetOptions(15))
+                    {
+                        <option value="@opt.Elea">@opt.Liba</option>
+                    }
+                </InputSelect>
+            </FormField>
+   
+            <!-- FIELD 12: Email -->
+            <FormField Label="Email" IsVisible="@AflVisibility.GetValueOrDefault("Email", true)">
+                @if (isEditing)
+                {
+                    <InputText @bind-Value="Adraft.Email" class="form-control" />
+                }
+                else
+                {
+                    <span class="form-control-plaintext">@Adraft.Email</span>
+                }
+            </FormField>
+
+            <!-- FIELD 13: Phone -->
+            <FormField Label="Phone" IsVisible="@AflVisibility.GetValueOrDefault("Phone", true)">
+                @if (isEditing)
+                {
+                    <InputText @bind-Value="Adraft.Phone" class="form-control" />
+                }
+                else
+                {
+                    <span class="form-control-plaintext">@Adraft.Phone</span>
+                }
+            </FormField>
+
+            <!-- FIELD 14: Date de naissance -->
+            <FormField Label="Date Naiss." IsVisible="@AflVisibility.GetValueOrDefault("Dnais", true)">
+                @if (isEditing)
+                {
+                    <InputDate @bind-Value="Adraft.Dnais" class="form-control" />
+                }
+                else
+                {
+                    <span class="form-control-plaintext">@Adraft.Dnais</span>
+                }
+            </FormField>
+            
+            
+            <!-- FIELD 15: Date d’embauche -->
+            <FormField Label="Date Emb." IsVisible="@AflVisibility.GetValueOrDefault("Demb", true)">
+                @if (isEditing)
+                {
+                    <InputDate @bind-Value="Adraft.Demb" class="form-control" />
+                }
+                else
+                {
+                    <span class="form-control-plaintext">@Adraft.Demb</span>
+                }
+            </FormField>
+
+            <!-- FIELD 16: Nombre d’enfants -->
+            <FormField Label="Nb.Enf" IsVisible="@AflVisibility.GetValueOrDefault("Nenf", true)">
+                @if (isEditing)
+                {
+                    <InputNumber @bind-Value="Adraft.Nenf" class="form-control" />
+                }
+                else
+                {
+                    <span class="form-control-plaintext">@Adraft.Nenf</span>
+                }
+            </FormField>
+
+            <!-- FIELD 17: Responsabilité -->
+            <FormField Label="Responsable" IsVisible="@AflVisibility.GetValueOrDefault("Respon", true)">
+                <InputSelect @bind-Value="Adraft!.Respon"
+                             class="form-select"
+                             disabled="@(!isEditing)">
+                    <option value="0">?choisir</option>
+                    @foreach (var opt in GetOptions(17))
+                    {
+                        <option value="@opt.Elea">@opt.Liba</option>
+                    }
+                </InputSelect>
+            </FormField>
+
+            <!-- FIELD 18: Pays de résidence -->
+            <FormField Label="Residence" IsVisible="@AflVisibility.GetValueOrDefault("Rpays", true)">
+                <InputSelect @bind-Value="Adraft!.Rpays"
+                             class="form-select"
+                             disabled="@(!isEditing)">
+                    <option value="">?choisir</option>
+                    @foreach (var opt in GetOptions(31))
+                    {
+                        <option value="@opt.Abg">@opt.Liba</option>
+                    }
+                </InputSelect>
+            </FormField>
+           
+            <!-- FIELD 19: Nationalité -->
+            <FormField Label="Natio" IsVisible="@AflVisibility.GetValueOrDefault("Natio", true)">
+                <InputSelect @bind-Value="Adraft!.Natio"
+                             class="form-select"
+                             disabled="@(!isEditing)">
+                    <option value="">?choisir</option>
+                    @foreach (var opt in GetOptions(31))
+                    {
+                        <option value="@opt.Abg">@opt.Liba</option>
+                    }
+                </InputSelect>
+            </FormField>
+  
+            <!-- FIELD 20: Méthode de paiement -->
+            <FormField Label="P.Meth" IsVisible="@AflVisibility.GetValueOrDefault("Ipaid", true)">
+                <InputSelect @bind-Value="Adraft!.Ipaid"
+                             class="form-select"
+                             disabled="@(!isEditing)">
+                    <option value="0">?choisir</option>
+                    @foreach (var opt in GetOptions(17))
+                    {
+                        <option value="@opt.Elea">@opt.Liba</option>
+                    }
+                </InputSelect>
+            </FormField>
+        }
+    </div>
+</div>
 @code {
     // Workflow flags
     [Parameter] public List<Tieafl> SubAfls { get; set; }
     [Parameter] public GridMode GMode { get; set; } = GridMode.None;
-    [Parameter] public bool CanEdit { get; set; } = true;
+    [Parameter] public bool isEditing { get; set; } = false;
     [Parameter] public Dictionary<string, bool> AflVisibility { get; set; } = new();
-
-    //private bool isEditing => Mode == "Add" || Mode == "Edit";
 
     [Parameter] public List<Gptbl> TbItems { get; set; }
     [Parameter] public int? SelectedGroup { get; set; }
     
-    private Tieafl Draft = new();
     // Identifiers
     [Parameter] public string RenderKey { get; set; }
     [Parameter] public Guid? EdRowguid { get; set; }
@@ -28,5 +254,12 @@
     [Parameter] public EventCallback<Tieafl> CancelDelete { get; set; }
     [Parameter] public EventCallback<Tieafl> StartRubEdit { get; set; }
     [Parameter] public EventCallback<Guid> StartRowDelete { get; set; }
+
+    private List<Gptbl> GetOptions(int pxcod)
+    {
+        return TbItems
+            .Where(t => t.Pxcod == pxcod)
+            .ToList();
+    }
 
 }

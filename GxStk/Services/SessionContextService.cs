@@ -3,8 +3,7 @@ using System.Security.Claims;
 
 using Blazored.LocalStorage;
 
-using GxStk.Helpers;
-using GxStk.Profile;
+using GxStk.StaticHelpers;
 
 using GxShared.Sess;
 using GxShared.Identity;
@@ -196,7 +195,7 @@ namespace GxStk.Services
                 try
                 {
                     Userbag = JsonConvert.DeserializeObject<Userbag>(json);
-                    Console.Write($"Userbag got {json}");
+                    ////Console.Write($"Userbag got {json}");
                 }
                 catch (Exception ex)
                 {

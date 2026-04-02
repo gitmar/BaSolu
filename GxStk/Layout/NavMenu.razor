@@ -1,7 +1,7 @@
 ﻿@using GxStk.Services
 @using GxShared.Sess
-@using BlazorBootstrap
 @using System.Security.Claims
+@using BlazorBootstrap
 
 @inject NavigationManager _navManager
 
@@ -14,7 +14,7 @@
     </button>
 </div>
 
-<div class="@NavMenuCssClass bg-dark vh-100" style="overflow-y: auto;">
+<div class="@NavMenuCssClass bg-dark text-light vh-100" style="overflow-y: auto;">
     <nav class="nav flex-column">
 
         <!-- HOME -->
@@ -95,8 +95,21 @@
         <NavLink class="nav-link nav-main text-light" href="about">
             <i class="bi bi-info-circle-fill me-2"></i> About
         </NavLink>
+
+        <!-- Test -->
+        <NavLink class="nav-link nav-main text-light" href="items">
+            <i class="bi bi-info-circle-fill me-2"></i> Items
+        </NavLink>
+        <NavLink class="nav-link nav-main text-light" href="purchase">
+            <i class="bi bi-info-circle-fill me-2"></i> Purchase
+        </NavLink>
+        <NavLink class="nav-link nav-main text-light" href="sale">
+            <i class="bi bi-info-circle-fill me-2"></i> Sale
+        </NavLink>
+
     </nav>
 </div>
+
 
 <style>
     .top-row.navbar {
@@ -152,8 +165,8 @@
     .nav-main.open .arrow {
         transform: rotate(90deg);
     }
-
 </style>
+
 @code {
     [CascadingParameter]
     private Task<AuthenticationState>? AuthState { get; set; }
@@ -188,10 +201,6 @@
         }
         //_appState.OnChange += StateHasChanged;
     }
-    public void Dispose()
-    {
-        //_appState.OnChange -= StateHasChanged;
-    }
     private void ToggleNavMenu()
     {
         collapseNavMenu = !collapseNavMenu;
@@ -219,4 +228,12 @@
         isSubProgVisible = !isSubProgVisible;
     }
     private bool Entest = false;
+    public void Dispose()
+    {
+        //_appState.OnChange -= StateHasChanged;
+    }
+    // protected override async Task OnAfterRenderAsync(bool firstRender)
+    // {
+    //     Entest = false;
+    // }
 }

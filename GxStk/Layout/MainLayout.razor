@@ -1,10 +1,11 @@
 ﻿@inherits LayoutComponentBase
 
+@using System.Security.Claims
 @using System.Text.RegularExpressions
 @using Blazored.LocalStorage
 @using GxStk.Services
-@using GxShared.Helpers
-@using System.Security.Claims
+@using GxShared.Helpers;
+@using GxShared.Identity;
 
 @inject IConfiguration _iconfig
 @inject NavigationManager _navManager
@@ -31,14 +32,11 @@
                     &nbsp;
                     <AuthorizeView>
                         <Authorized>
-
                             <!-- Toggle User Menu -->
-                            <a class="nav-icon fw-bold text-dark fs-10 d-flex align-items-center m-0 p-0"
-                               href="#"
-                               @onclick="ToggleUserMenu">
+                            <button class="btn btn-sm nav-icon fw-bold text-dark fs-10 d-flex align-items-start m-0 p-0"
+                                    @onclick="NavigateToIdentityPage">
                                 <span>PrivateRoom</span>
-                            </a>
-
+                            </button>
                             <div class="truncated-text ms-3">@_appState.ogRaison</div>
                             <div class="truncated-text ms-3">@_appState.usFulnom</div>
 
@@ -76,9 +74,9 @@
                     <Authorized>
                         @if (collapseUserMenu)
                         {
-                            <div class="px-3 py-2 border-top bg-white">
+                            @* <div class="px-3 py-2 border-top bg-white">
                                 <UsrMenu />
-                            </div>
+                            </div> *@
                         }
                     </Authorized>
                 </AuthorizeView>
@@ -91,7 +89,6 @@
                     @Body
                 </article>
             </main>
-
         </div>
     </div>
 }
@@ -121,21 +118,21 @@ else
 </style>
 @code {
     private bool _layoutReady = false, isLoading = false;
-    private bool collapseUserMenu = false, canStkLog = false;
+    private bool collapseUserMenu = false, canTierLog = false;
     [CascadingParameter]
     private Task<AuthenticationState>? AuthState { get; set; }
     private ClaimsPrincipal authUser;
     private bool isAuthenticated = false;
     [Inject] private AuthenticationStateProvider _authProvider { get; set; }
 
-    private void ToggleUserMenu()
-    {
-        collapseUserMenu = !collapseUserMenu;
-    }
+    // private void ToggleUserMenu()
+    // {
+    //     collapseUserMenu = !collapseUserMenu;
+    // }
 
     protected override async Task OnInitializedAsync()
     {
-        canStkLog = false;
+        canTierLog = false;
         isLoading = false;
         //_layoutReady = true;
         var token = await _localStorage.GetItemAsync<string>("blazToken");
@@ -146,7 +143,7 @@ else
             return;
         }
         await _sessionContext.InitializeAsync();
-   
+
         // Wait for AuthenticationStateProvider to reflect the new token
         //await Task.Delay(100); // Give NotifyUserAuthentication time to propagate
 
@@ -160,19 +157,33 @@ else
         }
         else
         {
-            if (authUser.IsInRole("Support") || authUser.IsInRole("Admin")) canStkLog = true;
+            if (authUser.IsInRole("Support") || authUser.IsInRole("Admin")) canTierLog = true;
             Console.WriteLine("Authentication in Main Layout SUCCESS");
         }
 
         _layoutReady = true;
         _authProvider.AuthenticationStateChanged += async task =>
-    {
-        var authState = await task;
-        authUser = authState.User;
-        isAuthenticated = authUser.Identity?.IsAuthenticated ?? false;
-        StateHasChanged();
-    };
+        {
+            var authState = await task;
+            authUser = authState.User;
+            isAuthenticated = authUser.Identity?.IsAuthenticated ?? false;
+            StateHasChanged();
+        };
+
         isLoading = true;
+    }
+    private async Task NavigateToIdentityPage()
+    {
+        // Get token from localStorage
+        var token = await _localStorage.GetItemAsync<string>("blazToken");
+        if (string.IsNullOrWhiteSpace(token))
+        {
+            Console.WriteLine("No token found — skipping session sync.");
+            return;
+        }
+        var backendUrl = _iconfig["backendUrl"];
+        var targetUrl = $"{backendUrl}/Identity/Account/JwtLandingPage?access_token={token}";
+        _navManager.NavigateTo(targetUrl, forceLoad: true);
     }
     public void Dispose()
     {

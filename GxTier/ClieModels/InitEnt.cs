@@ -87,6 +87,8 @@ namespace GxWapi.DaModels
         [JsonIgnore]
         public int Iui { get; set; } = 0;
         [JsonIgnore]
+        public int Xadd1 { get; set; } = 0;
+        [JsonIgnore]
         public string Liba { get; set; } = string.Empty;
         [JsonIgnore]
         public string SMatri { get; set; } = string.Empty;
@@ -103,6 +105,9 @@ namespace GxWapi.DaModels
     {
         [JsonIgnore]
         public int Iui { get; set; } = 0;
+        [JsonIgnore]
+        public int Xadd1 { get; set; } = 0;
+        [JsonIgnore]
         public string Liba { get; set; } = string.Empty;
         [JsonIgnore]
         public string Abg { get; set; } = string.Empty;
@@ -119,6 +124,8 @@ namespace GxWapi.DaModels
     {
         [JsonIgnore]
         public int Iui { get; set; } = 0;
+        [JsonIgnore]
+        public int Xadd1 { get; set; } = 0;
         [JsonIgnore]
         public string Liba { get; set; } = string.Empty;
         [JsonIgnore]

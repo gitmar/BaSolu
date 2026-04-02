@@ -1,0 +1,46 @@
+﻿@page "/purchase"
+
+@using GxShared.StkDtos
+@using GxStk.Services
+
+@inject PurchaseClientService PurchaseService
+
+<h3>Create Purchase</h3>
+
+<input @bind="supplierId" placeholder="SupplierId" />
+<input @bind="warehouseId" placeholder="WarehouseId" />
+
+<button @onclick="CreatePurchase">Submit</button>
+
+@code {
+    int supplierId = 1;
+    int warehouseId = 1;
+
+    async Task CreatePurchase()
+    {
+        var dto = new CreatePurchaseDto
+        {
+            SupplierId = supplierId,
+            WarehouseId = warehouseId,
+            Lines = new List<CreatePurchaseLineDto>
+            {
+                new()
+                {
+                    ItemId = 1,
+                    Quantity = 50,
+                    UnitCost = 2.5m,
+                    BatchNumber = "B001",
+                    ExpiryDate = DateOnly.FromDateTime(DateTime.UtcNow.AddMonths(6))
+                }
+                //dateorder comparison
+                //.OrderBy(x => x.ExpiryDate.HasValue
+                //    ? x.ExpiryDate.Value.ToDateTime(TimeOnly.MinValue)
+                //        : DateTime.MaxValue)
+            }
+        };
+
+        var id = await PurchaseService.CreatePurchaseAsync(dto);
+
+        Console.WriteLine($"Purchase created: {id}");
+    }
+}

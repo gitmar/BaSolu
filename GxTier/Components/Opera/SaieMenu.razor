@@ -123,6 +123,7 @@
                             case 1:
                                 <SaieActLnes @ref="mygsaie"
                                     curOrga="@curOrga"
+                                    @bind-NbChanges="_nbChanges"
                                     _guard="@_guard"
                                     toChild="@toChild"
                                     ImyDiv="@ImyDiv"
@@ -368,6 +369,9 @@
         await _guard.CancelChangesAsync();
         StateHasChanged();
     }
+    //Guard
+    private int _nbChanges = 0;
+    private IDisposable? _locationHandler;
     protected override async Task OnInitializedAsync()
     {
         isLoading = true;
@@ -412,6 +416,9 @@
         Console.WriteLine($"inv roles : {_invRoles.Count()}");
 
         Ugpe = 1; //initial Cible
+        _guard.RegisterUnconfirmedPredicate<Actsaie>(e => e.Xadd1 == -1 || e.Xedt1 == -1 || e.Xdel1 == -1);
+        _guard.RegisterUnconfirmedPredicate<Actdet>(d => d.Xadd1 == -1 || d.Xedt1 == -1 || d.Xdel1 == -1);
+        _nbChanges = _guard.GetPendingChangesCount();  // Initial value
         Console.WriteLine("Authentication ENTREE");
         await LoadSaieOrgaAsync();
         //pita = 5;

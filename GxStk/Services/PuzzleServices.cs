@@ -3,14 +3,13 @@ using System.Security.Claims;
 
 using Blazored.LocalStorage;
 
-using GxStk.ClieModels;
-
 using GxShared.Sess;
 using GxShared.Identity;
 
 using Microsoft.AspNetCore.Components.Authorization;
 
 using static GxStk.Services.PuzzleSyncService;
+using GxStk.ClieModels;
 
 namespace GxStk.Services
 {

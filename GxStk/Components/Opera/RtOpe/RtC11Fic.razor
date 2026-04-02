@@ -14,9 +14,11 @@
 @using BlazorBootstrap
 @using Blazored.LocalStorage
 @using Components.Opera
+@using GxShared.Sess
 @using GxStk.ClieModels
 @using GxStk.Services
-@using GxShared.Sess
+@using GxStk.ClieModels
+@using GxStk.Services
 @using GxWapi.DaModels
 @using Microsoft.AspNetCore.Components.Forms
 @using Microsoft.AspNetCore.WebUtilities
@@ -114,7 +116,7 @@
 
     private ClaimsPrincipal authUser;
     private bool isAuthenticated = false;
-   
+
     private string _UserId = "", plnDom = "", atrTitle = "";
     private int _UorgId = 0;
     private Userbag _usrBag = new Userbag();

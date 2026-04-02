@@ -18,7 +18,7 @@
              
             <!-- FIELD 2: Dossier -->
             <FormField Label="Dossier" IsVisible="@Visibility.GetValueOrDefault("Dossier", true)">
-                @if (GMode == GridMode.TiersAdding)
+                @if (isEditing)
                 {
                     <InputText @bind-Value="Draft.Xmatri" class="form-control" />
                 }
@@ -30,7 +30,7 @@
 
             <!-- FIELD 3: Nom -->
             <FormField Label="Nom" IsVisible="@Visibility.GetValueOrDefault("Nom", true)">
-                @if (GMode == GridMode.TiersAdding)
+                @if (isEditing)
                 {
                     <InputText @bind-Value="Draft.Nom" class="form-control" />
                 }
@@ -41,7 +41,7 @@
             </FormField>
             <!-- FIELD 4: Pnom -->
             <FormField Label="Pnom" IsVisible="@Visibility.GetValueOrDefault("Pnom", true)">
-                @if (GMode == GridMode.TiersAdding)
+                @if (isEditing)
                 {
                     <InputText @bind-Value="Draft.Pnom" class="form-control" />
                 }
@@ -52,7 +52,7 @@
             </FormField>
             <!-- FIELD 5: Nom de Jeune fille -->
             <FormField Label="Bnom" IsVisible="@Visibility.GetValueOrDefault("Bnom", true)">
-                @if (GMode == GridMode.TiersAdding)
+                @if (isEditing)
                 {
                     <InputText @bind-Value="Draft.Bnom" class="form-control" />
                 }
@@ -66,7 +66,7 @@
             <FormField Label="Statut" IsVisible="@Visibility.GetValueOrDefault("Statut", true)">
                 <InputSelect @bind-Value="Draft!.Statut"
                              class="form-select"
-                             disabled="@(GMode != GridMode.TiersAdding || !CanEdit)">
+                             disabled="@(!isEditing)">
                     <option value="0">?choisir</option>
                     @foreach (var opt in GetOptions(11))
                     {
@@ -79,7 +79,7 @@
             <FormField Label="Relation" IsVisible="@Visibility.GetValueOrDefault("Relat", true)">
                 <InputSelect @bind-Value="Draft!.Relat"
                              class="form-select"
-                             disabled="@(GMode != GridMode.TiersAdding || !CanEdit)">
+                             disabled="@(!isEditing)">
                     <option value="0">?choisir</option>
                     @foreach (var opt in GetOptions(18))
                     {
@@ -91,7 +91,7 @@
             <FormField Label="Sexe" IsVisible="@Visibility.GetValueOrDefault("Sexe", true)">
                 <InputSelect @bind-Value="Draft!.Sexe"
                              class="form-select"
-                             disabled="@(GMode != GridMode.TiersAdding || !CanEdit)">
+                             disabled="@(!isEditing)">
                     <option value="0">?choisir</option>
                     @foreach (var opt in GetOptions(12))
                     {
@@ -104,7 +104,7 @@
             <FormField Label="Sit.Mat." IsVisible="@Visibility.GetValueOrDefault("Sitmat", true)">
                 <InputSelect @bind-Value="Draft!.Sitmat"
                              class="form-select"
-                             disabled="@(GMode != GridMode.TiersAdding || !CanEdit)">
+                             disabled="@(!isEditing)">
                     <option value="0">?choisir</option>
                     @foreach (var opt in GetOptions(13))
                     {
@@ -117,7 +117,7 @@
             <FormField Label="Fonction" IsVisible="@Visibility.GetValueOrDefault("Ifonc", true)">
                 <InputSelect @bind-Value="Draft!.Ifonc"
                              class="form-select"
-                             disabled="@(GMode != GridMode.TiersAdding || !CanEdit)">
+                             disabled="@(!isEditing)">
                     <option value="0">?choisir</option>
                     @foreach (var opt in GetOptions(14))
                     {
@@ -130,7 +130,7 @@
             <FormField Label="Grade" IsVisible="@Visibility.GetValueOrDefault("Igrad", true)">
                 <InputSelect @bind-Value="Draft!.Igrad"
                              class="form-select"
-                             disabled="@(GMode != GridMode.TiersAdding || !CanEdit)">
+                             disabled="@(!isEditing)">
                     <option value="0">?choisir</option>
                     @foreach (var opt in GetOptions(15))
                     {
@@ -141,7 +141,7 @@
    
             <!-- FIELD 12: Email -->
             <FormField Label="Email" IsVisible="@Visibility.GetValueOrDefault("Email", true)">
-                @if (GMode == GridMode.TiersAdding)
+                @if (isEditing)
                 {
                     <InputText @bind-Value="Draft.Email" class="form-control" />
                 }
@@ -153,7 +153,7 @@
 
             <!-- FIELD 13: Phone -->
             <FormField Label="Phone" IsVisible="@Visibility.GetValueOrDefault("Phone", true)">
-                @if (GMode == GridMode.TiersAdding)
+                @if (isEditing)
                 {
                     <InputText @bind-Value="Draft.Phone" class="form-control" />
                 }
@@ -165,7 +165,7 @@
 
             <!-- FIELD 14: Date de naissance -->
             <FormField Label="Date Naiss." IsVisible="@Visibility.GetValueOrDefault("Dnais", true)">
-                @if (GMode == GridMode.TiersAdding)
+                @if (isEditing)
                 {
                     <InputDate @bind-Value="Draft.Dnais" class="form-control" />
                 }
@@ -178,7 +178,7 @@
             
             <!-- FIELD 15: Date d’embauche -->
             <FormField Label="Date Emb." IsVisible="@Visibility.GetValueOrDefault("Demb", true)">
-                @if (GMode == GridMode.TiersAdding)
+                @if (isEditing)
                 {
                     <InputDate @bind-Value="Draft.Demb" class="form-control" />
                 }
@@ -190,7 +190,7 @@
 
             <!-- FIELD 16: Nombre d’enfants -->
             <FormField Label="Nb.Enf" IsVisible="@Visibility.GetValueOrDefault("Nenf", true)">
-                @if (GMode == GridMode.TiersAdding)
+                @if (isEditing)
                 {
                     <InputNumber @bind-Value="Draft.Nenf" class="form-control" />
                 }
@@ -204,7 +204,7 @@
             <FormField Label="Responsable" IsVisible="@Visibility.GetValueOrDefault("Respon", true)">
                 <InputSelect @bind-Value="Draft!.Respon"
                              class="form-select"
-                             disabled="@(GMode != GridMode.TiersAdding || !CanEdit)">
+                             disabled="@(!isEditing)">
                     <option value="0">?choisir</option>
                     @foreach (var opt in GetOptions(17))
                     {
@@ -217,7 +217,7 @@
             <FormField Label="Residence" IsVisible="@Visibility.GetValueOrDefault("Rpays", true)">
                 <InputSelect @bind-Value="Draft!.Rpays"
                              class="form-select"
-                             disabled="@(GMode != GridMode.TiersAdding || !CanEdit)">
+                             disabled="@(!isEditing)">
                     <option value="">?choisir</option>
                     @foreach (var opt in GetOptions(31))
                     {
@@ -230,7 +230,7 @@
             <FormField Label="Nationalite" IsVisible="@Visibility.GetValueOrDefault("Natio", true)">
                 <InputSelect @bind-Value="Draft!.Natio"
                              class="form-select"
-                             disabled="@(GMode != GridMode.TiersAdding || !CanEdit)">
+                             disabled="@(!isEditing)">
                     <option value="">?choisir</option>
                     @foreach (var opt in GetOptions(31))
                     {
@@ -243,7 +243,7 @@
             <FormField Label="P.Meth" IsVisible="@Visibility.GetValueOrDefault("Ipaid", true)">
                 <InputSelect @bind-Value="Draft!.Ipaid"
                              class="form-select"
-                             disabled="@(GMode != GridMode.TiersAdding || !CanEdit)">
+                             disabled="@(!isEditing)">
                     <option value="0">?choisir</option>
                     @foreach (var opt in GetOptions(17))
                     {
@@ -258,15 +258,13 @@
 @code {
     [Parameter] public Tiersp Draft { get; set; }
     [Parameter] public GridMode GMode { get; set; } = GridMode.None;
-    [Parameter] public bool CanEdit { get; set; } = true;
+    [Parameter] public bool isEditing { get; set; } = false;
     [Parameter] public Dictionary<string, bool> Visibility { get; set; } = new();
 
     [Parameter] public List<Gptbl> TbItems { get; set; }
     // Identifiers
     [Parameter] public string RenderKey { get; set; }
     [Parameter] public Guid? EdRowguid { get; set; }
-
-    //private bool GMode == GridMode.TiersAdding => Mode == "Add" || Mode == "Edit";
 
     private List<Gptbl> GetOptions(int pxcod)
     {

@@ -1,15 +1,20 @@
 ﻿using System.Net.Http.Headers;
+
 using BlazorDownloadFile;
+
 using Blazored.LocalStorage;
+
+using GxShared.Helpers;
+using GxShared.Sess;
+
 using GxStk;
 using GxStk.ClieModels;
 using GxStk.Services;
-using GxShared.Sess;
-using GxShared.Helpers;
+
+
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
-using Microsoft.Extensions.DependencyInjection;
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
 var backUrl = new Uri(builder.Configuration["BackendUrl"]);
@@ -18,6 +23,8 @@ builder.RootComponents.Add<App>("#app");
 builder.RootComponents.Add<HeadOutlet>("head::after");
 
 builder.Services.AddBlazoredLocalStorage();
+// ✅ 2. Auth Handler (injects token automatically)
+builder.Services.AddTransient<AuthDelegatingHandler>();
 //loading configuration in a json file
 builder.Services.AddSingleton(builder.Configuration);
 builder.Configuration.AddJsonFile("appsettings.json", optional: true, reloadOnChange: true);
@@ -47,6 +54,9 @@ builder.Services.AddScoped<RendAgres>();
 builder.Services.AddScoped<ClieAppState>();
 builder.Services.AddScoped<SessionContextService>();
 builder.Services.AddScoped<SessionContextClient>();
+builder.Services.AddScoped<LookupService>();
+builder.Services.AddScoped<PendingChangesGuard>();
+builder.Services.AddSingleton<IMessageService, MessageService>();
 
 builder.Services.AddSingleton<LoadingService>();
 // Configure logging first
@@ -76,32 +86,56 @@ builder.Services.AddHttpClient("OFFLClient", client =>
     client.DefaultRequestHeaders.Add("X-Requested-With", "Fetch");
 });
 //ODATAClient
-builder.Services.AddScoped<IODataContextFactory, ODataContextFactory>();
+
+builder.Services.AddScoped<PendingChangesGuard>();
+// 🔥 1. HTTP CLIENT for parallel batch saves (ROOT base address)
+// Register named OData client
 builder.Services.AddHttpClient("ODataClient", client =>
 {
-    client.BaseAddress = new Uri("https://localhost:7095/odata");
-    // Add any default headers or auth here if needed
-});
-//pouch services 
-builder.Services.AddSingleton<PouchDbService>();
+    var backUrl = builder.Configuration["BackendUrl"];
+    if (!backUrl.EndsWith("/")) backUrl += "/";
+    backUrl += "odata/";   // ✅ Ensure /odata is part of the base address
+
+    client.BaseAddress = new Uri(backUrl);
+})
+.AddHttpMessageHandler<AuthDelegatingHandler>();
+// 🔥 2. OData Context Factory (loads token + creates context)
+builder.Services.AddScoped<IODataContextFactory, ODataContextFactory>();//ODataClient
+
+builder.Services.AddScoped<TblJsonRender>();
+builder.Services.AddScoped<LinkSerialiser>();
 
 builder.Services.AddHttpClient("DefaultClient", client =>
 {
     client.BaseAddress = new Uri(builder.HostEnvironment.BaseAddress);
     client.DefaultRequestHeaders.Add("Accept", "application/json");
 });
+// test odata client ✅ CORRECT
+builder.Services.AddHttpClient("ODaTestClient", client =>
+{
+    client.BaseAddress = new Uri("https://localhost:7095/");  // Root = /odata routes work
+});
+
+// Pouch services 
+builder.Services.AddSingleton<PouchDbService>();
+// Stock services
+builder.Services.AddScoped<ItemClientService>();
+builder.Services.AddScoped<StockClientService>();
+builder.Services.AddScoped<PurchaseClientService>();
+builder.Services.AddScoped<SaleClientService>();
 // Build the host
 var host = builder.Build();
 // Get webApi is online or not
 var localStorage = host.Services.GetRequiredService<ILocalStorageService>();
 var authProvider = host.Services.GetRequiredService<MyAuthStateProvider>();
-// Clear local storage and notify logout
-await localStorage.ClearAsync(); // or remove specific items
-await authProvider.NotifyUserLogout();
-// Run the application
+var reset = await localStorage.GetItemAsync<bool>("force-reset");
+if (reset)
+{
+    await localStorage.ClearAsync();
+    await authProvider.NotifyUserLogout();
+}
 await host.RunAsync();
-// Run the application
-await host.RunAsync();
+
 public class ApiSettings
 {
     public string BackendUrl { get; set; } = string.Empty;
@@ -111,6 +145,3 @@ public class ApiSettings
     public string ApiUrl22 { get; set; } = string.Empty;
     public string FrontendUrl22 { get; set; } = string.Empty;
 }
-
-
-

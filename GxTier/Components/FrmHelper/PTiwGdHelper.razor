@@ -1,7 +1,9 @@
 ﻿@using GxWapi.DaModels
 @using GxShared.Others
+@using GxTie.ClieModels
 
 <h3>PTiwGdHelper</h3>
+
 @if (Draft != null)
 {
     <div class="card">
@@ -64,7 +66,7 @@
             <FormField Label="Statut" IsVisible="@Visibility.GetValueOrDefault("Statut", true)">
                 <InputSelect @bind-Value="Draft!.Statut"
                              class="form-select"
-                             disabled="@(!isEditing || !CanEdit)">
+                             disabled="@(!isEditing)">
                     <option value="0">?choisir</option>
                     @foreach (var opt in GetOptions(11))
                     {
@@ -77,7 +79,7 @@
             <FormField Label="Relation" IsVisible="@Visibility.GetValueOrDefault("Relat", true)">
                 <InputSelect @bind-Value="Draft!.Relat"
                              class="form-select"
-                             disabled="@(!isEditing || !CanEdit)">
+                             disabled="@(!isEditing)">
                     <option value="0">?choisir</option>
                     @foreach (var opt in GetOptions(18))
                     {
@@ -89,7 +91,7 @@
             <FormField Label="Sexe" IsVisible="@Visibility.GetValueOrDefault("Sexe", true)">
                 <InputSelect @bind-Value="Draft!.Sexe"
                              class="form-select"
-                             disabled="@(!isEditing || !CanEdit)">
+                             disabled="@(!isEditing)">
                     <option value="0">?choisir</option>
                     @foreach (var opt in GetOptions(12))
                     {
@@ -102,7 +104,7 @@
             <FormField Label="Sit.Mat." IsVisible="@Visibility.GetValueOrDefault("Sitmat", true)">
                 <InputSelect @bind-Value="Draft!.Sitmat"
                              class="form-select"
-                             disabled="@(!isEditing || !CanEdit)">
+                             disabled="@(!isEditing)">
                     <option value="0">?choisir</option>
                     @foreach (var opt in GetOptions(13))
                     {
@@ -115,7 +117,7 @@
             <FormField Label="Fonction" IsVisible="@Visibility.GetValueOrDefault("Ifonc", true)">
                 <InputSelect @bind-Value="Draft!.Ifonc"
                              class="form-select"
-                             disabled="@(!isEditing || !CanEdit)">
+                             disabled="@(!isEditing)">
                     <option value="0">?choisir</option>
                     @foreach (var opt in GetOptions(14))
                     {
@@ -128,7 +130,7 @@
             <FormField Label="Grade" IsVisible="@Visibility.GetValueOrDefault("Igrad", true)">
                 <InputSelect @bind-Value="Draft!.Igrad"
                              class="form-select"
-                             disabled="@(!isEditing || !CanEdit)">
+                             disabled="@(!isEditing)">
                     <option value="0">?choisir</option>
                     @foreach (var opt in GetOptions(15))
                     {
@@ -202,7 +204,7 @@
             <FormField Label="Responsable" IsVisible="@Visibility.GetValueOrDefault("Respon", true)">
                 <InputSelect @bind-Value="Draft!.Respon"
                              class="form-select"
-                             disabled="@(!isEditing || !CanEdit)">
+                             disabled="@(!isEditing)">
                     <option value="0">?choisir</option>
                     @foreach (var opt in GetOptions(17))
                     {
@@ -215,7 +217,7 @@
             <FormField Label="Residence" IsVisible="@Visibility.GetValueOrDefault("Rpays", true)">
                 <InputSelect @bind-Value="Draft!.Rpays"
                              class="form-select"
-                             disabled="@( !isEditing || !CanEdit )">
+                             disabled="@(!isEditing)">
                     <option value="">?choisir</option>
                     @foreach (var opt in GetOptions(31))
                     {
@@ -228,7 +230,7 @@
             <FormField Label="Nationalite" IsVisible="@Visibility.GetValueOrDefault("Natio", true)">
                 <InputSelect @bind-Value="Draft!.Natio"
                              class="form-select"
-                             disabled="@( !isEditing || !CanEdit )">
+                             disabled="@(!isEditing)">
                     <option value="">?choisir</option>
                     @foreach (var opt in GetOptions(31))
                     {
@@ -241,7 +243,7 @@
             <FormField Label="P.Meth" IsVisible="@Visibility.GetValueOrDefault("Ipaid", true)">
                 <InputSelect @bind-Value="Draft!.Ipaid"
                              class="form-select"
-                             disabled="@(!isEditing || !CanEdit)">
+                             disabled="@(!isEditing)">
                     <option value="0">?choisir</option>
                     @foreach (var opt in GetOptions(17))
                     {
@@ -255,13 +257,14 @@
 
 @code {
     [Parameter] public Tiewel Draft { get; set; }
-    [Parameter] public string Mode { get; set; } = "View";
-    [Parameter] public bool CanEdit { get; set; } = true;
+    [Parameter] public GridMode GMode { get; set; } = GridMode.None;
+    [Parameter] public bool isEditing { get; set; } = false;
     [Parameter] public Dictionary<string, bool> Visibility { get; set; } = new();
 
     [Parameter] public List<Gptbl> TbItems { get; set; }
-
-    private bool isEditing => Mode == "Add" || Mode == "Edit";
+    // Identifiers
+    [Parameter] public string RenderKey { get; set; }
+    [Parameter] public Guid? EdRowguid { get; set; }
 
     private List<Gptbl> GetOptions(int pxcod)
     {

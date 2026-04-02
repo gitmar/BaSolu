@@ -1,13 +1,14 @@
 ﻿using System.Security.Claims;
 using GxWapi.DaModels;
+using GxShared.Others;
 using GxShared.Sess;
 
 namespace GxStk.ClieModels
 {
     public class MyShareVars()
     {
-        public bool isAuthenticated { get; set; }
-        public ClaimsPrincipal authUser { get; set; }
+        public bool isAuthenticated { get; set; } = false;
+        public ClaimsPrincipal? authUser { get; set; }
         //public int Idorg { get; set; } = 0;
         //public string Usrid { get; set; } = string.Empty;
         public int Ugpe { get; set; } = 0;
@@ -17,8 +18,8 @@ namespace GxStk.ClieModels
         public List<Gpvar> LsTabls { get; set; } = new();
         public List<Gpdivh> LsDivs { get; set; } = new();
         public List<Rubhie> LsHies { get; set; } = new();
-        public List<Gsglne> LsCols { get; set; } = new();
-        public List<Gsglne> TbElems { get; set; } = new();
+        //public List<Gsglne> LsCols { get; set; } = new();
+        public List<Gtvar> TbElems { get; set; } = new();
         public bool MainOptsOk { get; set; } = false;
         public List<Gsesio> LsSess { get; set; } = new();
         public Gxorga curOrga { get; set; } = new();
@@ -29,9 +30,9 @@ namespace GxStk.ClieModels
     }   
     public class MyMenuVars()
     {
-        public int Ugpe { get; set; }
-        public int Uexo { get; set; }
-        public int Usesio { get; set; }
-        public int Usite { get; set; }
+        public int Ugpe { get; set; } = 0;
+        public int Uexo { get; set; } = 0;
+        public int Usesio { get; set; } = 0;
+        public int Usite { get; set; } = 0;
     }
 }

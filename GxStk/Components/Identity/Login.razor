@@ -1,35 +1,34 @@
 ﻿@page "/login"
 
-@using GxStk.Services
-@using Blazored.LocalStorage
-@using GxShared.Sess
-@using GxShared.Identity
-@using GxShared.Others
-@using Newtonsoft.Json
-@using GxShared.Helpers
 @using System.Security.Claims
 @using System.Text
+@using Blazored.LocalStorage
+@using GxShared.Sess
+@using GxShared.Helpers;
+@using GxShared.Identity
+@using GxStk.Services
+@using Newtonsoft.Json
 
-@inject ILocalStorageService _localStorage
+@inject ILocalStorageService _localStorage  
 @inject NavigationManager _navManager
 @inject IServiceProvider _serviceProvider
-@inject HttpClientService _apiClient
+@* @inject HttpClientService _apiClient *@
 @inject IHttpClientFactory _httpClientFactory
-@inject HttpClientService _clieManager
 @inject SessionContextService _sessionContext
+@inject HttpClientService _clieManager
 @inject ClieAppState _appState
 
 <PageTitle>Login</PageTitle>
 
-@if (!string.IsNullOrEmpty(Imessage))
+@if (!string.IsNullOrEmpty(Jmessage))
 {
-    <div class="alert alert-danger">@Imessage</div>
+    <div class="alert alert-danger">@Jmessage</div>
 }
 @if (isLoading)
 {
     <div class="text-center">
         <Spinner Color="SpinnerColor.Primary" Size="SpinnerSize.Large" />
-        <p>Stock Loading...</p>
+        <p>Tiers Loading...</p>
     </div>
 }
 else
@@ -58,10 +57,12 @@ else
                     <span>Login</span>
                 }
             </button>
+
             @if (!string.IsNullOrEmpty(Error))
             {
                 <div class="alert alert-danger mt-3">@Error</div>
             }
+
             @* <button class="btn btn-primary" type="submit">Login</button> *@
         }
         else
@@ -77,7 +78,7 @@ else
     private MyAuthStateProvider _authProvider { get; set; }
 
     private LoginModel loginModel = new();
-    private string Imessage = "";
+    private string Jmessage = "";
 
     private bool isBusy = false;
     private string? Error;
@@ -94,6 +95,7 @@ else
         //verified connection
         try
         {
+            Console.WriteLine($"adresse : {_dftClient.BaseAddress.ToString()}");
             var response = await _dftClient.GetAsync("lgauth/health");
             _yaconn = response.IsSuccessStatusCode;
         }
@@ -115,15 +117,15 @@ else
         Error = null;
         isBusy = true;
         bool yaErrors = false;
-        Imessage = "";
+        Jmessage = "";
         if (string.IsNullOrEmpty(loginModel.UsernameOrEmail))
         {
-            Imessage = "Email ou UserName obligatoire";
+            Jmessage = "Email ou UserName obligatoire";
             yaErrors = true;
         }
         if (string.IsNullOrEmpty(loginModel.Password))
         {
-            Imessage = Imessage + " /Mot de passe obligatoire";
+            Jmessage = Jmessage + " /Mot de passe obligatoire";
             yaErrors = true;
         }
         if (yaErrors)
@@ -134,14 +136,15 @@ else
         }
         try
         {
+            //_appState.IsTieLoggedIn = false;
             loginModel.IsHelpLogin = false; //necessaire pour le login not admin
-            //loginModel.UsernameOrEmail = loginModel.Username;
+            //.UsernameOrEmail = loginModel.Username;
             //Console.WriteLine($"uname : {loginModel.Username} et {loginModel.Email}");
             var json = JsonConvert.SerializeObject(loginModel);
             var request = new HttpRequestMessage(HttpMethod.Post, "lgauth/login")
-            {
-                Content = new StringContent(json, Encoding.UTF8, "application/json")
-            };
+                {
+                    Content = new StringContent(json, Encoding.UTF8, "application/json")
+                };
 
             var response = await _dftClient.SendAsync(request);
             response.EnsureSuccessStatusCode();
@@ -152,8 +155,8 @@ else
             {
                 isBusy = false;
                 Error = "Login failed. Check credentials.";
+                Jmessage = Jmessage + " Invalid login response.";
                 isLoading = false;
-                Imessage = Imessage + " /Invalid login response.";
                 return;
             }
 
@@ -167,6 +170,7 @@ else
                 await _localStorage.SetItemAsync("blazToken", result.Atoken);
                 await _localStorage.SetItemAsync("blazRtoken", result.Rtoken);
                 await _localStorage.SetItemAsync("authToken", result.Atoken);
+
                 await _clieManager.SetAuthorizationHeaderAsync("AUTHClient");
                 var userbagResponse = await _clieManager.SendRequestAsync("AUTHClient", HttpMethod.Get, $"usercontext/userbag");
                 var userbag = JsonConvert.DeserializeObject<Userbag>(userbagResponse);
@@ -175,7 +179,7 @@ else
                     isBusy = false;
                     Error = "Login failed. Check credentials.";
                     isLoading = false;
-                    Imessage = Imessage + " /Failed to load user context.";
+                    Jmessage = Jmessage + " /Failed to load user context.";
                     return;
                 }
                 var identity = new ClaimsIdentity(claims, "jwt");
@@ -196,6 +200,7 @@ else
                     Console.WriteLine("PuzzleSyncService could not be resolved.");
                 }
                 _navManager.NavigateTo("/");
+                StateHasChanged();
             }
             Console.WriteLine("12.");
         }
@@ -203,7 +208,7 @@ else
         {
             Error = "Login failed. Check credentials.";
             isBusy = false;
-            Imessage = $"Login failed: {ex.Message}";
+            Jmessage = $"Login failed: {ex.Message}";
         }
         isLoading = false;
     }

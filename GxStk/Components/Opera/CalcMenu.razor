@@ -11,8 +11,6 @@
 @using GxStk.ClieModels
 @using GxStk.Services
 @using GxStk.Components.Opera.Calculs
-@using Gx.Components
-@using Gx.Components.Models
 @using GxWapi.DaModels
 @using Microsoft.OData.Client
 @using Newtonsoft.Json
@@ -23,6 +21,7 @@
 @inject IODataContextFactory _contextFactory
 @inject SessionContextService _sessionContext
 @inject RendAgres _rendAgres
+@inject PendingChangesGuard _guard
 
 @if (isLoading)
 {
@@ -36,104 +35,102 @@
 </div>
 @if (!isLoading)
 {
+    
+
     <div class="gx-screen-layout">
         <div class="container gx-parent-container" style="height: 100vh;">
             <div class="d-flex flex-column" style="height: 100%;">
                 <GxNavMenu BrandText="A24soft Gx-Solutions"
                            MenuItems="@MenuItems"
-                           YaGroup="false"
+                           YaGroup="true"
                            Groups="@Groupes"
                            MenuSelected="@_chxMenu"
                            MenuSelectedChanged="@SelMenu"
                            GroupSelected="@_chxGpe"
                            GroupSelectedChanged="@SelGpe"
                            OnBack="@NavigateBack" />
-                <!-- Top Menu -->
-                @* <div class="innermenu-container d-flex align-items-center justify-content-start">
-                    <!-- Brand -->
-                    <button class="navbar-brand text-white d-flex align-items-center me-4"
-                            style="height:44px;" @onclick="() => NavigateBack()">
-                        <i class="bi bi-grid-3x3-gap-fill me-2"></i>
-                        A24soft Gx-Solutions
-                    </button>
-
-                    <!-- Nav Items -->
-                    <ul class="menu nav nav-pills d-flex align-items-center">
-                        <li>
-                            @if (_invRoles.Count > 0)
+               
+                <!-- Top Menu Info -->
+                <div class="row mb-2">
+                    <div class="d-flex align-items-center gap-2">
+                        <label>Exercice:</label>
+                        <InputSelect id="exoId" @bind-Value="froMenu.Uexo">
+                            <option value="0">exo?</option>
+                            @foreach (var exo in EnsExos)
                             {
-                                <select class="gpet" id="Ugroupe" @onchange="OnGpeChanged">
-                                    @foreach (var gpe in LsGties)
-                                    {
-                                        <option value="@gpe.Elea">@gpe.Liba</option>
-                                    }
-                                </select>
+                                <option value="@exo.Id">@exo.Sref</option>
                             }
-                        </li>
-                        <li class="nav-item">
-                            <div @onclick="() => SelMenu(1)"
-                                 class="nav-link d-flex align-items-center @(_chxMenu == 1 ? "active" : "")">
-                                <i class="bi bi-table me-2"></i> Calcul
-                            </div>
-                        </li>
+                        </InputSelect>
 
-                        <li class="nav-item">
-                            <div @onclick="() => SelMenu(2)"
-                                 class="nav-link d-flex align-items-center @(_chxMenu == 2 ? "active" : "")">
-                                <i class="bi bi-tags me-2"></i> Validation
-                            </div>
-                        </li>
-                    </ul>
-                </div> *@
+                        <label>Session:</label>
+                        <InputSelect id="sesId" @bind-Value="froMenu.Usesio">
+                            <option value="0">session?</option>
+                            @foreach (var ses in EnsSess)
+                            {
+                                <option value="@ses.Id">@ses.Sref</option>
+                            }
+                        </InputSelect>
+                    </div>
+                </div>
 
-                <div class="row">
-                    <div class="col-md-12 input-group align-middle">
-                        <span class="text-uppercase text- text-success"><b>@strComp</b></span>
-                        &nbsp;&nbsp;
-                        <label>Exercice :</label>
+                <div class="row mb-2">
+                    <div class="d-flex align-items-center gap-2">
+                        <label>Programme :</label>
                         <div class="text-center">
-                            <InputSelect id="sesId" @bind-Value="froMenu.Uexo">
-                                <option value="0">exo?</option>
-                                @foreach (var oses in EnsExos)
+                            <InputSelect id="pgrId" @bind-Value="ImyProg">
+                                <option value="0">progr?</option>
+                                @foreach (var pgr in LsProgs)
                                 {
-                                    <option value="@oses.Id" @onclick="() => GetSelectedExos(oses)">@oses.Sref</option>
+                                    <option value="@pgr.Id">@pgr.Liba</option>
                                 }
                             </InputSelect>
                         </div>
-                        <label>Session : </label>
-                        <div class="text-center">
-                            <select id="sesId" @bind="froMenu.Usesio">
-                                <option value="0">session?</option>
-                                @foreach (var oses in EnsSess)
-                                {
-                                    <option value="@oses.Id" @onclick="() => GetSelectedSesio(oses)">@oses.Sref</option>
-                                }
-                            </select>
-                        </div>
 
-                        @if (!String.IsNullOrEmpty(MImessage))
-                        {
-                            <span class="bg-info bg-opacity-10" style="font-style:italic;color:red">&nbsp;--> @MImessage</span>
-                        }
+                        <label for="TypDiv">Service :</label>
+                        <div>
+                            <InputSelect id="TypDiv" @bind-Value="ImyDiv">
+                                <option value="0">Aucun</option>
+                                @foreach (var divo in LsDivs)
+                                {
+                                    <option value="@divo.Ihie">@divo.Abg-@divo.Liba</option>
+                                }
+                            </InputSelect>
+                        </div>
                     </div>
                 </div>
-                <div class="row">
-                    <label>==========</label>
-                </div>
 
+                    @if (!string.IsNullOrEmpty(Imessage))
+                    {
+                        <span class="bg-info bg-opacity-10 text-danger px-2" style="font-style: italic;">
+                            &nbsp;--> @Imessage
+                        </span>
+                    }
                 <!-- Main Content //a integer froMenu -->
                 @if (_chxMenu != 0 && curOrga != null && toChild != null && curODContext != null)
                 {
                     @if (_chxMenu == 1)
                     {
                         <CalcResLnes @ref="mygcalc"
+                               curOrga="@curOrga"
+                               @bind-NbChanges="_nbChanges"
+                               _guard="@_guard"
+                               toChild="@toChild"
+                               allEnable="@allEnable"
+                               curODContext="@curODContext">
+                                    <ChildContent>
+                                        @* <h2 class="child-box">Hello TABLES</h2> *@
+                                    </ChildContent>
+                        </CalcResLnes>
+
+                        @* <CalcResLnes @ref="mygcalc"
                                      curOrga="@curOrga"
                                      toChild="@toChild"
+                                     allEnable="@allEnable"
                                      curODContext="@curODContext">
                             <ChildContent>
-                                @* <h2 class="child-box">Hello GRILLES</h2> *@
+                                <h2 class="child-box">Hello GRILLES</h2>
                             </ChildContent>
-                        </CalcResLnes>
+                        </CalcResLnes> *@
                     }
                     else if (_chxMenu == 2)
                     {
@@ -147,7 +144,33 @@
             </div>
         </div>
     </div>
+    <div class="row mt-3">
+        <div class="col-12">
+            @if (_guard.HasPendingChanges())
+            {
+                <div class="alert alert-warning">
+                    <strong>@pendingCount changes pending across all tabs</strong>
+                </div>
+            }
+            <div class="d-flex gap-2 justify-content-end">
+                <Button Color="ButtonColor.Primary"
+                        @onclick="SaveAllAsync"
+                        Enabled="@_guard.HasPendingChanges()">
+                    Save All (@pendingCount changes)
+                </Button>
+                <Button Color="ButtonColor.Secondary"
+                        @onclick="CancelAllChanges">
+                    Cancel All Changes
+                </Button>
+            </div>
+        </div>
+    </div>
 }
+<ErrorBoundary>
+    <ErrorContent>
+        An unexpected error occured. Please try again later.
+    </ErrorContent>
+</ErrorBoundary>
 @code {
     private bool isLoading = true;
     public MyODataContext curODContext;
@@ -155,9 +178,42 @@
     public MyShareVars toChild = new();
     public MyMenuVars froMenu = new();
     private bool allEnable = false;
-    private string MImessage = "";
+    private string Imessage = "";
 
     private CalcResLnes mygcalc;
+    //public int ImyDiv = 0;
+    //public int ImyProg = 0;
+    private int _imyProg = 0;
+    public int ImyProg
+    {
+        get => _imyProg;
+        set
+        {
+            _imyProg = value;
+            var selected = LsProgs.FirstOrDefault(p => p.Id == value);
+            if (selected != null)
+            {
+                // fire-and-forget
+                _ = HandleSelectedProgAsync(selected);
+            }
+        }
+    }
+    private async Task HandleSelectedProgAsync(Gplan selected)
+    {
+        await GetSelectedProg(selected);
+    }
+    private int _imyDiv = 0;
+    public int ImyDiv
+    {
+        get => _imyDiv;
+        set
+        {
+            _imyDiv = value;
+            trierTiers(); // your existing method, adjust if it needs the selected Id
+        }
+    }
+
+    public List<Gplan> LsProgs = new();
 
     [Parameter]
     public RenderFragment Atributs { get; set; }
@@ -172,11 +228,10 @@
     public bool isAuthenticated = false;
 
     public Plngen curProg = new Plngen();
+    public List<Tiersp> EnsTiers { get; set; } = new();
+    public List<Plngen> EnsProgs { get; set; } = new();
+    public List<Tiersp> PreTiers { get; set; } = new();
 
-    public List<Tiersp> EnsTiers { get; set; }
-    public List<Plngen> EnsProgs { get; set; }
-
-    public int _GIdTie = 0;
     public string _strOrga = "", _curSigle = "", strmeta = "", strmeta2 = "";
     private int Ugpe = 0;
     private string gpeLiba = "";
@@ -202,6 +257,7 @@
 
     public List<Gpvar> LsVars = new();
     public List<Gplan> LsPlans = new();
+    public List<Gpdivh> LsDivs = new();
     //public List<Gplan> LsProgs = new List<Gplan>();
     public List<Gpvar> LsTabls = new();
     public List<Gpfixe> LsGties = new();
@@ -222,7 +278,23 @@
     private bool ContentLoaded = false;
 
     private bool isFilteringEnabled = false;
-
+    //Guard
+    private int pendingCount => _guard.HasPendingChanges() ?
+        curODContext.Context.Entities.Count(e => e.State != EntityStates.Unchanged) : 0;
+    
+    private async Task SaveAllAsync()
+    {
+        await _guard.FlushAsync();
+        StateHasChanged();
+    }
+    private async Task CancelAllChanges()
+    {
+        await _guard.CancelChangesAsync();
+        StateHasChanged();
+    }
+    //Guard
+    private int _nbChanges = 0;
+    private IDisposable? _locationHandler;
     protected override async Task OnInitializedAsync()
     {
         isLoading = true;
@@ -236,7 +308,7 @@
             return;
         }
         _usrBag = await _sessionContext.GetUserbagAsync();
-        _GIdTie = _usrBag.Usorga.Gdtie;
+        _gIdTie = _usrBag.Usorga.Gdtie;
         LsVars = _usrBag.Usorga.Uvars.ToList();
         LsFixes = _usrBag.Ufixes.ToList();
         LsPlans = _usrBag.Usorga.Uplns.ToList();
@@ -259,6 +331,12 @@
         //Console.WriteLine($"inv roles : {_invRoles.Count()}");
         _invRoles = await _rendAgres.LoadOrgaRoles();
         Ugpe = 1; //initial Cible
+        _guard.RegisterUnconfirmedPredicate<Actsaie>(e => e.Xadd1 == -1 || e.Xedt1 == -1 || e.Xdel1 == -1);
+        _guard.RegisterUnconfirmedPredicate<Actdet>(d => d.Xadd1 == -1 || d.Xedt1 == -1 || d.Xdel1 == -1);
+        _guard.RegisterUnconfirmedPredicate<Resdon>(e => e.Xadd1 == -1);
+        _guard.RegisterUnconfirmedPredicate<Resdet>(d => d.Xadd1 == -1);
+        _guard.RegisterUnconfirmedPredicate<Resbro>(d => d.Xadd1 == -1);
+        _nbChanges = _guard.GetPendingChangesCount();  // Initial value
         Console.WriteLine("Authentication ENTREE");
         await LoadSaieOrgaAsync();
         //pita = 5;
@@ -281,27 +359,44 @@
         try
         {
             curODContext = await _contextFactory.CreateAsync();
-            //var expand = "Tiersps($expand=Actsaies($expand=Actdets))";
-            var expand = "Tiersps," +
-                "Tiersps($expand=Actsaies($expand=Actdets))," +
-                "Tiersps($expand=Resdons($expand=Resdets))," +
-                "Tiersps($expand=Resbros)";
-            var dxorgas = await curODContext.LoadFilteredAsync<Gxorga>(expand: expand);
-            pisa = 3;
-            curOrga = dxorgas.FirstOrDefault();
-            if (curOrga == null)
-            {
-                Console.WriteLine("No organization found for the current user.");
-                return;
-            }
-            Console.WriteLine($"orga recu {curOrga.Raison}");
-            var expand2 = "Gsesios," + "Plngens," +
-                "Plngens($expand=Rubvars)," + //($expand=Rubfmts)
-                "Plngens($expand=Rubhies($expand=Rubpsts))";
-            var dxplns = await curODContext.LoadFilteredAsync<Gxorga>(expand: expand2);
+            _guard.AttachContext(curODContext);
+            
+            var expand1 =
+                "Tiersps($expand=Actsaies($expand=Actdets),Resdons($expand=Resdets),Resbros)";
+            await curODContext.LoadFilteredAsync<Gxorga>(expand: expand1);
+            var expand2 =
+                "Gsesios," +
+                "Plngens($expand=Rubvars,Rubhies($expand=Rubpsts))";
+            await curODContext.LoadFilteredAsync<Gxorga>(expand: expand2);
 
-            pisa = 3;
-            curOrga = dxorgas.FirstOrDefault();
+            curOrga = curODContext.Context.Entities
+                .Select(e => e.Entity)
+                .OfType<Gxorga>()
+                .SingleOrDefault(o => o.Idorg == _usrBag.Idorg);
+            
+            
+            //var expand = "Tiersps($expand=Actsaies($expand=Actdets))";
+            // // var expand = "Tiersps," +
+            // //     "Tiersps($expand=Actsaies($expand=Actdets))," +
+            // //     "Tiersps($expand=Resdons($expand=Resdets))," +
+            // //     "Tiersps($expand=Resbros)";
+            // // var dxorgas = await curODContext.LoadFilteredAsync<Gxorga>(expand: expand);
+            // // pisa = 3;
+            // // curOrga = dxorgas.FirstOrDefault();
+            // // if (curOrga == null)
+            // // {
+            // //     Console.WriteLine("No organization found for the current user.");
+            // //     return;
+            // // }
+            // // Console.WriteLine($"orga recu {curOrga.Raison}");
+            // // var expand2 = "Gsesios," + "Plngens," +
+            // //     "Plngens($expand=Rubvars)," + //($expand=Rubfmts)
+            // //     "Plngens($expand=Rubhies($expand=Rubpsts))";
+            // // var dxplns = await curODContext.LoadFilteredAsync<Gxorga>(expand: expand2);
+
+            // // pisa = 3;
+            // // curOrga = dxorgas.FirstOrDefault();
+
             if (curOrga == null)
             {
                 Console.WriteLine("No organization found for the current user.");
@@ -468,6 +563,7 @@
             Ugpe = fixno;
             toChild.Ugpe = Ugpe;
             gpeLiba = LsGties.Where(ut => ut.Elea == fixno).FirstOrDefault().Liba.ToUpperInvariant();
+            EnsTiers = curOrga.Tiersps.Where(t => t.Utyp == fixno).ToList();
             //if (_inTwels.Count() > 0) {
             //    _LsTiers = _inTwels.Where(ut => ut.Ttyp == Ugpe).ToList();
             //}
@@ -475,7 +571,7 @@
     }
     // private async Task SelMenu(int noM)
     // {
-    //     _chxMenu = noM;
+    //     chxMenu = noM;
     //     if (_chxMenu == 1) strComp = "Calculs";
     //     if (_chxMenu == 2) strComp = "Validations";
     //     allEnable = false;
@@ -534,6 +630,50 @@
             toChild.curSesio = EnsSess.Where(us => us.Id == froMenu.Usesio).FirstOrDefault();
             StateHasChanged();
         }
+    }
+    private async Task GetSelectedProg(Gplan bropln)
+    {
+        //Console.WriteLine($"ICI PROGRAMMES : {EnsProgs.Count()}");
+        curProg = new();
+        EnsRubrs = new();
+        if (EnsProgs.Any())
+        {
+            curProg = EnsProgs.Where(pl => pl.Id == bropln.Id).FirstOrDefault();
+            if (curProg != null)
+            {
+                //Console.WriteLine($"ICI prog Id : {curProg.Idorg}");
+                toChild.curProg = curProg;
+                EnsRubrs = curProg.Rubvars.ToList();
+                //_rubvarResolver = new RubvarResolver(curProg.Rubvars.ToList());
+                var curDivpln = curOrga.Plngens.Where(pl => pl.Id == curProg.Plsdiv).FirstOrDefault();
+                if (curDivpln != null)
+                {
+                    List<Gpdivh> inDivs = await _rendAgres.LoadOrgaPostes();
+                    LsDivs = inDivs?.Where(ud => ud.Ihie == curDivpln.Id && ud.Sidiv == 1).ToList();
+                }
+                else
+                {
+                    LsDivs = new();
+                }
+            }
+        }
+        //Console.WriteLine($"ICI RUBRIQUES : {curProg.Rubvars.Count()}");
+    }
+    private void trierTiers()
+    {
+        Console.WriteLine("TRIE Commence");
+        if (ImyDiv != 0)
+        {
+            Console.WriteLine($"TRIE Prepare : {EnsTiers.Count}");
+            Imessage = "Preparation de la liste en cours";
+            PreTiers = EnsTiers.Where(t => t.Ihie == ImyDiv)
+                .OrderByDescending(um => um.Smatri)
+                .ToList();
+            Imessage = "Liste des tiers prete";
+            Console.WriteLine($"TRIE termine : {PreTiers.Count}");
+            StateHasChanged();
+        }
+        Console.WriteLine("TRIE Fini");
     }
     private async Task SelMenu(int noM)
     {

@@ -1,7 +1,9 @@
 ﻿using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
+
 using Blazored.LocalStorage;
+
 using Newtonsoft.Json.Linq;
 
 namespace GxStk.Services
@@ -18,6 +20,7 @@ namespace GxStk.Services
             _localStorage = localStorage;
             _clients["AUTHClient"] = _httpClientFactory.CreateClient("AUTHClient");
             _clients["OFFLClient"] = _httpClientFactory.CreateClient("OFFLClient");
+            _clients["ODataClient"] = _httpClientFactory.CreateClient("ODataClient");
             // Add others as needed
 
         }
