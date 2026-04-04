@@ -23,40 +23,78 @@ namespace GxStk.Services
     }
     public class StockClientService
     {
-        private readonly MyODataContext _context;
-        public StockClientService(MyODataContext context)
+        private readonly HttpClient _http;
+
+        public StockClientService(HttpClient http)
         {
-            _context = context;
+            _http = http;
         }
-        public async Task AddStockAsync(int itemId, int warehouseId, decimal qty, decimal cost)
+        public async Task AddStock(int itemId, int warehouseId, decimal quantity, decimal unitCost, int? batchId)
         {
-            var uri = new Uri($"Items({itemId})/AddStock", UriKind.Relative);
+            var response = await _http.PostAsJsonAsync(
+                $"odata/Stkita({itemId})/AddStock",
+                new { warehouseId, quantity, unitCost, batchId });
 
-            var parameters = new Dictionary<string, object>
-        {
-            { "WarehouseId", warehouseId },
-            { "Quantity", qty },
-            { "UnitCost", cost },
-            { "BatchId", null }
-        };
-
-            //await _context.Context.ExecuteAsync(uri, "POST", parameters);
+            response.EnsureSuccessStatusCode();
         }
 
-        public async Task RemoveStockAsync(int itemId, int warehouseId, decimal qty, decimal price)
+        public async Task AdjustStockBatch(AdjustmentRequestDto request)
         {
-            var uri = new Uri($"Items({itemId})/RemoveStock", UriKind.Relative);
+            var response = await _http.PostAsJsonAsync(
+                "odata/Stkita/AdjustStockBatch",
+                new { request });
 
-            var parameters = new Dictionary<string, object>
-        {
-            { "WarehouseId", warehouseId },
-            { "Quantity", qty },
-            { "UnitCost", price },
-            { "BatchId", null }
-        };
-
-            //await _context.ExecuteQueryAsync(uri, "POST", parameters);
+            response.EnsureSuccessStatusCode();
         }
+
+        public async Task CreateSale(int clientId, List<CreateSaleLineDto> lines)
+        {
+            var response = await _http.PostAsJsonAsync(
+                "odata/Stkita/CreateSale",
+                new { clientId, lines });
+
+            response.EnsureSuccessStatusCode();
+        }
+
+        public async Task AddItemEntry(ItemEntryLineDto line)
+        {
+            await _http.PostAsJsonAsync(
+                $"odata/Stkita({line.ItemId})/AddStock",
+                new
+                {
+                    warehouseId = line.WarehouseId,
+                    quantity = line.Quantity,
+                    unitCost = line.UnitCost,
+                    batchId = line.BatchId
+                });
+        }
+        public async Task CreatePurchase(ItemPurchaseRequestDto request)
+        {
+            await _http.PostAsJsonAsync(
+                "odata/Stkita/CreatePurchase", // optional endpoint if you implement purchase
+                request);
+        }
+        public async Task TransferStock(ItemTransferLineDto line)
+        {
+            await _http.PostAsJsonAsync(
+                $"odata/Stkita({line.ItemId})/TransferStock",
+                new
+                {
+                    fromWarehouseId = line.FromWarehouseId,
+                    toWarehouseId = line.ToWarehouseId,
+                    quantity = line.Quantity,
+                    batchId = line.BatchId,
+                    transferType = line.TransferType
+                });
+        }
+        public async Task<List<Stkitum>> GetItemsAsync()
+            => await _http.GetFromJsonAsync<List<Stkitum>>("odata/Stkita");
+
+        public async Task<List<Gsloca>> GetWarehousesAsync()
+            => await _http.GetFromJsonAsync<List<Gsloca>>("odata/Gslocas");
+
+        public async Task<List<Tiersp>> GetSuppliersAsync()
+            => await _http.GetFromJsonAsync<List<Tiersp>>("odata/Tiersps");
     }
     public class PurchaseClientService
     {
@@ -93,3 +131,40 @@ namespace GxStk.Services
         }
     }
 }
+//public class StockClientService
+//{
+//    private readonly MyODataContext _context;
+//    public StockClientService(MyODataContext context)
+//    {
+//        _context = context;
+//    }
+//    public async Task AddStockAsync(int itemId, int warehouseId, decimal qty, decimal cost)
+//    {
+//        var uri = new Uri($"Items({itemId})/AddStock", UriKind.Relative);
+
+//        var parameters = new Dictionary<string, object>
+//    {
+//        { "WarehouseId", warehouseId },
+//        { "Quantity", qty },
+//        { "UnitCost", cost },
+//        { "BatchId", null }
+//    };
+
+//        //await _context.Context.ExecuteAsync(uri, "POST", parameters);
+//    }
+
+//    public async Task RemoveStockAsync(int itemId, int warehouseId, decimal qty, decimal price)
+//    {
+//        var uri = new Uri($"Items({itemId})/RemoveStock", UriKind.Relative);
+
+//        var parameters = new Dictionary<string, object>
+//    {
+//        { "WarehouseId", warehouseId },
+//        { "Quantity", qty },
+//        { "UnitCost", price },
+//        { "BatchId", null }
+//    };
+
+//        //await _context.ExecuteQueryAsync(uri, "POST", parameters);
+//    }
+//}

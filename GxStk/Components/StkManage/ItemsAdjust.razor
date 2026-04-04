@@ -1,0 +1,66 @@
+﻿@page "/items-adjustment"
+@using GxShared.StkDtos
+@using GxStk.Services
+@using GxWapi.DaModels
+
+@inject StockClientService _stkService
+
+<h3>Stock Adjustment</h3>
+
+<!-- Reason -->
+<div class="mb-2">
+    <label>Reason</label>
+    <InputText class="form-control" @bind-Value="_adjustRequest.Reason" />
+</div>
+
+<!-- Add Line Button -->
+<button class="btn btn-primary mb-2" @onclick="AddLine">Add Line</button>
+
+<!-- Lines -->
+@foreach (var line in _adjustRequest.Lines)
+{
+    <div class="border p-2 mb-2">
+
+        <InputNumber placeholder="ItemId" @bind-Value="line.ItemId" />
+        <InputNumber placeholder="Location" @bind-Value="line.LocationId" />
+        <InputNumber placeholder="Qty (+/-)" @bind-Value="line.QuantityDiff" />
+        <InputNumber placeholder="Cost" @bind-Value="line.UnitCost" />
+
+        <button class="btn btn-danger btn-sm" @onclick="() => RemoveLine(line)">X</button>
+    </div>
+}
+
+<!-- Submit -->
+<button class="btn btn-success" @onclick="Submit">Submit Adjustment</button>>
+
+@code {
+    private AdjustmentRequestDto _adjustRequest = new();
+
+    protected override void OnInitialized()
+    {
+        // Start with one line
+        _adjustRequest.Lines.Add(new AdjustmentLineDto());
+    }
+
+    private void AddLine()
+    {
+        _adjustRequest.Lines.Add(new AdjustmentLineDto());
+    }
+
+    private void RemoveLine(AdjustmentLineDto line)
+    {
+        _adjustRequest.Lines.Remove(line);
+    }
+
+    private async Task Submit()
+    {
+        if (!_adjustRequest.Lines.Any())
+            return;
+
+        await _stkService.AdjustStockBatch(_adjustRequest);
+
+        // Reset form
+        _adjustRequest = new AdjustmentRequestDto();
+        _adjustRequest.Lines.Add(new AdjustmentLineDto());
+    }
+}

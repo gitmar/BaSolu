@@ -1,0 +1,108 @@
+﻿@page "/items-transfer"
+
+@using GxWapi.DaModels
+@using GxStk.Services
+@using GxShared.StkDtos
+
+@inject StockClientService _stkService
+
+<h3>Items Transfer</h3>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Item</th>
+            <th>From Warehouse</th>
+            <th>To Warehouse</th>
+            <th>Quantity</th>
+            <th>Unit Cost</th>
+            <th>Batch</th>
+            <th>Transfer Type</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var line in TransferRequest.Lines)
+        {
+            <tr>
+                <td>
+                    <InputSelect @bind-Value="line.ItemId">
+                        @foreach (var item in Items)
+                        {
+                            <option value="@item.Id">@item.Nom</option>
+                        }
+                    </InputSelect>
+                </td>
+                <td>
+                    <InputSelect @bind-Value="line.FromWarehouseId">
+                        @foreach (var wh in Warehouses)
+                        {
+                            <option value="@wh.Id">@wh.Liba</option>
+                        }
+                    </InputSelect>
+                </td>
+                <td>
+                    <InputSelect @bind-Value="line.ToWarehouseId">
+                        @foreach (var wh in Warehouses)
+                        {
+                            <option value="@wh.Id">@wh.Liba</option>
+                        }
+                    </InputSelect>
+                </td>
+                <td><InputNumber @bind-Value="line.Quantity" /></td>
+                <td><InputNumber @bind-Value="line.UnitCost" /></td>
+                <td><InputNumber @bind-Value="line.BatchId" /></td>
+                <td>
+                    <InputSelect @bind-Value="line.TransferType">
+                        <option value="1">Intra</option>
+                        <option value="2">Inter</option>
+                    </InputSelect>
+                </td>
+                <td>
+                    <button class="btn btn-danger btn-sm" @onclick="() => RemoveLine(line)">X</button>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<button class="btn btn-secondary" @onclick="AddLine">Add Line</button>
+<button class="btn btn-primary" @onclick="SubmitTransfer">Submit Transfer</button>
+
+@code {
+    private ItemTransferRequestDto TransferRequest = new();
+    private List<Stkitum> Items = new();
+    private List<Gsloca> Warehouses = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        Items = await _stkService.GetItemsAsync();
+        Warehouses = await _stkService.GetWarehousesAsync();
+        AddLine(); // start with one line
+    }
+
+    private void AddLine() => TransferRequest.Lines.Add(new ItemTransferLineDto());
+
+    private void RemoveLine(ItemTransferLineDto line) => TransferRequest.Lines.Remove(line);
+
+    private async Task SubmitTransfer()
+    {
+        foreach (var line in TransferRequest.Lines)
+        {
+            if (line.Quantity <= 0)
+            {
+                // simple validation
+                throw new InvalidOperationException("Quantity must be positive");
+            }
+            if (line.FromWarehouseId == line.ToWarehouseId)
+            {
+                throw new InvalidOperationException("Source and destination must differ");
+            }
+
+            await _stkService.TransferStock(line);
+        }
+
+        TransferRequest = new ItemTransferRequestDto();
+        AddLine();
+    }
+}

@@ -1,0 +1,94 @@
+﻿@page "/items-purchase"
+
+@using GxWapi.DaModels
+@using GxStk.Services
+@using GxShared.StkDtos
+
+@inject StockClientService _stkService
+
+<h3>Items Purchase</h3>
+
+<div class="mb-2">
+    <label>Supplier</label>
+    <InputSelect @bind-Value="Purchase.SupplierId">
+        @foreach(var s in Suppliers)
+        {
+            <option value="@s.Id">@s.Nom</option>
+        }
+    </InputSelect>
+</div>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Item</th>
+            <th>Warehouse</th>
+            <th>Quantity</th>
+            <th>Unit Cost</th>
+            <th>Batch</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach(var line in Purchase.Lines)
+        {
+            <tr>
+                <td>
+                    <InputSelect @bind-Value="line.ItemId">
+                        @foreach(var item in Items)
+                        {
+                            <option value="@item.Id">@item.Nom</option>
+                        }
+                    </InputSelect>
+                </td>
+                <td>
+                    <InputSelect @bind-Value="line.WarehouseId">
+                        @foreach(var wh in Warehouses)
+                        {
+                            <option value="@wh.Id">@wh.Liba</option>
+                        }
+                    </InputSelect>
+                </td>
+                <td><InputNumber @bind-Value="line.Quantity" /></td>
+                <td><InputNumber @bind-Value="line.UnitCost" /></td>
+                <td><InputNumber @bind-Value="line.BatchId" /></td>
+                <td>
+                    <button class="btn btn-danger btn-sm" @onclick="() => RemoveLine(line)">X</button>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<button class="btn btn-secondary" @onclick="AddLine">Add Line</button>
+<button class="btn btn-primary" @onclick="SubmitPurchase">Submit Purchase</button>
+
+@code {
+    private ItemPurchaseRequestDto Purchase = new();
+    private List<Stkitum> Items = new();
+    private List<Gsloca> Warehouses = new();
+    private List<Tiersp> Suppliers = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        Items = await _stkService.GetItemsAsync();
+        Warehouses = await _stkService.GetWarehousesAsync();
+        Suppliers = await _stkService.GetSuppliersAsync();
+    }
+
+    private void AddLine()
+    {
+        Purchase.Lines.Add(new ItemEntryLineDto());
+    }
+
+    private void RemoveLine(ItemEntryLineDto line)
+    {
+        Purchase.Lines.Remove(line);
+    }
+
+    private async Task SubmitPurchase()
+    {
+        await _stkService.CreatePurchase(Purchase);
+        Purchase = new ItemPurchaseRequestDto();
+    }
+}

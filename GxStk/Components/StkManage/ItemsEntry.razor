@@ -1,0 +1,60 @@
+﻿@page "/items-entry"
+
+@using GxWapi.DaModels
+@using GxStk.Services
+@using GxShared.StkDtos 
+
+@inject StockClientService _stkService
+
+<h3>Items Entry</h3>
+
+<div class="mb-2">
+    <label>Item</label>
+    <InputSelect @bind-Value="Model.ItemId">
+        @foreach (var item in Items)
+        {
+            <option value="@item.Id">@item.Nom</option>
+        }
+    </InputSelect>
+</div>
+
+<div class="mb-2">
+    <label>Warehouse</label>
+    <InputSelect @bind-Value="Model.WarehouseId">
+        @foreach (var wh in Warehouses)
+        {
+            <option value="@wh.Id">@wh.Liba</option>
+        }
+    </InputSelect>
+</div>
+
+<div class="mb-2">
+    <label>Quantity</label>
+    <InputNumber @bind-Value="Model.Quantity" />
+</div>
+
+<div class="mb-2">
+    <label>Unit Cost</label>
+    <InputNumber @bind-Value="Model.UnitCost" />
+</div>
+
+<button class="btn btn-primary" @onclick="SubmitEntry">Submit Entry</button>
+
+@code {
+    private ItemEntryLineDto Model = new();
+    private List<Stkitum> Items = new();
+    private List<Gsloca> Warehouses = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        // Load items
+        Items = await _stkService.GetItemsAsync();
+        Warehouses = await _stkService.GetWarehousesAsync();
+    }
+
+    private async Task SubmitEntry()
+    {
+        await _stkService.AddItemEntry(Model);
+        Model = new ItemEntryLineDto(); // reset
+    }
+}
