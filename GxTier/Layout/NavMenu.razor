@@ -6,8 +6,9 @@
 @inject NavigationManager _navManager
 
 <div class="top-row mb-0 navbar navbar-dark bg-success shadow-sm bg-opacity-25 mt-0 navbar-slim">
-    <a class="navbar-brand text-white fw-bold" href="">
-        <i class="bi bi-gear-fill me-1"></i> Gx-Solutions
+    <a class="navbar-brand text-white fw-bold d-flex align-items-center gap-1" href="">
+        <i class="bi bi-gear-fill"></i>
+        <span>Gx-Solutions</span>
     </a>
     <button class="navbar-toggler btn btn-sm" type="button" @onclick="ToggleNavMenu">
         <span class="navbar-toggler-icon"></span>
@@ -19,7 +20,8 @@
 
         <!-- HOME -->
         <NavLink class="nav-link nav-main text-light small" href="" Match="NavLinkMatch.All">
-            <i class="bi bi-house-door-fill me-2"></i> Home
+            <i class="bi bi-house-door-fill nav-icon"></i>
+            <span class="nav-text" title="Home">Home</span>
         </NavLink>
 
         <AuthorizeView>
@@ -27,26 +29,35 @@
 
                 <!-- RHUMAINES -->
                 <NavLink class="nav-link nav-main text-light small" @onclick="ToggleSubManag">
-                    <i class="bi bi-people-fill me-2"></i> Rhumaines
+                    <i class="bi bi-people nav-icon"></i>
+
+                    <span class="nav-text d-flex align-items-center gap-1">
+                        Rhumaines
+                        <i class="bi @(isSubManagVisible ? "bi-chevron-up" : "bi-chevron-down") nav-chevron"></i>
+                    </span>
                 </NavLink>
 
                 <div class="submenu @(isSubManagVisible ? "open" : "")">
                     <nav class="nav flex-column">
 
                         <NavLink class="nav-link nav-sub text-light small" href="enrolmenu">
-                            <i class="bi bi-person-plus-fill me-2"></i> Enrollement
+                            <i class="bi bi-person-plus nav-icon"></i>
+                            <span class="nav-text" title="Enrollement">Enrollement</span>
                         </NavLink>
 
                         <NavLink class="nav-link nav-sub text-light small" href="invoper">
-                            <i class="bi bi-person-plus-fill me-2"></i> Visiteurs
+                            <i class="bi bi-person nav-icon"></i>
+                            <span class="nav-text" title="Visiteurs">Visiteurs</span>
                         </NavLink>
 
                         <NavLink class="nav-link nav-sub text-light small" href="carrimenu">
-                            <i class="bi bi-person-lines-fill me-2"></i> Carrière
+                            <i class="bi bi-person-lines-fill nav-icon"></i>
+                            <span class="nav-text" title="Carrière">Carrière</span>
                         </NavLink>
 
                         <NavLink class="nav-link nav-sub text-light small" href="subitem3">
-                            <i class="bi bi-file-earmark-text-fill me-2"></i> Editions
+                            <i class="bi bi-file-earmark-text nav-icon"></i>
+                            <span class="nav-text" title="Editions">Editions</span>
                         </NavLink>
 
                     </nav>
@@ -54,116 +65,122 @@
 
                 <!-- OPERATIONS -->
                 <NavLink class="nav-link nav-main text-light small" @onclick="ToggleSubOper">
-                    <i class="bi bi-gear-fill me-2"></i> Operations
+                    <i class="bi bi-gear nav-icon"></i>
+
+                    <span class="nav-text d-flex align-items-center gap-1">
+                        Operations
+                        <i class="bi @(isSubOperVisible ? "bi-chevron-up" : "bi-chevron-down") nav-chevron"></i>
+                    </span>
                 </NavLink>
 
                 <div class="submenu @(isSubOperVisible ? "open" : "")">
                     <nav class="nav flex-column">
 
                         <NavLink class="nav-link nav-sub text-light small" href="saieactlnes">
-                            <i class="bi bi-ui-checks-grid me-2"></i> Saisies
+                            <i class="bi bi-ui-checks-grid nav-icon"></i>
+                            <span class="nav-text" title="Saisies">Saisies</span>
                         </NavLink>
 
                         <NavLink class="nav-link nav-sub text-light small" href="calcreslnes">
-                            <i class="bi bi-calculator-fill me-2"></i> Calculs
+                            <i class="bi bi-calculator nav-icon"></i>
+                            <span class="nav-text" title="Calculs">Calculs</span>
+                        </NavLink>
+
+                        <NavLink class="nav-link nav-sub text-light small" href="offlinemanager">
+                            <i class="bi bi-calculator nav-icon"></i>
+                            <span class="nav-text" title="Calculs">Offline</span>
                         </NavLink>
 
                         <NavLink class="nav-link nav-sub text-light small" href="subitem3">
-                            <i class="bi bi-printer-fill me-2"></i> Editions
+                            <i class="bi bi-printer nav-icon"></i>
+                            <span class="nav-text" title="Editions">Editions</span>
                         </NavLink>
 
                     </nav>
                 </div>
-                <!-- Analyses -->
-                <NavLink class="nav-link nav-main text-light" href="about">
-                    <i class="bi bi-bar-chart-line-fill me-2"></i> Analyses
+
+                <!-- ANALYSES -->
+                <NavLink class="nav-link nav-main text-light small" href="about">
+                    <i class="bi bi-bar-chart-line nav-icon"></i>
+                    <span class="nav-text" title="Analyses">Analyses</span>
                 </NavLink>
 
                 <!-- SUPPORT -->
                 <NavLink class="nav-link nav-main text-light small" href="about">
-                    <i class="bi bi-graph-up-arrow me-2"></i> Support
+                    <i class="bi bi-life-preserver nav-icon"></i>
+                    <span class="nav-text" title="Support">Support</span>
                 </NavLink>
 
             </Authorized>
         </AuthorizeView>
 
-        <!-- TEST MAIL -->
-        @* <NavLink class="nav-link nav-main text-light small" href="testmail">
-            <i class="bi bi-calendar3 me-2"></i> Test mail
-        </NavLink> *@
-
-        <!-- TEST SELECTED -->
-        @* <NavLink class="nav-link nav-main text-light small" href="testselected">
-            <i class="bi bi-calendar3 me-2"></i> Test Selected
-        </NavLink> *@
-
         <!-- AGENDAS -->
         <NavLink class="nav-link nav-main text-light small" href="about">
-            <i class="bi bi-calendar3 me-2"></i> Agendas
+            <i class="bi bi-calendar3 nav-icon"></i>
+            <span class="nav-text" title="Agendas">Agendas</span>
         </NavLink>
 
         <!-- ABOUT -->
         <NavLink class="nav-link nav-main text-light small" href="about">
-            <i class="bi bi-info-circle-fill me-2"></i> About
+            <i class="bi bi-info-circle nav-icon"></i>
+            <span class="nav-text" title="About">About</span>
         </NavLink>
 
     </nav>
 </div>
 
-
 <style>
-    .top-row.navbar {
-        padding-left: 0 !important;
-        padding-right: 0 !important;
-        --bs-navbar-padding-y: 0.25rem; /* reduce vertical padding */
+    .nav-link {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        line-height: 1.2;
+        flex-wrap: nowrap;
     }
 
-    .top-row .navbar-brand {
-        margin-left: 0 !important;
-        padding-left: 0 !important;
-        font-size: 0.9rem; /* smaller text */
-        line-height: 1.2; /* tighter line spacing */
+    /* ICON COLUMN */
+    .nav-icon {
+        width: 22px;
+        min-width: 22px;
+        text-align: center;
+        font-size: 1rem;
+        flex-shrink: 0;
     }
-    /* ========== SUBMENU ANIMATION ========== */
+
+    /* TEXT */
+    .nav-text {
+        flex: 1;
+        min-width: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    /* CHEVRON */
+    .nav-chevron {
+        font-size: 0.7rem;
+        opacity: 0.7;
+        flex-shrink: 0;
+    }
+
+    /* SUBMENU */
     .submenu {
         max-height: 0;
         overflow: hidden;
-        opacity: 0;
-        transition: max-height 0.35s ease-out, opacity 0.25s ease-out, padding-left 0.3s ease-out;
-        padding-left: 0rem;
+        transition: max-height 0.25s ease;
+        margin-left: 10px;
+        padding-left: 1rem;
+        border-left: 1px solid rgba(255,255,255,0.1);
     }
 
-        /* When open, expand submenu */
         .submenu.open {
-            max-height: 500px; /* Enough for many items */
-            opacity: 1;
-            padding-left: 0.5rem;
+            max-height: 500px;
         }
 
-    /* Style submenu links */
+    /* SUB ITEMS */
     .nav-sub {
-        padding-left: 1.5rem !important;
-        transition: padding-left 0.25s ease;
-    }
-
-        /* Hover effect on submenu items */
-        .nav-sub:hover {
-            padding-left: 1.7rem !important;
-            background-color: rgba(255, 255, 255, 0.08);
-            border-radius: 4px;
-        }
-
-    /* ========== ARROW ANIMATION (optional) ========== */
-    /* Place an arrow icon inside main menu items if needed */
-    .nav-main .arrow {
-        transition: transform 0.3s ease;
-        font-size: 0.8rem;
-    }
-
-    /* Rotate arrow when submenu is open */
-    .submenu.open ~ .nav-main .arrow,
-    .nav-main.open .arrow {
-        transform: rotate(90deg);
+        font-size: 0.85rem;
+        opacity: 0.9;
     }
 </style>
 

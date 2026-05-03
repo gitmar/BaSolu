@@ -1,0 +1,906 @@
+﻿@page "/saiemenu"
+@inherits LayoutComponentBase
+@layout FreeLayout
+
+@using System.Security.Claims
+@using BlazorBootstrap
+@using Blazored.LocalStorage
+@using GxShared.Formulas.ForaModels
+@using GxShared.Sess
+@using GxShared.Others
+@using GxShared.GxDtos
+@using GxShared.Interfaces
+@using GxTie.ClieModels
+@using GxTie.Services
+@using GxTie.StaticHelpers
+@using GxTie.Components.Opera.Saisies
+@using Simple.OData.Client
+@using Newtonsoft.Json
+@using GxTie.Components.Paccu.Inscr
+@using GxTie.Components.Paccu.Invita
+@using GxTie.Components.Paccu.Valida
+
+@inject NavigationManager _navmanager
+@inject ILocalStorageService _localStorage
+@inject HttpClientService _cliemanager
+@inject IODataClient _MyODaClient
+@inject SessionContextService _sessionScontext
+@inject RendAgres _rendAgres
+@inject IPendingChangesGuard _guard
+@inject IMessageService _messageService
+
+@if (isLoading)
+{
+    <div class="text-center">
+        <Spinner Color="SpinnerColor.Primary" Size="SpinnerSize.Large" />
+        <p>OPERA/SAISIE Loading...</p>
+    </div>
+}
+<div>
+    @* test : @froMenu.Usite *@
+</div>
+
+@if (!isLoading)
+{
+    <!-- Main Layout -->
+    <div class="gx-screen-layout">
+        <div class="container gx-parent-container" style="height: 100vh;">
+            <div class="d-flex flex-column" style="height: 100%;">
+                <!-- Top Navigation Menu -->
+                <GxNavMenu BrandText="A24soft Gx-Solutions"
+                           MenuItems="@MenuItems"
+                           YaGroup="true"
+                           Groups="@Groupes"
+                           MenuSelected="@_chxMenu"
+                           MenuSelectedChanged="@SelMenu"
+                           GroupSelected="@_chxGpe"
+                           GroupSelectedChanged="@SelGpe"
+                           OnBack="@NavigateBack" />
+                <!-- Top Menu Info -->
+                <div class="row mb-2">
+                    <div class="d-flex align-items-center gap-2">
+                        <label>Exercice:</label>
+                        <InputSelect id="exoId" @bind-Value="froMenu.Uexo">
+                            <option value="0">exo?</option>
+                            @foreach (var exo in EnsExos)
+                            {
+                                <option value="@exo.Id">@exo.Sref</option>
+                            }
+                        </InputSelect>
+                        <label>Session:</label>
+                        <InputSelect id="sesId" @bind-Value="froMenu.Usesio">
+                            <option value="0">session?</option>
+                            @foreach (var ses in EnsSess)
+                            {
+                                <option value="@ses.Id">@ses.Sref</option>
+                            }
+                        </InputSelect>
+                        <InputSelect id="optId" @bind-Value="ImyOrient">
+                            <option value="0">aucun</option>
+                            @foreach (var uf in LsFixes.Where(xf => xf.Gvars == 33 && xf.Itb == 7 && xf.Gp1 == 4))
+                            {
+                                <option value="@uf.Elea" @onclick="() => GetSelectedOption(uf)">par @uf.Liba</option>
+                            }
+                        </InputSelect>
+                    </div>
+                </div>
+                <div class="row mb-2">
+                    <div class="d-flex align-items-center gap-2">
+                        <label>Programme :</label>
+                        <div class="text-center">
+                            <InputSelect id="pgrId" @bind-Value="ImyProg">
+                                <option value="0">progr?</option>
+                                @foreach (var pgr in LsProgs)
+                                {
+                                    <option value="@pgr.Id" @onclick="() => GetSelectedProg(pgr)">@pgr.Liba</option>
+                                }
+                            </InputSelect>
+                        </div>
+                        <label for="TypDiv">Service :</label>
+                        <div>
+                            <InputSelect id="TypDiv" @bind-Value="ImyDiv">
+                                <option value="0">Aucun</option>
+                                @foreach (var divo in LsDivs)
+                                {
+                                    <option value="@divo.Ihie" @onclick="@trierTiers">@divo.Abg-@divo.Liba</option>
+                                }
+                            </InputSelect>
+                        </div>
+
+                    </div>
+                        @if (!string.IsNullOrEmpty(Imessage))
+                        {
+                            <span class="bg-info bg-opacity-10 text-danger px-2" style="font-style: italic;">
+                                &nbsp;--> @Imessage
+                            </span>
+                        }
+                </div>
+
+                <!-- Main Content Section -->
+                <div class="flex-fill overflow-auto">
+                    @if (_chxMenu != 0 && curOrga != null && toChild != null)
+                    {
+                        @switch (_chxMenu)
+                        {
+                            case 1:
+                                <SaieActLnes @ref="mygsaie"
+                                    curOrga="@curOrga"
+                                    @bind-NbChanges="_nbChanges"
+                                    _guard="@_guard"
+                                    toChild="@toChild"
+                                    ImyDiv="@ImyDiv"
+                                    ImyOrient="@ImyOrient"
+                                    PreTiers="@PreTiers"
+                                    _InODaClient="@_MyODaClient">
+                                        <ChildContent>
+                                            @* <h2 class="child-box">Hello TABLES</h2> *@
+                                        </ChildContent>
+                                </SaieActLnes>
+                                @* <SaieActLnes @ref="mygsaie"
+                                             curOrga="@curOrga"
+                                             toChild="@toChild"
+                                             allEnable="@allEnable"
+                                             curODContext="@_MyODaClient">
+                                    <ChildContent>
+                                        <h2 class="child-box">Hello GRILLES</h2>
+                                    </ChildContent>
+                                </SaieActLnes> *@
+                                break;
+
+                            case 2:
+                                @* OrdaLoad component placeholder *@
+                                @* Uncomment and implement as needed *@
+                                @* 
+                                <OrdaLoad>
+                                    <ChildContent>
+                                        <h2 class="child-box">Hello VALIDATIONS</h2>
+                                    </ChildContent>
+                                </OrdaLoad> 
+                                *@
+                                break;
+
+                            case 5 when EnsTiers.Any():
+                                @* EdtSaie11 component placeholder *@
+                                @*
+                                <EdtSaie11 @ref="gedt11"
+                                           curOrga="@curOrga"
+                                           toChild="@toChild"
+                                           curODContext="@_MyODaClient"
+                                           enstiers="@EnsTiers">
+                                    <ChildContent>
+                                        <h2 class="child-box">Liste du Personnel</h2>
+                                    </ChildContent>
+                                </EdtSaie11>
+                                *@
+                                break;
+                        }
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+     <div class="row mt-3">
+            <div class="col-12">
+                @if (_guard.HasPendingChanges())
+                {
+                    <div class="alert alert-warning">
+                        <strong>@pendingCount changes pending across all tabs</strong>
+                    </div>
+                }
+                <div class="d-flex gap-2 justify-content-end">
+                    <Button Color="ButtonColor.Primary"
+                        @onclick="SaveAllChanges"
+                            Enabled="@_guard.HasPendingChanges()">
+                        Save All (@pendingCount changes)
+                    </Button>
+                    <Button Color="ButtonColor.Secondary"
+                            @onclick="CancelAllChanges">
+                        Cancel All Changes
+                    </Button>
+                </div>
+            </div>
+        </div>
+}
+<ErrorBoundary>
+    <ErrorContent>
+        An unexpected error occured. Please try again later.
+    </ErrorContent>
+</ErrorBoundary>
+@code {
+
+    private bool isLoading = true;
+    //public FormulaDataContext curForContext { get; set; }
+
+    public GxorgaDto curOrga = new GxorgaDto();
+    public MyShareVars toChild = new();
+    public MyMenuVars froMenu = new();
+    private bool allEnable = false;
+    private string Imessage = "";
+
+    private SaieActLnes mygsaie = new();
+    public int ImyOrient = 0;
+    //public int ImyDiv = 0;
+    //public int ImyProg = 0;
+    private int _imyProg = 0;
+    public int ImyProg
+    {
+        get => _imyProg;
+        set
+        {
+            _imyProg = value;
+            var selected = LsProgs.FirstOrDefault(p => p.Id == value);
+            if (selected != null)
+            {
+                // fire-and-forget
+                _ = HandleSelectedProgAsync(selected);
+            }
+        }
+    }
+    private async Task HandleSelectedProgAsync(Gplan selected)
+    {
+        await GetSelectedProg(selected);
+    }
+    private int _imyDiv = 0;
+    public int ImyDiv
+    {
+        get => _imyDiv;
+        set
+        {
+            _imyDiv = value;
+            trierTiers(); // your existing method, adjust if it needs the selected Id
+        }
+    }
+    public List<Gplan> LsProgs = new();
+
+    //Formula service
+    //private FormulaEvalService _formulaEvalService;
+    public List<FormulaLine> FormulaLines { get; set; } = new();
+    public List<InDataLineStream> EvalStream { get; set; } = new();
+
+    // Optional: shared methods for parsing, evaluating, persisting
+    public void EvaluateAll()
+    {
+        // foreach(var line in FormulaLines)
+        // {
+        //     line.Result = _formulaService.EvaluateFormula(line.Formula, line).ToString();
+        // });
+
+    }
+
+    public void RefreshStream()
+    {
+        EvalStream = FormulaLines
+            .Select(f => new InDataLineStream
+            {
+                // Etyp = (int)f.Etyp,
+                // Scdrub = f.Scdrub,
+                // Vtyp = (int)f.Vtyp,
+                // StrValue = f.StrValue,
+                // DecValue = f.DecValue,
+                // IntValue = f.IntValue,
+                // LngValue = f.LngValue,
+                // BolValue = f.BolValue,
+                // DatValue = f.DatValue
+            })
+            .ToList();
+    }
+
+
+    //private EdtSaie11 gedt11;
+    //private EdtSaie12 gedt12;
+
+    [Parameter]
+    public RenderFragment Atributs { get; set; }
+    [Parameter]
+    public RenderFragment Gtables { get; set; }
+    [Parameter]
+    public RenderFragment Grilles { get; set; }
+
+    [CascadingParameter]
+    private Task<AuthenticationState>? AuthState { get; set; }
+    public ClaimsPrincipal authUser;
+    public bool isAuthenticated = false;
+
+    public PlngenDto curProg = new PlngenDto();
+
+    public List<TierspDto> EnsTiers { get; set; } = new();
+    public List<PlngenDto> EnsProgs { get; set; } = new();
+    public List<TierspDto> PreTiers { get; set; } = new();
+
+    public int _GIdTie = 0;
+    public string _strOrga = "", _curSigle = "", strmeta = "", strmeta2 = "";
+    private int Ugpe = 0;
+    private string gpeLiba = "";
+
+    //menus
+    public List<GxMenuItem> MenuItems = new()
+    {
+        new GxMenuItem { Id = 1, Text = "SurSite", Icon = "bi bi-box-arrow-in-down" },
+        new GxMenuItem { Id = 2, Text = "Online", Icon = "bi bi-house-door" },
+        new GxMenuItem { Id = 3, Text = "Validation", Icon = "bi bi-house-door" },
+        new GxMenuItem { Id = 4, Text = "Ordres", Icon = "bi bi-journal-text" },
+        //new MenuItem { Id = 4, Text = "Mutation", Icon = "bi bi-arrow-repeat" },
+    };
+    public List<GxGroupe> Groupes = new();
+
+    //entities load
+    private IEnumerable<GxorgaDto> _lsOrgas = new List<GxorgaDto>();
+
+    //GlobModels
+    public Userbag _usrBag = new Userbag();
+    public List<Gpfixe> LsFixes = new();
+    public List<RubvarDto> EnsRubrs = new();
+    public List<GsesioDto> EnsExos = new();
+    public List<GsesioDto> EnsSess = new();
+
+    public List<Gpvar> LsVars = new();
+    public List<Gplan> LsPlans = new();
+    public List<Gpdivh> LsDivs = new();
+    //public List<Gplan> LsProgs = new List<Gplan>();
+    public List<Gpvar> LsTabls = new();
+    public List<Gpfixe> LsGties = new();
+    // public List<Gpvar> TbElems = new List<Gpvar>();
+    // public List<Clvar> LsCols = new List<Clvar>();
+    //public List<Rubhie> LsDivs = new List<Rubhie>();
+    //gpe choix
+    private List<Grole> _invRoles = new();
+    //Navigation
+    private int _gIdTie = 0, _chxGpe = 0, _chxMenu = 1;
+    private string strComp = "Saisies(sursite)";
+
+    //modal management
+    private string SidebarStyle = "width: 200px;";
+    private bool IsOpen = true;
+    private bool FirstLoadCompleted = false;
+    private bool ContentLoaded = false;
+
+    private bool isFilteringEnabled = false;
+
+    //TieSaies
+    int year = DateTime.Now.Year;
+    int month = DateTime.Now.Month;
+    IEnumerable<ActsaieDto> LsActs = new List<ActsaieDto>();
+    //Guard
+    private int _nbChanges = 0;
+    private IDisposable? _locationHandler;
+    private int pendingCount => _guard.GetPendingChangesCount();
+    private int insertCount => _guard.GetInsertCount();
+    private int updateCount => _guard.GetUpdateCount();
+    private int deleteCount => _guard.GetDeleteCount();
+    private async Task CancelAllChanges()
+    {
+        Console.WriteLine("🗑️ CancelAllChanges START");
+        await _guard.CancelChanges();  // 🔥 AWAIT - blocks until done
+        _messageService.Show("✅ CancelAllChanges successfully", ToastType.Success);
+        StateHasChanged();
+        Console.WriteLine($"✅ CancelAllChanges END - Pending: {_guard.GetPendingChangesCount()}");
+    }
+    private async Task SaveAllChanges()
+    {
+        await _guard.FlushAsync();  // 🔥 AWAIT - blocks until done
+        _messageService.Show("✅ Saved successfully", ToastType.Success);
+        StateHasChanged();
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        isLoading = true;
+        int pita = 0;
+        var authState = await AuthState;
+        authUser = authState.User;
+        isAuthenticated = authUser.Identity.IsAuthenticated;
+        if (!isAuthenticated)
+        {
+            Console.WriteLine("Authentication SaieMenu ECHEC");
+            return;
+        }
+        // var evaluator = new BasicFormulaEvaluator();
+        // _formulaService = new FormulaEvalService(evaluator);
+        // _formulaService.Initialize(FormulaLines);
+        _usrBag = await _sessionScontext.GetUserbagAsync();
+        LsVars = _usrBag.Usorga.Uvars.ToList();
+        LsFixes = _usrBag.Ufixes.ToList();
+        LsPlans = _usrBag.Usorga.Uplns.ToList();
+        LsProgs = _usrBag.Usorga.Uplns.Where(pl => pl.Ptyp == 5).ToList();
+        Console.WriteLine($"Programmes en cours : {LsProgs.Count}");
+        //LsProgs = _usrBag.Usorga.Uplns.Where(pl => pl.Ptyp == 5).ToList();
+        //var idplnadm = _usrBag.Usorga.Schba;
+        //LtTabls = _usrBag.Usorga.Uvars.Where(tb => tb.Gvars == 4).ToList();
+        LsTabls = _usrBag.Usorga.Uvars.Where(tb => tb.Gvars == 5).ToList();
+        //LsCols = ColBag.Ucols.Where(uv => uv.Jtyp == 1).OrderBy(uv => uv.Ydpd).ToList();
+        //TbElems = _usrBag.Usorga.Uvars.Where(uv => uv.Gvars == 5 && uv.Ade == 1 && uv.Elea != 0).ToList();
+        //ensemble des roles
+        //xdom = 1/tiere
+        int xdom = 6;
+        LsGties = LsFixes.Where(ut => ut.Gvars == 36 && ut.Itb == xdom && ut.Elea != 0 && ut.Elea != 9).ToList();
+        if (LsGties.Count() > 0)
+        {
+            ////gpeLiba = LsGties.Where(ut => ut.Elea == 1).FirstOrDefault().Liba.ToUpperInvariant();
+        }
+        Groupes.Clear();
+        foreach (var gr in LsGties.Where(gr => gr.Itb == 6))
+        {
+            Groupes.Add(new GxGroupe { Itb = gr.Itb, Elea = gr.Elea, Liba = gr.Liba });
+        }
+        _invRoles = await _rendAgres.LoadOrgaRoles();
+        Console.WriteLine($"inv roles : {_invRoles.Count()}");
+
+        Ugpe = 1; //initial Cible
+        // _guard.RegisterUnconfirmedPredicate<Actsaie>(e => e.Xadd1 == -1 || e.Xedt1 == -1 || e.Xdel1 == -1);
+        // _guard.RegisterUnconfirmedPredicate<Actdet>(d => d.Xadd1 == -1 || d.Xedt1 == -1 || d.Xdel1 == -1);
+        // _nbChanges = _guard.GetPendingChangesCount();  // Initial value
+        Console.WriteLine("Authentication ENTREE");
+        await LoadSaieOrgaAsync(_usrBag.Idorg);
+        //pita = 5;
+        Console.WriteLine("TIERS A ETE TESTE");
+        //sessions de saisies ouvertes pour l=exercice
+        EnsSess = curOrga.Gsesios.Where(us => us.Styp == 3 && us.Sicur == 1 && us.Sieta == 1).ToList(); //saisies ouversts
+        toChild.authUser = authUser;
+        toChild.isAuthenticated = isAuthenticated;
+        toChild.Ugpe = Ugpe;
+        toChild.curOrga = curOrga;
+        //toChild.LsHies = LsHies;
+        toChild.LsVars = LsVars;
+        toChild.LsFixes = LsFixes;
+        toChild.LsPlans = LsPlans;
+        toChild.LsTabls = LsTabls;
+        // var tableResolvers = FormulaContextBuilder.BuildResolvers(curForContext);
+        // _formulaEvalService = new FormulaEvalService(
+        //     new RubvarResolver(curForContext.FDCRubvars),
+        //     new TierspCodeResolver(), // ✅ now implements ITierspResolver
+        //     tableResolvers,
+        //     new BasicFormulaEvaluator()
+        // );
+        isLoading = false;
+    }
+    //CRUD
+    private async Task LoadSaieOrgaAsync(int key)
+    {
+        int pisa = 2;   
+        try
+        {
+            curOrga = await _guard.GetTiebagsAsync(key);
+            LsActs = await _guard.GetSessionActsaiesAsync(
+                key, year, month
+            );
+
+            Console.WriteLine($"loadOrgaAsync completed : {curOrga?.Raison}");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Load error: {ex.Message}");
+        }
+        Console.WriteLine($"orga recu {curOrga.Raison}");
+        EnsTiers = curOrga.Tiersps.ToList();
+        Console.WriteLine($"orga recu {curOrga.Raison}");
+        pisa = 4;
+        Console.WriteLine($"nb tiers from orga  : {pisa} et {curOrga.Tiersps.Count()}");
+        var mytier = curOrga.Tiersps.FirstOrDefault();
+        if (mytier != null)
+        {
+            Console.WriteLine($"nom selected tiers : {mytier.Nom} et {mytier.Pnom}");
+            Console.WriteLine($"selected tiers actsaies : {mytier.Actsaies.Count()}");
+        }
+        else
+        {
+            Console.WriteLine($"probleme chargement Tiers");
+        }
+        EnsExos = curOrga.Gsesios.ToList();
+    }
+    public List<FormulaLine> PrepOpeSaie(int opt, TierspDto curTier, RubvarDto curRub, List<TierspDto> saieTiers, PlngenDto curProg, int imyDiv)
+    {
+        var calcLines = new List<FormulaLine>();
+
+        if (opt == 1)
+        {
+            foreach (var uru in curProg.Rubvars)
+            {
+                //var saielines = FormulaParser.ParseFormulaBlock(uru.Frsource); //, rubvarResolver);
+                //var parsedLine = saielines.FirstOrDefault(l => l.LineNumber == Convert.ToInt32(uru.Scdrub));
+                //var rubvar = rubvarResolver.ResolveByScdrub(Convert.ToInt32(uru.Scdrub));
+
+                calcLines.Add(new FormulaLine
+                {
+                    //Idrub = rubvar?.Idrub ?? 0,
+                    // Scdrub = rubvar?.Scdrub ?? uru.Scdrub,
+                    // Idtie = curTier.Idtie,
+                    // Liba = rubvar?.Liba ?? "",
+                    // Abg = rubvar?.Abg ?? "",
+                    // Nom = curTier.Nom,
+                    // Pnom = curTier.Pnom,
+                    //Formula = parsedLine?.Formula ?? "",
+                    // Result = "",
+                    // Resaie = ""
+                });
+            }
+        }
+        else if (opt == 2)
+        {
+            // var saielines = FormulaParser.ParseFormulaBlock(curRub.Frsource);
+
+            // foreach (var tie in saieTiers.Where(t => t.Idhie == imyDiv))
+            // {
+            //     foreach (var line in saielines)
+            //     {
+            //         var rubvar = rubvarResolver.ResolveByScdrub(line.LineNumber);
+
+            //         calcLines.Add(new FormulaLine
+            //         {
+            //             Idrub = rubvar?.Idrub ?? 0,
+            //             // Scdrub = rubvar?.Scdrub ?? line.LineNumber.ToString(),
+            //             // Idtie = tie.Idtie,
+            //             // Liba = rubvar?.Liba ?? "",
+            //             // Abg = rubvar?.Abg ?? "",
+            //             // Nom = tie.Nom,
+            //             // Pnom = tie.Pnom,
+            //             // Formula = line.Formula,
+            //             //Result = "",
+            //             // Resaie = ""
+            //         });
+            //     }
+            // }
+        }
+
+        return calcLines;
+    }
+    private async Task GetSelectedProg(Gplan bropln)
+    {
+        //Console.WriteLine($"ICI PROGRAMMES : {EnsProgs.Count()}");
+        curProg = new();
+        EnsRubrs = new();
+        if (EnsProgs.Any())
+        {
+            curProg = EnsProgs.Where(pl => pl.Id == bropln.Id).FirstOrDefault();
+            if (curProg != null)
+            {
+                //Console.WriteLine($"ICI prog Id : {curProg.Idorg}");
+                toChild.curProg = curProg;
+                EnsRubrs = curProg.Rubvars.ToList();
+                //_rubvarResolver = new RubvarResolver(curProg.Rubvars.ToList());
+                var curDivpln = curOrga.Plngens.Where(pl => pl.Id == curProg.Plsdiv).FirstOrDefault();
+                if (curDivpln != null)
+                {
+                    List<Gpdivh> inDivs = await _rendAgres.LoadOrgaPostes();
+                    LsDivs = inDivs?.Where(ud => ud.Ihie == curDivpln.Id && ud.Sidiv == 1).ToList();
+                }
+                else
+                {
+                    LsDivs = new();
+                }
+            }
+        }
+        //Console.WriteLine($"ICI RUBRIQUES : {curProg.Rubvars.Count()}");
+    }
+    //Others Selections//si isSesSaieOpen
+    private void GetSelectedOption(Gpfixe myuf)
+    {
+        //preparer data pour formulaire H/V
+
+        StateHasChanged();
+    }
+    private void trierTiers()
+    {
+        Console.WriteLine("TRIE Commence");
+        if (ImyDiv != 0)
+        {
+            Console.WriteLine($"TRIE Prepare : {EnsTiers.Count}");
+            Imessage = "Preparation de la liste en cours";
+            PreTiers = EnsTiers.Where(t => t.Ihie == ImyDiv)
+                .OrderByDescending(um => um.Smatri)
+                .ToList();
+            Imessage = "Liste des tiers prete";
+            Console.WriteLine($"TRIE termine : {PreTiers.Count}");
+            StateHasChanged();
+        }
+        Console.WriteLine("TRIE Fini");
+    }
+    // // private async Task LoadSaieTiersAsync()
+    // // {
+    // //     int pisa = 2;
+    // //     try
+    // //     {
+    // //         curODContext = await _contextFactory.CreateAsync();
+    // //         var expand = "Actsaies($expand=Actdets),IdorgNavigation";
+    // //         var dxtiers = await curODContext.LoadFilteredAsync<Tiersp>(expand: expand);
+    // //         pisa = 3;
+    // //         EnsTiers = dxtiers.ToList();
+    // //         //test tiers
+    // //         var mytier = EnsTiers.FirstOrDefault();
+    // //         if (mytier != null)
+    // //         {
+    // //             Console.WriteLine($"nom tiers : {mytier.Nom} et {mytier.Pnom}");
+    // //             curOrga = mytier.IdorgNavigation;
+    // //             Console.WriteLine($"curorga : {curOrga.Raison} et {curOrga.Sigle}");
+    // //             Console.WriteLine($"tiers actsaies : {mytier.Actsaies.Count()}");
+    // //         }
+    // //         else
+    // //         {
+    // //             Console.WriteLine($"probleme chargement Tiers");
+    // //         }
+    // //     }
+    // //     catch (Exception ex)
+    // //     {
+    // //         Console.WriteLine($"stack trace : {ex.StackTrace} place : {pisa} ex-mess : {ex.Message} and also in-mess: {ex.InnerException}");
+    // //     }
+    // // }
+    // private async Task LoadSaieTiersAsync()
+    // {
+    //     int pisa = 2;
+    //     try
+    //     {
+    //         curODContext = await _contextFactory.CreateAsync();
+    //         //var expand = "Tiersps,Tiersps(@expand=Actsaies),Tiersps/Actsaies(@expand=Actdets)";
+    //         //var expand = "Tiersps($expand=Actsaies($expand=Actdets))";
+    //         //var expand = "Actsaies,Actsaies($expand=Actdets)";
+    //         var expand = "Actsaies($expand=Actdets),IdorgNavigation";
+    //         //var expand = "Tiersps,Tiersps($expand=Actsaies($expand=Actdets))";
+
+    //         //var expand = "Tiersps,Tiersps($expand=Actsaies)";
+    //         var dxtiers = await curODContext.LoadFilteredAsync<Tiersp>(expand: expand);
+    //         pisa = 3;
+    //         // curOrga = dxorgas.FirstOrDefault();
+    //         // if (curOrga == null)
+    //         // {
+    //         //     Console.WriteLine("No organization found for the current user.");
+    //         //     return;
+    //         // }
+    //         // Console.WriteLine($"orga recu {curOrga.Raison}");
+    //         // pisa = 4;
+    //         // Console.WriteLine($"nb tiers test : {pisa} et {curOrga.Tiersps.Count()}");
+    //         // var mytier = curOrga.Tiersps.FirstOrDefault();
+    //         // if (mytier != null)
+    //         // {
+    //         //     Console.WriteLine($"nom tiers : {mytier.Nom } et {mytier.Pnom}");
+    //         // }
+    //         // else
+    //         // {
+    //         //     Console.WriteLine($"probleme chargement Tiers");
+    //         // }
+
+    //         EnsTiers = dxtiers.ToList();
+    //         //test tiers
+    //         var mytier = EnsTiers.FirstOrDefault();
+    //         if (mytier != null)
+    //         {
+    //             Console.WriteLine($"nom tiers : {mytier.Nom } et {mytier.Pnom}");
+    //             curOrga = mytier.IdorgNavigation;
+    //             Console.WriteLine($"curorga : {curOrga.Raison} et {curOrga.Sigle}");
+    //             Console.WriteLine($"tiers actsaies : {mytier.Actsaies.Count()}");
+    //         }
+    //         else
+    //         {
+    //             Console.WriteLine($"probleme chargement Tiers");
+    //         }
+    //         // //chargement des plans, rubriques et rubfmts/rubpsts
+    //         // var expandplan = "Rubvars,Rubvars($expand=Rubfmts)";
+    //         // //var expandplan = "Rubhies,Rubhies($expand=Rubpsts)";
+    //         // var dxplans = await _gODContext.LoadFilteredAsync<Plngen>(expand: expandplan);
+    //         // EnsProgs = dxplans.Where(pg => pg.Ptyp == 5).AsQueryable();
+    //         //test plans
+    //         //var myprog = EnsProgs.FirstOrDefault();
+    //         // if (myprog != null)
+    //         // {
+    //         //     Console.WriteLine($"nom plans : {myprog.Liba}");
+    //         // } else
+    //         // {
+    //         //     Console.WriteLine($"probleme chargement Plans");
+    //         // }
+    //     }
+    //     catch (Exception ex)
+    //     {
+    //         Console.WriteLine($"stack trace : {ex.StackTrace} place : {pisa} ex-mess : {ex.Message} and also in-mess: {ex.InnerException}");
+    //     }
+    // }
+    // curOrga = await ODataAdapterBase..
+    //     .For<GxorgaDto>("Gxorgas")
+    //     .Key(key)
+    //     .Expand(o => o.Gsesios)
+    //     .Expand(o => o.Tiersps.Select(t => t.Actsaies.Select(a => a.Actdets)))
+    //     .Expand(o => o.Plngens.Select(p => p.Rubvars.Select(rv => rv.Rubfmts)))
+    //     .Expand(o => o.Plngens.Select(p => p.Rubhies.Select(rh => rh.Rubpsts)))
+    //     .FindEntryAsync();
+    // private async Task LoadSaieBagsAsync()
+    // {
+    //     try
+    //     {
+    //         int pisa = 1;
+    //         Console.WriteLine($"En prenant le SAIEBAG");
+    //         var strcall = await _cliemanager.SendRequestAsync("AuthClient", HttpMethod.Get, "lgauth/saievars");
+    //         //Console.WriteLine($"21RECU DE LOGIN {strcall}");
+    //         pisa = 2;
+    //         var logResu = JsonConvert.DeserializeObject<IEnumerable<Gxorga>>(strcall);
+    //         //logResu = await response.Content.ReadFromJsonAsync<LoginResult>();
+    //         pisa = 3;
+    //         if (logResu != null)
+    //         {
+    //             pisa = 4;
+    //             //curOrga = logResu.FirstOrDefault();
+    //             pisa = 5;
+    //             //Console.WriteLine($"Orga de Saiebag : {curOrga.Idorg}");
+    //             //Console.WriteLine($"nb Orga plans : {curOrga.Plngens.Count}");
+    //         }
+    //         else
+    //         {
+    //             pisa = 6;
+    //             Console.WriteLine("SaieBag absent");
+    //         }
+    //     }
+    //     catch(Exception ex)
+    //     {
+    //         Console.WriteLine($"Saiebag call failed : // {ex.Message}");
+    //     }
+    //     isLoading = false;
+    // }
+    private void OnGpeChanged(EventArgs args)
+    {
+        //prise rolno et label
+        gpeLiba = "";
+        Ugpe = 0;
+        var chgeEventArgs = (ChangeEventArgs)args;
+        var fixno = Convert.ToInt16(chgeEventArgs.Value.ToString());
+        if (fixno > 0)
+        {
+            Ugpe = fixno;
+            toChild.Ugpe = Ugpe;
+            gpeLiba = LsGties.Where(ut => ut.Elea == fixno).FirstOrDefault().Liba.ToUpperInvariant();
+            EnsTiers = curOrga.Tiersps.Where(t => t.Utyp == fixno).ToList();
+        }
+    }
+    // private async Task SelMenu(int noM)
+    // {
+    //     _chxMenu = noM;
+    //     if (_chxMenu == 1) strComp = "Saisies(sursite)";
+    //     if (_chxMenu == 2) strComp = "Saisies(online)";
+    //     if (_chxMenu == 3) strComp = "Validations";
+    //     if (_chxMenu == 4) strComp = "Saisies(ordres)";
+    //     allEnable = false;
+    //     StateHasChanged();
+    //     await Task.Delay(800);
+    // }
+    // private void GetSelectedProg(Gplan bropln)
+    // {
+    //     Console.WriteLine($"ICI PROGRAMMES : {EnsProgs.Count()}");
+    //     if (EnsProgs.Any())
+    //     {
+    //         foreach (var upl in EnsProgs)
+    //         {
+    //             Console.WriteLine($"1 plan : {upl.Idpln}");
+    //         }
+    //         Console.WriteLine($"compare plan : {bropln.Idpln}");
+    //         curProg = EnsProgs.Where(pl => pl.Id == bropln.Id).FirstOrDefault();
+    //         if (curProg != null)
+    //         {
+    //             Console.WriteLine($"ICI prog Id : {curProg.Idorg}");
+    //             EnsRubrs = curProg.Rubvars.ToList();
+
+    //         }
+    //         else
+    //         {
+    //             Console.WriteLine("ICI prog Id (nul)");
+    //         }
+    //     }
+
+    //     //if (_curpln != null
+    //     //{
+    //     //    //_lsRubs = _lsRubs.Where(ur => ur.Idpln == ipln).ToList();
+    //     //}
+    //     Console.WriteLine($"ICI RUBRIQUES : {curProg.Rubvars.Count()}");
+    //     //return _curProg;
+    // }
+    void GetSelectedExos(GsesioDto myexo)
+    {
+        toChild.MainOptsOk = false;
+        toChild.curExo = myexo;
+        if (Ugpe != 0 && froMenu.Uexo != 0 && froMenu.Usesio != 0)
+        {
+            toChild.MainOptsOk = true;
+            toChild.curExo = myexo;
+            StateHasChanged();
+        }
+    }
+
+    void GetSelectedSesio(GsesioDto mysesio)
+    {
+        toChild.MainOptsOk = false;
+        toChild.curSesio = mysesio;
+        if (Ugpe != 0 && froMenu.Uexo != 0 && froMenu.Usesio != 0)
+        {
+            toChild.MainOptsOk = true;
+            toChild.curSesio = EnsSess.Where(us => us.Id == froMenu.Usesio).FirstOrDefault();
+            StateHasChanged();
+        }
+    }
+    private async Task SelMenu(int noM)
+    {
+        _chxMenu = noM;
+        if (_chxMenu == 1) strComp = $"Saisies(sursite) {gpeLiba}";
+        if (_chxMenu == 2) strComp = $"Saisies(online) {gpeLiba}";
+        if (_chxMenu == 3) strComp = $"Validations {gpeLiba}";
+        if (_chxMenu == 4) strComp = $"Saisies(ordres) {gpeLiba}";
+        //if (_chxMenu == 5) strComp = "Colonnes";
+        allEnable = false;
+        StateHasChanged();
+        await Task.Delay(1);
+    }
+    private async Task SelGpe(int noG)
+    {
+        gpeLiba = "";
+        if (noG == 0) return;
+        var mygpe = LsGties.Where(gt => gt.Itb == 6 && gt.Elea == noG).FirstOrDefault();
+        //LsCols = curOrga.Gsglnes.Where(ug => ug.Otyp == 5 && ug.Dtyp == 6 && ug.Totyp == Ugpe && ug.Jacc == 1).ToList();
+        Ugpe = noG;
+        //Tgpe = mygpe.Gp2;
+        gpeLiba = LsGties.Where(ut => ut.Elea == mygpe.Elea).FirstOrDefault().Liba.ToUpperInvariant();
+        StateHasChanged();
+        Console.WriteLine("PAS 2");
+        await Task.Delay(1);
+    }
+    void NavigateBack()
+    {
+        _navmanager.NavigateTo("/");
+    }
+    // try
+    // {
+    //     curODContext = await _contextFactory.CreateAsync();
+    //     _guard.AttachContext(curODContext);
+    //     int key = _usrBag.Idorg;
+    //     // ✅ Use key-based query instead of filtered collection
+    //     string expandGsesios =
+    //         ODataQueryHelper.Expand<Gxorga, IEnumerable<Gsesio>>(o => o.Gsesios);
+
+    //     string expandPlngens =
+    //         ODataQueryHelper.Expand<Gxorga, IEnumerable<Plngen>>(o => o.Plngens);
+
+    //     string expandTiersps =
+    //         ODataQueryHelper.Expand<Gxorga, IEnumerable<Tiersp>>(o => o.Tiersps);
+
+    //     // ✅ Correct nested expands
+    //     string expandPlngensNested =
+    //         expandPlngens +
+    //         "($expand=Rubvars($expand=Rubfmts),Rubhies($expand=Rubpsts))";
+
+    //     string expandTierspsNested =
+    //         expandTiersps +
+    //         "($expand=Actsaies($expand=Actdets))";
+
+    //     // Combine
+    //     string expand = string.Join(
+    //         ",",
+    //         expandGsesios,
+    //         expandPlngensNested,
+    //         expandTierspsNested
+    //     );
+
+    //     curOrga = await curODContext.GetByKeyAsync<Gxorga>(
+    //         key,
+    //         "Gxorgas",
+    //         expand
+    //     );
+    //var expand = "Tiersps($expand=Actsaies($expand=Actdets))";
+    // var expand = "Tiersps," + "Gsesios," +
+    //     "Tiersps($expand=Actsaies($expand=Actdets))";
+    // var dxorgas = await curODContext.LoadFilteredAsync<Gxorga>(expand: expand);
+    // pisa = 3;
+    // curOrga = dxorgas.FirstOrDefault();
+    // if (curOrga == null)
+    // {
+    //     Console.WriteLine("No organization found for the current user.");
+    //     return;
+    // }
+    // var expand2 = "Plngens," +
+    //     "Plngens($expand=Rubvars($expand=Rubfmts))," +
+    //     "Plngens($expand=Rubhies($expand=Rubpsts))";
+    // var dxplns = await curODContext.LoadFilteredAsync<Gxorga>(expand: expand2);
+    // pisa = 3;
+    // curOrga = dxorgas.FirstOrDefault();
+    // if (curOrga == null)
+    // {
+    //     Console.WriteLine("No organization found for the current user.");
+    //     return;
+    // }
+    // if (curOrga == null)
+    // {
+    //     Console.WriteLine("No organization found for the current user.");
+    //     return;
+    // }
+}

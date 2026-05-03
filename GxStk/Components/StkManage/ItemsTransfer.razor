@@ -1,108 +1,285 @@
 ﻿@page "/items-transfer"
 
-@using GxWapi.DaModels
+@using GxShared.Helpers
 @using GxStk.Services
-@using GxShared.StkDtos
+@using GxStk.ClieModels
+@using GxShared.Sess
+@using GxShared.GxDtos
+@using GxShared.Interfaces
+@using Simple.OData.Client
+@using Microsoft.EntityFrameworkCore;
 
-@inject StockClientService _stkService
+<h3>External Transfer</h3>
 
-<h3>Items Transfer</h3>
-
-<table class="table">
-    <thead>
-        <tr>
-            <th>Item</th>
-            <th>From Warehouse</th>
-            <th>To Warehouse</th>
-            <th>Quantity</th>
-            <th>Unit Cost</th>
-            <th>Batch</th>
-            <th>Transfer Type</th>
-            <th></th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var line in TransferRequest.Lines)
+<!-- Transfer header -->
+<div class="mb-3">
+    <label>Origin Department</label>
+    <InputSelect @bind-Value="curTransfer.Fromhie">
+        @foreach (var dep in Departments)
         {
-            <tr>
-                <td>
-                    <InputSelect @bind-Value="line.ItemId">
-                        @foreach (var item in Items)
-                        {
-                            <option value="@item.Id">@item.Nom</option>
-                        }
-                    </InputSelect>
-                </td>
-                <td>
-                    <InputSelect @bind-Value="line.FromWarehouseId">
-                        @foreach (var wh in Warehouses)
-                        {
-                            <option value="@wh.Id">@wh.Liba</option>
-                        }
-                    </InputSelect>
-                </td>
-                <td>
-                    <InputSelect @bind-Value="line.ToWarehouseId">
-                        @foreach (var wh in Warehouses)
-                        {
-                            <option value="@wh.Id">@wh.Liba</option>
-                        }
-                    </InputSelect>
-                </td>
-                <td><InputNumber @bind-Value="line.Quantity" /></td>
-                <td><InputNumber @bind-Value="line.UnitCost" /></td>
-                <td><InputNumber @bind-Value="line.BatchId" /></td>
-                <td>
-                    <InputSelect @bind-Value="line.TransferType">
-                        <option value="1">Intra</option>
-                        <option value="2">Inter</option>
-                    </InputSelect>
-                </td>
-                <td>
-                    <button class="btn btn-danger btn-sm" @onclick="() => RemoveLine(line)">X</button>
-                </td>
-            </tr>
+            <option value="@dep.Ihie">@dep.Liba</option>
         }
-    </tbody>
-</table>
+    </InputSelect>
 
-<button class="btn btn-secondary" @onclick="AddLine">Add Line</button>
-<button class="btn btn-primary" @onclick="SubmitTransfer">Submit Transfer</button>
+    <label>Destination Department</label>
+    <InputSelect @bind-Value="curTransfer.Tohie">
+        @foreach (var dep in Departments)
+        {
+            <option value="@dep.Ihie">@dep.Liba</option>
+        }
+    </InputSelect>
+
+    <label>Date</label>
+    <InputDate @bind-Value="curTransfer.Tdate" />
+    <label>Type</label>
+    <InputSelect @bind-Value="curTransfer.Ttype">
+        <option value="1">Exter</option>
+    </InputSelect>
+</div>
+
+<Button Color="ButtonColor.Success" @onclick="() => StartAdd()">Add New Line</Button>
+
+<Grid TItem="StktflneDto" Data="@curTransfer.Stktflnes" AllowPaging="true" Responsive="true">
+    <GridColumns>
+        <GridColumn TItem="StktflneDto" HeaderText="Item">
+            <ChildContent Context="line">
+                @if (editRowguid == line.Rowguid)
+                {
+                    <InputSelect @bind-Value="draftLine.Iitu">
+                        @foreach (var item in DaItems)
+                        {
+                            <option value="@item.Id">@item.Liba</option>
+                        }
+                    </InputSelect>
+                }
+                else
+                {
+
+                    @DaItems.FirstOrDefault(i => i.Id == line.Iitu)?.Liba
+                }
+            </ChildContent>
+        </GridColumn>
+
+        <GridColumn TItem="StktflneDto" HeaderText="From Location">
+            <ChildContent Context="line">
+                @if (editRowguid == line.Rowguid)
+                {
+                    <InputSelect @bind-Value="draftLine.Froloc">
+                        @foreach (var loc in OriginLocations.Where(od => od.Ihie == curTransfer.Fromhie).ToList())
+                        {
+                            <option value="@loc.Ipst">@loc.Liba</option>
+                        }
+                    </InputSelect>
+                }
+                else
+                {
+
+                    @OriginLocations.FirstOrDefault(l => l.Ipst == line.Froloc)?.Liba
+                }
+            </ChildContent>
+        </GridColumn>
+
+        <GridColumn TItem="StktflneDto" HeaderText="To Location">
+            <ChildContent Context="line">
+                @if (editRowguid == line.Rowguid)
+                {
+                    <InputSelect @bind-Value="draftLine.Toloc">
+                        @foreach (var loc in DestinationLocations.Where(od => od.Ihie == curTransfer.Tohie).ToList())
+                        {
+                            <option value="@loc.Ipst">@loc.Liba</option>
+                        }
+                    </InputSelect>
+                }
+                else
+                {
+                    @DestinationLocations.FirstOrDefault(l => l.Ipst == line.Toloc)?.Liba
+                }
+            </ChildContent>
+        </GridColumn>
+
+        <GridColumn TItem="StktflneDto" HeaderText="Quantity">
+            <ChildContent Context="line">
+                @if (editRowguid == line.Rowguid)
+                {
+                    <InputNumber @bind-Value="draftLine.Qty" />
+                }
+                else
+                {
+
+                    @line.Qty
+                }
+            </ChildContent>
+        </GridColumn>
+
+        <GridColumn TItem="StktflneDto" HeaderText="Batch">
+            <ChildContent Context="line">
+                @if (editRowguid == line.Rowguid)
+                {
+                    <InputNumber @bind-Value="draftLine.Ibtch" />
+                }
+                else
+                {
+
+                    @line.Ibtch
+                }
+            </ChildContent>
+        </GridColumn>
+
+        <GridColumn TItem="StktflneDto" HeaderText="Actions">
+            <ChildContent Context="line">
+                @if (editRowguid == line.Rowguid)
+                {
+                    <Button Color="ButtonColor.Primary" @onclick="() => SaveEdit(line)">Save</Button>
+                    <Button Color="ButtonColor.Secondary" @onclick="() => CancelEdit()">Cancel</Button>
+                }
+                else
+                {
+                    <Button Color="ButtonColor.Warning" @onclick="() => StartEdit(line)">Edit</Button>
+                    <Button Color="ButtonColor.Danger" @onclick="() => DeleteLine(line)">Delete</Button>
+                }
+            </ChildContent>
+        </GridColumn>
+    </GridColumns>
+</Grid>
+@if (isAdding)
+{
+    <div class="mt-3">
+        <h5>New Transfer Line</h5>
+        <InputSelect @bind-Value="draftLine.Iitu">
+            @foreach (var item in DaItems)
+            {
+                <option value="@item.Id">@item.Liba</option>
+            }
+        </InputSelect>
+        <InputSelect @bind-Value="draftLine.Froloc">
+            @foreach (var loc in OriginLocations)
+            {
+                <option value="@loc.Ipst">@loc.Liba</option>
+            }
+        </InputSelect>
+        <InputSelect @bind-Value="draftLine.Toloc">
+            @foreach (var loc in DestinationLocations)
+            {
+                <option value="@loc.Ipst">@loc.Liba</option>
+            }
+        </InputSelect>
+        <InputNumber @bind-Value="draftLine.Qty" placeholder="Quantity" />
+        <InputNumber @bind-Value="draftLine.Ibtch" placeholder="Batch" />
+        <Button Color="ButtonColor.Success" @onclick="() => SaveAdd()">Add</Button>
+        <Button Color="ButtonColor.Secondary" @onclick="() => CancelAdd()">Cancel</Button>
+    </div>
+}
+
 
 @code {
-    private ItemTransferRequestDto TransferRequest = new();
-    private List<Stkitum> Items = new();
-    private List<Gsloca> Warehouses = new();
+    [Parameter] public IODataClient _InODaClient { get; set; }
+    [Parameter] public GxorgaDto curOrga { get; set; }
+    [Parameter]
+    public List<Gpdivh> LsDivs { get; set; }
+    [Parameter] public MyShareVars toChild { get; set; }
+    [Parameter] public int toMenu { get; set; }
+    // [Parameter] public StockClientService stockService { get; set; }
+    // [Parameter] public ItemClientService itemService { get; set; }
+    [Parameter] public IPendingChangesGuard _guard { get; set; }
+    [Parameter] public EventCallback<PendingState> OnPendingStateChanged { get; set; }
+    [Parameter] public int NbChanges { get; set; }
+    [Parameter] public EventCallback<int> NbChangesChanged { get; set; }
 
+    private StktrsfDto curTransfer = new();
+    private StktflneDto draftLine = new();
+    private Guid? editRowguid;
+    private bool isAdding = false;
+
+    private List<StkituDto> DaItems = new();
+    private List<Gpdivh> Departments = new();
+    private List<Divpst> OriginLocations =>
+        LsDivs.Where(d => d.Ihie == curTransfer.Fromhie)
+          .FirstOrDefault()?
+          .Divpsts?.ToList() ?? new List<Divpst>();
+
+    private List<Divpst> DestinationLocations =>
+        LsDivs.Where(d => d.Ihie == curTransfer.Tohie)
+              .FirstOrDefault()?
+              .Divpsts?.ToList() ?? new List<Divpst>();
+  
     protected override async Task OnInitializedAsync()
     {
-        Items = await _stkService.GetItemsAsync();
-        Warehouses = await _stkService.GetWarehousesAsync();
-        AddLine(); // start with one line
+        DaItems = curOrga.Stkitus?.ToList() ?? new();
+        Departments = LsDivs; //await stockService.GetDepartmentsAsync();
+        //WarehouseLocations = await stockService.GetWarehousesAsync();
+
+        curTransfer.Rowguid = Guid.NewGuid();
+        curTransfer.Tdate = DateTime.Now;
+        curTransfer.Ttype = 2; // Inter
+        curTransfer.Stktflnes = new();
     }
 
-    private void AddLine() => TransferRequest.Lines.Add(new ItemTransferLineDto());
+    private void StartAdd() { isAdding = true; draftLine = new StktflneDto(); }
 
-    private void RemoveLine(ItemTransferLineDto line) => TransferRequest.Lines.Remove(line);
-
-    private async Task SubmitTransfer()
+    private async Task SaveAdd()
     {
-        foreach (var line in TransferRequest.Lines)
-        {
-            if (line.Quantity <= 0)
-            {
-                // simple validation
-                throw new InvalidOperationException("Quantity must be positive");
-            }
-            if (line.FromWarehouseId == line.ToWarehouseId)
-            {
-                throw new InvalidOperationException("Source and destination must differ");
-            }
-
-            await _stkService.TransferStock(line);
-        }
-
-        TransferRequest = new ItemTransferRequestDto();
-        AddLine();
+        draftLine.Rowguid = Guid.NewGuid();
+        draftLine.Itrsf = curTransfer.Id;
+        _guard.TrackInsert("Stktflnes", draftLine);
+        curTransfer.Stktflnes.Add(draftLine);
+        isAdding = false;
+        await NotifyPendingChanges();
     }
+
+    private void CancelAdd() => isAdding = false;
+
+    private void StartEdit(StktflneDto line)
+    {
+        editRowguid = line.Rowguid;
+        draftLine = new StktflneDto { Rowguid = line.Rowguid, Iitu = line.Iitu, Qty = line.Qty, Ibtch = line.Ibtch, Froloc = line.Froloc, Toloc = line.Toloc };
+    }
+
+    private async Task SaveEdit(StktflneDto line)
+    {
+        line.Iitu = draftLine.Iitu;
+        line.Qty = draftLine.Qty;
+        line.Ibtch = draftLine.Ibtch;
+        line.Froloc = draftLine.Froloc;
+        line.Toloc = draftLine.Toloc;
+        var key = GetEntityKey(draftLine); // helper to extract PK
+        _guard.TrackUpdate("Stktflnes", key, draftLine);
+        editRowguid = null;
+        await NotifyPendingChanges();
+    }
+
+    private void CancelEdit() => editRowguid = null;
+
+    private async Task DeleteLine(StktflneDto line)
+    {
+        curTransfer.Stktflnes.Remove(line);
+        // Extract PK using your helper
+        var key = GetEntityKey(line);
+        _guard.TrackDelete("Stktflnes", key);
+        Console.WriteLine($"🗑️ {line.Id} queued for delete");
+        await NotifyPendingChanges();
+    }
+    private object GetEntityKey<TDto>(TDto entity)
+    {
+        switch (entity)
+        {
+            case StktflneDto pln:
+                return pln.Id;
+            // case RubvarDto rub:
+            //     return rub.Id;
+            // case RubfmtDto fmt:
+            //     return fmt.Id;
+            default:
+                throw new InvalidOperationException($"Unknown entity type {typeof(TDto).Name}");
+        }
+    }
+    private async Task NotifyPendingChanges()
+    {
+        await OnPendingStateChanged.InvokeAsync(new PendingState(_guard.HasPendingChanges(), _guard.GetPendingChangesCount()));
+        NbChanges = _guard.GetPendingChangesCount();
+        await NbChangesChanged.InvokeAsync(NbChanges);
+        StateHasChanged();
+    }
+
+    // public async Task SaveAllChanges() { await curODContext.SaveChangesAsync(); await NotifyPendingChanges(); }
+    // public void CancelAllChanges() { _guard.RejectAllChanges(); NotifyPendingChanges(); }
 }

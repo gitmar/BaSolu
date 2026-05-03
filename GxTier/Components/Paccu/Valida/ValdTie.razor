@@ -1,33 +1,31 @@
 ﻿@page "/valdtie"
 @layout EnrolMenu
 
-@using System
-@using System.Collections.ObjectModel
-@using System.ComponentModel.DataAnnotations
-@using System.Dynamic
-@using System.Net.Http.Headers
 @using System.Security.Claims
-@using System.Reflection
-@using System.Text
-@using System.Text.Json
-@using System.Web
 @using BlazorBootstrap
-@using GxShared.Sess
-@using GxShared.Others
-@using GxShared.Helpers
+@using Blazored.LocalStorage
 @using GxTie.ClieModels
+@using GxTie.Components.Pcarri
 @using GxTie.Services
-@using GxTie.Components.Paccu.RtPer
+@using GxTie.StaticHelpers
 @using GxTie.Components.FrmHelper
-@using GxWapi.DaModels
-@using Microsoft.AspNetCore.Components.Forms
-@using Microsoft.AspNetCore.WebUtilities
-@using Microsoft.OData.Client
+@using GxShared.Others
+@using GxShared.Sess
+@* @using Microsoft.EntityFrameworkCore *@
+@using Simple.OData.Client
+@using Simple.OData.Client.Extensions
+@using GxShared.GxDtos
+@using GxShared.Interfaces
 @using Newtonsoft.Json
 
-@inject NavigationManager _navmanager
+@implements IDisposable
+
+@inject NavigationManager _navManager
+@inject ILocalStorageService _localStorage
 @inject HttpClientService _clieManager
+@inject SessionContextService _sessionContext
 @inject RendAgres _rendAgres
+@inject IJSRuntime _JsRUN
 @inject IMessageService _messageService
 
 <PageTitle>Saisie.Enrollement</PageTitle>
@@ -51,9 +49,10 @@
                EntyTie="@curTie"
                LsmVars="@LsVars"
                LsmFixes="@LsFixes"
-               OnTieSave="@HandleTieSave"
+               
                Oparent="2">
     </GlobModal>
+    @* OnTieSave = "@HandleTieSave" *@
 }
 <div class="my-container">
     @if (toChild != null)
@@ -117,13 +116,13 @@
                                                           GMode="@GtieMode"
                                                           IsEditing="@isTieEditing"
                                                           Visibility="@Visibility"
-                                                          TbItems="@TbItems"
+                                                          EnsTbls="@EnsTbls"
                                                           EdRowguid="@EdTiwRowguid" />
                                         }
                                     </div>
 
                                     <!-- Additional dynamic attributes -->
-                                    <div class="card">
+                                    @* <div class="card">
                                         <div class="card-body p-3">
                                             @foreach (var ua in LsVars.Where(a => a.Gvars == 6 && a.Itb == Ugpe))
                                             {
@@ -131,11 +130,9 @@
                                                                 ?? new Tieatr
                                                                 {
                                                                     Xadd1 = -1,
-                                                                    Igsg = ua.Xseq,
                                                                     Itie = curTie.Id,
                                                                     Atyp = ua.Atyp,
-                                                                    Aztyp = ua.Ztyp,
-                                                                    Svala = "",
+                                                                    Aval = "",
                                                                     AtState = AEntState.NewAdded
                                                                 };
                                                 <FormField Label="@ua.Liba" IsVisible=true>
@@ -143,7 +140,7 @@
                                                     { //et actif 
                                                         if (ua.Zfro == 2)
                                                         {
-                                                            <InputSelect @bind-Value="icatr.Svala" class="form-select">
+                                                            <InputSelect @bind-Value="icatr.Aval" class="form-select">
                                                                 <option value="0">?choisir</option>
                                                                 @foreach (var tob in TbItems.Where(ut => ut.Pxcod == ua.Xdpd))
                                                                 {
@@ -153,17 +150,17 @@
                                                         }
                                                         else
                                                         {
-                                                            <InputText @bind-Value="icatr.Svala" class="form-control" />
+                                                            <InputText @bind-Value="icatr.Aval" class="form-control" />
                                                         }
                                                     }
                                                     else
                                                     {
-                                                        <div class="form-control-plaintext">@icatr.Svala</div>
+                                                        <div class="form-control-plaintext">@icatr.Aval</div>
                                                     }
                                                 </FormField>
                                             }
                                         </div>
-                                    </div>
+                                    </div> *@
                                 </EditForm>
                             </Content>
                         </Tab>
@@ -211,7 +208,7 @@
                                                           GMode="@GaflMode"
                                                           IsEditing="@isAflEditing"
                                                           AflVisibility="@AflVisibility"
-                                                          TbItems="@TbItems"
+                                                          EnsTbls="@EnsTbls"
                                                           EdRowguid="@EdAflRowguid"
                                                           SelectedGroup="@IMyGAfl"
                                                           ConfirmEdit="@(p => ConfirmEdit(p, EntityLevel.Rub))"
@@ -237,33 +234,33 @@
                                 {
                                     <div class="container row">
                                         @* SelectedItemsChanged="OnSelectedItemsChanged" *@
-                                        <Grid TItem="Tiersp"
+                                        <Grid TItem="TierspDto"
                                               Data="@WaitingTiersps"
                                               AllowSelection="true"
                                               SelectionMode="GridSelectionMode.Multiple"
                                               Responsive="true">
                                             <GridColumns>
-                                                <GridColumn TItem="Tiersp" HeaderText="No">
+                                                <GridColumn TItem="TierspDto" HeaderText="No">
                                                     <ChildContent Context="item">
                                                         <span>@(item.Xedt1 == -1 ? item?.Iui : (item?.Iui == 0 ? item?.Iele : item?.Iui))</span>
                                                     </ChildContent>
                                                 </GridColumn>
-                                                <GridColumn TItem="Tiersp" HeaderText="Dossier">
+                                                <GridColumn TItem="TierspDto" HeaderText="Dossier">
                                                     <ChildContent Context="item">
                                                         @item.Xmatri
                                                     </ChildContent>
                                                 </GridColumn>
-                                                <GridColumn TItem="Tiersp" HeaderText="Nom">
+                                                <GridColumn TItem="TierspDto" HeaderText="Nom">
                                                     <ChildContent Context="item">
                                                         @item.Nom
                                                     </ChildContent>
                                                 </GridColumn>
-                                                <GridColumn TItem="Tiersp" HeaderText="Pnom">
+                                                <GridColumn TItem="TierspDto" HeaderText="Pnom">
                                                     <ChildContent Context="item">
                                                         @item.Pnom
                                                     </ChildContent>
                                                 </GridColumn>
-                                                <GridColumn TItem="Tiersp" HeaderText="etat" IsVisible="true">
+                                                <GridColumn TItem="TierspDto" HeaderText="etat" IsVisible="true">
                                                     <HeaderContent>
                                                         @* @if (siyaItem)
                                                                     {
@@ -298,34 +295,34 @@
             }
             <!--En bas ordinaire-->
             <div class="container row">
-                <Grid TItem="Tiersp"
+                <Grid TItem="TierspDto"
                       Data="@WaitingTiersps"
                       @key="TiwRenderKey"
                       AllowDetailView="true"
                       AllowPaging="true"
                       Responsive="true">
                     <GridColumns>
-                        <GridColumn TItem="Tiersp" HeaderText="No">
+                        <GridColumn TItem="TierspDto" HeaderText="No">
                             <ChildContent Context="item">
                                 <span>@(item.Xedt1 == -1 ? item?.Iui : (item?.Iui == 0 ? item?.Iele : item?.Iui))</span>
                             </ChildContent>
                         </GridColumn>
-                        <GridColumn TItem="Tiersp" HeaderText="Dossier">
+                        <GridColumn TItem="TierspDto" HeaderText="Dossier">
                             <ChildContent Context="item">
                                 @item.Xmatri
                             </ChildContent>
                         </GridColumn>
-                        <GridColumn TItem="Tiersp" HeaderText="Nom">
+                        <GridColumn TItem="TierspDto" HeaderText="Nom">
                             <ChildContent Context="item">
                                 @item.Nom
                             </ChildContent>
                         </GridColumn>
-                        <GridColumn TItem="Tiersp" HeaderText="Pnom">
+                        <GridColumn TItem="TierspDto" HeaderText="Pnom">
                             <ChildContent Context="item">
                                 @item.Pnom
                             </ChildContent>
                         </GridColumn>
-                        <GridColumn TItem="Tiersp" HeaderText="etat" IsVisible="true">
+                        <GridColumn TItem="TierspDto" HeaderText="etat" IsVisible="true">
                             <ChildContent Context="item">
                                 <InputSelect @bind-Value="item.Eta" disabled="true">
                                     <option class="jchx" value="0">?choisir</option>
@@ -336,7 +333,7 @@
                                 </InputSelect>
                             </ChildContent>
                         </GridColumn>
-                        <GridColumn TItem="Tiersp" HeaderText="Actions" Filterable="false" Class="xcol2 actions-col">
+                        <GridColumn TItem="TierspDto" HeaderText="Actions" Filterable="false" Class="xcol2 actions-col">
                             <ChildContent Context="item">
                                 @switch (GetRowState(item.Rowguid))
                                 {
@@ -380,33 +377,33 @@
                             </ChildContent>
                         </GridColumn>
                     </GridColumns>
-                    <GridDetailView TItem="Tiersp" Context="selectedPln">
-                        <Grid TItem="Tieafl"
+                    <GridDetailView TItem="TierspDto" Context="selectedPln">
+                        <Grid TItem="TieaflDto"
                               Data="@selectedPln.Tieafls"
                               @key="RubRenderKey"
                               Responsive="true">
                             <GridColumns>
-                                <GridColumn TItem="Tieafl" HeaderText="No">
+                                <GridColumn TItem="TieaflDto" HeaderText="No">
                                     <ChildContent Context="item">
                                         <span>@(item.Xedt1 == -1 ? item?.Iui : (item?.Iui == 0 ? item?.Iele : item?.Iui))</span>
                                     </ChildContent>
                                 </GridColumn>
-                                <GridColumn TItem="Tieafl" HeaderText="Dossier">
+                                <GridColumn TItem="TieaflDto" HeaderText="Dossier">
                                     <ChildContent Context="item">
                                         @item.Xmatri
                                     </ChildContent>
                                 </GridColumn>
-                                <GridColumn TItem="Tieafl" HeaderText="Nom">
+                                <GridColumn TItem="TieaflDto" HeaderText="Nom">
                                     <ChildContent Context="item">
                                         @item.Nom
                                     </ChildContent>
                                 </GridColumn>
-                                <GridColumn TItem="Tieafl" HeaderText="Pnom">
+                                <GridColumn TItem="TieaflDto" HeaderText="Pnom">
                                     <ChildContent Context="item">
                                         @item.Pnom
                                     </ChildContent>
                                 </GridColumn>
-                                <GridColumn TItem="Tieafl" HeaderText="etat" IsVisible="true">
+                                <GridColumn TItem="TieaflDto" HeaderText="etat" IsVisible="true">
                                     <ChildContent Context="item">
                                         <InputSelect @bind-Value="item.Eta" disabled="true">
                                             <option class="jchx" value="0">?choisir</option>
@@ -417,7 +414,7 @@
                                         </InputSelect>
                                     </ChildContent>
                                 </GridColumn>
-                                <GridColumn TItem="Tieafl" HeaderText="Actions" Filterable="false" Class="xcol2 actions-col">
+                                <GridColumn TItem="TieaflDto" HeaderText="Actions" Filterable="false" Class="xcol2 actions-col">
                                     <ChildContent Context="item">
                                         @switch (GetRowState(item.Rowguid))
                                         {
@@ -550,9 +547,9 @@
     [Parameter]
     public RenderFragment ChildContent { get; set; }
     [Parameter]
-    public MyODataContext curODContext { get; set; }
+    public IODataClient _InODaClient { get; set; }
     [Parameter]
-    public Gxorga curOrga { get; set; } = new();
+    public GxorgaDto curOrga { get; set; } = new();
     [Parameter]
     public MyShareVars toChild { get; set; }
     [Parameter]
@@ -562,10 +559,10 @@
     [Parameter]
     public int toMenu { get; set; }
     [Parameter]
-    public List<Gptbl> TbItems { get; set; } // Dropdown options
+    public List<Gtabl> EnsTbls { get; set; } // Dropdown options
     //guard
     [Parameter]
-    public PendingChangesGuard _guard { get; set; }
+    public IPendingChangesGuard _guard { get; set; }
     [Parameter]
     public EventCallback<PendingState> OnPendingStateChanged { get; set; }
     [Parameter]
@@ -642,8 +639,8 @@
     private string atrTitle = "";
 
     private string atrDest = "Programmes de Saisie";
-    private Tiersp curTie = new();
-    private Tieafl curAfl = new();
+    private TierspDto curTie = new();
+    private TieaflDto curAfl = new();
     //private Rubfmt curFmat = new();
 
 
@@ -651,8 +648,8 @@
     /// </summary> <summary>
 
     //data
-    private List<Tiersp> MyDaTies { get; set; } = new();
-    private List<Tieafl> MyDaAfls { get; set; } = new();  
+    private List<TierspDto> MyDaTies { get; set; } = new();
+    private List<TieaflDto> MyDaAfls { get; set; } = new();  
 
     // Workflow flags
     private bool isTieAdd;
@@ -663,16 +660,16 @@
     private Dictionary<string, bool> Visibility = new();
     private Dictionary<string, bool> AflVisibility = new();
 
-    private Tieafl? curAfil = new();
+    private TieaflDto? curAfil = new();
     //add/edit options
     private bool AllowMultipleEdits { get; set; } = false;
     private bool isFiltre { get; set; } = false;
     private bool isRubCodeValid = false; //child
     //modals
     private bool isModalVisible = false;
-    private List<Tiersp> WaitingTiersps => MyDaTies.Where(tw => tw.Xadd1 != -1).ToList();
+    private List<TierspDto> WaitingTiersps => MyDaTies.Where(tw => tw.Xadd1 != -1).ToList();
     private bool canbeVerified => WaitingTiersps.Any();
-    private HashSet<Tiersp> selectedTiersps = new();
+    private HashSet<TierspDto> selectedTiersps = new();
     private bool siyaItem => selectedTiersps.Any();
     //TABS
     private string ActiveTab { get; set; } = "Candidat";
@@ -680,8 +677,8 @@
 
     //PLAN
     private Guid? TiwRenderKey = null;
-    private Dictionary<Guid, Tiersp> _edPlnOriginals = new();
-    private Tiersp? draftTiw = null;
+    private Dictionary<Guid, TierspDto> _edPlnOriginals = new();
+    private TierspDto? draftTiw = null;
     private bool isAddTiw = false;
     private bool isEdtTiw = false;
     private Guid? AdTiwRowguid = null;
@@ -689,23 +686,23 @@
     private Guid? DlTiwRowguid = null;
     //RUBRIQUE
     private Guid? RubRenderKey = null;
-    private Dictionary<Guid, Tieafl> _edRubOriginals = new();
-    private Tieafl? draftAfl = null;
+    private Dictionary<Guid, TieaflDto> _edRubOriginals = new();
+    private TieaflDto? draftAfl = null;
     private bool isAddAfl = false;
     private bool isEdtRub = false;
     private Guid? AdAflRowguid = null;
     private Guid? EdAflRowguid = null;// Currently editing row ID
     private Guid? DlAflRowguid = null;
     //FORMAT
-    private Guid? FmtRenderKey = null;
-    private Dictionary<Guid, Rubfmt> _edFmtOriginals = new();
-    private Rubfmt? draftFmt = null;
-    private bool isAddFmt = false;
-    private bool isEdtFmt = false;
-    //private bool isDelFmt = false;
-    private Guid? AdFmtRowguid = null;
-    private Guid? EdFmtRowguid = null;// Currently editing row ID
-    private Guid? DlFmtRowguid = null;
+    // private Guid? FmtRenderKey = null;
+    // private Dictionary<Guid, RubfmtDto> _edFmtOriginals = new();
+    // private RubfmtDto? draftFmt = null;
+    // private bool isAddFmt = false;
+    // private bool isEdtFmt = false;
+    // //private bool isDelFmt = false;
+    // private Guid? AdFmtRowguid = null;
+    // private Guid? EdFmtRowguid = null;// Currently editing row ID
+    // private Guid? DlFmtRowguid = null;
 
     bool IsTiwRowLocked(Guid rowGuid) =>
         !AllowMultipleEdits &&
@@ -750,7 +747,7 @@
             //TbGpes = datbls?.Hdtbls ?? new List<Gtabl>();
             LsPlans = toChild?.LsPlans;
             Console.WriteLine($"Child init: Tiersps={curOrga.Tiersps?.Count ?? 0}");
-            Console.WriteLine($"nb. tbitems : {TbItems.Count}");
+            //Console.WriteLine($"nb. tbitems : {TbItems.Count}");
             //editcontext Model initialising
             curTie ??= new();  // Or load data here
             if (curOrga.Tiersps != null && curOrga.Tiersps.Any())
@@ -767,7 +764,7 @@
             else
             {
                 Console.WriteLine("Tiersps null/empty - initializing empty collections");
-                //MyDaTies = new ObservableCollection<Tiersp>();
+                //MyDaTies = new ObservableCollection<TierspDto>();
                 MyDaTies = new();
             }
             // Load visibility rules
@@ -788,10 +785,10 @@
     {
         Console.WriteLine("Visibility loaded 1");
         // ✅ Fix 1: Await authorization (no .Wait())
-        await _clieManager.SetAuthorizationHeaderAsync("AUTHClient");
+        await _clieManager.SetAuthorizationHeaderAsync("AuthClient");
 
         var urlPrinc = $"regis/colsvisibility/{curOrga.Idorg}/1/1/{Ugpe}/1";
-        var jsonPrinc = await _clieManager.SendRequestAsync("AUTHClient", HttpMethod.Get, urlPrinc);
+        var jsonPrinc = await _clieManager.SendRequestAsync("AuthClient", HttpMethod.Get, urlPrinc);
 
         Visibility = System.Text.Json.JsonSerializer.Deserialize<Dictionary<string, bool>>(jsonPrinc) ?? new();
         Console.WriteLine("Visibility loaded 2");
@@ -801,10 +798,10 @@
     {
         Console.WriteLine("AflVisibility loaded 1");
         // ✅ Fix 2: Same await pattern
-        await _clieManager.SetAuthorizationHeaderAsync("AUTHClient");
+        await _clieManager.SetAuthorizationHeaderAsync("AuthClient");
 
         var url = $"regis/colsvisibility/{curOrga.Idorg}/1/2/{IMyGAfl}/2";
-        var json = await _clieManager.SendRequestAsync("AUTHClient", HttpMethod.Get, url);
+        var json = await _clieManager.SendRequestAsync("AuthClient", HttpMethod.Get, url);
 
         AflVisibility = System.Text.Json.JsonSerializer.Deserialize<Dictionary<string, bool>>(json) ?? new();
         Console.WriteLine("AflVisibility loaded 2");
@@ -816,7 +813,7 @@
 
         // 1. Create new entity
         var lsnb = NextSeq(MyDaTies, p => p.Iui);
-        var newTiw = new Tiersp
+        var newTiw = new TierspDto
         {
             Rowguid = Guid.NewGuid(),
             Idorg = curOrga.Idorg,
@@ -836,7 +833,7 @@
         MyDaTies.Insert(0, newTiw);
 
         // 3. Prepare stable UI mirror (only once per add)
-        draftTiw = (Tiersp)DeepClone(newTiw);
+        draftTiw = (TierspDto)DeepClone(newTiw);
         EdTiwRowguid = draftTiw.Rowguid;
         GtieMode = GridMode.TiersAdding;
         isEdtTiw = false;
@@ -853,7 +850,7 @@
     }
 
 
-    private async Task StartRubNew(Tiersp parentTiw, int rubType)
+    private async Task StartRubNew(TierspDto parentTiw, int rubType)
     {
         //Ensure parent is persisted before adding children
         if (parentTiw.Id <= 0)
@@ -868,7 +865,7 @@
         var nextSeq = NextSeq(parentTiw.Tieafls, p => p.Iui);
 
         // Create new Rubrique
-        var newRub = new Tieafl
+        var newRub = new TieaflDto
         {
             Rowguid = Guid.NewGuid(),
             Itie = parentTiw.Id,
@@ -891,11 +888,11 @@
 
         // Ensure child collection exists
         if (parentTiw.Tieafls == null)
-            parentTiw.Tieafls = new DataServiceCollection<Tieafl>();
+            parentTiw.Tieafls = new List<TieaflDto>();
 
         // Insert into domain collection
         parentTiw.Tieafls.Insert(0, newRub);
-        draftAfl = (Tieafl)DeepClone(newRub);
+        draftAfl = (TieaflDto)DeepClone(newRub);
         EdAflRowguid = draftAfl?.Rowguid;
         GaflMode = GridMode.AflsAdding;
         isAddAfl = true;
@@ -910,7 +907,7 @@
         //@curTie.Tieafls.Add(curAfl);
         StateHasChanged();
     }
-    private void CancelRubNew(Tiersp parentTiw)
+    private void CancelRubNew(TierspDto parentTiw)
     {
         if (draftAfl == null) return;
 
@@ -942,9 +939,11 @@
 
         Console.WriteLine("✖ Cancelled new child record.");
     }
-    private async Task StartTiwEdit(Tiersp item, Guid rowguid)
+    private async Task StartTiwEdit(TierspDto item, Guid rowguid)
     {
-        var isNew = StaticMethods.IsNew(curODContext, item, e => e.Id);
+        //bool isNew = true; //await _InODaClient.IsNewEntity(item); // Synchronous call to check if entity is new
+        //var isNew = StaticMethods.IsNew(curODContext, item, e => e.Id);
+        bool isNew = item.Id == default; // for int, default == 0
         if (isNew)
         { //not saved yet
             Imessage = "🚫 Cannot edit new Plan: Please save it first.";
@@ -954,8 +953,8 @@
         item.Xedt1 = -1;
         if (item.Iele != 0) item.Iui = (int)item.Iele;
 
-        draftTiw = (Tiersp)DeepClone(item);
-        _edPlnOriginals[rowguid] = (Tiersp)DeepClone(item);
+        draftTiw = (TierspDto)DeepClone(item);
+        _edPlnOriginals[rowguid] = (TierspDto)DeepClone(item);
         EdTiwRowguid = AllowMultipleEdits ? null : rowguid;
         GtieMode = GridMode.TiersEditing;
         isAddTiw = false;
@@ -966,7 +965,7 @@
         //StateHasChanged();
     }
 
-    private async Task StartManTiwEdit(Tiersp mytiw, int mytst)
+    private async Task StartManTiwEdit(TierspDto mytiw, int mytst)
     {
         // Domain-level tracking
         curTie = mytiw;
@@ -977,7 +976,7 @@
     {
         switch (item)
         {
-            case Tieafl tieafl:
+            case TieaflDto tieafl:
                 await StartRubEdit(tieafl, rowguid); // your existing method
                 break;
 
@@ -990,9 +989,10 @@
         }
     }
 
-    private async Task StartRubEdit(Tieafl item, Guid rowguid)
+    private async Task StartRubEdit(TieaflDto item, Guid rowguid)
     {
-        var isNew = StaticMethods.IsNew(curODContext, item, e => e.Id);
+        //var isNew = StaticMethods.IsNew(curODContext, item, e => e.Id);
+        bool isNew = item.Id == default; // for int, default == 0
         if (isNew)
         {
             Imessage = "🚫 Cannot edit new Rubrique: Please save it first.";
@@ -1004,9 +1004,9 @@
         if (item.Iele != 0) item.Iui = (int)item.Iele;
 
         SetRowState(rowguid, RowState.EditPending);
-        _edRubOriginals[rowguid] = (Tieafl)DeepClone(item);
+        _edRubOriginals[rowguid] = (TieaflDto)DeepClone(item);
         EdAflRowguid = AllowMultipleEdits ? null : rowguid;
-        draftAfl = (Tieafl)DeepClone(item);
+        draftAfl = (TieaflDto)DeepClone(item);
         isEdtRub = true;
 
         StartRowEdit(rowguid, EntityLevel.Rub);
@@ -1017,35 +1017,35 @@
         {
             if (atr.AtState == AEntState.NewAdded)
             {
-                curODContext.AddObject("tieatrs", atr);  // Tracks + prepares INSERT
-                Console.WriteLine($"➕ NEW {typeof(Tieatr).Name} → AddObject");
+                _guard.TrackInsert("tieatrs", atr);
+                Console.WriteLine($"➕ NEW {atr.Liba} → AddObject");
             }
             else
             {
-                curODContext.SafeAttachOrUpdate(atr, "tieatrs", false);  // Your method!
+                var key = GetEntityKey(atr); // helper to extract PK
+                _guard.TrackUpdate("tieatrs", key, atr);
                 Console.WriteLine($"✏️ EXISTING → SafeAttachOrUpdate");
             }
-            curODContext.UpdateObject(atr);
-            Console.WriteLine($"✅ {typeof(Tieatr).Name} confirmed → tracked");
+            Console.WriteLine($"✅ {atr.Liba} confirmed → tracked");
         }
     }
     // ✅ 2.1 CONFIRM OPERATIONS
-    //private async Task ConfirmPlnEdit(Tiersp item)
-    private async Task ConfirmPlnEdit(Tiersp item)
+    //private async Task ConfirmPlnEdit(TierspDto item)
+    private async Task ConfirmPlnEdit(TierspDto item)
     {
         await UnifiedEditAction(item, true, EntityLevel.Plan);
         await TieatSaveAsync();
     }
 
-    private async Task ConfirmRubEdit(Tieafl item) =>
+    private async Task ConfirmRubEdit(TieaflDto item) =>
         await UnifiedEditAction(item, true, EntityLevel.Rub);
     // ✅ 2.2 CANCEL OPERATIONS
-    private async Task CancelPlnEdit(Tiersp item)
+    private async Task CancelPlnEdit(TierspDto item)
     {
         await UnifiedEditAction(item, false, EntityLevel.Plan);
         //TieatCancelAsync();
     }
-    private async Task CancelRubEdit(Tieafl item) =>
+    private async Task CancelRubEdit(TieaflDto item) =>
         await UnifiedEditAction(item, false, EntityLevel.Rub);
 
     private async Task UnifiedEditAction(object item, bool isConfirm, EntityLevel level)
@@ -1053,21 +1053,21 @@
         switch (level)
         {
             case EntityLevel.Plan:
-                await ProcessPlan((Tiersp)item, isConfirm);
+                await ProcessPlan((TierspDto)item, isConfirm);
                 break;
             case EntityLevel.Rub:
-                await ProcessRub((Tieafl)item, isConfirm);
+                await ProcessRub((TieaflDto)item, isConfirm);
                 break;
                 // case EntityLevel.Rub:
                 //     await ProcessFmt((Rubfmt)item, isConfirm);
                 //     break;
         }
     }
-    private async Task ProcessPlan(Tiersp pln, bool isConfirm)
+    private async Task ProcessPlan(TierspDto pln, bool isConfirm)
     {
         await ProcessEntity(pln, isConfirm, "Tiersps", p => ValidatePln(p));
     }
-    private async Task ProcessRub(Tieafl rub, bool isConfirm)
+    private async Task ProcessRub(TieaflDto rub, bool isConfirm)
     {
         await ProcessEntity(rub, isConfirm, "Tieafls", r => ValidateRub(r));
     }
@@ -1101,20 +1101,19 @@
             bool isNew = GetXadd1(entity) == -1;  // Assumes GetXadd1<T>
             if (isNew)
             {
-                curODContext.AddObject(entitySet, entity);  // Tracks + prepares INSERT
+                _guard.TrackInsert(entitySet, entity);
                 Console.WriteLine($"➕ NEW {typeof(T).Name} → AddObject");
             }
             else
             {
-                curODContext.SafeAttachOrUpdate(entity, entitySet, false);  // Your method!
+                var key = GetEntityKey(entity); // helper to extract PK
+                _guard.TrackUpdate(entitySet, key, entity);
                 Console.WriteLine($"✏️ EXISTING → SafeAttachOrUpdate");
             }
 
             // 🔥 4. Confirm flags ONCE
             SetFlags(entity, 0, -1, 0);  // Xadd1=0 confirmed
 
-            // 🔥 5. SINGLE UpdateObject (applies flags + changes)
-            curODContext.UpdateObject(entity);
             Console.WriteLine($"✅ {typeof(T).Name} confirmed → tracked");
 
             // 🔥 6. UI + notify
@@ -1129,8 +1128,7 @@
         {
             if (GetXadd1(entity) == -1)  // New only
             {
-                if (curODContext.IsEntityTracked(entity))
-                    curODContext.Detach(entity);
+                _guard.TrackDelete(entitySet, entity);
                 RemoveFromParentCollection(entity);
             }
             else
@@ -1143,6 +1141,20 @@
             Imessage = "";
         }
         StateHasChanged();
+    }
+    private object GetEntityKey<TDto>(TDto entity)
+    {
+        switch (entity)
+        {
+            case TierspDto pln:
+                return pln.Id;
+            case TieaflDto rub:
+                return rub.Id;
+            //case RubfmtDto fmt:
+            //    return fmt.Id;
+            default:
+                throw new InvalidOperationException($"Unknown entity type {typeof(TDto).Name}");
+        }
     }
     // 🔥 Generic Rowguid (no reflection)
     private static Guid GetRowguid<T>(T entity) where T : class
@@ -1165,10 +1177,10 @@
     private void RemoveFromParentCollection<T>(T entity)
     {
         // Plngen: top-level
-        if (entity is Tiersp pln && MyDaTies.Any(p => p.Rowguid == pln.Rowguid))
+        if (entity is TierspDto pln && MyDaTies.Any(p => p.Rowguid == pln.Rowguid))
             MyDaTies.Remove(pln);
         // Rubvar: parent Plngen.Rubvars
-        else if (entity is Tieafl rub)
+        else if (entity is TieaflDto rub)
         {
             var parent = MyDaTies.FirstOrDefault(p => p.Id == rub.Itie);
             parent?.Tieafls?.Remove(rub);
@@ -1178,9 +1190,9 @@
     {
         switch (typeof(T).Name)
         { // ONLY editable UI fields - 5-10x faster than reflection!
-            case nameof(Tiersp):
+            case nameof(TierspDto):
                 if (draftTiw == null) return;
-                var pln = (Tiersp)(object)gridItem;
+                var pln = (TierspDto)(object)gridItem;
                 pln.Smatri = draftTiw.Smatri; //designation
                 pln.Xmatri = draftTiw.Xmatri; //abrege
                 pln.Nom = draftTiw.Nom; //formule-non valider
@@ -1190,9 +1202,9 @@
                 pln.Xadd1 = draftTiw.Xadd1;
                 pln.Xedt1 = draftTiw.Xedt1;
                 break;
-            case nameof(Tieafl):
+            case nameof(TieaflDto):
                 if (draftAfl == null) return;
-                var rub = (Tieafl)(object)gridItem;
+                var rub = (TieaflDto)(object)gridItem;
                 rub.Irang = draftAfl.Irang;
                 rub.Smatri = draftAfl.Smatri; //designation
                 rub.Xmatri = draftAfl.Xmatri; //abrege
@@ -1225,19 +1237,19 @@
     {
         switch (typeof(T).Name)
         {
-            case nameof(Tiersp):
+            case nameof(TierspDto):
                 draftTiw = null;
                 Console.WriteLine("EdTiwRowguid is become null");
                 EdTiwRowguid = null;
                 break;
-            case nameof(Tieafl):
+            case nameof(TieaflDto):
                 draftAfl = null;
                 EdAflRowguid = null;
                 break;
-            case nameof(Rubfmt):
-                draftFmt = null;
-                EdFmtRowguid = null;
-                break;
+            // case nameof(Rubfmt):
+            //     draftFmt = null;
+            //     EdFmtRowguid = null;
+            //     break;
         }
     }
     // ROWS MANAGEMENT
@@ -1253,7 +1265,7 @@
         _activeEditLevel = null;
         StateHasChanged();
     }
-    private string GetTiwRowClass(Tiersp pln)
+    private string GetTiwRowClass(TierspDto pln)
     {
         var state = GetRowState(pln.Rowguid);
         var isLight = IsLightBackground(pln.Rowguid);  // 🔥 Uses your existing
@@ -1264,7 +1276,7 @@
 
         return GetRowCss(state, isLight, pln.Rowguid, isActiveEdit, isOtherRowEditing);
     }
-    private string GetRubRowClass(Tieafl rub)
+    private string GetRubRowClass(TieaflDto rub)
     {
         var state = GetRowState(rub.Rowguid);
         var isLight = IsLightBackground(rub.Rowguid);  // 🔥 Uses your existing
@@ -1275,23 +1287,23 @@
 
         return GetRowCss(state, isLight, rub.Rowguid, isActiveEdit, isOtherRowEditing);
     }
-    private string GetFmtRowClass(Rubfmt fmt)
-    {
-        var state = GetRowState(fmt.Rowguid);
-        var isLight = IsLightBackground(fmt.Rowguid);  // 🔥 Uses your existing
+    // private string GetFmtRowClass(Rubfmt fmt)
+    // {
+    //     var state = GetRowState(fmt.Rowguid);
+    //     var isLight = IsLightBackground(fmt.Rowguid);  // 🔥 Uses your existing
 
-        // 🔥 NEW: Single Active Row Editing
-        var isActiveEdit = _activeEditRowguid == fmt.Rowguid;
-        var isOtherRowEditing = _activeEditRowguid != null && !isActiveEdit;
+    //     // 🔥 NEW: Single Active Row Editing
+    //     var isActiveEdit = _activeEditRowguid == fmt.Rowguid;
+    //     var isOtherRowEditing = _activeEditRowguid != null && !isActiveEdit;
 
-        return GetRowCss(state, isLight, fmt.Rowguid, isActiveEdit, isOtherRowEditing);
-    }
+    //     return GetRowCss(state, isLight, fmt.Rowguid, isActiveEdit, isOtherRowEditing);
+    // }
     private RowState GetRowState(Guid rowguid, object? parent = null)
     {
         if (_rowStates.TryGetValue(rowguid, out var state)) return state;
 
         // Context-aware lookup
-        if (parent is Tiersp mytiw)
+        if (parent is TierspDto mytiw)
         {
             if (mytiw.Rowguid == rowguid && IsTiwRowLocked(rowguid)) return RowState.Locked;
             var rub = mytiw.Tieafls?.FirstOrDefault(r => r.Rowguid == rowguid);
@@ -1326,8 +1338,8 @@
     {
         switch (typeof(T).Name)
         {
-            case nameof(Tiersp): ResetPlnUI(); break;
-            case nameof(Tieafl): ResetRubUI(); break;
+            case nameof(TierspDto): ResetPlnUI(); break;
+            case nameof(TieaflDto): ResetRubUI(); break;
                 //case nameof(Rubfmt): ResetFmtUI(); break;
         }
     }
@@ -1430,32 +1442,39 @@
     {
         switch (level)
         {
-            case EntityLevel.Plan: await ProcessDelete<Tiersp>(item as Tiersp, isConfirm); break;
-            case EntityLevel.Rub: await ProcessDelete<Tieafl>(item as Tieafl, isConfirm); break;
+            case EntityLevel.Plan: await ProcessDelete<TierspDto>(item as TierspDto, isConfirm); break;
+            case EntityLevel.Rub: await ProcessDelete<TieaflDto>(item as TieaflDto, isConfirm); break;
                 //case EntityLevel.Rub: await ProcessDelete<Rubfmt>(item as Rubfmt, isConfirm); break;
         }
     }
-    private async Task ProcessDelete<T>(T item, bool isConfirm) where T : class
+    private async Task ProcessDelete<TDto>(TDto item, bool isConfirm) where TDto : class
     {
         if (item == null) return;
 
-        var rowguid = (Guid)typeof(T).GetProperty("Rowguid")!.GetValue(item)!;
+        var rowguid = (Guid)typeof(TDto).GetProperty("Rowguid")!.GetValue(item)!;
 
         if (isConfirm)
         {
             // 🔥 Generic delete logic
             RemoveFromParentCollection(item);
 
-            if (!curODContext.IsEntityTracked(item))
-                curODContext.Context.AttachTo(GetEntitySetName<T>(), item);
+            // Extract PK using your helper
+            var key = GetEntityKey(item);
 
-            curODContext.Context.DeleteObject(item);
+            // Queue delete in guard
+            //_guard.TrackDelete("Gxorgas", key);
+
+            _guard.TrackDelete(GetEntitySetName<TDto>(), key);
+            Console.WriteLine($"🗑️ {typeof(TDto).Name} queued for delete");
+
+            // Flags + UI
             SetDeleteFlags(item);
             SetRowState(rowguid, RowState.Normal);
-            await NotifyPendingChanges();
+            //await NotifyPendingChanges();
         }
         else
         {
+            // Cancel delete → reset UI only
             SetRowState(rowguid, RowState.Normal);
         }
 
@@ -1465,18 +1484,18 @@
     {
         return typeof(T) switch
         {
-            Type t when t == typeof(Tiersp) => "Tiersps",
-            Type t when t == typeof(Tieafl) => "Tieafls",
-            //Type t when t == typeof(Rubfmt) => "Rubfmts",
+            Type t when t == typeof(TierspDto) => "Tiersps",
+            Type t when t == typeof(TieaflDto) => "Tieafls",
             _ => throw new ArgumentException($"Unknown entity type: {typeof(T).Name}")
         };
     }
+    
     private string GetEntitySet(object entity)
     {
         return entity switch
         {
-            Tiersp _ => "Tiersps",
-            Tieafl _ => "Tieafls",
+            TierspDto _ => "Tiersps",
+            TieaflDto _ => "Tieafls",
             //Rubfmt _ => "Rubfmts",
             _ => throw new ArgumentException("Unknown entity type")
         };
@@ -1487,13 +1506,13 @@
     {
         return item switch
         {
-            Tiersp pln => ValidatePln(pln),
-            Tieafl rub => ValidateRub(rub),
+            TierspDto pln => ValidatePln(pln),
+            TieaflDto rub => ValidateRub(rub),
             //Rubfmt fmt => ValidateFmt(fmt),
             _ => true
         };
     }
-    private bool ValidatePln(Tiersp? mytiw)
+    private bool ValidatePln(TierspDto? mytiw)
     {
         Console.WriteLine($"A verifier {mytiw.Nom}");
         //liba
@@ -1518,7 +1537,7 @@
         // }
         return true;
     }
-    private bool ValidateRub(Tieafl myrub)
+    private bool ValidateRub(TieaflDto myrub)
     {
         //liba
         if (string.IsNullOrEmpty(myrub.Nom)
@@ -1630,18 +1649,19 @@
     //     }
     // }
 
-    private void MarkAsModified(object entity)
+    private void MarkAsModified<TDto>(TDto item, string entitySet) where TDto : class
     {
-        // Reset flags universally
-        if (entity is Tiersp pln) { pln.Xedt1 = pln.Xadd1 = pln.Xdel1 = 0; }
-        else if (entity is Tieafl rub) { rub.Xedt1 = rub.Xadd1 = rub.Xdel1 = 0; }
-        else if (entity is Rubfmt fmt) { fmt.Xedt1 = fmt.Xadd1 = fmt.Xdel1 = 0; }
+        // Reset flags (your convention)
+        SetFlags(item, 0, 0, 0);  // Xadd1=Xedt1=Xdel1=0
 
-        try { curODContext.Context.AttachTo(GetEntitySet(entity), entity); }
-        catch (InvalidOperationException) { }  // Already tracked
+        // Extract PK using your helper
+        var key = GetEntityKey(item);
 
-        curODContext.Context.UpdateObject(entity);  // 🔥 KEY: Context.UpdateObject()
-        Console.WriteLine($"✅ {entity.GetType().Name} marked Modified");
+        // Queue update in guard
+        _guard.TrackUpdate(entitySet, key, item);
+
+        Console.WriteLine($"modified liba {((dynamic)item).Liba} et abg {((dynamic)item).Abg}");
+        Console.WriteLine($"✅ {entitySet} marked Modified (queued for update)");
     }
     private object DeepClone(object entity)
     {
@@ -1654,7 +1674,7 @@
         return JsonConvert.DeserializeObject(json, entity.GetType(), settings)!;
     }
 
-    private Task OnSelectedItemsChanged(HashSet<Tiersp> myties)
+    private Task OnSelectedItemsChanged(HashSet<TierspDto> myties)
     {
         selectedTiersps = myties is not null && myties.Any() ? myties : new();
         return Task.CompletedTask;
@@ -1665,7 +1685,7 @@
 
         return true;
     }
-    bool AreRowsEqual(Tieafl row1, Tieafl row2) =>
+    bool AreRowsEqual(TieaflDto row1, TieaflDto row2) =>
         row1.Liba == row2.Liba && row1.Abg == row2.Abg;
     private int NextSeq<T>(IEnumerable<T> source, Func<T, int?> selector)
     {
@@ -1673,7 +1693,7 @@
         return maxSeq + 1;
     }
     //FILTRES
-    private Grid<Tiersp> grid = default!;
+    private Grid<TierspDto> grid = default!;
     private async void TogglePlnFiltering()
     {
         isPlnFilteringEnabled = !isPlnFilteringEnabled;
@@ -1698,7 +1718,7 @@
         return Task.CompletedTask;
     }
     
-    private Task HandleTieSave(Tiersp entity)
+    private Task HandleTieSave(TierspDto entity)
     {
         // Handle modal entity save
         // For example, save to the database or update the UI
@@ -1727,7 +1747,7 @@
         return EdState.TryGetValue(oId, out bool onEditing) && onEditing ? "Confirm" : "Edit";
     }
 
-    private void OnChlFocusHandler(Tiersp mypl, Tieafl myvar)
+    private void OnChlFocusHandler(TierspDto mypl, TieaflDto myvar)
     {
 
     }
@@ -1738,7 +1758,7 @@
         Console.WriteLine($"Field edited: {e.FieldIdentifier.FieldName}");
         // Place your logic here when a field is edited
     }
-    private void ResetEditContext(Tiersp model)
+    private void ResetEditContext(TierspDto model)
     {
         // Dispose old handlers before replacing
         if (edTiwContext != null)
@@ -1752,7 +1772,7 @@
     public void Dispose()  // ← ADD THIS
     {
         Console.WriteLine("🧹 Child Prubsaie cleaning up");
-        _guard.DiscardUnconfirmedAdds<Tiersp>();
-        _guard.DiscardUnconfirmedAdds<Tieafl>();
+        // _guard.DiscardUnconfirmedAdds<TierspDto>();
+        // _guard.DiscardUnconfirmedAdds<TieaflDto>();
     }
 }

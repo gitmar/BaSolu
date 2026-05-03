@@ -15,6 +15,9 @@ namespace GxPilo.Services
             HttpRequestMessage request, CancellationToken cancellationToken)
         {
             var token = await _localStorage.GetItemAsync<string>("blazToken");
+            Console.WriteLine($"[AuthHandler] Request: {request.Method} {request.RequestUri}");
+            Console.WriteLine($"[AuthHandler] Token exists: {!string.IsNullOrWhiteSpace(token)}");
+            Console.WriteLine($"[AuthHandler] Auth before: {request.Headers.Authorization}");
             if (!string.IsNullOrEmpty(token))
             {
                 request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);

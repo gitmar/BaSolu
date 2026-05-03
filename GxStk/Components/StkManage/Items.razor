@@ -1,13 +1,15 @@
 ﻿@page "/items"
 
-@using GxWapi.DaModels
 @using GxStk.Services
-
-@inject ItemClientService ItemService
+@using GxShared.GxDtos
+@using GxShared.Sess
+@using Simple.OData.Client
+ 
+@* @inject ItemClientService ItemService *@
 
 <h3>Items</h3>
 
-@if (items == null)
+@if (DaItems == null)
 {
     <p>Loading...</p>
 }
@@ -21,11 +23,11 @@ else
             </tr>
         </thead>
         <tbody>
-            @foreach (var item in items)
+            @foreach (var item in DaItems)
             {
                 <tr>
-                    <td>@item.Xcod</td>
-                    <td>@item.Nom</td>
+                    <td>@item.Zcod</td>
+                    <td>@item.Liba</td>
                 </tr>
             }
         </tbody>
@@ -33,10 +35,18 @@ else
 }
 
 @code {
-    private List<Stkitum>? items;
+    
+    [Parameter] 
+    public GxorgaDto curOrga { get; set; }
+    [Parameter] 
+    public List<Gpdivh> LsDivs { get; set; }
+    [Parameter]
+    public IODataClient _InODaClient { get; set; }
+
+    private List<StkituDto>? DaItems;
 
     protected override async Task OnInitializedAsync()
     {
-        items = await ItemService.GetItemsAsync();
+        DaItems = curOrga.Stkitus.ToList();
     }
 }

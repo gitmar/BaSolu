@@ -1,279 +1,166 @@
-﻿using System.Reflection;
-
-using GxWapi.DaModels;
-
-using Microsoft.AspNetCore.Components;
-using Microsoft.AspNetCore.Components.Routing;
-using Microsoft.JSInterop;
-using Microsoft.OData.Client;
-
+﻿using AutoMapper;
+using GxShared.GxDtos;
+using Newtonsoft.Json;
+using Simple.OData.Client;
 namespace GxPilo.Services
 {
     public sealed class PendingChangesGuard : IAsyncDisposable
     {
-        private readonly IODataContextFactory _contextFactory;
-        private readonly NavigationManager _navManager;
-        private readonly IJSRuntime _jsRuntime;
-        private readonly IHttpClientFactory _httpClientFactory;
-        private MyODataContext? _ctx;
-        private bool _disposed;
-        private HttpClient? _httpClient;
-        private bool _isUpdating = false;
+        private readonly ODataClient _client;
+        private readonly IMapper _mapper;
+        private readonly List<Func<ODataClient, IMapper, Task>> _pendingOps = new();
+
+        private int _insertCount;
+        private int _updateCount;
+        private int _deleteCount;
+
         public event Action? OnChanges;
-        // 🔥 GENERALIZED 
-        private readonly Dictionary<Type, Func<object, bool>> _unconfirmedPredicates = new();
-        private readonly HashSet<Guid> _unconfirmedRowguids = new();
-        private readonly HashSet<object> _unconfirmedAdds = new();
-        private int _childPendingCount = 0;        
-        public PendingChangesGuard(
-            IODataContextFactory contextFactory,
-            NavigationManager navManager,
-            IJSRuntime jsRuntime,
-            IHttpClientFactory httpClientFactory)
+
+        public PendingChangesGuard(ODataClient client, IMapper mapper)
         {
-            _contextFactory = contextFactory;
-            _navManager = navManager;
-            _jsRuntime = jsRuntime;
-            _httpClientFactory = httpClientFactory;
-            _httpClient = httpClientFactory.CreateClient("ODataClient");
+            _client = client;
+            _mapper = mapper;
         }
 
-        public void AttachContext(MyODataContext ctx) => _ctx = ctx;
-
-        public bool IsUnconfirmedAdd<T>(T entity) where T : class
+        // ✅ Track Query
+        public void TrackQuery<TDto>(string entitySet, Func<IBoundClient<TDto>, IBoundClient<TDto>>? queryBuilder = null)
+    where TDto : class
         {
-            return _unconfirmedPredicates.TryGetValue(typeof(T), out var predicate) && predicate(entity);
-        }
-        // 🔥 NEW: Generic version
-        public void MarkUnconfirmedAdd<T>(T entity) where T : class
-        {
-            _unconfirmedAdds.Add(entity);
-            Console.WriteLine($"🔍 Marked unconfirmed {typeof(T).Name}: {entity?.GetHashCode()}");
-            //NotifyChanges();
-        }
-        public void DiscardAllUnconfirmedAdds()
-        {
-            if (_ctx?.Context?.Entities == null) return;
-
-            foreach (var kvp in _unconfirmedPredicates)
+            _pendingOps.Add(async (client, mapper) =>
             {
-                var entityType = kvp.Key;
-                var predicate = kvp.Value;
+                var bound = client.For<TDto>(entitySet);
 
-                var unconfirmed = _ctx.Context.Entities
-                    .Where(e => e.Entity != null &&
-                               entityType.IsInstanceOfType(e.Entity) &&
-                               predicate(e.Entity) &&
-                               _unconfirmedAdds.Contains(e.Entity))  // 🔥 FIXED!
-                    .ToList();
-                foreach (var entityDesc in unconfirmed)
+                // Apply optional conditions (filter, expand, orderby, etc.)
+                if (queryBuilder != null)
                 {
-                    _ctx.Context.Detach(entityDesc);  // 🔥 Primary action
-                    Console.WriteLine($"🚫 Discarded unconfirmed {entityType.Name}");
-
-                    // Optional: Clean tracking (safe remove)
-                    try
-                    {
-                        _unconfirmedAdds.Remove((dynamic)entityDesc.Entity);
-                    }
-                    catch
-                    {
-                        // Ignore - already detached
-                    }
-                }
-            }
-
-            NotifyChanges();
-        }
-        public static bool IsPendingState(EntityStates state) =>
-            state == EntityStates.Added || state == EntityStates.Modified || state == EntityStates.Deleted;
-
-        public bool HasPendingChanges() =>
-            (_ctx?.Context?.Entities.Any(e => IsPendingState(e.State)) ?? false) || _childPendingCount > 0;
-
-        public int GetPendingChangesCount() =>
-            (_ctx?.Context?.Entities.Count(e => IsPendingState(e.State)) ?? 0) + _childPendingCount;
-
-        public async Task ClearPendingChangesAsync()
-        {
-            Console.WriteLine("🔄 ClearPendingChangesAsync START");
-
-            try
-            {
-                // 🔥 1. Get ALL pending entities (Added/Modified/Deleted)
-                var pendingEntities = _ctx?.Context.Entities
-                    .Where(e => e.State != EntityStates.Unchanged)
-                    .ToList();
-
-                Console.WriteLine($"📊 Found {pendingEntities.Count} pending entities");
-
-                // 🔥 2. Detach EACH entity async-safe
-                foreach (var entityEntry in pendingEntities)
-                {
-                    try
-                    {
-                        _ctx?.Detach(entityEntry.Entity);
-                        Console.WriteLine($"✅ Detached: {entityEntry.Entity.GetType().Name}");
-                    }
-                    catch (Exception ex)
-                    {
-                        Console.WriteLine($"⚠️ Failed to detach {entityEntry.Entity}: {ex.Message}");
-                    }
+                    bound = queryBuilder(bound);
                 }
 
-                // 🔥 3. Force context refresh (async-safe)
-                await Task.Yield();  // Yield to UI thread
+                var results = await bound.FindEntriesAsync();
 
-                Console.WriteLine($"✅ ClearPendingChangesAsync COMPLETE - Cleared {pendingEntities.Count}");
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"❌ ClearPendingChangesAsync FAILED: {ex.Message}");
-            }
-        }
-        public void RegisterUnconfirmedPredicate<T>(Func<T, bool> isUnconfirmed) where T : class
-        {
-            Console.WriteLine("prob1");
-            _unconfirmedPredicates[typeof(T)] = obj =>
-            {
-                Console.WriteLine("prob2");
-                if (obj is T entity)  // 🔥 SAFE CAST FIRST
-                    return isUnconfirmed(entity);
-                Console.WriteLine("prob3");
-                return false;  // Not this type → not unconfirmed
-            };
-            //Console.WriteLine($"✅ Registered {typeof(T).Name}: Xxxx == -1");
-        }
-        public bool HasConfirmedPendingChanges()
-        {
-            if (_ctx?.Context == null) return _childPendingCount > 0;
-
-            return _ctx.Context.Entities.Any(e =>
-            {
-                if (!IsPendingState(e.State)) return false;
-
-                // 🔥 Check ALL predicates SAFELY
-                foreach (var kvp in _unconfirmedPredicates)
+                // You can now map results or store them
+                foreach (var dto in results)
                 {
-                    if (kvp.Value(e.Entity)) return false;  // Unconfirmed!
+                    Console.WriteLine($"Fetched entity: {JsonConvert.SerializeObject(dto)}");
                 }
-                return true;  // Confirmed pending change
             });
-        }
-        public void NotifyChanges() => OnChanges?.Invoke();
-        public async Task CancelChangesAsync()
-        {
-            Console.WriteLine("🗑️ CancelChangesAsync START");
-
-            // 1. Detach ALL current entities
-            DiscardAllUnconfirmedAdds();
-            Console.WriteLine($"{GetPendingChangesCount}");
-            if (_ctx?.Context != null)
-            {
-                var allPending = _ctx.Context.Entities
-                    .Where(e => IsPendingState(e.State))
-                    .ToList();
-
-                foreach (var entityDesc in allPending)
-                {
-                    _ctx.Context.Detach(entityDesc);
-                }
-            }
-
-            _childPendingCount = 0;
-
-            // 🔥 2. REPLACE CONTEXT - Forces fresh tracking
-            _ctx = await _contextFactory.CreateAsync();
-            AttachContext(_ctx);
 
             NotifyChanges();
-
-            Console.WriteLine($"✅ CancelChangesAsync END - Fresh context");
         }
-        public async Task FlushAsync(bool skipUnconfirmedDiscard = false)
+        // ✅ Direct Query
+        public async Task<IEnumerable<TDto>> ExecuteQueryAsync<TDto>(
+    string entitySet,
+    Func<IBoundClient<TDto>, IBoundClient<TDto>>? queryBuilder = null)
+    where TDto : class
         {
-            Console.WriteLine($"1- Pending: {GetPendingChangesCount()}");
+            var bound = _client.For<TDto>(entitySet);
 
-            if (!skipUnconfirmedDiscard)
-                DiscardAllUnconfirmedAdds();
-
-            if (!HasConfirmedPendingChanges())
+            if (queryBuilder != null)
             {
-                Console.WriteLine("✅ No confirmed changes to flush");
+                bound = queryBuilder(bound);
+            }
+
+            var results = await bound.FindEntriesAsync();
+            return results;
+        }
+
+        // ✅ Track Insert
+        public void TrackInsert<TDto>(string entitySet, TDto dto) where TDto : class
+        {
+            _pendingOps.Add(async (client, mapper) =>
+            {
+                var entity = mapper.Map<object>(dto);
+                await client.For<object>(entitySet).Set(entity).InsertEntryAsync();
+            });
+            _insertCount++;
+            NotifyChanges();
+        }
+        // ✅ Track Update
+        public void TrackUpdate<TDto>(string entitySet, object key, TDto dto) where TDto : class
+        {
+            _pendingOps.Add(async (client, mapper) =>
+            {
+                // Serialize DTO → Dictionary
+                string json = JsonConvert.SerializeObject(dto);
+                var dict = JsonConvert.DeserializeObject<Dictionary<string, object>>(json);
+
+                // Filter persisted fields (exclude keys, UI-only, etc.)
+                var filtered = PersistedFieldRegistry.Filter<TDto>(dict);
+
+                // Remove nulls (Delta<T> expects only changed fields)
+                var nonNulls = filtered
+                    .Where(kvp => kvp.Value != null)
+                    .ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
+
+                // Log payload for debugging
+                //Console.WriteLine(JsonConvert.SerializeObject(nonNulls, Formatting.Indented));
+
+                // Send PATCH with only changed fields
+                await client.For(entitySet)
+                            .Key(key)
+                            .Set(nonNulls)
+                            .UpdateEntryAsync();
+            });
+            _updateCount++;
+            NotifyChanges();
+        }
+        // ✅ Track Delete
+        public void TrackDelete(string entitySet, object key)
+        {
+            _pendingOps.Add(async (client, mapper) =>
+            {
+                await client.For(entitySet)
+                            .Key(key)
+                            .DeleteEntryAsync();
+            });
+
+            _deleteCount++;
+            NotifyChanges();
+        }
+        // ✅ Counts
+        public bool HasPendingChanges() => _pendingOps.Count > 0;
+        public int GetPendingChangesCount() => _pendingOps.Count;
+        public int GetInsertCount() => _insertCount;
+        public int GetUpdateCount() => _updateCount;
+        public int GetDeleteCount() => _deleteCount;
+
+        // ✅ Commit all tracked operations
+        public async Task FlushAsync()
+        {
+            if (!HasPendingChanges())
+            {
+                Console.WriteLine("No pending changes to flush");
                 return;
             }
 
-            Console.WriteLine($"2- Saving {GetPendingChangesCount()} confirmed changes");
-            await _ctx.Context.SaveChangesAsync();
-            Console.WriteLine($"3- After save: {GetPendingChangesCount()}");
-        }
-
-        // 🔥 Your existing FlushAsync - ENHANCED
-        //public async Task FlushAsync()
-        //{
-        //    Console.WriteLine($"1- {GetPendingChangesCount()}");
-        //    DiscardAllUnconfirmedAdds();  // All entity types twice verification
-
-        //    if (!HasConfirmedPendingChanges())
-        //    {
-        //        Console.WriteLine("✅ No confirmed changes to flush");
-        //        return;
-        //    }
-        //    Console.WriteLine($"2- {GetPendingChangesCount()}");
-        //    await _ctx.Context.SaveChangesAsync();
-        //    Console.WriteLine($"3- {GetPendingChangesCount()}");
-        //}
-        public async Task FlushConfirmedChangesOnlyAsync()
-        {
-            ////Console.WriteLine($"Saving ONLY confirmed changes: {GetConfirmedPendingChangesCount()}");
-
-            // 🔥 NO DiscardAllUnconfirmedAdds() here
-            if (!HasConfirmedPendingChanges())
+            Console.WriteLine($"Flushing {GetPendingChangesCount()} changes...");
+            foreach (var op in _pendingOps)
             {
-                Console.WriteLine("✅ No confirmed changes to flush");
-                return;
+                await op(_client, _mapper);
             }
 
-            await _ctx.Context.SaveChangesAsync();
-            ////ClearConfirmedChanges();  // Reset flags only
-        }
-        // 🔥 Navigation guard - Uses HasConfirmedPendingChanges
-
-        
-
-        //private void NotifyChanges() => OnChanges?.Invoke();
-        public event Action<int>? OnChildPendingChanged;
-        public ValueTask DisposeAsync()  // ❌ Remove 'async'
-        {
-            Console.WriteLine("🧹 PendingChangesGuard DisposeAsync");
-
-            // Clear internal state only
-            _ctx = null;
-            _unconfirmedPredicates.Clear();
-
-            // Remove _trackedEntities.Clear() - doesn't exist
-
-            // ✅ CORRECT ValueTask return
-            return ValueTask.CompletedTask;  // NOT 'default'
+            _pendingOps.Clear();
+            _insertCount = _updateCount = _deleteCount = 0;
+            NotifyChanges();
         }
 
-        public void DiscardUnconfirmedAdds<T>() where T : class
+        // ✅ Cancel all tracked operations
+        public async Task CancelChanges()
         {
-            if (_ctx?.Context?.Entities == null) return;
+            Console.WriteLine("Cancelling all pending changes");
+            _pendingOps.Clear();
+            _insertCount = _updateCount = _deleteCount = 0;
+            NotifyChanges();
+        }
 
-            var unconfirmed = _ctx.Context.Entities
-                .Where(e => e.Entity is T t
-                           && _unconfirmedPredicates.TryGetValue(typeof(T), out var pred)
-                           && pred(t)  // ← Xadd1 == -1 ONLY
-                           && _unconfirmedAdds.Contains(t))  // ← ALSO check MarkUnconfirmedAdd tracking
-                .ToList();
+        private void NotifyChanges() => OnChanges?.Invoke();
 
-            foreach (var entityDesc in unconfirmed)
-            {
-                _ctx.Context.Detach(entityDesc);
-                Console.WriteLine($"✅ DETACHED unconfirmed {typeof(T).Name}");
-                _unconfirmedAdds.Remove((T)entityDesc.Entity);
-            }
+        public ValueTask DisposeAsync()
+        {
+            Console.WriteLine("Disposing PendingChangesGuard");
+            _pendingOps.Clear();
+            _insertCount = _updateCount = _deleteCount = 0;
+            return ValueTask.CompletedTask;
         }
     }
 }

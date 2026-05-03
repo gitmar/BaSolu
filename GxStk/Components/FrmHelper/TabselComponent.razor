@@ -2,7 +2,7 @@
 @using Microsoft.AspNetCore.Components.Forms
 @using GxShared.Sess
 @using GxShared.Others
-@using GxWapi.DaModels
+@using GxShared.GxDtos
 
 <!-- TabselComponent.razor -->
 
@@ -20,7 +20,7 @@
     [Parameter] public EventCallback<object> ObjChanged { get; set; }
 
     [Parameter] public int? Ztbl { get; set; }
-    [Parameter] public List<Gsglne> TbElems { get; set; }
+    [Parameter] public List<Gtabl> TbElems { get; set; }
     [Parameter] public string Title { get; set; }
     [Parameter] public int? ParentTableValue { get; set; }
     [Parameter] public string Class { get; set; }

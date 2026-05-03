@@ -6,8 +6,9 @@
 @inject NavigationManager _navManager
 
 <div class="top-row mb-0 navbar navbar-dark bg-success shadow-sm bg-opacity-25 mt-0 navbar-slim">
-    <a class="navbar-brand text-white fw-bold" href="">
-        <i class="bi bi-gear-fill me-1"></i> Gx-Solutions
+    <a class="navbar-brand text-white fw-bold d-flex align-items-center gap-1" href="">
+        <i class="bi bi-gear-fill"></i>
+        <span>Gx-Solutions</span>
     </a>
     <button class="navbar-toggler btn btn-sm" type="button" @onclick="ToggleNavMenu">
         <span class="navbar-toggler-icon"></span>
@@ -19,162 +20,174 @@
 
         <!-- HOME -->
         <NavLink class="nav-link nav-main text-light small" href="" Match="NavLinkMatch.All">
-            <i class="bi bi-house-door-fill me-2"></i> Home
+            <i class="bi bi-house-door-fill nav-icon"></i>
+            <span class="nav-text" title="Home">Home</span>
         </NavLink>
 
         <AuthorizeView>
             <Authorized>
 
-                <!-- GStock -->
-                <NavLink class="nav-link nav-main text-light small" @onclick="ToggleSubManag">
-                    <i class="bi bi-boxes me-2"></i> GStock
+                <!-- Parametrage -->
+                <NavLink class="nav-link nav-main text-light small" @onclick="ToggleSubPara">
+                    <i class="bi bi-sliders nav-icon"></i>
+
+                    <span class="nav-text d-flex align-items-center gap-1">
+                        Parametrage
+                        <i class="bi @(isSubParaVisible ? "bi-chevron-up" : "bi-chevron-down") nav-chevron"></i>
+                    </span>
                 </NavLink>
 
-                <div class="submenu @(isSubManagVisible ? "open" : "")">
+                <div class="submenu @(isSubParaVisible ? "open" : "")">
                     <nav class="nav flex-column">
-                        <NavLink class="nav-link nav-sub text-light small" href="enrolmenu">
-                            <i class="bi bi-arrow-down-square me-2"></i> Reception
-                        </NavLink>
-
-                        <NavLink class="nav-link nav-sub text-light small" href="carrimenu">
-                            <i class="bi bi-arrow-left-right me-2"></i> Mouvement
-                        </NavLink>
-
-                        <NavLink class="nav-link nav-sub text-light small" href="subitem3">
-                            <i class="bi bi-file-earmark-text me-2"></i> Editions
+                        <NavLink class="nav-link nav-sub text-light small" href="parasmenu">
+                            <i class="bi bi-calendar-check nav-icon"></i>
+                            <span class="nav-text" title="Astreintes">Astreintes</span>
                         </NavLink>
                     </nav>
                 </div>
 
-                <!-- OPERATIONS -->
-                <NavLink class="nav-link nav-main text-light small" @onclick="ToggleSubOper">
-                    <i class="bi bi-clipboard-data-fill me-2"></i> Operations
+                <!-- Mouvements -->
+                <NavLink class="nav-link nav-main text-light small" @onclick="ToggleSubMove">
+                    <i class="bi bi-arrow-left-right nav-icon"></i>
+
+                    <span class="nav-text d-flex align-items-center gap-1">
+                        Mouvement
+                        <i class="bi @(isSubMoveVisible ? "bi-chevron-up" : "bi-chevron-down") nav-chevron"></i>
+                    </span>
                 </NavLink>
 
-                <div class="submenu @(isSubOperVisible ? "open" : "")">
+                <div class="submenu @(isSubMoveVisible ? "open" : "")">
                     <nav class="nav flex-column">
-
-                        <NavLink class="nav-link nav-sub text-light small" href="saieactlnes">
-                            <i class="bi bi-cart-plus me-2"></i> Achats
+                        <NavLink class="nav-link nav-sub text-light small" href="entrymenu">
+                            <i class="bi bi-shuffle nav-icon"></i>
+                            <span class="nav-text" title="Entrees">Entrees</span>
                         </NavLink>
-
-                        <NavLink class="nav-link nav-sub text-light small" href="saieactlnes">
-                            <i class="bi bi-cart-check me-2"></i> Ventes
+                        <NavLink class="nav-link nav-sub text-light small" href="transfmenu">
+                            <i class="bi bi-shuffle nav-icon"></i>
+                            <span class="nav-text" title="Affectation">Affectation</span>
                         </NavLink>
-
-                        <NavLink class="nav-link nav-sub text-light small" href="calcreslnes">
-                            <i class="bi bi-calculator me-2"></i> Calculs
+                        <NavLink class="nav-link nav-sub text-light small" href="corrigmenu">
+                            <i class="bi bi-pencil-square nav-icon"></i>
+                            <span class="nav-text" title="Correction">Correction</span>
                         </NavLink>
-
-                        <NavLink class="nav-link nav-sub text-light small" href="subitem3">
-                            <i class="bi bi-file-earmark-text me-2"></i> Editions
+                        <NavLink class="nav-link nav-sub text-light small" href="offlinemanager">
+                            <i class="bi bi-pencil-square nav-icon"></i>
+                            <span class="nav-text" title="Offline">Offline</span>
                         </NavLink>
-
                     </nav>
                 </div>
+
+                <!-- Transactions -->
+                <NavLink class="nav-link nav-main text-light small" @onclick="ToggleSubTrans">
+                    <i class="bi bi-cash-stack nav-icon"></i>
+
+                    <span class="nav-text d-flex align-items-center gap-1">
+                        Transactions
+                        <i class="bi @(isSubTransVisible ? "bi-chevron-up" : "bi-chevron-down") nav-chevron"></i>
+                    </span>
+                </NavLink>
+
+                <div class="submenu @(isSubTransVisible ? "open" : "")">
+                    <nav class="nav flex-column">
+                        <NavLink class="nav-link nav-sub text-light small" href="appromenu">
+                            <i class="bi bi-box-arrow-in-down nav-icon"></i>
+                            <span class="nav-text" title="Approv">Approv</span>
+                        </NavLink>
+                        <NavLink class="nav-link nav-sub text-light small" href="ventemenu">
+                            <i class="bi bi-cart-check nav-icon"></i>
+                            <span class="nav-text" title="Ventes">Ventes</span>
+                        </NavLink>
+                    </nav>
+                </div>
+
+                <!-- Editions -->
+                <NavLink class="nav-link nav-sub text-light small" href="subitem3">
+                    <i class="bi bi-printer nav-icon"></i>
+                    <span class="nav-text" title="Editions">Editions</span>
+                </NavLink>
 
                 <!-- Analyses -->
-                <NavLink class="nav-link nav-main text-light" href="about">
-                    <i class="bi bi-bar-chart-line-fill me-2"></i> Analyses
+                <NavLink class="nav-link nav-main text-light small" href="about">
+                    <i class="bi bi-bar-chart-line nav-icon"></i>
+                    <span class="nav-text" title="Analyses">Analyses</span>
                 </NavLink>
 
-                <!-- SUPPORT -->
+                <!-- Support -->
                 <NavLink class="nav-link nav-main text-light small" href="about">
-                    <i class="bi bi-graph-up-arrow me-2"></i> Support
+                    <i class="bi bi-life-preserver nav-icon"></i>
+                    <span class="nav-text" title="Support">Support</span>
                 </NavLink>
 
             </Authorized>
         </AuthorizeView>
 
         <!-- Agendas -->
-        <NavLink class="nav-link nav-main text-light" href="about">
-            <i class="bi bi-calendar3 me-2"></i> Agendas
+        <NavLink class="nav-link nav-main text-light small" href="about">
+            <i class="bi bi-calendar3 nav-icon"></i>
+            <span class="nav-text" title="Agendas">Agendas</span>
         </NavLink>
 
         <!-- About -->
-        <NavLink class="nav-link nav-main text-light" href="about">
-            <i class="bi bi-info-circle-fill me-2"></i> About
+        <NavLink class="nav-link nav-main text-light small" href="about">
+            <i class="bi bi-info-circle nav-icon"></i>
+            <span class="nav-text" title="About">About</span>
         </NavLink>
 
-        <!-- Test -->
-        <NavLink class="nav-link nav-main text-light" href="items">
-            <i class="bi bi-info-circle-fill me-2"></i> Items
-        </NavLink>
-        <NavLink class="nav-link nav-main text-light" href="purchase">
-            <i class="bi bi-info-circle-fill me-2"></i> Purchase
-        </NavLink>
-        <NavLink class="nav-link nav-main text-light" href="sale">
-            <i class="bi bi-info-circle-fill me-2"></i> Sale
-        </NavLink>
-        <NavLink class="nav-link nav-main text-light" href="itemsentry">
-            <i class="bi bi-info-circle-fill me-2"></i> Items_Entry
-        </NavLink>
-        <NavLink class="nav-link nav-main text-light" href="itemsadjust">
-            <i class="bi bi-info-circle-fill me-2"></i> Items_Adjust
-        </NavLink>
-        <NavLink class="nav-link nav-main text-light" href="itemspurchase">
-            <i class="bi bi-info-circle-fill me-2"></i> Items_Purchase
-        </NavLink>
-        <NavLink class="nav-link nav-main text-light" href="itemstransfer">
-            <i class="bi bi-info-circle-fill me-2"></i> Items_Transfer
-        </NavLink>
     </nav>
 </div>
 
-
 <style>
-    .top-row.navbar {
-        padding-left: 0 !important;
-        padding-right: 0 !important;
-        --bs-navbar-padding-y: 0.25rem; /* reduce vertical padding */
+    .nav-link {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        line-height: 1.2;
+        flex-wrap: nowrap;
     }
 
-    .top-row .navbar-brand {
-        margin-left: 0 !important;
-        padding-left: 0 !important;
-        font-size: 0.9rem; /* smaller text */
-        line-height: 1.2; /* tighter line spacing */
+    /* ICON COLUMN */
+    .nav-icon {
+        width: 22px;
+        min-width: 22px;
+        text-align: center;
+        font-size: 1rem;
+        flex-shrink: 0;
     }
-    /* ========== SUBMENU ANIMATION ========== */
+
+    /* TEXT */
+    .nav-text {
+        flex: 1;
+        min-width: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    /* CHEVRON */
+    .nav-chevron {
+        font-size: 0.7rem;
+        opacity: 0.7;
+        flex-shrink: 0;
+    }
+
+    /* SUBMENU */
     .submenu {
         max-height: 0;
         overflow: hidden;
-        opacity: 0;
-        transition: max-height 0.35s ease-out, opacity 0.25s ease-out, padding-left 0.3s ease-out;
-        padding-left: 0rem;
+        transition: max-height 0.25s ease;
+        margin-left: 10px;
+        padding-left: 1rem;
+        border-left: 1px solid rgba(255,255,255,0.1);
     }
 
-        /* When open, expand submenu */
         .submenu.open {
-            max-height: 500px; /* Enough for many items */
-            opacity: 1;
-            padding-left: 0.5rem;
+            max-height: 500px;
         }
 
-    /* Style submenu links */
+    /* SUB ITEMS */
     .nav-sub {
-        padding-left: 1.5rem !important;
-        transition: padding-left 0.25s ease;
-    }
-
-        /* Hover effect on submenu items */
-        .nav-sub:hover {
-            padding-left: 1.7rem !important;
-            background-color: rgba(255, 255, 255, 0.08);
-            border-radius: 4px;
-        }
-
-    /* ========== ARROW ANIMATION (optional) ========== */
-    /* Place an arrow icon inside main menu items if needed */
-    .nav-main .arrow {
-        transition: transform 0.3s ease;
-        font-size: 0.8rem;
-    }
-
-    /* Rotate arrow when submenu is open */
-    .submenu.open ~ .nav-main .arrow,
-    .nav-main.open .arrow {
-        transform: rotate(90deg);
+        font-size: 0.85rem;
+        opacity: 0.9;
     }
 </style>
 
@@ -190,12 +203,11 @@
 
     private bool siOpera=false, siAdmin = false, siStock = true;
     private int IMyAcc = 2;
-    private bool isSubManagVisible = false;
-    private bool isSubSecuVisible = false;
-    private bool isSubOperVisible = false;
     private bool isSubParaVisible = false;
-    private bool isSubProgVisible = false;
-    //private void ToggleNavMenu() => collapseNavMenu = !collapseNavMenu;
+    private bool isSubRecepVisible = false;
+    private bool isSubMoveVisible = false;
+    private bool isSubTransVisible = false;
+    
     protected override async Task OnInitializedAsync()
     {
         var authState = await AuthState;
@@ -216,35 +228,26 @@
     {
         collapseNavMenu = !collapseNavMenu;
     }
-    private void ToggleSubManag()
-    {
-        isSubManagVisible = !isSubManagVisible;
-    }
-    private void ToggleSubSecu()
-    {
-        isSubSecuVisible = !isSubSecuVisible;
-    }
-    private void ToggleSubOper()
-    {
-        isSubOperVisible = !isSubOperVisible;
-    }
-
-    //Admin
     private void ToggleSubPara()
     {
         isSubParaVisible = !isSubParaVisible;
     }
-    private void ToggleSubProg()
+    private void ToggleSubRecep()
     {
-        isSubProgVisible = !isSubProgVisible;
+        isSubRecepVisible = !isSubRecepVisible;
     }
+    private void ToggleSubMove()
+    {
+        isSubMoveVisible = !isSubMoveVisible;
+    }
+    private void ToggleSubTrans()
+    {
+        isSubTransVisible = !isSubTransVisible;
+    }
+    
     private bool Entest = false;
     public void Dispose()
     {
         //_appState.OnChange -= StateHasChanged;
     }
-    // protected override async Task OnAfterRenderAsync(bool firstRender)
-    // {
-    //     Entest = false;
-    // }
 }

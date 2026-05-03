@@ -1,8 +1,8 @@
 ﻿@page "/globmodal";
 
 @using GxShared.Sess
+@using GxShared.GxDtos
 @using GxTie.ClieModels
-@using GxWapi.DaModels
 @using System.Net.Http.Headers
 
 @inject IHttpClientFactory _httpfacClient
@@ -66,9 +66,9 @@
     public string Title { get; set; }   
     //to chose from parent
     [Parameter]
-    public Tiersp EntyTie { get; set; } 
+    public TierspDto EntyTie { get; set; } 
     [Parameter]
-    public Tiewel EntyTiw { get; set; }
+    public TiewelDto EntyTiw { get; set; }
     [Parameter]
     public List<Gpvar> LsmVars { get; set; }
     [Parameter]
@@ -76,9 +76,9 @@
     [Parameter]
     public int Oparent { get; set; }
     [Parameter]
-    public EventCallback<GxWapi.DaModels.Tiewel> OnTiwSave { get; set; } // Callback to return the modified entity
+    public EventCallback<TiewelDto> OnTiwSave { get; set; } // Callback to return the modified entity
     [Parameter]
-    public EventCallback<GxWapi.DaModels.Tiersp> OnTieSave { get; set; } // Callback to return the modified entity
+    public EventCallback<TierspDto> OnTieSave { get; set; } // Callback to return the modified entity
     
     private void CloseModal()
     {
@@ -117,7 +117,7 @@
 
         content.Add(fileContent, "file", selectedFile.Name);
         //pour le load des images et photos
-        _apiClient = _httpfacClient.CreateClient("OFFLClient");
+        _apiClient = _httpfacClient.CreateClient("LocalClient");
 
         var response = await _apiClient.PostAsync("lgfileup/upload", content);
 

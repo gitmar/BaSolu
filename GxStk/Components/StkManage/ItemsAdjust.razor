@@ -1,66 +1,155 @@
-﻿@page "/items-adjustment"
-@using GxShared.StkDtos
-@using GxStk.Services
+﻿@page "/items-categories"
 @using GxWapi.DaModels
+@using GxShared.Helpers
+@using GxStk.Services
+@using GxShared.Sess
+@using GxShared.GxDtos
 
-@inject StockClientService _stkService
+<div class="container mt-3">
+    <h4>Stock Categories</h4>
 
-<h3>Stock Adjustment</h3>
+    <Button Color="ButtonColor.Success" OnClick="@StartAdd">Add New Category</Button>
 
-<!-- Reason -->
-<div class="mb-2">
-    <label>Reason</label>
-    <InputText class="form-control" @bind-Value="_adjustRequest.Reason" />
+    <Grid TItem="Stkcat" Data="@curOrga?.Stkcats" AllowPaging="true" Responsive="true">
+        <GridColumns>
+            <GridColumn TItem="Stkcat" HeaderText="Id" Class="xcol1">
+                <ChildContent Context="item">@item.Id</ChildContent>
+            </GridColumn>
+            <GridColumn TItem="Stkcat" HeaderText="Label" Class="xcol3">
+                <ChildContent Context="item">
+                    @if (editRowguid == item.Rowguid)
+                    {
+                        <InputText @bind-Value="draftCat.Liba" />
+                    }
+                    else
+                    {
+
+                        @item.Liba
+                    }
+                </ChildContent>
+            </GridColumn>
+            <GridColumn TItem="Stkcat" HeaderText="Price" Class="xcol2">
+                <ChildContent Context="item">
+                    @if (editRowguid == item.Rowguid)
+                    {
+                        <InputNumber @bind-Value="draftCat.Prix" />
+                    }
+                    else
+                    {
+
+                        @item.Prix
+                    }
+                </ChildContent>
+            </GridColumn>
+            <GridColumn TItem="Stkcat" HeaderText="Actions">
+                <ChildContent Context="item">
+                    @if (editRowguid == item.Rowguid)
+                    {
+                        <Button Color="ButtonColor.Primary" OnClick="@(() => SaveEdit(item))">Save</Button>
+                        <Button Color="ButtonColor.Secondary" OnClick="@CancelEdit">Cancel</Button>
+                    }
+                    else
+                    {
+                        <Button Color="ButtonColor.Warning" OnClick="@(() => StartEdit(item))">Edit</Button>
+                        <Button Color="ButtonColor.Danger" OnClick="@(() => DeleteCategory(item))">Delete</Button>
+                    }
+                </ChildContent>
+            </GridColumn>
+        </GridColumns>
+    </Grid>
+
+    @if (isAdding)
+    {
+        <div class="mt-3">
+            <InputText @bind-Value="draftCat.Liba" placeholder="Label" />
+            <InputNumber @bind-Value="draftCat.Prix" placeholder="Price" />
+            <Button Color="ButtonColor.Success" OnClick="@SaveAdd">Add</Button>
+            <Button Color="ButtonColor.Secondary" OnClick="@CancelAdd">Cancel</Button>
+        </div>
+    }
 </div>
 
-<!-- Add Line Button -->
-<button class="btn btn-primary mb-2" @onclick="AddLine">Add Line</button>
-
-<!-- Lines -->
-@foreach (var line in _adjustRequest.Lines)
-{
-    <div class="border p-2 mb-2">
-
-        <InputNumber placeholder="ItemId" @bind-Value="line.ItemId" />
-        <InputNumber placeholder="Location" @bind-Value="line.LocationId" />
-        <InputNumber placeholder="Qty (+/-)" @bind-Value="line.QuantityDiff" />
-        <InputNumber placeholder="Cost" @bind-Value="line.UnitCost" />
-
-        <button class="btn btn-danger btn-sm" @onclick="() => RemoveLine(line)">X</button>
-    </div>
-}
-
-<!-- Submit -->
-<button class="btn btn-success" @onclick="Submit">Submit Adjustment</button>>
-
 @code {
-    private AdjustmentRequestDto _adjustRequest = new();
+    [Parameter] public MyODataContext curODContext { get; set; }
+    [Parameter] public Gxorga curOrga { get; set; }
+    [Parameter] 
+    public List<Gpdivh> LsDivs { get; set; }
+    
+    private bool isAdding = false;
+    private Guid? editRowguid;
+    private Stkcat draftCat = new();
 
-    protected override void OnInitialized()
+
+    private void StartAdd()
     {
-        // Start with one line
-        _adjustRequest.Lines.Add(new AdjustmentLineDto());
+        isAdding = true;
+        draftCat = new Stkcat(); // reset draft
+    }
+    private void SaveEdit(Stkcat mycat)
+    {
+        Console.WriteLine($"Saving attribute {mycat.Id}");
+    }
+    private void CancelEdit()
+    {
+        Console.WriteLine($"Cancelling attribute");
+    }
+    private void StartEdit(Stkcat mycat)
+    {
+        Console.WriteLine($"Saving attribute {mycat.Id}");
+    }
+    private void SaveAdd()
+    {
+        Console.WriteLine($"Saving new attribute");
+    }
+    private void CancelAdd()
+    {
+        Console.WriteLine($"Cancelling add attribute");
+    }
+    private void DeleteCategory(Stkcat mycat)
+    {
+        Console.WriteLine($"Deleting link {mycat.Id}");
     }
 
-    private void AddLine()
-    {
-        _adjustRequest.Lines.Add(new AdjustmentLineDto());
-    }
 
-    private void RemoveLine(AdjustmentLineDto line)
-    {
-        _adjustRequest.Lines.Remove(line);
-    }
 
-    private async Task Submit()
-    {
-        if (!_adjustRequest.Lines.Any())
-            return;
-
-        await _stkService.AdjustStockBatch(_adjustRequest);
-
-        // Reset form
-        _adjustRequest = new AdjustmentRequestDto();
-        _adjustRequest.Lines.Add(new AdjustmentLineDto());
-    }
+    // private void SaveEditLink(Stkitatr link)
+    // {
+    //     Console.WriteLine($"Saving link {link.Id}");
+    // }
+    // private void CancelEditLink()
+    // {
+    //     Console.WriteLine("Cancelling link edit");
+    // }
+    // private void StartAddLink()
+    // {
+    //     Console.WriteLine("Starting to add new link");
+    // }
+    // private void SaveAddLink()
+    // {
+    //     Console.WriteLine("Saving new link");
+    // }
+    // private void CancelAddLink()
+    // {
+    //     Console.WriteLine("Cancelling add link");
+    // }
+    // private void DeleteLink(Stkitatr link)
+    // {
+    //     Console.WriteLine($"Deleting link {link.Id}");
+    // }
+    // private void StartEditCategory(Stkcat cat)
+    // {
+    //     Console.WriteLine($"Editing category {cat.Id}");    
+    // }
+    // private void SaveEditCategory(Stkcat cat)
+    // {
+    //     Console.WriteLine($"Saving category {cat.Id}");
+    // }   
+    // private void CancelEditCategory()
+    // {
+    //     Console.WriteLine("Cancelling category edit");
+    // }
+    // private void DeleteLink(Stkcat parent, Stkitatr link)
+    // {
+    //     parent.Stkitatr.Remove(link);
+    // }
 }

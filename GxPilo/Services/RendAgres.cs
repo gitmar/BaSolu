@@ -2,7 +2,6 @@
 using GxShared.Sess;
 using GxShared.Others;
 using Newtonsoft.Json;
-using GxWapi.DaModels;
 
 namespace GxPilo.Services
 {
@@ -16,7 +15,7 @@ namespace GxPilo.Services
         public async Task<List<Gpdivh>> LoadOrgaPostes()
         {
             //FmtPsts
-            var json = await _clieManager.SendRequestAsync("AUTHClient", HttpMethod.Get, "lgauth/allpostes");
+            var json = await _clieManager.SendRequestAsync("AuthClient", HttpMethod.Get, "lgauth/allpostes");
             var result = JsonConvert.DeserializeObject<List<Gpdivh>>(json);
             if (result.Any())
             {
@@ -34,7 +33,7 @@ namespace GxPilo.Services
         public async Task<List<Grole>> LoadOrgaRoles()
         {
             //FmtPsts
-            var json = await _clieManager.SendRequestAsync("AUTHClient", HttpMethod.Get, "lgauth/allroles");
+            var json = await _clieManager.SendRequestAsync("AuthClient", HttpMethod.Get, "lgauth/allroles");
             var result = JsonConvert.DeserializeObject<List<Grole>>(json);
             if (result.Any())
             {
@@ -47,26 +46,21 @@ namespace GxPilo.Services
                 return new();
             }
         }
-        public async Task<List<Gptbl>> LoadOrgaTables()
+        public async Task<List<Gtabl>> LoadOrgaTables()
         {
-            //FmtPsts
-            var json = await _clieManager.SendRequestAsync("AUTHClient", HttpMethod.Get, "lgauth/alltables");
-            var result = JsonConvert.DeserializeObject<List<Gptbl>>(json);
-            if (result.Any())
-            {
-                Console.WriteLine($"Nb tables : {result.Count}");
-                return result.ToList();
-            }
-            else
-            {
-                Console.WriteLine("Nb tables : null");
-                return new();
-            }
+            var json = await _clieManager.SendRequestAsync(
+                "AuthClient",
+                HttpMethod.Get,
+                "lgauth/alltables");
+
+            var result = JsonConvert.DeserializeObject<List<Gtabl>>(json);
+             
+            return result ?? new List<Gtabl>();
         }
         public async Task<List<Gpcol>> LoadOrgaColons()
         {
             //FmtPsts
-            var json = await _clieManager.SendRequestAsync("AUTHClient", HttpMethod.Get, "lgauth/allcolons");
+            var json = await _clieManager.SendRequestAsync("AuthClient", HttpMethod.Get, "lgauth/allcolons");
             var result = JsonConvert.DeserializeObject<List<Gpcol>>(json);
             if (result.Any())
             {

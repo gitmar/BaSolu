@@ -1,42 +1,34 @@
-﻿using Microsoft.OData.Client;
+﻿using AutoMapper;
+
+using Simple.OData.Client;
 
 namespace GxPilo.Services
 {
-    public static class StaticMethods
+    public static class ODataClientExtensions
     {
-        public static void MarkModified<T>(this DataServiceContext ctx, T entity, string setName)
+        // ✅ Explicit Update
+        public static async Task MarkModifiedAsync<TDto>(
+            this ODataClient client,
+            string entitySet,
+            object key,
+            TDto dto,
+            IMapper mapper)
+            where TDto : class
         {
-            // Use ReferenceEquals to ensure we're checking the same object instance
-            if (!ctx.Entities.Any(e => ReferenceEquals(e.Entity, entity)))
-            {
-                ctx.AttachTo(setName, entity);
-            }
-            ctx.UpdateObject(entity);
+            var entity = mapper.Map<object>(dto);
+            await client.For<object>(entitySet).Key(key).Set(entity).UpdateEntryAsync();
         }
-        public static bool IsNew<T>(
-                MyODataContext context,
-                T entity,
-                Func<T, int> keySelector)
-                where T : class
+
+        // ✅ Check if entity is new
+        public static async Task<bool> IsNewAsync<TDto>(
+            this ODataClient client,
+            string entitySet,
+            object key)
+            where TDto : class
         {
-            // Check OData tracking state first
-            var descriptor = context.Context.GetEntityDescriptor(entity);
-            if (descriptor != null)
-            {
-                if (descriptor.State == EntityStates.Added)
-                    return true;   // definitely new
-                if (descriptor.State == EntityStates.Unchanged ||
-                    descriptor.State == EntityStates.Modified)
-                    return false;  // already persisted
-            }
-
-            // Fallback: check int key value
-            var keyValue = keySelector(entity);
-            return keyValue == 0; // default int means not saved
+            // Try to load by key
+            var existing = await client.For<TDto>(entitySet).Key(key).FindEntryAsync();
+            return existing == null;
         }
-        //public static class ODataEntityHelper
-        //{
-
-        //}
     }
 }

@@ -1,6 +1,6 @@
 ﻿using System.Security.Claims;
-using GxWapi.DaModels;
 using GxShared.Others;
+using GxShared.GxDtos;
 using GxShared.Sess;
 
 namespace GxTie.ClieModels
@@ -17,16 +17,16 @@ namespace GxTie.ClieModels
         public List<Gplan> LsPlans { get; set; } = new();
         public List<Gpvar> LsTabls { get; set; } = new();
         public List<Gpdivh> LsDivs { get; set; } = new();
-        public List<Rubhie> LsHies { get; set; } = new();
+        public List<RubhieDto> LsHies { get; set; } = new();
         //public List<Gsglne> LsCols { get; set; } = new();
         public List<Gtvar> TbElems { get; set; } = new();
         public bool MainOptsOk { get; set; } = false;
-        public List<Gsesio> LsSess { get; set; } = new();
-        public Gxorga curOrga { get; set; } = new();
-        public Plngen curProg { get; set; } = new();
-        public Gsesio curExo { get; set; } = new();
-        public Gsesio curSesio { get; set; } = new();
-        public Rubhie curSite { get; set; } = new();
+        public List<GsesioDto> LsSess { get; set; } = new();
+        public GxorgaDto curOrga { get; set; } = new();
+        public PlngenDto curProg { get; set; } = new();
+        public GsesioDto curExo { get; set; } = new();
+        public GsesioDto curSesio { get; set; } = new();
+        public RubhieDto curSite { get; set; } = new();
     }   
     public class MyMenuVars()
     {

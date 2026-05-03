@@ -301,6 +301,39 @@ namespace GxWapi.DaModels
         public int Ajrej { get; set; } = 0;
         [JsonIgnore]
         public int Ajnot { get; set; } = 0;
+
+        // Computed property exposed to JSON
+        [NotMapped]
+        public object ParsedValue =>
+        Satyp switch
+        {
+            "int" => int.TryParse(Aval, out var i) ? i : default,
+            "decimal" => decimal.TryParse(Aval, out var d) ? d : default,
+            "date" => DateTime.TryParse(Aval, out var dt) ? dt : default,
+            "bool" => bool.TryParse(Aval, out var b) ? b : default,
+            _ => Aval
+        };
+    }
+    public partial class Sktatr
+    {
+        [JsonIgnore]
+        public int Ajacc { get; set; } = 0;
+        [JsonIgnore]
+        public int Ajrej { get; set; } = 0;
+        [JsonIgnore]
+        public int Ajnot { get; set; } = 0;
+
+        // Computed property exposed to JSON
+        //[NotMapped]
+        //public object ParsedValue =>
+        //Satyp switch
+        //{
+        //    "int" => int.TryParse(Aval, out var i) ? i : default,
+        //    "decimal" => decimal.TryParse(Aval, out var d) ? d : default,
+        //    "date" => DateTime.TryParse(Aval, out var dt) ? dt : default,
+        //    "bool" => bool.TryParse(Aval, out var b) ? b : default,
+        //    _ => Aval
+        //};
     }
     public partial class Tiwatr
     {

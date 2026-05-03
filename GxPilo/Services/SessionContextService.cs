@@ -57,7 +57,7 @@ namespace GxPilo.Services
             {
                 try
                 {
-                    var response = await _apiClient.SendRequestAsync("AUTHClient", HttpMethod.Get, $"usercontext/session");
+                    var response = await _apiClient.SendRequestAsync("AuthClient", HttpMethod.Get, $"usercontext/session");
                     var sessionDto = JsonConvert.DeserializeObject<SessionDto>(response);
                     if (sessionDto != null)
                     {
@@ -102,7 +102,7 @@ namespace GxPilo.Services
         //    // Optional: validate token online
         //    CurrentSession = await _localStorage.GetItemAsync<SessionDto>("blazSessionDto");
         //    Console.WriteLine("SESSION HAS BEEN INITIALIZED");
-        //    var response = await _apiClient.SendRequestAsync("AUTHClient", HttpMethod.Get, $"usercontext/session");
+        //    var response = await _apiClient.SendRequestAsync("AuthClient", HttpMethod.Get, $"usercontext/session");
         //    var sessionDto = JsonConvert.DeserializeObject<SessionDto>(response);
         //    if (sessionDto != null)
         //    {
@@ -138,7 +138,7 @@ namespace GxPilo.Services
 
             var orgid = await _localStorage.GetItemAsync<int>("blazOrgid");
 
-            var response = await _apiClient.SendRequestAsync("AUTHClient", HttpMethod.Get, $"usercontext/userbag");
+            var response = await _apiClient.SendRequestAsync("AuthClient", HttpMethod.Get, $"usercontext/userbag");
             var result = JsonConvert.DeserializeObject<Userbag>(response);
             if (Userbag == null || !result.Succeeded)
             {
@@ -156,7 +156,7 @@ namespace GxPilo.Services
         public async Task<bool> TryRefreshTokenAsync()
         {
             var rtoken = await _localStorage.GetItemAsync<string>("blazRtoken");
-            var response = await _apiClient.SendRequestAsync("AUTHClient", HttpMethod.Post, "lgauth/refresh", new { Rtoken = rtoken });
+            var response = await _apiClient.SendRequestAsync("AuthClient", HttpMethod.Post, "lgauth/refresh", new { Rtoken = rtoken });
             var newTokens = JsonConvert.DeserializeObject<LoginResult>(response);
 
             if (newTokens?.Atoken == null) return false;
@@ -212,7 +212,7 @@ namespace GxPilo.Services
         }
         public async Task<Userbag?> GetUserbagAsync()
         {
-            var response = await _apiClient.SendRequestAsync("AUTHClient", HttpMethod.Get, $"usercontext/userbag");
+            var response = await _apiClient.SendRequestAsync("AuthClient", HttpMethod.Get, $"usercontext/userbag");
             return JsonConvert.DeserializeObject<Userbag>(response);
         }  
     }

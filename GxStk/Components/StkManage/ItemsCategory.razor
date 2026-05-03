@@ -1,0 +1,175 @@
+﻿@page "/items-category"
+
+@using GxShared.GxDtos
+@using GxShared.GxGuards
+@using Simple.OData.Client
+@using GxShared.Helpers
+@using GxStk.Services
+@using GxStk.ClieModels
+@using GxShared.Sess
+@using Microsoft.EntityFrameworkCore;
+
+<div class="container mt-3">
+    <h4>Stock Categories</h4>
+
+    <Button Color="ButtonColor.Success" @onclick="() => StartAdd()">Add New Category</Button>
+
+    <Grid TItem="Stkcat" Data="@curOrga?.Stkcats" AllowPaging="true" Responsive="true">
+        <GridColumns>
+            <GridColumn TItem="StkcatDto" HeaderText="Id" Class="xcol1">
+                <ChildContent Context="item">@item.Id</ChildContent>
+            </GridColumn>
+            <GridColumn TItem="Stkcat" HeaderText="Label" Class="xcol3">
+                <ChildContent Context="item">
+                    @if (editRowguid == item.Rowguid)
+                    {
+                        <InputText @bind-Value="draftCat.Liba" />
+                    }
+                    else
+                    {
+                        @item.Liba
+                    }
+                </ChildContent>
+            </GridColumn>
+            <GridColumn TItem="Stkcat" HeaderText="Price" Class="xcol2">
+                <ChildContent Context="item">
+                    @if (editRowguid == item.Rowguid)
+                    {
+                        <InputNumber @bind-Value="draftCat.Prix" />
+                    }
+                    else
+                    {
+                        @item.Prix
+                    }
+                </ChildContent>
+            </GridColumn>
+            <GridColumn TItem="Stkcat" HeaderText="Actions">
+                <ChildContent Context="item">
+                    @if (editRowguid == item.Rowguid)
+                    {
+                        <Button Color="ButtonColor.Primary" Size="ButtonSize.Small"
+                                @onclick="() => SaveEdit(item)">
+                            Save
+                        </Button>
+                        <Button Color="ButtonColor.Secondary" Size="ButtonSize.Small"
+                                @onclick="() => CancelEdit()">
+                            Cancel
+                        </Button>
+                    }
+                    else
+                    {
+                        <Button Color="ButtonColor.Warning" Size="ButtonSize.Small"
+                                @onclick="() => StartEdit(item)">
+                            Edit
+                        </Button>
+                        <Button Color="ButtonColor.Danger" Size="ButtonSize.Small"
+                                @onclick="() => DeleteCategory(item)">
+                            Delete
+                        </Button>
+                    }
+                </ChildContent>
+            </GridColumn>
+        </GridColumns>
+    </Grid>
+
+    @if (isAdding)
+    {
+        <div class="mt-3">
+            <h5>New Category</h5>
+            <InputText @bind-Value="draftCat.Liba" placeholder="Label" />
+            <InputNumber @bind-Value="draftCat.Prix" placeholder="Price" />
+            <Button Color="ButtonColor.Success" @onclick="() => SaveAdd()">Add</Button>
+            <Button Color="ButtonColor.Secondary" @onclick="() => CancelAdd()">Cancel</Button>
+        </div>
+    }
+</div>
+
+@code {
+    [CascadingParameter]
+    private Task<AuthenticationState>? AuthState { get; set; }
+
+    [Parameter] public RenderFragment ChildContent { get; set; }
+    [Parameter] public MyODataContext curODContext { get; set; }
+    [Parameter] public Gxorga curOrga { get; set; } = new();
+    [Parameter] 
+    public List<Gpdivh> LsDivs { get; set; }
+    [Parameter] public MyShareVars toChild { get; set; }
+    [Parameter] public int toMenu { get; set; }
+
+    // Guard
+    [Parameter] public PendingChangesGuard _guard { get; set; }
+    [Parameter] public EventCallback<PendingState> OnPendingStateChanged { get; set; }
+    [Parameter] public int NbChanges { get; set; }
+    [Parameter] public EventCallback<int> NbChangesChanged { get; set; }
+
+    // [Parameter] public ItemClientService ItemService { get; set; }
+    // [Parameter] public StockClientService StockService { get; set; }
+
+    private Guid? editRowguid;
+    private bool isAdding = false;
+    private Stkcat draftCat = new();
+
+    private void CancelAdd() => isAdding = false;
+
+    private void StartEdit(Stkcat cat)
+    {
+        editRowguid = cat.Rowguid;
+        draftCat = new Stkcat { Id = cat.Id, Liba = cat.Liba, Prix = cat.Prix, Rowguid = cat.Rowguid };
+    }
+
+    private async Task SaveEdit(Stkcat cat)
+    {
+        cat.Liba = draftCat.Liba;
+        cat.Prix = draftCat.Prix;
+
+        // Register update with OData context
+        curODContext.UpdateObject(cat);
+
+        editRowguid = null;
+        await NotifyPendingChanges();
+    }
+
+    private void CancelEdit() => editRowguid = null;
+
+    private async Task DeleteCategory(Stkcat cat)
+    {
+        curOrga.Stkcats.Remove(cat);
+
+        // Register delete with OData context
+        curODContext.DeleteObject(cat);
+
+        await NotifyPendingChanges();
+    }
+
+    private void StartAdd()
+    {
+        isAdding = true;
+        draftCat = new Stkcat();
+    }
+
+    private async Task SaveAdd()
+    {
+        draftCat.Rowguid = Guid.NewGuid();
+
+        // Register add with OData context
+        curODContext.AddObject("Stkcats", draftCat);
+
+        curOrga.Stkcats.Add(draftCat);
+        isAdding = false;
+
+        await NotifyPendingChanges();
+    }
+
+    // Notify guard/UI of pending changes
+    private async Task NotifyPendingChanges()
+    {
+        await OnPendingStateChanged.InvokeAsync(new PendingState(
+            _guard.HasPendingChanges(),
+            _guard.GetPendingChangesCount()
+        ));
+
+        NbChanges = _guard.GetPendingChangesCount();
+        await NbChangesChanged.InvokeAsync(NbChanges);
+        StateHasChanged();
+    }
+}

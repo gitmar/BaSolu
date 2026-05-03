@@ -11,7 +11,7 @@ namespace GxPilo.Services
 
         public TblJsonRender(IHttpClientFactory htClieFactory)
         {
-            _httpClie = htClieFactory.CreateClient("AUTHClient"); // ✅ Use the named client
+            _httpClie = htClieFactory.CreateClient("AuthClient"); // ✅ Use the named client
         }
         public async Task<TableSet?> rendTables()
         {

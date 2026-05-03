@@ -151,7 +151,7 @@ namespace GxPilo.Services
             try
             {
                 Console.WriteLine("Checking backend health...");
-                var _dftClient = _httpClientFactory.CreateClient("AUTHClient");
+                var _dftClient = _httpClientFactory.CreateClient("AuthClient");
                 _dftClient.Timeout = TimeSpan.FromSeconds(3); // Optional: prevent long hangs
                 var response = await _dftClient.GetAsync("lgauth/health");
                 return response.IsSuccessStatusCode;

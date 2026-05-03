@@ -96,7 +96,7 @@ else
     protected override async Task OnInitializedAsync()
     {
         Console.WriteLine("A BIEN ATTERRI");
-        _apiClient = _httpClientFactory.CreateClient("AUTHClient");
+        _apiClient = _httpClientFactory.CreateClient("AuthClient");
 
         if (string.IsNullOrEmpty(CdLink))
         {

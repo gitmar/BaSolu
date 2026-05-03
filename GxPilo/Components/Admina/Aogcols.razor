@@ -2,13 +2,16 @@
 
 @using System.Text
 @using System.Text.Json
-@using GxWapi.DaModels
+@using Simple.OData.Client
 @using GxPilo.Services
 @using GxShared.Others
 @using GxShared.Helpers
 @using GxShared.Sess
 
 @using Newtonsoft.Json;
+
+@using Simple.OData.Client
+@using GxShared.GxDtos
 
 @inject HttpClientService _clieManager
 
@@ -108,7 +111,9 @@
 
 @code {
     [Parameter]
-    public Gxorga curOrga { get; set; }
+    public IODataClient _InODaClient { get; set; }
+    [Parameter]
+    public GxorgaDto curOrga { get; set; }
     [Parameter]
     public int IMyDom { get; set; } = 0; //1tiers2mati
     [Parameter]
@@ -141,7 +146,7 @@
         //Tstyp(2cnj3par4enf..
         //Efrm(1accu2enrol)
         var selectedCol = LsPcols.FirstOrDefault(uc =>  uc.Totyp == IMyGpe && uc.Efrm == EtRef 
-            && uc.Zfro == IMyDom);
+            && uc.Btyp == IMyDom);
         Console.WriteLine($"Valeur colonnes entrees : {EtRef} et/{IMyGpe} et/{IMyAfl} puis//-{selectedCol?.Fgsrc}");
         string strStore = selectedCol != null ? selectedCol.Fgsrc : string.Empty;
         Columns = ColsPreferences.DeserializePreferences(strStore);
@@ -172,7 +177,7 @@
             return;
         }
         var selectedCol = LsFcols.FirstOrDefault(uc =>
-            uc.Totyp == IMyAfl && uc.Efrm == EtRef && uc.Zfro == IMyDom);
+            uc.Totyp == IMyAfl && uc.Efrm == EtRef && uc.Btyp == IMyDom);
         string strStore = selectedCol?.Fgsrc ?? string.Empty;
         AflColumns = ColsPreferences.DeserializePreferences(strStore);
         foreach (var ocol in LsOcols)
@@ -219,9 +224,9 @@
         }
         ctosave.Efrm = EtRef; //1accueil2enrol
         ctosave.Strcols = svcolos;
-        await _clieManager.SetAuthorizationHeaderAsync("AUTHClient");
+        await _clieManager.SetAuthorizationHeaderAsync("AuthClient");
         var response = await _clieManager.SendRequestAsync(
-            "AUTHClient",
+            "AuthClient",
             HttpMethod.Post,
             "regis/save-cols", ctosave);
         Imessage = "Succes Colonnes options saved ";
@@ -230,7 +235,7 @@
         await Task.Delay(1);
     }
 
-    private async Task ConfOnePrinGener(Gsgfix mygtie)
+    private async Task ConfOnePrinGener(GsgfixDto mygtie)
     {
         if (mygtie == null)
         {
@@ -282,7 +287,7 @@
             // }
         }
     }
-    private async Task ConfOneAfilGener(Gsgfix mygafl)
+    private async Task ConfOneAfilGener(GsgfixDto mygafl)
     {
         if (mygafl == null)
         {

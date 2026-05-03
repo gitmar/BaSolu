@@ -1,6 +1,7 @@
-﻿@using GxWapi.DaModels
-@using GxShared.Others
+﻿@using GxShared.Others
 @using GxTie.ClieModels
+@using GxShared.GxDtos
+
 
 <h3>CTiwGdHelper</h3>
 
@@ -236,30 +237,30 @@
 </div>
 @code {
     // Workflow flags
-    [Parameter] public List<Tiwafl> SubAfls { get; set; }
+    [Parameter] public List<TiwaflDto> SubAfls { get; set; }
     [Parameter] public GridMode GMode { get; set; } = GridMode.None;
     [Parameter] public bool isEditing { get; set; } = false;
     [Parameter] public Dictionary<string, bool> AflVisibility { get; set; } = new();
 
-    [Parameter] public List<Gptbl> TbItems { get; set; }
+    [Parameter] public List<Gtabl> EnsTbls { get; set; }
     [Parameter] public int? SelectedGroup { get; set; }
     
     // Identifiers
     [Parameter] public string RenderKey { get; set; }
     [Parameter] public Guid? EdRowguid { get; set; }
     // Actions passed in from parent
-    [Parameter] public EventCallback<Tiwafl> ConfirmEdit { get; set; }
-    [Parameter] public EventCallback<Tiwafl> CancelEdit { get; set; }
+    [Parameter] public EventCallback<TiwaflDto> ConfirmEdit { get; set; }
+    [Parameter] public EventCallback<TiwaflDto> CancelEdit { get; set; }
 
-    [Parameter] public EventCallback<Tiwafl> ConfirmDelete { get; set; }
-    [Parameter] public EventCallback<Tiwafl> CancelDelete { get; set; }
-    [Parameter] public EventCallback<Tiwafl> StartRubEdit { get; set; }
+    [Parameter] public EventCallback<TiwaflDto> ConfirmDelete { get; set; }
+    [Parameter] public EventCallback<TiwaflDto> CancelDelete { get; set; }
+    [Parameter] public EventCallback<TiwaflDto> StartRubEdit { get; set; }
     [Parameter] public EventCallback<Guid> StartRowDelete { get; set; }
 
-    private List<Gptbl> GetOptions(int pxcod)
+    private List<Gtabl> GetOptions(int pxcod)
     {
-        return TbItems
-            .Where(t => t.Pxcod == pxcod)
+        return EnsTbls
+            .Where(t => t.Pid == pxcod)
             .ToList();
     }
 }

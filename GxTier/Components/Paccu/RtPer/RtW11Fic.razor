@@ -17,12 +17,10 @@
 @using GxShared.Sess
 @using GxTie.ClieModels
 @using GxTie.Services
-@using GxTie.ClieModels
-@using GxTie.Services
-@using GxWapi.DaModels
+@using Simple.OData.Client
+@using GxShared.GxDtos
 @using Microsoft.AspNetCore.Components.Forms
 @using Microsoft.AspNetCore.WebUtilities
-@using Microsoft.OData.Client
 @using Newtonsoft.Json
 
 @inject ILocalStorageService _localStorage
@@ -112,13 +110,13 @@
     [Parameter]
     public RenderFragment ChildContent { get; set; }
     [Parameter]
-    public MyODataContext curODContext { get; set; }
+    public IODataClient _InODaClient { get; set; }
     [Parameter]
-    public Gxorga curOrga { get; set; } = new();
+    public GxorgaDto curOrga { get; set; } = new();
     [Parameter]
     public MyShareVars toChild { get; set; }
     [Parameter]
-    public Tiewel curTiw { get; set; } = new();
+    public TiewelDto curTiw { get; set; } = new();
 
     private ClaimsPrincipal authUser;
     private bool isAuthenticated = false;

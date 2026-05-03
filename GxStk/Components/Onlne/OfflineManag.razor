@@ -1,0 +1,58 @@
+﻿@page "/offlinemanager"
+
+@using GxShared.Interfaces
+@using GxShared.GxDtos
+@using TG.Blazor.IndexedDB
+
+<h3>Offline Operations Manager</h3>
+
+<div class="mb-3">
+    <button class="btn btn-secondary" @onclick="StartOfflineOps">Start Offline Ops</button>
+    <button class="btn btn-primary" @onclick="JoinOnlineState">Join Online State</button>
+</div>
+
+@if (queuedOps?.Any() == true)
+{
+    <h5>Queued Operations</h5>
+    <ul class="list-group">
+        @foreach (var op in queuedOps)
+        {
+            <li class="list-group-item">
+                <strong>@op.Operation</strong> on <em>@op.Entity</em>
+                <pre>@op.PayloadJson</pre>
+            </li>
+        }
+    </ul>
+}
+else
+{
+    <p>No queued operations.</p>
+}
+
+@code {
+    private List<PendingOpRecord>? queuedOps;
+
+    // Inject guard and IndexedDB manager
+    [Inject] private IPendingChangesGuard _guard { get; set; } = default!;
+    [Inject] private IndexedDBManager _db { get; set; } = default!;
+
+    protected override async Task OnInitializedAsync()
+    {
+        queuedOps = await _db.GetRecords<PendingOpRecord>("PendingOps");
+    }
+
+    private void StartOfflineOps()
+    {
+        _guard.EnableOfflineMode();
+        Console.WriteLine("Offline mode enabled. Ops will be queued.");
+    }
+
+    private async Task JoinOnlineState()
+    {
+        Console.WriteLine("Joining online state...");
+        await _guard.ReplayFromIndexedDbAsync();
+
+        // Refresh list after replay
+        queuedOps = await _db.GetRecords<PendingOpRecord>("PendingOps");
+    }
+}

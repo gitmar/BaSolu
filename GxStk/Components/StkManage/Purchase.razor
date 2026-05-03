@@ -1,10 +1,10 @@
 ﻿@page "/purchase"
 
-@using GxShared.StkDtos
+@using GxShared.GxDtos
 @using GxStk.Services
 @using GxStk.Services
 
-@inject PurchaseClientService PurchaseService
+@* @inject PurchaseClientService PurchaseService *@
 
 <h3>Create Purchase</h3>
 
@@ -19,29 +19,29 @@
 
     async Task CreatePurchase()
     {
-        var dto = new CreatePurchaseDto
-        {
-            SupplierId = supplierId,
-            WarehouseId = warehouseId,
-            Lines = new List<CreatePurchaseLineDto>
-            {
-                new()
-                {
-                    ItemId = 1,
-                    Quantity = 50,
-                    UnitCost = 2.5m,
-                    BatchNumber = "B001",
-                    ExpiryDate = DateOnly.FromDateTime(DateTime.UtcNow.AddMonths(6))
-                }
-                //dateorder comparison
-                //.OrderBy(x => x.ExpiryDate.HasValue
-                //    ? x.ExpiryDate.Value.ToDateTime(TimeOnly.MinValue)
-                //        : DateTime.MaxValue)
-            }
-        };
+        // var dto = new CreatePurchaseDto
+        // {
+        //     SupplierId = supplierId,
+        //     WarehouseId = warehouseId,
+        //     Lines = new List<CreatePurchaseLineDto>
+        //     {
+        //         new()
+        //         {
+        //             ItemId = 1,
+        //             Quantity = 50,
+        //             UnitCost = 2.5m,
+        //             BatchNumber = "B001",
+        //             ExpiryDate = DateOnly.FromDateTime(DateTime.UtcNow.AddMonths(6))
+        //         }
+        //         //dateorder comparison
+        //         //.OrderBy(x => x.ExpiryDate.HasValue
+        //         //    ? x.ExpiryDate.Value.ToDateTime(TimeOnly.MinValue)
+        //         //        : DateTime.MaxValue)
+        //     }
+        // };
 
-        var id = await PurchaseService.CreatePurchaseAsync(dto);
+        // var id = await PurchaseService.CreatePurchaseAsync(dto);
 
-        Console.WriteLine($"Purchase created: {id}");
+        // Console.WriteLine($"Purchase created: {id}");
     }
 }

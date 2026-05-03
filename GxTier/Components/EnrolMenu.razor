@@ -1,0 +1,520 @@
+﻿@page "/enrolmenu"
+@inherits LayoutComponentBase
+@layout FreeLayout
+
+@using System.Security.Claims
+@using BlazorBootstrap
+@using Blazored.LocalStorage
+@using GxTie.ClieModels
+@using GxTie.Components.Paccu.Valida
+@using GxTie.Components.Paccu.Inscr
+@using GxTie.Components.Paccu.Invita
+
+@using GxTie.Services
+@using GxTie.StaticHelpers
+@using GxShared.Sess
+@using GxShared.Others
+@using Simple.OData.Client
+@using GxShared.GxDtos
+@using GxShared.Interfaces
+@using AutoMapper
+@using Newtonsoft.Json
+@using Gx.Components.Navigation
+
+@implements IDisposable
+
+@inject NavigationManager _navManager
+@inject ILocalStorageService _localStorage
+@inject HttpClientService _clieManager
+@inject IODataClient _MyODaClient
+@inject IMapper Mapper
+@inject SessionContextService _sessionContext
+@inject RendAgres _rendAgres
+@inject IPendingChangesGuard _guard
+@inject IJSRuntime _JsRUN
+@inject IMessageService _messageService
+
+@if (isLoading)
+{
+    <div class="text-center">
+        <Spinner Color="SpinnerColor.Primary" Size="SpinnerSize.Large" />
+        <p>RH/ENROLLEMENT Loading...</p>
+    </div>
+}
+else
+{
+    <div class="gx-screen-layout">
+        <div class="container gx-parent-container" style="height: 100vh;">
+            <div class="d-flex flex-column" style="height: 100%;">
+                <GxNavMenu BrandText="A24soft Gx-Solutions"
+                           MenuItems="@MenuItems"
+                           YaGroup="true"
+                           Groups="@Groupes"
+                           MenuSelected="@_chxMenu"
+                           MenuSelectedChanged="@SelMenu"
+                           OnBack="@NavigateBack" />
+                <div class="row">
+                    <div class="col-md-12 input-group align-middle">
+                        <span class="text-uppercase text- text-success"><b>@strComp</b></span>
+                        @if (!String.IsNullOrEmpty(Jmessage))
+                        {
+                            <span class="bg-info bg-opacity-10" style="font-style:italic;color:red">&nbsp;--> @Jmessage</span>
+                        }
+                    </div>
+                </div>
+                <!-- Main Content -->
+                <div class="row">
+                    @if (_chxMenu != 0 && toChild.LsFixes.Any() && curOrga != null)
+                    {
+                        @if (_chxMenu == 1 && Ugpe != 0 && Tgpe != 0)
+                        {
+                            <ValdTie @ref="mygvld"
+                                     Ugpe="@Ugpe"
+                                     Tgpe="@Tgpe"
+                                     curOrga="@curOrga"
+                                     @bind-NbChanges="_nbChanges"
+                                     _guard="_guard"
+                                     EnsTbls ="@EnsTbls"
+                                     toChild="@toChild"
+                                     _InODaClient="@_MyODaClient">
+                                <ChildContent>
+                                    @* <h2 class="child-box">Hello INTEGRATION</h2> *@
+                                </ChildContent>
+                            </ValdTie>
+                        }
+                        else if (_chxMenu == 2 && Ugpe != 0) // && Tgpe != 0 && ParentOK)
+                        {
+                            <InscTiw @ref="myetiw"
+                                     Ugpe="@Ugpe"
+                                     Tgpe="@Tgpe"
+                                     curOrga="@curOrga"
+                                     @bind-NbChanges="_nbChanges"
+                                     _guard="_guard"
+                                     EnsTbls="@EnsTbls"
+                                     toChild="@toChild"
+                                     _InODaClient="@_MyODaClient">
+                                <ChildContent>
+                                    @* <h2 class="child-box">Hello ACCUEIL</h2> *@
+                                </ChildContent>
+                            </InscTiw>
+                        }
+                        else if (_chxMenu == 3)
+                        {
+                            @* <InvOper @ref="myginv"
+                                     curOrga="@curOrga"
+                                     allEnable="@allEnable"
+                                     _InODaClient="@ODataClient">
+                                <ChildContent>
+                                    <h2 class="child-box">Hello ACCUEIL</h2>
+                                </ChildContent>
+                            </InvOper> *@
+                        }
+                    }
+                 }
+            </div>
+        </div>
+    </div>
+</div>
+    <div class="row mt-3">
+        <div class="alert alert-warning d-flex justify-content-between align-items-center py-1 px-2 position-fixed bottom-0 end-0"
+             style="background-color: transparent; z-index: 1050; max-width: 400px;">
+            <div class="d-flex gap-2 align-items-center">
+                <Button class="w-auto flex-grow-0 flex-shrink-0" Color="ButtonColor.Info" @onclick="SaveAllChanges"
+                        Enabled="@_guard.HasPendingChanges()">
+                    Save All (@_guard.GetPendingChangesCount() changes)
+                </Button>
+                <Button class="w-auto flex-grow-0 flex-shrink-0" Color="ButtonColor.Secondary" @onclick="CancelAllChanges"
+                        Enabled="@_guard.HasPendingChanges()">
+                    Cancel All
+                </Button>
+            </div>
+        </div>
+
+    </div>
+}
+@code {
+    private bool isLoading = true;
+    public GxorgaDto curOrga = new();
+    public MyShareVars toChild = new();
+
+    private ValdTie mygvld = new();
+    private InscTiw myetiw = new();
+    private InvOper myginv = new();
+
+    private MyAuthStateProvider _authProvider { get; set; }
+    public Userbag _usrBag = new();
+
+    [Parameter]
+    public RenderFragment ValdTie { get; set; }
+    [Parameter]
+    public RenderFragment EnrolTiw { get; set; }
+    [Parameter]
+    public RenderFragment InviTiw { get; set; } 
+
+    [CascadingParameter]
+    private Task<AuthenticationState>? AuthState { get; set; }
+
+    private ClaimsPrincipal authUser;
+    private bool isAuthenticated = false;
+
+    //Guard
+    private int _nbChanges = 0;
+    private IDisposable? _locationHandler;
+    private int pendingCount => _guard.GetPendingChangesCount();
+    private int insertCount => _guard.GetInsertCount();
+    private int updateCount => _guard.GetUpdateCount();
+    private int deleteCount => _guard.GetDeleteCount();
+    private async Task CancelAllChanges()
+    {
+        Console.WriteLine("🗑️ CancelAllChanges START");
+        await _guard.CancelChanges();  // 🔥 AWAIT - blocks until done
+        _messageService.Show("✅ CancelAllChanges successfully", ToastType.Success);
+        StateHasChanged();
+        Console.WriteLine($"✅ CancelAllChanges END - Pending: {_guard.GetPendingChangesCount()}");
+    }
+    private async Task SaveAllChanges()
+    {
+        await _guard.FlushAsync();  // 🔥 AWAIT - blocks until done
+        _messageService.Show("✅ Saved successfully", ToastType.Success);
+        StateHasChanged();
+    }
+    //menus
+    public List<GxMenuItem> MenuItems = new()
+    {
+        new GxMenuItem { Id = 1, Text = "Integration", Icon = "bi bi-box-arrow-in-down" },
+        new GxMenuItem { Id = 2, Text = "Accueil/Site", Icon = "bi bi-house-door" },
+        //new GxMenuItem { Id = 3, Text = "Invite/Online", Icon = "bi bi-envelope-paper" },
+        //new GxMenuItem { Id = 4, Text = "ATest", Icon = "bi bi-envelope-paper" }
+        //new MenuItem { Id = 4, Text = "Mutation", Icon = "bi bi-arrow-repeat" },
+    };
+    public List<GxGroupe> Groupes = new();
+
+    //public int _UorgId = 0;
+    public string _strOrga = "", _curSigle = "", LoadLabel = "", strmeta = "", strmeta2 = "";
+    private string Jmessage = "";
+    //entities load
+    private IEnumerable<GxorgaDto> _lsOrgas = new List<GxorgaDto>();
+    private List<TiewelDto> InTwels = new List<TiewelDto>();
+    private List<TierspDto> InTiers = new List<TierspDto>();
+    public IQueryable<GsaplDto> InApls = Enumerable.Empty<GsaplDto>().AsQueryable();
+    public IEnumerable<TiewelDto> ResTiw;
+    public IEnumerable<TierspDto> ResTie;
+    public TiewelDto opTwel = new();
+    public TierspDto opTier = new();
+
+    public List<Gpfixe> LsFixes = new();
+    public List<Gpfixe> LsGties = new();
+    public List<Gpdivh> LsDivs = new();
+    //public List<Rubpst> LsPsts = new();
+    public List<Gpvar> LsVars = new();
+    public List<Gplan> LsPlans = new();
+    public List<Grole> Uroles = new();
+
+    private List<Grole> LsRoles = new();
+    private List<Gtabl> EnsTbls = new();
+    //Navigation
+    private int _gIdTie = 0, _chxGpe = 0, _chxMenu = 1;
+    private string strComp = $"Integration";
+    string gpeLiba = "";
+    public int Ugpe = 0, Tgpe = 0; //gpe ref1..6/tiers type6..7
+    //modal management
+    private string SidebarStyle = "width: 200px;";
+    private bool IsOpen = true;
+    private bool FirstLoadCompleted = false;
+    private bool ContentLoaded = false;
+
+    // private async Task SaveAllAsync()
+    // {
+    //     await _guard.FlushAsync();
+    //     StateHasChanged();
+    // }
+    // private async Task CancelAllChanges()
+    // {
+    //     Console.WriteLine("🗑️ CancelAllChanges START");
+    //     await _guard.CancelChangesAsync();  // 🔥 AWAIT - blocks until done
+    //     _messageService.Show("✅ CancelAllChanges successfully", ToastType.Success);
+    //     StateHasChanged();
+    //     Console.WriteLine($"✅ CancelAllChanges END - Pending: {_guard.GetPendingChangesCount()}");
+    // }
+    // private async Task SaveAllChanges()
+    // {
+    //     //_guard.DiscardUnconfirmedAdds<Plngen>();
+    //     //_guard.DiscardUnconfirmedAdds<Rubvar>();
+    //     _guard.DiscardUnconfirmedAdds<Tiewel>();
+    //     _guard.DiscardUnconfirmedAdds<Tiwatr>();
+    //     _guard.DiscardUnconfirmedAdds<Tiwafl>();
+    //     if (_guard.HasPendingChanges())
+    //     {
+    //         await curODContext.Context.SaveChangesAsync();
+    //     }
+    //     _guard.NotifyChanges();
+    //     _messageService.Show("✅ Saved successfully", ToastType.Success);
+    //     StateHasChanged();
+    // }
+    //Guard
+    //private int _nbChanges = 0;
+    //private IDisposable? _locationHandler;
+
+    protected override async Task OnInitializedAsync()
+    {
+        //prise valeurs parent
+        isLoading = true;
+        LoadLabel = "data is loading";
+        await SetLoadingState(); // 75, "Fetching data...");
+        var authState = await AuthState;
+        authUser = authState.User;
+        isAuthenticated = authUser.Identity.IsAuthenticated;
+        if (!isAuthenticated)
+        {
+            Console.WriteLine("Authentication in Enrol Utilisateur ECHEC");
+            return;
+        }
+        else
+        {
+            Console.WriteLine("Authentication in Enrol SUCCESS");
+        }
+        _usrBag = await _sessionContext.GetUserbagAsync();
+
+        LsVars = _usrBag.Usorga.Uvars.ToList();
+        Uroles = _usrBag.Uroles.ToList();
+        LsPlans = _usrBag.Usorga.Uplns.ToList();
+        LsDivs = await _rendAgres.LoadOrgaPostes();
+        LsRoles = await _rendAgres.LoadOrgaRoles();
+        LsFixes = _usrBag.Ufixes.ToList();
+        toChild = new MyShareVars
+        {
+            authUser = authState.User,
+            isAuthenticated = true,
+            LsDivs = LsDivs.ToList(),
+            LsVars = LsVars.ToList(),
+            LsFixes = LsFixes.ToList(),
+            LsPlans = LsPlans.ToList(),
+        };
+        Console.WriteLine($"nb. fixes {LsFixes.Count}");
+        LsGties = _usrBag.Ufixes
+            .Where(ut => ut.Gvars == 36 && ut.Elea != 0 && ut.Elea != 9)
+            .ToList();
+        Groupes.Clear();
+        foreach(var gr in LsGties.Where(gr => gr.Itb == 6))
+        {
+            Groupes.Add(new GxGroupe { Itb = gr.Itb, Elea = gr.Elea, Liba = gr.Liba });
+        };
+        //var lscols = await _rendAgres.LoadOrgaColons();
+        //LsPcols = lscols.Where(tc => tc.Otyp == 1 && tc.Totyp == Ugpe && tc.Zfro == 1).ToList();
+        //LsFcols = lscols.Where(tc => tc.Otyp == 2 && tc.Totyp == Ugpe && tc.Zfro == 1).ToList();
+        Console.WriteLine("Authentication ENTREE");
+        EnsTbls = await _rendAgres.LoadOrgaTables();
+        //TbItems = await _rendAgres.LoadOrgaTables();
+        //Console.WriteLine($"nb. tbitems : {TbItems.Count}");
+        
+        //_guard.RegisterUnconfirmedPredicate<Tiewel>(w => w.Xadd1 == -1 || w.Xedt1 == -1 || w.Xdel1 == -1);
+        // _guard.RegisterUnconfirmedPredicate<Tiwatr>(wa => wa.Xadd1 == -1 || wa.Xedt1 == -1 || wa.Xdel1 == -1);
+        // _guard.RegisterUnconfirmedPredicate<Tiwafl>(wf => wf.Xadd1 == -1 || wf.Xedt1 == -1 || wf.Xdel1 == -1);
+        // _guard.RegisterUnconfirmedPredicate<TierspDto>(e => e.Xadd1 == -1 || e.Xedt1 == -1 || e.Xdel1 == -1);
+        // _guard.RegisterUnconfirmedPredicate<Tieatr>(ea => ea.Xadd1 == -1 || ea.Xedt1 == -1 || ea.Xdel1 == -1);
+        // _guard.RegisterUnconfirmedPredicate<TieaflDto>(ef => ef.Xadd1 == -1 || ef.Xedt1 == -1 || ef.Xdel1 == -1);
+
+        _nbChanges = _guard.GetPendingChangesCount();  // Initial value
+        
+        await LoadTieAplAsync(_usrBag.Idorg);
+
+        // pita = 5;
+        Console.WriteLine("TIERS A ETE TESTE");
+        //option initiale
+        strComp = $"Integration {gpeLiba}";
+        //isLoading = false;
+        //ParentOK = false;
+        //await _loadingService.Hide();
+        StateHasChanged();
+        isLoading = false;
+    }
+    private async Task LoadTieAplAsync(int key)
+    {
+        // Create context
+        // curODContext = await _contextFactory.CreateAsync();
+        // _guard.AttachContext(curODContext);
+        try
+        {
+            curOrga = await _MyODaClient
+                .For<GxorgaDto>("Gxorgas")
+                .Key(key)
+                .Expand(o => o.Gsesios)
+                .Expand(o => o.Tiewels.Select(t => t.Tiwafls))
+                .Expand(o => o.Tiersps.Select(t => t.Tieafls))
+                .Expand(o => o.Tiersps.Select(t => t.Tieatrs))
+                .Expand(o => o.Tiersps.Select(t => t.Tiecats))
+                .FindEntryAsync();
+            Console.WriteLine($"loadOrgaAsync completed : {curOrga?.Raison}");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Load error: {ex.Message}");
+        }
+
+        try
+        {
+            // string expandTiewels = ODataQueryHelper.Expand<Gxorga, IEnumerable<Tiewel>>(o => o.Tiewels)
+            //     + "($expand=Tiwafls,Tiwatrs)";
+            // string expandTiersps = ODataQueryHelper.Expand<Gxorga, IEnumerable<TierspDto>>(o => o.Tiersps)
+            //     + "($expand=Tieafls,Tieatrs)";
+            // string expandStkita = ODataQueryHelper.Expand<Gxorga, IEnumerable<Stkitu>>(o => o.Stkitus);
+            // string expandGsesios = ODataQueryHelper.Expand<Gxorga, IEnumerable<Gsesio>>(o => o.Gsesios);
+
+            // // Combine them
+            // string expand = string.Join(",", expandTiewels, expandTiersps,
+            //         expandGsesios, expandStkita);
+            // curOrga = await curODContext.GetByKeyAsync<Gxorga>(
+            //     key,
+            //     "Gxorgas",
+            //     expand
+            // );
+
+            // curOrga = await _clieManager
+            //     .GetDtoWithExpandAsync<GxorgaDto>(
+            //         "Gxorgas",
+            //         key,
+            //         "Tiewels($expand=Tiwafls), Tiersps($expand=(Tieafls, Tieatrs))"
+            // );
+            // if (curOrga == null)
+            // {
+            //     //Console.WriteLine($"No organization found for the current user. {expand}");
+            //     return;
+            // }
+
+            Console.WriteLine($"Expanded results : {curOrga.Tiersps.Count} and {curOrga.Stkitus?.Count ?? 0}");
+            ////attributs//Lvars deja charge
+            // foreach (var tie in curOrga.Tiersps)
+            // {
+            //     foreach (var tat in tie.Tieatrs)
+            //     {
+            //         var curat = LsVars.FirstOrDefault(at => at.Xseq == tat.Igsg);
+            //         if (curat != null) tat.LoadFromGsgfix(curat);
+            //     }
+            // }
+            // foreach (var tiw in curOrga.Tiewels)
+            // {
+            //     foreach (var tat in tiw.Tiwatrs)
+            //     {
+            //         var curat = LsVars.FirstOrDefault(at => at.Xseq == tat.Igsg);
+            //         if (curat != null) tat.LoadFromGsgfix(curat);
+            //     }
+            // }
+        }
+        catch(Exception ex)
+        {
+            Console.WriteLine($"Erreur Get Data : {ex.Message}");
+        }
+        Ugpe = 1; //cible
+        Tgpe = 6; //tiers 7matiere
+        _chxMenu = 1;
+        Console.WriteLine($"✅ COMPLETE: Tiersps={curOrga.Tiersps?.Count ?? 0}");
+    }
+    protected override void OnAfterRender(bool firstRender)
+    {
+        if (firstRender)
+        {
+            _locationHandler = _navManager.RegisterLocationChangingHandler(OnLocationChangingAsync);
+            //Console.WriteLine("📌 LocationChangingHandler registered");
+        }
+    }
+    private async ValueTask OnLocationChangingAsync(LocationChangingContext context)
+    {
+        Console.WriteLine($"🌐 Intercepted: {context.TargetLocation}");
+
+        if (!_guard.HasPendingChanges())
+        {
+            Console.WriteLine("✅ Clean - allowing navigation");
+            return;
+        }
+
+        context.PreventNavigation();  // BLOCK navigation
+        Console.WriteLine($"🚫 Showing confirm dialog {context.TargetLocation}");
+
+        try
+        {
+            var save = await _JsRUN.InvokeAsync<bool>("confirm", "Save changes before leaving?");
+
+            if (save)
+            {
+                // 🔥 YES: SaveAllChanges() → Navigate  away
+                await SaveAllChanges();
+                Console.WriteLine("💾 Saved - navigating away");
+                _navManager.NavigateTo(context.TargetLocation, forceLoad: false);
+            }
+            else
+            {
+                // 🔥 NO: STAY on page - NO CancelAllChanges()
+                Console.WriteLine("❌ User chose NO - staying on page");
+                // User stays - sees SaveAllChanges() / CancelAllChanges() buttons ENABLED
+                // They can now manually: SaveAllChanges() OR CancelAllChanges()
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"❌ Error: {ex.Message}");
+            // Safety: stay on page
+        }
+    }
+    //changes des selections
+    void ChxGpeTiers(Gpfixe mygpe)
+    {
+        gpeLiba = "";
+        //colonnes parent et elements
+
+    }
+    private async Task SelMenu(int noM)
+    {
+        _chxMenu = noM;
+        if (_chxMenu == 1) 
+        {
+            //_guardVisible = true;
+            strComp = $"Integration {gpeLiba}";
+        }
+        if (_chxMenu == 2)
+        {
+            //_guardVisible = true;
+            strComp = $"Accueil/Site  {gpeLiba}";
+        }
+        StateHasChanged();
+        await Task.Delay(1);
+    }
+    private async Task SelGpe(int noG)
+    {
+        gpeLiba = "";
+        if (noG == 0) return;
+        var mygpe = LsGties.Where(gt => gt.Itb == 6 && gt.Elea == noG).FirstOrDefault();
+        Ugpe = noG;
+        Tgpe = mygpe.Gp2;
+        gpeLiba = mygpe.Liba.ToUpperInvariant(); //LsGties.Where(ut => ut.Elea == mygpe.Elea).FirstOrDefault().Liba.ToUpperInvariant();
+        StateHasChanged();
+        Console.WriteLine("PAS 2");
+        await Task.Delay(1);
+    }
+    async void InitChildData()
+    {
+        StateHasChanged();
+    }
+    public void Dispose()
+    {
+        _locationHandler?.Dispose();
+        // Parent-level cleanup
+        // _guard.DiscardUnconfirmedAdds<Tiewel>();
+        // _guard.DiscardUnconfirmedAdds<TierspDto>();
+        // _guard.DiscardUnconfirmedAdds<Tiwatr>();
+        // _guard.DiscardUnconfirmedAdds<Tieatr>();
+        // _guard.DiscardUnconfirmedAdds<Tiwafl>();
+        // _guard.DiscardUnconfirmedAdds<TieaflDto>();
+    }
+
+    void NavigateBack()
+    {
+        _navManager.NavigateTo("/");
+    }
+    
+    private async Task SetLoadingState()
+    {
+        await _JsRUN.InvokeVoidAsync("eval",
+        "document.documentElement.style.setProperty('--blazor-load-percentage', '100');" +
+        "document.documentElement.style.setProperty('--blazor-load-percentage-text', '\"Loading data...\"');");
+    }
+}

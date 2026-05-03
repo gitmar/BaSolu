@@ -1,0 +1,242 @@
+﻿@page "/movemenu"
+@inherits LayoutComponentBase
+@layout FreeLayout
+
+@using System.Security.Claims
+@using BlazorBootstrap
+@using Blazored.LocalStorage
+@using GxStk.ClieModels
+@using GxStk.Components.StkManage
+<!-- @using GxStk.Components.Stock    🔽 ADD YOUR STOCK COMPONENTS NAMESPACE -->
+@using GxStk.Services
+@using GxStk.StaticHelpers
+@using GxShared.Sess
+@using GxWapi.DaModels
+@using Microsoft.OData.Client
+
+@implements IDisposable
+
+@inject NavigationManager _navManager
+@inject ILocalStorageService _localStorage
+@inject HttpClientService _clieManager
+@inject IODataContextFactory _contextFactory
+@inject SessionContextService _sessionContext
+@inject RendAgres _rendAgres
+@inject PendingChangesGuard _guard
+@inject IJSRuntime _JsRUN
+@inject IMessageService _messageService
+
+<!-- 🔽 STOCK SERVICES -->
+@inject ItemClientService ItemService
+@inject StockClientService StockService
+
+@if (isLoading)
+{
+    <div class="text-center">
+        <Spinner Color="SpinnerColor.Primary" Size="SpinnerSize.Large" />
+        <p>Loading...</p>
+    </div>
+}
+else
+{
+    <div class="gx-screen-layout">
+        <div class="container gx-parent-container" style="height: 100vh;">
+            <div class="d-flex flex-column" style="height: 100%;">
+
+                <!-- Top Menu -->
+                <GxNavMenu BrandText="A24soft Gx-Solutions"
+                           MenuItems="@MenuItems"
+                           YaGroup="false"
+                           Groups="@Groupes"
+                           MenuSelected="@_chxMenu"
+                           MenuSelectedChanged="@SelMenu"
+                           GroupSelected="@_chxGpe"
+                           GroupSelectedChanged="@SelGpe"
+                           OnBack="@NavigateBack" />
+
+                <!-- Main Content -->
+                @if (_chxMenu != 0 && curOrga != null && curODContext != null)
+                {
+                    @* 🔽 STOCK PAGES *@
+                    if (_chxMenu == 1)
+                    {
+                        <ItemsEntry curODContext="@curODContext"
+                                    curOrga="@curOrga"
+                                    ItemService="@ItemService"
+                                    StockService="@StockService" />
+                    }
+                    else if (_chxMenu == 2)
+                    {
+                        <ItemsPurchase curODContext="@curODContext"
+                                       curOrga="@curOrga"
+                                       ItemService="@ItemService"
+                                       StockService="@StockService" />
+                    }
+                    else if (_chxMenu == 3)
+                    {
+                        <ItemsAdjust curODContext="@curODContext"
+                                     curOrga="@curOrga"
+                                     StockService="@StockService" />
+                    }
+                    else if (_chxMenu == 4)
+                    {
+                        <ItemsTransfer curODContext="@curODContext"
+                                       curOrga="@curOrga"
+                                       StockService="@StockService" />
+                    }
+                }
+
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    private bool isLoading = true;
+
+    [CascadingParameter]
+    private Task<AuthenticationState>? AuthState { get; set; }
+
+    public MyODataContext curODContext;
+    public Gxorga curOrga = new Gxorga();
+    public MyShareVars toChild = new();
+
+    public Userbag _usrBag = new();
+
+    //Navigation
+    private int _gIdTie = 0, _chxGpe = 0, _chxMenu = 1;
+    private string strComp = $"Deplacement";
+    string gpeLiba = "";
+    public int Ugpe = 0, Tgpe = 0; //gpe ref1..6/tiers type6..7
+
+    public List<Gpfixe> LsFixes = new();
+    public List<Gpfixe> LsGties = new();
+    public List<Gpdivh> LsDivs = new();
+
+    public List<GxMenuItem> MenuItems = new()
+    {
+        // 🔽 STOCK
+        new GxMenuItem { Id = 1, Text = "Deplacement", Icon = "bi bi-plus-circle" },
+        new GxMenuItem { Id = 2, Text = "Transfert", Icon = "bi bi-cart" },
+    };
+
+    public List<GxGroupe> Groupes = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        isLoading = true;
+        try
+        {
+            var authState = await AuthState;
+            if (!authState.User.Identity.IsAuthenticated) return;
+            // Load lightweight user data FIRST
+            _usrBag = await _sessionContext.GetUserbagAsync();
+            LsDivs = await _rendAgres.LoadOrgaPostes();
+            
+            // Create shared OData context
+            curODContext = await _contextFactory.CreateAsync();
+            _guard.AttachContext(curODContext);
+            _usrBag = await _sessionContext.GetUserbagAsync();
+
+            // Groupe tiers
+            LsGties = _usrBag.Ufixes
+                .Where(ut => ut.Gvars == 36 && ut.Elea != 0 && ut.Elea != 9)
+                .ToList();
+            Groupes.Clear();
+            foreach (var gr in LsGties.Where(gr => gr.Itb == 6))
+            {
+                Groupes.Add(new GxGroupe { Itb = gr.Itb, Elea = gr.Elea, Liba = gr.Liba });
+            }
+            ;
+
+            // Load organization
+            //int key = await _sessionContext.GetUserbagAsync()).Idorg;
+            // // int key = _usrBag.Idorg;
+            // // string expandTiersps = ODataQueryHelper.Expand<Gxorga, IEnumerable<Tiersp>>(o => o.Tiersps);
+            // // string expandStkita = ODataQueryHelper.Expand<Gxorga, IEnumerable<Stkitu>>(o => o.Stkitus);
+            // // // Combine them
+            // // string expand = string.Join(",", expandTiersps, expandStkita);
+            // // curOrga = await curODContext.GetByKeyAsync<Gxorga>(
+            // //     key,
+            // //     "Gxorgas",
+            // //     expand
+            // // );
+            // Load ONLY parent entity
+            int key = _usrBag.Idorg;
+            string expandTiewels = ODataQueryHelper.Expand<Gxorga, IEnumerable<Tiewel>>(o => o.Tiewels)
+                + "($expand=Tiwafls,Tiwatrs)";
+            string expandTiersps = ODataQueryHelper.Expand<Gxorga, IEnumerable<Tiersp>>(o => o.Tiersps)
+                + "($expand=Tieafls,Tieatrs)";
+            //string expandStkdivs = ODataQueryHelper.Expand<Gxorga, IEnumerable<Rubhie>>(o => o.Rubhies);
+            //    + "($expand=Rubpsts)";
+            string expandGsesios = ODataQueryHelper.Expand<Gxorga, IEnumerable<Gsesio>>(o => o.Gsesios);
+
+            // Combine them
+            string expand = string.Join(",", expandTiewels, expandTiersps,
+                    expandGsesios); //expandStkdivs
+            curOrga = await curODContext.GetByKeyAsync<Gxorga>(
+                key,
+                "Gxorgas",
+                expand
+            );
+            if (curOrga == null)
+            {
+                Console.WriteLine($"No organization found for the current user. {expand}");
+                return;
+            }
+            Console.WriteLine($"Expanded results : {curOrga.Tiersps.Count} and stkent {curOrga.Tiewels?.Count ?? 0}");
+
+            Console.WriteLine($"cur orga : {curOrga.Raison}");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"cur orga : {curOrga}");
+            _messageService.Show($"Failed to load organization: {ex.Message}");
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private async Task SelMenu(int noM)
+    {
+        _chxMenu = noM;
+        if (_chxMenu == 1)
+        {
+            //_guardVisible = true;
+            strComp = $"Deplacement {gpeLiba}";
+        }
+        if (_chxMenu == 2)
+        {
+            //_guardVisible = true;
+            strComp = $"Transfert  {gpeLiba}";
+        }
+        
+        StateHasChanged();
+        await Task.Delay(1);
+    }
+    private async Task SelGpe(int noG)
+    {
+        gpeLiba = "";
+        if (noG == 0) return;
+        var mygpe = LsGties.Where(gt => gt.Itb == 6 && gt.Elea == noG).FirstOrDefault();
+        Ugpe = noG;
+        Tgpe = mygpe.Gp2;
+        gpeLiba = mygpe.Liba.ToUpperInvariant(); //LsGties.Where(ut => ut.Elea == mygpe.Elea).FirstOrDefault().Liba.ToUpperInvariant();
+        StateHasChanged();
+        Console.WriteLine("PAS 2");
+        await Task.Delay(1);
+    }
+
+    void NavigateBack()
+    {
+        _navManager.NavigateTo("/");
+    }
+
+    public void Dispose()
+    {
+        // cleanup if needed
+    }
+}
+

@@ -5,7 +5,6 @@ using System.Text.Json;
 using Blazored.LocalStorage;
 
 using Newtonsoft.Json.Linq;
-
 namespace GxStk.Services
 {
     public class HttpClientService
@@ -18,8 +17,8 @@ namespace GxStk.Services
         {
             _httpClientFactory = httpClientFactory;
             _localStorage = localStorage;
-            _clients["AUTHClient"] = _httpClientFactory.CreateClient("AUTHClient");
-            _clients["OFFLClient"] = _httpClientFactory.CreateClient("OFFLClient");
+            _clients["AuthClient"] = _httpClientFactory.CreateClient("AuthClient");
+            _clients["LocalClient"] = _httpClientFactory.CreateClient("LocalClient");
             _clients["ODataClient"] = _httpClientFactory.CreateClient("ODataClient");
             // Add others as needed
 
@@ -59,11 +58,30 @@ namespace GxStk.Services
             {
                 _clients[clientname].DefaultRequestHeaders.Authorization =
                     new AuthenticationHeaderValue("Bearer", token);
-            } else
+            }
+            else
             {
                 Console.WriteLine($"Setting Token is null or empty : {token}");
             }
         }
+        // LoadOrgaAsync - Bypass ODataClient for single DTOs
+        private static readonly JsonSerializerOptions jsonOptions = new()
+        {
+            PropertyNamingPolicy = JsonNamingPolicy.CamelCase,  // Match server casing
+            PropertyNameCaseInsensitive = true
+        };
+        public async Task<TDto?> GetDtoWithExpandAsync<TDto>(string entitySet, int key, string expand)
+        where TDto : class
+        {
+            var client = _httpClientFactory.CreateClient("ODataClient");
+            var response = await client.GetAsync($"{entitySet}({key})?$expand={expand}");
+
+            if (!response.IsSuccessStatusCode) return null;
+
+            var json = await response.Content.ReadAsStringAsync();
+            return JsonSerializer.Deserialize<TDto>(json, jsonOptions);
+        }
+
     }
     public class TokenAwareClientManager
     {
@@ -85,58 +103,3 @@ namespace GxStk.Services
         }
     }
 }
-        //public async Task<string> SendRequestAsync(string clientname, HttpMethod method, 
-        //    string requestUri, object? content = null)
-        //{
-        //    if (!_clients.ContainsKey(clientname))
-        //    {
-        //        throw new InvalidOperationException($"HttpClient {clientname} not found. ");
-        //    }
-        //    var request = new HttpRequestMessage(method, requestUri);
-
-        //    if (method == HttpMethod.Post && content != null)
-        //    {
-        //        request.Content = new StringContent(JsonSerializer.Serialize(content), Encoding.UTF8, "application/json");
-        //    }
-        //    var response = await _clients[clientname].SendAsync(request);
-        //    response.EnsureSuccessStatusCode();
-        //    return await response.Content.ReadAsStringAsync();
-        //}
-        //public async Task<HttpResponseMessage> SendOdareqAsync(string clientname, HttpMethod method,
-        //    string requestUri, object? content = null)
-        //{
-        //    if (!_clients.ContainsKey(clientname))
-        //    {
-        //        throw new InvalidOperationException($"HttpClient {clientname} not found. ");
-        //    }
-        //    var request = new HttpRequestMessage(method, requestUri);
-
-        //    if (method == HttpMethod.Post && content != null)
-        //    {
-        //        request.Content = new StringContent(JsonSerializer.Serialize(content), Encoding.UTF8, "application/json");
-        //    }
-        //    var response = await _clients[clientname].SendAsync(request);
-        //    response.EnsureSuccessStatusCode();
-        //    return response;
-        //}
-        //public async Task<byte[]> GetRptBytesAsync(string requestUri)
-        //{
-        //    var response = await _clients["AUTHClient"].GetByteArrayAsync(requestUri);
-        //    return response;
-        //}
-        //public async Task SetAuthorizationHeaderAsync(string clientname)
-        //{
-        //    if (!_clients.ContainsKey(clientname))
-        //    {
-        //        throw new InvalidOperationException($"HttpClient {clientname} not found.");
-        //    }
-
-        //    var token = await _localStorage.GetItemAsync<string>("blazToken");
-        //    if (!string.IsNullOrWhiteSpace(token))
-        //    {
-        //        _clients[clientname].DefaultRequestHeaders.Authorization =
-        //            new AuthenticationHeaderValue("Bearer", token);
-        //    }
-        //}
-//    }
-//}

@@ -1,0 +1,44 @@
+﻿@page "/items-stock-attr"
+@using GxWapi.DaModels
+@using GxShared.Helpers
+@using GxStk.Services
+@using Microsoft.EntityFrameworkCore;
+
+<h3>Stock Item Attributes</h3>
+
+@if (itemAttrs == null)
+{
+    <p>Loading...</p>
+}
+else
+{
+    <table class="table table-striped">
+        <thead><tr><th>Id</th><th>Stock Item Id</th><th>Attribute Id</th></tr></thead>
+        <tbody>
+            @foreach (var sa in itemAttrs)
+            {
+                <tr>
+                    <td>@sa.Id</td>
+                    <td>@sa.Iitu</td>
+                    <td>@sa.Iatr</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    Parameter] 
+    public List<Gpdivh> LsDivs { get; set; }
+    [Parameter]
+    public ItemClientService ItemService { get; set; }
+    [Parameter]
+    public StockClientService StockService { get; set; }
+    private List<Stkitatr> itemAttrs;
+
+    protected override async Task OnInitializedAsync()
+    {
+        //var context = await _contextFactory.CreateAsync();
+        //itemAttrs = (await context.Query<Stkitatr>("Stkitatr").ExecuteAsync()).ToList();
+    }
+}

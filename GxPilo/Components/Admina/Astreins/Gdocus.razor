@@ -16,15 +16,18 @@
 @using GxPilo.ClieModels
 @using GxPilo.Services
 @using GxShared.Sess
-@using GxWapi.DaModels
+@using Simple.OData.Client
+@using GxShared.GxDtos
+@using GxShared.Interfaces
+@using AutoMapper
 @using Microsoft.AspNetCore.Components.Forms
 @using Microsoft.AspNetCore.WebUtilities
-@using Microsoft.OData.Client
 @using Newtonsoft.Json
 
 @inject ILocalStorageService _localStorage
 @inject NavigationManager _navmanager
 @inject HttpClientService _clieManager
+@inject IMapper Mapper
 @inject IJSRuntime _jsRun
 
 <!-- InscTiewComponent.razor -->
@@ -102,7 +105,7 @@ else
                         <div class="row">
                             @if (ITyDoc != 0)
                             {
-                                <Grid TItem="Gsgfix"
+                                <Grid TItem="GsgfixDto"
                                 Data="@MyDaDocus"
                                 @key="FixeRenderKey"
                                 AllowDetailView="true"
@@ -110,7 +113,7 @@ else
                                 RowClass="@((item) => GetPlnRowClass(item))"
                                 Responsive="true">
                                     <GridColumns>
-                                        <GridColumn TItem="Gsgfix" HeaderText="No" Class="xcol1">
+                                        <GridColumn TItem="GsgfixDto" HeaderText="No" Class="xcol1">
                                             <ChildContent Context="item">
                                                 @if (item.Elea == 0)
                                                 {
@@ -122,7 +125,7 @@ else
                                                 }
                                             </ChildContent>
                                         </GridColumn>
-                                        <GridColumn TItem="Gsgfix" HeaderText="Designation" Class="xcol3">
+                                        <GridColumn TItem="GsgfixDto" HeaderText="Designation" Class="xcol3">
                                             <ChildContent Context="item">
                                                 @if (EdFixRowguid == item?.Rowguid)
                                                 { // show draftPln inputs
@@ -134,7 +137,7 @@ else
                                                 }
                                             </ChildContent>
                                         </GridColumn>
-                                        <GridColumn TItem="Gsgfix" HeaderText="Taille" class="xcol1" >
+                                        <GridColumn TItem="GsgfixDto" HeaderText="Taille" class="xcol1" >
                                             <ChildContent Context="item">
                                                 @if (EdFixRowguid == item?.Rowguid)
                                                 { // show draftPln inputs
@@ -147,7 +150,7 @@ else
                                                 }
                                             </ChildContent>
                                         </GridColumn>
-                                        <GridColumn TItem="Gsgfix" HeaderText="Methode" IsVisible="ITyDoc == 3" Class="xcol1">
+                                        <GridColumn TItem="GsgfixDto" HeaderText="Methode" IsVisible="ITyDoc == 3" Class="xcol1">
                                             <ChildContent Context="item">
                                                 <InputSelect @bind-Value="item.Ityp" disabled>
                                                     @foreach (var tob in LsFixes.Where(ut => ut.Gvars == 33 && ut.Itb == 8 && ut.Gp1 == 1 && ut.Elea != 0))
@@ -157,7 +160,7 @@ else
                                                 </InputSelect>
                                             </ChildContent>
                                         </GridColumn>
-                                        <GridColumn TItem="Gsgfix" HeaderText="Frequence" IsVisible="ITyDoc == 3" Class="xcol1">
+                                        <GridColumn TItem="GsgfixDto" HeaderText="Frequence" IsVisible="ITyDoc == 3" Class="xcol1">
                                             <ChildContent Context="item">
                                                 <InputSelect @bind-Value="item.Jtyp" disabled>
                                                     @foreach (var tob in LsFixes.Where(ut => ut.Gvars == 33 && ut.Itb == 8 && ut.Gp1 == 2 && ut.Elea != 0))
@@ -167,7 +170,7 @@ else
                                                 </InputSelect>
                                             </ChildContent>
                                         </GridColumn>
-                                        <GridColumn TItem="Gsgfix" HeaderText="jeton" IsVisible="ITyDoc == 3" Class="xcol1">
+                                        <GridColumn TItem="GsgfixDto" HeaderText="jeton" IsVisible="ITyDoc == 3" Class="xcol1">
                                             <ChildContent Context="item">
                                                 <InputSelect @bind-Value="item.Ktyp" disabled>
                                                     <option value="0">sans</option>
@@ -176,7 +179,7 @@ else
                                                 </InputSelect>
                                             </ChildContent>
                                         </GridColumn>
-                                        <GridColumn TItem="Gsgfix" HeaderText="Eta" Class="xcol1">
+                                        <GridColumn TItem="GsgfixDto" HeaderText="Eta" Class="xcol1">
                                             <HeaderContent>
                                                 @if (ITyDoc == 1 || ITyDoc == 2)
                                                 {
@@ -213,7 +216,7 @@ else
                                                 }
                                             </ChildContent>
                                         </GridColumn>
-                                        <GridColumn TItem="Gsgfix" HeaderText="Actions" Filterable="false" Class="xcol2 actions-col">
+                                        <GridColumn TItem="GsgfixDto" HeaderText="Actions" Filterable="false" Class="xcol2 actions-col">
                                             <ChildContent Context="item">
                                                 @switch (GetRowState(item.Rowguid))
                                                 {
@@ -415,16 +418,16 @@ else
     [Parameter]
     public RenderFragment ChildContent { get; set; }
     [Parameter]
-    public MyODataContext curODContext { get; set; }
+    public IODataClient _InODaClient { get; set; }
     [Parameter]
-    public Gxorga curOrga { get; set; } = new();
+    public GxorgaDto curOrga { get; set; } = new();
     [Parameter]
     public MyShareVars toChild { get; set; }
     [Parameter]
     public int toMenu { get; set; }
     //guard
     [Parameter]
-    public PendingChangesGuard _guard { get; set; }
+    public IPendingChangesGuard _guard { get; set; }
     [Parameter]
     public EventCallback<PendingState> OnPendingStateChanged { get; set; }
     [Parameter]
@@ -495,14 +498,14 @@ else
     private string atrTitle = "";
 
     //data
-    private ObservableCollection<Gsgfix> MyDaDocus { get; set; } = new();
+    private ObservableCollection<GsgfixDto> MyDaDocus { get; set; } = new();
     //add/edit options
     private bool AllowMultipleEdits { get; set; } = false;
     private bool isFiltre { get; set; } = false;
     //FIX
     private Guid? FixeRenderKey = null;
-    private Dictionary<Guid, Gsgfix> _edFixOriginals = new();
-    private Gsgfix? draftFix = null;
+    private Dictionary<Guid, GsgfixDto> _edFixOriginals = new();
+    private GsgfixDto? draftFix = null;
     private bool isAddFix = false;
     private bool isEdtFix = false;
     private Guid? AdFixRowguid = null;
@@ -540,25 +543,21 @@ else
             //var noslims = LsVars.Where(uv => uv.Idhie == 0 && uv.Gvars == 21 && uv.Itb == 1 && uv.Elea == 1);
             //if (noslims.Any()) _lgcdu = noslims.FirstOrDefault().Ivala;
             //ChargeParentData;
-            Console.WriteLine($"Child init: Gsgfixes={curOrga.Gsgfixes?.Count ?? 0}");
+            Console.WriteLine($"Child init: Gsgfixs={curOrga.Gsgfixes?.Count ?? 0}");
 
-            // 🔥 SAFE - Only initialize if Gsgfixes EXISTS
+            // 🔥 SAFE - Only initialize if Gsgfixs EXISTS
             if (curOrga.Gsgfixes != null && curOrga.Gsgfixes.Any())
             {
-                MyDaDocus = new ObservableCollection<Gsgfix>(curOrga.Gsgfixes
+                MyDaDocus = new ObservableCollection<GsgfixDto>(curOrga.Gsgfixes
                     .Where(uv => uv.Gvars == 3 && uv.Itb == 1 && uv.Elea >= 1)
                     .ToList());
-                Console.WriteLine($"Gsgfixes loaded: {curOrga.Gsgfixes.Count}");
+                Console.WriteLine($"Gsgfixs loaded: {curOrga.Gsgfixes.Count}");
             }
             else
             {
-                Console.WriteLine("Gsgfixes null/empty - initializing empty collections");
-                MyDaDocus = new ObservableCollection<Gsgfix>();
+                Console.WriteLine("Gsgfixs null/empty - initializing empty collections");
+                MyDaDocus = new ObservableCollection<GsgfixDto>();
             }
-
-            // Guard registration (safe)
-            _guard.RegisterUnconfirmedPredicate<Gsgfix>(p => p.Xadd1 == -1 || p.Xedt1 == -1 || p.Xdel1 == -1);
-
             atrTitle = "Saisie";
         }
         catch (Exception ex)
@@ -578,10 +577,10 @@ else
     {
         Console.WriteLine("🚨 StartPlnNew");
         var lsnb = NextSeq(MyDaDocus, p => p.Iui);
-        var newDoc = new Gsgfix();
+        var newDoc = new GsgfixDto();
         if (tydoc == 1)
         {//docS
-            newDoc = new Gsgfix
+            newDoc = new GsgfixDto
             {
                 Rowguid = Guid.NewGuid(),
                 Idorg = curOrga.Idorg, //pere Id
@@ -598,7 +597,7 @@ else
         }
         else if (tydoc == 2)
         {//docP
-            newDoc = new Gsgfix
+            newDoc = new GsgfixDto
             {
             //Rowguid = Guid.NewGuid(),
                 Rowguid = Guid.NewGuid(),
@@ -623,7 +622,7 @@ else
         SetRowState(newDoc.Rowguid, RowState.AddPending);
         SetLightBackground(newDoc.Rowguid, true);
         MyDaDocus.Insert(0, newDoc);
-        draftFix = (Gsgfix)DeepClone(newDoc);
+        draftFix = (GsgfixDto)DeepClone(newDoc);
         EdFixRowguid = draftFix.Rowguid;
         isAddFix = true;
         isEdtFix = true;
@@ -633,9 +632,17 @@ else
         StartRowEdit(draftFix.Rowguid, EntityLevel.Plan);
         StateHasChanged();
     }
-    private async Task StartDocuEdit(Gsgfix item, Guid rowguid)
+    private async Task StartDocuEdit(GsgfixDto item, Guid rowguid)
     {
-        var isNew = StaticMethods.IsNew(curODContext, item, e => e.Xseq);
+        //var client = (ODataClient)_InODaClient;
+        //bool isNew = await client.IsNewAsync<GsgfixDto>("Gsgfixes", item.Xseq);
+        bool isNew = item.Xseq == default; // for int, default == 0
+        if (isNew)
+        {
+            Imessage = "🚫 Cannot edit new Plan: Please save it first.";
+            return;
+        }
+
         if (isNew)
         { //not saved yet
             Imessage = "🚫 Cannot edit new Plan: Please save it first.";
@@ -645,20 +652,20 @@ else
         item.Xedt1 = -1;
         if (item.Jele != 0) item.Iui = (int)item.Jele;
         SetRowState(rowguid, RowState.EditPending);  // Shows Confirm/Cancel buttons
-        _edFixOriginals[rowguid] = (Gsgfix)DeepClone(item);
+        _edFixOriginals[rowguid] = (GsgfixDto)DeepClone(item);
         EdFixRowguid = AllowMultipleEdits ? null : rowguid;
-        draftFix = (Gsgfix)DeepClone(item);
+        draftFix = (GsgfixDto)DeepClone(item);
         isEdtFix = true;
         StartRowEdit(rowguid, EntityLevel.Plan);
         StateHasChanged();
     }
 
     // ✅ 2.1 CONFIRM OPERATIONS
-    private async Task ConfirmDocuEdit(Gsgfix item) =>
+    private async Task ConfirmDocuEdit(GsgfixDto item) =>
         await UnifiedEditAction(item, true, EntityLevel.Plan);
 
     // ✅ 2.2 CANCEL OPERATIONS
-    private async Task CancelDocuEdit(Gsgfix item) =>
+    private async Task CancelDocuEdit(GsgfixDto item) =>
         await UnifiedEditAction(item, false, EntityLevel.Plan);
 
     private async Task UnifiedEditAction(object item, bool isConfirm, EntityLevel level)
@@ -666,14 +673,14 @@ else
         switch (level)
         {
             case EntityLevel.Plan:
-                await ProcessPlan((Gsgfix)item, isConfirm);
+                await ProcessPlan((GsgfixDto)item, isConfirm);
                 break;
         }
     }
 
-    private async Task ProcessPlan(Gsgfix pln, bool isConfirm)
+    private async Task ProcessPlan(GsgfixDto pln, bool isConfirm)
     {
-        await ProcessEntity(pln, isConfirm, "Gsgfixes", p => ValidatePln(p));
+        await ProcessEntity(pln, isConfirm, "Gsgfixs", p => ValidatePln(p));
     }
 
     private async Task ProcessEntity<T>(T entity, bool isConfirm, string entitySet, Func<T, bool> validate)
@@ -705,22 +712,19 @@ else
             bool isNew = GetXadd1(entity) == -1;  // Assumes GetXadd1<T>
             if (isNew)
             {
-                curODContext.AddObject(entitySet, entity);  // Tracks + prepares INSERT
-                Console.WriteLine($"➕ NEW {typeof(T).Name} → AddObject");
+                _guard.TrackInsert(entitySet, entity);
+                Console.WriteLine($"➕ NEW {typeof(T).Name} → TrackInsert");
             }
             else
             {
-                curODContext.SafeAttachOrUpdate(entity, entitySet, false);  // Your method!
-                Console.WriteLine($"✏️ EXISTING → SafeAttachOrUpdate");
+                var key = GetEntityKey(entity); // helper to extract PK
+                _guard.TrackUpdate(entitySet, key, entity);
+                Console.WriteLine($"✏️ EXISTING {typeof(T).Name} → TrackUpdate");
             }
         
             // 🔥 4. Confirm flags ONCE
             SetFlags(entity, 0, -1, 0);  // Xadd1=0 confirmed
         
-            // 🔥 5. SINGLE UpdateObject (applies flags + changes)
-            curODContext.UpdateObject(entity);
-            Console.WriteLine($"✅ {typeof(T).Name} confirmed → tracked");
-
             // 🔥 6. UI + notify
             var rowguid = GetRowguid(entity);  // Generic helper
             ResetRowState(rowguid);
@@ -731,16 +735,16 @@ else
         }
         else  // CANCEL (unchanged - perfect)
         {
-            if (GetXadd1(entity) == -1)  // New only
+            if (GetXadd1(entity) == -1) // New only
             {
-                if (curODContext.IsEntityTracked(entity))
-                    curODContext.Detach(entity);
                 RemoveFromParentCollection(entity);
+                Console.WriteLine($"🗑️ Removed new {typeof(T).Name}");
             }
             else
             {
                 ClearDraft<T>();
             }
+
             var rowguid = GetRowguid(entity);
             ResetRowState(rowguid);
             ResetEntityUIState<T>();
@@ -781,29 +785,24 @@ else
         // //     parent?.Rubvars?.Remove(rub);
         // // }
     }
-    private void MarkAsModified<T>(T item, string entitySet) where T : class
-    {
-        SetFlags(item, 0, 0, 0);  // Xadd1=Xedt1=Xdel1=0
+    // private void MarkAsModified<T>(T item, string entitySet) where T : class
+    // {
+    //     SetFlags(item, 0, 0, 0);  // Xadd1=Xedt1=Xdel1=0
 
-        try
-        {
-            curODContext.Context.AttachTo(entitySet, item);
-        }
-        catch (InvalidOperationException)
-        {
-            // Already tracked ✅
-        }
-        Console.WriteLine($"modified liba {((dynamic)item).Liba} et abg {((dynamic)item).Abg}");
-        curODContext.Context.UpdateObject(item);  // 🔥 KEY: Context.UpdateObject()
-        Console.WriteLine($"✅ {entitySet} marked Modified");
-    }
+    //     catch (InvalidOperationException)
+    //     {
+    //         // Already tracked ✅
+    //     }
+    //     Console.WriteLine($"modified liba {((dynamic)item).Liba} et abg {((dynamic)item).Abg}");
+    //     Console.WriteLine($"✅ {entitySet} marked Modified");
+    // }
     private void CopyDraftToGridItem<T>(T gridItem) where T : class
     {
         switch (typeof(T).Name)
         { // ONLY editable UI fields - 5-10x faster than reflection!
-            case nameof(Gsgfix):
+            case nameof(GsgfixDto):
                 if (draftFix == null) return;
-                var pln = (Gsgfix)(object)gridItem;
+                var pln = (GsgfixDto)(object)gridItem;
                 pln.Liba = draftFix.Liba; //designation
                 pln.Abg = draftFix.Abg; //abrege
                 //pln.Fpsrc = draftFix.Fpsrc; //formule-non valider
@@ -815,7 +814,7 @@ else
     {
         switch (typeof(T).Name)
         {
-            case nameof(Gsgfix):
+            case nameof(GsgfixDto):
                 draftFix = null;
                 Console.WriteLine("EdFixRowguid is become null");
                 EdFixRowguid = null;
@@ -835,7 +834,7 @@ else
         _activeEditLevel = null;
         StateHasChanged();
     }
-    private string GetPlnRowClass(Gsgfix pln)
+    private string GetPlnRowClass(GsgfixDto pln)
     {
         var state = GetRowState(pln.Rowguid);
         var isLight = IsLightBackground(pln.Rowguid);  // 🔥 Uses your existing
@@ -877,7 +876,7 @@ else
     {
         switch (typeof(T).Name)
         {
-            case nameof(Gsgfix): ResetPlnUI(); break;
+            case nameof(GsgfixDto): ResetPlnUI(); break;
         }
     }
     private void ResetPlnUI()
@@ -956,7 +955,7 @@ else
     {
         switch (level)
         {
-            case EntityLevel.Plan: await ProcessDelete<Gsgfix>(item as Gsgfix, isConfirm); break;
+            case EntityLevel.Plan: await ProcessDelete<GsgfixDto>(item as GsgfixDto, isConfirm); break;
         }
     }
     private async Task ProcessDelete<T>(T item, bool isConfirm) where T : class
@@ -969,14 +968,13 @@ else
         {
             // 🔥 Generic delete logic
             RemoveFromParentCollection(item);
+            //_guard.TrackDelete<T>(GetEntitySet(item), GetEntityKey(item));
+            var key = GetEntityKey(item); // helper to extract PK
+            _guard.TrackDelete(GetEntitySetName<T>(), key);
 
-            if (!curODContext.IsEntityTracked(item))
-                curODContext.Context.AttachTo(GetEntitySetName<T>(), item);
-
-            curODContext.Context.DeleteObject(item);
             SetDeleteFlags(item);
             SetRowState(rowguid, RowState.Normal);
-            await NotifyPendingChanges();
+            //await NotifyPendingChanges();
         }
         else
         {
@@ -989,7 +987,7 @@ else
     {
         return typeof(T) switch
         {
-            Type t when t == typeof(Gsgfix) => "Gsgfixes",
+            Type t when t == typeof(GsgfixDto) => "Gsgfixs",
             _ => throw new ArgumentException($"Unknown entity type: {typeof(T).Name}")
         };
     }
@@ -997,7 +995,7 @@ else
     {
         return entity switch
         {
-            Gsgfix _ => "Gsgfixes",
+            GsgfixDto _ => "Gsgfixs",
             _ => throw new ArgumentException("Unknown entity type")
         };
     }
@@ -1007,11 +1005,11 @@ else
     {
         return item switch
         {
-            Gsgfix pln => ValidatePln(pln),
+            GsgfixDto pln => ValidatePln(pln),
             _ => true
         };
     }
-    private bool ValidatePln(Gsgfix? mypln)
+    private bool ValidatePln(GsgfixDto? mypln)
     {
         Console.WriteLine($"A verifier {mypln.Liba}");
         //liba
@@ -1100,17 +1098,17 @@ else
     {
         if (xdom == 1 || xdom == 2)
         {
-            MyDaDocus = new ObservableCollection<Gsgfix>(curOrga.Gsgfixes
+            MyDaDocus = new ObservableCollection<GsgfixDto>(curOrga.Gsgfixes
               .Where(uv => uv.Gvars == 3 && uv.Itb == xdom && uv.Elea >= 1)
               .ToList());
         } else if (xdom == 3)
         {
-            MyDaDocus = new ObservableCollection<Gsgfix>(curOrga.Gsgfixes
+            MyDaDocus = new ObservableCollection<GsgfixDto>(curOrga.Gsgfixes
               .Where(uv => uv.Gvars == 41 && uv.Itb == 1 && uv.Elea != 0)
               .ToList());
         } else
         {
-           MyDaDocus = new ObservableCollection<Gsgfix>();
+           MyDaDocus = new ObservableCollection<GsgfixDto>();
         }
         Console.WriteLine($"Nb. documents : {MyDaDocus.Count}");
         StateHasChanged();
@@ -1118,16 +1116,19 @@ else
     
     // ✅ 6. HELPERS - Mark Count and Clone
 
-    private void MarkAsModified(object entity)
+    private void MarkAsModified<TDto>(TDto item, string entitySet) where TDto : class
     {
-        // Reset flags universally
-        if (entity is Gsgfix pln) { pln.Xedt1 = pln.Xadd1 = pln.Xdel1 = 0; }
+        // Reset flags (your convention)
+        SetFlags(item, 0, 0, 0);  // Xadd1=Xedt1=Xdel1=0
 
-        try { curODContext.Context.AttachTo(GetEntitySet(entity), entity); }
-        catch (InvalidOperationException) { }  // Already tracked
+        // Extract PK using your helper
+        var key = GetEntityKey(item);
 
-        curODContext.Context.UpdateObject(entity);  // 🔥 KEY: Context.UpdateObject()
-        Console.WriteLine($"✅ {entity.GetType().Name} marked Modified");
+        // Queue update in guard
+        _guard.TrackUpdate(entitySet, key, item);
+
+        Console.WriteLine($"modified liba {((dynamic)item).Liba} et abg {((dynamic)item).Abg}");
+        Console.WriteLine($"✅ {entitySet} marked Modified (queued for update)");
     }
     private object DeepClone(object entity)
     {
@@ -1139,7 +1140,17 @@ else
         var json = JsonConvert.SerializeObject(entity, settings);
         return JsonConvert.DeserializeObject(json, entity.GetType(), settings)!;
     }
-    bool AreRowsEqual(Gsgfix row1, Gsgfix row2) =>
+    private object GetEntityKey<TDto>(TDto entity)
+    {
+        switch (entity)
+        {
+            case GstablDto pln:
+                return pln.Id;
+            default:
+                throw new InvalidOperationException($"Unknown entity type {typeof(TDto).Name}");
+        }
+    }
+    bool AreRowsEqual(GsgfixDto row1, GsgfixDto row2) =>
         row1.Liba == row2.Liba && row1.Abg == row2.Abg;
     private int NextSeq<T>(IEnumerable<T> source, Func<T, int?> selector)
     {
@@ -1147,7 +1158,7 @@ else
         return maxSeq + 1;
     }
     //FILTRES
-    private Grid<Gsgfix> grid = default!;
+    private Grid<GsgfixDto> grid = default!;
     private async void TogglePlnFiltering()
     {
         isFixFilteringEnabled = !isFixFilteringEnabled;
@@ -1178,6 +1189,5 @@ else
     public void Dispose()  // ← ADD THIS
     {
         Console.WriteLine("🧹 Child Prubsaie cleaning up");
-        _guard.DiscardUnconfirmedAdds<Gsgfix>();
     }
 }

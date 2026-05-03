@@ -13,15 +13,14 @@
 @using GxShared.Identity
 @using GxShared.Helpers
 @using GxShared.ShdServices
-@using GxWapi.DaModels
+@using Simple.OData.Client
+@using GxShared.GxDtos
 @using Microsoft.AspNetCore.WebUtilities
-@using Microsoft.OData.Client
 @using Newtonsoft.Json
 
 @inject IHttpClientFactory _httpFactorer
 @inject ILocalStorageService _localStorage
 @inject HttpClientService _clieManager
-@inject IODataContextFactory _contextFactory
 @inject LinkSerialiser _linkSerialiser
 @inject NavigationManager _navmanager
 @inject SessionContextService _sessionContext
@@ -399,8 +398,7 @@ else
     [Parameter]
     public RenderFragment ChildContent { get; set; }
 
-    private MyODataContext curODContext;
-    private Gxorga curOrga = new Gxorga();
+    private GxorgaDto curOrga = new GxorgaDto();
     private InviteRequest _invModel = new();
     private string emailsInput = "";
     private List<string> invalidEmails = new();
@@ -459,15 +457,15 @@ else
     {
         try
         {
-            curODContext = await _contextFactory.CreateAsync(); // Use factory
-            var expand = "Tiewels";
-            var dxorgas = await curODContext.LoadFilteredAsync<Gxorga>(expand: expand);
-            curOrga = dxorgas.FirstOrDefault();
-            if (curOrga == null)
-            {
-                Console.WriteLine("No organization found for the current user.");
-                return;
-            }
+            // curODContext = await _contextFactory.CreateAsync(); // Use factory
+            // var expand = "Tiewels";
+            // var dxorgas = await curODContext.LoadFilteredAsync<GxorgaDto>(expand: expand);
+            // curOrga = dxorgas.FirstOrDefault();
+            // if (curOrga == null)
+            // {
+            //     Console.WriteLine("No organization found for the current user.");
+            //     return;
+            // }
             _invModel.Idorg = curOrga.Idorg; // convert.toint16(user.findfirst("insidorg")?.value);                                                        //Console.WriteLine(usrBag.Lkorga.Idorg);
             _invModel.Raison = curOrga.Raison;
             // Load roles, divisions, fixes (your existing logic)
@@ -490,6 +488,7 @@ else
                 .ToList();
             _invModel.Utyp = 0; //cible
             _invModel.IvTiep = 0; //a controler au server (Tiersp/Tiewel)
+            await LoadOrgaAsync(_usrBag.Idorg);
             Console.WriteLine($"AUTHENTICATION OK et orga recu {curOrga.Raison}");
         }
         catch(Exception ex)
@@ -497,7 +496,29 @@ else
             Console.WriteLine($"orga recu {curOrga.Raison}");
         }
     }
+    private async Task LoadOrgaAsync(int key)
+    {
+        try
+        {
+            // Query directly into DTO (recommended for Blazor WASM)
+            curOrga = await _clieManager
+                .GetDtoWithExpandAsync<GxorgaDto>("Gxorgas", key, "Tiewels");
+            // curOrga = await ODataClient
+            //     .For<GxorgaDto>("Gxorgas")
+            //     .Key(key)
+            //     .Expand(o => o.Tiewels)
+            //     .FindEntryAsync();
 
+            if (curOrga == null)
+                return;
+
+            Console.WriteLine($"curorga : {curOrga.Raison}");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex);
+        }
+    }
     private async Task SendIndividualInvite()
     {
         Console.WriteLine("Sending Invite");
@@ -518,12 +539,12 @@ else
             }
             // Individual
             Console.WriteLine("1 en cours....");
-            await _clieManager.SetAuthorizationHeaderAsync("AUTHClient");
+            await _clieManager.SetAuthorizationHeaderAsync("AuthClient");
             var response = await _clieManager.SendRequestAsync(
-                "AUTHClient",
+                "AuthClient",
                 HttpMethod.Post,
                 "regis/generate-invite", _invModel);
-            // var response = await _clieManager.SendRequestAsync("AUTHClient", HttpMethod.Post,
+            // var response = await _clieManager.SendRequestAsync("AuthClient", HttpMethod.Post,
             //     "regis/generate-invite", new IndividualInviteRequest
             //     {
             //         InviteData = _invModel
@@ -656,9 +677,9 @@ else
         dto.Srole = "Owner";
         // Dynamic client per-customer
         var clieUrl = _invModel.Weburl;
-        await _clieManager.SetAuthorizationHeaderAsync("AUTHClient");
+        await _clieManager.SetAuthorizationHeaderAsync("AuthClient");
         var response = await _clieManager.SendRequestAsync(
-                "AUTHClient",
+                "AuthClient",
                 HttpMethod.Post,
                 "regis/resendconfirm", _invModel);
         // if (!response.IsSuccessStatusCode)

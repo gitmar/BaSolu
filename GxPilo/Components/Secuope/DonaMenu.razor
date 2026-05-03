@@ -8,15 +8,17 @@
 @using GxShared.Sess
 @using GxPilo.ClieModels
 @using GxPilo.Services
-@using GxWapi.DaModels
-@using Microsoft.OData.Client
+@using Simple.OData.Client
+@using AutoMapper
+@using GxShared.GxDtos
 @using Newtonsoft.Json
 
 @* @inject MyODataContext _gODContext *@
 @inject NavigationManager _navmanager
 @inject ILocalStorageService _localStorage
 @inject HttpClientService _clieManager
-@inject IODataContextFactory _contextFactory
+@inject IODataClient _MyODaClient
+@inject IMapper Mapper
 @inject SessionContextService _sessionContext
 @inject IMessageService _messageService
 
@@ -152,8 +154,7 @@
 }
 @code {
     private bool isLoading = true;
-    public MyODataContext curODContext;
-    public Gxorga curOrga = new Gxorga();
+    public GxorgaDto curOrga = new GxorgaDto();
     public MyShareVars toChild = new();
     
     [CascadingParameter]
@@ -161,12 +162,12 @@
     public ClaimsPrincipal authUser;
     public bool isAuthenticated = false;
     //in DATA
-    public List<Gsgfix> LsTables = new List<Gsgfix>();
+    public List<GsgfixDto> LsTables = new List<GsgfixDto>();
 
     public string _strOrga = "", _curSigle = "", strComp = "", strmeta = "", strmeta2 = "";
 
     //entities load
-    private IEnumerable<Gxorga> _lsOrgas = new List<Gxorga>();
+    private IEnumerable<GxorgaDto> _lsOrgas = new List<GxorgaDto>();
     //Gestion CRUD Entete
     public string Jmessage = "";
 
@@ -214,7 +215,7 @@
         ////EnrolVue.ShowSubmenu();
         pita = 21;
         //await LoadROrgaAsync();
-        await LoadSTROrgaAsync();
+        await LoadOrgaAsync(_usrBag.Idorg);
         toChild.authUser = authUser;
         toChild.isAuthenticated = isAuthenticated;
         toChild.LsVars = LsVars.ToList();
@@ -225,35 +226,29 @@
         isLoading = false;
     }
     //CRUD
-    private async Task LoadSTROrgaAsync()
+    private async Task LoadOrgaAsync(int key)
     {
-        int pisa = 2;
         try
         {
-            curODContext = await _contextFactory.CreateAsync(); // Use factory
-
-            var expand = "Plngens($expand=Gsesios)";
-            var dxorgas = await curODContext.LoadFilteredAsync<Gxorga>(expand: expand);
-
-            pisa = 3;
-            curOrga = dxorgas.FirstOrDefault();
+            // Query directly into DTO (recommended for Blazor WASM)
+            curOrga = await _MyODaClient
+                .For<GxorgaDto>("Gxorgas")
+                .Key(key)
+                .Expand(s => s.Gsesios)
+                .Expand(o => o.Plngens)
+                .Expand(o => o.Plngens.Select(p => p.Rubhies))
+                .FindEntryAsync();
 
             if (curOrga == null)
-            {
-                Console.WriteLine("No organization found for the current user.");
                 return;
-            }
 
-            Console.WriteLine($"orga recu {curOrga.Raison}");
-            pisa = 4;
-            Console.WriteLine($"nb pln test : {pisa} et {curOrga.Plngens.Count()}");
+            Console.WriteLine($"curorga : {curOrga.Raison}");
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"stack trace : {ex.StackTrace} place : {pisa} ex-mess : {ex.Message} and also in-mess: {ex.InnerException}");
+            Console.WriteLine(ex);
         }
     }
-    
     // manage Access all
     private void EdiAll()
     {

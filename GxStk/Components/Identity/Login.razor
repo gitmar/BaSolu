@@ -91,7 +91,7 @@ else
     protected override async Task OnInitializedAsync()
     {
         isLoading = true;
-        _dftClient = _httpClientFactory.CreateClient("AUTHClient");
+        _dftClient = _httpClientFactory.CreateClient("AuthClient");
         //verified connection
         try
         {
@@ -171,8 +171,8 @@ else
                 await _localStorage.SetItemAsync("blazRtoken", result.Rtoken);
                 await _localStorage.SetItemAsync("authToken", result.Atoken);
 
-                await _clieManager.SetAuthorizationHeaderAsync("AUTHClient");
-                var userbagResponse = await _clieManager.SendRequestAsync("AUTHClient", HttpMethod.Get, $"usercontext/userbag");
+                await _clieManager.SetAuthorizationHeaderAsync("AuthClient");
+                var userbagResponse = await _clieManager.SendRequestAsync("AuthClient", HttpMethod.Get, $"usercontext/userbag");
                 var userbag = JsonConvert.DeserializeObject<Userbag>(userbagResponse);
                 if (userbag == null || !userbag.Succeeded)
                 {

@@ -1,16 +1,16 @@
 ﻿using System.Net.Http;
 using System.Reflection;
 
-using GxWapi.DaModels;
+using GxShared.GxDtos;
 
 namespace GxStk.Services
 {
     public class LookupService
     {
-        public List<Gsglne> ColDefs { get; }  // ✅ PROPERTY declared at CLASS level
-        private readonly List<Gsglne> _tblDefs; 
-        private readonly List<Gsglne> _colDefs;
-        public LookupService(List<Gsglne> colDefs, List<Gsglne> tblDefs)
+        public List<GstablDto> ColDefs { get; }  // ✅ PROPERTY declared at CLASS level
+        private readonly List<GstablDto> _tblDefs; 
+        private readonly List<GstablDto> _colDefs;
+        public LookupService(List<GstablDto> colDefs, List<GstablDto> tblDefs)
         {
             ColDefs = colDefs ?? throw new ArgumentNullException(nameof(colDefs));  // ✅ Assign to PROPERTY
             _colDefs = ColDefs;  // ✅ Now works
@@ -20,8 +20,8 @@ namespace GxStk.Services
         public List<string> GetFieldsByJacc(int idorg, int jaccValue = 1)
         {
             return ColDefs
-                .Where(g => g.Idorg == idorg && g.Scdrub != null && g.Jacc == jaccValue)
-                .Select(g => g.Scdrub!)
+                .Where(g => g.Idorg == idorg && g.Liba != null && g.Jacc == jaccValue)
+                .Select(g => g.Liba!)
                 .Distinct()
                 .OrderBy(name => name)
                 .ToList();
@@ -31,24 +31,24 @@ namespace GxStk.Services
         {
             var result = new Dictionary<string, List<LookupItem>>();
             var tiewelFields = _colDefs
-                .Where(c => c.Idorg == idorg && c.Ztyp == 8 && !string.IsNullOrWhiteSpace(c.Scdrub))
+                .Where(c => c.Idorg == idorg && !string.IsNullOrWhiteSpace(c.Liba))
                 .ToList();
 
             foreach (var field in tiewelFields)
             {
                 var tableItems = _tblDefs
-                    .Where(item => item.Idorg == idorg && item.Pitb == field.Ztbl && item.Ydpd == 0)
-                    .OrderBy(item => item.Yrng)
+                    .Where(item => item.Idorg == idorg && item.Pid == field.Id && item.Ydpd == 0)
+                    .OrderBy(item => item.Iele)
                     .Select(item => new LookupItem
                     { //items in gsglnes otyp=4,pitb=table
-                        Value = item.Abg ?? item.Elea.ToString(),
-                        Text = item.Liba ?? item.Scdrub,
-                        Order = item.Pele ?? 0
+                        Value = item.Abg ?? item.Iele.ToString(),
+                        Text = item.Liba ?? item.Liba,
+                        Order = item.Iele ?? 0
                     })
                     .ToList();
 
                 if (tableItems.Any())
-                    result[field.Scdrub] = tableItems;
+                    result[field.Liba] = tableItems;
             }
 
             return Task.FromResult(result);
@@ -56,20 +56,20 @@ namespace GxStk.Services
         public Task<Dictionary<string, List<LookupItem>>> GetTiwaflLookupsAsync(int idorg)
         {
             var result = new Dictionary<string, List<LookupItem>>();
-            var tiewelFields = _colDefs
-                .Where(c => c.Idorg == idorg && c.Ztyp == 8 && !string.IsNullOrWhiteSpace(c.Scdrub))
+            var tiewelFields = _colDefs //&& c.Ztyp == 8 
+                .Where(c => c.Idorg == idorg && !string.IsNullOrWhiteSpace(c.Scdrub))
                 .ToList();
 
             foreach (var field in tiewelFields)
             {
                 var tableItems = _tblDefs
-                    .Where(item => item.Idorg == idorg && item.Pitb == field.Ztbl && item.Ydpd == 0)
-                    .OrderBy(item => item.Yrng)
+                    .Where(item => item.Idorg == idorg && item.Pid == field.Ztbl && item.Ydpd == 0)
+                    .OrderBy(item => item.Iele)
                     .Select(item => new LookupItem
                     { //items in gsglnes otyp=4,pitb=table
-                        Value = item.Abg ?? item.Elea.ToString(),
-                        Text = item.Liba ?? item.Scdrub,
-                        Order = item.Pele ?? 0
+                        Value = item.Abg ?? item.Iele.ToString(),
+                        Text = item.Liba ?? item.Liba,
+                        Order = item.Iele ?? 0
                     })
                     .ToList();
 

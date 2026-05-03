@@ -27,7 +27,7 @@
     [Parameter] public bool Visible { get; set; } = true;
     [Parameter] public string Label { get; set; }
     
-    private List<Gptbl> Options => SelectOptions.GetValueOrDefault(Pxcod, new());
+    private List<Gtabl> Options; // => SelectOptions.GetValueOrDefault(Pxcod, new());
     private string SelectedLabel => Options.FirstOrDefault(o => o.Elea == BindValue)?.Liba ?? "?";
 }
 

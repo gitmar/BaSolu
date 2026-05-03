@@ -1,4 +1,5 @@
-﻿@using GxPilo.Services
+﻿
+@using GxPilo.Services
 @using GxShared.Sess
 @using BlazorBootstrap
 @using Blazored.LocalStorage
@@ -9,8 +10,9 @@
 @inject ILocalStorageService _localStorage
 
 <div class="top-row mb-0 navbar navbar-dark bg-success shadow-sm bg-opacity-25 mt-0 navbar-slim">
-    <a class="navbar-brand text-white fw-bold" href="">
-        <i class="bi bi-gear-fill me-1"></i> Gx-Solutions
+    <a class="navbar-brand text-white fw-bold d-flex align-items-center gap-1" href="">
+        <i class="bi bi-gear-fill"></i>
+        <span>Gx-Solutions</span>
     </a>
     <button class="navbar-toggler btn btn-sm" type="button" @onclick="ToggleNavMenu">
         <span class="navbar-toggler-icon"></span>
@@ -21,176 +23,216 @@
     <nav class="nav flex-column">
 
         <!-- HOME -->
-        <NavLink class="nav-link nav-main text-light small" href="" Match="NavLinkMatch.All">
-            <i class="bi bi-house-door-fill me-2"></i> Home
+        <NavLink class="nav-link nav-main text-light small d-flex align-items-center flex-nowrap gap-2" href="" Match="NavLinkMatch.All">
+            <i class="bi bi-house-door-fill nav-icon"></i>
+            <span class="nav-text" title="Home">Home</span>
         </NavLink>
-        @* <NavLink class="nav-link nav-main text-light small" href="testmenu" Match="NavLinkMatch.All">
-            <i class="bi bi-house-door-fill me-2"></i> TestMenu
+        <!-- TEST OData -->
+        @* <NavLink class="nav-link nav-main text-light small d-flex align-items-center flex-nowrap gap-2" href="testodata">
+            <i class="bi bi-building nav-icon"></i>
+            <span class="nav-text" title="Institution">Test OData</span>
+        </NavLink> *@
+        <!-- TEST OData -->
+        @* <NavLink class="nav-link nav-main text-light small d-flex align-items-center flex-nowrap gap-2" href="testgsglne">
+            <i class="bi bi-building nav-icon"></i>
+            <span class="nav-text" title="Institution">Test OData Gsglne</span>
         </NavLink> *@
         <AuthorizeView>
             <Authorized>
 
                 <!-- INSTITUTION -->
-                <NavLink class="nav-link nav-main text-light small" href="aorgas">
-                    <i class="bi bi-building-gear me-2"></i> Institution
+                <NavLink class="nav-link nav-main text-light small d-flex align-items-center flex-nowrap gap-2" href="aorgas">
+                    <i class="bi bi-building nav-icon"></i>
+                    <span class="nav-text" title="Institution">Institution</span>
                 </NavLink>
 
                 <!-- PARAMETRAGE -->
-                <NavLink class="nav-link nav-main text-light small" @onclick="ToggleSubPara">
-                    <i class="bi bi-sliders2-vertical me-2"></i> Paramétrage
+                <NavLink class="nav-link nav-main text-light small d-flex align-items-center flex-nowrap gap-2"
+                         @onclick="ToggleSubPara">
+
+                    <i class="bi bi-sliders nav-icon"></i>
+
+                    <span class="nav-text d-flex align-items-center flex-nowrap gap-1" style="min-width:0;">
+                        Paramétrage
+                        <i class="bi @(isSubParaVisible ? "bi-chevron-up" : "bi-chevron-down") nav-chevron flex-shrink-0"></i>
+                    </span>
                 </NavLink>
 
                 <div class="submenu @(isSubParaVisible ? "open" : "")">
                     <nav class="nav flex-column">
 
-                        <NavLink class="nav-link nav-sub text-light small ps-4" href="atblmenu">
-                            <i class="bi bi-table me-2"></i> Tables
+                        <NavLink class="nav-link nav-sub text-light small d-flex align-items-center flex-nowrap gap-2" href="atblmenu">
+                            <i class="bi bi-table nav-icon"></i>
+                            <span class="nav-text">Tables</span>
                         </NavLink>
 
-                        <NavLink class="nav-link nav-sub text-light small ps-4" href="astrmenu">
-                            <i class="bi bi-diagram-3-fill me-2"></i> Astreintes
+                        <NavLink class="nav-link nav-sub text-light small d-flex align-items-center flex-nowrap gap-2" href="astrmenu">
+                            <i class="bi bi-calendar-check nav-icon"></i>
+                            <span class="nav-text">Astreintes</span>
                         </NavLink>
 
-                        <NavLink class="nav-link nav-sub text-light small ps-4" href="invoper">
-                            <i class="bi bi-envelope-plus me-2"></i> Operateurs
+                        <NavLink class="nav-link nav-sub text-light small d-flex align-items-center flex-nowrap gap-2" href="atribmenu">
+                            <i class="bi bi-calendar-check nav-icon"></i>
+                            <span class="nav-text">Attributs++</span>
+                        </NavLink>
+
+                        <NavLink class="nav-link nav-sub text-light small d-flex align-items-center flex-nowrap gap-2" href="invoper">
+                            <i class="bi bi-people nav-icon"></i>
+                            <span class="nav-text">Operateurs</span>
                         </NavLink>
 
                     </nav>
                 </div>
 
                 <!-- PROGRAMMES -->
-                <NavLink class="nav-link nav-main text-light small" @onclick="ToggleSubProg">
-                    <i class="bi bi-journal-code me-2"></i> Programmes
+                <NavLink class="nav-link nav-main text-light small d-flex align-items-center flex-nowrap gap-2"
+                         @onclick="ToggleSubProg">
+
+                    <i class="bi bi-journal-code nav-icon"></i>
+
+                    <span class="nav-text d-flex align-items-center flex-nowrap gap-1" style="min-width:0;">
+                        Programmes
+                        <i class="bi @(isSubProgVisible ? "bi-chevron-up" : "bi-chevron-down") nav-chevron flex-shrink-0"></i>
+                    </span>
                 </NavLink>
 
                 <div class="submenu @(isSubProgVisible ? "open" : "")">
                     <nav class="nav flex-column">
 
-                        <NavLink class="nav-link nav-sub text-light small ps-4" href="prubmenu">
-                            <i class="bi bi-pin-map-fill me-2"></i> Plans
+                        <NavLink class="nav-link nav-sub text-light small d-flex align-items-center flex-nowrap gap-2" href="prubmenu">
+                            <i class="bi bi-diagram-3 nav-icon"></i>
+                            <span class="nav-text">Plans</span>
                         </NavLink>
 
-                        <NavLink class="nav-link nav-sub text-light small ps-4" href="edtmenu">
-                            <i class="bi bi-pencil-square me-2"></i> Écriture
+                        <NavLink class="nav-link nav-sub text-light small d-flex align-items-center flex-nowrap gap-2" href="edtmenu">
+                            <i class="bi bi-pencil-square nav-icon"></i>
+                            <span class="nav-text">Écriture</span>
                         </NavLink>
 
                     </nav>
                 </div>
 
                 <!-- SECURITES -->
-                <NavLink class="nav-link nav-main text-light small" @onclick="ToggleSubSecu">
-                    <i class="bi bi-shield-lock-fill me-2"></i> Sécurités
+                <NavLink class="nav-link nav-main text-light small d-flex align-items-center flex-nowrap gap-2"
+                         @onclick="ToggleSubSecu">
+
+                    <i class="bi bi-shield-lock nav-icon"></i>
+
+                    <span class="nav-text d-flex align-items-center flex-nowrap gap-1" style="min-width:0;">
+                        Sécurités
+                        <i class="bi @(isSubSecuVisible ? "bi-chevron-up" : "bi-chevron-down") nav-chevron flex-shrink-0"></i>
+                    </span>
                 </NavLink>
 
                 <div class="submenu @(isSubSecuVisible ? "open" : "")">
                     <nav class="nav flex-column">
 
-                        <NavLink class="nav-link nav-sub text-light small ps-4" href="accsmenu">
-                            <i class="bi bi-unlock-fill me-2"></i> Autorisations
+                        <NavLink class="nav-link nav-sub text-light small d-flex align-items-center flex-nowrap gap-2" href="accsmenu">
+                            <i class="bi bi-key nav-icon"></i>
+                            <span class="nav-text">Autorisations</span>
                         </NavLink>
 
-                        <NavLink class="nav-link nav-sub text-light small ps-4" href="donamenu">
-                            <i class="bi bi-database-fill-gear me-2"></i> Données
+                        <NavLink class="nav-link nav-sub text-light small d-flex align-items-center flex-nowrap gap-2" href="donamenu">
+                            <i class="bi bi-database nav-icon"></i>
+                            <span class="nav-text">Données</span>
                         </NavLink>
 
-                        <NavLink class="nav-link nav-sub text-light small ps-4" href="subitem2">
-                            <i class="bi bi-tools me-2"></i> Outils
+                        <NavLink class="nav-link nav-sub text-light small d-flex align-items-center flex-nowrap gap-2" href="subitem2">
+                            <i class="bi bi-tools nav-icon"></i>
+                            <span class="nav-text">Outils</span>
                         </NavLink>
 
-                        <NavLink class="nav-link nav-sub text-light small ps-4" href="ownerpage">
-                            <i class="bi bi-person-badge-fill me-2"></i> Owner Page
+                        <NavLink class="nav-link nav-sub text-light small d-flex align-items-center flex-nowrap gap-2" href="ownerpage">
+                            <i class="bi bi-person-badge nav-icon"></i>
+                            <span class="nav-text">Owner Page</span>
                         </NavLink>
 
                     </nav>
                 </div>
-                
-                <!-- Test message displaying -->
-                @* <NavLink class="nav-link nav-main text-light" href="test-messages">
-                    <i class="bi bi-bar-chart-line-fill me-2"></i> Test Messages
-                </NavLink> *@
 
-               <!-- Analyses -->
-                <NavLink class="nav-link nav-main text-light" href="about">
-                    <i class="bi bi-bar-chart-line-fill me-2"></i> Analyses
+                <!-- ANALYSES -->
+                <NavLink class="nav-link nav-main text-light small d-flex align-items-center flex-nowrap gap-2" href="about">
+                    <i class="bi bi-bar-chart-line nav-icon"></i>
+                    <span class="nav-text">Analyses</span>
                 </NavLink>
 
                 <!-- SUPPORT -->
-                <NavLink class="nav-link nav-main text-light small" href="about">
-                    <i class="bi bi-graph-up-arrow me-2"></i> Support
+                <NavLink class="nav-link nav-main text-light small d-flex align-items-center flex-nowrap gap-2" href="about">
+                    <i class="bi bi-life-preserver nav-icon"></i>
+                    <span class="nav-text">Support</span>
                 </NavLink>
 
             </Authorized>
         </AuthorizeView>
 
         <!-- AGENDAS -->
-        <NavLink class="nav-link nav-main text-light small" href="about">
-            <i class="bi bi-calendar3 me-2"></i> Agendas
+        <NavLink class="nav-link nav-main text-light small d-flex align-items-center flex-nowrap gap-2" href="about">
+            <i class="bi bi-calendar3 nav-icon"></i>
+            <span class="nav-text">Agendas</span>
         </NavLink>
 
         <!-- ABOUT -->
-        <NavLink class="nav-link nav-main text-light" href="about">
-            <i class="bi bi-info-circle-fill me-2"></i> About
+        <NavLink class="nav-link nav-main text-light small d-flex align-items-center flex-nowrap gap-2" href="about">
+            <i class="bi bi-info-circle nav-icon"></i>
+            <span class="nav-text">About</span>
         </NavLink>
 
     </nav>
 </div>
 
 <style>
-    .top-row.navbar {
-        padding-left: 0 !important;
-        padding-right: 0 !important;
-        --bs-navbar-padding-y: 0.25rem; /* reduce vertical padding */
+    .nav-link {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        line-height: 1.2;
+        flex-wrap: nowrap;
     }
 
-    .top-row .navbar-brand {
-        margin-left: 0 !important;
-        padding-left: 0 !important;
-        font-size: 0.9rem; /* smaller text */
-        line-height: 1.2; /* tighter line spacing */
+    /* ICON COLUMN */
+    .nav-icon {
+        width: 22px;
+        min-width: 22px;
+        text-align: center;
+        font-size: 1rem;
+        flex-shrink: 0;
     }
 
-    /* ========== SUBMENU ANIMATION ========== */
+    /* TEXT */
+    .nav-text {
+        flex: 1;
+        min-width: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    /* CHEVRON */
+    .nav-chevron {
+        font-size: 0.7rem;
+        opacity: 0.7;
+        flex-shrink: 0;
+    }
+
+    /* SUBMENU */
     .submenu {
         max-height: 0;
         overflow: hidden;
-        opacity: 0;
-        transition: max-height 0.35s ease-out, opacity 0.25s ease-out, padding-left 0.3s ease-out;
-        padding-left: 0rem;
+        transition: max-height 0.25s ease;
+        margin-left: 10px;
+        padding-left: 1rem;
+        border-left: 1px solid rgba(255,255,255,0.1);
     }
 
-        /* When open, expand submenu */
         .submenu.open {
-            max-height: 500px; /* Enough for many items */
-            opacity: 1;
-            padding-left: 0.5rem;
+            max-height: 500px;
         }
 
-    /* Style submenu links */
+    /* SUB ITEMS */
     .nav-sub {
-        padding-left: 1.5rem !important;
-        transition: padding-left 0.25s ease;
+        font-size: 0.85rem;
+        opacity: 0.9;
     }
-
-        /* Hover effect on submenu items */
-        .nav-sub:hover {
-            padding-left: 1.7rem !important;
-            background-color: rgba(255, 255, 255, 0.08);
-            border-radius: 4px;
-        }
-
-    /* ========== ARROW ANIMATION (optional) ========== */
-    /* Place an arrow icon inside main menu items if needed */
-    .nav-main .arrow {
-        transition: transform 0.3s ease;
-        font-size: 0.8rem;
-    }
-
-    /* Rotate arrow when submenu is open */
-    .submenu.open ~ .nav-main .arrow,
-    .nav-main.open .arrow {
-        transform: rotate(90deg);
-    }
-
 </style>
 @code {
     [CascadingParameter]
@@ -222,6 +264,7 @@
     {
         collapseNavMenu = !collapseNavMenu;
     }
+
     private void ToggleSubManag()
     {
         isSubManagVisible = !isSubManagVisible;
@@ -240,6 +283,7 @@
     {
         isSubParaVisible = !isSubParaVisible;
     }
+
     private void ToggleSubProg()
     {
         isSubProgVisible = !isSubProgVisible;

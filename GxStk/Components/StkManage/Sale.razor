@@ -1,8 +1,8 @@
 ﻿@page "/sale"
-@using GxShared.StkDtos;
+@using GxShared.GxDtos
 @using GxStk.Services
 
-@inject SaleClientService SaleService
+@* @inject SaleClientService SaleService *@
 
 <h3>Create Sale</h3>
     
@@ -11,23 +11,23 @@
 @code {
     async Task CreateSale()
     {
-        var dto = new CreateSaleDto
-        {
-            WarehouseId = 1,
-            Reference = "INV-001",
-            Lines = new List<CreateSaleLineDto>
-            {
-                new()
-                {
-                    ItemId = 1,
-                    Quantity = 5,
-                    UnitPrice = 3m
-                }
-            }
-        };
+        // var dto = new CreateSaleDto
+        // {
+        //     WarehouseId = 1,
+        //     Reference = "INV-001",
+        //     // Lines = new List<CreateSaleLineDto>
+        //     // {
+        //     //     new()
+        //     //     {
+        //     //         ItemId = 1,
+        //     //         Quantity = 5,
+        //     //         UnitPrice = 3m
+        //     //     }
+        //     // }
+        // };
 
-        var id = await SaleService.CreateSaleAsync(dto);
+        // var id = await SaleService.CreateSaleAsync(dto);
 
-        Console.WriteLine($"Sale created: {id}");
+        // Console.WriteLine($"Sale created: {id}");
     }
 }

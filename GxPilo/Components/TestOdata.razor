@@ -1,0 +1,58 @@
+﻿@page "/testodata"
+@using System.Collections.Generic
+@using GxPilo.Services
+
+@inject MyODataClient ODataClient
+
+<h3>Test OData Client</h3>
+
+@* @if (Items is null)
+{
+    <p>Loading...</p>
+}
+else if (Items.Count == 0)
+{
+    <p>No items found.</p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Id</th>
+                <th>Otyp</th>
+                <th>Idorg</th>
+                <th>Rowguid</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Items)
+            {
+                <tr>
+                    <td>@item.Id</td>
+                    <td>@item.Otyp</td>
+                    <td>@item.Idorg</td>
+                    <td>@item.Rowguid</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+} *@
+
+@code {
+    // private List<Gsglne>? Items;
+
+    // protected override async Task OnInitializedAsync()
+    // {
+    //     try
+    //     {
+    //         Items = await ODataClient.GetGsglnesAsync();
+    //     }
+    //     catch (Exception ex)
+    //     {
+    //         // In real app, use structured logging / UI error toast
+    //         Console.WriteLine($"Error loading Gsglnes: {ex.Message}");
+    //         Items = new();
+    //     }
+    // }
+}

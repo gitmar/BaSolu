@@ -1,0 +1,293 @@
+﻿@page "/items-unit"
+
+@using GxShared.Helpers
+@using GxStk.Services
+@using GxStk.ClieModels
+@using GxShared.Sess
+@using GxShared.GxDtos
+@using GxShared.Interfaces
+@using Simple.OData.Client
+@using Microsoft.EntityFrameworkCore;
+
+<div class="container mt-3">
+    <h4>Stock Units</h4>
+
+    <Button Color="ButtonColor.Success" @onclick="() => StartAdd()">Add New Unit</Button>
+    @* @if (curItu != null && curItu.Stkuns.Any())
+    { *@
+    <div class="mt-3">
+        <h5>New Transfer Line</h5>
+        <InputSelect @bind-Value="IMyItu">
+            @foreach (var item in curOrga.Stkitus.ToList())
+            {
+                <option value="@item.Id" @onclick="() => SelPuns()">@item.Liba</option>
+            }
+        </InputSelect>
+    </div>
+        <Grid TItem="StkunDto" Data="@DaStkuns" AllowPaging="true" Responsive="true">
+            <GridColumns>
+                <GridColumn TItem="StkunDto" HeaderText="Id" Class="xcol1">
+                    <ChildContent Context="item">@item.Id</ChildContent>
+                </GridColumn>
+                <GridColumn TItem="StkunDto" HeaderText="Label" Class="xcol3">
+                    <ChildContent Context="item">
+                        @if (editRowguid == item.Rowguid)
+                        {
+                            <InputText @bind-Value="draftUn.Liba" />                             
+                        }
+                        else
+                        {
+                            @item.Liba
+
+                        }
+                    </ChildContent>
+                </GridColumn>
+                <GridColumn TItem="StkunDto" HeaderText="Abrege" Class="xcol2">
+                    <ChildContent Context="item">
+                        @if (editRowguid == item.Rowguid)
+                        {
+                            <InputText @bind-Value="draftUn.Abg" />                             
+                        }
+                        else
+                        {
+                            @item.Abg
+
+                        }
+                    </ChildContent>
+                </GridColumn>
+                <GridColumn TItem="StkunDto" HeaderText="Nom" Class="xcol2">
+                    <ChildContent Context="item">
+                        @if (editRowguid == item.Rowguid)
+                        {
+                            <InputText @bind-Value="draftUn.Nom" />                             
+                        }
+                        else
+                        {
+                            @item.Nom
+
+                        }
+                    </ChildContent>
+                </GridColumn>
+                <GridColumn TItem="StkunDto" HeaderText="Description" Class="xcol3">
+                    <ChildContent Context="item">
+                        @if (editRowguid == item.Rowguid)
+                        {
+                            <InputText @bind-Value="draftUn.Description" />                             
+                        }
+                        else
+                        {
+                            @item.Description
+
+                        }
+                    </ChildContent>
+                </GridColumn>
+                <GridColumn TItem="StkunDto" HeaderText="Symbol" Class="xcol1">
+                    <ChildContent Context="item">
+                        @if (editRowguid == item.Rowguid)
+                        {
+                            <InputText @bind-Value="draftUn.Symbol" />                             
+                        }
+                        else
+                        {
+                            @item.Symbol
+
+                        }
+                    </ChildContent>
+                </GridColumn>
+                <GridColumn TItem="StkunDto" HeaderText="Conv Factor" Class="xcol2">
+                    <ChildContent Context="item">
+                        @if (editRowguid == item.Rowguid)
+                        {
+                            <InputNumber @bind-Value="draftUn.ConvFactor" />                             
+                        }
+                        else
+                        {
+                            @item.ConvFactor
+
+                        }
+                    </ChildContent>
+                </GridColumn>
+                <GridColumn TItem="StkunDto" HeaderText="Base Unit" Class="xcol1">
+                    <ChildContent Context="item">
+                        @if (editRowguid == item.Rowguid)
+                        {
+                            <InputCheckbox @bind-Value="draftUn.IsBaseUnit" />                             
+                        }
+                        else
+                        {
+                            @item.IsBaseUnit
+
+                        }
+                    </ChildContent>
+                </GridColumn>
+                <GridColumn TItem="StkunDto" HeaderText="Actions">
+                    <ChildContent Context="item">
+                        @if (editRowguid == item.Rowguid)
+                        {
+                            <Button Color="ButtonColor.Primary" @onclick="() => SaveEdit(item)">Save</Button>
+                            <Button Color="ButtonColor.Secondary" @onclick="() => CancelEdit()">Cancel</Button>
+                        }
+                        else
+                        {
+                            <Button Color="ButtonColor.Warning" @onclick="() => StartEdit(item)">Edit</Button>
+                            <Button Color="ButtonColor.Danger" @onclick="() => DeleteUnit(item)">Delete</Button>
+                        }
+                    </ChildContent>
+                </GridColumn>
+            </GridColumns>
+        </Grid>
+    @* } *@
+    @if (isAdding)
+    {
+        <div class="mt-3">
+            <InputText @bind-Value="draftUn.Liba" placeholder="Label" />
+            <InputText @bind-Value="draftUn.Abg" placeholder="Abrege" />
+            <InputText @bind-Value="draftUn.Nom" placeholder="Nom" />
+            <InputText @bind-Value="draftUn.Description" placeholder="Description" />
+            <InputText @bind-Value="draftUn.Symbol" placeholder="Symbol" />
+            <InputNumber @bind-Value="draftUn.ConvFactor" placeholder="Conv Factor" />
+            <InputCheckbox @bind-Value="draftUn.IsBaseUnit" /> Base Unit
+            <Button Color="ButtonColor.Success" @onclick="() => SaveAdd()">Add</Button>
+            <Button Color="ButtonColor.Secondary" @onclick="() => CancelAdd()">Cancel</Button>
+        </div>
+    }
+</div>
+
+<style>
+    .xcolx { width: 40px !important; }
+    .xcol1 { width: 60px; }
+    .xcol2 { width: 120px; }
+    .xcol3 { width: 180px; }
+    .xcol4 { width: 240px; }
+    /* Ensure inputs inside these columns fill the width */
+    .xcol1 input,
+    .xcol2 input,
+    .xcol3 input,
+    .xcol4 input {
+        width: 100%;
+        box-sizing: border-box;
+    }
+</style>
+
+@code {
+    [Parameter] public IODataClient _InODaClient { get; set; }
+    [Parameter] public GxorgaDto curOrga { get; set; }
+    [Parameter] 
+    public List<Gpdivh> LsDivs { get; set; }
+    [Parameter] public MyShareVars toChild { get; set; }
+    [Parameter] public int toMenu { get; set; }
+
+    // Guard
+    [Parameter] public IPendingChangesGuard _guard { get; set; }
+    [Parameter] public EventCallback<PendingState> OnPendingStateChanged { get; set; }
+    [Parameter] public int NbChanges { get; set; }
+    [Parameter] public EventCallback<int> NbChangesChanged { get; set; }
+
+    // [Parameter] public ItemClientService ItemService { get; set; }
+    // [Parameter] public StockClientService StockService { get; set; }
+
+    private Guid? editRowguid;
+    private bool isAdding = false;
+    private StkunDto draftUn = new();
+
+    private List<StkunDto> DaStkuns = new();
+    private int IMyItu = 0;
+    private StkituDto curItu = new StkituDto();
+
+    private void CancelAdd() => isAdding = false;
+
+    private void StartAdd()
+    {
+        isAdding = true;
+        draftUn = new StkunDto();
+    }
+    protected override async Task OnInitializedAsync()
+    {
+        IMyItu = curOrga.Stkitus?.FirstOrDefault()?.Id ?? 0;
+    }
+    private async Task SaveAdd()
+    {
+        draftUn.Rowguid = Guid.NewGuid();
+
+        // Register add with OData 
+        _guard.TrackInsert("Stkuns", draftUn);
+
+        curItu.Stkuns.Add(draftUn);
+        isAdding = false;
+
+        await NotifyPendingChanges();
+    }
+    private void StartEdit(StkunDto un)
+    {
+        editRowguid = un.Rowguid;
+        draftUn = new StkunDto {
+            Id = un.Id, Liba = un.Liba, Abg = un.Abg, Nom = un.Nom,
+            Description = un.Description, Symbol = un.Symbol,
+            ConvFactor = un.ConvFactor, IsBaseUnit = un.IsBaseUnit,
+            Rowguid = un.Rowguid
+        };
+    }
+
+    private async Task SaveEdit(StkunDto item)
+    {
+        item.Liba = draftUn.Liba;
+        item.Abg = draftUn.Abg;
+        item.Nom = draftUn.Nom;
+        item.Description = draftUn.Description;
+        item.Symbol = draftUn.Symbol;
+        item.ConvFactor = draftUn.ConvFactor;
+        item.IsBaseUnit = draftUn.IsBaseUnit;
+        
+        // Register update with OData context
+        var key = GetEntityKey(item); // helper to extract PK
+        _guard.TrackUpdate("Stkuns", key, item);
+
+        editRowguid = null;
+        await NotifyPendingChanges();
+    }
+
+    private void CancelEdit() => editRowguid = null;
+
+    private async Task DeleteUnit(StkunDto item)
+    {
+        curItu.Stkuns.Remove(item);
+
+        //Register delete with OData context
+        var key = GetEntityKey(item);
+        _guard.TrackDelete("Stkuns", key);
+
+        await NotifyPendingChanges();
+    }
+    private object GetEntityKey<TDto>(TDto entity)
+    {
+        switch (entity)
+        {
+            case StkunDto pln:
+                return pln.Id;
+            // case RubvarDto rub:
+            //     return rub.Id;
+            // case RubfmtDto fmt:
+            //     return fmt.Id;
+            default:
+                throw new InvalidOperationException($"Unknown entity type {typeof(TDto).Name}");
+        }
+    }
+    private void SelPuns()
+    {
+        curItu = curOrga.Stkitus.FirstOrDefault(s => s.Id == IMyItu);
+        DaStkuns = curItu?.Stkuns.ToList() ?? new List<StkunDto>();
+    }
+    // Notify guard/UI of pending changes
+    private async Task NotifyPendingChanges()
+    {
+        await OnPendingStateChanged.InvokeAsync(new PendingState(
+            _guard.HasPendingChanges(),
+            _guard.GetPendingChangesCount()
+        ));
+
+        NbChanges = _guard.GetPendingChangesCount();
+        await NbChangesChanged.InvokeAsync(NbChanges);
+        StateHasChanged();
+    }
+
+}

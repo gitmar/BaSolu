@@ -2,7 +2,9 @@
 @inherits LayoutComponentBase
 @layout FreeLayout
 
-@using Microsoft.OData.Client
+@using Simple.OData.Client
+@using AutoMapper
+@using GxShared.GxDtos
 @using System.Security.Claims
 @using Blazored.LocalStorage
 @using BlazorBootstrap
@@ -11,6 +13,7 @@
 @using GxSaie.Services
 @using GxWapi.DaModels
 @using GxShared.GlobModels
+
 @inject NavigationManager _navmanager
 @inject IUsrdaService _dbusrManager
 @inject IInputService _usaieManager
@@ -86,7 +89,7 @@
     private MyODataContext _gODContext;
     public int vientDe = 1;
     //Loaded Data
-    //public Gxorga curOrga = new Gxorga();
+    //public GxorgaDto curOrga = new GxorgaDto();
     public IQueryable<Plngen>
         ensPlans;
 
@@ -130,8 +133,8 @@
                                                                                 ();
 
                                                                                 public Gporga rfOrga = new Gporga();
-                                                                                private IEnumerable<Gxorga>
-                                                                                    _lsOrgas = new List<Gxorga>
+                                                                                private IEnumerable<GxorgaDto>
+                                                                                    _lsOrgas = new List<GxorgaDto>
                                                                                         ();
                                                                                         public List<Gphie>
                                                                                             LsDivs = new List<Gphie>

@@ -11,16 +11,19 @@
 @using GxShared.Formulas.ForaModels
 @using GxShared.Sess
 @using GxShared.Others
+@using GxShared.Interfaces
+@using GxShared.GxDtos
 @using GxTie.ClieModels
 @using GxTie.Components.Opera
 @using GxTie.Services
 @using GxTie.Components.Opera.RtOpe
-@using GxWapi.DaModels
+@using Simple.OData.Client  
 
 @inject MyAuthStateProvider _authprovider
 @inject ILocalStorageService _localStorage
 @inject IBlazorDownloadFileService DownloadService
 @inject HttpClientService _cliemanager
+@inject IMessageService _messageService
 @inject RendAgres _rendAgres
 @inject IJSRuntime _jsRun
 
@@ -79,7 +82,7 @@ else
         <RtS11Fic @ref="myfsaie"
         curOrga="@curOrga"
         toChild="@toChild"
-        curODContext="@curODContext"
+        _EdtODaClient="@_InODaClient"
         _curTier="@_curTier">
             <ChildContent>
                 <h2 class="child-box">Fiche de @curProg.Liba</h2>
@@ -246,9 +249,9 @@ else
     [Parameter]
     public RenderFragment ChildContent { get; set; }
     [Parameter]
-    public MyODataContext curODContext { get; set; }
+    public IODataClient _InODaClient { get; set; }
     [Parameter]
-    public Gxorga curOrga { get; set; }
+    public GxorgaDto curOrga { get; set; }
     [Parameter]
     public MyShareVars toChild { get; set; }
     [Parameter]
@@ -258,14 +261,14 @@ else
     [Parameter]
     public int ImyOrient { get; set; }
     [Parameter]
-    public List<Tiersp> PreTiers { get; set; }
+    public List<TierspDto> PreTiers { get; set; }
     [Parameter]
     public bool allEnable { get; set; }
     [Parameter]
     public int toMenu { get; set; }
     //guard
     [Parameter]
-    public PendingChangesGuard _guard { get; set; }
+    public IPendingChangesGuard _guard { get; set; }
     [Parameter]
     public EventCallback<PendingState> OnPendingStateChanged { get; set; }
     [Parameter]
@@ -288,23 +291,23 @@ else
     public int _lgcdu = 0;
 
     //private Userbag _usrBag = new Userbag();
-    private List<Actsaie> _tieActs = new();
-    private List<Actsaie> _lsmActs = new();
+    private List<ActsaieDto> _tieActs = new();
+    private List<ActsaieDto> _lsmActs = new();
 
-    private Tiersp _curTier = new();
-    private List<Tiersp> EnsTiers = new();
-    private List<Plngen> EnsProgs = new();
-    private List<Rubvar> EnsRubrs = new();
+    private TierspDto _curTier = new();
+    private List<TierspDto> EnsTiers = new();
+    private List<PlngenDto> EnsProgs = new();
+    private List<RubvarDto> EnsRubrs = new();
     
     //  private Actsaie curAct = new();
-    private Plngen curProg = new();
+    private PlngenDto curProg = new();
 
     private bool isFilteringEnabled = false;
-    private Rubvar _curRub = new();
-    private Gsesio _curSes = new();
-    private Plngen selPgr = new();
-    private Rubvar selRub = new();
-    private Rubfmt selFmt = new();
+    private RubvarDto _curRub = new();
+    private GsesioDto _curSes = new();
+    private PlngenDto selPgr = new();
+    private RubvarDto selRub = new();
+    private RubfmtDto selFmt = new();
     private DateTime _sesDat;
 
     private List<Gpfixe> LsFixes = new List<Gpfixe>();
@@ -315,7 +318,7 @@ else
     private string rolInv = "", userName = "", isatmsg = "";
 
     
-    private List<Tiersp> SaieTiers = new();
+    private List<TierspDto> SaieTiers = new();
 
     private ReqgnModel qryModel = new ReqgnModel();
 
@@ -335,10 +338,10 @@ else
     private PersonEvaluationSession _currentSession;
     //CRUD ROW ADDING
     private Guid? EditingActRowGuid; //pmodal
-    private bool IsActAdding(Plngen item) => EditingActRowGuid == item.Rowguid;
+    private bool IsActAdding(PlngenDto item) => EditingActRowGuid == item.Rowguid;
     private Guid? ConfirmingActDeleteRowGuid;
     private Guid? EditingDetRowGuid; //pmodal
-    private bool IsDetAdding(Plngen item) => EditingDetRowGuid == item.Rowguid;
+    private bool IsDetAdding(PlngenDto item) => EditingDetRowGuid == item.Rowguid;
     private Guid? ConfirmingDetDeleteRowGuid;
 
     //private string opseudo = "", opnomp = "";
@@ -360,7 +363,7 @@ else
             }
         }
     }
-    private async Task HandleSelectedRubrAsync(Rubvar selected)
+    private async Task HandleSelectedRubrAsync(RubvarDto selected)
     {
         await GetSelectedRubr(selected);
     }
@@ -384,7 +387,7 @@ else
     }
 
     // Async helper if needed
-    private async Task HandleSelectedTierAsync(Tiersp selected)
+    private async Task HandleSelectedTierAsync(TierspDto selected)
     {
         await GetSelectedTier(selected);
     }
@@ -398,19 +401,19 @@ else
   
     //variables PLANS
     Modal edAModal;
-    Actsaie actItem = new();
+    ActsaieDto actItem = new();
     int? edAIndex = null;
-    Actsaie edAct = new();
+    ActsaieDto edAct = new();
     bool adingAct = false;
 
-    Actdet edADet = new();
+    ActdetDto edADet = new();
     //variables Man
-    Actsaie? draftAct = null;
-    Actsaie? editingAct = null;
+    ActsaieDto? draftAct = null;
+    ActsaieDto? editingAct = null;
     //bool yaEuActModif = false;
     //variables Lne
-    Actdet? draftDet = null;
-    Actdet? editingDet = null;
+    ActdetDto? draftDet = null;
+    ActdetDto? editingDet = null;
     bool yaEuDetModif = false;
 
     //private IRubvarResolver _rubvarResolver;
@@ -521,7 +524,7 @@ else
         }
     }
     
-    private async Task GetSelectedTier(Tiersp mytier)
+    private async Task GetSelectedTier(TierspDto mytier)
     {
         if (mytier != null)
         {
@@ -537,7 +540,7 @@ else
             //can Input      
         }
     }
-    private async Task GetSelectedRubr(Rubvar myrub)
+    private async Task GetSelectedRubr(RubvarDto myrub)
     {
         //Console.WriteLine($"ENTREE DANS PLN : {curProg.Liba}");
         if (myrub != null)
@@ -552,7 +555,7 @@ else
             }
         }
     }
-    private void GetSelectedTActs(int orig, Tiersp mytier, Rubvar myrub)
+    private void GetSelectedTActs(int orig, TierspDto mytier, RubvarDto myrub)
     {
         //LsDaActs = new();
         DateTime sessionDate = Convert.ToDateTime(_curSes.Datses); // session current date
@@ -563,7 +566,7 @@ else
                 var lsRubs = curProg.Rubvars.ToList();
 
                 var icurActs = _curTier.Actsaies
-                    .Where(ac => ac.Itie == mytier.Id && lsRubs.Any(r => r.Id == ac.IrubNavigation.Id))
+                    .Where(ac => ac.Itie == mytier.Id) //&& lsRubs.Any(r => r.Id == r.acIrubNavigation.Id))
                     //ADJUST LATER
                     // .Where(ac =>
                     //     (ac.Tperi == 0) ||
@@ -573,7 +576,7 @@ else
                     .ToList();
                 foreach (var ac in icurActs)
                 {
-                    var icurRub = curProg.Rubvars.Where(ur => ur.Ipln == ac.IrubNavigation.Ipln).FirstOrDefault();
+                    var icurRub = curProg.Rubvars.FirstOrDefault(); //Where(ur => ur.Ipln == ac.IrubNavigation.Ipln).FirstOrDefault();
                     ac.Liba = icurRub.Liba;
                     ac.Abg = icurRub.Abg;
                 }
@@ -630,7 +633,7 @@ else
             OutLines = CalcLines
         };
         await _cliemanager.SendRequestAsync(
-            "AUTHClient",
+            "AuthClient",
             HttpMethod.Post,
             "lgauth/savcalcresu",
         request);
@@ -639,9 +642,6 @@ else
         StateHasChanged();
     }
 
-
-
-    
 
     //manage SAVING
     public async Task EdtAll()
@@ -766,7 +766,7 @@ else
 
         // ✅ Step 3: Submit to API
         await _cliemanager.SendRequestAsync(
-            "AUTHClient",
+            "AuthClient",
             HttpMethod.Post,
             "lgauth/savcalcresu",
             request
@@ -808,7 +808,7 @@ else
                 OutLines = CalcLines
             };
             await _cliemanager.SendRequestAsync(
-                "AUTHClient",
+                "AuthClient",
                 HttpMethod.Post,
                 "lgauth/savcalcresu",
             request);
@@ -838,7 +838,7 @@ else
                 OutLines = CalcLines
             };
             await _cliemanager.SendRequestAsync(
-                "AUTHClient",
+                "AuthClient",
                 HttpMethod.Post,
                 "lgauth/savcalcresu",
             request);
@@ -875,7 +875,7 @@ else
 
     //     // ✅ Step 3: Submit to API
     //     await _cliemanager.SendRequestAsync(
-    //         "AUTHClient",
+    //         "AuthClient",
     //         HttpMethod.Post,
     //         "lgauth/savcalcresu",
     //         request
@@ -905,7 +905,7 @@ else
     //     };
 
     //     // ✅ Send to API
-    //     await _cliemanager.SendRequestAsync("AUTHClient", HttpMethod.Post, "lgauth/savcalcresu", reqModel);
+    //     await _cliemanager.SendRequestAsync("AuthClient", HttpMethod.Post, "lgauth/savcalcresu", reqModel);
     // }
     private async Task ValidSaieAsync()
     {
@@ -924,7 +924,7 @@ else
     }
     private async Task PrintFiche()
     {
-        Actdet myedt = new();
+        ActdetDto myedt = new();
         //var asi = myedt.Idrub;
 
         await _jsRun.InvokeVoidAsync("printForm", ".print-area");

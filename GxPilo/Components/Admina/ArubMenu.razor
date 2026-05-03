@@ -10,8 +10,9 @@
 @using GxPilo.Services
 @using GxPilo.StaticHelpers
 @using GxShared.Sess
-@using GxWapi.DaModels
-@using Microsoft.OData.Client
+@using Simple.OData.Client
+@using GxShared.GxDtos
+@using GxShared.Interfaces
 @using Newtonsoft.Json
 
 @implements IDisposable
@@ -19,10 +20,10 @@
 @inject NavigationManager _navManager
 @inject ILocalStorageService _localStorage
 @inject HttpClientService _clieManager
-@inject IODataContextFactory _contextFactory
+@inject IODataClient _MyODaClient
 @inject SessionContextService _sessionContext
 @inject RendAgres _rendAgres
-@inject PendingChangesGuard _guard
+@inject IPendingChangesGuard _guard
 @inject IJSRuntime _JsRUN
 @inject IMessageService _messageService
 
@@ -52,7 +53,7 @@ else
                 <!-- Main Content -->
                 @if (this != null)
                 {
-                    @if (_chxMenu != 0 && toChild != null && curOrga != null && curODContext != null)
+                    @if (_chxMenu != 0 && toChild != null && curOrga != null)
                     {
                         if (_chxMenu == 1)
                     { //grilles rubriques
@@ -62,7 +63,7 @@ else
                             _guard="_guard"
                             curOrga="@curOrga"
                             toChild="@toChild"
-                            curODContext="@curODContext">
+                            _InODaClient="@_MyODaClient">
                             <ChildContent>
                                 @* <h2 class="child-box">Hello GRILLES</h2> *@
                             </ChildContent>
@@ -76,7 +77,7 @@ else
                             _guard="_guard"
                             curOrga="@curOrga"
                             toChild="@toChild"
-                            curODContext="@curODContext">
+                            _InODaClient="@_MyODaClient">
                             <ChildContent>
                                 @* <h2 class="child-box">Hello GRILLES</h2> *@
                             </ChildContent>
@@ -90,7 +91,7 @@ else
                             _guard="_guard"
                             curOrga="@curOrga"
                             toChild="@toChild"
-                            curODContext="@curODContext">
+                            _InODaClient="@_MyODaClient">
                             <ChildContent>
                                 @* <h2 class="child-box">Hello GRILLES</h2> *@
                             </ChildContent>
@@ -123,8 +124,7 @@ else
 
 @code {
     private bool isLoading = true;
-    public MyODataContext curODContext;
-    public Gxorga curOrga = new Gxorga();
+    public GxorgaDto curOrga = new();
     public MyShareVars toChild = new();
     private string Jmessage = "";
 
@@ -136,6 +136,27 @@ else
     private Task<AuthenticationState>? AuthState { get; set; }
     public ClaimsPrincipal authUser;
 
+    //Guard
+    private int _nbChanges = 0;
+    private IDisposable? _locationHandler;
+    private int pendingCount => _guard.GetPendingChangesCount();
+    private int insertCount => _guard.GetInsertCount();
+    private int updateCount => _guard.GetUpdateCount();
+    private int deleteCount => _guard.GetDeleteCount();
+    private async Task CancelAllChanges()
+    {
+        Console.WriteLine("🗑️ CancelAllChanges START");
+        await _guard.CancelChanges();  // 🔥 AWAIT - blocks until done
+        _messageService.Show("✅ CancelAllChanges successfully", ToastType.Success);
+        StateHasChanged();
+        Console.WriteLine($"✅ CancelAllChanges END - Pending: {_guard.GetPendingChangesCount()}");
+    }
+    private async Task SaveAllChanges()
+    {
+        await _guard.FlushAsync();  // 🔥 AWAIT - blocks until done
+        _messageService.Show("✅ Saved successfully", ToastType.Success);
+        StateHasChanged();
+    }
     //menus
     private string strComp = "Plan.GRILLE";
     public List<GxMenuItem> MenuItems = new()
@@ -147,7 +168,6 @@ else
         //new MenuItem { Id = 4, Text = "Mutation", Icon = "bi bi-arrow-repeat" },
     };
     public List<GxGroupe> Groupes = new();
-
     public Userbag _usrBag = new Userbag();
     public List<Gpfixe> LsFixes = new();
     public List<Gpdivh> LsDivs = new();
@@ -160,10 +180,7 @@ else
     //modal management
     private string SidebarStyle = "width: 200px;";
 
-    //Guard
-    private int _nbChanges = 0;
-    private IDisposable? _locationHandler;
-
+    
     protected override async Task OnInitializedAsync()
     {
         isLoading = true;
@@ -179,21 +196,7 @@ else
             LsPlans = _usrBag.Usorga.Uplns.Where(pl => pl.Ptyp == 2 || pl.Ptyp == 3 || pl.Ptyp == 4).ToList();
             LtTabls = _usrBag.Usorga.Uvars.Where(tb => tb.Gvars == 4).ToList();
             LsTabls = _usrBag.Usorga.Uvars.Where(tb => tb.Gvars == 5).ToList();
-            // Create context
-            curODContext = await _contextFactory.CreateAsync();
-            _guard.AttachContext(curODContext);
-            // Load ONLY parent entity
-            int key = _usrBag.Idorg;
-            string expand = ODataQueryHelper.Expand<Gxorga, IEnumerable<Plngen>>(
-                o => o.Plngens) + "($expand=Rubvars,Rubhies)";
-            curOrga = await curODContext.GetByKeyAsync<Gxorga>(
-                key,
-                "Gxorgas",
-                expand);
-            if (curOrga == null) return;
-            // ✅ Plngens exists as empty DataServiceCollection - USE I
-            Console.WriteLine($"READY: Orga loaded, Plngens={curOrga.Plngens?.Count ?? 0}");
-            if (curOrga == null) return;
+            await LoadOrgaAsync(_usrBag.Idorg);
             // Populate child data immediately
             toChild = new MyShareVars
             {
@@ -205,9 +208,7 @@ else
                 LsPlans = LsPlans.ToList(),
                 LsTabls = LsTabls.ToList()
             };
-            _guard.RegisterUnconfirmedPredicate<Plngen>(p => p.Xadd1 == -1 || p.Xedt1 == -1 || p.Xdel1 == -1);
-            _guard.RegisterUnconfirmedPredicate<Rubvar>(r => r.Xadd1 == -1 || r.Xedt1 == -1 || r.Xdel1 == -1);
-            _guard.RegisterUnconfirmedPredicate<Rubhie>(h => h.Xadd1 == -1 || h.Xedt1 == -1 || h.Xdel1 == -1);
+            
             _nbChanges = _guard.GetPendingChangesCount();  // Initial value
         }
         finally
@@ -223,6 +224,24 @@ else
             Console.WriteLine("📌 LocationChangingHandler registered");
         }
     }
+    private async Task LoadOrgaAsync(int key)
+    {
+        try
+        {
+            curOrga = await _MyODaClient
+                .For<GxorgaDto>("Gxorgas")
+                .Key(key)
+                .Expand(o => o.Plngens.Select(p => p.Rubvars))
+                .Expand(o => o.Plngens.Select(p => p.Rubhies))
+                .FindEntryAsync();
+            Console.WriteLine($"loadOrgaAsync completed :{curOrga?.Raison}");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Load error: {ex.Message}");
+        }
+    }
+
     private async ValueTask OnLocationChangingAsync(LocationChangingContext context)
     {
         Console.WriteLine($"🌐 Intercepted: {context.TargetLocation}");
@@ -284,35 +303,11 @@ else
         Console.WriteLine("PAS 2");
         await Task.Delay(1);
     }
-    private async Task CancelAllChanges()
-    {
-        Console.WriteLine("🗑️ CancelAllChanges START");
-        await _guard.CancelChangesAsync();  // 🔥 AWAIT - blocks until done
-        _messageService.Show("✅ CancelAllChanges successfully", ToastType.Success);
-        StateHasChanged();
-        Console.WriteLine($"✅ CancelAllChanges END - Pending: {_guard.GetPendingChangesCount()}");
-    }
-    private async Task SaveAllChanges()
-    {
-        _guard.DiscardUnconfirmedAdds<Plngen>();
-        _guard.DiscardUnconfirmedAdds<Rubvar>();
-        _guard.DiscardUnconfirmedAdds<Rubhie>();
-        if (_guard.HasPendingChanges())
-        {
-            await curODContext.Context.SaveChangesAsync();
-        }
-        _guard.NotifyChanges();
-        _messageService.Show("✅ Saved successfully", ToastType.Success);
-        StateHasChanged();
-    }
-
+    
     public void Dispose()
     {
         _locationHandler?.Dispose();
         // Parent-level cleanup
-        _guard.DiscardUnconfirmedAdds<Plngen>();
-        _guard.DiscardUnconfirmedAdds<Rubvar>();
-        _guard.DiscardUnconfirmedAdds<Rubfmt>();
     }
 
     void NavigateBack()

@@ -1,0 +1,182 @@
+﻿@page "/tiers-entry"
+
+@using GxShared.Helpers
+@using GxTie.Services
+@using GxTie.ClieModels
+@using GxShared.Sess
+@using GxShared.GxDtos
+@using GxShared.Interfaces
+@using Simple.OData.Client
+@using Microsoft.EntityFrameworkCore;
+
+<h3>Items Entry</h3>
+
+<Button Color="ButtonColor.Success" @onclick="() => StartAdd()">Add New Item</Button>
+
+<Grid TItem="TiewelDto" Data="@curOrga?.Tiewels" AllowPaging="true" Responsive="true">
+    <GridColumns>
+        <GridColumn TItem="TiewelDto" HeaderText="Id" Class="xcol1">
+            <ChildContent Context="item">@item.Id</ChildContent>
+        </GridColumn>
+        <GridColumn TItem="TiewelDto" HeaderText="Name" Class="xcol3">
+            <ChildContent Context="item">
+                @if (editRowguid == item.Rowguid)
+                {
+                    <InputText @bind-Value="draftItem.Nom" />
+                }
+                else
+                {
+                    @item.Nom
+                }
+            </ChildContent>
+        </GridColumn>
+        <GridColumn TItem="TiewelDto" HeaderText="Name" Class="xcol3">
+            <ChildContent Context="item">
+                @if (editRowguid == item.Rowguid)
+                {
+                    <InputText @bind-Value="draftItem.Nom" />
+                }
+                else
+                {
+                    @item.Nom
+                }
+            </ChildContent>
+        </GridColumn>
+        <GridColumn TItem="TiewelDto" HeaderText="Actions">
+            <ChildContent Context="item">
+                @if (editRowguid == item.Rowguid)
+                {
+                    <Button Color="ButtonColor.Primary" @onclick="() => SaveEdit(item)">Save</Button>
+                    <Button Color="ButtonColor.Secondary" @onclick="() => CancelEdit()">Cancel</Button>
+                }
+                else
+                {
+                    <Button Color="ButtonColor.Warning" @onclick="() => StartEdit(item)">Edit</Button>
+                    <Button Color="ButtonColor.Danger" @onclick="() => DeleteItem(item)">Delete</Button>
+                }
+            </ChildContent>
+        </GridColumn>
+    </GridColumns>
+</Grid>
+
+@if (isAdding)
+{
+    <div class="mt-3">
+        <h5>New Item</h5>
+        <InputText @bind-Value="draftItem.Liba" placeholder="Name" />
+        @* <InputText @bind-Value="draftItem.Liba" placeholder="Label" />
+        <InputNumber @bind-Value="draftItem.Qty" placeholder="Quantity" />
+        <InputNumber @bind-Value="draftItem.UnitCost" placeholder="Unit Cost" /> *@
+        <Button Color="ButtonColor.Success" @onclick="() => SaveAdd()">Add</Button>
+        <Button Color="ButtonColor.Secondary" @onclick="() => CancelAdd()">Cancel</Button>
+    </div>
+}
+
+@code {
+    [Parameter] public ODataClient MyODaClient { get; set; }
+    [Parameter] public GxorgaDto curOrga { get; set; }
+    [Parameter]
+    public List<Gpdivh> LsDivs { get; set; }
+    [Parameter] public MyShareVars toChild { get; set; }
+    [Parameter] public int toMenu { get; set; }
+    // [Parameter] public ItemClientService itemService { get; set; }
+    // [Parameter] public StockClientService stockService { get; set; }
+
+    // Guard
+    [Parameter] public IPendingChangesGuard _guard { get; set; }
+    [Parameter] public EventCallback<PendingState> OnPendingStateChanged { get; set; }
+    [Parameter] public int NbChanges { get; set; }
+    [Parameter] public EventCallback<int> NbChangesChanged { get; set; }
+
+    private Guid? editRowguid;
+    private bool isAdding = false;
+    private TiewelDto draftItem = new();
+
+    private void StartAdd()
+    {
+        isAdding = true;
+        draftItem = new TiewelDto();
+    }
+
+    private async Task SaveAdd()
+    {
+        draftItem.Rowguid = Guid.NewGuid();
+
+        // Register add with OData
+        _guard.TrackInsert("Stkitus", draftItem);
+   
+        curOrga.Stkitus.Add(draftItem);
+        isAdding = false;
+
+        await NotifyPendingChanges();
+    }
+
+    private void CancelAdd() => isAdding = false;
+
+    private void StartEdit(TiewelDto item)
+    {
+        editRowguid = item.Rowguid;
+        draftItem = new TiewelDto
+        {
+            Rowguid = item.Rowguid,
+            Id = item.Id,
+            Liba = item.Liba,
+            //Qty = item.Quantity,
+            //Ucost = item.UnitCost
+        };
+    }
+
+    private async Task SaveEdit(TiewelDto item)
+    {
+        item.Nom = draftItem.Nom;
+        item.Pnom = draftItem.Pnom;
+        //item.Liba = draftItem.Liba;
+        //item.Quantity = draftItem.Quantity;
+        //item.UnitCost = draftItem.UnitCost;
+
+        // Register update with OData context
+        var key = GetEntityKey(item); // helper to extract PK
+        _guard.TrackUpdate("Stkitus", key, item);
+
+        editRowguid = null;
+        await NotifyPendingChanges();
+    }
+
+    private void CancelEdit() => editRowguid = null;
+
+    private async Task DeleteItem(TiewelDto item)
+    {
+        curOrga.Stkitus.Remove(item);
+
+        // Register delete with OData context
+        var key = GetEntityKey(item);
+        _guard.TrackDelete("Stkitus", key);
+
+        await NotifyPendingChanges();
+    }
+    private object GetEntityKey<TDto>(TDto entity)
+    {
+        switch (entity)
+        {
+            case TiewelDto pln:
+                return pln.Id;
+            // case RubvarDto rub:
+            //     return rub.Id;
+            // case RubfmtDto fmt:
+            //     return fmt.Id;
+            default:
+                throw new InvalidOperationException($"Unknown entity type {typeof(TDto).Name}");
+        }
+    }
+    private async Task NotifyPendingChanges()
+    {
+        await OnPendingStateChanged.InvokeAsync(new PendingState(
+            _guard.HasPendingChanges(),
+            _guard.GetPendingChangesCount()
+        ));
+
+        NbChanges = _guard.GetPendingChangesCount();
+        await NbChangesChanged.InvokeAsync(NbChanges);
+        StateHasChanged();
+    }
+}

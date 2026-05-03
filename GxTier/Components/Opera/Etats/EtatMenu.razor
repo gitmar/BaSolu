@@ -8,8 +8,8 @@
 @using GxShared.Sess
 @using GxShared.Others
 @using GxTie.Services
-@using GxWapi.DaModels
-@using Microsoft.OData.Client
+@using Simple.OData.Client
+@using GxShared.GxDtos
 @using Newtonsoft.Json
 @* @using GxTie.Components.Operatio.Saisies
 @using GxTie.Components.Operatio.Ordres *@
@@ -160,12 +160,12 @@
     private Task<AuthenticationState>? AuthState { get; set; }
     public ClaimsPrincipal authUser;
     public bool isAuthenticated = false;
-    private MyODataContext _gODContext;
+    private ODataClient _MyODaClient;
     //in DATA
-    public Gxorga curOrga = new Gxorga();
-    public Plngen curProg = new Plngen();
-    public List<Tiersp> EnsTiers { get; set; }
-    public List<Plngen> EnsProgs { get; set; }
+    public GxorgaDto curOrga = new GxorgaDto();
+    public PlngenDto curProg = new PlngenDto();
+    public List<TierspDto> EnsTiers { get; set; }
+    public List<PlngenDto> EnsProgs { get; set; }
 
     public int _GIdTie = 0;
     public string _strOrga = "", _curSigle = "", strmeta = "", strmeta2 = "";
@@ -174,13 +174,13 @@
     public int ImyExo = 0, ImySes = 0, ImyDiv = 0;
 
     //entities load
-    private IEnumerable<Gxorga> _lsOrgas = new List<Gxorga>();
+    private IEnumerable<GxorgaDto> _lsOrgas = new List<Gxorga>();
     //LocModels
 
     //GlobModels
     public Userbag _usrBag = new Userbag();
     public List<Gpfixe> LsFixes = new List<Gpfixe>();
-    public List<Rubvar> EnsRubrs = new List<Rubvar>();
+    public List<RubvarDto> EnsRubrs = new List<RubvarDto>();
 
     //public List<Upara> Uafls = new List<Upara>();
     public List<Gpvar> LsVars = new List<Gpvar>();
@@ -244,6 +244,8 @@
     private async Task LoadSaieTiersAsync()
     {
         int pisa = 2;
+
+
         try
         {
             var token = await _localStorage.GetItemAsync<string>("blazToken");

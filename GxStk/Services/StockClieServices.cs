@@ -1,38 +1,53 @@
 ﻿using System.Net.Http.Json;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Serialization;
+
 using GxShared.StkDtos;
+
 using GxWapi.DaModels;
+
+using static System.Net.WebRequestMethods;
+using System.Text.Json.Serialization;
+using Microsoft.EntityFrameworkCore;
 
 namespace GxStk.Services
 {
     public class ItemClientService
     {
-        private readonly IMyODataContext _context;
+        private readonly IODataContextFactory _contextFactory;
 
-        public ItemClientService(IMyODataContext context)
+        public ItemClientService(IODataContextFactory contextFactory)
         {
-            _context = context;
+            _contextFactory = contextFactory;
         }
 
-        public async Task<List<Stkitum>> GetItemsAsync()
+        public async Task<List<Stkitu>> GetItemsAsync()
         {
-            var query = _context.Query<Stkitum>("Items")
-                .AddQueryOption("$filter", "isactive eq true");
+            var context = await _contextFactory.CreateAsync();
 
-            return await _context.ExecuteQueryAsync<Stkitum>(query);
+            var query = context.Query<Stkitu>("Stkitus")
+                .AddQueryOption("$filter", "IsActive eq true");
+
+            var result = await context.ExecuteQueryAsync<Stkitu>(query);
+
+            return result.ToList();
         }
     }
     public class StockClientService
     {
         private readonly HttpClient _http;
+        private readonly TokenAwareClientManager _tokenAwareClie;
 
-        public StockClientService(HttpClient http)
+        public StockClientService(IHttpClientFactory httpClientFactory, TokenAwareClientManager tokenAwareClie)
         {
-            _http = http;
+            _tokenAwareClie = tokenAwareClie;
+            _http = httpClientFactory.CreateClient("AUTHClient");
+
         }
         public async Task AddStock(int itemId, int warehouseId, decimal quantity, decimal unitCost, int? batchId)
         {
             var response = await _http.PostAsJsonAsync(
-                $"odata/Stkita({itemId})/AddStock",
+                $"Stkitus({itemId})/AddStock",
                 new { warehouseId, quantity, unitCost, batchId });
 
             response.EnsureSuccessStatusCode();
@@ -41,7 +56,7 @@ namespace GxStk.Services
         public async Task AdjustStockBatch(AdjustmentRequestDto request)
         {
             var response = await _http.PostAsJsonAsync(
-                "odata/Stkita/AdjustStockBatch",
+                "Stkitus/AdjustStockBatch",
                 new { request });
 
             response.EnsureSuccessStatusCode();
@@ -50,7 +65,7 @@ namespace GxStk.Services
         public async Task CreateSale(int clientId, List<CreateSaleLineDto> lines)
         {
             var response = await _http.PostAsJsonAsync(
-                "odata/Stkita/CreateSale",
+                "Stkitus/CreateSale",
                 new { clientId, lines });
 
             response.EnsureSuccessStatusCode();
@@ -59,7 +74,7 @@ namespace GxStk.Services
         public async Task AddItemEntry(ItemEntryLineDto line)
         {
             await _http.PostAsJsonAsync(
-                $"odata/Stkita({line.ItemId})/AddStock",
+                $"Stkitus({line.ItemId})/AddStock",
                 new
                 {
                     warehouseId = line.WarehouseId,
@@ -71,13 +86,13 @@ namespace GxStk.Services
         public async Task CreatePurchase(ItemPurchaseRequestDto request)
         {
             await _http.PostAsJsonAsync(
-                "odata/Stkita/CreatePurchase", // optional endpoint if you implement purchase
+                "Stkitus/CreatePurchase", // optional endpoint if you implement purchase
                 request);
         }
-        public async Task TransferStock(ItemTransferLineDto line)
+        public async Task TransfStock(ItemTransferLineDto line)
         {
             await _http.PostAsJsonAsync(
-                $"odata/Stkita({line.ItemId})/TransferStock",
+                $"Stkitus({line.ItemId})/TransfStock",
                 new
                 {
                     fromWarehouseId = line.FromWarehouseId,
@@ -87,84 +102,162 @@ namespace GxStk.Services
                     transferType = line.TransferType
                 });
         }
-        public async Task<List<Stkitum>> GetItemsAsync()
-            => await _http.GetFromJsonAsync<List<Stkitum>>("odata/Stkita");
+        public async Task<List<Rubhie>> GetDepartmentsAsync()
+        {
+            var client = await _tokenAwareClie.GetHttpClientAsync("ODataClient");
+            var response = await client.GetFromJsonAsync<ODataResponse<Rubhie>>("Rubhies");
+            return response?.Value ?? new();
+        }
+        public async Task<List<Stkitu>> GetItaAsync()
+        {
+            var client = await _tokenAwareClie.GetHttpClientAsync("ODataClient");
+            var response = await client.GetFromJsonAsync<ODataResponse<Stkitu>>("Stkitus");
+            return response?.Value ?? new List<Stkitu>();
+        }
+       
+        //public async Task<List<Rubpst>> GetWarehousesAsync()
+        //{
+        //    var client = await _tokenAwareClie.GetHttpClientAsync("ODataClient");
+        //    var response = await client.GetFromJsonAsync<ODataResponse<Rubpst>>("Rubpsts");
+        //    return response?.Value ?? new List<Rubpst>();
+        //}
+        
+        //public async Task<List<Stkitu>> GetItaAsync()
+        //    => await _http.GetFromJsonAsync<List<Stkitu>>("Stkitus");
 
-        public async Task<List<Gsloca>> GetWarehousesAsync()
-            => await _http.GetFromJsonAsync<List<Gsloca>>("odata/Gslocas");
+        //public async Task<List<Rubpst>> GetWarehousesAsync()
+        //    => await _http.GetFromJsonAsync<List<Rubpst>>("Rubpsts");
 
         public async Task<List<Tiersp>> GetSuppliersAsync()
-            => await _http.GetFromJsonAsync<List<Tiersp>>("odata/Tiersps");
+            => await _http.GetFromJsonAsync<List<Tiersp>>("Tiersps");
     }
+
     public class PurchaseClientService
     {
-        private readonly HttpClient _stkClient;
+        private readonly HttpClient _http;
+        private readonly TokenAwareClientManager _tokenAwareClie;
 
-        public PurchaseClientService(HttpClient stkClient)
+        public PurchaseClientService(IHttpClientFactory httpClientFactory, TokenAwareClientManager tokenAwareClie)
         {
-            _stkClient = stkClient;
+            _tokenAwareClie = tokenAwareClie;
+            _http = httpClientFactory.CreateClient("AUTHClient");
         }
 
         public async Task<int> CreatePurchaseAsync(CreatePurchaseDto dto)
         {
-            var response = await _stkClient.PostAsJsonAsync("odata/Operations/CreatePurchase", dto);
+            var response = await _http.PostAsJsonAsync("odata/Operations/CreatePurchase", dto);
             response.EnsureSuccessStatusCode();
-
             return await response.Content.ReadFromJsonAsync<int>();
         }
+
+        public async Task<List<CreatePurchaseDto>> GetPurchasesAsync()
+        {
+            var client = await _tokenAwareClie.GetHttpClientAsync("ODataClient");
+            var response = await client.GetFromJsonAsync<ODataResponse<CreatePurchaseDto>>("Purchases");
+            return response?.Value ?? new List<CreatePurchaseDto>();
+        }
     }
+
     public class SaleClientService
     {
         private readonly HttpClient _http;
+        private readonly TokenAwareClientManager _tokenAwareClie;
 
-        public SaleClientService(HttpClient http)
+        public SaleClientService(IHttpClientFactory httpClientFactory, TokenAwareClientManager tokenAwareClie)
         {
-            _http = http;
+            _http = httpClientFactory.CreateClient("AUTHClient");
+            _tokenAwareClie = tokenAwareClie;
         }
 
         public async Task<int> CreateSaleAsync(CreateSaleDto dto)
         {
             var response = await _http.PostAsJsonAsync("odata/Operations/CreateSale", dto);
             response.EnsureSuccessStatusCode();
-
             return await response.Content.ReadFromJsonAsync<int>();
         }
+
+        public async Task<List<CreateSaleDto>> GetSalesAsync()
+        {
+            var client = await _tokenAwareClie.GetHttpClientAsync("ODataClient");
+            var response = await client.GetFromJsonAsync<ODataResponse<CreateSaleDto>>("Sales");
+            return response?.Value ?? new List<CreateSaleDto>();
+        }
+    }
+
+    public class MasterDataClientService
+    {
+        private readonly MyODataContext _ctx;
+
+        public MasterDataClientService(MyODataContext ctx)
+        {
+            _ctx = ctx;
+        }
+
+        // ---------------- Categories ----------------
+        public async Task<List<Stkcat>> GetCategories(int idorg)
+        {
+            return (await _ctx.Context.Stkcats
+                .Where(c => c.Idorg == idorg)
+                .ToListAsync());
+        }
+
+        public async Task CreateCategory(Stkcat cat)
+        {
+            _ctx.Context.AddToStkcats(cat);
+            await _ctx.Context.SaveChangesAsync();
+        }
+
+        // ---------------- Units ----------------
+        public async Task<List<Stkun>> GetUnits(int idorg)
+        {
+            return (await _ctx.Context.Stkuns
+                .Where(u => u.Idorg == idorg)
+                .ToListAsync());
+        }
+
+        public async Task CreateUnit(Stkun unit)
+        {
+            _ctx.Context.AddToStkuns(unit);
+            await _ctx.Context.SaveChangesAsync();
+        }
+
+        // ---------------- Attributes ----------------
+        public async Task<List<Stkatr>> GetAttributes(int idorg)
+        {
+            return (await _ctx.Context.Stkatrs
+                .Where(a => a.Idorg == idorg)
+                .ToListAsync());
+        }
+
+        public async Task CreateAttribute(Stkatr attr)
+        {
+            _ctx.Context.AddToStkatrs(attr);
+            await _ctx.Context.SaveChangesAsync();
+        }
+    }
+    //public class SaleClientService
+    //{
+    //    private readonly HttpClient _http;
+    //    private readonly TokenAwareClientManager _tokenAwareClie;
+
+    //    public SaleClientService(IHttpClientFactory httpClientFactory, TokenAwareClientManager tokenAwareClie)
+    //    {
+    //        _http = httpClientFactory.CreateClient("AUTHClient");
+    //        _tokenAwareClie = tokenAwareClie;
+    //    }
+
+    //    public async Task<int> CreateSaleAsync(CreateSaleDto dto)
+    //    {
+
+    //        var response = await _http.PostAsJsonAsync("odata/Operations/CreateSale", dto);
+    //        response.EnsureSuccessStatusCode();
+
+    //        return await response.Content.ReadFromJsonAsync<int>();
+    //    }
+    //}
+    public class ODataResponse<T>
+    {
+        [JsonPropertyName("value")]
+        public List<T> Value { get; set; }
     }
 }
-//public class StockClientService
-//{
-//    private readonly MyODataContext _context;
-//    public StockClientService(MyODataContext context)
-//    {
-//        _context = context;
-//    }
-//    public async Task AddStockAsync(int itemId, int warehouseId, decimal qty, decimal cost)
-//    {
-//        var uri = new Uri($"Items({itemId})/AddStock", UriKind.Relative);
-
-//        var parameters = new Dictionary<string, object>
-//    {
-//        { "WarehouseId", warehouseId },
-//        { "Quantity", qty },
-//        { "UnitCost", cost },
-//        { "BatchId", null }
-//    };
-
-//        //await _context.Context.ExecuteAsync(uri, "POST", parameters);
-//    }
-
-//    public async Task RemoveStockAsync(int itemId, int warehouseId, decimal qty, decimal price)
-//    {
-//        var uri = new Uri($"Items({itemId})/RemoveStock", UriKind.Relative);
-
-//        var parameters = new Dictionary<string, object>
-//    {
-//        { "WarehouseId", warehouseId },
-//        { "Quantity", qty },
-//        { "UnitCost", price },
-//        { "BatchId", null }
-//    };
-
-//        //await _context.ExecuteQueryAsync(uri, "POST", parameters);
-//    }
-//}

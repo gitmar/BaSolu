@@ -17,8 +17,7 @@ namespace GxPilo.Services
         {
             _httpClientFactory = httpClientFactory;
             _localStorage = localStorage;
-            _clients["AUTHClient"] = _httpClientFactory.CreateClient("AUTHClient");
-            _clients["OFFLClient"] = _httpClientFactory.CreateClient("OFFLClient");
+            _clients["AuthClient"] = _httpClientFactory.CreateClient("AuthClient");
             _clients["ODataClient"] = _httpClientFactory.CreateClient("ODataClient");
             // Add others as needed
 
@@ -63,6 +62,24 @@ namespace GxPilo.Services
                 Console.WriteLine($"Setting Token is null or empty : {token}");
             }
         }
+        // LoadOrgaAsync - Bypass ODataClient for single DTOs
+        private static readonly JsonSerializerOptions jsonOptions = new()
+        {
+            PropertyNamingPolicy = JsonNamingPolicy.CamelCase,  // Match server casing
+            PropertyNameCaseInsensitive = true
+        };
+        public async Task<TDto?> GetDtoWithExpandAsync<TDto>(string entitySet, int key, string expand)
+        where TDto : class
+        {
+            var client = _httpClientFactory.CreateClient("ODataClient");
+            var response = await client.GetAsync($"{entitySet}({key})?$expand={expand}");
+
+            if (!response.IsSuccessStatusCode) return null;
+
+            var json = await response.Content.ReadAsStringAsync();
+            return JsonSerializer.Deserialize<TDto>(json, jsonOptions);
+        }
+
     }
     public class TokenAwareClientManager
     {
@@ -120,7 +137,7 @@ namespace GxPilo.Services
         //}
         //public async Task<byte[]> GetRptBytesAsync(string requestUri)
         //{
-        //    var response = await _clients["AUTHClient"].GetByteArrayAsync(requestUri);
+        //    var response = await _clients["AuthClient"].GetByteArrayAsync(requestUri);
         //    return response;
         //}
         //public async Task SetAuthorizationHeaderAsync(string clientname)

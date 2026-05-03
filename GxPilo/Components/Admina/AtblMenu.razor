@@ -12,8 +12,9 @@
 @using GxPilo.StaticHelpers
 @using GxShared.Sess
 @using GxShared.Others
-@using GxWapi.DaModels
-@using Microsoft.OData.Client
+@using Simple.OData.Client
+@using GxShared.GxDtos
+@using GxShared.Interfaces
 @using Newtonsoft.Json
 @using Gx.Components
 @using Gx.Components.Navigation
@@ -21,10 +22,10 @@
 @inject NavigationManager _navmanager
 @inject ILocalStorageService _localStorage
 @inject HttpClientService _clieManager
-@inject IODataContextFactory _contextFactory
+@inject IODataClient _MyODaClient
 @inject SessionContextService _sessionContext
 @inject RendAgres _rendAgres
-@inject PendingChangesGuard _guard
+@inject IPendingChangesGuard _guard
 @inject IMessageService _messageService
 
 @if (isLoading)
@@ -53,45 +54,12 @@
                 <div class="row">
                     <div class="col-md-12 input-group align-middle">
                         <span class="text-uppercase text- text-success"><b>@strComp</b></span>
-                        @* @if (curOrga != null && toChild != null && curODContext != null)
-                        {
-                            <MessageHost>
-                                @if (_chxMenu == 1)
-                                {
-                                    <Gtables />
-                                }
-                                else if (_chxMenu == 2)
-                                {
-                                    <Gatribs />
-                                }
-                                else if (_chxMenu == 3)
-                                {
-                                    <Gconstes />
-                                }
-                            </MessageHost>
-                        } *@
                         <span class="separator">|| </span>
-                        @* <Button class="btn btn-sm btn-secondary btnsz"
-                                style="@(!allEnable ? "" : "display:none;")"
-                                @onclick="ManEditAll">
-                            Modifier
-                        </Button>
-                        <Button class="btn btn-sm btn-secondary btnsz"
-                                style="@(allEnable ? "" : "display:none;")"
-                                @onclick="ManCnclAll">
-                            Annuler
-                        </Button>
-                        <span class="separator">|  </span>
-                        <Button class="btn btn-sm btn-secondary btnsz"
-                                style="@(allEnable ? "" : "display:none;")"
-                                @onclick="ManSaveAll">
-                            Enregistrer
-                        </Button>    *@  
-                        </div>
+                    </div>
                 </div>
 
                 <!-- Main Content -->
-                @if (curOrga != null && toChild != null && curODContext != null)
+                @if (curOrga != null && toChild != null)
                 {
                     @if (_chxMenu == 1)
                     {
@@ -100,7 +68,7 @@
                                  @bind-NbChanges="_nbChanges"
                                  _guard="@_guard"
                                  toChild="@toChild"
-                                 curODContext="@curODContext">
+                                 _InODaClient="@_MyODaClient">
                             <ChildContent>
                                 @* <h2 class="child-box">Hello TABLES</h2> *@
                             </ChildContent>
@@ -108,41 +76,17 @@
                     }
                     else if (_chxMenu == 2)
                     {
-                        <Gatribs @ref="mygatr"
-                                 curOrga="@curOrga"
-                                 @bind-NbChanges="_nbChanges"
-                                 _guard="_guard"
-                                 toChild="@toChild"
-                                 curODContext="@curODContext">
-                            <ChildContent>
-                                @* <h2 class="child-box">Hello ATTRIBUTS</h2> *@
-                            </ChildContent>
-                        </Gatribs>
-                    }
-                    else if (_chxMenu == 3)
-                    {
                         <Gdocus @ref="mygdoc"
                                 curOrga="@curOrga"
                                 @bind-NbChanges="_nbChanges"
                                 _guard="_guard"
                                 toChild="@toChild"
-                                curODContext="@curODContext">
+                                _InODaClient="@_MyODaClient">
                             <ChildContent>
                                 @* <h2 class="child-box">Hello ATTRIBUTS</h2> *@
                             </ChildContent>
                         </Gdocus>
                     }
-                    @* else if (_chxMenu == 4)
-                    {
-                        <ArubMenu @ref="myamenu">
-                                  curOrga="@curOrga"
-                                  toChild="@toChild"
-                                  curODContext="@curODContext">
-                            <ChildContent>
-                            </ChildContent>
-                        </ArubMenu>
-                    } *@
-
                 }
             </div>
         </div>
@@ -156,7 +100,7 @@
                 }
                 <div class="d-flex gap-2 justify-content-end">
                     <Button Color="ButtonColor.Primary"
-                            @onclick="SaveAllAsync"
+                            @onclick="SaveAllChanges"
                             Enabled="@_guard.HasPendingChanges()">
                         Save All (@pendingCount changes)
                     </Button>
@@ -179,30 +123,26 @@
     private int selectedMenu = 1;
 
     private bool isLoading = true;
-    //public MyODataContext curODContext;
-    public MyODataContext? curODContext = null;
-    public Gxorga curOrga = new Gxorga();
+    public GxorgaDto curOrga = new GxorgaDto();
     public MyShareVars toChild = new MyShareVars();
     public RenderFragment ChildContent { get; set; }
     //private bool allEnable = false;
     private string Jmessage = "";
 
     private Gtables mygtbl = new();
-    private Gatribs mygatr = new();
     private Gdocus mygdoc = new();
-    private ArubMenu myamenu = new();
 
     [CascadingParameter]
     private Task<AuthenticationState>? AuthState { get; set; }
     public ClaimsPrincipal authUser;
     public bool isAuthenticated = false;
     //in DATA
-    public List<Gsgfix> LsTables = new List<Gsgfix>();
+    public List<GsgfixDto> LsTables = new();
 
     private string _strOrga = "", _curSigle = "", strmeta = "", strmeta2 = "";
     //private int _lgcdu = 0;
     //entities load
-    private IEnumerable<Gxorga> _lsOrgas = new List<Gxorga>();
+    private IEnumerable<GxorgaDto> _lsOrgas = new List<GxorgaDto>();
 
     //GlobModels
     public Userbag _usrBag = new Userbag();
@@ -213,18 +153,36 @@
     public List<Gplan> LsPlans = new();
     public List<Gpvar> LtTabls = new();
     public List<Gpvar> LsTabls = new();
-    //public List<Gpvar> TbElems = new();
-    //public List<Clvar> LsCols = new();
     //Navigation
     private int _gIdTie = 0, _chxGpe = 0, _chxMenu = 1;
     private string strComp = "Tables";
 
+    //Guard
+    private int _nbChanges = 0;
+    private IDisposable? _locationHandler;
+    private int pendingCount => _guard.GetPendingChangesCount();
+    private int insertCount => _guard.GetInsertCount();
+    private int updateCount => _guard.GetUpdateCount();
+    private int deleteCount => _guard.GetDeleteCount();
+    private async Task CancelAllChanges()
+    {
+        Console.WriteLine("🗑️ CancelAllChanges START");
+        await _guard.CancelChanges();  // 🔥 AWAIT - blocks until done
+        _messageService.Show("✅ CancelAllChanges successfully", ToastType.Success);
+        StateHasChanged();
+        Console.WriteLine($"✅ CancelAllChanges END - Pending: {_guard.GetPendingChangesCount()}");
+    }
+    private async Task SaveAllChanges()
+    {
+        await _guard.FlushAsync();  // 🔥 AWAIT - blocks until done
+        _messageService.Show("✅ Saved successfully", ToastType.Success);
+        StateHasChanged();
+    }
     //menus
     public List<GxMenuItem> MenuItems = new()
     {
         new GxMenuItem { Id = 1, Text = "Tables", Icon = "bi bi-box-arrow-in-down" },
-        new GxMenuItem { Id = 2, Text = "Attributs", Icon = "bi bi-house-door" },
-        new GxMenuItem { Id = 3, Text = "Documents", Icon = "bi bi-house-door" },
+        new GxMenuItem { Id = 2, Text = "Documents", Icon = "bi bi-house-door" },
         //new MenuItem { Id = 4, Text = "Mutation", Icon = "bi bi-arrow-repeat" },
     };
     public List<GxGroupe> Groupes = new();
@@ -235,31 +193,6 @@
     private bool FirstLoadCompleted = false;
     private bool ContentLoaded { get; set; } = false;
 
-    //Guard
-    private int pendingCount => _guard.HasPendingChanges() ?
-        curODContext.Context.Entities.Count(e => e.State != EntityStates.Unchanged) : 0;
-    private int _nbChanges = 0;
-    private IDisposable? _locationHandler;
-
-    private async Task SaveAllAsync()
-    {
-        try
-        {
-            await _guard.FlushAsync();
-            _messageService.Show("✅ Saved successfully", ToastType.Success);
-        }
-        catch (Exception ex)
-        {
-            _messageService.Show("❌ Saved failed", ToastType.Danger);
-            await _guard.CancelChangesAsync();
-        }
-        StateHasChanged();
-    }
-    private async void CancelAllChanges()
-    {
-        await _guard.CancelChangesAsync();
-        StateHasChanged();
-    }
     protected override async Task OnInitializedAsync()
     {
         try
@@ -294,7 +227,7 @@
             var allDivs = await allDivsTask;
             LsDivs = allDivs.Where(ud => ud.Pdom == 6 && ud.Patr == 1).ToList();
 
-            await LoadSTROrgaAsync();
+            await LoadOrgaAsync(_usrBag.Idorg);
             // 4. NOW pass to child (all data ready)
             toChild.authUser = authUser;
             toChild.isAuthenticated = true;
@@ -304,7 +237,7 @@
             toChild.LsPlans = LsPlans;
             toChild.LsTabls = LsTabls;
             toChild.curOrga = curOrga;  // ADD THIS!
-            _guard.RegisterUnconfirmedPredicate<Gsgfix>(g => g.Xadd1 == -1 || g.Xedt1 == -1 || g.Xdel1 == -1);
+            //_guard.RegisterUnconfirmedPredicate<Gsgfix>(g => g.Xadd1 == -1 || g.Xedt1 == -1 || g.Xdel1 == -1);
             _nbChanges = _guard.GetPendingChangesCount();  // Initial value
         }
         catch (Exception ex)
@@ -318,37 +251,23 @@
             StateHasChanged();
         }
     }
-    public async Task LoadSTROrgaAsync()
+    private async Task LoadOrgaAsync(int key)
     {
-        int pisa = 2;
         try
         {
-            curODContext = await _contextFactory.CreateAsync();  // ✅ DISPOSES AUTOMATICALLY
-            _guard.AttachContext(curODContext);
-
-            int key = _usrBag.Idorg;
-            string expandPlngens = ODataQueryHelper.Expand<Gxorga, IEnumerable<Plngen>>(o => o.Plngens);
-            string expandPlngensNested = expandPlngens + "($expand=Rubvars)";
-            string expandGsgfixes = ODataQueryHelper.Expand<Gxorga, IEnumerable<Gsgfix>>(g => g.Gsgfixes);
-            string expandGsgfixesNested = expandGsgfixes + "($expand=Gsglnes)";
-            //string expandGsglnes = ODataQueryHelper.Expand<Gxorga, IEnumerable<Gsglne>>(g => g.Gsglnes);
-            string expand = string.Join(",", expandPlngensNested, expandGsgfixesNested);
-
-            curOrga = await curODContext.GetByKeyAsync<Gxorga>(key, "Gxorgas", expand);
-
-            if (curOrga == null)
-            {
-                _messageService.Show("❌ Organisation non trouvée", ToastType.Danger);
-                return;
-            }
+            curOrga = await _MyODaClient
+                .For<GxorgaDto>("Gxorgas")
+                .Key(key)
+                .Expand(o => o.Gsgfixes)
+                .Expand(o => o.Gstabls)
+                .FindEntryAsync();
+            Console.WriteLine($"loadOrgaAsync completed :{curOrga?.Raison}");
         }
         catch (Exception ex)
         {
-            _messageService.Show($"❌ Erreur organisation: {ex.Message}", ToastType.Danger);
-            Console.WriteLine($"pisa {pisa}: {ex}");
+            Console.WriteLine($"Load error: {ex.Message}");
         }
     }
-
     private async Task ManEditAll()
     {
         Jmessage = "Edition en preparation...";
@@ -381,7 +300,7 @@
         { //constantes
             //await mygcst.CncAll();
         }
-        await LoadSTROrgaAsync();
+        await LoadOrgaAsync(_usrBag.Idorg);
         Jmessage = "";
     }
     private async Task ManSaveAll()
@@ -406,8 +325,7 @@
     {
         _chxMenu = noM;
         if (_chxMenu == 1) strComp = $"Tables";
-        if (_chxMenu == 2) strComp = $"Attributs";
-        if (_chxMenu == 3) strComp = $"Documents";
+        if (_chxMenu == 2) strComp = $"Documents";
         StateHasChanged();
         await Task.Delay(1);
     }

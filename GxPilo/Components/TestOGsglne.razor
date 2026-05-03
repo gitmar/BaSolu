@@ -1,0 +1,61 @@
+﻿@page "/testgsglne"
+@using System.Collections.Generic
+@using GxPilo.Services
+@inject GsglneHttpService GsglneService
+
+@if (Items is null)
+{
+    <p>Loading...</p>
+}
+else if (Items.Count == 0)
+{
+    <p>No Gsglne items found.</p>
+}
+else
+{
+    <table class="table table-sm">
+        <thead>
+            <tr>
+                <th>Id</th>
+                <th>Otyp</th>
+                <th>Idorg</th>
+                <th>Liba</th>
+                <th>Abg</th>
+                <th>Scdrub</th>
+                <th>Rowguid</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Items)
+            {
+                <tr>
+                    <td>@item.Id</td>
+                    <td>@item.Otyp</td>
+                    <td>@item.Idorg</td>
+                    <td>@item.Liba</td>
+                    <td>@item.Abg</td>
+                    <td>@item.Scdrub</td>
+                    <td>@item.Rowguid</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code
+{
+    private List<GsglneDto>? Items;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            Items = await GsglneService.GetGsglnesAsync();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error loading Gsglnes: {ex.Message}");
+            Items = new();
+        }
+    }
+}

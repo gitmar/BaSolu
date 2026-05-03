@@ -2,8 +2,6 @@
 
 using GxShared.Sess;
 
-using Microsoft.OData.Client;
-
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
@@ -37,20 +35,21 @@ namespace GxWapi.DaModels
         public string Abg { get; set; } = string.Empty;
         [JsonIgnore]
         public string Frsource { get; set; } = string.Empty;
+
         //mrthode to populate the properties from Gsgfix
-        public void LoadFromRubvar(Rubvar myvar)
-        {
-            if (myvar == null) return;
-            Liba = myvar.Liba;
-            Abg = myvar.Abg;
-            Frsource = myvar.Frsrc;
-        }
-        public void LoadFromTiersp(Tiersp mytie)
-        {
-            KMatri = mytie.Smatri;
-            Nom = mytie.Nom;
-            Pnom = mytie.Pnom;       
-        }
+        //public void LoadFromRubvar(Rubvar myvar)
+        //{
+        //    if (myvar == null) return;
+        //    Liba = myvar.Liba;
+        //    Abg = myvar.Abg;
+        //    Frsource = myvar.Frsrc;
+        //}
+        //public void LoadFromTiersp(Tiersp mytie)
+        //{
+        //    KMatri = mytie.Smatri;
+        //    Nom = mytie.Nom;
+        //    Pnom = mytie.Pnom;       
+        //}
     }
     public partial class Actdet
     {
@@ -344,16 +343,26 @@ namespace GxWapi.DaModels
         public string Alib2 { get; set; } = "";
         [JsonIgnore]
         public string Aabg { get; set; } = "";
-        //mrthode to populate the properties from Gsgfix
-        public void LoadFromGsgfix(Gpvar gsgvar)
+        [NotMapped]
+        public object ParsedValue =>
+        Satyp switch
         {
-            if (gsgvar == null) return;
-            Iui = gsgvar.Xseq;
-            Acode = gsgvar.Code.ToString();
-            Aliba = gsgvar.Liba;
-            Alib2 = gsgvar.Sliba; 
-            Aabg = gsgvar.Abg;
-        }
+            "int" => int.TryParse(Aval, out var i) ? i : default,
+            "decimal" => decimal.TryParse(Aval, out var d) ? d : default,
+            "date" => DateTime.TryParse(Aval, out var dt) ? dt : default,
+            "bool" => bool.TryParse(Aval, out var b) ? b : default,
+            _ => Aval
+        };
+        //mrthode to populate the properties from Gsgfix
+        //public void LoadFromGsgfix(Gpvar gsgvar)
+        //{
+        //    if (gsgvar == null) return;
+        //    Iui = gsgvar.Xseq;
+        //    Acode = gsgvar.Code.ToString();
+        //    Aliba = gsgvar.Liba;
+        //    Alib2 = gsgvar.Sliba; 
+        //    Aabg = gsgvar.Abg;
+        //}
         [JsonIgnore]
         public AEntState AtState { get; set; } = AEntState.Unchanged;
 
@@ -364,7 +373,18 @@ namespace GxWapi.DaModels
         [JsonIgnore]
         public int Ajnot { get; set; } = 0;
     }
-    public partial class Tiwatr
+    public partial class Stkatr
+    {
+        [JsonIgnore]
+        public int Iui { get; set; } = 0;
+        [JsonIgnore]
+        public int Xadd1 { get; set; } = 0;
+        [JsonIgnore]
+        public int Xedt1 { get; set; } = 0;
+        [JsonIgnore]
+        public int Xdel1 { get; set; } = 0;
+    }
+        public partial class Tiwatr
     {
         [JsonIgnore]
         public int Iui { get; set; } = 0;
@@ -401,6 +421,9 @@ namespace GxWapi.DaModels
         [JsonIgnore]
         public int Ajnot { get; set; } = 0;
     }
+
+
+    //STOCKS
     public partial class Gsesio
     {
         [JsonIgnore]
@@ -412,6 +435,41 @@ namespace GxWapi.DaModels
         [JsonIgnore]
         public int Xdel1 { get; set; } = 0;
     }
+    public partial class Stkcat
+    {
+        [JsonIgnore]
+        public int Iui { get; set; } = 0;
+        [JsonIgnore]
+        public int Xadd1 { get; set; } = 0;
+        [JsonIgnore]
+        public int Xedt1 { get; set; } = 0;
+        [JsonIgnore]
+        public int Xdel1 { get; set; } = 0;
+    }
+    
+    public partial class Stkitatr
+    {
+        [JsonIgnore]
+        public int Iui { get; set; } = 0;
+        [JsonIgnore]
+        public int Xadd1 { get; set; } = 0;
+        [JsonIgnore]
+        public int Xedt1 { get; set; } = 0;
+        [JsonIgnore]
+        public int Xdel1 { get; set; } = 0;
+    }
+    public partial class Stkun
+    {
+        [JsonIgnore]
+        public int Iui { get; set; } = 0;
+        [JsonIgnore]
+        public int Xadd1 { get; set; } = 0;
+        [JsonIgnore]
+        public int Xedt1 { get; set; } = 0;
+        [JsonIgnore]
+        public int Xdel1 { get; set; } = 0;
+    }
+
 
     public class Mytable
     {

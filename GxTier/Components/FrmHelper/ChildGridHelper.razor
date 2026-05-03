@@ -97,7 +97,7 @@ else
     [Parameter] public int SelectedGroup { get; set; }
 
     // Options for dropdowns
-    [Parameter] public List<Gptbl> TbItems { get; set; } = new();
+    [Parameter] public List<Gtabl> TbItems { get; set; } = new();
     [Parameter] public IEnumerable<SelectOption> SelectOptions { get; set; } = Enumerable.Empty<SelectOption>();
 
     // Action callbacks wired to parent methods
@@ -115,7 +115,7 @@ else
     private bool isEditing => Mode == "Add" || Mode == "Edit";
 
     // Cached options for quick lookup
-    private Dictionary<int, List<Gptbl>> _cachedOptions = new();
+    private Dictionary<int, List<Gtabl>> _cachedOptions = new();
 
     protected override void OnParametersSet()
     {
@@ -123,7 +123,7 @@ else
         {
             if (!_cachedOptions.TryGetValue(gptbl.Pxcod, out var list))
             {
-                list = new List<Gptbl>();
+                list = new List<Gtabl>();
                 _cachedOptions[gptbl.Pxcod] = list;
             }
             list.Clear();
@@ -131,11 +131,11 @@ else
         }
     }
 
-    private List<Gptbl> GetOptions(int pxcod)
+    private List<Gtabl> GetOptions(int pxcod)
     {
         if (_cachedOptions.TryGetValue(pxcod, out var cached))
             return cached;
 
-        return new List<Gptbl>();
+        return new List<Gtabl>();
     }
 }

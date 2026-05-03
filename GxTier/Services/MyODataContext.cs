@@ -55,14 +55,14 @@ namespace GxTie.Services
         void AddRelatedObject<TSource, TTarget>(TSource source, string navigationProperty, TTarget relatedObject)
             where TSource : class where TTarget : class;
         // NEW: For PendingChangesGuard integration
-        IEnumerable<EntityDescriptor> GetPendingChanges();  // ← Native OData type
+        //IEnumerable<EntityDescriptor> GetPendingChanges();  // ← Native OData type
         //IEnumerable<EntityEntry> GetPendingChanges();
         //void ClearPendingChanges();
 
         // Collections
-        DataServiceCollection<T> CreateTrackedCollection<T>(
-            IEnumerable<T> items, string entitySetName = null,
-            TrackingMode trackingMode = TrackingMode.AutoChangeTracking) where T : class;
+        //DataServiceCollection<T> CreateTrackedCollection<T>(
+        //    IEnumerable<T> items, string entitySetName = null,
+        //    TrackingMode trackingMode = TrackingMode.AutoChangeTracking) where T : class;
     }
     public class MyODataContext : IMyODataContext
     {

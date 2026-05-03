@@ -2,7 +2,7 @@
 
 using GxShared.Sess;
 
-using Microsoft.OData.Client;
+//using Microsoft.OData.Client;
 
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -313,7 +313,7 @@ namespace GxWapi.DaModels
         [JsonIgnore]
         public int Xgen1 { get; set; } = 0;
     }
-    public partial class Tiwafl
+    public partial class Stkcat
     {
         [JsonIgnore]
         public int Iui { get; set; } = 0;
@@ -325,6 +325,17 @@ namespace GxWapi.DaModels
         public int Xdel1 { get; set; } = 0;
         [JsonIgnore]
         public int Xgen1 { get; set; } = 0;
+    }
+    public partial class Tiwafl
+    {
+        [JsonIgnore]
+        public int Iui { get; set; } = 0;
+        [JsonIgnore]
+        public int Xadd1 { get; set; } = 0;
+        [JsonIgnore]
+        public int Xedt1 { get; set; } = 0;
+        [JsonIgnore]
+        public int Xdel1 { get; set; } = 0;
     }
     public partial class Tieatr
     {
@@ -344,16 +355,27 @@ namespace GxWapi.DaModels
         public string Alib2 { get; set; } = "";
         [JsonIgnore]
         public string Aabg { get; set; } = "";
-        //mrthode to populate the properties from Gsgfix
-        public void LoadFromGsgfix(Gpvar gsgvar)
+        // Computed property exposed to JSON
+        [NotMapped]
+        public object ParsedValue =>
+        Satyp switch
         {
-            if (gsgvar == null) return;
-            Iui = gsgvar.Xseq;
-            Acode = gsgvar.Code.ToString();
-            Aliba = gsgvar.Liba;
-            Alib2 = gsgvar.Sliba; 
-            Aabg = gsgvar.Abg;
-        }
+            "int" => int.TryParse(Aval, out var i) ? i : default,
+            "decimal" => decimal.TryParse(Aval, out var d) ? d : default,
+            "date" => DateTime.TryParse(Aval, out var dt) ? dt : default,
+            "bool" => bool.TryParse(Aval, out var b) ? b : default,
+            _ => Aval
+        };
+        //mrthode to populate the properties from Gsgfix
+        //public void LoadFromGsgfix(Gpvar gsgvar)
+        //{
+        //    if (gsgvar == null) return;
+        //    Iui = gsgvar.Xseq;
+        //    Acode = gsgvar.Code.ToString();
+        //    Aliba = gsgvar.Liba;
+        //    Alib2 = gsgvar.Sliba; 
+        //    Aabg = gsgvar.Abg;
+        //}
         [JsonIgnore]
         public AEntState AtState { get; set; } = AEntState.Unchanged;
 
@@ -364,6 +386,95 @@ namespace GxWapi.DaModels
         [JsonIgnore]
         public int Ajnot { get; set; } = 0;
     }
+    public partial class Stkatr
+    {
+        [JsonIgnore]
+        public int Iui { get; set; } = 0;
+        [JsonIgnore]
+        public int Xadd1 { get; set; } = 0;
+        [JsonIgnore]
+        public int Xedt1 { get; set; } = 0;
+        [JsonIgnore]
+        public int Xdel1 { get; set; } = 0;
+        [JsonIgnore]
+        public string Acode { get; set; } = "";
+        [JsonIgnore]
+        public string Aliba { get; set; } = "";
+        [JsonIgnore]
+        public string Alib2 { get; set; } = "";
+        [JsonIgnore]
+        public string Aabg { get; set; } = "";
+        // Computed property exposed to JSON
+        [NotMapped]
+        public object ParsedValue =>
+        Satyp switch
+        {
+            "int" => int.TryParse(Aval, out var i) ? i : default,
+            "decimal" => decimal.TryParse(Aval, out var d) ? d : default,
+            "date" => DateTime.TryParse(Aval, out var dt) ? dt : default,
+            "bool" => bool.TryParse(Aval, out var b) ? b : default,
+            _ => Aval
+        };
+        //mrthode to populate the properties from Gsgfix
+        //public void LoadFromGsgfix(Gpvar gsgvar)
+        //{
+        //    if (gsgvar == null) return;
+        //    Iui = gsgvar.Xseq;
+        //    Acode = gsgvar.Code.ToString();
+        //    Aliba = gsgvar.Liba;
+        //    Alib2 = gsgvar.Sliba; 
+        //    Aabg = gsgvar.Abg;
+        //}
+        [JsonIgnore]
+        public AEntState AtState { get; set; } = AEntState.Unchanged;
+
+        [JsonIgnore]
+        public int Ajacc { get; set; } = 0;
+        [JsonIgnore]
+        public int Ajrej { get; set; } = 0;
+        [JsonIgnore]
+        public int Ajnot { get; set; } = 0;
+    }
+    public partial class Stkitatr
+    {
+        [JsonIgnore]
+        public int Iui { get; set; } = 0;
+        [JsonIgnore]
+        public int Xadd1 { get; set; } = 0;
+        [JsonIgnore]
+        public int Xedt1 { get; set; } = 0;
+        [JsonIgnore]
+        public int Xdel1 { get; set; } = 0;
+        [JsonIgnore]
+        public string Acode { get; set; } = "";
+        [JsonIgnore]
+        public string Aliba { get; set; } = "";
+        [JsonIgnore]
+        public string Alib2 { get; set; } = "";
+        [JsonIgnore]
+        public string Aabg { get; set; } = "";
+        // Computed property exposed to JSON
+        //[NotMapped]
+        //public object ParsedValue =>
+        //Satyp switch
+        //{
+        //    "int" => int.TryParse(Aval, out var i) ? i : default,
+        //    "decimal" => decimal.TryParse(Aval, out var d) ? d : default,
+        //    "date" => DateTime.TryParse(Aval, out var dt) ? dt : default,
+        //    "bool" => bool.TryParse(Aval, out var b) ? b : default,
+        //    _ => Aval
+        //};
+        [JsonIgnore]
+        public AEntState AtState { get; set; } = AEntState.Unchanged;
+
+        [JsonIgnore]
+        public int Ajacc { get; set; } = 0;
+        [JsonIgnore]
+        public int Ajrej { get; set; } = 0;
+        [JsonIgnore]
+        public int Ajnot { get; set; } = 0;
+    }
+
     public partial class Tiwatr
     {
         [JsonIgnore]

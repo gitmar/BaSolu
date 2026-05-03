@@ -16,15 +16,18 @@
 @using GxPilo.ClieModels
 @using GxPilo.Services
 @using GxShared.Sess
-@using GxWapi.DaModels
+@using Simple.OData.Client
+@using AutoMapper
+@using GxShared.GxDtos
 @using Microsoft.AspNetCore.Components.Forms
-@using Microsoft.AspNetCore.WebUtilities
-@using Microsoft.OData.Client
+@using Microsoft.AspNetCore.WebUtilitiesClient
 @using Newtonsoft.Json
 
 @inject ILocalStorageService _localStorage
 @inject NavigationManager _navmanager
 @inject HttpClientService _clieManager
+@inject ODataClient ODataClient
+@inject IMapper Mapper
 
 <!-- InscTiewComponent.razor -->
 <PageTitle>Table.Plans</PageTitle>
@@ -226,7 +229,7 @@ else
                             @if (IMyGpln != 0 && IMyDom != 0)
                             {
                                 <!--Contenu des Plans-->
-                                <Grid TItem="Plngen"
+                                <Grid TItem="PlngenDto"
                                       Data="@MyDaPlans"
                                       AllowDetailView="true"
                                       AllowRowClick="true"
@@ -234,7 +237,7 @@ else
                                       AllowPaging="true"
                                       Responsive="true">
                                     <GridColumns>
-                                        <GridColumn TItem="Plngen" HeaderText="No">
+                                        <GridColumn TItem="PlngenDto" HeaderText="No">
                                             <ChildContent Context="item">
                                                 @if (item.Xadd1 == -1)
                                                 {
@@ -245,7 +248,7 @@ else
                                                 }
                                             </ChildContent>
                                         </GridColumn>
-                                        <GridColumn TItem="Plngen" HeaderText="Designation">
+                                        <GridColumn TItem="PlngenDto" HeaderText="Designation">
                                             <ChildContent Context="item">
                                                 @if (EditingPlnRowGuid == item.Rowguid)
                                                 {
@@ -258,7 +261,7 @@ else
                                                 }
                                             </ChildContent>
                                         </GridColumn>
-                                        <GridColumn TItem="Plngen" HeaderText="abrege">
+                                        <GridColumn TItem="PlngenDto" HeaderText="abrege">
                                             <ChildContent Context="item">
                                                 @if (EditingPlnRowGuid == item.Rowguid)
                                                 {
@@ -271,7 +274,7 @@ else
                                                 }
                                             </ChildContent>
                                         </GridColumn>
-                                        <GridColumn TItem="Plngen" HeaderText="Formule">
+                                        <GridColumn TItem="PlngenDto" HeaderText="Formule">
                                             <ChildContent Context="item">
                                                 @if (EditingPlnRowGuid == item.Rowguid)
                                                 { // show draftPln inputs
@@ -286,7 +289,7 @@ else
                                                 }
                                             </ChildContent>
                                         </GridColumn>
-                                        <GridColumn TItem="Plngen" HeaderText="Eta">
+                                        <GridColumn TItem="PlngenDto" HeaderText="Eta">
                                             <HeaderContent>
                                                 @if (!allEnable)
                                                 {
@@ -330,7 +333,7 @@ else
                                                 }
                                             </ChildContent>
                                         </GridColumn>
-                                        <GridColumn TItem="Plngen" HeaderText="actions" IsVisible="@(allEnable)" Filterable="false">
+                                        <GridColumn TItem="PlngenDto" HeaderText="actions" IsVisible="@(allEnable)" Filterable="false">
                                             <ChildContent Context="item">
                                                 @if (EditingPlnRowGuid == item.Rowguid)
                                                 {
@@ -385,13 +388,13 @@ else
                         }
                     </div>
                     <div class="p-0">
-                        <Grid TItem="Plngen"
+                        <Grid TItem="PlngenDto"
                               Data="@GplnNewRows"
                               AllowPaging="false"
                               Responsive="true"
                               AllowRowClick="false">
                             <GridColumns>
-                                <GridColumn TItem="Plngen" HeaderText="No">
+                                <GridColumn TItem="PlngenDto" HeaderText="No">
                                     <ChildContent Context="item">
                                         <div @key="item.Rowguid"></div>
                                         @if (item.Iele == 0)
@@ -404,7 +407,7 @@ else
                                         }
                                     </ChildContent>
                                 </GridColumn>
-                                <GridColumn TItem="Plngen" HeaderText="Designation">
+                                <GridColumn TItem="PlngenDto" HeaderText="Designation">
                                     <ChildContent Context="item">
                                         @if (AddingPlnRowGuid == item.Rowguid)
                                         {
@@ -416,7 +419,7 @@ else
                                         }
                                     </ChildContent>
                                 </GridColumn>
-                                <GridColumn TItem="Plngen" HeaderText="Abrege">
+                                <GridColumn TItem="PlngenDto" HeaderText="Abrege">
                                     <ChildContent Context="item">
                                         @if (AddingPlnRowGuid == item.Rowguid)
                                         {
@@ -428,7 +431,7 @@ else
                                         }
                                     </ChildContent>
                                 </GridColumn>
-                                <GridColumn TItem="Plngen" HeaderText="Eta">
+                                <GridColumn TItem="PlngenDto" HeaderText="Eta">
 
                                     <ChildContent Context="item">
                                         @if (AddingPlnRowGuid == item.Rowguid)
@@ -453,7 +456,7 @@ else
                                         }
                                     </ChildContent>
                                 </GridColumn>
-                                <GridColumn TItem="Plngen">
+                                <GridColumn TItem="PlngenDto">
                                     <HeaderContent>
                                         @if (!siPlnAdding)
                                         {
@@ -463,7 +466,7 @@ else
                                         }
                                     </HeaderContent>
                                 </GridColumn>
-                                <GridColumn TItem="Plngen" HeaderText="">
+                                <GridColumn TItem="PlngenDto" HeaderText="">
                                     <ChildContent Context="item">
                                         @if (siPlnAdding && item.Xadd1 == -1)
                                         {
@@ -554,7 +557,7 @@ else
     [Parameter]
     public MyODataContext curODContext { get; set; }
     [Parameter]
-    public Gxorga curOrga { get; set; } = new();
+    public GxorgaDto curOrga { get; set; } = new();
     [Parameter]
     public MyShareVars toChild { get; set; }
     [Parameter]
@@ -1089,7 +1092,7 @@ else
     //     };
     // }
 
-    void IncludePlan(Plngen aglne)
+    void IncludePlan(PlngenDto aglne)
     {
         // Use parent Idrub as key to gRubsMap dictionary
         var parentId = curOrga.Idorg;
@@ -1201,7 +1204,7 @@ else
     // }
 
     //GTfl -- EDITING
-    void PromptPlnEdit(Plngen mypln)
+    void PromptPlnEdit(PlngenDto mypln)
     {
         var isNew = StaticMethods.IsNew(curODContext, mypln, e => e.Id);
         if (isNew)
@@ -1291,7 +1294,7 @@ else
     //     EditingFmtRowGuid = myfmt.Rowguid;
     //     //isEdingMan = true;
     // }
-    void CancEdingPln(Plngen mypln)
+    void CancEdingPln(PlngenDto mypln)
     {
         mypln.Xedt1 = 0;
         //isEdingMan = false;
@@ -1315,7 +1318,7 @@ else
     //     draftFmt = null;
     //     EditingFmtRowGuid = Guid.Empty;
     // }
-    void ConfEdingPln(Plngen mypln)
+    void ConfEdingPln(PlngenDtoDto mypln)
     {
         if (editingPln is not null)
         {
@@ -1407,13 +1410,13 @@ else
     // }
 
     //EDITION/DELETE - Plngen
-    // void BeginPlnEdit(Plngen item)
+    // void BeginPlnEdit(PlngenDtoDto item)
     // {
     //     if (!_originalFixSnapshots.ContainsKey(item.Rowguid))
     //         _originalFixSnapshots[item.Rowguid] = PlnClone(item);
     //     EditingPlnRowGuid = item.Rowguid;
     // }
-    // private void SavePlnEdit(Plngen item)
+    // private void SavePlnEdit(PlngenDtoDto item)
     // {
     //     if (curODContext.Context.GetEntityDescriptor(item) == null)
     //     {
@@ -1425,7 +1428,7 @@ else
     //     _originalFixSnapshots.Remove(item.Rowguid);
     //     StateHasChanged();
     // }
-    // private void CancelPlnEdit(Plngen item)
+    // private void CancelPlnEdit(PlngenDto item)
     // {
     //     if (_originalFixSnapshots.TryGetValue(item.Rowguid, out var original))
     //     {
@@ -1435,7 +1438,7 @@ else
     //     }
     //     EditingPlnRowGuid = Guid.Empty;
     // }
-    private void PromptPlnDelete(Plngen item)
+    private void PromptPlnDelete(PlngenDto item)
     {
         ConfirmingPlnDeleteRowGuid = item.Rowguid;
     }
@@ -1443,7 +1446,7 @@ else
     {
         ConfirmingPlnDeleteRowGuid = Guid.Empty;
     }
-    private void ConfirmPlnDelete(Plngen row)
+    private void ConfirmPlnDelete(PlngenDto row)
     {
         var parent = curOrga;
         if (parent == null)
@@ -1695,7 +1698,7 @@ else
     //     isPlnFilteringEnabled = !isPlnFilteringEnabled;
     // }
     //PLAN Formule modals
-    void showFrPlnModal(Plngen mypln)
+    void showFrPlnModal(PlngenDto mypln)
     {
         pstrFormu = "";
         if (!String.IsNullOrEmpty(mypln.Fpsrc))
@@ -1728,7 +1731,7 @@ else
     //     gForuModal?.ShowAsync();
     // }
 
-    private bool IsPaterValid(Plngen mypl)
+    private bool IsPaterValid(PlngenDto mypl)
     {
         int ercpt = 0;
         patTitle = patInitTitle;
@@ -1995,19 +1998,19 @@ else
         int oId = Convert.ToInt32(itemId);
         return EdState.TryGetValue(oId, out bool onEditing) && onEditing ? "Confirm" : "Edit";
     }
-    // private void OnChlBlurHandler(Plngen mypl, Rubvar myvar)
+    // private void OnChlBlurHandler(PlngenDto mypl, Rubvar myvar)
     // {
     //     Console.WriteLine("ATTENTION : En Blur....");
     //     isRubCodeValid = HandleChlInput(mypl, myvar);
     //     Imessage = $"OnBlur active : {isRubCodeValid}";
     //     // Optionally trigger UI refresh or logging
     // }
-    // private void OnChlFocusHandler(Plngen mypl, Rubvar myvar)
+    // private void OnChlFocusHandler(PlngenDto mypl, Rubvar myvar)
     // {
 
     // }
 
-    // private bool HandleChlInput(Plngen mypl, Rubvar myvar)
+    // private bool HandleChlInput(PlngenDto mypl, Rubvar myvar)
     // {
     //     var input = myvar.Scdrub?.Trim();
     //     Jmessage = "";

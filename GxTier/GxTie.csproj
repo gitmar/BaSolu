@@ -11,36 +11,24 @@
   </PropertyGroup>
   
   <ItemGroup>
-    <Compile Remove="Components\Admina\**" />
-    <Compile Remove="Components\InAdmTest\**" />
-    <Compile Remove="Components\Secuope\**" />
     <Compile Remove="Connected Services\OData Service\**" />
     <Compile Remove="Formulas\**" />
     <Compile Remove="MyApp.Tests\**" />
     <Compile Remove="Services\Mform\**" />
     <Compile Remove="wwwroot\lib\wrbootstrap\**" />
     <Compile Remove="YYYFormulas\**" />
-    <Content Remove="Components\Admina\**" />
-    <Content Remove="Components\InAdmTest\**" />
-    <Content Remove="Components\Secuope\**" />
     <Content Remove="Connected Services\OData Service\**" />
     <Content Remove="Formulas\**" />
     <Content Remove="MyApp.Tests\**" />
     <Content Remove="Services\Mform\**" />
     <Content Remove="wwwroot\lib\wrbootstrap\**" />
     <Content Remove="YYYFormulas\**" />
-    <EmbeddedResource Remove="Components\Admina\**" />
-    <EmbeddedResource Remove="Components\InAdmTest\**" />
-    <EmbeddedResource Remove="Components\Secuope\**" />
     <EmbeddedResource Remove="Connected Services\OData Service\**" />
     <EmbeddedResource Remove="Formulas\**" />
     <EmbeddedResource Remove="MyApp.Tests\**" />
     <EmbeddedResource Remove="Services\Mform\**" />
     <EmbeddedResource Remove="wwwroot\lib\wrbootstrap\**" />
     <EmbeddedResource Remove="YYYFormulas\**" />
-    <None Remove="Components\Admina\**" />
-    <None Remove="Components\InAdmTest\**" />
-    <None Remove="Components\Secuope\**" />
     <None Remove="Connected Services\OData Service\**" />
     <None Remove="Formulas\**" />
     <None Remove="MyApp.Tests\**" />
@@ -51,64 +39,64 @@
 
   <ItemGroup>
     <Compile Remove="ClieModels\CalcModel.cs" />
+    <Compile Remove="ClieModels\InitEnt.cs" />
     <Compile Remove="ClieModels\outModels.cs" />
-    <Compile Remove="Components\GridBase.cs" />
-    <Compile Remove="Components\GridWrapper.razor.cs" />
     <Compile Remove="oldProgram.cs" />
     <Compile Remove="Services\AdautService.cs" />
     <Compile Remove="Services\AppStateServices.cs" />
     <Compile Remove="Services\DaLibaResolver.cs" />
+    <Compile Remove="Services\LookupService.cs" />
+    <Compile Remove="Services\MyODataContext.cs" />
     <Compile Remove="Services\MyOGridService.cs" />
     <Compile Remove="Services\MyRubCalc.cs" />
     <Compile Remove="Services\OdSaieMessageHandler.cs" />
+    <Compile Remove="Services\PendingChangesGuard.cs" />
     <Compile Remove="Services\RubCalc.cs" />
+    <Compile Remove="Services\StaticMethods.cs" />
+    <Compile Remove="Services\StockClientService.cs" />
     <Compile Remove="Services\UsrdaService.cs" />
+    <Compile Remove="Services\Z3PendingChangesGuard.cs" />
     <Compile Remove="Services\ZZMyRubCalc.cs" />
   </ItemGroup>
 
   <ItemGroup>
+    <Content Remove="Components\FrmHelper\BoolComponent.razor" />
+    <Content Remove="Components\FrmHelper\CheckComponent.razor" />
     <Content Remove="Components\FrmHelper\ChildGridHelper.razor" />
     <Content Remove="Components\FrmHelper\ChildGridHelper8.razor" />
     <Content Remove="Components\FrmHelper\MainGridHelper.razor" />
     <Content Remove="Components\FrmHelper\MainGridHelper8.razor" />
-    <Content Remove="Components\FrmHelper\SelectedField.razor" />
+    <Content Remove="Components\FrmHelper\StringComponent.razor" />
+    <Content Remove="Components\FrmHelper\TabhieComponent.razor" />
+    <Content Remove="Components\FrmHelper\TabselComponent.razor" />
     <Content Remove="Components\Identity\AdmLogin.razor" />
     <Content Remove="Components\Identity\BzmailConf.razor" />
     <Content Remove="Components\Identity\OldRegister.razor" />
     <Content Remove="Components\Identity\Register.razor" />
     <Content Remove="Components\Identity\Repareg.razor" />
-    <Content Remove="Components\Paccu\CarriMenu5.razor" />
-    <Content Remove="Components\Paccu\Inscr\Z3EnrolAcc.razor" />
-    <Content Remove="Components\Paccu\Inscr\Z3EnrolTiw.razor" />
-    <Content Remove="Components\Paccu\Inscr\Z3InscTiw.razor" />
-    <Content Remove="Components\Paccu\Inscr\Z5InscTiw.razor" />
-    <Content Remove="Components\Paccu\Organ\Aschemas.razor" />
-    <Content Remove="Components\Paccu\TieGridForm.razor" />
-    <Content Remove="Components\Paccu\Valida\ValdAfil.razor" />
-    <Content Remove="Components\Paccu\Valida\Z3ValdTie.razor" />
-    <Content Remove="Components\Paccu\Valida\ZZZAccuTiw.razor" />
-    <Content Remove="Components\Paccu\Inscr\AccuAfil.razor" />
-    <Content Remove="Components\GridWrapper.razor" />
-    <Content Remove="Components\Opera\Saisies\ZZActSaie.razor" />
-    <Content Remove="Components\Opera\ZZAsesions.razor" />
+    <Content Remove="Components\Opera\Etats\EtatMenu.razor" />
+    <Content Remove="Components\Opera\Ordres\OrdaLoad.razor" />
+    <Content Remove="Components\Paccu\Inscr\MgrTest.razor" />
+    <Content Remove="Components\Paccu\Inscr\Z4InscTiw.razor" />
+    <Content Remove="Components\Paccu\Organ\Muta\Mutatio.razor" />
+    <Content Remove="Components\Paccu\Z2Carri6Menu.razor" />
+    <Content Remove="Components\Paccu\Z3CarriMenu5.razor" />
+    <Content Remove="Components\Secuope\AccsMenu.razor" />
+    <Content Remove="Components\Secuope\Authoriz\Regxauth.razor" />
+    <Content Remove="Components\Secuope\Authoriz\Regxcorg.razor" />
+    <Content Remove="Components\Secuope\DonaMenu.razor" />
+    <Content Remove="Components\Secuope\Sessions\ASessions.razor" />
     <Content Remove="Components\TestNavMenu.razor" />
     <Content Remove="Layout\Index.cshtml" />
     <Content Remove="Layout\Logadm.razor" />
     <Content Remove="Layout\UsrMenu.razor" />
+    <Content Remove="Pages\TiersTest.razor" />
+    <Content Remove="wwwroot\js\pouchblazor.js" />
   </ItemGroup>
 
   <ItemGroup>
-    <None Remove="Components\Paccu\EnrolMenu.razor.css" />
+    <None Remove="Components\Opera\Etats\EtatMenu.razor.css" />
     <None Remove="Formulas\Connected Services\OData Service\OData ServiceCsdl.xml" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Compile Include="Connected Services\OData Service\Reference.cs" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Content Include="Connected Services\OData Service\ConnectedService.json" />
-    <EmbeddedResource Include="Connected Services\OData Service\OData ServiceCsdl.xml" />
   </ItemGroup>
 
   <ItemGroup>
@@ -125,17 +113,24 @@
     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="9.0.10" PrivateAssets="all" />
     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Authentication" Version="9.0.10" />
     <PackageReference Include="Microsoft.AspNetCore.Components.Authorization" Version="9.0.10" />
+    <PackageReference Include="Microsoft.Extensions.Http" Version="10.0.1" />
     <PackageReference Include="Microsoft.IdentityModel.JsonWebTokens" Version="8.13.0" />
     <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.13.0" />
     <PackageReference Include="Microsoft.AspNetCore.WebUtilities" Version="9.0.0" />
     <PackageReference Include="Microsoft.AspNetCore.Http" Version="2.3.0" />
-    <PackageReference Include="Microsoft.OData.Core" Version="8.4.2" />
-    <PackageReference Include="Microsoft.OData.Edm" Version="8.4.2" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.22" />
+
+    <!-- EF Core: keep ONLY 8.x -->
+    <PackageReference Include="Simple.OData.Client" Version="6.0.1" />
+    <PackageReference Include="Microsoft.OData.Core" Version="7.9.4" />
+    <PackageReference Include="Microsoft.OData.Edm" Version="7.9.4" />
+    <PackageReference Include="Microsoft.Spatial" Version="7.9.4" />
+    <PackageReference Include="TG.Blazor.IndexedDB" Version="1.5.0-preview" />
+    
   </ItemGroup>
+
   <ItemGroup>
     <PackageReference Include="Blazored.LocalStorage" Version="4.5.0" />
-    <PackageReference Include="Microsoft.OData.Client" Version="8.4.2" />
-    <PackageReference Include="Microsoft.Spatial" Version="8.4.2" />
     <PackageReference Include="System.ComponentModel.Annotations" Version="5.0.0" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />  
     <PackageReference Include="System.Text.Json" Version="10.0.3" />
@@ -146,7 +141,11 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Components\Paccu\Organ\" />
+    <Folder Include="Components\Opera\Etats\" />
+    <Folder Include="Components\Paccu\Organ\Muta\" />
+    <Folder Include="Components\Secuope\Authoriz\" />
+    <Folder Include="Components\Secuope\Sessions\" />
+    <Folder Include="Connected Services\" />
     <Folder Include="wwwroot\_content\Blazor.Bootstrap\" />
   </ItemGroup>
 

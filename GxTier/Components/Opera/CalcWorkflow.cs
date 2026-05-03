@@ -1,7 +1,7 @@
 ﻿using GxShared.Formulas.ForaContext;
 using GxShared.Formulas.ForaModels;
 
-using GxWapi.DaModels;
+using GxShared.GxDtos;
 
 using Microsoft.AspNetCore.Components.Forms;
 
@@ -19,7 +19,7 @@ namespace GxTie.Components.Opera
             Itie = itie;
             SessionDate = sessionDate;
         }
-        public void HydrateInputs(IEnumerable<Actsaie> actsaies, IEnumerable<Resdon> resdons)
+        public void HydrateInputs(IEnumerable<ActsaieDto> actsaies, IEnumerable<ResdonDto> resdons)
         {
             Inputs = InputHydrator.Hydrate(Itie, SessionDate, actsaies, resdons);
         }
@@ -60,8 +60,8 @@ namespace GxTie.Components.Opera
         public static List<InDataLineStream> Hydrate(
             int itie,
             DateTime sessionDate,
-            IEnumerable<Actsaie> actsaies,
-            IEnumerable<Resdon> resdons)
+            IEnumerable<ActsaieDto> actsaies,
+            IEnumerable<ResdonDto> resdons)
         {
             var inputs = new List<InDataLineStream>();
 

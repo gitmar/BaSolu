@@ -1,5 +1,5 @@
-﻿@using GxWapi.DaModels
-@using GxShared.Others
+﻿@using GxShared.Others
+@using GxShared.GxDtos
 @using GxTie.ClieModels
 
 <h3>PTieGdHelper</h3>
@@ -256,20 +256,20 @@
 }
 
 @code {
-    [Parameter] public Tiersp Draft { get; set; }
+    [Parameter] public TierspDto Draft { get; set; }
     [Parameter] public GridMode GMode { get; set; } = GridMode.None;
     [Parameter] public bool isEditing { get; set; } = false;
     [Parameter] public Dictionary<string, bool> Visibility { get; set; } = new();
 
-    [Parameter] public List<Gptbl> TbItems { get; set; }
+    [Parameter] public List<Gtabl> EnsTbls { get; set; }
     // Identifiers
     [Parameter] public string RenderKey { get; set; }
     [Parameter] public Guid? EdRowguid { get; set; }
 
-    private List<Gptbl> GetOptions(int pxcod)
+    private List<Gtabl> GetOptions(int pxcod)
     {
-        return TbItems
-            .Where(t => t.Pxcod == pxcod)
+        return EnsTbls
+            .Where(t => t.Pid == pxcod)
             .ToList();
     }
 }

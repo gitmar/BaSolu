@@ -1,89 +1,117 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.BlazorWebAssembly">
-
   <PropertyGroup>
     <TargetFramework>net9.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <ServiceWorkerAssetsManifest>service-worker-assets.js</ServiceWorkerAssetsManifest>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
   </PropertyGroup>
-
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
-    <Optimize>True</Optimize>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|AnyCPU'">
+    <Optimize>true</Optimize>
   </PropertyGroup>
-
+  
   <ItemGroup>
     <Compile Remove="Components\Admina\**" />
-    <Compile Remove="Components\Secuope\Colons\**" />
+    <Compile Remove="Components\InAdmTest\**" />
+    <Compile Remove="Components\Secuope\**" />
+    <Compile Remove="Connected Services\**" />
     <Compile Remove="Formulas\**" />
-    <Compile Remove="Profile\**" />
+    <Compile Remove="MyApp.Tests\**" />
+    <Compile Remove="Services\Mform\**" />
+    <Compile Remove="wwwroot\lib\wrbootstrap\**" />
     <Compile Remove="YYYFormulas\**" />
     <Content Remove="Components\Admina\**" />
-    <Content Remove="Components\Secuope\Colons\**" />
+    <Content Remove="Components\InAdmTest\**" />
+    <Content Remove="Components\Secuope\**" />
+    <Content Remove="Connected Services\**" />
     <Content Remove="Formulas\**" />
-    <Content Remove="Profile\**" />
+    <Content Remove="MyApp.Tests\**" />
+    <Content Remove="Services\Mform\**" />
+    <Content Remove="wwwroot\lib\wrbootstrap\**" />
     <Content Remove="YYYFormulas\**" />
     <EmbeddedResource Remove="Components\Admina\**" />
-    <EmbeddedResource Remove="Components\Secuope\Colons\**" />
+    <EmbeddedResource Remove="Components\InAdmTest\**" />
+    <EmbeddedResource Remove="Components\Secuope\**" />
+    <EmbeddedResource Remove="Connected Services\**" />
     <EmbeddedResource Remove="Formulas\**" />
-    <EmbeddedResource Remove="Profile\**" />
+    <EmbeddedResource Remove="MyApp.Tests\**" />
+    <EmbeddedResource Remove="Services\Mform\**" />
+    <EmbeddedResource Remove="wwwroot\lib\wrbootstrap\**" />
     <EmbeddedResource Remove="YYYFormulas\**" />
     <None Remove="Components\Admina\**" />
-    <None Remove="Components\Secuope\Colons\**" />
+    <None Remove="Components\InAdmTest\**" />
+    <None Remove="Components\Secuope\**" />
+    <None Remove="Connected Services\**" />
     <None Remove="Formulas\**" />
-    <None Remove="Profile\**" />
+    <None Remove="MyApp.Tests\**" />
+    <None Remove="Services\Mform\**" />
+    <None Remove="wwwroot\lib\wrbootstrap\**" />
     <None Remove="YYYFormulas\**" />
   </ItemGroup>
 
   <ItemGroup>
     <Compile Remove="ClieModels\CalcModel.cs" />
+    <Compile Remove="ClieModels\InitEnt.cs" />
+    <Compile Remove="ClieModels\InitTiers.cs" />
     <Compile Remove="ClieModels\outModels.cs" />
+    <Compile Remove="Components\GridBase.cs" />
     <Compile Remove="Components\GridWrapper.razor.cs" />
     <Compile Remove="oldProgram.cs" />
     <Compile Remove="Services\AdautService.cs" />
+    <Compile Remove="Services\AppStateServices.cs" />
     <Compile Remove="Services\DaLibaResolver.cs" />
+    <Compile Remove="Services\LookupService.cs" />
+    <Compile Remove="Services\MyODataContext.cs" />
     <Compile Remove="Services\MyOGridService.cs" />
     <Compile Remove="Services\MyRubCalc.cs" />
     <Compile Remove="Services\OdSaieMessageHandler.cs" />
     <Compile Remove="Services\RubCalc.cs" />
+    <Compile Remove="Services\StockClieServices.cs" />
+    <Compile Remove="Services\T55iersClieServices.cs" />
+    <Compile Remove="Services\TiersClientServices.cs" />
     <Compile Remove="Services\UsrdaService.cs" />
     <Compile Remove="Services\ZZMyRubCalc.cs" />
   </ItemGroup>
 
   <ItemGroup>
+    <Content Remove="Components\CorrigMenu.razor" />
+    <Content Remove="Components\FrmHelper\ChildGridHelper.razor" />
+    <Content Remove="Components\FrmHelper\ChildGridHelper8.razor" />
+    <Content Remove="Components\FrmHelper\MainGridHelper.razor" />
+    <Content Remove="Components\FrmHelper\MainGridHelper8.razor" />
     <Content Remove="Components\FrmHelper\SelectedField.razor" />
+    <Content Remove="Components\FrmHelper\TabhieComponent.razor" />
+    <Content Remove="Components\FrmHelper\TabselComponent.razor" />
     <Content Remove="Components\Identity\AdmLogin.razor" />
     <Content Remove="Components\Identity\BzmailConf.razor" />
     <Content Remove="Components\Identity\OldRegister.razor" />
     <Content Remove="Components\Identity\Register.razor" />
     <Content Remove="Components\Identity\Repareg.razor" />
-    <Content Remove="Components\Paccu\Organ\Aschemas.razor" />
-    <Content Remove="Components\Paccu\Valida\ValdAfil.razor" />
-    <Content Remove="Components\Paccu\Valida\ZZZAccuTiw.razor" />
-    <Content Remove="Components\Paccu\Inscr\AccuAfil.razor" />
     <Content Remove="Components\GridWrapper.razor" />
-    <Content Remove="Components\Opera\Saisies\ZZActSaie.razor" />
-    <Content Remove="Components\Opera\ZZAsesions.razor" />
-    <Content Remove="Components\Secuope\AccsMenu.razor" />
-    <Content Remove="Components\Secuope\Authoriz\Regxauth.razor" />
-    <Content Remove="Components\Secuope\Authoriz\Regxcorg.razor" />
-    <Content Remove="Components\Secuope\DonaMenu.razor" />
-    <Content Remove="Components\Secuope\Sessions\ASesexos.razor" />
-    <Content Remove="Components\Secuope\Sessions\ASessions.razor" />
-    <Content Remove="Components\Secuope\Sessions\ZZSAsesios.razor" />
-    <Content Remove="Components\StkManage\Items.razor" />
-    <Content Remove="Components\StkManage\Purchase.razor" />
-    <Content Remove="Components\StkManage\Sale.razor" />
+    <Content Remove="Components\ProdMenu.razor" />
+    <Content Remove="Components\StkManage\ItemsAdjust.razor" />
+    <Content Remove="Components\StkManage\ItemsAttribute.razor" />
+    <Content Remove="Components\StkManage\ItemsCategory.razor" />
+    <Content Remove="Components\StkManage\ItemsPurchase.razor" />
+    <Content Remove="Components\StkManage\ItemsStockAttr.razor" />
+    <Content Remove="Components\StkManage\TstkMenu.razor" />
     <Content Remove="Components\TestNavMenu.razor" />
+    <Content Remove="Components\Z3AchatMenu.razor" />
+    <Content Remove="Components\Z3ApproMenu.razor" />
+    <Content Remove="Components\Z3ParasMenu.razor" />
+    <Content Remove="Components\Z3VenteMenu.razor" />
+    <Content Remove="Components\ZZMoveMenu.razor" />
+    <Content Remove="Layout\Index.cshtml" />
     <Content Remove="Layout\Logadm.razor" />
+    <Content Remove="Layout\UsrMenu.razor" />
+    <Content Remove="Pages\TiersTest.razor" />
+    <Content Remove="wwwroot\js\pouchblazor.js" />
   </ItemGroup>
 
   <ItemGroup>
-    <None Remove="Connected Services\OData Service\OData ServiceCsdl.xml" />
+    <None Remove="Formulas\Connected Services\OData Service\OData ServiceCsdl.xml" />
   </ItemGroup>
 
-  <ItemGroup>
-    <EmbeddedResource Include="Connected Services\OData Service\OData ServiceCsdl.xml" />
-  </ItemGroup>
   <ItemGroup>
     <None Update="wwwroot\manifest.webmanifest">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
@@ -93,26 +121,29 @@
   <ItemGroup>
     <PackageReference Include="Blazor.Bootstrap" Version="3.4.0" />
     <PackageReference Include="BlazorDownloadFile" Version="2.4.0.2" />
-    <PackageReference Include="bootstrap" Version="5.3.6" />
     <PackageReference Include="Flee" Version="2.0.0" />
     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="9.0.10" />
     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="9.0.10" PrivateAssets="all" />
     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Authentication" Version="9.0.10" />
-    <PackageReference Include="Microsoft.AspNetCore.Http" Version="2.3.0" />
-    <PackageReference Include="Microsoft.AspNetCore.WebUtilities" Version="9.0.0" />
     <PackageReference Include="Microsoft.AspNetCore.Components.Authorization" Version="9.0.10" />
+    <PackageReference Include="Microsoft.Extensions.Http" Version="10.0.1" />
     <PackageReference Include="Microsoft.IdentityModel.JsonWebTokens" Version="8.13.0" />
     <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.13.0" />
-    <PackageReference Include="Microsoft.OData.Core" Version="8.4.3" />
-    <PackageReference Include="Microsoft.OData.Edm" Version="8.4.3" />
+    <PackageReference Include="Microsoft.AspNetCore.WebUtilities" Version="9.0.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Http" Version="2.3.0" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="9.0.2" />
+    <!-- EF Core: keep ONLY 8.x -->
+    <PackageReference Include="Simple.OData.Client" Version="6.0.1" />
+    <PackageReference Include="Microsoft.OData.Core" Version="7.9.4" />
+    <PackageReference Include="Microsoft.OData.Edm" Version="7.9.4" />
+    <PackageReference Include="Microsoft.Spatial" Version="7.9.4" />
+    <PackageReference Include="TG.Blazor.IndexedDB" Version="1.5.0-preview" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Blazored.LocalStorage" Version="4.5.0" />
-    <PackageReference Include="Microsoft.OData.Client" Version="8.4.3" />
-    <PackageReference Include="Microsoft.Spatial" Version="8.4.3" />
     <PackageReference Include="System.ComponentModel.Annotations" Version="5.0.0" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />  
-    <PackageReference Include="System.Text.Json" Version="9.0.4" />
+    <PackageReference Include="System.Text.Json" Version="10.0.3" />
   </ItemGroup>
 
   <ItemGroup>
@@ -120,10 +151,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Components\Paccu\Organ\" />
-    <Folder Include="Components\Secuope\Authoriz\" />
-    <Folder Include="Components\Secuope\Sessions\" />
-    <Folder Include="wwwroot\lib\bootstrap\css\" />
     <Folder Include="wwwroot\_content\Blazor.Bootstrap\" />
   </ItemGroup>
 
@@ -135,7 +162,7 @@
     <ProjectReference Include="..\..\GxShared\GxShared.csproj" />
     <ProjectReference Include="..\..\GxSmenu\Gx.Components.csproj" />
   </ItemGroup>
-  
+
   <ProjectExtensions><VisualStudio><UserProperties /></VisualStudio></ProjectExtensions>
 
 </Project>

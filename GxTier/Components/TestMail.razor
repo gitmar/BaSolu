@@ -23,7 +23,7 @@
     protected override async Task OnInitializedAsync()
     {
         isLoading = true;
-        _dftClient = _httpClientFactory.CreateClient("AUTHClient");
+        _dftClient = _httpClientFactory.CreateClient("AuthClient");
         //verified connection
         try
         {
@@ -59,7 +59,7 @@
             });
             
             var response = await _clieManager.SendRequestAsync(
-                "AUTHClient",
+                "AuthClient",
                 HttpMethod.Post,
                 "regis/generate-invite",
                 rDto);

@@ -4,7 +4,7 @@
 @using GxShared.Sess
 @using GxShared.Identity;
 @using GxTie.Services
-@using GxWapi.DaModels
+@using GxShared.GxDtos
 @using Newtonsoft.Json
 
 
@@ -58,8 +58,8 @@
 </div>
 
 @code {
-    [CascadingParameter]
-    public Default.Container _icontext { get; set; }
+    //[CascadingParameter]
+    //public Default.Container _icontext { get; set; }
     [CascadingParameter(Name = "EnrolMenu")]
     public EnrolMenu EnrolVue { get; set; }
     [Parameter]
@@ -87,13 +87,13 @@
     [Parameter]
     public string Title { get; set; }   
     [Parameter]
-    public GxWapi.DaModels.Tiewel Entity { get; set; } // Replace with your actual entity type
+    public TiewelDto Entity { get; set; } // Replace with your actual entity type
     [Parameter]
     public List<Gpvar> LsmVars { get; set; }
     [Parameter]
     public List<Gpfixe> LsmFixes { get; set; }
     [Parameter]
-    public EventCallback<GxWapi.DaModels.Tiewel> OnSave { get; set; } // Callback to return the modified entity
+    public EventCallback<TiewelDto> OnSave { get; set; } // Callback to return the modified entity
     private ProgressBar progressBar;
     private string strmeta = "", strmeta2 = "";
 
@@ -212,7 +212,7 @@
 
         content.Add(fileContent, "file", selectedFile.Name);
         //pour le load des images et photos
-        var strcall = await _httpClie.SendRequestAsync("AUTHClient", HttpMethod.Post, "lgfileup/upload");//, logModel);
+        var strcall = await _httpClie.SendRequestAsync("AuthClient", HttpMethod.Post, "lgfileup/upload");//, logModel);
         //Console.WriteLine($"21RECU DE LOGIN {strcall}");
         var response = JsonConvert.DeserializeObject<LoginResult>(strcall);
         Console.WriteLine($"22RECU DE LOGIN {response}");
@@ -266,9 +266,9 @@
     //     }
     // }
 }
-<CascadingValue Value="_icontext">
+@* <CascadingValue Value="_icontext">
     <RecpTiw>
         <CascadingValue Value="_icontext"></CascadingValue>
     </RecpTiw>
-</CascadingValue>
+</CascadingValue> *@
 
