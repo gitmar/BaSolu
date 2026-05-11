@@ -8,12 +8,21 @@ using GxShared.Sess;
 using GxShared.Identity;
 
 using Microsoft.AspNetCore.Components.Authorization;
-
-using static GxStk.Services.PuzzleSyncService;
-using GxStk.ClieModels;
+using GxShared.Helpers;
 
 namespace GxStk.Services
 {
+    using System.Net.Http.Json;
+    using System.Net.NetworkInformation;
+    using System.Security.Claims;
+
+    using Blazored.LocalStorage;
+
+    using GxShared.Helpers;
+    using GxShared.Identity;
+    using GxShared.Sess;
+
+    using static GxStk.Services.PuzzleSyncService;
     public interface IPuzzleSyncService
     {
         Task<bool> EnsureSessionIsFreshAsync();
@@ -28,9 +37,9 @@ namespace GxStk.Services
         private readonly IHttpClientFactory _httpClientFactory;
         private readonly MyAuthStateProvider _authProvider;
         private readonly Userbag _userbag;
-        private readonly MyShareVars _shareVars;
-        
-        public PuzzleSyncService(ILocalStorageService localStorage, IHttpClientFactory httpClientFactory, MyAuthStateProvider authProvider, Userbag userbag, MyShareVars shareVars)
+        private readonly ChildVars _shareVars;
+
+        public PuzzleSyncService(ILocalStorageService localStorage, IHttpClientFactory httpClientFactory, MyAuthStateProvider authProvider, Userbag userbag, ChildVars shareVars)
         {
             _localStorage = localStorage;
             _httpClientFactory = httpClientFactory;
@@ -38,12 +47,12 @@ namespace GxStk.Services
             _userbag = userbag;
             _shareVars = shareVars;
         }
-
         public async Task<bool> EnsureSessionIsFreshAsync()
         {
             var token = await _localStorage.GetItemAsync<string>("blazToken");
             var exp = await _localStorage.GetItemAsync<DateTime>("blazExp");
 
+            // If token missing or expiring soon, try refresh
             if (string.IsNullOrEmpty(token) || exp < DateTime.UtcNow.AddMinutes(5))
             {
                 var refreshToken = await _localStorage.GetItemAsync<string>("blazRtoken");
@@ -53,8 +62,11 @@ namespace GxStk.Services
                     return false;
                 }
 
-                var client = _httpClientFactory.CreateClient("TOKENClient");
-                var response = await client.PostAsJsonAsync("lgauth/refresh", new { RefreshToken = refreshToken });
+                var client = _httpClientFactory.CreateClient("AuthClient");
+                var response = await client.PostAsJsonAsync("lgauth/refresh", new RefreshRequest
+                {
+                    RefreshToken = refreshToken
+                });
 
                 if (!response.IsSuccessStatusCode)
                 {
@@ -70,22 +82,25 @@ namespace GxStk.Services
                     return false;
                 }
 
+                // ✅ Update local storage with new tokens
                 await _localStorage.SetItemAsync("blazToken", loginResult.Atoken);
                 await _localStorage.SetItemAsync("blazExp", loginResult.Adexp);
                 await _localStorage.SetItemAsync("blazRtoken", loginResult.Rtoken);
                 await _localStorage.SetItemAsync("blazUserid", loginResult.Userid);
                 await _localStorage.SetItemAsync("blazOrgid", loginResult.LgOrgid);
 
+                // Update authentication state
                 var claims = _authProvider.ParseClaimsFromJwt(loginResult.Atoken);
                 var user = new ClaimsPrincipal(new ClaimsIdentity(claims, "jwt"));
                 _authProvider.NotifyUserAuthentication(user);
 
                 return true;
             }
-            Console.WriteLine($"Token is valid");
-            // Token is still valid — no refresh needed
+
+            Console.WriteLine("Token is still valid — no refresh needed.");
             return true;
         }
+
         public async Task<SessionSyncResult> SyncPuzzleStateAsync()
         {
             var token = await _localStorage.GetItemAsync<string>("blazToken");
@@ -119,7 +134,7 @@ namespace GxStk.Services
             if (_userbag.GetType().GetProperty("IsSupport") != null)
                 _userbag.GetType().GetProperty("IsSupport")?.SetValue(_userbag, context.Roles.Contains("Support"));
 
-            // Hydrate MyShareVars
+            // Hydrate ChildVars
             if (_shareVars.GetType().GetProperty("SessionToken") != null)
                 _shareVars.GetType().GetProperty("SessionToken")?.SetValue(_shareVars, context.Token);
             if (_shareVars.GetType().GetProperty("IsPuzzleReady") != null)
@@ -177,6 +192,10 @@ namespace GxStk.Services
             public bool Success { get; set; }
             public string Message { get; set; }
             public SessionContext Context { get; set; }
+        }
+        public class RefreshRequest
+        {
+            public string RefreshToken { get; set; }
         }
     }
 }

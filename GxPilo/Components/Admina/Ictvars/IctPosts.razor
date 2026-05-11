@@ -13,8 +13,8 @@
 @using System.Web
 @using BlazorBootstrap
 @using Blazored.LocalStorage
-@using GxPilo.ClieModels
 @using GxPilo.Services
+@using GxShared.Helpers
 @using GxShared.Sess
 @using Simple.OData.Client
 @using AutoMapper
@@ -65,19 +65,19 @@ else
             <div class="form-group">
                 <div class="btn btn-group">
                     <label class="fw-bold">Domaine :</label>
-                    <InputSelect @bind-Value="ItkDom" class="me-3" style="width:auto">
+                    <InputSelect @bind-Value="IMyDom" @onchange="() => curPlanDom(IMyDom)" class="me-3" style="width:auto">
                         <option value="0">?domaine</option>
                         @foreach (var tob in LsDoms)
                         {
-                            <option value="@tob.Gp2" @onclick="() => SelItkDom()">@tob.Liba</option>
+                            <option value="@tob.Gp2">@tob.Liba</option>
                         }
                     </InputSelect>
                     <label class="me-2">Plan :</label>
-                    <InputSelect @bind-Value="IMyPlan" class="me-3" style="width:auto">
+                    <InputSelect @bind-Value="IMyPlan" @onchange="() => curPlanPlan(IMyPlan)" class="me-3" style="width:auto">
                         <option value="0">?plan</option>
-                        @foreach (var upl in LsPlans.Where(pl => pl.Todom == ItkDom).ToList())
+                        @foreach (var upl in LsPlans.Where(pl => pl.Todom == IMyDom).ToList())
                         {
-                            <option value="@upl.Id" @onclick="() => curPlanDom(upl.Id)">@upl.Liba</option>
+                            <option value="@upl.Id">@upl.Liba</option>
                         }
                     </InputSelect>
                 </div>
@@ -126,13 +126,15 @@ else
                                                                     </ChildContent>
                                                                 </GridColumn>
                                                                 <GridColumn TItem="RubhieDto" HeaderText="" Class="xcol1 rubpoint">
+                                                                    <!--
                                                                     <HeaderContent>
                                                                         Code
-                                                                        @if (!String.IsNullOrEmpty(Jmessage))
+                                                                        if (!String.IsNullOrEmpty(Jmessage))
                                                                         {
-                                                                            <span class="bg-info bg-opacity-10" style="font-style:italic;color:red">&nbsp;--> @Jmessage</span>
+                                                                            <span class="bg-info bg-opacity-10" style="font-style:italic;color:red">&nbsp; Jmessage</span>
                                                                         }
                                                                     </HeaderContent>
+                                                                    -->
                                                                     <ChildContent Context="item">
                                                                         @item.Scdrub
                                                                     </ChildContent>
@@ -247,13 +249,13 @@ else
                                                                             </div>
                                                                         </div>
                                                                 <Grid TItem="RubpstDto"
-                                                                      Data="@selectedRub.Rubpsts"
+                                                                      Data="@selectedRub.Rubpsts.ToList()"
                                                                       @key="FmtRenderKey"
                                                                       AllowPaging="true"
                                                                       RowClass="@((rf) => GetFmtRowClass(rf))"
                                                                       Responsive="true">
                                                                     <GridColumns>
-                                                                        <GridColumn TItem="RubpstDto" HeaderText="Code" Class="xcol1">
+                                                                        <GridColumn TItem="RubpstDto" HeaderText="No" Class="xcol1">
                                                                             <ChildContent Context="rf">
                                                                                 @if (rf.Xadd1 == -1)
                                                                                 {
@@ -267,17 +269,16 @@ else
                                                                                 }
                                                                             </ChildContent>
                                                                         </GridColumn>
-                                                                        <GridColumn TItem="RubpstDto" HeaderText="Code">
+                                                                        <GridColumn TItem="RubpstDto" HeaderText="Adresse">
                                                                         <ChildContent Context="rf">
                                                                             @if (EdFmtRowguid == rf.Rowguid)
                                                                             {
-                                                                                <InputText @bind-Value="draftFmt.Padres"
-                                                                                           placeholder="code"
-                                                                                           @* onblur="@(() => OnBlurChlHandler(selectedRub, draftFmt))"
-                                                                                           onmouseleave="@(() => OnBlurHandler(selectedRub, draftFmt))" *@
-                                                                                           pattern="@($"[0-9]{{{_lgcdu}}}")"
-                                                                                           title="@($"{_lgcdu} chiffres obligatoires et unique")"
-                                                                                           required />
+                                                                                <InputText @bind-Value="rf.Padres"
+                                                                                           @oninput="e => OnChlInput(e, rf)"
+                                                                                           @onfocus="() => OnChlFocusHandler(selectedRub, rf)"
+                                                                                           @onfocusout="() => OnChlBlurHandler(selectedRub, rf)"
+                                                                                           class="@(string.IsNullOrEmpty(Jmessage) ? "" : "is-invalid")" />
+
                                                                                 @if (!string.IsNullOrEmpty(Jmessage))
                                                                                 {
                                                                                     <div class="text-danger small">@Jmessage</div>
@@ -301,7 +302,7 @@ else
                                                                             }
                                                                         </ChildContent>
                                                                     </GridColumn>
-                                                                        <GridColumn TItem="RubpstDto" HeaderText="Abrege">
+                                                                    <GridColumn TItem="RubpstDto" HeaderText="Abrege">
                                                                         <ChildContent Context="rf">
                                                                             @if (EdFmtRowguid == rf.Rowguid)
                                                                             {
@@ -313,13 +314,13 @@ else
                                                                             }
                                                                         </ChildContent>
                                                                     </GridColumn>
-                                                                        <GridColumn TItem="RubpstDto" HeaderText="Eta">
+                                                                    <GridColumn TItem="RubpstDto" HeaderText="Eta">
                                                                         <ChildContent Context="rf">
                                                                             @if (EdFmtRowguid == rf.Rowguid)
                                                                             { // show draftPln inputs
-                                                                              <InputSelect @bind-Value="draftFmt.Eta" class="col-md-1" style="width:auto">
-                                                                                  <option class="jchx" value="0">?etat</option>
-                                                                                    @foreach (var tob in LsFixes.Where(ut => ut.Gvars == 32 && ut.Itb == 1 && ut.Elea != 0))
+                                                                                <InputSelect @bind-Value="draftFmt.Eta" class="col-md-1" style="width:auto">
+                                                                                    <option class="jchx" value="0">?etat</option>
+                                                                                    @foreach (var tob in LsFixes.Where(ut => ut.Gvars == 32 && ut.Itb == 2 && ut.Elea != 0))
                                                                                     {
                                                                                         <option value="@tob.Elea">@tob.Liba</option>
                                                                                     }
@@ -592,7 +593,7 @@ else
     [Parameter]
     public GxorgaDto curOrga { get; set; } = new();
     [Parameter]
-    public MyShareVars toChild { get; set; }
+    public ChildVars toChild { get; set; }
     [Parameter]
     public int toMenu { get; set; }
     //guard
@@ -639,6 +640,7 @@ else
         Locked
     }
     public enum EntityLevel { Plan, Rub, Fmt }
+    private CodeMode _mode = CodeMode.Numeric;
 
     private List<Gplan> LsPlans = new();
     private List<Gpfixe> LsFixes = new();
@@ -656,16 +658,17 @@ else
     private int IMyDom = 1; //1Saisie
     private int ItkDom = 1; //?1Tiers2Mat
     private int IMyVue = 1; //1Reel2Virtuel
-    private int _myPlan; //curPlan no
-    public int IMyPlan
-    {
-        get => _myPlan;
-        set
-        {
-            _myPlan = value;
-            curPlanDom(value); // run your logic when plan changes
-        }
-    }
+    private int IMyPlan = 0; //plan en cours
+    // private int _myPlan; //curPlan no
+    // public int IMyPlan
+    // {
+    //     get => _myPlan;
+    //     set
+    //     {
+    //         _myPlan = value;
+    //         curPlanDom(value); // run your logic when plan changes
+    //     }
+    // }
     private string atrTitle = "", splnDom = "";
     private string atrDest = "Programmes de Saisie"; 
     //pour modals formulas
@@ -780,6 +783,9 @@ else
                 Console.WriteLine("Plngens null/empty - initializing empty collections");
                 MyDaPlans = new ObservableCollection<PlngenDto>();
             }
+            // Batch update so you don’t render three times
+            IMyPlan = LsPlans?.FirstOrDefault()?.Id ?? 0;
+            UpdateAllDom(IMyPlan, IMyDom);
             atrTitle = "Saisie";
         }
         catch (Exception ex)
@@ -852,7 +858,7 @@ else
         StartRowEdit(rowguid, EntityLevel.Plan);
         StateHasChanged();
     }
-     private async Task StartRubEdit(RubhieDto item, Guid rowguid)
+    private async Task StartRubEdit(RubhieDto item, Guid rowguid)
     {
         //var client = (ODataClient)_InODaClient;
         //bool isNew = await client.IsNewAsync<RubhieDto>("Rubhies", item.Id);
@@ -876,7 +882,7 @@ else
     }
     private async Task StartFmtNew(RubhieDto myrub)
     {
-        if (myrub.Id <= 0)
+        if (myrub.Id == 0)
         {
             Imessage = "🚫 Cannot add Format: Rubrique must be saved first.";
             return;
@@ -1309,7 +1315,7 @@ else
         draftFmt = null; EdFmtRowguid = AdFmtRowguid = null;
         isEdtFmt = isAddFmt = false; FmtRenderKey = null;
     }
-    
+
     private void StartDelete<T>(T item, string entitySet) where T : class
     {
         var rowguid = ((dynamic)item).Rowguid;
@@ -1557,32 +1563,76 @@ else
         return string.Join(" ", css);
     }
     // ✅ 6. SELECTIONS
-    private void curPlanAtr(int xatr)
-    {
+    // private void curPlanTier(int xtie)
+    // {
+    //     IMyGtie = xtie;
 
-    }
-    private void curPlanDom(int xdom)
+    //     if (IMyGtie > 0 && (IMyDom != 0 && IMyAtr > 0 && IMyVue > 0))
+    //     {
+    //         InvokeAsync(StateHasChanged);
+    //     }
+    // }
+    private void curPlanPlan(int plnId)
     {
-        if (xdom != 0)
+        IMyPlan = plnId;
+        if (IMyPlan != 0)
         {
             int gtib = 7;
-            if (xdom == 1) gtib = 6;
+            curPlan = curOrga?.Plngens.FirstOrDefault(pln => pln.Ptyp == 4);
+            //LsGties = LsFixes.Where(ut => ut.Gvars == 36 && ut.Itb == gtib && ut.Elea != 0 && ut.Elea != 9).ToList();
+        }
+        else
+        {
+            curPlan = new();
+            //LsGties = new();
+        }
+
+        // Example: check if all selections are valid
+        if (IMyPlan != 0 && IMyDom != 0)
+        {
+            // All three have values → single render
+            InvokeAsync(StateHasChanged);
+        }
+    }
+    private void curPlanDom(int domId)
+    {
+        IMyDom = domId;
+        if (IMyDom != 0)
+        {
             //LsGties = LsFixes.Where(ut => ut.Gvars == 36 && ut.Itb == gtib && ut.Elea != 0 && ut.Elea != 9).ToList();
         }
         else
         {
             //LsGties = new();
         }
+
+        // Example: check if all selections are valid
+        if (IMyDom != 0 && IMyPlan != 0)
+        {
+            // All three have values → single render
+            InvokeAsync(StateHasChanged);
+        }
     }
-    private void curPlanTier(int xtie)
+    private void UpdateAllDom(int plnId, int domId)
     {
+        IMyPlan = plnId;
+        IMyDom = domId;
+        if (plnId != 0 && domId != 0)
+        {
+            curPlan = curOrga.Plngens.FirstOrDefault(pl => pl.Id == plnId);
+        } else
+        {
+            curPlan = new();
+        }
+        //IMyAtr = atrId;
+        //IMyVue = vueId;
 
+        InvokeAsync(StateHasChanged); // single refresh
     }
-    private void curPlanVue(int xvue)
+    private void ResetAllDom()
     {
-
+        UpdateAllDom(plnId: 0, domId: 0); //, atrId: 0, vueId: 1);
     }
-
 
     // ✅ 6. HELPERS - Mark Count and Clone
   
@@ -1687,55 +1737,125 @@ else
         int oId = Convert.ToInt32(itemId);
         return EdState.TryGetValue(oId, out bool onEditing) && onEditing ? "Confirm" : "Edit";
     }
-
-    private void OnChlBlurHandler(PlngenDto mypl, RubhieDto myvar)
+    private void OnChlFocusHandler(RubhieDto myrub, RubpstDto mypst)
     {
-        Console.WriteLine("ATTENTION : En Blur....");
-        isRubCodeValid = HandleChlInput(mypl, myvar);
-        Imessage = $"OnBlur active : {isRubCodeValid}";
-        // Optionally trigger UI refresh or logging
-    }
-    private void OnChlFocusHandler(PlngenDto mypl, RubhieDto myvar)
-    {
-
-    }
-    private bool HandleChlInput(PlngenDto mypl, RubhieDto myvar)
-    {
-        var input = myvar.Scdrub?.Trim();
         Jmessage = "";
-        Console.WriteLine($"code entre traiter {input}");
-        // Basic null/empty check
+    }
+    private void OnChlBlurHandler(RubhieDto myrub, RubpstDto mypst)
+    {
+        ValidateChl(myrub, mypst);
+    }
+    private bool ValidateChl(RubhieDto myrub, RubpstDto mypst)
+    {
+        var input = mypst?.Padres?.Trim() ?? "";
+        Jmessage = "";
+
+        // Required
         if (string.IsNullOrEmpty(input))
         {
             Jmessage = "Le code est requis.";
             return false;
         }
-        // Explicit length check
+
+        // Length
         if (input.Length != _lgcdu)
         {
-            Jmessage = $"Le code doit contenir exactement {_lgcdu} chiffres.";
+            Jmessage = $"Le code doit contenir exactement {_lgcdu} caractères.";
             return false;
         }
-        // Digit-only check/No de poste peut ne pas etre numerique
-        if (!Regex.IsMatch(input, @"^[0-9]+$")) // @"^[a-zA-Z0-9_\-\/\\|{}]+$"))
+
+        // Character rules
+        bool isValidChars = _mode switch
         {
-            //(!Regex.IsMatch(input, @"^\d+$")) /numeric
-            //(Regex.IsMatch(input, @"^[a-zA-Z0-9]+$")) /alphanumeric strict
-            //(Regex.IsMatch(input, @"^[a-zA-Z0-9_\-\/\\|{}]+$") /add some others characters
-            //(Regex.IsMatch(input, @"^[a-zA-Z0-9_\-\/\\|{}]{6}$")) //limit number to 6
-            //(Regex.IsMatch(input, @"^[a-zA-Z0-9_\-\/\\|{}]{4,10}$")) //limit a range 4-10
-            Jmessage = "Le code ne doit contenir que des chiffres.";
+            CodeMode.Numeric => input.All(char.IsDigit),
+            CodeMode.AlphaNumeric => input.All(char.IsLetterOrDigit),
+            CodeMode.Custom => Regex.IsMatch(input, @"^[a-zA-Z0-9_\-\/\\|{}]+$"),
+            _ => false
+        };
+
+        if (!isValidChars)
+        {
+            Jmessage = _mode switch
+            {
+                CodeMode.Numeric => "Le code doit contenir uniquement des chiffres.",
+                CodeMode.AlphaNumeric => "Le code doit être alphanumérique.",
+                CodeMode.Custom => "Caractères non autorisés.",
+                _ => "Format invalide."
+            };
             return false;
         }
-        // Uniqueness check
-        var exists = mypl.Rubhies?.Any(uva => uva.Scdrub == input) ?? false;
+
+        // Uniqueness (exclude current editing row if needed)
+        var exists = myrub.Rubpsts?
+            .Any(uva => uva.Padres == input && uva != mypst) ?? false;
+
         if (exists)
         {
             Jmessage = "Ce code rubrique existe déjà.";
             return false;
         }
+
         return true;
     }
+    private void OnChlInput(ChangeEventArgs e, RubpstDto mypst)
+    {
+        var raw = e.Value?.ToString() ?? "";
+
+        string filtered = _mode switch
+        {
+            CodeMode.Numeric => new string(raw.Where(char.IsDigit).ToArray()),
+            CodeMode.AlphaNumeric => new string(raw.Where(char.IsLetterOrDigit).ToArray()),
+            CodeMode.Custom => Regex.Replace(raw, @"[^a-zA-Z0-9_\-\/\\|{}]", ""),
+            _ => raw
+        };
+
+        // Enforce max length
+        if (filtered.Length > _lgcdu)
+            filtered = filtered[.._lgcdu];
+
+        mypst.Padres = filtered;
+    }
+    // private void OnChlFocusHandler(PlngenDto mypl, RubhieDto myvar)
+    // {
+
+    // }
+    // private bool HandleChlInput(PlngenDto mypl, RubhieDto myvar)
+    // {
+    //     var input = myvar.Scdrub?.Trim();
+    //     Jmessage = "";
+    //     Console.WriteLine($"code entre traiter {input}");
+    //     // Basic null/empty check
+    //     if (string.IsNullOrEmpty(input))
+    //     {
+    //         Jmessage = "Le code est requis.";
+    //         return false;
+    //     }
+    //     // Explicit length check
+    //     if (input.Length != _lgcdu)
+    //     {
+    //         Jmessage = $"Le code doit contenir exactement {_lgcdu} chiffres.";
+    //         return false;
+    //     }
+    //     // Digit-only check/No de poste peut ne pas etre numerique
+    //     if (!Regex.IsMatch(input, @"^[0-9]+$")) // @"^[a-zA-Z0-9_\-\/\\|{}]+$"))
+    //     {
+    //         //(!Regex.IsMatch(input, @"^\d+$")) /numeric
+    //         //(Regex.IsMatch(input, @"^[a-zA-Z0-9]+$")) /alphanumeric strict
+    //         //(Regex.IsMatch(input, @"^[a-zA-Z0-9_\-\/\\|{}]+$") /add some others characters
+    //         //(Regex.IsMatch(input, @"^[a-zA-Z0-9_\-\/\\|{}]{6}$")) //limit number to 6
+    //         //(Regex.IsMatch(input, @"^[a-zA-Z0-9_\-\/\\|{}]{4,10}$")) //limit a range 4-10
+    //         Jmessage = "Le code ne doit contenir que des chiffres.";
+    //         return false;
+    //     }
+    //     // Uniqueness check
+    //     var exists = mypl.Rubhies?.Any(uva => uva.Scdrub == input) ?? false;
+    //     if (exists)
+    //     {
+    //         Jmessage = "Ce code rubrique existe déjà.";
+    //         return false;
+    //     }
+    //     return true;
+    // }
 
     public void Dispose()  // ← ADD THIS
     {

@@ -13,8 +13,8 @@
 @using System.Web
 @using BlazorBootstrap
 @using Blazored.LocalStorage
-@using GxPilo.ClieModels
 @using GxPilo.Services
+@using GxShared.Helpers
 @using GxShared.Sess
 @using Simple.OData.Client
 @using GxShared.GxDtos
@@ -627,7 +627,7 @@ else
     [Parameter]
     public GxorgaDto curOrga { get; set; } = new();
     [Parameter]
-    public MyShareVars toChild { get; set; }
+    public ChildVars toChild { get; set; }
     [Parameter]
     public int toMenu { get; set; }
     //guard
@@ -779,9 +779,9 @@ else
             //var noslims = LsVars.Where(uv => uv.Idhie == 0 && uv.Gvars == 21 && uv.Itb == 1 && uv.Elea == 1);
             //if (noslims.Any()) _lgcdu = noslims.FirstOrDefault().Ivala;
             //ChargeParentData;
-            Console.WriteLine($"Child init: Gsgfixes={curOrga.Gstabls?.Count ?? 0}");
+            Console.WriteLine($"Child init: Gstabls={curOrga.Gstabls?.Count ?? 0}");
 
-            // 🔥 SAFE - Only initialize if Gsgfixes EXISTS
+            // 🔥 SAFE - Only initialize if Gstabls EXISTS
             if (curOrga.Gstabls != null && curOrga.Gstabls.Any())
             {
                 // Parent collection: Rubrics - otyp1tables - tenr1base
@@ -866,7 +866,7 @@ else
         isEdtFix = true;
         SetRowState(draftFix.Rowguid, RowState.EditPending);  // Shows Confirm/Cancel ✓
         FixRenderKey = draftFix.Rowguid;
-        //Console.WriteLine($"✅ New row added to curOrga.Gsgfixes - Count: {curOrga.Gsgfixes.Count}");
+        //Console.WriteLine($"✅ New row added to curOrga.Gstabls - Count: {curOrga.Gstabls.Count}");
         StartRowEdit(draftFix.Rowguid, EntityLevel.Plan);
         StateHasChanged();
     }
@@ -1395,7 +1395,7 @@ else
     {
         return typeof(T) switch
         {
-            Type t when t == typeof(GstablDto) => "Gsgfixes",
+            Type t when t == typeof(GstablDto) => "Gstabls",
             _ => throw new ArgumentException($"Unknown entity type: {typeof(T).Name}")
         };
     }
@@ -1568,13 +1568,13 @@ else
     // {
     //     if (xdom == 1 || xdom == 2)
     //     {
-    //         MyDaRubrs = new ObservableCollection<Gsgfix>(curOrga.Gsgfixes
+    //         MyDaRubrs = new ObservableCollection<Gsgfix>(curOrga.Gstabls
     //           .Where(uv => uv.Gvars == 3 && uv.Itb == xdom && uv.Elea >= 1)
     //           .ToList());
     //     }
     //     else if (xdom == 3)
     //     {
-    //         MyDaRubrs = new ObservableCollection<Gsgfix>(curOrga.Gsgfixes
+    //         MyDaRubrs = new ObservableCollection<Gsgfix>(curOrga.Gstabls
     //           .Where(uv => uv.Gvars == 41 && uv.Itb == 1 && uv.Elea != 0)
     //           .ToList());
     //     }

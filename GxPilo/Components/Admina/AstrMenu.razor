@@ -5,10 +5,10 @@
 @using System.Security.Claims
 @using BlazorBootstrap
 @using Blazored.LocalStorage
-@using GxPilo.ClieModels
 @using GxPilo.Components.Admina.Ictvars
 @using GxPilo.Services
 @using GxPilo.StaticHelpers
+@using GxShared.Helpers
 @using GxShared.Sess
 @using Simple.OData.Client
 @using GxShared.GxDtos
@@ -97,6 +97,20 @@ else
                            </IctPosts>
                         }
                         else if (_chxMenu == 4)
+                        {  //durables/personne - unite
+                            <IctGrils @ref="myigrd"
+                                      toMenu="@_chxMenu"
+                                      @bind-NbChanges="_nbChanges"
+                                      _guard="_guard"
+                                      curOrga="@curOrga"
+                                      toChild="@toChild"
+                                      _InODaClient="@_MyODaClient">
+                                <ChildContent>
+                                    @*  <h2 class="child-box">Hello STANDARD</h2> *@
+                                </ChildContent>
+                            </IctGrils>
+                        }
+                        else if (_chxMenu == 5)
                         { //APLANS
                           //ref="myapln"
                         }
@@ -123,7 +137,7 @@ else
 @code {
     private bool isLoading = true;
     public GxorgaDto curOrga = new GxorgaDto();
-    public MyShareVars toChild = new();
+    public ChildVars toChild = new();
 
     private IctGrils myigrd = new();
     private IctEches myiech = new();
@@ -162,7 +176,8 @@ else
         new GxMenuItem { Id = 1, Text = "Saisie.GRILLE", Icon = "bi bi-box-arrow-in-down" },
         new GxMenuItem { Id = 2, Text = "Saisie.ECHEANCIER", Icon = "bi bi-house-door" },
         new GxMenuItem { Id = 3, Text = "Saisie.POSTES", Icon = "bi bi-house-door" },
-        new GxMenuItem { Id = 4, Text = "APlans", Icon = "bi bi-house-door" },
+        new GxMenuItem { Id = 4, Text = "Saisie.DURABLES", Icon = "bi bi-house-door" },
+        new GxMenuItem { Id = 5, Text = "APlans", Icon = "bi bi-house-door" },
     };
     public List<GxGroupe> Groupes = new();
 
@@ -197,7 +212,7 @@ else
             await LoadOrgaAsync(_usrBag.Idorg);
 
             Console.WriteLine($"Usrbag plans : {_usrBag.Usorga.Uplns.Count()}");
-            toChild = new MyShareVars
+            toChild = new ChildVars
             {
                 authUser = authState.User,
                 isAuthenticated = true,
@@ -229,11 +244,22 @@ else
         {
             try
             {
+                // curOrga = await _MyODaClient
+                //     .For<GxorgaDto>("Gxorgas")
+                //     .Key(key)
+                //     //.Expand(o => o.Plngens.Select(p => p.Rubvars))
+                //     //.Expand(o => o.Plngens.Select(p => p.Rubhies.Select(t => t.Rubpsts)))
+                //     .Expand(o => o.Plngens
+                //         .Select(p => new
+                //         {
+                //             p.Rubvars,
+                //             Rubhies = p.Rubhies.Select(t => t.Rubpsts)
+                //         }))
+                //     .FindEntryAsync();
                 curOrga = await _MyODaClient
                     .For<GxorgaDto>("Gxorgas")
                     .Key(key)
-                    .Expand(o => o.Plngens.Select(p => p.Rubvars))
-                    .Expand(o => o.Plngens.Select(p => p.Rubhies))
+                    .Expand("Plngens($expand=Rubvars,Rubhies($expand=Rubpsts))")
                     .FindEntryAsync();
                 Console.WriteLine($"loadOrgaAsync completed :{curOrga?.Raison}");
             }
@@ -292,7 +318,8 @@ else
         if (_chxMenu == 1) strComp = $"Saisie.GRILLE";
         if (_chxMenu == 2) strComp = $"Saisie.ECHEANCIER";
         if (_chxMenu == 3) strComp = $"Saisie.POSTES";
-        if (_chxMenu == 4)
+        if (_chxMenu == 4) strComp = $"Saisie.DURABLES";
+        if (_chxMenu == 5)
         {
             _navManager.NavigateTo("/arubmenu", replace: true);
             strComp = $"Aplans";
@@ -316,5 +343,4 @@ else
     {
         _navManager.NavigateTo("/");
     }
-    }
-    
+  }

@@ -13,7 +13,7 @@
 @using GxShared.Others
 @using GxShared.Interfaces
 @using GxShared.GxDtos
-@using GxTie.ClieModels
+@using GxShared.Helpers
 @using GxTie.Components.Opera
 @using GxTie.Services
 @using GxTie.Components.Opera.RtOpe
@@ -253,7 +253,7 @@ else
     [Parameter]
     public GxorgaDto curOrga { get; set; }
     [Parameter]
-    public MyShareVars toChild { get; set; }
+    public ChildVars toChild { get; set; }
     [Parameter]
     public int ImyProg { get; set; }
     [Parameter]
@@ -304,7 +304,7 @@ else
 
     private bool isFilteringEnabled = false;
     private RubvarDto _curRub = new();
-    private GsesioDto _curSes = new();
+    private string? _curSes = "";
     private PlngenDto selPgr = new();
     private RubvarDto selRub = new();
     private RubfmtDto selFmt = new();
@@ -328,8 +328,7 @@ else
     private bool SaveMarked = false;
     private bool CalcMarked = false;
     private bool autoSave = false;
-    private bool SessOpen => toChild.curExo != null && toChild.curExo.Id != 0
-                    && toChild.curSesio != null && toChild.curSesio.Id != 0;
+    private bool SessOpen => toChild.curExo != null && toChild.curSes != null;
     private bool ProgOpen => SessOpen && ImyProg != 0;
     private bool CanSaie => ProgOpen && (ImyRubr != 0 || ImyTier != 0);
     //->can Edit-can OpenSaie
@@ -558,59 +557,59 @@ else
     private void GetSelectedTActs(int orig, TierspDto mytier, RubvarDto myrub)
     {
         //LsDaActs = new();
-        DateTime sessionDate = Convert.ToDateTime(_curSes.Datses); // session current date
-        if (orig == 1 && mytier != null) //personne
-        {
-            if (mytier.Actsaies.Any())
-            {
-                var lsRubs = curProg.Rubvars.ToList();
+        // DateTime sessionDate = Convert.ToDateTime(_curSes.Datses); // session current date
+        // if (orig == 1 && mytier != null) //personne
+        // {
+        //     if (mytier.Actsaies.Any())
+        //     {
+        //         var lsRubs = curProg.Rubvars.ToList();
 
-                var icurActs = _curTier.Actsaies
-                    .Where(ac => ac.Itie == mytier.Id) //&& lsRubs.Any(r => r.Id == r.acIrubNavigation.Id))
-                    //ADJUST LATER
-                    // .Where(ac =>
-                    //     (ac.Tperi == 0) ||
-                    //     (ac.Tperi == 1 && ac.Dfval <= sessionDate) ||
-                    //     (ac.Tperi == 2 && ac.Dfval == sessionDate)
-                    // )
-                    .ToList();
-                foreach (var ac in icurActs)
-                {
-                    var icurRub = curProg.Rubvars.FirstOrDefault(); //Where(ur => ur.Ipln == ac.IrubNavigation.Ipln).FirstOrDefault();
-                    ac.Liba = icurRub.Liba;
-                    ac.Abg = icurRub.Abg;
-                }
-                //LsDaActs = icurActs;
-            }
-        }
-        else if (orig == 2 && myrub != null) //par rubrique
-        {
-            if (myrub.Id != 0)
-            {
-                var lsTiers = curOrga.Tiersps.ToList(); //Where(te => te.Idhie == froMenu.Usite).ToList();
-                Console.WriteLine($"AVANT RECUP ACTS : {lsTiers.Count}");
-                var icurActs = lsTiers
-                    .SelectMany(tier => tier.Actsaies)
-                    .Where(ac => ac.Irub == myrub.Id)  // Filter by selected Rubvar
-                                                       //ADJUST LATER
-                                                       // .Where(ac =>
-                                                       //     (ac.Tperi == 0) ||
-                                                       //     (ac.Tperi == 1 && ac.Dfval <= sessionDate) ||
-                                                       //     (ac.Tperi == 2 && ac.Dfval == sessionDate)
-                                                       // )
-                    .ToList();
-                foreach (var ac in icurActs)
-                {
-                    var icurRub = curProg.Rubvars.Where(ur => ur.Rowguid == ac.Rowguid).FirstOrDefault();
-                    ac.Liba = icurRub.Liba;
-                    ac.Abg = icurRub.Abg;
-                }
-                //LsDaActs = icurActs;
-                //Console.WriteLine($"APRES RECUP ACTS : {LsDaActs.Count}");
-            }
-        }
-        var updated = _curTier.Actsaies.Where(a => !string.IsNullOrEmpty(a.Liba) || !string.IsNullOrEmpty(a.Abg)).ToList();
-        Console.WriteLine($"Verified Liba Set : {_curTier.Actsaies.FirstOrDefault().Liba}");
+        //         var icurActs = _curTier.Actsaies
+        //             .Where(ac => ac.Itie == mytier.Id) //&& lsRubs.Any(r => r.Id == r.acIrubNavigation.Id))
+        //             //ADJUST LATER
+        //             // .Where(ac =>
+        //             //     (ac.Tperi == 0) ||
+        //             //     (ac.Tperi == 1 && ac.Dfval <= sessionDate) ||
+        //             //     (ac.Tperi == 2 && ac.Dfval == sessionDate)
+        //             // )
+        //             .ToList();
+        //         foreach (var ac in icurActs)
+        //         {
+        //             var icurRub = curProg.Rubvars.FirstOrDefault(); //Where(ur => ur.Ipln == ac.IrubNavigation.Ipln).FirstOrDefault();
+        //             ac.Liba = icurRub.Liba;
+        //             ac.Abg = icurRub.Abg;
+        //         }
+        //         //LsDaActs = icurActs;
+        //     }
+        // }
+        // else if (orig == 2 && myrub != null) //par rubrique
+        // {
+        //     if (myrub.Id != 0)
+        //     {
+        //         var lsTiers = curOrga.Tiersps.ToList(); //Where(te => te.Idhie == froMenu.Usite).ToList();
+        //         Console.WriteLine($"AVANT RECUP ACTS : {lsTiers.Count}");
+        //         var icurActs = lsTiers
+        //             .SelectMany(tier => tier.Actsaies)
+        //             .Where(ac => ac.Irub == myrub.Id)  // Filter by selected Rubvar
+        //                                                //ADJUST LATER
+        //                                                // .Where(ac =>
+        //                                                //     (ac.Tperi == 0) ||
+        //                                                //     (ac.Tperi == 1 && ac.Dfval <= sessionDate) ||
+        //                                                //     (ac.Tperi == 2 && ac.Dfval == sessionDate)
+        //                                                // )
+        //             .ToList();
+        //         foreach (var ac in icurActs)
+        //         {
+        //             var icurRub = curProg.Rubvars.Where(ur => ur.Rowguid == ac.Rowguid).FirstOrDefault();
+        //             ac.Liba = icurRub.Liba;
+        //             ac.Abg = icurRub.Abg;
+        //         }
+        //         //LsDaActs = icurActs;
+        //         //Console.WriteLine($"APRES RECUP ACTS : {LsDaActs.Count}");
+        //     }
+        // }
+        // var updated = _curTier.Actsaies.Where(a => !string.IsNullOrEmpty(a.Liba) || !string.IsNullOrEmpty(a.Abg)).ToList();
+        // Console.WriteLine($"Verified Liba Set : {_curTier.Actsaies.FirstOrDefault().Liba}");
     }
     private async Task EvaluateSaisie()
     {
@@ -757,8 +756,8 @@ else
             Sireel = curProg.Tovue,
             Idorg = curOrga.Idorg,
             Idpln = curProg.Id,
-            Vperi = toChild.curSesio.Speri,
-            Eperi = toChild.curExo.Speri,
+            Vperi = toChild.curSes,
+            Eperi = toChild.curExo,
             Datope = DateTime.Now,
             Gseq = 1,
             OutLines = calcLines
@@ -801,8 +800,8 @@ else
                 Sireel = curProg.Tovue,
                 Idorg = curOrga.Idorg,
                 Idpln = curProg.Id,
-                Vperi = toChild.curSesio.Speri,
-                Eperi = toChild.curExo.Speri,
+                Vperi = toChild.curSes,
+                Eperi = toChild.curExo,
                 Datope = DateTime.Now,
                 Gseq = 1,
                 OutLines = CalcLines
@@ -831,8 +830,8 @@ else
                 Sireel = curProg.Tovue,
                 Idorg = curOrga.Idorg,
                 Idpln = curProg.Id,
-                Vperi = toChild.curSesio.Speri,
-                Eperi = toChild.curExo.Speri,
+                Vperi = toChild.curSes,
+                Eperi = toChild.curExo,
                 Datope = DateTime.Now,
                 Gseq = 1,
                 OutLines = CalcLines

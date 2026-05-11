@@ -1,8 +1,10 @@
-﻿@page "/categstk"
+﻿@page "/asessions"
+@layout AccsMenu
+
 @using BlazorBootstrap
 @using Blazored.LocalStorage
 @using GxShared.Helpers
-@using GxPilo.Services
+@using GxTie.Services
 @using Simple.OData.Client
 @using AutoMapper
 @using GxShared.GxDtos
@@ -18,25 +20,49 @@
 @inject IJSRuntime _jsRun
 
 <div class="container mt-3">
-    <h4>Stock Categories</h4>
-
-    <Button Color="ButtonColor.Success" @onclick="() => StartAdd()">Add New Category</Button>
-
-    @if (draftCat != null)
+    <!-- Transfer header -->
+    <div class="mb-3">
+        <label>Exercice</label>
+        <InputSelect @bind-Value="IMyExo">
+            @foreach (var exo in LsExos)
+            {
+                <option value="@exo.Elea">@exo.Liba</option>
+            }
+        </InputSelect>
+        <label>G.session</label>
+        <InputSelect @bind-Value="IMySes">
+            @foreach (var ses in GSesios)
+            {
+                <option value="@ses.Elea">@ses.Liba</option>
+            }
+        </InputSelect>  
+    </div>
+    <Button Color="ButtonColor.Success" @onclick="() => StartAdd()">Add New Session</Button>
+    @if (isAdding)
     {
-        <Grid TItem="StkcatDto" 
-        Data="@curOrga?.Stkcats.ToList()" 
-        AllowPaging="true" 
-        Responsive="true">
+        <div class="mt-3">
+            <InputText @bind-Value="draftSes.Liba" placeholder="Label" />
+            <InputDate @bind-Value="draftSes.Dval" placeholder="Debut" />
+            <InputDate @bind-Value="draftSes.Fval" placeholder="Fin" />
+            <Button Color="ButtonColor.Success" @onclick="() => SaveAdd()">Add</Button>
+            <Button Color="ButtonColor.Secondary" @onclick="() => CancelAdd()">Cancel</Button>
+        </div>
+    }
+    @if (DaExos.Any())
+    {
+        <Grid TItem="GsgfixDto"
+              Data="@DaExos"
+              AllowPaging="true"
+              Responsive="true">
             <GridColumns>
-                <GridColumn TItem="StkcatDto" HeaderText="Id" Class="xcol1">
-                    <ChildContent Context="item">@item.Id</ChildContent>
+                <GridColumn TItem="GsgfixDto" HeaderText="No" Class="xcol1">
+                    <ChildContent Context="item">@item.Elea</ChildContent>
                 </GridColumn>
-                <GridColumn TItem="StkcatDto" HeaderText="Label" Class="xcol3">
+                <GridColumn TItem="GsgfixDto" HeaderText="Designation" Class="xcol3">
                     <ChildContent Context="item">
                         @if (editRowguid == item.Rowguid)
                         {
-                            <InputText @bind-Value="draftCat.Liba" />
+                            <InputText @bind-Value="draftSes.Liba" />
                         }
                         else
                         {
@@ -44,80 +70,100 @@
                         }
                     </ChildContent>
                 </GridColumn>
-                <GridColumn TItem="StkcatDto" HeaderText="Price" Class="xcol2">
+                <GridColumn TItem="GsgfixDto" HeaderText="Type" Class="xcol1">
                     <ChildContent Context="item">
                         @if (editRowguid == item.Rowguid)
                         {
-                            <InputNumber @bind-Value="draftCat.Prix" />
-                        }
-                        else
-                        {
-                            @item.Prix
-                        }
-                    </ChildContent>
-                </GridColumn>
-                <GridColumn TItem="StkcatDto" HeaderText="Parent" Class="xcol2">
-                    <ChildContent Context="item">
-                        @if (editRowguid == item.Rowguid)
-                        {
-                            <InputSelect @bind-Value="draftCat.Pid" class="me-3" style="width:auto">
-                                <option value="0">?choisir</option>
-                                @foreach (var utb in LsCats.Where(u => u.Id != draftCat.Id))
-                                {
-                                    <option value="@utb.Id">@utb.Liba</option>
-                                }
+                            <InputSelect @bind-Value="draftSes.Etyp" class="me-3" style="width:auto">
+                                <option value="1">aaaamm</option>
+                                <option value="2">aaaa</option>
                             </InputSelect>
                         }
                         else
                         {
-                            <InputSelect @bind-Value="draftCat.Pid" class="me-3" style="width:auto" disabled>
-                                <option value="0">?choisir</option>
-                                @foreach (var utb in LsCats.Where(u => u.Id != draftCat.Id))
-                                {
-                                    <option value="@utb.Id">@utb.Liba</option>
-                                }
+                            <InputSelect @bind-Value="draftSes.Etyp" class="me-3" style="width:auto" disabled>
+                                <option value="1">aaaamm</option>
+                                <option value="2">aaaa</option>
                             </InputSelect>
                         }
                     </ChildContent>
                 </GridColumn>
-                <GridColumn TItem="StkcatDto" HeaderText="Actions">
+                <GridColumn TItem="GsgfixDto" HeaderText="Depart" Class="xcol1">
+                    <ChildContent Context="item">
+                        @if (editRowguid == item.Rowguid)
+                        {
+                            <InputDate @bind-Value="draftSes.Dval" />
+                        }
+                        else
+                        {
+                            @item.Dval?.ToShortDateString()
+                        }
+                    </ChildContent>
+                </GridColumn>
+                <GridColumn TItem="GsgfixDto" HeaderText="Fin" Class="xcol1">
+                    <ChildContent Context="item">
+                        @if (editRowguid == item.Rowguid)
+                        {
+                            <InputDate @bind-Value="draftSes.Fval" />
+                        }
+                        else
+                        {
+                            @item.Fval?.ToShortDateString()
+                        }
+                    </ChildContent>
+                </GridColumn>
+                <GridColumn TItem="GsgfixDto" HeaderText="Actions">
                     <ChildContent Context="item">
                         @if (editRowguid == item.Rowguid)
                         {
                             <Button Color="ButtonColor.Primary" Size="ButtonSize.Small"
-                            @onclick="() => SaveEdit(item)">
+                                    @onclick="() => SaveEdit(item)">
                                 Save
                             </Button>
                             <Button Color="ButtonColor.Secondary" Size="ButtonSize.Small"
-                            @onclick="() => CancelEdit()">
+                                    @onclick="() => CancelEdit()">
                                 Cancel
                             </Button>
                         }
                         else
                         {
-                            <Button Color="ButtonColor.Warning" Size="ButtonSize.Small"
-                            @onclick="() => StartEdit(item)">
-                                Edit
-                            </Button>
-                            <Button Color="ButtonColor.Danger" Size="ButtonSize.Small"
-                            @onclick="() => DeleteCategory(item)">
-                                Delete
-                            </Button>
+                            @if (item.Eta == 0)
+                            { //nouveau
+                                <Button Color="ButtonColor.Warning" Size="ButtonSize.Small"
+                                        @onclick="() => StartEdit(item)">
+                                    Ouvrir
+                                </Button>
+                                <Button Color="ButtonColor.Danger" Size="ButtonSize.Small"
+                                        @onclick="() => DeleteAttribute(item)">
+                                    Delete
+                                </Button>
+                            }
+                            else if (item.Eta == 1)
+                            {
+                                <Button Color="ButtonColor.Danger" Size="ButtonSize.Small"
+                                        @onclick="() => DeleteAttribute(item)">
+                                    Cloturer
+                                </Button>
+                            }
+                            else if (item.Eta == 2)
+                            {
+                                <Button Color="ButtonColor.Warning" Size="ButtonSize.Small"
+                                        @onclick="() => DeleteAttribute(item)">
+                                    Archiver
+                                </Button>
+                            }
+                            else
+                            {
+                                <Button Color="ButtonColor.Warning" Size="ButtonSize.Small"
+                                        @onclick="() => DeleteAttribute(item)">
+                                    Visible
+                                </Button>
+                            }
                         }
                     </ChildContent>
                 </GridColumn>
             </GridColumns>
         </Grid>
-    }
-    @if (isAdding)
-    {
-        <div class="mt-3">
-            <h5>New Category</h5>
-            <InputText @bind-Value="draftCat.Liba" placeholder="Label" />
-            <InputNumber @bind-Value="draftCat.Prix" placeholder="Price" />
-            <Button Color="ButtonColor.Success" @onclick="() => SaveAdd()">Add</Button>
-            <Button Color="ButtonColor.Secondary" @onclick="() => CancelAdd()">Cancel</Button>
-        </div>
     }
 </div>
 <style>
@@ -185,15 +231,18 @@
     [Parameter]
     public EventCallback<int> NbChangesChanged { get; set; }
 
+
+    private int IMyExo = 0, IMySes = 0;
+    private List<Gpvar> LsExos = new();
+    private List<Gpvar> GSesios = new();
     //[Parameter] public ItemClientService ItemService { get; set; }
     //[Parameter] public StockClientService StockService { get; set; }
-    private List<StkcatDto> LsCats = new();
+    private List<GsgfixDto> DaExos = new();
     private Guid? editRowguid;
     private bool isAdding = false;
-    private StkcatDto draftCat = new();
+    private GsgfixDto draftSes = new();
 
     private void CancelAdd() => isAdding = false;
-
 
     protected override async Task OnInitializedAsync()
     {
@@ -212,47 +261,43 @@
             //     Imessage = "CONNEXION, Utilisateur non authentifie";
             //     return;
             // }
+            LsExos = toChild.LsVars.Where(v => v.Gvars == 11).ToList();
+            GSesios = toChild.LsVars.Where(v => v.Gvars == 12).ToList();
             // //LsVars = toChild.LsVars;
             // LsFixes = toChild.LsFixes;
             //LsDoms = toChild.LsFixes.Where(ut => ut.Gvars == 36 && ut.Itb == 4 && ut.Gp1 == 3 && ut.Elea != 0).ToList();
             //LsDoms = LsFixes.Where(ut => ut.Gvars == 36 && ut.Itb == 4 && ut.Gp1 == 3 && ut.Elea != 0).ToList();
             //LsSites = toChild.LsSites;
             //_lgcdu = 3;
-            LsCats = curOrga?.Stkcats.ToList();
+            DaExos = curOrga?.Gsgfixes.Where(f => f.Gvars == 11).ToList();
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"22error loading cat-Stk: {ex.Message}");
+            Console.WriteLine($"22error loading atr-Stk: {ex.Message}");
         }
     }
-    private void StartEdit(StkcatDto atr)
+    private void StartEdit(GsgfixDto atr)
     {
         editRowguid = atr.Rowguid;
-        draftCat = new StkcatDto 
-        { 
-            Id = atr.Id, 
-            Liba = atr.Liba, 
-            Xtyp = atr.Xtyp, 
-            Rowguid = atr.Rowguid 
-        };
+        draftSes = new GsgfixDto { Xseq = atr.Xseq, Liba = atr.Liba, Atyp = atr.Atyp, Rowguid = atr.Rowguid };
     }
 
-    private async Task SaveEdit(StkcatDto atr)
+    private async Task SaveEdit(GsgfixDto atr)
     {
-        atr.Liba = draftCat.Liba;
-        atr.Xtyp = draftCat.Xtyp;
+        atr.Liba = draftSes.Liba;
+        atr.Atyp = draftSes.Atyp;
         // Register update with OData context
         var key = GetEntityKey(atr); // helper to extract PK
-        _guard.TrackUpdate("Stkcats", key, atr);
+        _guard.TrackUpdate("Gsgfixes", key, atr);
         editRowguid = null;
         await NotifyPendingChanges();
     }
 
     private void CancelEdit() => editRowguid = null;
 
-    private async Task DeleteCategory(StkcatDto atr)
+    private async Task DeleteAttribute(GsgfixDto atr)
     {
-        curOrga.Stkcats.Remove(atr);
+        curOrga.Gsgfixes.Remove(atr);
 
         // Register delete with OData context
         // Extract PK using your helper
@@ -260,7 +305,7 @@
 
         // Queue delete in guard
         //_guard.TrackDelete<TDto>(GetEntitySetName<TDto>(), key);
-        _guard.TrackDelete("Stkcats", key);
+        _guard.TrackDelete("Gsgfixes", key);
         Console.WriteLine($"🗑️ {atr.Liba} queued for delete");
         
         await NotifyPendingChanges();
@@ -269,16 +314,16 @@
     private void StartAdd()
     {
         isAdding = true;
-        draftCat = new StkcatDto();
+        draftSes = new GsgfixDto();
     }
 
     private async Task SaveAdd()
     {
-        draftCat.Rowguid = Guid.NewGuid();
-        draftCat.Idorg = curOrga.Idorg;
+        draftSes.Rowguid = Guid.NewGuid();
+        draftSes.Idorg = curOrga.Idorg;
         // Register add with OData context
-        _guard.TrackInsert("Stkcats", draftCat);
-        Console.WriteLine($"➕ NEW {draftCat.Liba} → TrackInsert");
+        _guard.TrackInsert("Gsgfixes", draftSes);
+        Console.WriteLine($"➕ NEW {draftSes.Liba} → TrackInsert");
         isAdding = false;
         await NotifyPendingChanges();
     }
@@ -286,8 +331,8 @@
     {
         switch (entity)
         {
-            case StkcatDto pln:
-                return pln.Id;
+            case GsgfixDto pln:
+                return pln.Xseq;
             // case RubhieDto rub:
             //     return rub.Id;
             // case RubpstDto fmt:
@@ -309,4 +354,3 @@
         StateHasChanged();
     }
 }
-

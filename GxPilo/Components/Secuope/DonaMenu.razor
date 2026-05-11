@@ -5,8 +5,8 @@
 @using System.Security.Claims
 @using BlazorBootstrap
 @using Blazored.LocalStorage
+@using GxShared.Helpers
 @using GxShared.Sess
-@using GxPilo.ClieModels
 @using GxPilo.Services
 @using Simple.OData.Client
 @using AutoMapper
@@ -155,7 +155,7 @@
 @code {
     private bool isLoading = true;
     public GxorgaDto curOrga = new GxorgaDto();
-    public MyShareVars toChild = new();
+    public ChildVars toChild = new();
     
     [CascadingParameter]
     private Task<AuthenticationState>? AuthState { get; set; }
@@ -234,7 +234,6 @@
             curOrga = await _MyODaClient
                 .For<GxorgaDto>("Gxorgas")
                 .Key(key)
-                .Expand(s => s.Gsesios)
                 .Expand(o => o.Plngens)
                 .Expand(o => o.Plngens.Select(p => p.Rubhies))
                 .FindEntryAsync();

@@ -11,6 +11,7 @@
   </PropertyGroup>
   
   <ItemGroup>
+    <Compile Remove="ClieModels\**" />
     <Compile Remove="Components\Admina\**" />
     <Compile Remove="Components\InAdmTest\**" />
     <Compile Remove="Components\Secuope\**" />
@@ -20,6 +21,7 @@
     <Compile Remove="Services\Mform\**" />
     <Compile Remove="wwwroot\lib\wrbootstrap\**" />
     <Compile Remove="YYYFormulas\**" />
+    <Content Remove="ClieModels\**" />
     <Content Remove="Components\Admina\**" />
     <Content Remove="Components\InAdmTest\**" />
     <Content Remove="Components\Secuope\**" />
@@ -29,6 +31,7 @@
     <Content Remove="Services\Mform\**" />
     <Content Remove="wwwroot\lib\wrbootstrap\**" />
     <Content Remove="YYYFormulas\**" />
+    <EmbeddedResource Remove="ClieModels\**" />
     <EmbeddedResource Remove="Components\Admina\**" />
     <EmbeddedResource Remove="Components\InAdmTest\**" />
     <EmbeddedResource Remove="Components\Secuope\**" />
@@ -38,6 +41,7 @@
     <EmbeddedResource Remove="Services\Mform\**" />
     <EmbeddedResource Remove="wwwroot\lib\wrbootstrap\**" />
     <EmbeddedResource Remove="YYYFormulas\**" />
+    <None Remove="ClieModels\**" />
     <None Remove="Components\Admina\**" />
     <None Remove="Components\InAdmTest\**" />
     <None Remove="Components\Secuope\**" />
@@ -50,10 +54,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Remove="ClieModels\CalcModel.cs" />
-    <Compile Remove="ClieModels\InitEnt.cs" />
-    <Compile Remove="ClieModels\InitTiers.cs" />
-    <Compile Remove="ClieModels\outModels.cs" />
     <Compile Remove="Components\GridBase.cs" />
     <Compile Remove="Components\GridWrapper.razor.cs" />
     <Compile Remove="oldProgram.cs" />
@@ -65,6 +65,7 @@
     <Compile Remove="Services\MyOGridService.cs" />
     <Compile Remove="Services\MyRubCalc.cs" />
     <Compile Remove="Services\OdSaieMessageHandler.cs" />
+    <Compile Remove="Services\PouchDbService.cs" />
     <Compile Remove="Services\RubCalc.cs" />
     <Compile Remove="Services\StockClieServices.cs" />
     <Compile Remove="Services\T55iersClieServices.cs" />
@@ -155,6 +156,8 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Include="Components\Secuope\AccsMenu.razor" />
+    <None Include="Components\Secuope\Asessions.razor" />
     <None Include="efpt.config.json.user" />
   </ItemGroup>
 

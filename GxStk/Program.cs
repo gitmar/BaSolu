@@ -13,7 +13,6 @@ using GxShared.Mapping;
 using GxShared.Sess;
 
 using GxStk;
-using GxStk.ClieModels;
 using GxStk.Services;
 
 using Microsoft.AspNetCore.Components.Authorization;
@@ -137,7 +136,7 @@ builder.Services.AddScoped<IPendingChangesGuard, PendingChangesGuard>();
 builder.Services.AddAutoMapper(typeof(SharedMappingProfile).Assembly);
 builder.Services.AddScoped<Userbag>();
 builder.Services.AddScoped<IPuzzleSyncService, PuzzleSyncService>();
-builder.Services.AddScoped<MyShareVars>();
+builder.Services.AddScoped<ChildVars>();
 builder.Services.AddScoped<RendAgres>();
 builder.Services.AddScoped<ClieAppState>();
 builder.Services.AddScoped<SessionContextService>();
@@ -196,7 +195,7 @@ public class ApiSettings
 //using GxShared.Sess;
 
 //using GxStk;
-//using GxStk.ClieModels;
+//using GxShared.Helpers;
 //using GxStk.Services;
 
 //using Microsoft.AspNetCore.Components.Authorization;

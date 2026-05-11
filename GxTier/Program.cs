@@ -11,7 +11,7 @@ using GxShared.Mapping;
 using GxShared.Sess;
 
 using GxTie;
-using GxTie.ClieModels;
+using GxShared.Helpers;
 using GxTie.Services;
 
 using Microsoft.AspNetCore.Components.Authorization;
@@ -127,7 +127,7 @@ builder.Services.AddScoped<IPendingChangesGuard, PendingChangesGuard>();
 builder.Services.AddAutoMapper(typeof(SharedMappingProfile).Assembly);
 builder.Services.AddScoped<Userbag>();
 builder.Services.AddScoped<IPuzzleSyncService, PuzzleSyncService>();
-builder.Services.AddScoped<MyShareVars>();
+builder.Services.AddScoped<ChildVars>();
 builder.Services.AddScoped<RendAgres>();
 builder.Services.AddScoped<ClieAppState>();
 builder.Services.AddScoped<SessionContextService>();
@@ -136,7 +136,7 @@ builder.Services.AddScoped<HttpClientService>();
 builder.Services.AddScoped<TokenAwareClientManager>();
 builder.Services.AddScoped<TblJsonRender>();
 builder.Services.AddScoped<LinkSerialiser>();
-builder.Services.AddScoped<PouchDbService>();
+//builder.Services.AddScoped<PouchDbService>();
 builder.Services.AddSingleton<IMessageService, MessageService>();
 builder.Services.AddSingleton<LoadingService>();
 
@@ -182,7 +182,7 @@ public class ApiSettings
 //using GxShared.Sess;
 
 //using GxTie;
-//using GxTie.ClieModels;
+//using GxShared.Helpers;
 //using GxTie.Services;
 
 //using Microsoft.AspNetCore.Components.Authorization;

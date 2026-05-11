@@ -13,8 +13,8 @@
 @using System.Web
 @using BlazorBootstrap
 @using Blazored.LocalStorage
-@using GxPilo.ClieModels
 @using GxPilo.Services
+@using GxShared.Helpers
 @using GxShared.Sess
 @using Simple.OData.Client
 @using AutoMapper
@@ -65,7 +65,7 @@ else
             <div class="form-group">
                 <div class="btn btn-group">
                     <label class="me-2">Plan :</label>
-                    <InputSelect @bind-Value="IMyPlan" class="me-3" style="width:auto">
+                    <InputSelect @bind-Value="IMyPlan" @onchange="() => curPlanPlan(IMyPlan)" class="me-3" style="width:auto">
                         <option value="0">?plan</option>
                         @foreach (var upl in LsPlans)
                         {
@@ -656,7 +656,7 @@ else
     [Parameter]
     public GxorgaDto curOrga { get; set; } = new();
     [Parameter]
-    public MyShareVars toChild { get; set; }
+    public ChildVars toChild { get; set; }
     [Parameter]
     public int toMenu { get; set; }
     //guard
@@ -720,16 +720,18 @@ else
     private int IMyDom = 1; //1Saisie
     private int ItkDom = 6; //6Tiers7Mat
     private int IMyVue = 1; //1Reel2Virtuel
-    private int _myPlan; //curPlan no
-    public int IMyPlan
-    {
-        get => _myPlan;
-        set
-        {
-            _myPlan = value;
-            //curPlanDom(value); // run your logic when plan changes
-        }
-    }
+    private int IMyPlan = 0; //plan en cours
+
+    // private int _myPlan; //curPlan no
+    // public int IMyPlan
+    // {
+    //     get => _myPlan;
+    //     set
+    //     {
+    //         _myPlan = value;
+    //         //curPlanDom(value); // run your logic when plan changes
+    //     }
+    // }
     private string atrTitle = "";
     private string atrDest = "Programmes de Saisie";
     //pour modals formulas
@@ -852,6 +854,7 @@ else
             }
             else
             {
+                MyDaActs = new ObservableCollection<ActsaieDto>();
                 Console.WriteLine("No tiers found for the current user.");
             }
 
@@ -868,7 +871,9 @@ else
                 Console.WriteLine("Plngen null/empty - initializing empty collections");
                 MyDaPlans = new ObservableCollection<PlngenDto>();
             }
-
+            // Batch update so you don’t render three times
+            IMyPlan = LsPlans?.FirstOrDefault()?.Id ?? 0;
+            UpdateAllDom(IMyPlan, IMyDom);
             atrTitle = "Saisie";
         }
         catch (Exception ex)
@@ -925,8 +930,8 @@ else
             Froac = 3, //de grille
             Dstr = "",
             Fstr = "",
-            Ddval = DateTime.Now,
-            Dfval = DateTime.Now,
+            Dtdeb = DateTime.Now,
+            Dtfin = DateTime.Now,
             Svala = "",
             Pirub = myact.Irub,
             Zcdrub = $"{myact.Scdrub}Z{lsnb.ToString()}",
@@ -963,8 +968,8 @@ else
         bool isNew = item.Id == default; // for int, default == 0
         if (isNew)
         { //not saved yet
-           Imessage = "🚫 Cannot edit new Fmt: Please save it first.";
-           return;
+            Imessage = "🚫 Cannot edit new Fmt: Please save it first.";
+            return;
         }
         if (rowguid == Guid.Empty) return;
         item.Xedt1 = -1;
@@ -1023,31 +1028,31 @@ else
 
     private async Task ProcessEntity<T>(T entity, bool isConfirm, string entitySet, Func<T, bool> validate)
     where T : class
-{
-    Console.WriteLine($"🔄 Process{typeof(T).Name}: {(isConfirm ? "CONFIRM" : "CANCEL")}");
-    
-    if (entity == null)
     {
-        Imessage = "entity nulle";
-        StateHasChanged();
-        return;
-    }
+        Console.WriteLine($"🔄 Process{typeof(T).Name}: {(isConfirm ? "CONFIRM" : "CANCEL")}");
 
-    if (isConfirm)
-    {
-        // 🔥 1. Copy draft → entity (for validation)
-        CopyDraftToGridItem(entity);
-        
-        // 🔥 2. VALIDATE (now has updated values)
-        if (!validate(entity))
+        if (entity == null)
         {
-            Console.WriteLine($"❌ Validation failed: {Imessage}");
+            Imessage = "entity nulle";
             StateHasChanged();
             return;
         }
-        
-        // 🔥 3. NEW vs EXISTING (SINGLE operation)
-        bool isNew = GetXadd1(entity) == -1;  // Assumes GetXadd1<T>
+
+        if (isConfirm)
+        {
+            // 🔥 1. Copy draft → entity (for validation)
+            CopyDraftToGridItem(entity);
+
+            // 🔥 2. VALIDATE (now has updated values)
+            if (!validate(entity))
+            {
+                Console.WriteLine($"❌ Validation failed: {Imessage}");
+                StateHasChanged();
+                return;
+            }
+
+            // 🔥 3. NEW vs EXISTING (SINGLE operation)
+            bool isNew = GetXadd1(entity) == -1;  // Assumes GetXadd1<T>
             if (isNew)
             {
                 _guard.TrackInsert(entitySet, entity);
@@ -1059,11 +1064,11 @@ else
                 _guard.TrackUpdate(entitySet, key, entity);
                 Console.WriteLine($"✏️ EXISTING {typeof(T).Name} → TrackUpdate");
             }
-        
-        // 🔥 4. Confirm flags ONCE
-        SetFlags(entity, 0, -1, 0);  // Xadd1=0 confirmed
-        
-        // 5. UI + notify
+
+            // 🔥 4. Confirm flags ONCE
+            SetFlags(entity, 0, -1, 0);  // Xadd1=0 confirmed
+
+            // 5. UI + notify
             var rowguid = GetRowguid(entity);
             ResetRowState(rowguid);
             SetLightBackground(rowguid, false);
@@ -1071,8 +1076,8 @@ else
             //await NotifyPendingChanges();
 
             Imessage = $"✅ {typeof(T).Name} confirmed";
-    }
-    else // CANCEL
+        }
+        else // CANCEL
         {
             if (GetXadd1(entity) == -1) // New only
             {
@@ -1089,8 +1094,8 @@ else
             ResetEntityUIState<T>();
             Imessage = "";
         }
-    StateHasChanged();
-}
+        StateHasChanged();
+    }
     private object GetEntityKey<TDto>(TDto entity)
     {
         switch (entity)
@@ -1105,9 +1110,9 @@ else
                 throw new InvalidOperationException($"Unknown entity type {typeof(TDto).Name}");
         }
     }
-// 🔥 Generic Rowguid (no reflection)
-private static Guid GetRowguid<T>(T entity) where T : class
-    => ((dynamic)entity).Rowguid;  // Or property expression
+    // 🔥 Generic Rowguid (no reflection)
+    private static Guid GetRowguid<T>(T entity) where T : class
+        => ((dynamic)entity).Rowguid;  // Or property expression
 
     // Generic flag setter
     private void SetFlags<T>(T entity, int xadd1, int xedt1, int xdel1)
@@ -1432,7 +1437,7 @@ private static Guid GetRowguid<T>(T entity) where T : class
 
         StateHasChanged();
     }
-    
+
     private string GetEntitySetName<T>() where T : class
     {
         return typeof(T) switch
@@ -1594,40 +1599,60 @@ private static Guid GetRowguid<T>(T entity) where T : class
         return string.Join(" ", css);
     }    
     // ✅ 6. SELECTIONS
-    private void curPlanVue(int xdom)
+    private void curPlanPlan(int plnId)
     {
-        if (xdom != 0)
+        //IMyPlan = plnId;
+        if (IMyPlan != 0)
         {
+            int gtib = 7;
+            curPlan = curOrga?.Plngens.FirstOrDefault(pln => pln.Ptyp == 4);
+            //LsGties = LsFixes.Where(ut => ut.Gvars == 36 && ut.Itb == gtib && ut.Elea != 0 && ut.Elea != 9).ToList();
+        }
+        else
+        {
+            curPlan = new();
+            //LsGties = new();
+        }
 
+        // Example: check if all selections are valid
+        if (IMyDom != 0 && IMyPlan != 0)
+        {
+            // All three have values → single render
+            InvokeAsync(StateHasChanged);
         }
     }
-    // private void curPlanDom(int xdom)
-    // {
-    //     if (xdom != 0)
-    //     {
-    //         curPlan = MyDaPlans?.FirstOrDefault(p => p.Id == IMyPlan);
-    //         splnDom = curPlan?.Liba;    
-    //         //MyDaPlans = new ObservableO curog.Where(pl => pl.IrubNavigation.Ipln == IMyPlan).ToList()
-    //         //splnDom = MyDaPlans?.FirstOrDefault(p => p.Id == IMyPlan)?.Liba;
-    //     }
-    // }
+    private void curPlanDom(int domId)
+    {
+        //IMyDom = domId;
+        if (IMyDom != 0)
+        {
+            //LsGties = LsFixes.Where(ut => ut.Gvars == 36 && ut.Itb == gtib && ut.Elea != 0 && ut.Elea != 9).ToList();
+        }
+        else
+        {
+            //LsGties = new();
+        }
 
-    // ✅ 6. HELPERS - Mark Count and Clone
+        // Example: check if all selections are valid
+        if (IMyDom != 0 && IMyPlan != 0)
+        {
+            // All three have values → single render
+            InvokeAsync(StateHasChanged);
+        }
+    }
+    private void UpdateAllDom(int plnId, int domId)
+    {
+        IMyPlan = plnId;
+        IMyDom = domId;
+        //IMyAtr = atrId;
+        //IMyVue = vueId;
 
-    // private void MarkAsModified(object entity)
-    // {
-    //     // Reset flags universally
-    //     if (entity is PlngenDto pln) { pln.Xedt1 = pln.Xadd1 = pln.Xdel1 = 0; }
-    //     else if (entity is ActsaieDto rub) { rub.Xedt1 = rub.Xadd1 = rub.Xdel1 = 0; }
-    //     else if (entity is ActdetDto fmt) { fmt.Xedt1 = fmt.Xadd1 = fmt.Xdel1 = 0; }
-
-    //     try { 
-    //         curODContext.Context.AttachTo(GetEntitySet(entity), entity); }
-    //     catch (InvalidOperationException) { }  // Already tracked
-
-    //     curODContext.Context.UpdateObject(entity);  // 🔥 KEY: Context.UpdateObject()
-    //     Console.WriteLine($"✅ {entity.GetType().Name} marked Modified");
-    // }
+        InvokeAsync(StateHasChanged); // single refresh
+    }
+    private void ResetAllDom()
+    {
+        UpdateAllDom(plnId: 0, domId: 0); //, atrId: 0, vueId: 1);
+    }
 
     private object DeepClone(object entity)
     {

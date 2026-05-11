@@ -3,30 +3,36 @@
 @layout FreeLayout
 
 @using System.Security.Claims
+@using System.Linq.Expressions
 @using BlazorBootstrap
 @using Blazored.LocalStorage
-@using GxShared.Sess
-@using GxPilo.ClieModels
+@using GxPilo.Components.Secuope
 @using GxPilo.Services
-@using GxPilo.Components.Secuope.Sessions
+@using GxPilo.StaticHelpers
+@using GxShared.Helpers
+@using GxShared.Sess
+@using GxShared.Others
 @using Simple.OData.Client
 @using GxShared.GxDtos
-@using GxShared.GxGuards
+@using GxShared.Interfaces
 @using Newtonsoft.Json
+@using Gx.Components
+@using Gx.Components.Navigation
 
-@inject NavigationManager _navManager
+@inject NavigationManager _navmanager
 @inject ILocalStorageService _localStorage
 @inject HttpClientService _clieManager
 @inject IODataClient _MyODaClient
 @inject SessionContextService _sessionContext
-@inject PendingChangesGuard _guard
+@inject RendAgres _rendAgres
+@inject IPendingChangesGuard _guard
 @inject IMessageService _messageService
 
 @if (isLoading)
 {
     <div class="text-center">
         <Spinner Color="SpinnerColor.Primary" Size="SpinnerSize.Large" />
-        <p>SECURITES/AUTORISATIONS Loading...</p>
+        <p>PARAMS/TABLES Loading...</p>
     </div>
 }
 @if (!isLoading)
@@ -44,77 +50,44 @@
                            GroupSelected="@_chxGpe"
                            GroupSelectedChanged="@SelGpe"
                            OnBack="@NavigateBack" />
+
                 <div class="row">
                     <div class="col-md-12 input-group align-middle">
                         <span class="text-uppercase text- text-success"><b>@strComp</b></span>
-                        &nbsp;&nbsp;
                         <span class="separator">|| </span>
-                        <Button class="btn btn-sm btn-secondary btnsz"
-                                
-                                @onclick="ManEditAll">
-                            Modifier
-                        </Button>
-                        <Button class="btn btn-sm btn-secondary btnsz"
-                                
-                                @onclick="ManCnclAll">
-                            Annuler
-                        </Button>
-                        <span class="separator">|  </span>
-                        @if (!String.IsNullOrEmpty(Jmessage))
-                        {
-                            <span class="bg-info bg-opacity-10" style="font-style:italic;color:red">&nbsp;--> @Jmessage</span>
-                        }
                     </div>
                 </div>
+
                 <!-- Main Content -->
-                @if (this != null)
+                @if (curOrga != null && toChild != null)
                 {
-                    @* @if (_chxMenu == 2)
-                    { //SESSIONS
-                      <AJetons @ref=mygses
-                                 ChxMenu="@chxMenu"
+                    @if (_chxMenu == 1)
+                    {
+                        <Asessions @ref="mygtbl"
                                  curOrga="@curOrga"
+                                 @bind-NbChanges="_nbChanges"
+                                 _guard="@_guard"
                                  toChild="@toChild"
-                                 curODContext="@curODContext">
-                          <ChildContent>
-                              <h2 class="child-box">Hello SESSIONS</h2>
-                          </ChildContent>
-                      </AJetons>
-                    } else *@
-                    @if (_chxMenu == 2)
-                    { //SESSIONS
-                      <ASessions @ref=mygses
-                        ChxMenu="@_chxMenu"
-                        curOrga="@curOrga"
-                        toChild="@toChild">
+                                 _InODaClient="@_MyODaClient">
                             <ChildContent>
-                                <h2 class="child-box">Hello SESSIONS</h2>
+                                @* <h2 class="child-box">Hello TABLES</h2> *@
                             </ChildContent>
-                        </ASessions>
-                    } else
-                    @if (_chxMenu == 3)
-                    { //EXERCICES
-                        @*<ZZSAsesios ChxMenu="@chxMenu"
-                                    curOrga="@curOrga"
-                                    toChild="@toChild"
-                                    curODContext="@curODContext">
-                              <ChildContent>
-                                  <h2 class="child-box">Hello RECEPTION</h2>
-                              </ChildContent>
-                          </ZZSAsesios>*@
-                    } else
-                    @if (_chxMenu == 4)
-                    { //EXERCICES
-                      @* <ASessions ChxMenu="@chxMenu"
-                                curOrga="@curOrga"
-                                toChild="@toChild"
-                                curODContext="@curODContext">
-                          <ChildContent>
-                              <h2 class="child-box">Hello RECEPTION</h2>
-                          </ChildContent>
-                      </ASessions> *@
+                        </Asessions>
                     }
-                 }
+                    else if (_chxMenu == 2)
+                    {
+                        <Asauthors @ref="mygaut"
+                                curOrga="@curOrga"
+                                @bind-NbChanges="_nbChanges"
+                                _guard="_guard"
+                                toChild="@toChild"
+                                _InODaClient="@_MyODaClient">
+                            <ChildContent>
+                                @* <h2 class="child-box">Hello ATTRIBUTS</h2> *@
+                            </ChildContent>
+                        </Asauthors>
+                    }
+                }
             </div>
         </div>
         <div class="row mt-3">
@@ -140,73 +113,58 @@
         </div>
     </div>
 }
+<ErrorBoundary>
+    <ErrorContent>
+        An unexpected error occured. Please try again later.
+    </ErrorContent>
+</ErrorBoundary>
+
 @code {
+
+    private int selectedMenu = 1;
+
     private bool isLoading = true;
     public GxorgaDto curOrga = new GxorgaDto();
-    public MyShareVars toChild = new();
+    public ChildVars toChild = new ChildVars();
+    public RenderFragment ChildContent { get; set; }
+    //private bool allEnable = false;
+    private string Jmessage = "";
 
-    [Parameter]
-    public RenderFragment Pstands { get; set; }
-    [Parameter]
-    public RenderFragment Pmaties { get; set; }
-    [Parameter]
-    public RenderFragment Pgrilles { get; set; }
-    [Parameter]
-    public RenderFragment Pschemas { get; set; }
+    private Asessions mygtbl = new();
+    private Asauthors mygaut = new();
+
     [CascadingParameter]
     private Task<AuthenticationState>? AuthState { get; set; }
     public ClaimsPrincipal authUser;
     public bool isAuthenticated = false;
-
-    private ASessions mygses = new(); 
     //in DATA
     public List<GsgfixDto> LsTables = new();
 
-    public string _strOrga = "", _curSigle = "", Jmessage = "", strmeta = "", strmeta2 = "";
-    
-    //guard
+    private string _strOrga = "", _curSigle = "", strmeta = "", strmeta2 = "";
+    //private int _lgcdu = 0;
+    //entities load
+    private IEnumerable<GxorgaDto> _lsOrgas = new List<GxorgaDto>();
+
+    //GlobModels
+    public Userbag _usrBag = new Userbag();
+    public List<Gpfixe> LsFixes = new();
+    //public List<Upara> Uafls = new();
+    public List<Gpdivh> LsDivs = new();
+    public List<Gpvar> LsVars = new();
+    public List<Gplan> LsPlans = new();
+    public List<Gpvar> LtTabls = new();
+    public List<Gpvar> LsTabls = new();
+    //Navigation
+    private int _gIdTie = 0, _chxGpe = 0, _chxMenu = 1;
+    private string strComp = "Sessions";
+
+    //Guard
+    private int _nbChanges = 0;
+    private IDisposable? _locationHandler;
     private int pendingCount => _guard.GetPendingChangesCount();
     private int insertCount => _guard.GetInsertCount();
     private int updateCount => _guard.GetUpdateCount();
     private int deleteCount => _guard.GetDeleteCount();
-
-    //menus
-    public List<GxMenuItem> MenuItems = new()
-    {
-        new GxMenuItem { Id = 1, Text = "Autorisations SESSION", Icon = "bi bi-box-arrow-in-down" },
-        new GxMenuItem { Id = 2, Text = "Autorisations SAISIE", Icon = "bi bi-house-door" },
-        new GxMenuItem { Id = 3, Text = "Autorisations VENTILATION", Icon = "bi bi-house-door" },
-        //new MenuItem { Id = 4, Text = "Mutation", Icon = "bi bi-arrow-repeat" },
-    };
-    public List<GxGroupe> Groupes = new();
-
-    //entities load
-    private IEnumerable<GxorgaDto> _lsOrgas = new List<GxorgaDto>();
-    //Gestion CRUD Entete
-    
-    //GlobModels
-    public Userbag _usrBag = new Userbag();
-
-    private Gporga rfOrga = new Gporga();
-    public List<Gpfixe> LsFixes = new List<Gpfixe>();
-    public List<Gpvar> LsVars = new List<Gpvar>();
-    public List<Gplan> LsPlans = new List<Gplan>();
-    public List<Gpvar> LtTabls = new List<Gpvar>();
-    public List<Gpvar> LsTabls = new List<Gpvar>();
-    public List<Gpvar> TbElems = new List<Gpvar>();
-
-    //private int curnbCols => curOrga.Gsglnes.Where(x => x.Otyp == IBastyp && x.Totyp == selTyp).Count();
-    
-    //Navigation
-    private int _gIdTie = 0, _chxGpe = 0, _chxMenu = 1;
-    private string strComp = "Autorisations SESSIONS";
-    //modal management
-    private string SidebarStyle = "width: 200px;";
-    private bool IsOpen = true;
-    private bool FirstLoadCompleted = false;
-    private bool ContentLoaded = false;
-
-    //Guard
     private async Task CancelAllChanges()
     {
         Console.WriteLine("🗑️ CancelAllChanges START");
@@ -221,95 +179,166 @@
         _messageService.Show("✅ Saved successfully", ToastType.Success);
         StateHasChanged();
     }
+    //menus
+    public List<GxMenuItem> MenuItems = new()
+    {
+        new GxMenuItem { Id = 1, Text = "Sessions", Icon = "bi bi-box-arrow-in-down" },
+        new GxMenuItem { Id = 2, Text = "Autorisations", Icon = "bi bi-house-door" },
+        //new GxMenuItem { Id = 3, Text = "Exercices", Icon = "bi bi-arrow-repeat" },
+    };
+    public List<GxGroupe> Groupes = new();
+
+    //modal management
+    private string SidebarStyle = "width: 200px;";
+    private bool IsOpen = true;
+    private bool FirstLoadCompleted = false;
+    private bool ContentLoaded { get; set; } = false;
 
     protected override async Task OnInitializedAsync()
     {
-        isLoading = true;
-        int pita = 0;
-        ////Console.WriteLine("ADMIN EN TEST");
-        //MainTiw = this;
-        var authState = await AuthState;
-        authUser = authState.User;
-        isAuthenticated = authUser.Identity.IsAuthenticated;
-        if (!isAuthenticated)
+        try
         {
-            Console.WriteLine("Authentication ECHEC");
-            return;
-        }
-        _usrBag = await _sessionContext.GetUserbagAsync();
-        _gIdTie = _usrBag.Usorga.Gdtie;
-        LsVars = _usrBag.Usorga.Uvars.ToList();
-        LsFixes = _usrBag.Ufixes.ToList();
-        LsPlans = _usrBag.Usorga.Uplns.Where(pl => pl.Ptyp == 5 || pl.Ptyp == 6).ToList();
-        Console.WriteLine("Authentication ENTREE");
-        ////EnrolVue.ShowSubmenu();
-        pita = 21;
-        //await LoadROrgaAsync();
-        await LoadOrgaAsync(_usrBag.Idorg);
-        toChild.authUser = authUser;
-        toChild.isAuthenticated = isAuthenticated;
-        toChild.LsVars = LsVars.ToList();
-        toChild.LsFixes = LsFixes.ToList();
-        toChild.LsPlans = LsPlans.ToList();
-        //toChild.LsTabls = LsTabls.ToList();
+            isLoading = true;
 
-        //curODContext = _curODContext;
-        isLoading = false;
-        //pita = 5;
-        Console.WriteLine("ADMINS A ETE TESTE");
-        isLoading = false;
+            // 1. CRITICAL: AUTH FIRST
+            var authState = await AuthState!;
+            if (!authState.User.Identity.IsAuthenticated)
+            {
+                _messageService.Show("❌ Utilisateur non authentifié", ToastType.Danger);
+                return;  // STOP EXECUTION
+            }
+
+            // 2. Load user context
+            _usrBag = await _sessionContext.GetUserbagAsync();
+            if (_usrBag == null)
+            {
+                _messageService.Show("❌ Session utilisateur invalide", ToastType.Danger);
+                return;
+            }
+
+            _gIdTie = _usrBag.Usorga.Gdtie;
+            LsFixes = _usrBag.Ufixes.ToList();
+            LsVars = _usrBag.Usorga.Uvars.ToList();
+            LsPlans = _usrBag.Usorga.Uplns.ToList();
+            LtTabls = _usrBag.Usorga.Uvars.Where(tb => tb.Gvars == 4).ToList();
+            LsTabls = _usrBag.Usorga.Uvars.Where(tb => tb.Gvars == 5).ToList();
+
+            // 3. Parallel loads for performance
+            var allDivsTask = _rendAgres.LoadOrgaPostes();
+            var allDivs = await allDivsTask;
+            LsDivs = allDivs.Where(ud => ud.Pdom == 6 && ud.Patr == 1).ToList();
+
+            await LoadOrgaAsync(_usrBag.Idorg);
+            // 4. NOW pass to child (all data ready)
+            toChild.authUser = authUser;
+            toChild.isAuthenticated = true;
+            toChild.LsDivs = LsDivs;
+            toChild.LsVars = LsVars;
+            toChild.LsFixes = LsFixes;
+            toChild.LsPlans = LsPlans;
+            toChild.LsTabls = LsTabls;
+            toChild.curOrga = curOrga;  // ADD THIS!
+            //_guard.RegisterUnconfirmedPredicate<Gsgfix>(g => g.Xadd1 == -1 || g.Xedt1 == -1 || g.Xdel1 == -1);
+            _nbChanges = _guard.GetPendingChangesCount();  // Initial value
+        }
+        catch (Exception ex)
+        {
+            _messageService.Show($"❌ Erreur chargement: {ex.Message}", ToastType.Danger);
+            Console.WriteLine($"Load error: {ex}");
+        }
+        finally
+        {
+            isLoading = false;
+            StateHasChanged();
+        }
     }
-    //CRUD
     private async Task LoadOrgaAsync(int key)
     {
         try
         {
-            // Query directly into DTO (recommended for Blazor WASM)
             curOrga = await _MyODaClient
                 .For<GxorgaDto>("Gxorgas")
                 .Key(key)
-                .Expand(o => o.Plngens.Select(p => p.Rubvars))
-                .Expand(o => o.Plngens.Select(p => p.Rubhies))
+                .Expand(o => o.Gsgfixes)
                 .FindEntryAsync();
-
-            if (curOrga == null)
-                return;
-
-            Console.WriteLine($"curorga : {curOrga.Raison}");
+            Console.WriteLine($"loadOrgaAsync completed :{curOrga?.Raison}");
         }
         catch (Exception ex)
         {
-            Console.WriteLine(ex);
+            Console.WriteLine($"Load error: {ex.Message}");
         }
     }
-    
     private async Task ManEditAll()
     {
         Jmessage = "Edition en preparation...";
-        if (_chxMenu == 2)
-        { //sessions
-            await mygses.EdtAll();
+        if (_chxMenu == 1)
+        { //tables
+            //await mygtbl.EdtAll();
         }
+        if (_chxMenu == 2)
+        { //attributs
+            //await mygatr.EdtAll();
+        }
+        if (_chxMenu == 3)
+        { //constantes
+            //await mygcst.EdtAll();
+        }
+        // if (_chxMenu == 4)
+        // { //constantes
+        //     //await mygcst.EdtAll();
+        // }
         Jmessage = "";
     }
     private async Task ManCnclAll()
     {
         Jmessage = "annulation en cours...";
-        if (_chxMenu == 2)
-        { //sessions
-            await mygses.CncAll();
+        if (_chxMenu == 1)
+        { //tables
+            //await mygtbl.CncAll();
         }
-        //reload
+        if (_chxMenu == 2)
+        { //atributs
+            //await mygatr.CncAll();
+        }
+        if (_chxMenu == 3)
+        { //constantes
+            //await mygcst.CncAll();
+        }
+        if (_chxMenu == 4)
+        { //constantes
+            //await mygcst.CncAll();
+        }
         await LoadOrgaAsync(_usrBag.Idorg);
         Jmessage = "";
+    }
+    private async Task ManSaveAll()
+    {
+        bool oksav = false;
+        Jmessage = "enregistrement en cours...";
+        if (_chxMenu == 1)
+        { //tables
+            //oksav = await mygtbl.SaveCurEntities();
+        }
+        if (_chxMenu == 2)
+        { //atributs
+            //oksav = await mygatr.SaveCurEntities();
+        }
+        if (_chxMenu == 3)
+        { //constantes
+            //oksav = await mygcst.SaveCurEntities();
+        }
+        if (_chxMenu == 4)
+        { //constantes
+            //oksav = await mygcst.SaveCurEntities();
+        }
+        if (oksav) Jmessage = "";
     }
     private async Task SelMenu(int noM)
     {
         _chxMenu = noM;
-        if (_chxMenu == 1) strComp = $"Autorisations SESSION";
-        if (_chxMenu == 2) strComp = $"Autorisations SAISIE";
-        if (_chxMenu == 3) strComp = $"Autorisations VENTILATION";
-        //if (_chxMenu == 5) strComp = "Colonnes";
+        if (_chxMenu == 1) strComp = $"Sessions";
+        if (_chxMenu == 2) strComp = $"Autorisations";
+        //if (_chxMenu == 3) strComp = $"Exercices";
         StateHasChanged();
         await Task.Delay(1);
     }
@@ -320,9 +349,12 @@
         Console.WriteLine("PAS 2");
         await Task.Delay(1);
     }
-    
+    private async Task Save()
+    {
+        await _guard.FlushAsync();  // ✅ Parallel batch saves
+    }
     void NavigateBack()
     {
-        _navManager.NavigateTo("/");
+        _navmanager.NavigateTo("/");
     }
 }

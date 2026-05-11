@@ -37,7 +37,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Remove="ClieModels\InitEnt.cs" />
     <Compile Remove="Components\Admina\AOrgas.razor.cs" />
     <Compile Remove="Components\GridWrapper.razor.cs" />
     <Compile Remove="Components\Identity\GxRegister.cshtml.cs" />
@@ -53,6 +52,7 @@
     <Compile Remove="Services\Old44PendingChangesGuard.cs" />
     <Compile Remove="Services\OldPendingChangesGuard.cs" />
     <Compile Remove="Services\PendingChangesGuard.cs" />
+    <Compile Remove="Services\PouchDbService.cs" />
     <Compile Remove="Services\RubCalc.cs" />
     <Compile Remove="Services\TestMyOdataService.cs" />
     <Compile Remove="Services\UsrdaService.cs" />
@@ -61,14 +61,15 @@
 
   <ItemGroup>
     <Content Remove="Components\Admina\AdmFlow.razor" />
-    <Content Remove="Components\Admina\Astreins\Gcstes.razor" />
-    <Content Remove="Components\Admina\Astreins\Gplans.razor" />
-    <Content Remove="Components\Admina\Astreins\Postbrou.razor" />
-    <Content Remove="Components\Admina\Astreins\Z3Gatribs.razor" />
-    <Content Remove="Components\Admina\Astreins\ZZZGcolons.razor" />
-    <Content Remove="Components\Admina\Astreins\ZZZGcstes.razor" />
+    <Content Remove="Components\Admina\Atabls\Gcstes.razor" />
+    <Content Remove="Components\Admina\Atabls\Gplans.razor" />
+    <Content Remove="Components\Admina\Atabls\Postbrou.razor" />
+    <Content Remove="Components\Admina\Atabls\Z3Gatribs.razor" />
+    <Content Remove="Components\Admina\Atabls\ZZZGcolons.razor" />
+    <Content Remove="Components\Admina\Atabls\ZZZGcstes.razor" />
     <Content Remove="Components\Admina\EditMenu.razor" />
     <Content Remove="Components\Admina\PRubs\Brou.razor" />
+    <Content Remove="Components\Admina\PRubs\CategMenu.razor" />
     <Content Remove="Components\Admina\SitesFlow.razor" />
     <Content Remove="Components\Admina\Z3IagrMenu.razor" />
     <Content Remove="Components\Admina\Z3PrubMenu.razor" />
@@ -89,10 +90,12 @@
     <Content Remove="Components\Identity\ZZRegister.razor" />
     <Content Remove="Components\Opera\Saisies\ZZActSaie.razor" />
     <Content Remove="Components\Opera\ZZAsesions.razor" />
-    <Content Remove="Components\Secuope\Authoriz\Regxauth.razor" />
-    <Content Remove="Components\Secuope\Authoriz\Regxcorg.razor" />
-    <Content Remove="Components\Secuope\Sessions\ASesexos.razor" />
-    <Content Remove="Components\Secuope\Sessions\ZZSAsesios.razor" />
+    <Content Remove="Components\Secuope\Accedo\ASessions.razor" />
+    <Content Remove="Components\Secuope\Accedo\ASesexos.razor" />
+    <Content Remove="Components\Secuope\Accedo\ZZSAsesios.razor" />
+    <Content Remove="Components\Secuope\Regxauth.razor" />
+    <Content Remove="Components\Secuope\Regxcorg.razor" />
+    <Content Remove="Components\Secuope\Z3ASessions.razor" />
     <Content Remove="Components\TestOdata.razor" />
     <Content Remove="Components\TestOGsglne.razor" />
     <Content Remove="Layout\Logadm.razor" />
@@ -147,7 +150,7 @@
   <ItemGroup>
     <Folder Include="Components\Admina\Edits\" />
     <Folder Include="Components\Admina\Paccu\Organ\" />
-    <Folder Include="Components\Secuope\Authoriz\" />
+    <Folder Include="Components\Secuope\Accedo\" />
     <Folder Include="Connected Services\" />
     <Folder Include="wwwroot\_content\Blazor.Bootstrap\" />
   </ItemGroup>

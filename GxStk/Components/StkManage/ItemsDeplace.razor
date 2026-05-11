@@ -2,7 +2,7 @@
 
 @using GxShared.Helpers
 @using GxStk.Services
-@using GxStk.ClieModels
+@using GxShared.Helpers
 @using GxShared.Sess
 @using GxShared.GxDtos
 @using GxShared.Interfaces
@@ -169,7 +169,7 @@
     [Parameter] public GxorgaDto curOrga { get; set; }
     [Parameter] 
     public List<Gpdivh> LsDivs { get; set; }
-    [Parameter] public MyShareVars toChild { get; set; }
+    [Parameter] public ChildVars toChild { get; set; }
     [Parameter] public int toMenu { get; set; }
     // [Parameter] public StockClientService stockService { get; set; }
     // [Parameter] public ItemClientService itemService { get; set; }

@@ -13,8 +13,8 @@
 @using System.Web
 @using BlazorBootstrap
 @using Blazored.LocalStorage
-@using GxPilo.ClieModels
 @using GxPilo.Services
+@using GxShared.Helpers
 @using GxShared.Sess
 @using Simple.OData.Client
 @using AutoMapper
@@ -27,6 +27,7 @@
 @inject ILocalStorageService _localStorage
 @inject NavigationManager _navmanager
 @inject HttpClientService _clieManager
+@inject RendAgres _rendAgres
 @inject IMapper Mapper
 @inject IJSRuntime _jsRun
 
@@ -64,25 +65,23 @@ else
             </div>
             <div class="form-group">
                 <label class="me-2">Domaine :</label>
-                <InputSelect @bind-Value="ItkDom" class="me-3" style="width:auto">
+                <InputSelect @bind-Value="IMyDom" @onchange="() => curPlanDom(IMyDom)" class="me-3" style="width:auto">
                     <option value="0">?domaine</option>
                     @foreach (var tob in LsDoms)
                     {
                         <option value="@tob.Gp2">@tob.Liba</option>
                     }
                 </InputSelect>
-
                 <label class="fw-bold">Attribut :</label>
-                <InputSelect @bind-Value="IMyAtr" class="me-3" style="width:auto">
+                <InputSelect @bind-Value="IMyAtr" @onchange="() => curPlanAtr(IMyAtr)" class="me-3" style="width:auto">
                     <option value="0">?atrib</option>
                     @foreach (var tob in LsAtrs)
                     {
                         <option value="@tob.Elea">@tob.Liba</option>
                     }
                 </InputSelect>
-
                 <label class="fw-bold">Base :</label>
-                <InputSelect @bind-Value="IMyVue" class="me-3" style="width:auto">
+                <InputSelect @bind-Value="IMyVue" @onchange="() => curPlanVue(IMyVue)" class="me-3" style="width:auto">
                     <option value="0">?util</option>
                     @foreach (var tob in LsVues)
                     {
@@ -107,10 +106,10 @@ else
                             }
                         </div>
                         <div class="row">
-                            @if (IMyDom != 0 && ItkDom != 0 && IMyAtr != 0 && IMyVue != 0)
+                            @if (IMyDom != 0 && IMyAtr != 0 && IMyVue != 0)
                             {
                                 <Grid TItem="PlngenDto"
-                                      Data="@MyDaPlans.Where(vu => vu.Todom == IMyDom && vu.Totyp == IMyGtie && vu.Toatr == IMyAtr && vu.Tovue == IMyVue)"
+                                      Data="@MyDaPlans.Where(vu => vu.Todom == IMyDom && vu.Toatr == IMyAtr && vu.Tovue == IMyVue)"
                                       @key="PlanRenderKey"
                                       AllowDetailView="true"
                                       AllowPaging="true"
@@ -181,7 +180,10 @@ else
                                                 {
                                                     <button class="btn btn-primary btn-sm @(isAddPln || isEdtPln ? "disabled-action" : "")"
                                                             @onclick="StartPlnNew">
-                                                        ➕ Add
+                                                        <span style="display:inline-flex; align-items:center; gap:4px;">
+                                                            <span>➕</span>
+                                                            <span>Add</span>
+                                                        </span>
                                                     </button>
                                                 }
                                             </HeaderContent>
@@ -403,7 +405,10 @@ else
                                                                             <button class="btn btn-primary btn-sm
                                                                                                                                              @(AllowMultipleEdits || !isAddRub ? "" : "disabled-action")"
                                                                                     @onclick="() => StartRubNew(selectedPln)">
-                                                                                ➕ Add
+                                                                                <span style="display:inline-flex; align-items:center; gap:4px;">
+                                                                                    <span>➕</span>
+                                                                                    <span>Add</span>
+                                                                                </span>
                                                                             </button>
                                                                         }
                                                                     </HeaderContent>
@@ -492,6 +497,90 @@ else
                     </EditForm>
                 }
             </div>
+            <!-- Modal for RUBHIE EDIT -->
+            <Modal @ref="rHieModal" Size="ModalSize.Large" Title="Edit Division" ShowCloseButton="false">
+                <BodyTemplate>
+                    <div class="row">
+                        <div class="table-responsive">
+                            <table class="table w-auto" style="margin-left:10px">
+                                <tbody>
+                                    <tr>
+                                        <td>Raison sociale:</td>
+                                        <td class="text-right">
+                                            <InputText class="my-input" @bind-Value="draftRub.Raison" required
+                                                       style="font-weight:bold" />
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>Sigle:</td>
+                                        <td class="text-right">
+                                            <InputText class="my-input" @bind-Value="draftRub.Sigle" required
+                                                       style="font-weight:bold" />
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>Nom Cible:</td>
+                                        <td class="text-right">
+                                            <InputText class="my-input" @bind-Value="draftRub.Stcible" required
+                                                       style="font-weight:bold" />
+                                        </td>
+                                    </tr>
+                                    @* <tr>
+                                        <td>Poste Principal:</td>
+                                        <td class="text-right">
+                                            <InputSelect @bind-Value="draftRub.Kpst">
+                                                <option value=0>choisir</option>
+                                                @foreach (var udp in LsDivs.Where(dv => dv.Simain == 1))
+                                                {
+                                                    <option value="@udp.Ihie">@udp.Liba</option>
+                                                }
+                                            </InputSelect>
+                                        </td>
+                                    </tr> *@
+                                    @* <tr>
+                                        <td>Sigle:</td>
+                                        <td class="text-right">
+                                            <InputNumber class="my-input" @bind-Value="draftRub.Sigle" required
+                                                         style="font-weight:bold" />
+                                        </td>
+                                    </tr> *@
+                                    <tr>
+                                        <td>Adresse:</td>
+                                        <td class="text-right">
+                                            <InputText class="my-input" @bind-Value="draftRub.Adr"
+                                                       style="font-weight:bold" />
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>Ville:</td>
+                                        <td class="text-right">
+                                            <InputNumber class="my-input" @bind-Value="draftRub.Icity"
+                                                         style="font-weight:bold" />
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>Province:</td>
+                                        <td class="text-right">
+                                            <InputNumber class="my-input" @bind-Value="draftRub.Iprovi"
+                                                         style="font-weight:bold" />
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>Region:</td>
+                                        <td class="text-right">
+                                            <InputNumber class="my-input" @bind-Value="draftRub.Iregio"
+                                                         style="font-weight:bold" />
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </BodyTemplate>
+                <FooterTemplate>
+                    <Button Color="ButtonColor.Secondary" @onclick="() => rHieModal.HideAsync()">Cancel</Button>
+                </FooterTemplate>
+            </Modal>
             <!-- Modal for FORMULE PLAN -->
             <Modal @ref="pForuModal" Size="ModalSize.Large" Title="Edit Formula" ShowCloseButton="false">
                 <BodyTemplate>
@@ -662,7 +751,7 @@ else
     [Parameter]
     public IODataClient _InODaClient { get; set; }
     [Parameter]
-    public MyShareVars toChild { get; set; }
+    public ChildVars toChild { get; set; }
     [Parameter]
     public int toMenu { get; set; }
     //guard
@@ -674,45 +763,15 @@ else
     public int NbChanges { get; set; }
     [Parameter]
     public EventCallback<int> NbChangesChanged { get; set; }  // 🔥 CRITICAL
-    
+
     //Global
     private int _lgcdu = 0;
     private int IMyGpln = 4; //4Organigramme
     private int IMyDom = 1; //1Saisie
+    private int IMyAtr = 1; ////1Adm2Geo
     //private int ItkDom = 0; //6Tiers7Mat
-    //private int IMyAtr = 0; ////1Adm2Geo
     private int IMyGtie = 0; //1Cible/2Operat...
-    //private int IMyVue = 1; //1Reel2Virtuel
-    private int _itkDom = 0;
-    public int ItkDom
-    {
-        get => _itkDom; //6Tiers7Mat
-        set
-        {
-            _itkDom = value;
-            curPlanDom(value);
-        }
-    }
-    private int _myAtr = 0; //1Adm2Geo
-    public int IMyAtr
-    {
-        get => _myAtr;
-        set
-        {
-            _myAtr = value;
-            curPlanAtr(value);
-        }
-    }
-    private int _myVue = 1; //1Reel2Virtuel
-    public int IMyVue
-    {
-        get => _myVue;
-        set
-        {
-            _myVue = value;
-            curPlanVue(value);
-        }
-    }
+    private int IMyVue = 1; //1Reel2Virtuel
     //author
     private ClaimsPrincipal authUser;
     private bool isAuthenticated = false;
@@ -756,6 +815,8 @@ else
     private List<Gpfixe> LsAtrs = new();
     private List<Gpfixe> LsVues = new();
     private List<Gpfixe> LsGties = new();
+    private List<Gpdivh> LsDivs = new();
+
 
     private bool isPlnFilteringEnabled = false;
     private bool isRubFilteringEnabled = false;
@@ -823,10 +884,11 @@ else
     //Modals formule
     Modal pForuModal = new(); //plans
     Modal rForuModal = new(); //rubriques
+    Modal rHieModal = new(); //edit rubhie
     Modal gForuModal = new(); //formats
     private string patTitle = "", chlTitle = "", gsnTitle = "";
     private string patInitTitle = "", chlInitTitle = "", gsnInitTitle = "";
-    private string pstrFormu = "", rstrFormu = "", fstrFormu = "";
+    private string pstrFormu = "", rstrFormu = "", fstrFormu = "", rstrHie = "";
 
     protected override async Task OnInitializedAsync()
     {
@@ -853,6 +915,7 @@ else
             LsVues = LsFixes.Where(ut => ut.Gvars == 36 && ut.Itb == 4 && ut.Gp1 == 4 && ut.Elea != 0).ToList();
             //LsTabls = toChild.LsTabls.ToList();
             LsPlans = toChild.LsPlans;
+            LsDivs = await _rendAgres.LoadOrgaPostes();
             //LsSites = toChild.LsSites;
             _lgcdu = 3;
             var noslims = LsVars.Where(uv => uv.Idhie == 0 && uv.Gvars == 21 && uv.Itb == 1 && uv.Elea == 1);
@@ -874,7 +937,9 @@ else
                 Console.WriteLine("Plngens null/empty - initializing empty collections");
                 MyDaPlans = new ObservableCollection<PlngenDto>();
             }
-       
+            Console.WriteLine($"nb plns actifs ; {MyDaPlans.Count}");
+            // Batch update so you don’t render three times
+            UpdateAllDom(IMyDom, IMyAtr, IMyVue);
             atrTitle = "Saisie";
         }
         catch (Exception ex)
@@ -974,11 +1039,11 @@ else
                 Scdrub = "",
                 Liba = "",
                 Abg = "",
-                //Xcod = "",
+            //Xcod = "",
                 Ydpd = null,
                 Weburl = curOrga.Weburl,
                 Adr = curOrga.Adr,
-                //Adr2 = curOrga.Adr2,
+            //Adr2 = curOrga.Adr2,
                 Sigrid = 0, //grille
                 Ustyp = 0, //de base
                 Ddval = 0,
@@ -1008,6 +1073,7 @@ else
         StartRowEdit(draftRub.Rowguid, EntityLevel.Rub);
         StateHasChanged();
     }
+    
     private async Task StartRubEdit(RubhieDto item, Guid rowguid)
     {
         //var client = (ODataClient)_InODaClient;
@@ -1015,8 +1081,8 @@ else
         bool isNew = item.Id == default; // for int, default == 0
         if (isNew)
         { //not saved yet
-           Imessage = "🚫 Cannot edit new Rubrique: Please save it first.";
-           return;
+            Imessage = "🚫 Cannot edit new Rubrique: Please save it first.";
+            return;
         }
         if (rowguid == Guid.Empty) return;
 
@@ -1028,6 +1094,7 @@ else
         draftRub = (RubhieDto)DeepClone(item);
         isEdtRub = true;
         StartRowEdit(rowguid, EntityLevel.Rub);
+        showRubEditModal(1);
         StateHasChanged();
     }
  
@@ -1664,34 +1731,69 @@ else
 
         return string.Join(" ", css);
     }
-    // ✅ 6. SELECTIONS
-    private void curPlanAtr(int xatr)
+    // ✅ 6. SELECTIONS 
+    private void curPlanTier(int xtie)
     {
+        //IMyGtie = xtie;
 
+        if (IMyDom != 0 && IMyAtr != 0 && IMyVue != 0)
+        {
+            InvokeAsync(StateHasChanged);
+        }
     }
-    private void curPlanDom(int xdom)
+    private void curPlanDom(int domId)
     {
-        if (xdom != 0)
+        //IMyDom = domId;
+        if (IMyDom != 0)
         {
             int gtib = 7;
-            if (xdom == 1) gtib = 6;
+            if (IMyDom == 1) gtib = 6;
             LsGties = LsFixes.Where(ut => ut.Gvars == 36 && ut.Itb == gtib && ut.Elea != 0 && ut.Elea != 9).ToList();
         }
         else
         {
             LsGties = new();
         }
+
+        // Example: check if all selections are valid
+        if (IMyDom != 0 && IMyAtr != 0 && IMyVue != 0)
+        {
+            // All three have values → single render
+            InvokeAsync(StateHasChanged);
+        }
     }
-    private void curPlanTier(int xtie)
+
+    private void curPlanAtr(int atrId)
     {
+        //IMyAtr = atrId;
 
+        if (IMyDom != 0 && IMyAtr != 0 && IMyVue != 0)
+        {
+            InvokeAsync(StateHasChanged);
+        }
     }
-    private void curPlanVue(int xvue)
+
+    private void curPlanVue(int vueId)
     {
+        //IMyVue = vueId;
 
+        if (IMyDom != 0 && IMyAtr != 0 && IMyVue != 0)
+        {
+            InvokeAsync(StateHasChanged);
+        }
     }
+    private void UpdateAllDom(int domId, int atrId, int vueId)
+    {
+        IMyDom = domId;
+        IMyAtr = atrId;
+        IMyVue = vueId;
 
-
+        InvokeAsync(StateHasChanged); // single refresh
+    }
+    private void ResetAllDom()
+    {
+        UpdateAllDom(domId: 0, atrId: 0, vueId: 1);
+    }
     // ✅ 6. HELPERS - Mark Count and Clone
   
     private object DeepClone(object entity)
@@ -1772,6 +1874,20 @@ else
         {
             gForuModal.BodyCssClass = (orig == 1) ? "editable" : "readonly";
             gForuModal.ShowAsync();
+        }
+    }
+    //RUBR Formule modals
+    void showRubEditModal(int orig)
+    {
+        rstrHie = "";
+        if (!string.IsNullOrEmpty(draftRub.Liba))
+        {
+            rstrHie = draftRub.Liba.Substring(0, 8);
+        }
+        if (rHieModal != null)
+        {
+            rHieModal.BodyCssClass = (orig == 1) ? "editable" : "readonly";
+            rHieModal.ShowAsync();
         }
     }
     private void showPgLink()

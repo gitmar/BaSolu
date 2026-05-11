@@ -13,8 +13,8 @@
 @using System.Web
 @using BlazorBootstrap
 @using Blazored.LocalStorage
-@using GxPilo.ClieModels
 @using GxPilo.Services
+@using GxShared.Helpers
 @using GxShared.Sess
 @using Simple.OData.Client
 @using AutoMapper
@@ -949,7 +949,7 @@ else
     [Parameter]
     public GxorgaDto curOrga { get; set; } = new();
     [Parameter]
-    public MyShareVars toChild { get; set; }
+    public ChildVars toChild { get; set; }
     [Parameter]
     public int toMenu { get; set; }
     //guard

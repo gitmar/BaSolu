@@ -5,7 +5,7 @@
 @using System.Security.Claims
 @using BlazorBootstrap
 @using Blazored.LocalStorage
-@using GxTie.ClieModels
+@using GxShared.Helpers
 @using GxTie.Components.Paccu.Valida
 @using GxTie.Components.Paccu.Inscr
 @using GxTie.Components.Paccu.Invita
@@ -13,6 +13,7 @@
 @using GxTie.Services
 @using GxTie.StaticHelpers
 @using GxShared.Sess
+@using GxShared.Helpers
 @using GxShared.Others
 @using Simple.OData.Client
 @using GxShared.GxDtos
@@ -135,7 +136,7 @@ else
 @code {
     private bool isLoading = true;
     public GxorgaDto curOrga = new();
-    public MyShareVars toChild = new();
+    public ChildVars toChild = new();
 
     private ValdTie mygvld = new();
     private InscTiw myetiw = new();
@@ -281,7 +282,7 @@ else
         LsDivs = await _rendAgres.LoadOrgaPostes();
         LsRoles = await _rendAgres.LoadOrgaRoles();
         LsFixes = _usrBag.Ufixes.ToList();
-        toChild = new MyShareVars
+        toChild = new ChildVars
         {
             authUser = authState.User,
             isAuthenticated = true,
@@ -338,7 +339,6 @@ else
             curOrga = await _MyODaClient
                 .For<GxorgaDto>("Gxorgas")
                 .Key(key)
-                .Expand(o => o.Gsesios)
                 .Expand(o => o.Tiewels.Select(t => t.Tiwafls))
                 .Expand(o => o.Tiersps.Select(t => t.Tieafls))
                 .Expand(o => o.Tiersps.Select(t => t.Tieatrs))

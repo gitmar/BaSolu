@@ -1,17 +1,18 @@
-﻿@page "/carrimenu"
+﻿@page "/affecmenu"
 @inherits LayoutComponentBase
 @layout FreeLayout
 
 @using System.Security.Claims
 @using BlazorBootstrap
 @using Blazored.LocalStorage
-@using GxTie.ClieModels
+@using GxShared.Helpers
 @using GxTie.Components.Pcarri
 @using GxTie.Services
 @using GxTie.StaticHelpers
 @using GxShared.Sess
 @using Simple.OData.Client
 @using GxShared.GxDtos
+@using GxShared.Others
 @using GxShared.Interfaces
 @using AutoMapper
 @using Newtonsoft.Json
@@ -65,41 +66,52 @@ else
                     @* 🔽 STOCK PAGES *@
                     if (_chxMenu == 1)
                     {
-                        <Mutation @ref="mygmut"
+                        <Affectation @ref="mygmut"
                             curOrga="@curOrga"
                             LsDivs="@LsDivs"
+                            LsPlans="@LsPlans"
+                            EnsTbls="@EnsTbls"
                             toMenu="@_chxMenu"
                             @bind-NbChanges="_nbChanges"
                             _guard="_guard"
                             _InODaClient="@_MyODaClient">
-                        </Mutation>
+                        </Affectation>
                     }
                     else if (_chxMenu == 2)
                     {
-                        @* <ItemsTransfer @ref="mygtrf"
-                                       curODContext="@curODContext"
-                                       curOrga="@curOrga"
-                                       LsDivs="@LsDivs"
-                                       toMenu="@_chxMenu"
-                                       @bind-NbChanges="_nbChanges"
-                                       _guard="_guard"
-                                       ItemService="@ItemService"
-                                       StockService="@StockService"></ItemsTransfer> *@
+                        <Affecfonct @ref="myresp"
+                                  curOrga="@curOrga"
+                                  LsDivs="@LsDivs"
+                                  LsPlans="@LsPlans"
+                                  EnsTbls="@EnsTbls"
+                                  toMenu="@_chxMenu"
+                                  @bind-NbChanges="_nbChanges"
+                                  _guard="_guard"
+                                  _InODaClient="@_MyODaClient">
+                        </Affecfonct>
                     }
-                    @* else if (_chxMenu == 3)
+                    else if (_chxMenu == 3)
                     {
-                        
-                    } *@
+                        <Affecref @ref="myaref"
+                                  curOrga="@curOrga"
+                                  LsDivs="@LsDivs"
+                                  LsPlans="@LsPlans"
+                                  toMenu="@_chxMenu"
+                                  @bind-NbChanges="_nbChanges"
+                                  _guard="_guard"
+                                  _InODaClient="@_MyODaClient">
+                        </Affecref>
+                    }
                 }
             </div>
             <div class="row mt-3">
                 <div class="col-12">
-                    @if (_guard.HasPendingChanges())
+                    @* @if (_guard.HasPendingChanges())
                     {
                         <div class="alert alert-warning">
                             <strong>@pendingCount changes pending across all tabs</strong>
                         </div>
-                    }
+                    } *@
                     <div class="d-flex gap-2 justify-content-end">
                         <Button Color="ButtonColor.Primary"
                                 @onclick="SaveAllChanges"
@@ -120,32 +132,38 @@ else
 @code {
     private bool isLoading = true;
 
-    private Mutation mygmut = new();
+    private Affectation mygmut = new();
+    private Affecref myaref = new();
+    private Affecfonct myresp = new();
 
     [CascadingParameter]
     private Task<AuthenticationState>? AuthState { get; set; }
 
     public GxorgaDto curOrga = new GxorgaDto();
-    public MyShareVars toChild = new();
+    public ChildVars toChild = new();
 
     public Userbag _usrBag = new();
 
     //Navigation
     private int _gIdTie = 0, _chxGpe = 0, _chxMenu = 1;
-    private string strComp = $"Deplacement";
+    private string strComp = $"Affectation";
     string gpeLiba = "";
     public int Ugpe = 0, Tgpe = 0; //gpe ref1..6/tiers type6..7
 
     public List<Gpfixe> LsFixes = new();
     public List<Gpfixe> LsGties = new();
     public List<Gpdivh> LsDivs = new();
+    public List<Gplan> LsPlans = new();
+    private List<Gtabl> EnsTbls = new();
+    //public List<GsesioDto> EnsExos = new();
+    //public List<GsesioDto> EnsSess = new();
 
     public List<GxMenuItem> MenuItems = new()
     {
         // 🔽 STOCK
-        new GxMenuItem { Id = 1, Text = "Deplacement", Icon = "bi bi-plus-circle" },
-        new GxMenuItem { Id = 2, Text = "Transfert", Icon = "bi bi-cart" },
-        //new GxMenuItem { Id = 3, Text = "Unites", Icon = "bi bi-cart" },
+        new GxMenuItem { Id = 1, Text = "Affectation", Icon = "bi bi-plus-circle" },
+        new GxMenuItem { Id = 2, Text = "Fonctions", Icon = "bi bi-cart" },
+        new GxMenuItem { Id = 3, Text = "References", Icon = "bi bi-cart" }
     };
 
     public List<GxGroupe> Groupes = new();
@@ -182,6 +200,8 @@ else
             // Load lightweight user data FIRST
             _usrBag = await _sessionContext.GetUserbagAsync();
             LsDivs = await _rendAgres.LoadOrgaPostes();
+            EnsTbls = await _rendAgres.LoadOrgaTables();
+            LsPlans = _usrBag.Usorga.Uplns.Where(pl => pl.Ptyp == 4).ToList();
             // Create shared OData context
             //curODContext = await _contextFactory.CreateAsync();
             //_guard.AttachContext(curODContext);
@@ -225,10 +245,10 @@ else
             curOrga = await _MyODaClient
                 .For<GxorgaDto>("Gxorgas")
                 .Key(key)
-                .Expand(o => o.Gsesios)
-                .Expand(o => o.Tiersps.Select(t => t.Tieatrs))
-                .Expand(o => o.Tiersps.Select(t => t.Tieatrs))
-                .Expand(o => o.Tiersps.Select(t => t.Tiecats))
+                .Expand(o => o.Tiemvts.Select(t => t.Tiemvlnes))
+                .Expand(o => o.Tiersps)
+                //.Expand(o => o.Tiersps.Select(t => t.Tieatrs))
+                //.Expand(o => o.Tiersps.Select(t => t.Tiecats))
                 .FindEntryAsync();
             Console.WriteLine($"loadOrgaAsync completed : {curOrga?.Raison}");
         }
@@ -295,18 +315,18 @@ else
         if (_chxMenu == 1)
         {
             //_guardVisible = true;
-            strComp = $"Deplacement {gpeLiba}";
+            strComp = $"Affectation {gpeLiba}";
         }
         if (_chxMenu == 2)
         {
             //_guardVisible = true;
-            strComp = $"Transfert  {gpeLiba}";
+            strComp = $"Fonctions  {gpeLiba}";
         }
-        // if (_chxMenu == 3)
-        // {
-        //     //_guardVisible = true;
-        //     strComp = $"Unites  {gpeLiba}";
-        // }
+        if (_chxMenu == 3)
+        {
+            //_guardVisible = true;
+            strComp = $"References  {gpeLiba}";
+        }
 
         StateHasChanged();
         await Task.Delay(1);
@@ -337,4 +357,3 @@ else
         _navManager.NavigateTo("/");
     }
 }
-

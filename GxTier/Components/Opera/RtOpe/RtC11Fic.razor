@@ -15,7 +15,7 @@
 @using Blazored.LocalStorage
 @using Components.Opera
 @using GxShared.Sess
-@using GxTie.ClieModels
+@using GxShared.Helpers
 @using GxTie.Services
 @using Simple.OData.Client
 @using GxShared.GxDtos
@@ -108,7 +108,7 @@
     [Parameter]
     public GxorgaDto curOrga { get; set; } = new();
     [Parameter]
-    public MyShareVars toChild { get; set; }
+    public ChildVars toChild { get; set; }
     [Parameter]
     public List<TierspDto> CalcTiers { get; set; } = new();
 

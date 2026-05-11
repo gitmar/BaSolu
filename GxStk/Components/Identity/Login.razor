@@ -1,5 +1,6 @@
 ﻿@page "/login"
 
+@using System.Net
 @using System.Security.Claims
 @using System.Text
 @using Blazored.LocalStorage
@@ -116,100 +117,115 @@ else
         isLoading = true;
         Error = null;
         isBusy = true;
-        bool yaErrors = false;
         Jmessage = "";
-        if (string.IsNullOrEmpty(loginModel.UsernameOrEmail))
+
+        // Basic validation
+        if (string.IsNullOrEmpty(loginModel.UsernameOrEmail) || string.IsNullOrEmpty(loginModel.Password))
         {
-            Jmessage = "Email ou UserName obligatoire";
-            yaErrors = true;
-        }
-        if (string.IsNullOrEmpty(loginModel.Password))
-        {
-            Jmessage = Jmessage + " /Mot de passe obligatoire";
-            yaErrors = true;
-        }
-        if (yaErrors)
-        {
+            Jmessage = "Email/UserName et Mot de passe obligatoires";
             isBusy = false;
             isLoading = false;
             return;
         }
+
         try
         {
-            //_appState.IsTieLoggedIn = false;
-            loginModel.IsHelpLogin = false; //necessaire pour le login not admin
-            //.UsernameOrEmail = loginModel.Username;
-            //Console.WriteLine($"uname : {loginModel.Username} et {loginModel.Email}");
+            loginModel.IsHelpLogin = false;
+
             var json = JsonConvert.SerializeObject(loginModel);
             var request = new HttpRequestMessage(HttpMethod.Post, "lgauth/login")
-                {
-                    Content = new StringContent(json, Encoding.UTF8, "application/json")
-                };
+            {
+                Content = new StringContent(json, Encoding.UTF8, "application/json")
+            };
 
             var response = await _dftClient.SendAsync(request);
-            response.EnsureSuccessStatusCode();
+
+            if (response.StatusCode == HttpStatusCode.Unauthorized)
+            {
+                Error = "Login failed: Unauthorized (401).";
+                Jmessage = "Identifiants invalides.";
+                isBusy = false;
+                isLoading = false;
+                return;
+            }
+
+            if (!response.IsSuccessStatusCode)
+            {
+                Error = $"Login failed: {(int)response.StatusCode} {response.ReasonPhrase}";
+                Jmessage = "Erreur serveur.";
+                isBusy = false;
+                isLoading = false;
+                return;
+            }
+
             var responseContent = await response.Content.ReadAsStringAsync();
             var result = JsonConvert.DeserializeObject<LoginResult>(responseContent);
+
             isBusy = false;
             if (result == null || string.IsNullOrEmpty(result.Atoken))
             {
-                isBusy = false;
                 Error = "Login failed. Check credentials.";
-                Jmessage = Jmessage + " Invalid login response.";
+                Jmessage = "Réponse de login invalide.";
                 isLoading = false;
                 return;
             }
 
             Console.WriteLine("Tokens received.");
+
             if (_authProvider is MyAuthStateProvider provider)
             {
                 Console.WriteLine("Refresh token stored.");
 
                 var claims = _authProvider.ParseClaimsFromJwt(result.Atoken);
 
+                // ✅ Store tokens
                 await _localStorage.SetItemAsync("blazToken", result.Atoken);
                 await _localStorage.SetItemAsync("blazRtoken", result.Rtoken);
                 await _localStorage.SetItemAsync("authToken", result.Atoken);
 
+                // ✅ Update client headers
                 await _clieManager.SetAuthorizationHeaderAsync("AuthClient");
-                var userbagResponse = await _clieManager.SendRequestAsync("AuthClient", HttpMethod.Get, $"usercontext/userbag");
+
+                // Load user context
+                var userbagResponse = await _clieManager.SendRequestAsync("AuthClient", HttpMethod.Get, "usercontext/userbag");
                 var userbag = JsonConvert.DeserializeObject<Userbag>(userbagResponse);
                 if (userbag == null || !userbag.Succeeded)
                 {
-                    isBusy = false;
                     Error = "Login failed. Check credentials.";
+                    Jmessage = "Failed to load user context.";
                     isLoading = false;
-                    Jmessage = Jmessage + " /Failed to load user context.";
                     return;
                 }
+
                 var identity = new ClaimsIdentity(claims, "jwt");
                 var user = new ClaimsPrincipal(identity);
                 provider.NotifyUserAuthentication(user);
-                await _sessionContext.PersistSessionAsync(result, userbag); // ✅ handles everything
+
+                await _sessionContext.PersistSessionAsync(result, userbag);
 
                 _appState.UpdateDisplvalue(userbag.Graison, userbag.Usprof.Ufulnom);
 
+                // ✅ Kick off refresh workflow
                 var puzzleSyncService = _serviceProvider.GetService<IPuzzleSyncService>();
                 if (puzzleSyncService != null)
                 {
                     await puzzleSyncService.EnsureSessionIsFreshAsync();
                     await puzzleSyncService.SyncPuzzleStateAsync();
                 }
-                else
-                {
-                    Console.WriteLine("PuzzleSyncService could not be resolved.");
-                }
+
                 _navManager.NavigateTo("/");
                 StateHasChanged();
             }
-            Console.WriteLine("12.");
         }
         catch (Exception ex)
         {
             Error = "Login failed. Check credentials.";
-            isBusy = false;
             Jmessage = $"Login failed: {ex.Message}";
+            isBusy = false;
         }
-        isLoading = false;
+        finally
+        {
+            isLoading = false;
+        }
     }
 }

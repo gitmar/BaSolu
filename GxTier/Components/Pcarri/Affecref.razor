@@ -1,0 +1,378 @@
+﻿@page "/affecref"
+@layout AffecMenu
+
+@using BlazorBootstrap
+@using Blazored.LocalStorage
+@using GxShared.Helpers
+@using GxTie.Services
+@using Simple.OData.Client
+@using AutoMapper
+@using GxShared.GxDtos
+@using GxShared.Interfaces
+@using GxShared.Sess
+@* @using Microsoft.EntityFrameworkCore *@
+@using Newtonsoft.Json
+
+@inject ILocalStorageService _localStorage
+@inject NavigationManager _navmanager
+@inject HttpClientService _clieManager
+@inject IMapper Mapper
+@inject IJSRuntime _jsRun
+
+<div class="container mt-3">
+    <h3>References Affectations</h3>
+    <div class="d-flex align-items-center gap-2">
+        <label>Exercice:</label>
+        <InputSelect id="exoId" @bind-Value="curEXO">
+            <option value="0">exo?</option>
+            @* @foreach (var exo in toChild.)
+            {
+                <option value="@exo.Id">@exo.Sref</option>
+            } *@
+        </InputSelect>
+        <Button Color="ButtonColor.Success" @onclick="() => StartAdd()">Add New Reference Affectation</Button>
+    </div>
+    @if (isAdding)
+    {
+        <div class="mt-3">
+            <InputText @bind-Value="draftMvt.Refa" class="xcol2" placeholder="reference" />
+            <InputText @bind-Value="draftMvt.Title" class="xcol2" placeholder="titre" />
+            <InputText @bind-Value="draftMvt.Notes" class="xcol2" placeholder="notes" />
+            <InputSelect @bind-Value="draftMvt.Ipln" class="xcol2">
+                @foreach (var item in LsDivs.Where(p => p.Ptyp == 4))
+                {
+                    <option value="@item.Ipln">@item.Liba</option>
+                }
+            </InputSelect>
+
+            <InputDate @bind-Value="draftMvt.Tdate" placeholder="date" class="xcol1" />
+            <InputDate @bind-Value="draftMvt.Vdate" placeholder="valide" class="xcol1" />
+            <Button Color="ButtonColor.Success" @onclick="() => SaveAdd()">Add</Button>
+            <Button Color="ButtonColor.Secondary" @onclick="() => CancelAdd()">Cancel</Button>
+        </div>
+    }
+    @if (draftMvt != null)
+    {
+        <Grid TItem="TiemvtDto"
+              Data="@curOrga?.Tiemvts.ToList()"
+              AllowPaging="true"
+              Responsive="true">
+            <GridColumns>
+                <GridColumn TItem="TiemvtDto" HeaderText="Id" Class="xcol1">
+                    <ChildContent Context="item">@item.Id</ChildContent>
+                </GridColumn>
+                <GridColumn TItem="TiemvtDto" HeaderText="Reference" Class="xcol1">
+                    <ChildContent Context="item">
+                        @if (editRowguid == item.Rowguid)
+                        {
+                            <InputText @bind-Value="draftMvt.Refa" />
+                        }
+                        else
+                        {
+                            @item.Refa
+                        }
+                    </ChildContent>
+                </GridColumn>
+                <GridColumn TItem="TiemvtDto" HeaderText="Titre" Class="xcol2 text-truncate">
+                    <ChildContent Context="item">
+                        @if (editRowguid == item.Rowguid)
+                        {
+                            <InputText @bind-Value="draftMvt.Title" />
+                        }
+                        else
+                        {
+                            @item.Title
+                        }
+                    </ChildContent>
+                </GridColumn>
+                <GridColumn TItem="TiemvtDto" HeaderText="Notes" Class="xcol2 text-truncate">
+                    <ChildContent Context="item">
+                        @if (editRowguid == item.Rowguid)
+                        {
+                            <InputTextArea @bind-Value="draftMvt.Notes">
+                             
+                            </InputTextArea>
+                        }
+                        else
+                        {
+                            @item.Notes
+                        }
+                    </ChildContent>
+                </GridColumn>
+                <GridColumn TItem="TiemvtDto" HeaderText="Organ." Class="xcol2">
+                    <ChildContent Context="item">
+                        @if (editRowguid == item.Rowguid)
+                        {
+                            <InputSelect @bind-Value="item.Ipln">
+                                @foreach (var item in LsPlans.Where(p => p.Ptyp == 4))
+                                {
+                                    <option value="@item.Id">@item.Liba</option>
+                                }
+                            </InputSelect>
+                        }
+                        else
+                        {
+                            <InputSelect @bind-Value="item.Ipln" disabled>
+                                @foreach (var item in LsPlans.Where(p => p.Ptyp == 4))
+                                {
+                                    <option value="@item.Id">@item.Liba</option>
+                                }
+                            </InputSelect>
+                        }
+                    </ChildContent>
+                </GridColumn>
+                <GridColumn TItem="TiemvtDto" HeaderText="Date" Class="xcol1 text-truncate">
+                    <ChildContent Context="item">
+                        @if (editRowguid == item.Rowguid)
+                        {
+                            <InputDate @bind-Value="draftMvt.Tdate">
+                             
+                            </InputDate>
+                        }
+                        else
+                        {
+                            @item.Tdate?.ToShortDateString()
+                        }
+                    </ChildContent>
+                </GridColumn>
+                <GridColumn TItem="TiemvtDto" HeaderText="Validite" Class="xcol2 text-truncate">
+                    <ChildContent Context="item">
+                        <div class="d-flex align-items-center">
+                        <InputSelect @bind-Value="item.Tperi">
+                            @foreach (var item in LsFixes.Where(p => p.Gvars == 32 && p.Itb == 4 && p.Elea != 0))
+                            {
+                                <option value="@item.Elea">@item.Liba</option>
+                            }
+                        </InputSelect>
+                        @if (editRowguid == item.Rowguid)
+                        {
+                            <InputDate @bind-Value="draftMvt.Vdate"></InputDate>
+                        }
+                        else
+                        {
+                            @item.Vdate
+                        }
+                        </div>
+                    </ChildContent>
+                </GridColumn>
+                <GridColumn TItem="TiemvtDto" HeaderText="Actions" Class="xcol1">
+                    <ChildContent Context="item">
+                        <div class="d-flex align-items-center gap-2">
+                        @if (editRowguid == item.Rowguid)
+                        {
+                            <Button Color="ButtonColor.Primary" Size="ButtonSize.Small"
+                                    @onclick="() => SaveEdit(item)">
+                                Save
+                            </Button>
+                            <Button Color="ButtonColor.Secondary" Size="ButtonSize.Small"
+                                    @onclick="() => CancelEdit()">
+                                Cancel
+                            </Button>
+                        }
+                        else
+                        {
+                            <Button Color="ButtonColor.Warning" Size="ButtonSize.Small"
+                                    @onclick="() => StartEdit(item)">
+                                Edit
+                            </Button>
+                            <Button Color="ButtonColor.Danger" Size="ButtonSize.Small"
+                                    @onclick="() => DeleteAttribute(item)">
+                                Delete
+                            </Button>
+                        }
+                        </div>
+                    </ChildContent>
+                </GridColumn>
+            </GridColumns>
+        </Grid>
+    }    
+</div>
+<style>
+    .xcolx {
+        width: 40px !important;
+    }
+
+    .xcol1 {
+        width: 60px;
+    }
+
+    .xcol2 {
+        width: 120px;
+    }
+
+    .xcol3 {
+        width: 180px;
+    }
+
+    .xcol4 {
+        width: 240px;
+    }
+        /* Ensure inputs inside these columns fill the width */
+        .xcol1 input,
+        .xcol2 input,
+        .xcol3 input,
+        .xcol4 input {
+            width: 100%;
+            box-sizing: border-box; /* prevents overflow due to padding/border */
+        }
+
+    .editing-row {
+        pointer-events: none; /* Blocks all clicks on row */
+    }
+
+        .editing-row * {
+            pointer-events: auto; /* Re-enables clicks on buttons/inputs */
+        }
+</style>
+@code {
+    private bool isLoading = true;
+
+    [Parameter]
+    public IODataClient _InODaClient { get; set; }
+    [Parameter]
+    public GxorgaDto curOrga { get; set; }
+    [Parameter]
+    public int Orig { get; set; }
+    [Parameter]
+    public ChildVars toChild { get; set; }
+    [Parameter]
+    public int toMenu { get; set; }
+    [Parameter]
+    public RenderFragment ChildContent { get; set; }
+    [Parameter]
+    public string curSES { get; set; }
+    [Parameter]
+    public string curEXO { get; set; }
+    [Parameter]
+    public List<Gpdivh> LsDivs { get; set; }
+    [Parameter]
+    public List<Gplan> LsPlans { get; set; }
+
+    // Guard
+    [Parameter]
+    public IPendingChangesGuard _guard { get; set; }
+    [Parameter]
+    public EventCallback<PendingState> OnPendingStateChanged { get; set; }
+    [Parameter]
+    public int NbChanges { get; set; }
+    [Parameter]
+    public EventCallback<int> NbChangesChanged { get; set; }
+
+    //[Parameter] public ItemClientService ItemService { get; set; }
+    //[Parameter] public StockClientService StockService { get; set; }
+    private List<TiemvtDto> LsMvts = new();
+    private Guid? editRowguid;
+    private bool isAdding = false;
+    private TiemvtDto draftMvt = new();
+    private List<Gpfixe> LsFixes = new();
+
+    private void CancelAdd() => isAdding = false;
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        isLoading = true;
+        try
+        {
+            LsFixes = toChild.LsFixes;
+            LsDivs = toChild.LsDivs;
+            LsMvts = curOrga?.Tiemvts.Where(m => m.Todom == 1).ToList();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"22error loading atr-Tie: {ex.Message}");
+        }
+    }
+    private void StartAdd()
+    {
+        isAdding = true;
+        draftMvt = new TiemvtDto();
+        draftMvt.Ipln = 0;
+        draftMvt.Refa = "";
+        draftMvt.Title = "";
+        draftMvt.Notes = "";
+    }
+
+    private async Task SaveAdd()
+    {
+        draftMvt.Rowguid = Guid.NewGuid();
+        draftMvt.Idorg = curOrga.Idorg;
+        draftMvt.Todom = 1;//affectation
+        // Register add with OData context
+        _guard.TrackInsert("Tiemvts", draftMvt);
+        Console.WriteLine($"➕ NEW {draftMvt.Title} → TrackInsert");
+        curOrga.Tiemvts.Add(draftMvt);
+        isAdding = false;
+        await NotifyPendingChanges();
+        draftMvt = new();
+    }
+    private void StartEdit(TiemvtDto vlne)
+    {
+        editRowguid = vlne.Rowguid;
+        draftMvt = new TiemvtDto 
+        { 
+            Rowguid = vlne.Rowguid,
+            Id = vlne.Id,  
+            Idorg = vlne.Idorg,
+            Ipln = vlne.Ipln,
+            Mtyp = vlne.Mtyp,
+            Title = vlne.Title,
+            Refa = vlne.Refa,
+            Notes = vlne.Notes,
+            Tdate = vlne.Tdate
+        };
+    }
+    private async Task SaveEdit(TiemvtDto vlne)
+    {
+        vlne.Ipln = draftMvt.Ipln;
+        vlne.Mtyp = draftMvt.Mtyp;
+        vlne.Title = draftMvt.Title;
+        vlne.Refa = draftMvt.Refa;
+        vlne.Notes = draftMvt.Notes;
+        vlne.Tdate = draftMvt.Tdate;
+        // Register update with OData context
+        var key = GetEntityKey(vlne); // helper to extract PK
+        _guard.TrackUpdate("Tiemvts", key, vlne);
+        editRowguid = null;
+        await NotifyPendingChanges();
+    }
+
+    private void CancelEdit() => editRowguid = null;
+
+    private async Task DeleteAttribute(TiemvtDto vlne)
+    {
+        curOrga?.Tiemvts.Remove(vlne);
+        // Extract PK using your helper
+        var key = GetEntityKey(vlne);
+        // Queue delete in guard
+        _guard.TrackDelete("Tiemvts", key);
+        Console.WriteLine($"🗑️ {vlne.Title} queued for delete");
+        await NotifyPendingChanges();
+    }
+    private object GetEntityKey<TDto>(TDto entity)
+    {
+        switch (entity)
+        {
+            case TiemvtDto pln:
+                return pln.Id;
+            //case TiemvlneDto rub:
+            //    return rub.Id;
+            // case RubpstDto fmt:
+            //     return fmt.Id;
+            default:
+                throw new InvalidOperationException($"Unknown entity type {typeof(TDto).Name}");
+        }
+    }
+    // Notify guard/UI of pending changes
+    private async Task NotifyPendingChanges()
+    {
+        await OnPendingStateChanged.InvokeAsync(new PendingState(
+            _guard.HasPendingChanges(),
+            _guard.GetPendingChangesCount()
+        ));
+
+        NbChanges = _guard.GetPendingChangesCount();
+        await NbChangesChanged.InvokeAsync(NbChanges);
+        StateHasChanged();
+    }
+}

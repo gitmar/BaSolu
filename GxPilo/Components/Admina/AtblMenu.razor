@@ -6,10 +6,10 @@
 @using System.Linq.Expressions
 @using BlazorBootstrap
 @using Blazored.LocalStorage
-@using GxPilo.ClieModels
-@using GxPilo.Components.Admina.Astreins
+@using GxPilo.Components.Admina.Atabls
 @using GxPilo.Services
 @using GxPilo.StaticHelpers
+@using GxShared.Helpers
 @using GxShared.Sess
 @using GxShared.Others
 @using Simple.OData.Client
@@ -87,6 +87,19 @@
                             </ChildContent>
                         </Gdocus>
                     }
+                    else if (_chxMenu == 3)
+                    {
+                        <Gexos @ref="mygexo"
+                                curOrga="@curOrga"
+                                @bind-NbChanges="_nbChanges"
+                                _guard="_guard"
+                                toChild="@toChild"
+                                _InODaClient="@_MyODaClient">
+                            <ChildContent>
+                                @* <h2 class="child-box">Hello ATTRIBUTS</h2> *@
+                            </ChildContent>
+                        </Gexos>
+                    }
                 }
             </div>
         </div>
@@ -118,19 +131,21 @@
         An unexpected error occured. Please try again later.
     </ErrorContent>
 </ErrorBoundary>
-@code {
+
+    @code {
 
     private int selectedMenu = 1;
 
     private bool isLoading = true;
     public GxorgaDto curOrga = new GxorgaDto();
-    public MyShareVars toChild = new MyShareVars();
+    public ChildVars toChild = new ChildVars();
     public RenderFragment ChildContent { get; set; }
     //private bool allEnable = false;
     private string Jmessage = "";
 
     private Gtables mygtbl = new();
     private Gdocus mygdoc = new();
+    private Gexos mygexo = new();
 
     [CascadingParameter]
     private Task<AuthenticationState>? AuthState { get; set; }
@@ -183,7 +198,8 @@
     {
         new GxMenuItem { Id = 1, Text = "Tables", Icon = "bi bi-box-arrow-in-down" },
         new GxMenuItem { Id = 2, Text = "Documents", Icon = "bi bi-house-door" },
-        //new MenuItem { Id = 4, Text = "Mutation", Icon = "bi bi-arrow-repeat" },
+        new GxMenuItem { Id = 3, Text = "Exercices", Icon = "bi bi-arrow-repeat" },
+        //new GxMenuItem { Id = 4, Text = "Exercice", Icon = "bi bi-arrow-repeat" }
     };
     public List<GxGroupe> Groupes = new();
 
@@ -283,6 +299,10 @@
         { //constantes
             //await mygcst.EdtAll();
         }
+        // if (_chxMenu == 4)
+        // { //constantes
+        //     //await mygcst.EdtAll();
+        // }
         Jmessage = "";
     }
     private async Task ManCnclAll()
@@ -297,6 +317,10 @@
             //await mygatr.CncAll();
         }
         if (_chxMenu == 3)
+        { //constantes
+            //await mygcst.CncAll();
+        }
+        if (_chxMenu == 4)
         { //constantes
             //await mygcst.CncAll();
         }
@@ -319,6 +343,10 @@
         { //constantes
             //oksav = await mygcst.SaveCurEntities();
         }
+        if (_chxMenu == 4)
+        { //constantes
+            //oksav = await mygcst.SaveCurEntities();
+        }
         if (oksav) Jmessage = "";
     }
     private async Task SelMenu(int noM)
@@ -326,6 +354,7 @@
         _chxMenu = noM;
         if (_chxMenu == 1) strComp = $"Tables";
         if (_chxMenu == 2) strComp = $"Documents";
+        if (_chxMenu == 3) strComp = $"Exercices";
         StateHasChanged();
         await Task.Delay(1);
     }

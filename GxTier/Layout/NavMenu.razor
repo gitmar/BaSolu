@@ -32,7 +32,7 @@
                     <i class="bi bi-people nav-icon"></i>
 
                     <span class="nav-text d-flex align-items-center gap-1">
-                        Rhumaines
+                        Reception
                         <i class="bi @(isSubManagVisible ? "bi-chevron-up" : "bi-chevron-down") nav-chevron"></i>
                     </span>
                 </NavLink>
@@ -50,9 +50,41 @@
                             <span class="nav-text" title="Visiteurs">Visiteurs</span>
                         </NavLink>
 
-                        <NavLink class="nav-link nav-sub text-light small" href="carrimenu">
-                            <i class="bi bi-person-lines-fill nav-icon"></i>
-                            <span class="nav-text" title="Carrière">Carrière</span>
+                        <NavLink class="nav-link nav-sub text-light small" href="subitem3">
+                            <i class="bi bi-file-earmark-text nav-icon"></i>
+                            <span class="nav-text" title="Editions">Editions</span>
+                        </NavLink>
+
+                    </nav>
+                </div>
+
+                <!-- CARRIERES -->
+                <NavLink class="nav-link nav-main text-light small" @onclick="ToggleSubCarri">
+                    <i class="bi bi-gear nav-icon"></i>
+
+                    <span class="nav-text d-flex align-items-center gap-1">
+                        Carrieres
+                        <i class="bi @(isSubCarriVisible ? "bi-chevron-up" : "bi-chevron-down") nav-chevron"></i>
+                    </span>
+                </NavLink>
+
+                <div class="submenu @(isSubCarriVisible ? "open" : "")">
+                    <nav class="nav flex-column">
+                        <NavLink class="nav-link nav-sub text-light small" href="affecMenu">
+                            <i class="bi bi-ui-checks-grid nav-icon"></i>
+                            <span class="nav-text" title="Affectation">Affectations</span>
+                        </NavLink>
+                        <NavLink class="nav-link nav-sub text-light small" href="saieactlnes">
+                            <i class="bi bi-ui-checks-grid nav-icon"></i>
+                            <span class="nav-text" title="Promotions">Promotions</span>
+                        </NavLink>
+                        <NavLink class="nav-link nav-sub text-light small" href="saieactlnes">
+                            <i class="bi bi-ui-checks-grid nav-icon"></i>
+                            <span class="nav-text" title="Sanctions">Sanctions</span>
+                        </NavLink>
+                        <NavLink class="nav-link nav-sub text-light small" href="saieactlnes">
+                            <i class="bi bi-ui-checks-grid nav-icon"></i>
+                            <span class="nav-text" title="Missions">Missions</span>
                         </NavLink>
 
                         <NavLink class="nav-link nav-sub text-light small" href="subitem3">
@@ -63,19 +95,18 @@
                     </nav>
                 </div>
 
-                <!-- OPERATIONS -->
+                <!-- TRAITEMENTS -->
                 <NavLink class="nav-link nav-main text-light small" @onclick="ToggleSubOper">
                     <i class="bi bi-gear nav-icon"></i>
 
                     <span class="nav-text d-flex align-items-center gap-1">
-                        Operations
+                        Traitements
                         <i class="bi @(isSubOperVisible ? "bi-chevron-up" : "bi-chevron-down") nav-chevron"></i>
                     </span>
                 </NavLink>
 
                 <div class="submenu @(isSubOperVisible ? "open" : "")">
                     <nav class="nav flex-column">
-
                         <NavLink class="nav-link nav-sub text-light small" href="saieactlnes">
                             <i class="bi bi-ui-checks-grid nav-icon"></i>
                             <span class="nav-text" title="Saisies">Saisies</span>
@@ -95,37 +126,35 @@
                             <i class="bi bi-printer nav-icon"></i>
                             <span class="nav-text" title="Editions">Editions</span>
                         </NavLink>
-
                     </nav>
                 </div>
-
+                <!--SESSIONS-->
+                <NavLink class="nav-link nav-main text-light small" href="accsmenu">
+                    <i class="bi bi-clock nav-icon"></i>
+                    <span class="nav-text" title="Sessions">Sessions</span>
+                </NavLink>
                 <!-- ANALYSES -->
                 <NavLink class="nav-link nav-main text-light small" href="about">
                     <i class="bi bi-bar-chart-line nav-icon"></i>
                     <span class="nav-text" title="Analyses">Analyses</span>
                 </NavLink>
-
                 <!-- SUPPORT -->
                 <NavLink class="nav-link nav-main text-light small" href="about">
                     <i class="bi bi-life-preserver nav-icon"></i>
                     <span class="nav-text" title="Support">Support</span>
                 </NavLink>
-
+                <!-- AGENDAS -->
+                <NavLink class="nav-link nav-main text-light small" href="about">
+                    <i class="bi bi-calendar3 nav-icon"></i>
+                    <span class="nav-text" title="Agendas">Agendas</span>
+                </NavLink>
             </Authorized>
         </AuthorizeView>
-
-        <!-- AGENDAS -->
-        <NavLink class="nav-link nav-main text-light small" href="about">
-            <i class="bi bi-calendar3 nav-icon"></i>
-            <span class="nav-text" title="Agendas">Agendas</span>
-        </NavLink>
-
         <!-- ABOUT -->
         <NavLink class="nav-link nav-main text-light small" href="about">
             <i class="bi bi-info-circle nav-icon"></i>
             <span class="nav-text" title="About">About</span>
         </NavLink>
-
     </nav>
 </div>
 
@@ -197,6 +226,7 @@
     private bool siOpera=false, siAdmin = false, siStock = true;
     private int IMyAcc = 2;
     private bool isSubManagVisible = false;
+    private bool isSubCarriVisible = false;
     private bool isSubSecuVisible = false;
     private bool isSubOperVisible = false;
     private bool isSubParaVisible = false;
@@ -225,6 +255,10 @@
     private void ToggleSubManag()
     {
         isSubManagVisible = !isSubManagVisible;
+    }
+    private void ToggleSubCarri()
+    {
+        isSubCarriVisible = !isSubCarriVisible;
     }
     private void ToggleSubSecu()
     {

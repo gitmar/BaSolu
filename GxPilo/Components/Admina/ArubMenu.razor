@@ -5,10 +5,10 @@
 @using System.Security.Claims
 @using BlazorBootstrap
 @using Blazored.LocalStorage
-@using GxPilo.ClieModels
 @using GxPilo.Components.Admina.ARubs
 @using GxPilo.Services
 @using GxPilo.StaticHelpers
+@using GxShared.Helpers
 @using GxShared.Sess
 @using Simple.OData.Client
 @using GxShared.GxDtos
@@ -55,7 +55,7 @@ else
                 {
                     @if (_chxMenu != 0 && toChild != null && curOrga != null)
                     {
-                        if (_chxMenu == 1)
+                    if (_chxMenu == 1)
                     { //grilles rubriques
                         <RubGrils @ref="myrgrd"
                             toMenu="@_chxMenu"
@@ -98,12 +98,26 @@ else
                         </RubPosts>
                     }
                         else if (_chxMenu == 4)
-                        { //ASTREINTES
-                          //ref="myastr"
+                        { //durables rubriques
+                            <RubGrils @ref="myrgrd"
+                                      toMenu="@_chxMenu"
+                                      @bind-NbChanges="_nbChanges"
+                                      _guard="_guard"
+                                      curOrga="@curOrga"
+                                      toChild="@toChild"
+                                      _InODaClient="@_MyODaClient">
+                                <ChildContent>
+                                    @* <h2 class="child-box">Hello GRILLES</h2> *@
+                                </ChildContent>
+                            </RubGrils>
                         }
-
+                    else if (_chxMenu == 5)
+                    { //ASTREINTES
+                          //ref="myastr"
                     }
+
                 }
+            }
             </div>
         </div>
     </div>
@@ -125,7 +139,7 @@ else
 @code {
     private bool isLoading = true;
     public GxorgaDto curOrga = new();
-    public MyShareVars toChild = new();
+    public ChildVars toChild = new();
     private string Jmessage = "";
 
     private RubGrils myrgrd = new();
@@ -164,7 +178,8 @@ else
         new GxMenuItem { Id = 1, Text = "Grille", Icon = "bi bi-box-arrow-in-down" },
         new GxMenuItem { Id = 2, Text = "Echeancier", Icon = "bi bi-house-door" },
         new GxMenuItem { Id = 3, Text = "Organigramme", Icon = "bi bi-house-door" },
-        new GxMenuItem { Id = 4, Text = "Saisies", Icon = "bi bi-house-door" },
+        new GxMenuItem { Id = 4, Text = "Durables", Icon = "bi bi-house-door" },
+        new GxMenuItem { Id = 5, Text = "Saisies", Icon = "bi bi-house-door" },
         //new MenuItem { Id = 4, Text = "Mutation", Icon = "bi bi-arrow-repeat" },
     };
     public List<GxGroupe> Groupes = new();
@@ -198,7 +213,7 @@ else
             LsTabls = _usrBag.Usorga.Uvars.Where(tb => tb.Gvars == 5).ToList();
             await LoadOrgaAsync(_usrBag.Idorg);
             // Populate child data immediately
-            toChild = new MyShareVars
+            toChild = new ChildVars
             {
                 authUser = authState.User,
                 isAuthenticated = true,
@@ -287,7 +302,8 @@ else
         if (_chxMenu == 1) strComp = $"Plan.GRILLE";
         if (_chxMenu == 2) strComp = $"Plan.ECHEANCIER";
         if (_chxMenu == 3) strComp = $"Plan.ORGANIGRAMME";
-        if (_chxMenu == 4)
+        if (_chxMenu == 4) strComp = $"Plan.DURABLES";
+        if (_chxMenu == 5)
         {
             _navManager.NavigateTo("/astrmenu", replace: true);
             strComp = $"Saisies";

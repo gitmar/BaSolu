@@ -5,7 +5,6 @@ using BlazorDownloadFile;
 using Blazored.LocalStorage;
 
 using GxPilo;
-using GxPilo.ClieModels;
 using GxPilo.Services;
 
 using GxShared.GxGuards;
@@ -75,49 +74,6 @@ builder.Services.AddScoped<IODataClientFactory>(sp =>
 // you can still register it as a scoped service using your factory
 builder.Services.AddScoped<IODataClient>(sp =>
     sp.GetRequiredService<IODataClientFactory>().CreateClient());
-
-
-//// ------------------------------------------------
-//// Consolidated HttpClients (3) Configured for Auth
-//// ------------------------------------------------
-//builder.Services.AddHttpClient("AuthClient", client =>
-//{
-//    client.BaseAddress = new Uri($"{backendUrl}api/");
-//})
-//.AddHttpMessageHandler<AuthDelegatingHandler>();
-//// Register a dedicated OData HttpClient
-//builder.Services.AddHttpClient("ODataClient", client =>
-//{
-//    client.BaseAddress = new Uri($"{backendUrl}odata/");
-//    client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
-//})
-//.AddHttpMessageHandler<AuthDelegatingHandler>();
-//// access simple local folders
-//builder.Services.AddHttpClient("LocalClient", client =>
-//{
-//    client.BaseAddress = new Uri($"{backendUrl}api/");
-//    client.DefaultRequestHeaders.Add("X-Requested-With", "Fetch");
-//});
-
-//// 2. Register ODataClient directly using the factory
-//builder.Services.AddScoped<IODataClient>(sp =>
-//{
-//    var httpClient = sp.GetRequiredService<IHttpClientFactory>().CreateClient("ODataClient");
-//    var settings = new ODataClientSettings(httpClient)
-//    {
-//        PayloadFormat = ODataPayloadFormat.Json
-//    };
-//    return new ODataClient(settings);
-//});
-
-//// Simple.OData.Client
-//builder.Services.AddScoped<ODataClient>(sp =>
-//{
-//    var httpClient = sp.GetRequiredService<IHttpClientFactory>().CreateClient("ODataClient");
-//    return new ODataClient(new ODataClientSettings(httpClient) { PayloadFormat = ODataPayloadFormat.Json });
-//});
-//builder.Services.AddScoped<IODataClientFactory>(sp => new DefaultODataClientFactory(new Uri($"{backendUrl}odata/")));
-
 // ----------------------------
 // Guard Services (Dependency Fix)
 // ----------------------------
@@ -129,20 +85,45 @@ builder.Services.AddScoped<IPendingChangesGuard, PendingChangesGuard>();
 // ----------------------------
 builder.Services.AddAutoMapper(typeof(SharedMappingProfile).Assembly);
 
+// ----------------------------
+// Core State & Context Services
+// ----------------------------
 builder.Services.AddScoped<Userbag>();
-builder.Services.AddScoped<IPuzzleSyncService, PuzzleSyncService>();
-builder.Services.AddScoped<MyShareVars>();
+builder.Services.AddScoped<ChildVars>();
 builder.Services.AddScoped<RendAgres>();
 builder.Services.AddScoped<ClieAppState>();
 builder.Services.AddScoped<SessionContextService>();
 builder.Services.AddScoped<SessionContextClient>();
-builder.Services.AddScoped<HttpClientService>();
-builder.Services.AddScoped<TokenAwareClientManager>();
+
+// ----------------------------
+// Authentication & Sync Services
+// ----------------------------
+builder.Services.AddScoped<MyAuthStateProvider>();
+builder.Services.AddScoped<AuthenticationStateProvider>(sp => sp.GetRequiredService<MyAuthStateProvider>());
+builder.Services.AddScoped<IPuzzleSyncService, PuzzleSyncService>();
+
+// ----------------------------
+// HttpClient Services
+// ----------------------------
+builder.Services.AddScoped<HttpClientService>();          // auto-refresh before requests
+builder.Services.AddScoped<TokenAwareClientManager>();    // raw client with token attached
+
+
+//builder.Services.AddScoped<Userbag>();
+//builder.Services.AddScoped<IPuzzleSyncService, PuzzleSyncService>();
+//builder.Services.AddScoped<ChildVars>();
+//builder.Services.AddScoped<RendAgres>();
+//builder.Services.AddScoped<ClieAppState>();
+//builder.Services.AddScoped<SessionContextService>();
+//builder.Services.AddScoped<SessionContextClient>();
+//builder.Services.AddScoped<HttpClientService>();
+//builder.Services.AddScoped<TokenAwareClientManager>();
+
 builder.Services.AddScoped<TblJsonRender>();
 builder.Services.AddScoped<LinkSerialiser>();
 
 builder.Services.AddSingleton<IMessageService, MessageService>();
-builder.Services.AddSingleton<PouchDbService>();
+//builder.Services.AddSingleton<PouchDbService>();
 
 // ----------------------------
 // Startup
@@ -182,7 +163,6 @@ public class ApiSettings
 //using GxShared.Sess;
 
 //using GxPilo;
-//using GxPilo.ClieModels;
 //using GxPilo.Services;
 
 //using Microsoft.AspNetCore.Components.Authorization;
@@ -228,7 +208,7 @@ public class ApiSettings
 ////builder.Services.AddScoped<IGridActionService, GridActionService>();
 //builder.Services.AddScoped<IPuzzleSyncService, PuzzleSyncService>();
 ////builder.Services.AddScoped<Usaibag>();
-//builder.Services.AddScoped<MyShareVars>();
+//builder.Services.AddScoped<ChildVars>();
 //builder.Services.AddScoped<RendAgres>();
 //builder.Services.AddScoped<ClieAppState>();
 //builder.Services.AddScoped<SessionContextService>();
@@ -400,3 +380,44 @@ public class ApiSettings
 //.AddHttpMessageHandler<AuthDelegatingHandler>();
 // 🔥 1. HTTP CLIENT for parallel batch saves (ROOT base address)
 // Register named OData client
+
+//// ------------------------------------------------
+//// Consolidated HttpClients (3) Configured for Auth
+//// ------------------------------------------------
+//builder.Services.AddHttpClient("AuthClient", client =>
+//{
+//    client.BaseAddress = new Uri($"{backendUrl}api/");
+//})
+//.AddHttpMessageHandler<AuthDelegatingHandler>();
+//// Register a dedicated OData HttpClient
+//builder.Services.AddHttpClient("ODataClient", client =>
+//{
+//    client.BaseAddress = new Uri($"{backendUrl}odata/");
+//    client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+//})
+//.AddHttpMessageHandler<AuthDelegatingHandler>();
+//// access simple local folders
+//builder.Services.AddHttpClient("LocalClient", client =>
+//{
+//    client.BaseAddress = new Uri($"{backendUrl}api/");
+//    client.DefaultRequestHeaders.Add("X-Requested-With", "Fetch");
+//});
+
+//// 2. Register ODataClient directly using the factory
+//builder.Services.AddScoped<IODataClient>(sp =>
+//{
+//    var httpClient = sp.GetRequiredService<IHttpClientFactory>().CreateClient("ODataClient");
+//    var settings = new ODataClientSettings(httpClient)
+//    {
+//        PayloadFormat = ODataPayloadFormat.Json
+//    };
+//    return new ODataClient(settings);
+//});
+
+//// Simple.OData.Client
+//builder.Services.AddScoped<ODataClient>(sp =>
+//{
+//    var httpClient = sp.GetRequiredService<IHttpClientFactory>().CreateClient("ODataClient");
+//    return new ODataClient(new ODataClientSettings(httpClient) { PayloadFormat = ODataPayloadFormat.Json });
+//});
+//builder.Services.AddScoped<IODataClientFactory>(sp => new DefaultODataClientFactory(new Uri($"{backendUrl}odata/")));

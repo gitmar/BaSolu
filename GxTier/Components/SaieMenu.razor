@@ -10,7 +10,7 @@
 @using GxShared.Others
 @using GxShared.GxDtos
 @using GxShared.Interfaces
-@using GxTie.ClieModels
+@using GxShared.Helpers
 @using GxTie.Services
 @using GxTie.StaticHelpers
 @using GxTie.Components.Opera.Saisies
@@ -64,7 +64,7 @@
                             <option value="0">exo?</option>
                             @foreach (var exo in EnsExos)
                             {
-                                <option value="@exo.Id">@exo.Sref</option>
+                                <option value="@exo.Elea">@exo.Liba</option>
                             }
                         </InputSelect>
                         <label>Session:</label>
@@ -72,7 +72,7 @@
                             <option value="0">session?</option>
                             @foreach (var ses in EnsSess)
                             {
-                                <option value="@ses.Id">@ses.Sref</option>
+                                <option value="@ses.Elea">@ses.Liba</option>
                             }
                         </InputSelect>
                         <InputSelect id="optId" @bind-Value="ImyOrient">
@@ -212,9 +212,9 @@
     //public FormulaDataContext curForContext { get; set; }
 
     public GxorgaDto curOrga = new GxorgaDto();
-    public MyShareVars toChild = new();
+    public ChildVars toChild = new();
     public MyMenuVars froMenu = new();
-    private bool allEnable = false;
+    //private bool allEnable = false;
     private string Imessage = "";
 
     private SaieActLnes mygsaie = new();
@@ -330,8 +330,8 @@
     public Userbag _usrBag = new Userbag();
     public List<Gpfixe> LsFixes = new();
     public List<RubvarDto> EnsRubrs = new();
-    public List<GsesioDto> EnsExos = new();
-    public List<GsesioDto> EnsSess = new();
+    public List<GsgfixDto> EnsExos = new();
+    public List<GsgfixDto> EnsSess = new();
 
     public List<Gpvar> LsVars = new();
     public List<Gplan> LsPlans = new();
@@ -434,7 +434,7 @@
         //pita = 5;
         Console.WriteLine("TIERS A ETE TESTE");
         //sessions de saisies ouvertes pour l=exercice
-        EnsSess = curOrga.Gsesios.Where(us => us.Styp == 3 && us.Sicur == 1 && us.Sieta == 1).ToList(); //saisies ouversts
+        //--EnsSess = curOrga.Gsesios.Where(us => us.Styp == 3 && us.Sicur == 1 && us.Sieta == 1).ToList(); //saisies ouversts
         toChild.authUser = authUser;
         toChild.isAuthenticated = isAuthenticated;
         toChild.Ugpe = Ugpe;
@@ -444,6 +444,9 @@
         toChild.LsFixes = LsFixes;
         toChild.LsPlans = LsPlans;
         toChild.LsTabls = LsTabls;
+        //exo-session/saisie
+        toChild.inExo = LsVars.Where(v => v.Gvars == 11 && v.Itb == 1 && v.Atyp == 1 && v.Eta == 1).FirstOrDefault();
+        toChild.inSes = LsVars.Where(v => v.Gvars == 12 && v.Itb == 1 && v.Eta == 1).FirstOrDefault();
         // var tableResolvers = FormulaContextBuilder.BuildResolvers(curForContext);
         // _formulaEvalService = new FormulaEvalService(
         //     new RubvarResolver(curForContext.FDCRubvars),
@@ -485,7 +488,7 @@
         {
             Console.WriteLine($"probleme chargement Tiers");
         }
-        EnsExos = curOrga.Gsesios.ToList();
+        //--EnsExos = curOrga.Gsesios.ToList();
     }
     public List<FormulaLine> PrepOpeSaie(int opt, TierspDto curTier, RubvarDto curRub, List<TierspDto> saieTiers, PlngenDto curProg, int imyDiv)
     {
@@ -787,7 +790,7 @@
     //     Console.WriteLine($"ICI RUBRIQUES : {curProg.Rubvars.Count()}");
     //     //return _curProg;
     // }
-    void GetSelectedExos(GsesioDto myexo)
+    void GetSelectedExos(string myexo)
     {
         toChild.MainOptsOk = false;
         toChild.curExo = myexo;
@@ -799,14 +802,14 @@
         }
     }
 
-    void GetSelectedSesio(GsesioDto mysesio)
+    void GetSelectedSesio(string mysesio)
     {
         toChild.MainOptsOk = false;
-        toChild.curSesio = mysesio;
+        toChild.curSes = mysesio;
         if (Ugpe != 0 && froMenu.Uexo != 0 && froMenu.Usesio != 0)
         {
             toChild.MainOptsOk = true;
-            toChild.curSesio = EnsSess.Where(us => us.Id == froMenu.Usesio).FirstOrDefault();
+            toChild.curSes = EnsSess.Where(us => us.Elea == froMenu.Usesio).FirstOrDefault().Liba;
             StateHasChanged();
         }
     }

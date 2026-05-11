@@ -9,11 +9,12 @@
 @using Blazored.LocalStorage
 @using GxShared.Formulas.ForaContext
 @using GxShared.Formulas.ForaModels
+@using GxShared.Helpers
 @using GxShared.Sess
 @using GxShared.Others
 @using GxShared.Interfaces
 @using GxShared.GxDtos
-@using GxTie.ClieModels
+@using GxShared.Helpers
 @using GxTie.Services
 @using GxTie.Components.Opera.RtOpe
 @using GxTie.StaticHelpers
@@ -218,7 +219,7 @@ else
     [Parameter]
     public GxorgaDto curOrga { get; set; }
     [Parameter]
-    public MyShareVars toChild { get; set; }
+    public ChildVars toChild { get; set; }
     [Parameter]
     public bool allEnable { get; set; }
     [Parameter]
@@ -279,7 +280,7 @@ else
     //private List<Actdet> LsDaDets = new();
     private bool isFilteringEnabled = false;
     private RubvarDto _curRub = new();
-    private GsesioDto _curSes = new();
+    //private GsesioDto _curSes = new();
     private PlngenDto selPgr = new();
     private RubvarDto selRub = new();
     private RubfmtDto selFmt = new();
@@ -288,7 +289,7 @@ else
     private List<Gpfixe> LsFixes = new List<Gpfixe>();
     private List<Gpvar> LsVars = new();
     private List<Gplan> LsProgs = new();
-    
+
     private bool success, errors, isSubmitting = false;
     private string[] errorList = [];
     private string rolInv = "", userName = "", isatmsg = "";
@@ -308,8 +309,7 @@ else
     private bool CalcMarked = false;
     private bool SaveMarked = false;
     private bool autoSave = false;
-    private bool SessOpen => toChild.curExo != null && toChild.curExo.Id != 0
-                    && toChild.curSesio != null && toChild.curSesio.Id != 0;
+    private bool SessOpen => toChild.curExo != null && toChild.curSes != null;
     private bool ProgOpen => SessOpen && ImyProg != 0 && ImyDiv != 0;
     private bool SiTiers => !String.IsNullOrEmpty(IdebTier) && !String.IsNullOrEmpty(IfinTier);
     // Meme pour option 1 (tous) IDebTier et IFinTier doivent etre fournis
@@ -531,8 +531,8 @@ else
                     Sireel = curProg.Tovue,
                     Idorg = curOrga.Idorg,
                     Idpln = curProg.Id,
-                    Vperi = toChild.curSesio.Speri,
-                    Eperi = toChild.curExo.Speri,
+                    Vperi = toChild.curSes,
+                    Eperi = toChild.curExo,
                     Datope = DateTime.Now,
                     Gseq = 1,
                     OutLines = CalcLines
@@ -560,8 +560,8 @@ else
                     Sireel = curProg.Tovue,
                     Idorg = curOrga.Idorg,
                     Idpln = curProg.Id,
-                    Vperi = toChild.curSesio.Speri,
-                    Eperi = toChild.curExo.Speri,
+                    Vperi = toChild.curSes,
+                    Eperi = toChild.curExo,
                     Datope = DateTime.Now,
                     Gseq = 1,
                     OutLines = CalcLines

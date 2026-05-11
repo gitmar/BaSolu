@@ -13,8 +13,8 @@
 @using System.Web
 @using BlazorBootstrap
 @using Blazored.LocalStorage
-@using GxPilo.ClieModels
 @using GxPilo.Services
+@using GxShared.Helpers
 @using GxShared.Sess
 @using Simple.OData.Client
 @using AutoMapper
@@ -65,7 +65,7 @@ else
             <div class="form-group">
                 <div class="btn btn-group">
                     <label class="me-2">Plan :</label>
-                    <InputSelect @bind-Value="IMyPlan" class="me-3" style="width:auto">
+                    <InputSelect @bind-Value="IMyPlan" @onchange="() => curPlanPlan(IMyPlan)" class="me-3" style="width:auto">
                         <option value="0">?plan</option>
                         @foreach (var upl in LsPlans)
                         {
@@ -95,7 +95,7 @@ else
                             @if (curPlan != null && IMyPlan != 0)
                             {
                                 <Grid TItem="PlngenDto"
-                                      Data="@MyDaPlans.Where(vu => vu.Tovue == IMyVue)"
+                                      Data="@MyDaPlans.Where(vu => vu.Id == IMyPlan)"
                                       @key="PlanRenderKey"
                                       AllowDetailView="true"
                                       AllowPaging="true"
@@ -723,7 +723,7 @@ else
     [Parameter]
     public GxorgaDto curOrga { get; set; } = new();
     [Parameter]
-    public MyShareVars toChild { get; set; }
+    public ChildVars toChild { get; set; }
     [Parameter]
     public int toMenu { get; set; }
     //guard
@@ -787,17 +787,18 @@ else
     private int IMyDom = 1; //1Saisie
     private int ItkDom = 6; //6Tiers7Mat
     private int IMyVue = 1; //1Reel2Virtuel
-    
-    private int _myPlan; // curPlan no
-    public int IMyPlan
-    {
-        get => _myPlan;
-        set
-        {
-            _myPlan = value;
-            //curPlanDom(value); // run your logic when plan changes
-        }
-    }
+    private int IMyPlan = 0; //plan en cours
+
+    // private int _myPlan; // curPlan no
+    // public int IMyPlan
+    // {
+    //     get => _myPlan;
+    //     set
+    //     {
+    //         _myPlan = value;
+    //         //curPlanDom(value); // run your logic when plan changes
+    //     }
+    // }
     private string atrTitle = "";
     private string atrDest = "Programmes de Saisie"; 
     //pour modals formulas
@@ -909,6 +910,9 @@ else
                 Console.WriteLine("Plngen null/empty - initializing empty collections");
                 MyDaPlans = new ObservableCollection<PlngenDto>();
             }
+            // Batch update so you don’t render three times
+            IMyPlan = LsPlans?.FirstOrDefault()?.Id ?? 0;
+            UpdateAllDom(IMyPlan, IMyDom);
             atrTitle = "Saisie";
         }
         catch (Exception ex)
@@ -1040,8 +1044,8 @@ else
         bool isNew = item.Id == default; // for int, default == 0
         if (isNew)
         { //not saved yet
-           Imessage = "🚫 Cannot edit new Rubrique: Please save it first.";
-           return;
+            Imessage = "🚫 Cannot edit new Rubrique: Please save it first.";
+            return;
         }
         if (rowguid == Guid.Empty) return;
 
@@ -1092,7 +1096,7 @@ else
         myrub.Rubfmts.Insert(0, newFmt);
         draftFmt = (RubfmtDto)DeepClone(newFmt);
         EdFmtRowguid = draftFmt.Rowguid;
-        
+
         isAddFmt = true;
         isEdtFmt = true;
         SetRowState(draftFmt.Rowguid, RowState.EditPending);  // 🔥 ADD
@@ -1108,8 +1112,8 @@ else
         bool isNew = item.Id == default; // for int, default == 0
         if (isNew)
         { //not saved yet
-           Imessage = "🚫 Cannot edit new Fmt: Please save it first.";
-           return;
+            Imessage = "🚫 Cannot edit new Fmt: Please save it first.";
+            return;
         }
         if (rowguid == Guid.Empty) return;
         item.Xedt1 = -1;
@@ -1485,7 +1489,7 @@ else
         draftFmt = null; EdFmtRowguid = AdFmtRowguid = null;
         isEdtFmt = isAddFmt = false; FmtRenderKey = null;
     }
-    
+
     private void StartDelete<T>(T item, string entitySet) where T : class
     {
         var rowguid = ((dynamic)item).Rowguid;
@@ -1556,7 +1560,7 @@ else
 
             // Queue delete in guard
             //_guard.TrackDelete<TDto>(GetEntitySetName<TDto>(), key);
-            
+
 
             Console.WriteLine($"🗑️ {typeof(TDto).Name} queued for delete");
 
@@ -1735,33 +1739,60 @@ else
         return string.Join(" ", css);
     }
     // ✅ 6. SELECTIONS
-    // private void curPlanAtr(int xatr)
-    // {
-
-    // }
-    // private void curPlanDom(int xdom)
-    // {
-    //     if (xdom != 0)
-    //     {
-    //         int gtib = 7;
-    //         if (xdom == 1) gtib = 6;
-    //         LsGties = LsFixes.Where(ut => ut.Gvars == 36 && ut.Itb == gtib && ut.Elea != 0 && ut.Elea != 9).ToList();
-    //     }
-    //     else
-    //     {
-    //         LsGties = new();
-    //     }
-    // }
-    private void curPlanTier(int xtie)
+    private void curPlanPlan(int plnId)
     {
+        IMyPlan = plnId;
+        if (IMyPlan != 0)
+        {
+            int gtib = 7;
+            curPlan = curOrga?.Plngens.FirstOrDefault(pln => pln.Ptyp == 4);
+            //LsGties = LsFixes.Where(ut => ut.Gvars == 36 && ut.Itb == gtib && ut.Elea != 0 && ut.Elea != 9).ToList();
+        }
+        else
+        {
+            curPlan = new();
+            //LsGties = new();
+        }
 
+        // Example: check if all selections are valid
+        if (IMyPlan > 0 && IMyDom != 0)
+        {
+            // All three have values → single render
+            InvokeAsync(StateHasChanged);
+        }
     }
-    private void curPlanVue(int xvue)
+    private void curPlanDom(int domId)
     {
+        IMyDom = domId;
+        if (IMyDom != 0)
+        {
+            //LsGties = LsFixes.Where(ut => ut.Gvars == 36 && ut.Itb == gtib && ut.Elea != 0 && ut.Elea != 9).ToList();
+        }
+        else
+        {
+            //LsGties = new();
+        }
 
+        // Example: check if all selections are valid
+        if (IMyDom != 0 && IMyPlan != 0)
+        {
+            // All three have values → single render
+            InvokeAsync(StateHasChanged);
+        }
     }
+    private void UpdateAllDom(int plnId, int domId)
+    {
+        IMyPlan = plnId;
+        IMyDom = domId;
+        //IMyAtr = atrId;
+        //IMyVue = vueId;
 
-
+        InvokeAsync(StateHasChanged); // single refresh
+    }
+    private void ResetAllDom()
+    {
+        UpdateAllDom(plnId: 0, domId: 0); //, atrId: 0, vueId: 1);
+    }
     // ✅ 6. HELPERS - Mark Count and Clone
   
     private object DeepClone(object entity)

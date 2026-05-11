@@ -5,7 +5,7 @@
 @using System.Security.Claims
 @using BlazorBootstrap
 @using Blazored.LocalStorage
-@using GxStk.ClieModels
+@using GxShared.Helpers
 @using GxStk.Components.StkManage
 @using GxStk.Services
 @using GxStk.StaticHelpers
@@ -104,7 +104,7 @@ else
 @code {
     private bool isLoading = true;
     public GxorgaDto curOrga = new GxorgaDto();
-    public MyShareVars toChild = new();
+    public ChildVars toChild = new();
 
     private ItemsDeplace mygdpl = new();
     private ItemsTransfer mygtrf = new();
@@ -176,7 +176,7 @@ else
             await LoadOrgaAsync(_usrBag.Idorg);
 
             Console.WriteLine($"Usrbag plans : {_usrBag.Usorga.Uplns.Count()}");
-            toChild = new MyShareVars
+            toChild = new ChildVars
             {
                 authUser = authState.User,
                 isAuthenticated = true,

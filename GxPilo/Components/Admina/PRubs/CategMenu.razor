@@ -6,10 +6,10 @@
 @using System.Linq.Expressions
 @using BlazorBootstrap
 @using Blazored.LocalStorage
-@using GxPilo.ClieModels
 @using GxPilo.Components.Admina.Atrib
 @using GxPilo.Services
 @using GxPilo.StaticHelpers
+@using GxShared.Helpers
 @using GxShared.Sess
 @using GxShared.Others
 @using Simple.OData.Client
@@ -127,7 +127,7 @@
 
     private bool isLoading = true;
     public GxorgaDto curOrga = new GxorgaDto();
-    public MyShareVars toChild = new MyShareVars();
+    public ChildVars toChild = new ChildVars();
     public RenderFragment ChildContent { get; set; }
     //private bool allEnable = false;
     private string Jmessage = "";

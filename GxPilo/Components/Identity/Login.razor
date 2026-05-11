@@ -1,5 +1,6 @@
 ﻿@page "/login"
 
+@using System.Net
 @using System.Security.Claims
 @using System.Text
 @using Blazored.LocalStorage
@@ -156,83 +157,198 @@ else
         await AtestCors();
         isLoading = false;
     }
+    // private async Task HandleLoginAsync()
+    // {
+    //     isLoading = true;
+    //     Error = null;
+    //     isBusy = true;
+    //     bool yaErrors = false;
+    //     Jmessage = "";
+    //     if (string.IsNullOrEmpty(loginModel.UsernameOrEmail))
+    //     {
+    //         Jmessage = "Email ou UserName obligatoire";
+    //         yaErrors = true;
+    //     }
+    //     if (string.IsNullOrEmpty(loginModel.Password))
+    //     {
+    //         Jmessage = Jmessage + " Mot de passe obligatoire";
+    //         yaErrors = true;
+    //     }
+    //     if (yaErrors)
+    //     {
+    //         isBusy = false;
+    //         isLoading = false;
+    //         return;
+    //     }
+    //     try
+    //     {
+    //         loginModel.IsHelpLogin = false;
+    //         //loginModel.UsernameOrEmail = loginModel.Username;
+    //         //loginModel.Idorg = 0; selection
+    //         //Console.WriteLine($"uname : {loginModel.Username} et {loginModel.Email}");
+    //         //Console.WriteLine($"adresse11 : {_dftClient.BaseAddress.ToString()}");
+    //         // var json = JsonConvert.SerializeObject(loginModel);
+    //         // var request = new HttpRequestMessage(HttpMethod.Post, "lgauth/login")
+    //         // {
+    //         //     Content = new StringContent(json, Encoding.UTF8, "application/json")
+    //         // };
+    //         // var response = await _dftClient.SendAsync(request);
+    //         // response.EnsureSuccessStatusCode();
+    //         // var responseContent = await response.Content.ReadAsStringAsync();
+    //         var json = JsonConvert.SerializeObject(loginModel);
+    //         var request = new HttpRequestMessage(HttpMethod.Post, "lgauth/login")
+    //         {
+    //             Content = new StringContent(json, Encoding.UTF8, "application/json")
+    //         };
+
+    //         var response = await _dftClient.SendAsync(request);
+
+    //         if (response.StatusCode == HttpStatusCode.Unauthorized)
+    //         {
+    //             Console.WriteLine("Login failed: Unauthorized (401).");
+    //             //return null; // or trigger logout / show error
+    //         }
+
+    //         if (!response.IsSuccessStatusCode)
+    //         {
+    //             Console.WriteLine($"Login failed: {(int)response.StatusCode} {response.ReasonPhrase}");
+    //             //return null;
+    //         }
+
+    //         var responseContent = await response.Content.ReadAsStringAsync();
+
+    //         isBusy = false;
+    //         _logresult = JsonConvert.DeserializeObject<LoginResult>(responseContent);
+
+    //         if (_logresult == null || string.IsNullOrEmpty(_logresult.Atoken))
+    //         {
+    //             isBusy = false;
+    //             Error = "Login failed. Check credentials.";
+    //             Jmessage = Jmessage + " Invalid login response.";
+    //             isLoading = false;
+    //             return;
+    //         }
+    //         if (_logresult.SiSupport)
+    //         {
+    //             _orgas = _logresult.AllOrgas.ToList();
+    //             canSupportLoad = true;
+    //             isLoading = false;
+    //             isBusy = false;
+    //             Jmessage = "";
+    //             return;
+    //         }
+    //         if (!_logresult.SiAdmin && !_logresult.SiSupport)
+    //         {
+    //             isBusy = false;
+    //             Error = "Login failed. Check credentials.";
+    //             Jmessage = Jmessage + " Acces Refuse, Vous n-etes pas Autorise";
+    //             return;
+    //         }
+    //         await AccepterLoginAsync();
+    //         Console.WriteLine("12.");
+    //     }
+    //     catch (Exception ex)
+    //     {
+    //         //Console.WriteLine($"adresse22 : {_dftClient.BaseAddress.ToString()}");
+    //         Error = "Login failed. Check credentials.";
+    //         isBusy = false;
+    //         Jmessage = $"Login failed: {ex.Message}";
+    //     }
+    //     isLoading = false;
+    // }
     private async Task HandleLoginAsync()
     {
         isLoading = true;
         Error = null;
         isBusy = true;
-        bool yaErrors = false;
         Jmessage = "";
-        if (string.IsNullOrEmpty(loginModel.UsernameOrEmail))
+
+        // Basic validation
+        if (string.IsNullOrEmpty(loginModel.UsernameOrEmail) || string.IsNullOrEmpty(loginModel.Password))
         {
-            Jmessage = "Email ou UserName obligatoire";
-            yaErrors = true;
-        }
-        if (string.IsNullOrEmpty(loginModel.Password))
-        {
-            Jmessage = Jmessage + " Mot de passe obligatoire";
-            yaErrors = true;
-        }
-        if (yaErrors)
-        {
+            Jmessage = "Email/UserName et Mot de passe obligatoires";
             isBusy = false;
             isLoading = false;
             return;
         }
+
         try
         {
             loginModel.IsHelpLogin = false;
-            //loginModel.UsernameOrEmail = loginModel.Username;
-            //loginModel.Idorg = 0; selection
-            //Console.WriteLine($"uname : {loginModel.Username} et {loginModel.Email}");
-            //Console.WriteLine($"adresse11 : {_dftClient.BaseAddress.ToString()}");
+
             var json = JsonConvert.SerializeObject(loginModel);
             var request = new HttpRequestMessage(HttpMethod.Post, "lgauth/login")
             {
                 Content = new StringContent(json, Encoding.UTF8, "application/json")
             };
+
             var response = await _dftClient.SendAsync(request);
-            response.EnsureSuccessStatusCode();
+
+            if (response.StatusCode == HttpStatusCode.Unauthorized)
+            {
+                Error = "Login failed: Unauthorized (401).";
+                Jmessage = "Identifiants invalides.";
+                isBusy = false;
+                isLoading = false;
+                return;
+            }
+
+            if (!response.IsSuccessStatusCode)
+            {
+                Error = $"Login failed: {(int)response.StatusCode} {response.ReasonPhrase}";
+                Jmessage = "Erreur serveur.";
+                isBusy = false;
+                isLoading = false;
+                return;
+            }
+
             var responseContent = await response.Content.ReadAsStringAsync();
-            isBusy = false;
             _logresult = JsonConvert.DeserializeObject<LoginResult>(responseContent);
 
             if (_logresult == null || string.IsNullOrEmpty(_logresult.Atoken))
             {
-                isBusy = false;
                 Error = "Login failed. Check credentials.";
-                Jmessage = Jmessage + " Invalid login response.";
+                Jmessage = "Réponse de login invalide.";
+                isBusy = false;
                 isLoading = false;
                 return;
             }
+
+            // Handle support role
             if (_logresult.SiSupport)
             {
-                _orgas = _logresult.AllOrgas.ToList();
+                _orgas = _logresult.AllOrgas?.ToList() ?? new List<AdmOrga>();
                 canSupportLoad = true;
-                isLoading = false;
                 isBusy = false;
-                Jmessage = "";
+                isLoading = false;
                 return;
             }
+
+            // Handle admin role
             if (!_logresult.SiAdmin && !_logresult.SiSupport)
             {
+                Error = "Accès refusé.";
+                Jmessage = "Vous n'êtes pas autorisé.";
                 isBusy = false;
-                Error = "Login failed. Check credentials.";
-                Jmessage = Jmessage + " Acces Refuse, Vous n-etes pas Autorise";
+                isLoading = false;
                 return;
             }
+
+            // Accept login
             await AccepterLoginAsync();
-            Console.WriteLine("12.");
         }
         catch (Exception ex)
         {
-            //Console.WriteLine($"adresse22 : {_dftClient.BaseAddress.ToString()}");
             Error = "Login failed. Check credentials.";
-            isBusy = false;
             Jmessage = $"Login failed: {ex.Message}";
+            isBusy = false;
         }
-        isLoading = false;
+        finally
+        {
+            isLoading = false;
+        }
     }
+
     private async Task ReloadOrgaAsync()
     {
         isLoading = true;
@@ -281,53 +397,110 @@ else
         isLoading = false;
     }
     private async Task AccepterLoginAsync()
-    {
-        inAccepting = true;
-        canSupportLoad = false;
-        Console.WriteLine("Tokens received.");
-        if (_authProvider is MyAuthStateProvider provider)
-        {
-            Console.WriteLine("Refresh token stored.");
-            var claims = _authProvider.ParseClaimsFromJwt(_logresult.Atoken);
-            await _localStorage.SetItemAsync("blazToken", _logresult.Atoken);
-            await _localStorage.SetItemAsync("blazRtoken", _logresult.Rtoken);
-            await _localStorage.SetItemAsync("authToken", _logresult.Atoken);
-            await _clieManager.SetAuthorizationHeaderAsync("AuthClient");
-            var userbagResponse = await _clieManager.SendRequestAsync("AuthClient", HttpMethod.Get, $"usercontext/userbag");
-            _usrBag = JsonConvert.DeserializeObject<Userbag>(userbagResponse);
-            if (_usrBag == null || !_usrBag.Succeeded)
-            {
-                Jmessage = Jmessage + " Failed to load user context.";
-                return;
-            }
-            var identity = new ClaimsIdentity(claims, "jwt");
-            var user = new ClaimsPrincipal(identity);
-            provider.NotifyUserAuthentication(user);
-            await _sessionContext.PersistSessionAsync(_logresult, _usrBag); // ✅ handles everything
-            if (_logresult.SiSupport)
-            {
-                loginModel.IsHelpLogin = true;
-            }
-            else
-            {
-                loginModel.IsHelpLogin = false;
-            }
-            _appState.UpdateDisplvalue(_usrBag.Graison, _usrBag.Usprof.Ufulnom);
+{
+    inAccepting = true;
+    canSupportLoad = false;
+    Console.WriteLine("Tokens received.");
 
-            var puzzleSyncService = _serviceProvider.GetService<IPuzzleSyncService>();
-            if (puzzleSyncService != null)
-            {
-                await puzzleSyncService.EnsureSessionIsFreshAsync();
-                await puzzleSyncService.SyncPuzzleStateAsync();
-            }
-            else
-            {
-                Console.WriteLine("PuzzleSyncService could not be resolved.");
-            }
-            inAccepting = false;
-            _navManager.NavigateTo("/");
+    if (_authProvider is MyAuthStateProvider provider)
+    {
+        Console.WriteLine("Refresh token stored.");
+
+        var claims = _authProvider.ParseClaimsFromJwt(_logresult.Atoken);
+
+        // ✅ Store all tokens and expiry
+        await _localStorage.SetItemAsync("blazToken", _logresult.Atoken);
+        await _localStorage.SetItemAsync("blazRtoken", _logresult.Rtoken);
+        await _localStorage.SetItemAsync("authToken", _logresult.Atoken);
+        await _localStorage.SetItemAsync("blazExp", _logresult.Adexp);
+        await _localStorage.SetItemAsync("blazUserid", _logresult.Userid);
+        await _localStorage.SetItemAsync("blazOrgid", _logresult.LgOrgid);
+
+        // ✅ Update client headers
+        await _clieManager.SetAuthorizationHeaderAsync("AuthClient");
+
+        // Load user context
+        var userbagResponse = await _clieManager.SendRequestAsync("AuthClient", HttpMethod.Get, "usercontext/userbag");
+        _usrBag = JsonConvert.DeserializeObject<Userbag>(userbagResponse);
+        if (_usrBag == null || !_usrBag.Succeeded)
+        {
+            Jmessage += " Failed to load user context.";
+            return;
         }
+
+        var identity = new ClaimsIdentity(claims, "jwt");
+        var user = new ClaimsPrincipal(identity);
+        provider.NotifyUserAuthentication(user);
+
+        await _sessionContext.PersistSessionAsync(_logresult, _usrBag);
+
+        loginModel.IsHelpLogin = _logresult.SiSupport;
+
+        _appState.UpdateDisplvalue(_usrBag.Graison, _usrBag.Usprof.Ufulnom);
+
+        var puzzleSyncService = _serviceProvider.GetService<IPuzzleSyncService>();
+        if (puzzleSyncService != null)
+        {
+            await puzzleSyncService.EnsureSessionIsFreshAsync();
+            await puzzleSyncService.SyncPuzzleStateAsync();
+        }
+        else
+        {
+            Console.WriteLine("PuzzleSyncService could not be resolved.");
+        }
+
+        inAccepting = false;
+        _navManager.NavigateTo("/");
     }
+}
+    // private async Task AccepterLoginAsync()
+    // {
+    //     inAccepting = true;
+    //     canSupportLoad = false;
+    //     Console.WriteLine("Tokens received.");
+    //     if (_authProvider is MyAuthStateProvider provider)
+    //     {
+    //         Console.WriteLine("Refresh token stored.");
+    //         var claims = _authProvider.ParseClaimsFromJwt(_logresult.Atoken);
+    //         await _localStorage.SetItemAsync("blazToken", _logresult.Atoken);
+    //         await _localStorage.SetItemAsync("blazRtoken", _logresult.Rtoken);
+    //         await _localStorage.SetItemAsync("authToken", _logresult.Atoken);
+    //         await _clieManager.SetAuthorizationHeaderAsync("AuthClient");
+    //         var userbagResponse = await _clieManager.SendRequestAsync("AuthClient", HttpMethod.Get, $"usercontext/userbag");
+    //         _usrBag = JsonConvert.DeserializeObject<Userbag>(userbagResponse);
+    //         if (_usrBag == null || !_usrBag.Succeeded)
+    //         {
+    //             Jmessage = Jmessage + " Failed to load user context.";
+    //             return;
+    //         }
+    //         var identity = new ClaimsIdentity(claims, "jwt");
+    //         var user = new ClaimsPrincipal(identity);
+    //         provider.NotifyUserAuthentication(user);
+    //         await _sessionContext.PersistSessionAsync(_logresult, _usrBag); // ✅ handles everything
+    //         if (_logresult.SiSupport)
+    //         {
+    //             loginModel.IsHelpLogin = true;
+    //         }
+    //         else
+    //         {
+    //             loginModel.IsHelpLogin = false;
+    //         }
+    //         _appState.UpdateDisplvalue(_usrBag.Graison, _usrBag.Usprof.Ufulnom);
+
+    //         var puzzleSyncService = _serviceProvider.GetService<IPuzzleSyncService>();
+    //         if (puzzleSyncService != null)
+    //         {
+    //             await puzzleSyncService.EnsureSessionIsFreshAsync();
+    //             await puzzleSyncService.SyncPuzzleStateAsync();
+    //         }
+    //         else
+    //         {
+    //             Console.WriteLine("PuzzleSyncService could not be resolved.");
+    //         }
+    //         inAccepting = false;
+    //         _navManager.NavigateTo("/");
+    //     }
+    // }
     private async Task AtestCors()
     {
         //verified connection

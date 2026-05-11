@@ -10,7 +10,7 @@
 @using GxShared.Others
 @using GxShared.Interfaces
 @using GxShared.GxDtos 
-@using GxTie.ClieModels
+@using GxShared.Helpers
 @using GxTie.Services
 @using GxTie.Components.Opera.Calculs
 @using Simple.OData.Client
@@ -176,7 +176,7 @@
 @code {
     private bool isLoading = true;
     public GxorgaDto curOrga = new GxorgaDto();
-    public MyShareVars toChild = new();
+    public ChildVars toChild = new();
     public MyMenuVars froMenu = new();
     private bool allEnable = false;
     private string Imessage = "";
@@ -253,8 +253,8 @@
     public Userbag _usrBag = new Userbag();
     public List<Gpfixe> LsFixes = new();
     public List<RubvarDto> EnsRubrs = new();
-    private List<GsesioDto> EnsExos = new();
-    private List<GsesioDto> EnsSess = new();
+    private string EnsExos = "";
+    private List<GsgfixDto> EnsSess = new();
 
     public List<Gpvar> LsVars = new();
     public List<Gplan> LsPlans = new();
@@ -453,7 +453,7 @@
     //     Console.WriteLine($"ICI RUBRIQUES : {curProg.Rubvars.Count()}");
     //     //return _curProg;
     // }
-    void GetSelectedExos(GsesioDto myexo)
+    void GetSelectedExos(string myexo)
     {
         toChild.MainOptsOk = false;
         toChild.curExo = myexo;
@@ -465,14 +465,14 @@
         }
     }
 
-    void GetSelectedSesio(GsesioDto mysesio)
+    void GetSelectedSesio(string mysesio)
     {
         toChild.MainOptsOk = false;
-        toChild.curSesio = mysesio;
+        toChild.curSes = mysesio;
         if (Ugpe != 0 && froMenu.Uexo != 0 && froMenu.Usesio != 0)
         {
             toChild.MainOptsOk = true;
-            toChild.curSesio = EnsSess.Where(us => us.Id == froMenu.Usesio).FirstOrDefault();
+            toChild.curSes = EnsSess.Where(us => us.Elea == froMenu.Usesio).FirstOrDefault().Liba;
             StateHasChanged();
         }
     }

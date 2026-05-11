@@ -13,8 +13,8 @@
 @using System.Web
 @using BlazorBootstrap
 @using Blazored.LocalStorage
-@using GxPilo.ClieModels
 @using GxPilo.Services
+@using GxShared.Helpers
 @using GxShared.Sess
 @using Simple.OData.Client
 @using AutoMapper
@@ -63,14 +63,14 @@ else
                 </div>
             </div>
             <div class="form-group">
-                <label class="fw-bold">Domaine :</label>
+                @* <label class="fw-bold">Domaine :</label>
                 <InputSelect @bind-Value="ItkDom" class="me-3" style="width:auto">
                     <option value="0">?domaine</option>
                     @foreach (var tob in LsDoms)
                     {
                         <option value="@tob.Gp2">@tob.Liba</option>
                     }
-                </InputSelect>
+                </InputSelect> *@
 
                 <label class="fw-bold">G.Tiers :</label>
                 <InputSelect @bind-Value="IMyGtie" class="me-3" style="width:auto">
@@ -90,14 +90,14 @@ else
                     }
                 </InputSelect>
 
-                <label class="fw-bold">Base :</label>
+                @* <label class="fw-bold">Base :</label>
                 <InputSelect @bind-Value="IMyVue" class="me-3" style="width:auto">
                     <option value="0">?util</option>
                     @foreach (var tob in LsVues)
                     {
                         <option value="@tob.Gp2">@tob.Liba</option>
                     }
-                </InputSelect>
+                </InputSelect> *@
             </div>
             <div class="container-fluid-fixed-top">
                 @if (curOrga == null)
@@ -116,10 +116,10 @@ else
                             }
                         </div>
                         <div class="row">
-                            @if (IMyDom != 0 && ItkDom != 0 && IMyGtie !=0 && IMyAtr != 0 && IMyVue != 0)
+                            @if (IMyGtie != 0 && IMyAtr != 0)
                             {
                                 <Grid TItem="PlngenDto"
-                                      Data="@MyDaPlans.Where(vu => vu.Todom == IMyDom && vu.Totyp == IMyGtie && vu.Toatr == IMyAtr &&  vu.Tovue == IMyVue)"
+                                      Data="@MyDaPlans.Where(vu => vu.Totyp == IMyGtie && vu.Toatr == IMyAtr)"
                                       @key="PlanRenderKey"
                                       AllowDetailView="true"
                                       AllowPaging="true"
@@ -190,7 +190,10 @@ else
                                                 {
                                                     <button class="btn btn-primary btn-sm @(isAddPln || isEdtPln ? "disabled-action" : "")"
                                                             @onclick="StartPlnNew">
-                                                        ➕ Add
+                                                        <span style="display:inline-flex; align-items:center; gap:4px;">
+                                                            <span>➕</span>
+                                                            <span>Add</span>
+                                                        </span>
                                                     </button>
                                                 }
                                             </HeaderContent>
@@ -411,7 +414,10 @@ else
                                                                             <button class="btn btn-primary btn-sm
                                                                                                      @(AllowMultipleEdits || !isAddRub ? "" : "disabled-action")"
                                                                                     @onclick="() => StartRubNew(selectedPln)">
-                                                                                ➕ Add
+                                                                                <span style="display:inline-flex; align-items:center; gap:4px;">
+                                                                                    <span>➕</span>
+                                                                                    <span>Add</span>
+                                                                                </span>
                                                                             </button>
                                                                         }
                                                                     </HeaderContent>
@@ -670,7 +676,7 @@ else
     [Parameter]
     public IODataClient _InODaClient { get; set; }
     [Parameter]
-    public MyShareVars toChild { get; set; }
+    public ChildVars toChild { get; set; }
     [Parameter]
     public int toMenu { get; set; }
     //guard
@@ -686,51 +692,51 @@ else
     //Global
     private int _lgcdu = 0;
     private int IMyGpln = 3; //3Grille
-    private int IMyDom = 1; //1Saisie
+    private int IMyDom = 1; //Saisie
+    private int IMyVue = 1; //?1Reel2Virtuel
     //private int ItkDom = 0; //?6Tiers7Mat
-    //private int IMyAtr = 0; //?1Categ/2Fonct...
-    //private int IMyGtie = 0; //?1Cible/2Operat...
-    //private int IMyVue = 1; //?1Reel2Virtuel
-    private int _itkDom = 0; //?6Tiers7Mat
-    public int ItkDom
-    {
-        get => _itkDom;
-        set
-        {
-            _itkDom = value;
-            curPlanDom(value);
-        }
-    }
-    private int _myGtie = 0; //?1Cible/2Operat...
-    public int IMyGtie
-    {
-        get => _myGtie;
-        set
-        {
-            _myGtie = value;
-            curPlanTier(value);
-        }
-    }
-    private int _myAtr = 0; //?1Categ/2Fonct...
-    public int IMyAtr
-    {
-        get => _myAtr;
-        set
-        {
-            _myAtr = value;
-            curPlanAtr(value);
-        }
-    }
-    private int _myVue; //?1Reel2Virtuel
-    public int IMyVue
-    {
-        get => _myVue;
-        set
-        {
-            _myVue = value;
-            curPlanVue(value);
-        }
-    }
+    private int IMyAtr = 1; //?1Categ/2Fonct...
+    private int IMyGtie = 1; //?1Cible/2Operat...
+    // private int _itkDom = 0; //?6Tiers7Mat
+    // public int ItkDom
+    // {
+    //     get => _itkDom;
+    //     set
+    //     {
+    //         _itkDom = value;
+    //         curPlanDom(value);
+    //     }
+    // }
+    // private int _myGtie = 0; //?1Cible/2Operat...
+    // public int IMyGtie
+    // {
+    //     get => _myGtie;
+    //     set
+    //     {
+    //         _myGtie = value;
+    //         curPlanTier(value);
+    //     }
+    // }
+    // private int _myAtr = 0; //?1Categ/2Fonct...
+    // public int IMyAtr
+    // {
+    //     get => _myAtr;
+    //     set
+    //     {
+    //         _myAtr = value;
+    //         curPlanAtr(value);
+    //     }
+    // }
+    //private int _myVue; //?1Reel2Virtuel
+    // public int IMyVue
+    // {
+    //     get => _myVue;
+    //     set
+    //     {
+    //         _myVue = value;
+    //         curPlanVue(value);
+    //     }
+    // }
     
     //author
     private ClaimsPrincipal authUser;
@@ -870,6 +876,7 @@ else
             LsDoms = LsFixes.Where(ut => ut.Gvars == 36 && ut.Itb == 4 && ut.Gp1 == 3 && ut.Elea != 0).ToList();
             LsAtrs = LsFixes.Where(ut => ut.Gvars == 36 && ut.Itb == 1 && ut.Gp1 == 3 && ut.Elea != 0).ToList();
             LsVues = LsFixes.Where(ut => ut.Gvars == 36 && ut.Itb == 4 && ut.Gp1 == 4 && ut.Elea != 0).ToList();
+            LsGties = LsFixes.Where(ut => ut.Gvars == 36 && ut.Itb == 6 && ut.Elea != 0 && ut.Elea != 9).ToList();
             //LsTabls = toChild.LsTabls.ToList();
             LsPlans = toChild.LsPlans;
             //LsSites = toChild.LsSites;
@@ -893,6 +900,8 @@ else
                 Console.WriteLine("Plngens null/empty - initializing empty collections");
                 MyDaPlans = new ObservableCollection<PlngenDto>();
             }
+            // Batch update so you don’t render three times
+            UpdateAllDom(IMyGtie, IMyAtr);
             atrTitle = "Saisie";
         }
         catch (Exception ex)
@@ -1720,32 +1729,68 @@ else
         return string.Join(" ", css);
     }
     // ✅ 6. SELECTIONS
-    private void curPlanAtr(int xatr)
+    private void curPlanTier(int xtie)
     {
+        //IMyGtie = xtie;
 
+        if (IMyGtie != 0 && (IMyDom != 0 && IMyAtr != 0 && IMyVue != 0))
+        {
+            InvokeAsync(StateHasChanged);
+        }
     }
-    private void curPlanDom(int xdom)
+    private void curPlanDom(int domId)
     {
-        if (xdom != 0)
+        //IMyDom = domId;
+        if (IMyDom != 0)
         {
             int gtib = 7;
-            if (xdom == 1) gtib = 6;
+            if (IMyDom == 1) gtib = 6;
             LsGties = LsFixes.Where(ut => ut.Gvars == 36 && ut.Itb == gtib && ut.Elea != 0 && ut.Elea != 9).ToList();
         }
         else
         {
             LsGties = new();
         }
+
+        // Example: check if all selections are valid
+        if (IMyGtie != 0 && (IMyDom != 0 && IMyAtr != 0 && IMyVue != 0))
+        {
+            // All three have values → single render
+            InvokeAsync(StateHasChanged);
+        }
     }
-    private void curPlanTier(int xtie)
+
+    private void curPlanAtr(int atrId)
     {
+        //IMyAtr = atrIdif (IMyDom != 0 && IMyAtr != 0 && IMyVue != 0)
 
+        if (IMyGtie != 0 && (IMyDom != 0 && IMyAtr != 0 && IMyVue != 0))
+        {
+            InvokeAsync(StateHasChanged);
+        }
     }
-    private void curPlanVue(int xvue)
+
+    private void curPlanVue(int vueId)
     {
+        //IMyVue = vueId;
 
+        if (IMyGtie != 0 && (IMyDom != 0 && IMyAtr != 0 && IMyVue != 0))
+        {
+            InvokeAsync(StateHasChanged);
+        }
     }
+    private void UpdateAllDom(int gtieId, int atrId)
+    {
+        IMyGtie = gtieId;
+        IMyAtr = atrId;
+        //IMyVue = vueId;
 
+        InvokeAsync(StateHasChanged); // single refresh
+    }
+    private void ResetAllDom()
+    {
+        UpdateAllDom(gtieId: 0, atrId: 0);
+    }
 
     // ✅ 6. HELPERS - Mark Count and Clone
   

@@ -20,7 +20,6 @@
 @using GxShared.Others
 @using GxShared.Identity
 @using GxPilo.StaticHelpers
-@using GxPilo.ClieModels
 @using GxPilo.Services
 
 @using Simple.OData.Client
@@ -933,7 +932,6 @@ else if (edOrgContext != null && curOrga != null)
     bool isDelingTfl = false;
 
 
-
     //editing COL
     //Gsglne? editingCol = null;
     //bool isEdingCol = false;
@@ -1248,7 +1246,7 @@ else if (edOrgContext != null && curOrga != null)
             myfix.Xdel1 = 0;
             var key = myfix.Xseq; // helper to extract PK
             _guard.TrackUpdate("gsgfixes", key, myfix);
-             Console.WriteLine($"✏️ EXISTING Gsgfixs → TrackUpdate");
+             Console.WriteLine($"✏️ EXISTING Gsgfixes → TrackUpdate");
             //GdomEdRowguid = null;
             isEdDom = false;
             EdDomRowguid = null;
@@ -1305,7 +1303,7 @@ else if (edOrgContext != null && curOrga != null)
             myfix.Xdel1 = 0;
             var key = myfix.Xseq; // helper to extract PK
             _guard.TrackUpdate("gsgfixes", key, myfix);
-             Console.WriteLine($"✏️ EXISTING Gsgfixs → TrackUpdate");
+             Console.WriteLine($"✏️ EXISTING Gsgfixes → TrackUpdate");
             //GaptEdRowguid = null;
             isEdApt = false;
             EdAptRowguid = null;
@@ -1365,7 +1363,7 @@ else if (edOrgContext != null && curOrga != null)
             myfix.Xdel1 = 0;
             var key = myfix.Xseq; // helper to extract PK
             _guard.TrackUpdate("gsgfixes", key, myfix);
-             Console.WriteLine($"✏️ EXISTING Gsgfixs → TrackUpdate");
+             Console.WriteLine($"✏️ EXISTING Gsgfixes → TrackUpdate");
             //GaflEdRowguid = null;
             isEdAfl = false;
             EdAflRowguid = null;
