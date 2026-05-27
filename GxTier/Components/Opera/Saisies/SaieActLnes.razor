@@ -7,8 +7,7 @@
 @using BlazorBootstrap
 @using BlazorDownloadFile
 @using Blazored.LocalStorage
-@using GxShared.Formulas.ForaContext
-@using GxShared.Formulas.ForaModels
+
 @using GxShared.Sess
 @using GxShared.Others
 @using GxShared.Interfaces
@@ -16,6 +15,8 @@
 @using GxShared.Helpers
 @using GxTie.Components.Opera
 @using GxTie.Services
+@using GxFormula.ForaContext
+@using GxFormula.ForaModels
 @using GxTie.Components.Opera.RtOpe
 @using Simple.OData.Client  
 
@@ -23,6 +24,7 @@
 @inject ILocalStorageService _localStorage
 @inject IBlazorDownloadFileService DownloadService
 @inject HttpClientService _cliemanager
+@inject FormulaEvaluationService FormulaService
 @inject IMessageService _messageService
 @inject RendAgres _rendAgres
 @inject IJSRuntime _jsRun
@@ -45,9 +47,16 @@
         <p>Saisies/Saisie Loading...</p>
     </div>
 }
-else
+@if (!isLoading)
 {
     <div class="d-flex align-items-center gap-2">
+        <InputSelect id="optId" @bind-Value="ImyOrient">
+            <option value="0">aucun</option>
+            @foreach (var uf in LsFixes.Where(xf => xf.Gvars == 33 && xf.Itb == 7 && xf.Gp1 == 4))
+            {
+                <option value="@uf.Elea">par @uf.Liba</option>
+            }
+        </InputSelect>
         @if (CanSaie)
         {
             <Button class="btn btn-sm btn-secondary btnsz"
@@ -93,10 +102,10 @@ else
             <EditForm Context="invform" Model="curOrga">
                 <DataAnnotationsValidator />
                 <ValidationSummary />
-                @if (ImyOrient == 1)
+            <div class="p-1" style="max-height: 400px; overflow-y: auto;">
+               @if (ImyOrient == 1)
                 { // par rubrique
-                <div class="p-1" style="max-height: 400px; overflow-y: auto;">
-                  <div class="d-flex align-items-center gap-2">
+                        <div class="d-flex align-items-center gap-2">
                       <label>Code :</label>
                       <div class="text-center">
                           <InputSelect id="rubrid-code" @bind-Value="ImyRubr">
@@ -107,9 +116,8 @@ else
                                 }
                             </InputSelect>
                         </div>
-
-                        <label>Libelle :</label>
-                        <div class="text-center">
+                      <label>Libelle :</label>
+                      <div class="text-center">
                             <InputSelect id="rubrid-lib" @bind-Value="ImyRubr">
                                 <option value="0">rubrique?</option>
                                 @foreach (var rub in EnsRubrs)
@@ -117,8 +125,8 @@ else
                                     <option value="@rub.Id">@rub.Liba</option>
                                 }
                             </InputSelect>
-                        </div>
-                    </div>
+                      </div>
+                      </div>
                     <Grid TItem="FormulaLine"
                     Data="@MissionLines"
                     AllowFiltering="@isFilteringEnabled"
@@ -158,12 +166,10 @@ else
                             </GridColumn>
                         </GridColumns>
                     </Grid>
-                </div>
                 }
                 else
                 { // par personne
-                <div class="p-1" style="max-height: 400px; overflow-y: auto;">
-                  <div class="d-flex align-items-center gap-2">
+                        <div class="d-flex align-items-center gap-2">
                       <label>matricule :</label>
                       <div class="text-center">
                           <InputSelect id="Idtie" @bind-Value="ImyTier">
@@ -224,8 +230,8 @@ else
                             </GridColumn>
                         </GridColumns>
                     </Grid>
-                </div>
                 }
+            </div>
             </EditForm>
         </div>
     }
@@ -259,7 +265,7 @@ else
     [Parameter]
     public int ImyDiv { get ; set; }
     [Parameter]
-    public int ImyOrient { get; set; }
+    public int ChxGpe { get; set;}
     [Parameter]
     public List<TierspDto> PreTiers { get; set; }
     [Parameter]
@@ -285,7 +291,9 @@ else
 
     private RtS11Fic myfsaie;
 
-    //private FormulaEvalService _calcService;
+    public List<FormulaLine> FormulaLines { get; set; } = new();
+    public List<FormulaEvaluationOutcome> Outcomes { get; set; } = new();
+    private FormulaEvaluationService _calcService;
 
 
     public int _lgcdu = 0;
@@ -298,7 +306,7 @@ else
     private List<TierspDto> EnsTiers = new();
     private List<PlngenDto> EnsProgs = new();
     private List<RubvarDto> EnsRubrs = new();
-    
+
     //  private Actsaie curAct = new();
     private PlngenDto curProg = new();
 
@@ -312,12 +320,12 @@ else
 
     private List<Gpfixe> LsFixes = new List<Gpfixe>();
     private List<Gpvar> LsVars = new();
-    
+
     private bool success, errors, isSubmitting = false;
     private string[] errorList = [];
     private string rolInv = "", userName = "", isatmsg = "";
 
-    
+
     private List<TierspDto> SaieTiers = new();
 
     private ReqgnModel qryModel = new ReqgnModel();
@@ -328,7 +336,7 @@ else
     private bool SaveMarked = false;
     private bool CalcMarked = false;
     private bool autoSave = false;
-    private bool SessOpen => toChild.curExo != null && toChild.curSes != null;
+    private bool SessOpen => ChxGpe != 0; //toChild.inExo != null && toChild.inSes != null;
     private bool ProgOpen => SessOpen && ImyProg != 0;
     private bool CanSaie => ProgOpen && (ImyRubr != 0 || ImyTier != 0);
     //->can Edit-can OpenSaie
@@ -344,9 +352,48 @@ else
     private Guid? ConfirmingDetDeleteRowGuid;
 
     //private string opseudo = "", opnomp = "";
+    private string kmessage = "";
+    private string _errorMessage = "";
+    private int itRub = 0;
+    private int itProg = 0;
+    private int itTie = 0;
+    private int itPgr = 0;
+    private int itGpe = 0;
+
+    //variables PLANS
+    Modal edAModal;
+    ActsaieDto actItem = new();
+    int? edAIndex = null;
+    ActsaieDto edAct = new();
+    bool adingAct = false;
+
+    ActdetDto edADet = new();
+    //variables Man
+    ActsaieDto? draftAct = null;
+    ActsaieDto? editingAct = null;
+    //bool yaEuActModif = false;
+    //variables Lne
+    ActdetDto? draftDet = null;
+    ActdetDto? editingDet = null;
+    bool yaEuDetModif = false;
+
+    //private IRubvarResolver _rubvarResolver;
+
+    List<FormulaLine> MissionLines = new();
+    List<OutDataLineStream> CalcLines = new();
     //private int opfonc = 0, opgrad = 0, opafec = 0;
     //private int ImyTier = 0; //, ImyRubr = 0;
     private int ImyExo = 0; //ImySes = 0,
+    private int _imyOrient = 0;
+    public int ImyOrient
+    {
+        get => _imyOrient;
+        set
+        {
+            _imyOrient = value;
+            GetSelectedOption(value);
+        }
+    }
     private int _imyRubr = 0;
     public int ImyRubr
     {
@@ -361,6 +408,45 @@ else
                 _ = HandleSelectedRubrAsync(selected);
             }
         }
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        CalcLines = new();
+        isLoading = true;
+        isAuthenticated = toChild.isAuthenticated;
+        authUser = toChild.authUser;
+        if (!isAuthenticated)
+        {
+            Imessage = "Erreur, Utilisateur non authentifie";
+            return;
+        }
+        //curOrga = toChild.curOrga;
+        LsVars = toChild.LsVars;
+        LsFixes = toChild.LsFixes;
+        //LsProgs = toChild.LsProgs;
+        //LsSites = toChild.LsSites
+        //indata
+        EnsTiers = curOrga.Tiersps.ToList();
+        Console.WriteLine($"ACTSAIE Active {EnsTiers.Count()}");
+        //EnsSess = curOrga.Gsesios.Where(us => us.Styp == 3 && us.Sicur == 1 && us.Sieta == 1).ToList(); //saisies ouversts
+        _curTier = EnsTiers.FirstOrDefault();
+        EnsProgs = curOrga.Plngens.Where(pl => pl.Ptyp == 5).ToList(); //saisies
+        _lgcdu = 3;
+        var noslims = LsVars.Where(uv => uv.Idhie == 0 && uv.Gvars == 21 && uv.Itb == 1 && uv.Elea == 1);
+        if (noslims.Any()) _lgcdu = noslims.FirstOrDefault().Ivala;
+       
+        // _calcService = new FormulaEvalService(esaTier, esaAct, esaDet, resaDon, resaDet);
+        // _calcService = new FormulaEvalService(
+        //     new List<TierspDto> { _curTier }, // single person context
+        //         curDaAct,
+        //         curActDet,
+        //         curDaDon,
+        //         curResDet
+        // );
+        // _saiEdtContext(curOrg)
+        Console.WriteLine("Authentication ENTREE");
+        isLoading = false;
     }
     private async Task HandleSelectedRubrAsync(RubvarDto selected)
     {
@@ -390,35 +476,7 @@ else
     {
         await GetSelectedTier(selected);
     }
-    private string kmessage = "";
-    private string _errorMessage = "";
-    private int itRub = 0;
-    private int itProg = 0;
-    private int itTie = 0;
-    private int itPgr = 0;
-    private int itGpe = 0;
-  
-    //variables PLANS
-    Modal edAModal;
-    ActsaieDto actItem = new();
-    int? edAIndex = null;
-    ActsaieDto edAct = new();
-    bool adingAct = false;
-
-    ActdetDto edADet = new();
-    //variables Man
-    ActsaieDto? draftAct = null;
-    ActsaieDto? editingAct = null;
-    //bool yaEuActModif = false;
-    //variables Lne
-    ActdetDto? draftDet = null;
-    ActdetDto? editingDet = null;
-    bool yaEuDetModif = false;
-
-    //private IRubvarResolver _rubvarResolver;
-
-    List<FormulaLine> MissionLines = new();
-    List<OutDataLineStream> CalcLines = new();
+    
     private void HandleValidInput(FormulaLine item, object val)
     {
         if (val is int parsed)
@@ -468,48 +526,7 @@ else
         // }
 
     }
-    protected override async Task OnInitializedAsync()
-    {
-        CalcLines = new();
-        isLoading = true;
-        isAuthenticated = toChild.isAuthenticated;
-        authUser = toChild.authUser;
-        if (!isAuthenticated)
-        {
-            Imessage = "Erreur, Utilisateur non authentifie";
-            return;
-        }
-        //curOrga = toChild.curOrga;
-        LsVars = toChild.LsVars;
-        LsFixes = toChild.LsFixes;
-        //LsProgs = toChild.LsProgs;
-        //LsSites = toChild.LsSites
-        //indata
-        EnsTiers = curOrga.Tiersps.ToList();
-        Console.WriteLine($"ACTSAIE Active {EnsTiers.Count() }");
-        //EnsSess = curOrga.Gsesios.Where(us => us.Styp == 3 && us.Sicur == 1 && us.Sieta == 1).ToList(); //saisies ouversts
-        _curTier = EnsTiers.FirstOrDefault();
-        EnsProgs = curOrga.Plngens.Where(pl => pl.Ptyp == 5).ToList(); //saisies
-        _lgcdu = 3;
-        var noslims = LsVars.Where(uv => uv.Idhie == 0 && uv.Gvars == 21 && uv.Itb == 1 && uv.Elea == 1);
-        if (noslims.Any()) _lgcdu = noslims.FirstOrDefault().Ivala;
-
-       
-        //toChild.LsDivs.Where(uh => uh.Sidiv == 1).ToList();
-
-
-        // // _calcService = new FormulaEvalService(esaTier, esaAct, esaDet, resaDon, resaDet);
-        // _calcService = new FormulaEvalService(
-        //     new List<Tiersp> { _curTier }, // single person context
-        //         curDaAct,
-        //         curActDet,
-        //         curDaDon,
-        //         curResDet
-        // );
-        // _saiEdtContext(curOrg)
-        Console.WriteLine("Authentication ENTREE");
-        isLoading = false;
-    }
+    
     private async Task OuvrirFiche(int orig)
     {
         isFicheVisible = !isFicheVisible;
@@ -611,11 +628,25 @@ else
         // var updated = _curTier.Actsaies.Where(a => !string.IsNullOrEmpty(a.Liba) || !string.IsNullOrEmpty(a.Abg)).ToList();
         // Console.WriteLine($"Verified Liba Set : {_curTier.Actsaies.FirstOrDefault().Liba}");
     }
+    //Others Selections//si isSesSaieOpen
+    private void GetSelectedOption(int myele)
+    {
+        //preparer data pour formulaire H/V
+
+        StateHasChanged();
+    }
     private async Task EvaluateSaisie()
     {
         CalcLines.AddRange(_currentSession.Outputs);
         _currentSession.Clear();
         if (autoSave) await OpeSaveAsync();
+    }
+    //Manage CALCULATION
+    private void EvaluateAll()
+    {
+        Outcomes = FormulaLines
+            .Select(line => FormulaService.EvaluateWithLog(line))
+            .ToList();
     }
     private async Task OpeSaveAsync()
     {
@@ -625,8 +656,8 @@ else
             Sireel = curProg.Tovue,
             Idorg = curOrga.Idorg,
             Idpln = curProg.Id,
-            Vperi = toChild.curSesio.Speri,
-            Eperi = toChild.curExo.Speri,
+            //Vperi = toChild.inSes.Fda,
+            //Eperi = toChild.inExo.Speri,
             Datope = DateTime.Now,
             Gseq = 1,
             OutLines = CalcLines
@@ -662,7 +693,7 @@ else
         //EditingRowGuid = Guid.Empty;
         ////await curODContext.SaveDataAsync();
     }
-    //Manage CALCULATION
+    
     private void Opecalc()
     {
 
@@ -756,8 +787,8 @@ else
             Sireel = curProg.Tovue,
             Idorg = curOrga.Idorg,
             Idpln = curProg.Id,
-            Vperi = toChild.curSes,
-            Eperi = toChild.curExo,
+            //Vperi = toChild.inSes.Ddat.ToString("yyyy-MM-dd"),
+            //Eperi = toChild.inSes.Fdat.ToString("yyyy-MM-dd"),
             Datope = DateTime.Now,
             Gseq = 1,
             OutLines = calcLines
@@ -800,8 +831,8 @@ else
                 Sireel = curProg.Tovue,
                 Idorg = curOrga.Idorg,
                 Idpln = curProg.Id,
-                Vperi = toChild.curSes,
-                Eperi = toChild.curExo,
+                //Vperi = toChild.curSes,
+                //Eperi = toChild.curExo,
                 Datope = DateTime.Now,
                 Gseq = 1,
                 OutLines = CalcLines
@@ -830,8 +861,8 @@ else
                 Sireel = curProg.Tovue,
                 Idorg = curOrga.Idorg,
                 Idpln = curProg.Id,
-                Vperi = toChild.curSes,
-                Eperi = toChild.curExo,
+                //Vperi = toChild.curSes,
+                //Eperi = toChild.curExo,
                 Datope = DateTime.Now,
                 Gseq = 1,
                 OutLines = CalcLines

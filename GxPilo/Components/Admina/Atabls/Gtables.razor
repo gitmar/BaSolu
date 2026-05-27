@@ -24,7 +24,7 @@
 @using Newtonsoft.Json
 
 @inject ILocalStorageService _localStorage
-@inject NavigationManager _navmanager
+@inject NavigationManager _navManager
 @inject HttpClientService _clieManager
 @inject IJSRuntime _jsRun
 
@@ -176,8 +176,11 @@ else
                                                 @if (IMyGtbl != 1)
                                                 {
                                                     <button class="btn btn-primary btn-sm @(isAddFix || isEdtFix ? "disabled-action" : "")"
-                                                            @onclick="() => StartFixeNew()">
-                                                        ➕ Add
+                                                            @onclick="() => StartFixNew()">
+                                                        <span style="display:inline-flex; align-items:center; gap:2px;">
+                                                            <span>➕</span>
+                                                            <span>Add</span>
+                                                        </span>
                                                     </button>
                                                 }
                                                 else
@@ -380,89 +383,6 @@ else
                                                         }
                                                     </ChildContent>
                                                 </GridColumn>
-
-
-                                                @* <GridColumn TItem="GstablDto" HeaderText="Eta">
-                                                    <ChildContent Context="item">
-                                                        @if (EditingLneRowGuid == item.Rowguid)
-                                                        {
-                                                            <InputSelect @bind-Value="draftLne.Eta">
-                                                                <option class="jchx" value="0">?choisir</option>
-                                                                @foreach (var tob in LsFixes.Where(ut => ut.Gvars == 32 && ut.Itb == 1 && ut.Elea != 0))
-                                                                {
-                                                                    <option value="@tob.Elea">@tob.Liba</option>
-                                                                }
-                                                            </InputSelect>
-                                                        }
-                                                        else
-                                                        {
-                                                            <InputSelect @bind-Value="item.Eta" disabled="true">
-                                                                <option class="jchx" value="0">?choisir</option>
-                                                                @foreach (var tob in LsFixes.Where(ut => ut.Gvars == 32 && ut.Itb == 1 && ut.Elea != 0))
-                                                                {
-                                                                    <option value="@tob.Elea">@tob.Liba</option>
-                                                                }
-                                                            </InputSelect>
-                                                        }
-                                                    </ChildContent>
-                                                </GridColumn>
-                                                <GridColumn TItem="GstablDto" HeaderText="Actions" Filterable="false">
-                                                    <HeaderContent>
-                                                        @if (allEnable)
-                                                        {
-                                                            <button class="btn btn-primary btn-sm" @onclick="() => OpenAddChild(parent)">
-                                                                ➕ Add
-                                                            </button>
-                                                        }
-                                                    </HeaderContent>
-                                                    <ChildContent Context="item">
-                                                        @if (EdElmRowguid != item.Rowguid)
-                                                        {
-                                                            <button class="btn btn-warning btn-sm
-                                                                                                                                    @(!isEdElm && !isDlElm && EdElmRowguid != item.Rowguid ? "" : "disabled-action")"
-                                                                    @onclick="() => Edit2tbl(item)">
-                                                                ✏️ Edit
-                                                            </button>
-                                                        }
-                                                        else
-                                                        {
-                                                            <button class="btn btn-sm btn-success
-                                                                                                                                        @(EdElmRowguid == item.Rowguid ? "" : "disabled-action")"
-                                                                    @onclick="() => Conf2tbl(item)">
-                                                                💾 Save
-                                                            </button>
-                                                            <button class="btn btn-sm btn-secondary
-                                                                                                                                        @(EdElmRowguid == item.Rowguid ? "" : "disabled-action")"
-                                                                    @onclick="() => Canc2tbl(item)">
-                                                                ❎ Cancel
-                                                            </button>
-                                                        }
-                                                        @if (DlElmRowguid != item.Rowguid)
-                                                        {
-                                                            @if (IMyGtbl == 2)
-                                                            {
-                                                                <button class="btn btn-sm btn-outline-danger
-                                                                                                                                                        @(!isDlElm && !isEdElm && DlElmRowguid != item.Rowguid ? "" : "disabled-action")"
-                                                                        @onclick="() => Dele2tbl(item)">
-                                                                    🗑️ Delete
-                                                                </button>
-                                                            }
-                                                        }
-                                                        else
-                                                        {
-                                                            <button class="btn btn-warning btn-sm
-                                                                                                                                    @(DlElmRowguid == item.Rowguid ? "" : "disabled-action")"
-                                                                    @onclick="() => ConfD2tbl(item)">
-                                                                Confirm
-                                                            </button>
-                                                            <button class="btn btn-danger btn-sm
-                                                                                                                                    @(DlElmRowguid == item.Rowguid ? "" : "disabled-action")"
-                                                                    @onclick="() => CancD2tbl(item)">
-                                                                Annul
-                                                            </button>
-                                                        }
-                                                    </ChildContent>
-                                                </GridColumn> *@
                                             </GridColumns>
                                         </Grid>
                                     </GridDetailView>
@@ -789,7 +709,7 @@ else
                     curOrga.Gstabls
                         .Where(uv => (uv.Otyp == 1 || uv.Otyp == 2) && uv.Tenr == 1)
                         .ToList()
-                        //Otyp:1tiers2mat
+                //Otyp:1tiers2mat
                 );
                 // Console.WriteLine($"Gstabls loaded: {curOrga.Gstabls.Count}");
                 var testa = MyDaRubrs?.FirstOrDefault();
@@ -830,9 +750,24 @@ else
             isLoading = false;
             StateHasChanged();
         }
+        //.EnableOfflineMode();
     }
-
-    private async Task StartFixeNew()
+    // and call this in OnParametersSet
+    protected override void OnParametersSet()
+    {
+        SubscribeToGuard();
+    }
+    // set up subscription locally
+    private void SubscribeToGuard()
+    {
+        _guard.OnChanges += async () =>
+        {
+            NbChanges = _guard.GetPendingChangesCount();
+            await NbChangesChanged.InvokeAsync(NbChanges);
+            StateHasChanged();
+        };
+    }
+    private async Task StartFixNew()
     {
         Console.WriteLine("🚨 StartFixNew");
         var lsnb = NextSeq(MyDaRubrs, p => p.Iui);
@@ -1046,7 +981,6 @@ else
             ResetRowState(rowguid);
             SetLightBackground(rowguid, false);
             ResetEntityUIState<TDto>(tent);
-            //await NotifyPendingChanges();
             Imessage = $"✅ {typeof(TDto).Name} confirmed";
         }
         else  // CANCEL (unchanged - perfect)
@@ -1425,14 +1359,14 @@ else
         Console.WriteLine($"A verifier {mypln.Liba}");
         //liba
         if (string.IsNullOrEmpty(mypln.Liba)
-            || mypln.Liba.Length < 6)
+            || mypln.Liba.Length < 5)
         {
             Imessage = "designation obligatoire/longueur";
             return false;
         }
         //abrege
         if (string.IsNullOrEmpty(mypln.Abg)
-            || mypln.Abg.Length < 4)
+            || mypln.Abg.Length < 3)
         {
             Imessage = "abrege obligatoire/longueur";
             return false;
@@ -1456,7 +1390,7 @@ else
         }
         //abrege
         if (string.IsNullOrEmpty(myrub.Abg)
-            || myrub.Abg.Length < 4)
+            || myrub.Abg.Length < 3)
         {
             Imessage = "abrege obligatoire/longueur";
             return false;
@@ -1716,11 +1650,6 @@ else
     {
         int oId = Convert.ToInt32(itemId);
         return EdState.TryGetValue(oId, out bool onEditing) && onEditing ? "Confirm" : "Edit";
-    }
-
-    public void Dispose()  // ← ADD THIS
-    {
-        Console.WriteLine("🧹 Child Prubsaie cleaning up");
     }
 }
 

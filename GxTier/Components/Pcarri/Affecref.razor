@@ -38,13 +38,12 @@
             <InputText @bind-Value="draftMvt.Refa" class="xcol2" placeholder="reference" />
             <InputText @bind-Value="draftMvt.Title" class="xcol2" placeholder="titre" />
             <InputText @bind-Value="draftMvt.Notes" class="xcol2" placeholder="notes" />
-            <InputSelect @bind-Value="draftMvt.Ipln" class="xcol2">
+            @* <InputSelect @bind-Value="draftMvt.Ipln" class="xcol2">
                 @foreach (var item in LsDivs.Where(p => p.Ptyp == 4))
                 {
                     <option value="@item.Ipln">@item.Liba</option>
                 }
-            </InputSelect>
-
+            </InputSelect> *@
             <InputDate @bind-Value="draftMvt.Tdate" placeholder="date" class="xcol1" />
             <InputDate @bind-Value="draftMvt.Vdate" placeholder="valide" class="xcol1" />
             <Button Color="ButtonColor.Success" @onclick="() => SaveAdd()">Add</Button>
@@ -99,7 +98,7 @@
                         }
                     </ChildContent>
                 </GridColumn>
-                <GridColumn TItem="TiemvtDto" HeaderText="Organ." Class="xcol2">
+                @* <GridColumn TItem="TiemvtDto" HeaderText="Organ." Class="xcol2">
                     <ChildContent Context="item">
                         @if (editRowguid == item.Rowguid)
                         {
@@ -120,7 +119,7 @@
                             </InputSelect>
                         }
                     </ChildContent>
-                </GridColumn>
+                </GridColumn> *@
                 <GridColumn TItem="TiemvtDto" HeaderText="Date" Class="xcol1 text-truncate">
                     <ChildContent Context="item">
                         @if (editRowguid == item.Rowguid)

@@ -4,14 +4,17 @@ using BlazorDownloadFile;
 
 using Blazored.LocalStorage;
 
+using GxFormula.ForaContext;
+using GxFormula.ForaContext.GxFormula.ForaContext;
+
 using GxShared.GxGuards;
+using GxShared.Helpers;
 using GxShared.Helpers;
 using GxShared.Interfaces;
 using GxShared.Mapping;
 using GxShared.Sess;
 
 using GxTie;
-using GxShared.Helpers;
 using GxTie.Services;
 
 using Microsoft.AspNetCore.Components.Authorization;
@@ -139,6 +142,17 @@ builder.Services.AddScoped<LinkSerialiser>();
 //builder.Services.AddScoped<PouchDbService>();
 builder.Services.AddSingleton<IMessageService, MessageService>();
 builder.Services.AddSingleton<LoadingService>();
+
+// Load Plngen before building the host
+//var plngen = await LoadProgAsync(httpClient); // your custom method
+//var rubvars = plngen.Rubvars.ToList();
+
+//Formula services
+builder.Services.AddScoped<FormulaEngine>();
+builder.Services.AddScoped<ITokenResolver, TokenResolver>();
+builder.Services.AddScoped<FormulaEvaluationService>();
+builder.Services.AddScoped<FormulaEvaluationContext>();
+builder.Services.AddScoped<FormulaLineRegistry>();
 
 var host = builder.Build();
 

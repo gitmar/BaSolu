@@ -8,7 +8,6 @@
 @using GxShared.Helpers
 @using GxTie.Components.Paccu.Valida
 @using GxTie.Components.Paccu.Inscr
-@using GxTie.Components.Paccu.Invita
 
 @using GxTie.Services
 @using GxTie.StaticHelpers
@@ -140,7 +139,7 @@ else
 
     private ValdTie mygvld = new();
     private InscTiw myetiw = new();
-    private InvOper myginv = new();
+    //private InvOper myginv = new();
 
     private MyAuthStateProvider _authProvider { get; set; }
     public Userbag _usrBag = new();
@@ -296,7 +295,8 @@ else
             .Where(ut => ut.Gvars == 36 && ut.Elea != 0 && ut.Elea != 9)
             .ToList();
         Groupes.Clear();
-        foreach(var gr in LsGties.Where(gr => gr.Itb == 6))
+        //foreach(var gr in LsGties.Where(gr => gr.Gp1 == 1 && gr.Itb == 6))
+        foreach (var gr in LsGties.Where(gr => gr.Itb == 6))
         {
             Groupes.Add(new GxGroupe { Itb = gr.Itb, Elea = gr.Elea, Liba = gr.Liba });
         };

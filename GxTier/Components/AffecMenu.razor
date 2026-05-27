@@ -66,7 +66,7 @@ else
                     @* 🔽 STOCK PAGES *@
                     if (_chxMenu == 1)
                     {
-                        <Affectation @ref="mygmut"
+                        <Affecta @ref="mygmut"
                             curOrga="@curOrga"
                             LsDivs="@LsDivs"
                             LsPlans="@LsPlans"
@@ -75,9 +75,9 @@ else
                             @bind-NbChanges="_nbChanges"
                             _guard="_guard"
                             _InODaClient="@_MyODaClient">
-                        </Affectation>
+                        </Affecta>
                     }
-                    else if (_chxMenu == 2)
+                    @* else if (_chxMenu == 2)
                     {
                         <Affecfonct @ref="myresp"
                                   curOrga="@curOrga"
@@ -89,10 +89,10 @@ else
                                   _guard="_guard"
                                   _InODaClient="@_MyODaClient">
                         </Affecfonct>
-                    }
-                    else if (_chxMenu == 3)
+                    } *@
+                    else if (_chxMenu == 2)
                     {
-                        <Affecref @ref="myaref"
+                        @* <Affecref @ref="myaref"
                                   curOrga="@curOrga"
                                   LsDivs="@LsDivs"
                                   LsPlans="@LsPlans"
@@ -100,7 +100,7 @@ else
                                   @bind-NbChanges="_nbChanges"
                                   _guard="_guard"
                                   _InODaClient="@_MyODaClient">
-                        </Affecref>
+                        </Affecref> *@
                     }
                 }
             </div>
@@ -132,9 +132,9 @@ else
 @code {
     private bool isLoading = true;
 
-    private Affectation mygmut = new();
-    private Affecref myaref = new();
-    private Affecfonct myresp = new();
+    private Affecta mygmut = new();
+    //private Affecref myaref = new();
+    //private Affecfonct myresp = new();
 
     [CascadingParameter]
     private Task<AuthenticationState>? AuthState { get; set; }
@@ -162,8 +162,7 @@ else
     {
         // 🔽 STOCK
         new GxMenuItem { Id = 1, Text = "Affectation", Icon = "bi bi-plus-circle" },
-        new GxMenuItem { Id = 2, Text = "Fonctions", Icon = "bi bi-cart" },
-        new GxMenuItem { Id = 3, Text = "References", Icon = "bi bi-cart" }
+        //new GxMenuItem { Id = 2, Text = "References", Icon = "bi bi-cart" },
     };
 
     public List<GxGroupe> Groupes = new();
@@ -320,12 +319,7 @@ else
         if (_chxMenu == 2)
         {
             //_guardVisible = true;
-            strComp = $"Fonctions  {gpeLiba}";
-        }
-        if (_chxMenu == 3)
-        {
-            //_guardVisible = true;
-            strComp = $"References  {gpeLiba}";
+            //strComp = $"References  {gpeLiba}";
         }
 
         StateHasChanged();

@@ -1,11 +1,15 @@
-﻿@page "/resend-confirmation"
+﻿@page "/resendconfmail"
+
 @using System.ComponentModel.DataAnnotations
-@inject HttpClient Http
-@inject NavigationManager Nav
-@inject IConfiguration _iconfig
+@using GxPilo.Services
+@using GxShared.ShdServices
+@using GxShared.Sess
+
+@inject NavigationManager _navManager
+@inject HttpClientService _clieManager
+@inject SessionContextService _sessionContext
 
 <h3>Resend Confirmation Email</h3>
-
 <EditForm Model="@model" OnValidSubmit="HandleResend">
     <DataAnnotationsValidator />
     <ValidationSummary />
@@ -27,65 +31,61 @@
     </button>
 </EditForm>
 
-@if (!string.IsNullOrEmpty(message))
+@if (!string.IsNullOrEmpty(Imessage))
 {
     <div class="alert alert-info mt-3">
-        @message
+        @Imessage
     </div>
 }
 
 @code {
-    private ResendModel model = new();
+    private InviteRequest model = new();
     private bool isLoading = false;
-    private string? message;
+    private string? Imessage;
 
-    protected override void OnInitialized()
+    //GlobModels
+    public Userbag _usrBag = new Userbag();
+
+    protected override async void OnInitialized()
     {
-        // Optional: prefill email from query string
-        var uri = Nav.ToAbsoluteUri(Nav.Uri);
-        var query = System.Web.HttpUtility.ParseQueryString(uri.Query);
-
-        if (!string.IsNullOrEmpty(query["email"]))
+        // 2. Load user context
+        _usrBag = await _sessionContext.GetUserbagAsync();
+        if (_usrBag == null)
         {
-            model.Email = query["email"]!;
+            Imessage = "❌ Session utilisateur invalide";
+            return;
         }
+        model.Idorg = _usrBag.Idorg;
     }
-
-    private async Task HandleResend()
+    private async Task<bool> HandleResend()
     {
         isLoading = true;
-        message = null;
-
         try
         {
-            var backUrl = _iconfig["BackendUrl"];
-            if (!backUrl.EndsWith("/"))
-            {
-                backUrl += "/";
-            }
-            backUrl += "api/";
-            var response = await Http.PostAsJsonAsync("api/resendconfirm", new
-            {
-                email = model.Email
-            });
-
-            // Always show neutral message (security)
-            message = "If the account exists, a confirmation email has been sent.";
+            //non applicable;
+            model.Ivrole = 2; //owner
+            model.Srole = "Owner";
+            // ✅ Update client headers
+            await _clieManager.SetAuthorizationHeaderAsync("AuthClient");
+            // Load user context
+            var response = await _clieManager.SendRequestAsync("AuthClient", HttpMethod.Post, "regis/resendconfirm", model);
+            // if (!response.IsSuccessStatusCode)
+            // {
+            //     var errorContent = await response.Content.ReadAsStringAsync();
+            //     Imessage = $"Failed: {response.StatusCode} - {errorContent}";
+            //     return false;
+            // }
+            Imessage = "Resend SUCCES";
         }
         catch
         {
-            message = "An error occurred. Please try again later.";
+            Imessage = "An error occurred. Please try again later.";
+            return false;
         }
         finally
         {
             isLoading = false;
         }
-    }
-
-    public class ResendModel
-    {
-        [Required]
-        [EmailAddress]
-        public string Email { get; set; } = string.Empty;
-    }
+        return true;
+    }   
 }

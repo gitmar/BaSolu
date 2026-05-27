@@ -9,175 +9,162 @@
 @inject NavigationManager _navManager
 @inject ILocalStorageService _localStorage
 
-<div class="top-row mb-0 navbar navbar-dark bg-success shadow-sm bg-opacity-25 mt-0 navbar-slim">
-    <a class="navbar-brand text-white fw-bold d-flex align-items-center gap-1" href="">
+<div class="top-row navbar navbar-dark navbar-slim d-flex gap-1 shadow-sm
+    m-0 p-0 justify-content-start align-items-start" style="min-height:32px; background: linear-gradient(180deg, rgb(5, 39, 103) 0%, #3a0647 70%);">
+
+    <a class="navbar-brand text-white fw-bold m-0 p-1" href="">
         <i class="bi bi-gear-fill"></i>
         <span>Gx-Solutions</span>
     </a>
-    <button class="navbar-toggler btn btn-sm" type="button" @onclick="ToggleNavMenu">
+    <button class="navbar-toggler btn btn-sm ms-auto p-1 m-0"
+            type="button"
+            @onclick="ToggleNavMenu">
         <span class="navbar-toggler-icon"></span>
     </button>
+
 </div>
 
-<div class="@NavMenuCssClass bg-dark vh-100" style="overflow-y: auto;">
+<div class="@NavMenuCssClass vh-100" style="overflow-y: auto;">
     <nav class="nav flex-column">
 
         <!-- HOME -->
-        <NavLink class="nav-link nav-main text-light small d-flex align-items-center flex-nowrap gap-2" href="" Match="NavLinkMatch.All">
-            <i class="bi bi-house-door-fill nav-icon"></i>
+        <NavLink class="nav-link nav-main text-light text-small d-flex align-items-center gap-2" href="" Match="NavLinkMatch.All">
+            <i class="bi bi-house-door-fill nav-icon d-inline-flex align-items-center"></i>
             <span class="nav-text" title="Home">Home</span>
         </NavLink>
-        <!-- TEST OData -->
-        @* <NavLink class="nav-link nav-main text-light small d-flex align-items-center flex-nowrap gap-2" href="testodata">
-            <i class="bi bi-building nav-icon"></i>
-            <span class="nav-text" title="Institution">Test OData</span>
-        </NavLink> *@
-        <!-- TEST OData -->
-        @* <NavLink class="nav-link nav-main text-light small d-flex align-items-center flex-nowrap gap-2" href="testgsglne">
-            <i class="bi bi-building nav-icon"></i>
-            <span class="nav-text" title="Institution">Test OData Gsglne</span>
-        </NavLink> *@
+
         <AuthorizeView>
             <Authorized>
-
+                <!-- TEST -->
+                @* <NavLink class="nav-link nav-main text-light small d-flex align-items-center gap-2" href="pages/register">
+                    <i class="bi bi-building nav-icon d-inline-flex align-items-center"></i>
+                    <span class="nav-text" title="Test">Test</span>
+                </NavLink> *@
                 <!-- INSTITUTION -->
-                <NavLink class="nav-link nav-main text-light small d-flex align-items-center flex-nowrap gap-2" href="aorgas">
-                    <i class="bi bi-building nav-icon"></i>
+                <NavLink class="nav-link nav-main text-light small d-flex align-items-center gap-2" href="aorgas">
+                    <i class="bi bi-building nav-icon d-inline-flex align-items-center"></i>
                     <span class="nav-text" title="Institution">Institution</span>
                 </NavLink>
 
-                <!-- PARAMETRAGE -->
-                <NavLink class="nav-link nav-main text-light small d-flex align-items-center flex-nowrap gap-2"
+                <!-- PARAMÉTRAGE -->
+                <NavLink class="nav-link nav-main text-light small d-flex align-items-center gap-2"
                          @onclick="ToggleSubPara">
-
-                    <i class="bi bi-sliders nav-icon"></i>
-
-                    <span class="nav-text d-flex align-items-center flex-nowrap gap-1" style="min-width:0;">
-                        Paramétrage
-                        <i class="bi @(isSubParaVisible ? "bi-chevron-up" : "bi-chevron-down") nav-chevron flex-shrink-0"></i>
-                    </span>
+                    <i class="bi bi-sliders nav-icon d-inline-flex align-items-center"></i>
+                    <span class="nav-text">Paramétrage</span>
+                    <i class="bi @(isSubParaVisible ? "bi-chevron-up" : "bi-chevron-down") nav-chevron"></i>
                 </NavLink>
-
                 <div class="submenu @(isSubParaVisible ? "open" : "")">
                     <nav class="nav flex-column">
-
-                        <NavLink class="nav-link nav-sub text-light small d-flex align-items-center flex-nowrap gap-2" href="atblmenu">
+                        <NavLink class="nav-link nav-sub text-light text-small d-flex align-items-center gap-2" href="atblmenu">
                             <i class="bi bi-table nav-icon"></i>
                             <span class="nav-text">Constantes</span>
                         </NavLink>
-
-                        <NavLink class="nav-link nav-sub text-light small d-flex align-items-center flex-nowrap gap-2" href="astrmenu">
+                        <NavLink class="nav-link nav-sub text-light text-small d-flex align-items-center gap-2" href="astrmenu">
                             <i class="bi bi-calendar-check nav-icon"></i>
                             <span class="nav-text">Astreintes</span>
                         </NavLink>
-
-                        <NavLink class="nav-link nav-sub text-light small d-flex align-items-center flex-nowrap gap-2" href="atribmenu">
-                            <i class="bi bi-calendar-check nav-icon"></i>
+                        <NavLink class="nav-link nav-sub text-light text-small d-flex align-items-center gap-2" href="atribmenu">
+                            <i class="bi bi-tags nav-icon"></i>
                             <span class="nav-text">Attributs++</span>
                         </NavLink>
-
-                        <NavLink class="nav-link nav-sub text-light small d-flex align-items-center flex-nowrap gap-2" href="invoper">
+                        <NavLink class="nav-link nav-sub text-light text-small d-flex align-items-center gap-2" href="invoper">
                             <i class="bi bi-people nav-icon"></i>
-                            <span class="nav-text">Operateurs</span>
+                            <span class="nav-text">Opérateurs</span>
                         </NavLink>
-
                     </nav>
                 </div>
 
                 <!-- PROGRAMMES -->
-                <NavLink class="nav-link nav-main text-light small d-flex align-items-center flex-nowrap gap-2"
+                <NavLink class="nav-link nav-main text-light text-small d-flex gap-2"
                          @onclick="ToggleSubProg">
-
-                    <i class="bi bi-journal-code nav-icon"></i>
-
-                    <span class="nav-text d-flex align-items-center flex-nowrap gap-1" style="min-width:0;">
-                        Programmes
-                        <i class="bi @(isSubProgVisible ? "bi-chevron-up" : "bi-chevron-down") nav-chevron flex-shrink-0"></i>
-                    </span>
+                    <i class="bi bi-journal-code nav-icon d-inline-flex align-items-center"></i>
+                    <span class="nav-text">Programmes</span>
+                    <i class="bi @(isSubProgVisible ? "bi-chevron-up" : "bi-chevron-down") nav-chevron"></i>
                 </NavLink>
-
                 <div class="submenu @(isSubProgVisible ? "open" : "")">
                     <nav class="nav flex-column">
-
-                        <NavLink class="nav-link nav-sub text-light small d-flex align-items-center flex-nowrap gap-2" href="prubmenu">
+                        <NavLink class="nav-link nav-sub text-light small d-flex align-items-center gap-2" href="prubmenu">
                             <i class="bi bi-diagram-3 nav-icon"></i>
                             <span class="nav-text">Plans</span>
                         </NavLink>
-
-                        <NavLink class="nav-link nav-sub text-light small d-flex align-items-center flex-nowrap gap-2" href="edtmenu">
+                        <NavLink class="nav-link nav-sub text-light small d-flex align-items-center gap-2" href="edtmenu">
                             <i class="bi bi-pencil-square nav-icon"></i>
                             <span class="nav-text">Écriture</span>
                         </NavLink>
-
                     </nav>
                 </div>
 
-                <!-- SECURITES -->
-                <NavLink class="nav-link nav-main text-light small d-flex align-items-center flex-nowrap gap-2"
+                <!-- SÉCURITÉS -->
+                <NavLink class="nav-link nav-main text-light small d-flex align-items-center gap-2"
                          @onclick="ToggleSubSecu">
-
-                    <i class="bi bi-shield-lock nav-icon"></i>
-
-                    <span class="nav-text d-flex align-items-center flex-nowrap gap-1" style="min-width:0;">
-                        Sécurités
-                        <i class="bi @(isSubSecuVisible ? "bi-chevron-up" : "bi-chevron-down") nav-chevron flex-shrink-0"></i>
-                    </span>
+                    <i class="bi bi-shield-lock nav-icon d-inline-flex align-items-center"></i>
+                    <span class="nav-text">Sécurités</span>
+                    <i class="bi @(isSubSecuVisible ? "bi-chevron-up" : "bi-chevron-down") nav-chevron"></i>
                 </NavLink>
-
                 <div class="submenu @(isSubSecuVisible ? "open" : "")">
                     <nav class="nav flex-column">
-
-                        <NavLink class="nav-link nav-sub text-light small d-flex align-items-center flex-nowrap gap-2" href="accsmenu">
+                        <NavLink class="nav-link nav-sub text-light small d-flex align-items-center gap-2" href="secumenu">
                             <i class="bi bi-key nav-icon"></i>
                             <span class="nav-text">Autorisations</span>
                         </NavLink>
-
-                        <NavLink class="nav-link nav-sub text-light small d-flex align-items-center flex-nowrap gap-2" href="donamenu">
+                        <NavLink class="nav-link nav-sub text-light small d-flex align-items-center gap-2" href="donamenu">
                             <i class="bi bi-database nav-icon"></i>
                             <span class="nav-text">Données</span>
                         </NavLink>
-
-                        <NavLink class="nav-link nav-sub text-light small d-flex align-items-center flex-nowrap gap-2" href="subitem2">
+                        <NavLink class="nav-link nav-sub text-light small d-flex align-items-center gap-2" href="subitem2">
                             <i class="bi bi-tools nav-icon"></i>
                             <span class="nav-text">Outils</span>
                         </NavLink>
-
-                        <NavLink class="nav-link nav-sub text-light small d-flex align-items-center flex-nowrap gap-2" href="ownerpage">
+                        <NavLink class="nav-link nav-sub text-light small d-flex align-items-center gap-2" href="ownerpage">
                             <i class="bi bi-person-badge nav-icon"></i>
                             <span class="nav-text">Owner Page</span>
                         </NavLink>
-
                     </nav>
                 </div>
-                <!-- SUPPORT -->
-                <NavLink class="nav-link nav-main text-light small d-flex align-items-center flex-nowrap gap-2" href="about">
-                    <i class="bi bi-life-preserver nav-icon"></i>
-                    <span class="nav-text">Support</span>
-                </NavLink>
-                <!-- AGENDAS -->
-                <NavLink class="nav-link nav-main text-light small d-flex align-items-center flex-nowrap gap-2" href="about">
-                    <i class="bi bi-calendar3 nav-icon"></i>
-                    <span class="nav-text">Agendas</span>
-                </NavLink>
+
+                <!-- AGENDA -->
+                @* <NavLink class="nav-link nav-main text-light small d-flex align-items-center gap-2" href="agenda">
+                    <i class="bi bi-calendar3 nav-icon d-inline-flex align-items-center"></i>
+                    <span class="nav-text">Agenda</span>
+                </NavLink> *@
+
+                <!-- SUPPORT DOMAINE -->
+                @if (authUser.IsInRole("Support") || authUser.IsInRole("Owner") || authUser.IsInRole("Admin"))
+                {
+                    <NavLink class="nav-link nav-main text-light small d-flex align-items-center gap-2"
+                             @onclick="ToggleSubSupp">
+                        <i class="bi bi-life-preserver nav-icon d-inline-flex align-items-center"></i>
+                        <span class="nav-text">Support</span>
+                        <i class="bi @(isSubSuppVisible ? "bi-chevron-up" : "bi-chevron-down") nav-chevron"></i>
+                    </NavLink>
+                    <div class="submenu @(isSubSuppVisible ? "open" : "")">
+                        <nav class="nav flex-column">
+                            @if (authUser.IsInRole("Support"))
+                            {
+                                <NavLink class="nav-link nav-sub text-light small d-flex align-items-center gap-2" href="support">
+                                    <i class="bi bi-question-circle nav-icon"></i>
+                                    <span class="nav-text">Aide?</span>
+                                </NavLink>
+                            }
+                            <NavLink class="nav-link nav-sub text-light small d-flex align-items-center gap-2" href="resendconfmail">
+                                <i class="bi bi-envelope-check nav-icon"></i>
+                                <span class="nav-text">Re-Confirm Email</span>
+                            </NavLink>
+                        </nav>
+                    </div>
+                }
             </Authorized>
         </AuthorizeView>
 
         <!-- ABOUT -->
-        <NavLink class="nav-link nav-main text-light small d-flex align-items-center flex-nowrap gap-2" href="about">
-            <i class="bi bi-info-circle nav-icon"></i>
+        <NavLink class="nav-link nav-main text-light small d-flex align-items-center gap-2" href="about">
+            <i class="bi bi-info-circle nav-icon d-inline-flex align-items-center"></i>
             <span class="nav-text">About</span>
         </NavLink>
     </nav>
 </div>
 
 <style>
-    .nav-link {
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
-        line-height: 1.2;
-        flex-wrap: nowrap;
-    }
 
     /* ICON COLUMN */
     .nav-icon {
@@ -188,22 +175,25 @@
         flex-shrink: 0;
     }
 
-    /* TEXT */
+    .nav-link {
+        display: flex;
+        align-items: center;
+        gap: 0.35rem;
+        flex-wrap: nowrap;
+    }
+
     .nav-text {
-        flex: 1;
+        flex: 0 1 auto;
         min-width: 0;
-        overflow: hidden;
-        text-overflow: ellipsis;
         white-space: nowrap;
     }
 
-    /* CHEVRON */
     .nav-chevron {
-        font-size: 0.7rem;
-        opacity: 0.7;
+        font-size: 0.9rem;
+        color: #ffea00; /* bright yellow */
         flex-shrink: 0;
     }
-
+    
     /* SUBMENU */
     .submenu {
         max-height: 0;
@@ -223,10 +213,36 @@
         font-size: 0.85rem;
         opacity: 0.9;
     }
+
+    /* Slim navbar: remove Bootstrap’s default horizontal padding */
+    
+    /* Slim navbar: remove Bootstrap’s default horizontal padding */
+    .top-row.navbar {
+        padding-left: 0;
+        padding-right: 0;
+    }
+
+    /* Ensure menu container is flush left */
+    .bg-dark.vh-100 {
+        padding-left: 0;
+        margin-left: 0;
+    }
+
+    .navbar {
+        padding-left: 0 !important;
+        padding-right: 0 !important;
+    }
+
+    .navbar-brand {
+        margin-left: 0 !important;
+        margin-right: 0 !important;
+    }
+
 </style>
 @code {
     [CascadingParameter]
     private Task<AuthenticationState>? AuthState { get; set; }
+    private ClaimsPrincipal authUser;
 
     private bool success, errors, isSubmitting = false;
     private string[] errorList = [];
@@ -240,10 +256,12 @@
     private bool isSubOperVisible = false;
     private bool isSubParaVisible = false;
     private bool isSubProgVisible = false;
+    private bool isSubSuppVisible = false;
     //private void ToggleNavMenu() => collapseNavMenu = !collapseNavMenu;
     protected override async Task OnInitializedAsync()
     {
-        //_appState.OnChange += StateHasChanged;
+        var authState = await AuthState;
+        authUser = authState.User;
     }
 
     public void Dispose()
@@ -277,6 +295,11 @@
     private void ToggleSubProg()
     {
         isSubProgVisible = !isSubProgVisible;
+    }
+    //support
+    private void ToggleSubSupp()
+    {
+        isSubSuppVisible = !isSubSuppVisible;
     }
     private bool Entest = false;
 

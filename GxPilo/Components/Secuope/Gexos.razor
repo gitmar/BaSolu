@@ -1,0 +1,361 @@
+﻿@page "/gexos"
+@layout AtblMenu
+
+@using BlazorBootstrap
+@using Blazored.LocalStorage
+@using GxShared.Helpers
+@using GxPilo.Services
+@using Simple.OData.Client
+@using AutoMapper
+@using GxShared.GxDtos
+@using GxShared.Interfaces
+@using GxShared.Sess
+@* @using Microsoft.EntityFrameworkCore *@
+@using Newtonsoft.Json
+
+@inject ILocalStorageService _localStorage
+@inject NavigationManager _navManager
+@inject HttpClientService _clieManager
+@inject IMapper Mapper
+@inject IJSRuntime _jsRun
+
+<div class="container mt-3">
+    <div class="row">
+        <div class="col-md-12 input-group align-middle">
+            <span><b>Message :</b></span>
+            &nbsp;&nbsp;
+            @if (!String.IsNullOrEmpty(Imessage))
+            {
+                <span class="bg-info bg-opacity-10" style="font-style:italic;color:red">&nbsp;--> @Imessage</span>
+            }
+        </div>
+    </div>
+    <Button Color="ButtonColor.Success" @onclick="() => StartAdd()">Add New Exercice</Button>
+    @if (isAdding)
+    {
+        <div class="mt-3">
+            <InputText @bind-Value="draftExo.Liba" placeholder="Label" />
+            <InputSelect @bind-Value="draftExo.Etyp" class="me-3" style="width:auto">
+                <option value="1">aaaamm</option>
+                <option value="2">aaaa</option>
+            </InputSelect>
+            <InputDate @bind-Value="draftExo.Ddat" placeholder="Debut" />
+            <InputDate @bind-Value="draftExo.Fdat" placeholder="Fin" />
+            <Button Color="ButtonColor.Success" @onclick="() => SaveAdd()">Add</Button>
+            <Button Color="ButtonColor.Secondary" @onclick="() => CancelAdd()">Cancel</Button>
+        </div>
+    }
+    @if (DaExos.Any())
+    {
+        <Grid TItem="GsgfixDto" 
+        Data="@DaExos" 
+        AllowPaging="true" 
+        Responsive="true">
+            <GridColumns>
+                <GridColumn TItem="GsgfixDto" HeaderText="No" Class="xcol1">
+                    <ChildContent Context="item">@item.Elea</ChildContent>
+                </GridColumn>
+                <GridColumn TItem="GsgfixDto" HeaderText="Designation" Class="xcol3">
+                    <ChildContent Context="item">
+                        @if (editRowguid == item.Rowguid)
+                        {
+                            <InputText @bind-Value="draftExo.Liba" />
+                        }
+                        else
+                        {
+                            @item.Liba
+                        }
+                    </ChildContent>
+                </GridColumn>
+                <GridColumn TItem="GsgfixDto" HeaderText="Type" Class="xcol1">
+                    <ChildContent Context="item">
+                        @if (editRowguid == item.Rowguid)
+                        {
+                            <InputSelect @bind-Value="draftExo.Etyp" class="me-3" style="width:auto">
+                                <option value="1">aaaamm</option>
+                                <option value="2">aaaa</option>
+                            </InputSelect>
+                        }
+                        else
+                        {
+                            <InputSelect @bind-Value="draftExo.Etyp" class="me-3" style="width:auto" disabled>
+                                <option value="1">aaaamm</option>
+                                <option value="2">aaaa</option>
+                            </InputSelect>
+                        }
+                    </ChildContent>
+                </GridColumn>
+                <GridColumn TItem="GsgfixDto" HeaderText="Depart" Class="xcol1">
+                    <ChildContent Context="item">
+                        @if (editRowguid == item.Rowguid)
+                        {
+                            <InputDate @bind-Value="draftExo.Ddat" />
+                        }
+                        else
+                        {
+                            @item.Ddat?.ToShortDateString()
+                        }
+                    </ChildContent>
+                </GridColumn>
+                <GridColumn TItem="GsgfixDto" HeaderText="Fin" Class="xcol1">
+                    <ChildContent Context="item">
+                        @if (editRowguid == item.Rowguid)
+                        {
+                            <InputDate @bind-Value="draftExo.Fdat" />
+                        }
+                        else
+                        {
+                            @item.Fdat?.ToShortDateString()
+                        }
+                    </ChildContent>
+                </GridColumn>
+                <GridColumn TItem="GsgfixDto" HeaderText="Actions">
+                    <ChildContent Context="item">
+                        @if (editRowguid == item.Rowguid)
+                        {
+                            <Button Color="ButtonColor.Primary" Size="ButtonSize.Small"
+                            @onclick="() => SaveEdit(item)">
+                                Save
+                            </Button>
+                            <Button Color="ButtonColor.Secondary" Size="ButtonSize.Small"
+                            @onclick="() => CancelEdit()">
+                                Cancel
+                            </Button>
+                        }
+                        else
+                        {
+                            @if (item.Eta == 0)
+                            { //nouveau
+                                <Button Color="ButtonColor.Warning" Size="ButtonSize.Small"
+                                        @onclick="() => StartEdit(item)">
+                                    Ouvrir
+                                </Button>
+                                <Button Color="ButtonColor.Danger" Size="ButtonSize.Small"
+                                        @onclick="() => DeleteAttribute(item)">
+                                    Delete
+                                </Button>
+                            } else if (item.Eta == 1)
+                            {
+                                <Button Color="ButtonColor.Danger" Size="ButtonSize.Small"
+                                        @onclick="() => DeleteAttribute(item)">
+                                    Cloturer
+                                </Button>
+                            }
+                            else if (item.Eta == 2)
+                            {
+                                <Button Color="ButtonColor.Warning" Size="ButtonSize.Small"
+                                        @onclick="() => DeleteAttribute(item)">
+                                    Archiver
+                                </Button>
+                            } else
+                            {
+                                <Button Color="ButtonColor.Warning" Size="ButtonSize.Small"
+                                        @onclick="() => DeleteAttribute(item)">
+                                    Visible
+                                </Button>
+                            }
+                        }
+                    </ChildContent>
+                </GridColumn>
+            </GridColumns>
+        </Grid>
+    }
+</div>
+<style>
+    .xcolx {
+        width: 40px !important;
+    }
+
+    .xcol1 {
+        width: 60px;
+    }
+
+    .xcol2 {
+        width: 120px;
+    }
+
+    .xcol3 {
+        width: 180px;
+    }
+
+    .xcol4 {
+        width: 240px;
+    }
+        /* Ensure inputs inside these columns fill the width */
+        .xcol1 input,
+        .xcol2 input,
+        .xcol3 input,
+        .xcol4 input {
+            width: 100%;
+            box-sizing: border-box; /* prevents overflow due to padding/border */
+        }
+
+    .editing-row {
+        pointer-events: none; /* Blocks all clicks on row */
+    }
+
+        .editing-row * {
+            pointer-events: auto; /* Re-enables clicks on buttons/inputs */
+        }
+</style>
+@code {
+    private bool isLoading = true;
+
+    [Parameter] 
+    public IODataClient _InODaClient { get; set; }
+    [Parameter] 
+    public GxorgaDto curOrga { get; set; }
+    [Parameter]
+    public int Orig { get; set; }
+    [Parameter] 
+    public ChildVars toChild { get; set; }
+    [Parameter] 
+    public int toMenu { get; set; }
+    [Parameter]
+    public RenderFragment ChildContent { get; set; }
+    [Parameter]
+    public List<Gpdivh> LsDivs { get; set; }
+
+    // Guard
+    [Parameter] 
+    public IPendingChangesGuard _guard { get; set; }
+    [Parameter] 
+    public EventCallback<PendingState> OnPendingStateChanged { get; set; }
+    [Parameter] 
+    public int NbChanges { get; set; }
+    [Parameter] 
+    public EventCallback<int> NbChangesChanged { get; set; }
+
+    //[Parameter] public ItemClientService ItemService { get; set; }
+    //[Parameter] public StockClientService StockService { get; set; }
+    private List<GsgfixDto> DaExos = new();
+    private Guid? editRowguid;
+    private bool isAdding = false;
+    private string Imessage = "";
+    private GsgfixDto draftExo = new();
+
+    private void CancelAdd() => isAdding = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        isLoading = true;
+        try
+        {
+            // if (toChild == null || curOrga == null)
+            // {
+            //     Console.WriteLine("Missing parent data");
+            //     return;
+            // }
+            // isAuthenticated = toChild.isAuthenticated;
+            // authUser = toChild.authUser;
+            // if (!isAuthenticated)
+            // {
+            //     Imessage = "CONNEXION, Utilisateur non authentifie";
+            //     return;
+            // }
+            // //LsVars = toChild.LsVars;
+            // LsFixes = toChild.LsFixes;
+            //LsDoms = toChild.LsFixes.Where(ut => ut.Gvars == 36 && ut.Itb == 4 && ut.Gp1 == 3 && ut.Elea != 0).ToList();
+            //LsDoms = LsFixes.Where(ut => ut.Gvars == 36 && ut.Itb == 4 && ut.Gp1 == 3 && ut.Elea != 0).ToList();
+            //LsSites = toChild.LsSites;
+            //_lgcdu = 3;
+            DaExos = curOrga?.Gsgfixes.Where(f => f.Gvars == 11).ToList();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"22error loading atr-Stk: {ex.Message}");
+        }
+    }
+    // and call this in OnParametersSet
+    protected override void OnParametersSet()
+    {
+        SubscribeToGuard();
+    }
+    // set up subscription locally
+    private void SubscribeToGuard()
+    {
+        _guard.OnChanges += async () =>
+        {
+            NbChanges = _guard.GetPendingChangesCount();
+            await NbChangesChanged.InvokeAsync(NbChanges);
+            StateHasChanged();
+        };
+    }
+    private void StartEdit(GsgfixDto atr)
+    {
+        editRowguid = atr.Rowguid;
+        draftExo = new GsgfixDto { Xseq = atr.Xseq, Liba = atr.Liba, Atyp = atr.Atyp, Rowguid = atr.Rowguid };
+    }
+
+    private async Task SaveEdit(GsgfixDto atr)
+    {
+        atr.Liba = draftExo.Liba;
+        atr.Atyp = draftExo.Atyp;
+        // Register update with OData context
+        var key = GetEntityKey(atr); // helper to extract PK
+        _guard.TrackUpdate("Gsgfixes", key, atr);
+        editRowguid = null;
+        await NotifyPendingChanges();
+    }
+
+    private void CancelEdit() => editRowguid = null;
+
+    private async Task DeleteAttribute(GsgfixDto atr)
+    {
+        curOrga.Gsgfixes.Remove(atr);
+
+        // Register delete with OData context
+        // Extract PK using your helper
+        var key = GetEntityKey(atr);
+
+        // Queue delete in guard
+        //_guard.TrackDelete<TDto>(GetEntitySetName<TDto>(), key);
+        _guard.TrackDelete("Gsgfixes", key);
+        Console.WriteLine($"🗑️ {atr.Liba} queued for delete");
+        
+        await NotifyPendingChanges();
+    }
+
+    private void StartAdd()
+    {
+        isAdding = true;
+        draftExo = new GsgfixDto();
+    }
+
+    private async Task SaveAdd()
+    {
+        draftExo.Rowguid = Guid.NewGuid();
+        draftExo.Idorg = curOrga.Idorg;
+        // Register add with OData context
+        _guard.TrackInsert("Gsgfixes", draftExo);
+        Console.WriteLine($"➕ NEW {draftExo.Liba} → TrackInsert");
+        isAdding = false;
+        await NotifyPendingChanges();
+    }
+    private object GetEntityKey<TDto>(TDto entity)
+    {
+        switch (entity)
+        {
+            case GsgfixDto pln:
+                return pln.Xseq;
+            // case RubhieDto rub:
+            //     return rub.Id;
+            // case RubpstDto fmt:
+            //     return fmt.Id;
+            default:
+                throw new InvalidOperationException($"Unknown entity type {typeof(TDto).Name}");
+        }
+    }
+    // Notify guard/UI of pending changes
+    private async Task NotifyPendingChanges()
+    {
+        await OnPendingStateChanged.InvokeAsync(new PendingState(
+            _guard.HasPendingChanges(),
+            _guard.GetPendingChangesCount()
+        ));
+
+        NbChanges = _guard.GetPendingChangesCount();
+        await NbChangesChanged.InvokeAsync(NbChanges);
+        StateHasChanged();
+    }
+}

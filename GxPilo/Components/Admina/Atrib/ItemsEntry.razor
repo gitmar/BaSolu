@@ -192,6 +192,21 @@
                 throw new InvalidOperationException($"Unknown entity type {typeof(TDto).Name}");
         }
     }
+    // and call this in OnParametersSet
+    protected override void OnParametersSet()
+    {
+        SubscribeToGuard();
+    }
+    // set up subscription locally
+    private void SubscribeToGuard()
+    {
+        _guard.OnChanges += async () =>
+        {
+            NbChanges = _guard.GetPendingChangesCount();
+            await NbChangesChanged.InvokeAsync(NbChanges);
+            StateHasChanged();
+        };
+    }
     private async Task NotifyPendingChanges()
     {
         await OnPendingStateChanged.InvokeAsync(new PendingState(

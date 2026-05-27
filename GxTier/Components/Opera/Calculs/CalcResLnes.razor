@@ -7,14 +7,13 @@
 @using BlazorBootstrap
 @using BlazorDownloadFile
 @using Blazored.LocalStorage
-@using GxShared.Formulas.ForaContext
-@using GxShared.Formulas.ForaModels
+@using GxFormula.ForaContext
+@using GxFormula.ForaModels
 @using GxShared.Helpers
 @using GxShared.Sess
 @using GxShared.Others
 @using GxShared.Interfaces
 @using GxShared.GxDtos
-@using GxShared.Helpers
 @using GxTie.Services
 @using GxTie.Components.Opera.RtOpe
 @using GxTie.StaticHelpers
@@ -24,6 +23,7 @@
 @inject ILocalStorageService _localStorage
 @inject IBlazorDownloadFileService DownloadService
 @inject HttpClientService _cliemanager
+@inject FormulaEvaluationService FormulaService
 @inject IJSRuntime _jsRun
 
 <PageTitle>Saisie Offline</PageTitle>
@@ -48,7 +48,7 @@ else
 {
     @if (SessOpen)
     {
-        <div class="input-group">
+        @* <div class="input-group">
             <label>Programme :</label>
             <div class="text-center">
                 <InputSelect id="pgrId" @bind-Value="ImyProg">
@@ -70,7 +70,7 @@ else
                     }
                 </InputSelect>
             </div>
-        </div>
+        </div> *@
         <div class="input-group mt-1">
             @if (ProgOpen)
             {
@@ -89,14 +89,12 @@ else
         @if (CalcOpen)
         {
             <Button class="btn btn-sm btn-secondary btnsz"
-                    style="@(!allEnable ? "" : "display:none;")"
                     @onclick="() => CalcAndSaveAsync()">
                 Calculer
             </Button>
             @if (CalcMarked && autoSave)
             {
                 <Button class="btn btn-sm btn-secondary btnsz"
-                        style="@(!allEnable ? "" : "display:none;")"
                         @onclick="() => SaveResultAsync()">
                     Enregistrer
                 </Button>
@@ -206,7 +204,7 @@ else
 @code {
     private bool isLoading = true;
     //private bool notEnable => !allEnable;
-    private bool enrEnable = false;
+    //private bool enrEnable = false;
     private bool isEditing = false;
     private bool isFicheVisible = false;
     private bool FinPreparer = false;
@@ -221,9 +219,9 @@ else
     [Parameter]
     public ChildVars toChild { get; set; }
     [Parameter]
-    public bool allEnable { get; set; }
+    public int ImyDiv  { get; set; }
     [Parameter]
-    public int toMenu { get; set; }
+    public int ChxGpe { get; set; }
     //guard
     [Parameter]
     public IPendingChangesGuard _guard { get; set; }
@@ -249,7 +247,9 @@ else
 
     private RtC11Fic myfcalc;
 
-    //private FormulaEvalService _calcService;
+    public List<FormulaLine> FormulaLines { get; set; } = new();
+    public List<FormulaEvaluationOutcome> Outcomes { get; set; } = new();
+    private FormulaEvaluationService _calcService;
 
     //private HttpClient _apiClient;
     public string _UserId = "";
@@ -289,6 +289,8 @@ else
     private List<Gpfixe> LsFixes = new List<Gpfixe>();
     private List<Gpvar> LsVars = new();
     private List<Gplan> LsProgs = new();
+    private Gpvar inExo = new Gpvar();
+    private Gpvar inSes = new Gpvar();
 
     private bool success, errors, isSubmitting = false;
     private string[] errorList = [];
@@ -309,7 +311,7 @@ else
     private bool CalcMarked = false;
     private bool SaveMarked = false;
     private bool autoSave = false;
-    private bool SessOpen => toChild.curExo != null && toChild.curSes != null;
+    private bool SessOpen => ChxGpe != 0; //=> inExo.Eta == 1 && inSes.Eta == 1;
     private bool ProgOpen => SessOpen && ImyProg != 0 && ImyDiv != 0;
     private bool SiTiers => !String.IsNullOrEmpty(IdebTier) && !String.IsNullOrEmpty(IfinTier);
     // Meme pour option 1 (tous) IDebTier et IFinTier doivent etre fournis
@@ -332,7 +334,7 @@ else
     private string opseudo = "", opnomp = "";
     //private int opfonc = 0, opgrad = 0, opafec = 0;
     private int ImyTier = 0, ImyProg = 0, ImyRubr = 0;
-    private int ImyExo = 0, ImyDiv = 0; //ImySes = 0,
+    private int ImyExo = 0;//ImySes = 0,
     private int Jsdtie = 0, Jsftie = 0;
 
     private string kmessage = "";
@@ -383,6 +385,10 @@ else
         LsVars = toChild.LsVars;
         LsFixes = toChild.LsFixes;
         LsProgs = toChild.LsPlans.Where(pl => pl.Ptyp == 5).ToList();
+        //exo-session:saisie-Otyp1saisie
+        LsVars = toChild.LsVars;
+        inExo = LsVars.Where(v => v.Gvars == 11 && v.Itb == 1 && v.Otyp == 1 && v.Eta == 1).FirstOrDefault();
+        inSes = LsVars.Where(v => v.Gvars == 12 && v.Itb == 1 && v.Eta == 1).FirstOrDefault();
         Console.WriteLine($"Programmes en cours : {LsProgs.Count}");
         //LsProgs = toChild.LsProgs;
         //LsSites = toChild.LsSites
@@ -473,27 +479,13 @@ else
             if (indtie != null) IfinTier = indtie.Smatri;
         }
     }
-    //manage SAVING
-    public async Task EdtAll()
+    
+    private void EvaluateAll()
     {
-        allEnable = true;
-        //EditingRowGuid = Guid.Empty;
+        Outcomes = FormulaLines
+            .Select(line => FormulaService.EvaluateWithLog(line))
+            .ToList();
     }
-    public async Task CncAll()
-    { //reload to annul AddObject/UpdateObject/DeleteObjet
-        Imessage = "Annulation Operations, patience...";
-        allEnable = false;
-        //EditingRowGuid = Guid.Empty;
-        Imessage = "";
-    }
-    public async Task SavAll()
-    {
-        Imessage = "Enregistrement Operations, patience...";
-        allEnable = false;
-        //EditingRowGuid = Guid.Empty;
-        ////await curODContext.Context.SaveDataAsync();
-    }
-
     private async Task CalcAndSaveAsync()
     {
         CalcLines.Clear();
@@ -531,8 +523,8 @@ else
                     Sireel = curProg.Tovue,
                     Idorg = curOrga.Idorg,
                     Idpln = curProg.Id,
-                    Vperi = toChild.curSes,
-                    Eperi = toChild.curExo,
+                    Vperi = inSes.Abg,
+                    Eperi = inExo.Abg,
                     Datope = DateTime.Now,
                     Gseq = 1,
                     OutLines = CalcLines
@@ -560,8 +552,8 @@ else
                     Sireel = curProg.Tovue,
                     Idorg = curOrga.Idorg,
                     Idpln = curProg.Id,
-                    Vperi = toChild.curSes,
-                    Eperi = toChild.curExo,
+                    Vperi = inSes.Abg,
+                    Eperi = inExo.Abg,
                     Datope = DateTime.Now,
                     Gseq = 1,
                     OutLines = CalcLines

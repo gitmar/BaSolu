@@ -105,7 +105,7 @@ else
         else
         {
             <div class="nav-link text-success">
-                <i class="bi bi-exclamation-triangle-fill me-2" aria-hidden="true">CORS Success</i>
+                @* <i class="bi bi-exclamation-triangle-fill me-2" aria-hidden="true">CORS Success</i> *@
             </div>
         }
     </EditForm>
@@ -290,7 +290,7 @@ else
                 Jmessage = "Identifiants invalides.";
                 isBusy = false;
                 isLoading = false;
-                return;
+                //return;
             }
 
             if (!response.IsSuccessStatusCode)
@@ -299,7 +299,7 @@ else
                 Jmessage = "Erreur serveur.";
                 isBusy = false;
                 isLoading = false;
-                return;
+                //return;
             }
 
             var responseContent = await response.Content.ReadAsStringAsync();

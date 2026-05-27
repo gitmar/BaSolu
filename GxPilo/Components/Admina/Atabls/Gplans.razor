@@ -304,7 +304,10 @@ else
                                                         @if ((IMyGpln == 2) || (IMyGpln == 3 && IMyAtr != 0 && IMyGtie != 0) || (IMyGpln == 4 && IMyVue != 0) && !siPlnAdding)
                                                         {
                                                             <button class="btn btn-primary btn-sm" @onclick="() => OpenAddPlan()">
-                                                                ➕ Add
+                                                                <span style="display:inline-flex; align-items:center; gap:2px;">
+                                                                                    <span>➕</span>
+                                                                                    <span>Add</span>
+                                                                                </span>
                                                             </button>
                                                         }
                                                     }
@@ -791,6 +794,22 @@ else
     // //variable fmt
     // Rubfmt draftFmt = new();
     // Rubfmt? editingFmt = null;
+
+    // and call this in OnParametersSet
+    protected override void OnParametersSet()
+    {
+        SubscribeToGuard();
+    }
+    // set up subscription locally
+    private void SubscribeToGuard()
+    {
+        _guard.OnChanges += async () =>
+        {
+            NbChanges = _guard.GetPendingChangesCount();
+            await NbChangesChanged.InvokeAsync(NbChanges);
+            StateHasChanged();
+        };
+    }
 
     void OnPlanRowClick(GridRowEventArgs<Plngen> args)
     {

@@ -1,0 +1,341 @@
+﻿@page "/ordremenu"
+@inherits LayoutComponentBase
+@layout FreeLayout
+
+@using System.Security.Claims
+@using BlazorBootstrap
+@using Blazored.LocalStorage
+@using GxShared.Helpers
+@using GxTie.Components.Pcarri
+@using GxTie.Services
+@using GxTie.StaticHelpers
+@using GxShared.Sess
+@using Simple.OData.Client
+@using GxShared.GxDtos
+@using GxShared.Others
+@using GxShared.Interfaces
+@using AutoMapper
+@using Newtonsoft.Json
+@using Gx.Components.Navigation
+
+
+@implements IDisposable
+
+@inject NavigationManager _navManager
+@inject ILocalStorageService _localStorage
+@inject HttpClientService _clieManager
+@inject IODataClient _MyODaClient
+@inject IMapper Mapper
+@inject SessionContextService _sessionContext
+@inject RendAgres _rendAgres
+@inject IPendingChangesGuard _guard
+@inject IJSRuntime _JsRUN
+@inject IMessageService _messageService
+
+<!-- 🔽 STOCK SERVICES -->
+@* @inject ItemClientService ItemService
+@inject StockClientService StockService *@
+
+@if (isLoading)
+{
+    <div class="text-center">
+        <Spinner Color="SpinnerColor.Primary" Size="SpinnerSize.Large" />
+        <p>Loading...</p>
+    </div>
+}
+else
+{
+    <div class="gx-screen-layout">
+        <div class="container gx-parent-container" style="height: 100vh;">
+            <div class="d-flex flex-column" style="height: 100%;">
+
+                <!-- Top Menu -->
+                <GxNavMenu BrandText="A24soft Gx-Solutions"
+                           MenuItems="@MenuItems"
+                           YaGroup="false"
+                           Groups="@Groupes"
+                           MenuSelected="@_chxMenu"
+                           MenuSelectedChanged="@SelMenu"
+                           GroupSelected="@_chxGpe"
+                           GroupSelectedChanged="@SelGpe"
+                           OnBack="@NavigateBack" />
+
+                <!-- Main Content -->
+                @if (_chxMenu != 0 && curOrga != null)
+                {
+                    @* 🔽 STOCK PAGES *@
+                    if (_chxMenu == 1)
+                    {
+                        <Ordres @ref="mygmut"
+                                     curOrga="@curOrga"
+                                     LsDivs="@LsDivs"
+                                     LsPlans="@LsPlans"
+                                     EnsTbls="@EnsTbls"
+                                     toMenu="@_chxMenu"
+                                     @bind-NbChanges="_nbChanges"
+                                     _guard="_guard"
+                                     _InODaClient="@_MyODaClient">
+                        </Ordres>
+                    }
+                    else if (_chxMenu == 2)
+                    {
+                        @* <Ordreref @ref="myaref"
+                                  curOrga="@curOrga"
+                                  LsDivs="@LsDivs"
+                                  LsPlans="@LsPlans"
+                                  toMenu="@_chxMenu"
+                                  @bind-NbChanges="_nbChanges"
+                                  _guard="_guard"
+                                  _InODaClient="@_MyODaClient">
+                        </Ordreref> *@
+                    }
+                }
+            </div>
+            <div class="row mt-3">
+                <div class="col-12">
+                    @* @if (_guard.HasPendingChanges())
+                    {
+                        <div class="alert alert-warning">
+                            <strong>@pendingCount changes pending across all tabs</strong>
+                        </div>
+                    } *@
+                    <div class="d-flex gap-2 justify-content-end">
+                        <Button Color="ButtonColor.Primary"
+                                @onclick="SaveAllChanges"
+                                Enabled="@_guard.HasPendingChanges()">
+                            Save All (@pendingCount changes)
+                        </Button>
+                        <Button Color="ButtonColor.Secondary"
+                                @onclick="CancelAllChanges">
+                            Cancel All Changes
+                        </Button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    private bool isLoading = true;
+
+    //private Affecfonct myresp = new();
+
+    [CascadingParameter]
+    private Task<AuthenticationState>? AuthState { get; set; }
+
+    public GxorgaDto curOrga = new GxorgaDto();
+    public ChildVars toChild = new();
+
+    public Userbag _usrBag = new();
+
+    //Navigation
+    private int _gIdTie = 0, _chxGpe = 0, _chxMenu = 1;
+    private string strComp = $"Affectation";
+    string gpeLiba = "";
+    public int Ugpe = 0, Tgpe = 0; //gpe ref1..6/tiers type6..7
+
+    public List<Gpfixe> LsFixes = new();
+    public List<Gpfixe> LsGties = new();
+    public List<Gpdivh> LsDivs = new();
+    public List<Gplan> LsPlans = new();
+    private List<Gtabl> EnsTbls = new();
+    //public List<GsesioDto> EnsExos = new();
+    //public List<GsesioDto> EnsSess = new();
+
+    private Ordres mygmut = new();
+    //private Ordreref myaref = new();
+
+    public List<GxMenuItem> MenuItems = new()
+    {
+        // 🔽 STOCK
+        new GxMenuItem { Id = 1, Text = "Ordres", Icon = "bi bi-plus-circle" },
+        //new GxMenuItem { Id = 2, Text = "References", Icon = "bi bi-cart" },
+    };
+
+    public List<GxGroupe> Groupes = new();
+
+    //Guard
+    private int _nbChanges = 0;
+    private IDisposable? _locationHandler;
+    private int pendingCount => _guard.GetPendingChangesCount();
+    private int insertCount => _guard.GetInsertCount();
+    private int updateCount => _guard.GetUpdateCount();
+    private int deleteCount => _guard.GetDeleteCount();
+    private async Task CancelAllChanges()
+    {
+        Console.WriteLine("🗑️ CancelAllChanges START");
+        await _guard.CancelChanges();  // 🔥 AWAIT - blocks until done
+        _messageService.Show("✅ CancelAllChanges successfully", ToastType.Success);
+        StateHasChanged();
+        Console.WriteLine($"✅ CancelAllChanges END - Pending: {_guard.GetPendingChangesCount()}");
+    }
+    private async Task SaveAllChanges()
+    {
+        await _guard.FlushAsync();  // 🔥 AWAIT - blocks until done
+        _messageService.Show("✅ Saved successfully", ToastType.Success);
+        StateHasChanged();
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        isLoading = true;
+        try
+        {
+            var authState = await AuthState;
+            if (!authState.User.Identity.IsAuthenticated) return;
+            // Load lightweight user data FIRST
+            _usrBag = await _sessionContext.GetUserbagAsync();
+            LsDivs = await _rendAgres.LoadOrgaPostes();
+            EnsTbls = await _rendAgres.LoadOrgaTables();
+            LsPlans = _usrBag.Usorga.Uplns.Where(pl => pl.Ptyp == 4).ToList();
+            // Create shared OData context
+            //curODContext = await _contextFactory.CreateAsync();
+            //_guard.AttachContext(curODContext);
+
+            _usrBag = await _sessionContext.GetUserbagAsync();
+
+            // Groupe tiers
+            LsGties = _usrBag.Ufixes
+                .Where(ut => ut.Gvars == 36 && ut.Elea != 0 && ut.Elea != 9)
+                .ToList();
+            Groupes.Clear();
+            foreach (var gr in LsGties.Where(gr => gr.Itb == 6))
+            {
+                Groupes.Add(new GxGroupe { Itb = gr.Itb, Elea = gr.Elea, Liba = gr.Liba });
+            }
+            // Load ONLY parent entity
+            int key = _usrBag.Idorg;
+            Ugpe = 1; //initial Cible
+            Console.WriteLine("Authentication ENTREE");
+            await LoadCarriOrgaAsync(_usrBag.Idorg);
+
+            _nbChanges = _guard.GetPendingChangesCount();  // Initial value
+            Console.WriteLine($"Expanded results : {curOrga.Tiersps?.Count} and stkent {curOrga.Tiewels?.Count ?? 0}");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"cur orga : {curOrga}");
+            _messageService.Show($"Failed to load organization: {ex.Message}");
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+    //CRUD
+    private async Task LoadCarriOrgaAsync(int key)
+    {
+        int pisa = 2;
+        try
+        {
+            curOrga = await _MyODaClient
+                .For<GxorgaDto>("Gxorgas")
+                .Key(key)
+                .Expand(o => o.Tiemvts.Select(t => t.Tiemvlnes))
+                .Expand(o => o.Tiersps)
+                //.Expand(o => o.Tiersps.Select(t => t.Tieatrs))
+                //.Expand(o => o.Tiersps.Select(t => t.Tiecats))
+                .FindEntryAsync();
+            Console.WriteLine($"loadOrgaAsync completed : {curOrga?.Raison}");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Load error: {ex.Message}");
+        }
+        Console.WriteLine($"orga recu {curOrga.Raison}");
+        pisa = 4;
+        Console.WriteLine($"nb tiers from orga  : {pisa} et {curOrga.Tiersps.Count()}");
+        var mytier = curOrga.Tiersps.FirstOrDefault();
+        if (mytier != null)
+        {
+            Console.WriteLine($"nom selected tiers : {mytier.Nom} et {mytier.Pnom}");
+            Console.WriteLine($"selected tiers actsaies : {mytier.Actsaies.Count()}");
+        }
+        else
+        {
+            Console.WriteLine($"probleme chargement Tiers");
+        }
+        //EnsExos = curOrga.Gsesios.ToList();
+    }
+    private async ValueTask OnLocationChangingAsync(LocationChangingContext context)
+    {
+        Console.WriteLine($"🌐 Intercepted: {context.TargetLocation}");
+
+        if (!_guard.HasPendingChanges())
+        {
+            Console.WriteLine("✅ Clean - allowing navigation");
+            return;
+        }
+
+        context.PreventNavigation();  // BLOCK navigation
+        Console.WriteLine($"🚫 Showing confirm dialog {context.TargetLocation}");
+
+        try
+        {
+            var save = await _JsRUN.InvokeAsync<bool>("confirm", "Save changes before leaving?");
+
+            if (save)
+            {
+                // 🔥 YES: SaveAllChanges() → Navigate away
+                await SaveAllChanges();
+                Console.WriteLine("💾 Saved - navigating away");
+                _navManager.NavigateTo(context.TargetLocation, forceLoad: false);
+            }
+            else
+            {
+                // 🔥 NO: STAY on page - NO CancelAllChanges()
+                Console.WriteLine("❌ User chose NO - staying on page");
+                // User stays - sees SaveAllChanges() / CancelAllChanges() buttons ENABLED
+                // They can now manually: SaveAllChanges() OR CancelAllChanges()
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"❌ Error: {ex.Message}");
+            // Safety: stay on page
+        }
+    }
+    private async Task SelMenu(int noM)
+    {
+        _chxMenu = noM;
+        if (_chxMenu == 1)
+        {
+            //_guardVisible = true;
+            strComp = $"Ordres {gpeLiba}";
+        }
+        if (_chxMenu == 2)
+        {
+            //_guardVisible = true;
+            //strComp = $"References  {gpeLiba}";
+        }
+
+        StateHasChanged();
+        await Task.Delay(1);
+    }
+    private async Task SelGpe(int noG)
+    {
+        gpeLiba = "";
+        if (noG == 0) return;
+        var mygpe = LsGties.Where(gt => gt.Itb == 6 && gt.Elea == noG).FirstOrDefault();
+        Ugpe = noG;
+        Tgpe = mygpe.Gp2;
+        gpeLiba = mygpe.Liba.ToUpperInvariant(); //LsGties.Where(ut => ut.Elea == mygpe.Elea).FirstOrDefault().Liba.ToUpperInvariant();
+        StateHasChanged();
+        Console.WriteLine("PAS 2");
+        await Task.Delay(1);
+    }
+
+    public void Dispose()
+    {
+        _locationHandler?.Dispose();
+        // Parent-level cleanup
+        // _guard.DiscardUnconfirmedAdds<Stkcat>();
+        // _guard.DiscardUnconfirmedAdds<Stkatr>();
+        // _guard.DiscardUnconfirmedAdds<Stkitatr>();
+    }
+    void NavigateBack()
+    {
+        _navManager.NavigateTo("/");
+    }
+}

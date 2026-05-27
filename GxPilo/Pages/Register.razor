@@ -20,54 +20,64 @@ else
     <EditForm Model="@MyRegisDto" OnValidSubmit="HandleRegister">
         <DataAnnotationsValidator />
         <ValidationSummary />
-
+        <div class="row g-3"> 
         <!-- Organisation info -->
-        <div class="row mb-2">
-            <label class="fw-bold">@Sigle</label>
-            <label class="fw-bold">@Raison</label>
+            <div class="col-md-3">
+                <label class="fw-bold">@Sigle</label>
+            </div>
+            <div class="col-md-6">
+                <label class="fw-bold">@Raison</label>
+            </div>
         </div>
-
-        <!-- Email (readonly) -->
-        <div class="mb-2">
+        <div class="row g-3">
+            <!-- Email (readonly) -->
             <label>Email</label>
-            <InputText class="form-control" @bind-Value="MyRegisDto.Email" disabled />
+            <div class="col-md-4">
+                <InputText class="form-control" @bind-Value="MyRegisDto.Email" disabled />
+            </div>
         </div>
 
-        <!-- Nom -->
-        <div class="mb-2">
+        <div class="row g-3">
+            <!-- Nom -->
             <label>Nom</label>
-            <InputText class="form-control" @bind-Value="MyRegisDto.Nom" />
+            <div class="col-md-4">
+                <InputText class="form-control" @bind-Value="MyRegisDto.Nom" />
+            </div>
         </div>
-
-        <!-- Pnom -->
-        <div class="mb-2">
+        <div class="row g-3">
+            <!-- Pnom -->
             <label>Pnom</label>
-            <InputText class="form-control" @bind-Value="MyRegisDto.Pnom" />
+            <div class="col-md-4">
+                <InputText class="form-control" @bind-Value="MyRegisDto.Pnom" />
+            </div>
         </div>
-
         <!-- Username -->
-        <div class="mb-2">
-            <label>Username</label>
-            <InputText class="form-control" @bind-Value="MyRegisDto.Username" />
+        <div class="row g-3">
+            <label>Username (personnalizez 7-15 caract.)</label>
+            <div class="col-md-4">
+                <InputText class="form-control" @bind-Value="MyRegisDto.Username" />
+            </div>
         </div>
 
         <!-- Password -->
-        <div class="mb-2">
+        <div class="row g-3">
             <label>Password</label>
-            <InputText type="password" class="form-control" @bind-Value="MyRegisDto.Password" />
+            <div class="col-md-4">
+                <InputText type="password" class="form-control" @bind-Value="MyRegisDto.Password" />
+            </div>
         </div>
 
         <!-- Confirm -->
-        <div class="mb-2">
+        <div class="row g-3 mb-3">
             <label>Confirm Password</label>
-            <InputText type="password" class="form-control" @bind-Value="MyRegisDto.ConfirmPassword" />
+            <div class="col-md-4">
+                <InputText type="password" class="form-control" @bind-Value="MyRegisDto.ConfirmPassword" />
+            </div>
         </div>
-
         <button class="btn btn-primary" disabled="@isSubmitting">
             @(isSubmitting ? "Registering..." : "Register")
-        </button>
+         </button>
     </EditForm>
-
     @if (!string.IsNullOrEmpty(message))
     {
         <div class="alert alert-info mt-3">@message</div>

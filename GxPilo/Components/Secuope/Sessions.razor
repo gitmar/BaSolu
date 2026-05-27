@@ -1,0 +1,400 @@
+﻿@page "/sessions"
+@layout SecuMenu
+
+@using BlazorBootstrap
+@using Blazored.LocalStorage
+@using GxShared.Helpers
+@using GxPilo.Services
+@using Simple.OData.Client
+@using AutoMapper
+@using GxShared.GxDtos
+@using GxShared.Interfaces
+@using GxShared.Sess
+@* @using Microsoft.EntityFrameworkCore *@
+@using Newtonsoft.Json
+
+@inject ILocalStorageService _localStorage
+@inject NavigationManager _navmanager
+@inject HttpClientService _clieManager
+@inject IMapper Mapper
+@inject IJSRuntime _jsRun
+
+<div class="container mt-3">
+    <!-- Transfer header -->
+    <div class="mb-3">
+        <label>Exercice</label>
+        <InputSelect @bind-Value="IMyExo">
+            @foreach (var exo in LsExos)
+            {
+                <option value="@exo.Elea">@exo.Liba</option>
+            }
+        </InputSelect>
+        <label>G.session</label>
+        <InputSelect @bind-Value="IGpSes">
+            @foreach (var ses in GSesios)
+            {
+                <option value="@ses.Otyp">@ses.Liba</option>
+            }
+        </InputSelect>  
+    </div>
+    <Button Color="ButtonColor.Success" @onclick="() => StartAdd()">Add New Session</Button>
+    @if (isAdding)
+    {
+        // calcul/cumul prise variables defaults:
+        // -//auto-manu 
+        // -//an-mois-jour
+        // si auto et an prevaaaa + (1)
+        // si auto et mois prevmm + (1)
+        // si auto et jour prevjj + (1)
+        // si manu et an saisir aaaa + (1)
+        // si manu et mois saisir mm + (1)
+        // si manu et jour saisir jj + (1)
+        // -session a ouvrir : clcaaaammxxx
+        <div class="mt-3">
+            <InputText @bind-Value="draftSes.Liba" placeholder="Label" />        
+            <InputDate @bind-Value="draftSes.Ddat" placeholder="Debut" />
+            <InputDate @bind-Value="draftSes.Fdat" placeholder="Fin" />
+            
+            <Button Color="ButtonColor.Success" @onclick="() => SaveAdd()">Add</Button>
+            <Button Color="ButtonColor.Secondary" @onclick="() => CancelAdd()">Cancel</Button>
+        </div>
+    }
+    @if (DaSess.Any())
+    {
+        <Grid TItem="GsesioDto"
+              Data="@DaSess.Where(s => s.Igpe == IGpSes).ToList()"
+              AllowPaging="true"
+              Responsive="true">
+            <GridColumns>
+                <GridColumn TItem="GsesioDto" HeaderText="No" Class="xcol1">
+                    <ChildContent Context="item">@item.Id</ChildContent>
+                </GridColumn>
+                <GridColumn TItem="GsesioDto" HeaderText="Designation" Class="xcol3">
+                    <ChildContent Context="item">
+                        @if (editRowguid == item.Rowguid)
+                        {
+                            <InputText @bind-Value="draftSes.Liba" />
+                        }
+                        else
+                        {
+                            @item.Liba
+                        }
+                    </ChildContent>
+                </GridColumn>
+                <GridColumn TItem="GsesioDto" HeaderText="Type" Class="xcol1">
+                    <ChildContent Context="item">
+                        @* @if (editRowguid == item.Rowguid)
+                        {
+                            <InputSelect @bind-Value="draftSes.Otyp" class="me-3" style="width:auto" disabled>
+                                <option value="1">param</option>
+                                <option value="2">accueil</option>
+                                <option value="3">saisies</option>
+                                <option value="4">calculs</option>
+                                <option value="5">analyses</option>
+                            </InputSelect>
+                        }
+                        else
+                        { *@
+                            <InputSelect @bind-Value="draftSes.Igpe" class="me-3" style="width:auto" disabled>
+                                <option value="1">param</option>
+                                <option value="2">accueil</option>
+                                <option value="3">saisies</option>
+                                <option value="4">calculs</option>
+                                <option value="5">analyses</option>
+                            </InputSelect>
+                        @* } *@
+                    </ChildContent>
+                </GridColumn>
+                <GridColumn TItem="GsesioDto" HeaderText="Depart" Class="xcol1">
+                    <ChildContent Context="item">
+                        @if (editRowguid == item.Rowguid)
+                        {
+                            <InputDate @bind-Value="draftSes.Ddat" />
+                        }
+                        else
+                        {
+                            @item.Ddat?.ToShortDateString()
+                        }
+                    </ChildContent>
+                </GridColumn>
+                <GridColumn TItem="GsesioDto" HeaderText="Fin" Class="xcol1">
+                    <ChildContent Context="item">
+                        @if (editRowguid == item.Rowguid)
+                        {
+                            <InputDate @bind-Value="draftSes.Fdat" />
+                        }
+                        else
+                        {
+                            @item.Fdat?.ToShortDateString()
+                        }
+                    </ChildContent>
+                </GridColumn>
+                <GridColumn TItem="GsesioDto" HeaderText="Actions">
+                    <ChildContent Context="item">
+                        @if (editRowguid == item.Rowguid)
+                        {
+                            <Button Color="ButtonColor.Primary" Size="ButtonSize.Small"
+                                    @onclick="() => SaveEdit(item)">
+                                Save
+                            </Button>
+                            <Button Color="ButtonColor.Secondary" Size="ButtonSize.Small"
+                                    @onclick="() => CancelEdit()">
+                                Cancel
+                            </Button>
+                        }
+                        else
+                        {
+                            @if (item.Eta == 0)
+                            { //nouveau
+                                <Button Color="ButtonColor.Warning" Size="ButtonSize.Small"
+                                        @onclick="() => StartEdit(item)">
+                                    Ouvrir
+                                </Button>
+                                <Button Color="ButtonColor.Danger" Size="ButtonSize.Small"
+                                        @onclick="() => DeleteAttribute(item)">
+                                    Delete
+                                </Button>
+                            }
+                            else if (item.Eta == 1)
+                            {
+                                <Button Color="ButtonColor.Danger" Size="ButtonSize.Small"
+                                        @onclick="() => DeleteAttribute(item)">
+                                    Cloturer
+                                </Button>
+                            }
+                            else if (item.Eta == 2)
+                            {
+                                <Button Color="ButtonColor.Warning" Size="ButtonSize.Small"
+                                        @onclick="() => DeleteAttribute(item)">
+                                    Archiver
+                                </Button>
+                            }
+                            else
+                            {
+                                <Button Color="ButtonColor.Warning" Size="ButtonSize.Small"
+                                        @onclick="() => DeleteAttribute(item)">
+                                    Visible
+                                </Button>
+                            }
+                        }
+                    </ChildContent>
+                </GridColumn>
+            </GridColumns>
+        </Grid>
+    }
+</div>
+<style>
+    .xcolx {
+        width: 40px !important;
+    }
+
+    .xcol1 {
+        width: 60px;
+    }
+
+    .xcol2 {
+        width: 120px;
+    }
+
+    .xcol3 {
+        width: 180px;
+    }
+
+    .xcol4 {
+        width: 240px;
+    }
+        /* Ensure inputs inside these columns fill the width */
+        .xcol1 input,
+        .xcol2 input,
+        .xcol3 input,
+        .xcol4 input {
+            width: 100%;
+            box-sizing: border-box; /* prevents overflow due to padding/border */
+        }
+
+    .editing-row {
+        pointer-events: none; /* Blocks all clicks on row */
+    }
+
+        .editing-row * {
+            pointer-events: auto; /* Re-enables clicks on buttons/inputs */
+        }
+</style>
+@code {
+    private bool isLoading = true;
+
+    [Parameter]
+    public IODataClient _InODaClient { get; set; }
+    [Parameter]
+    public GxorgaDto curOrga { get; set; }
+    [Parameter]
+    public int Orig { get; set; }
+    [Parameter]
+    public ChildVars toChild { get; set; }
+    [Parameter]
+    public int toMenu { get; set; }
+    [Parameter]
+    public RenderFragment ChildContent { get; set; }
+    [Parameter]
+    public List<Gpdivh> LsDivs { get; set; }
+
+    // Guard
+    [Parameter]
+    public IPendingChangesGuard _guard { get; set; }
+    [Parameter]
+    public EventCallback<PendingState> OnPendingStateChanged { get; set; }
+    [Parameter]
+    public int NbChanges { get; set; }
+    [Parameter]
+    public EventCallback<int> NbChangesChanged { get; set; }
+
+
+    private int IMyExo = 0, IGpSes = 0;
+    //exo-session:saisie-Otyp1saisie
+    private List<Gpvar> LsVars = new();
+    private Gpvar inExo = new();
+    //private GsesioDto inSes = new();
+    private List<Gpvar> LsExos = new();
+    private List<Gpvar> GSesios = new();
+    //[Parameter] public ItemClientService ItemService { get; set; }
+    //[Parameter] public StockClientService StockService { get; set; }
+    private List<GsesioDto> DaSess = new();
+    private Guid? editRowguid;
+    private bool isAdding = false;
+    private GsesioDto draftSes = new();
+
+    private void CancelAdd() => isAdding = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        isLoading = true;
+        try
+        {
+            // if (toChild == null || curOrga == null)
+            // {
+            //     Console.WriteLine("Missing parent data");
+            //     return;
+            // }
+            // isAuthenticated = toChild.isAuthenticated;
+            // authUser = toChild.authUser;
+            // if (!isAuthenticated)
+            // {
+            //     Imessage = "CONNEXION, Utilisateur non authentifie";
+            //     return;
+            // }
+            LsExos = toChild.LsVars.Where(v => v.Gvars == 11).ToList();
+            GSesios = toChild.LsVars.Where(v => v.Gvars == 12).ToList();
+            //exo-session:saisie-Otyp1saisie
+            LsVars = toChild.LsVars;
+            inExo = LsVars.Where(v => v.Gvars == 11 && v.Itb == 1 && v.Otyp == 1 && v.Eta == 1).FirstOrDefault();
+            //inSes = LsVars.Where(v => v.Gvars == 12 && v.Itb == 1 && v.Eta == 1).FirstOrDefault();
+            // //LsVars = toChild.LsVars;
+            // LsFixes = toChild.LsFixes;
+            //LsDoms = toChild.LsFixes.Where(ut => ut.Gvars == 36 && ut.Itb == 4 && ut.Gp1 == 3 && ut.Elea != 0).ToList();
+            //LsDoms = LsFixes.Where(ut => ut.Gvars == 36 && ut.Itb == 4 && ut.Gp1 == 3 && ut.Elea != 0).ToList();
+            //LsSites = toChild.LsSites;
+            //_lgcdu = 3;
+            DaSess = curOrga?.Gsesios.ToList();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"22error loading atr-Stk: {ex.Message}");
+        }
+    }
+    private void StartEdit(GsesioDto atr)
+    {
+        editRowguid = atr.Rowguid;
+        draftSes = new GsesioDto { Id = atr.Id, Liba = atr.Liba, Igpe = atr.Igpe, Rowguid = atr.Rowguid };
+    }
+
+    private async Task SaveEdit(GsesioDto atr)
+    {
+        atr.Liba = draftSes.Liba;
+        atr.Igpe = draftSes.Igpe;
+        atr.Refa = draftSes.Refa;
+        atr.Ddat = draftSes.Ddat;
+        atr.Fdat = draftSes.Fdat;
+        // Register update with OData context
+        var key = GetEntityKey(atr); // helper to extract PK
+        _guard.TrackUpdate("Gsesios", key, atr);
+        DaSess.Insert(0, atr);
+        editRowguid = null;
+        await NotifyPendingChanges();
+    }
+
+    private void CancelEdit() => editRowguid = null;
+
+    private async Task DeleteAttribute(GsesioDto atr)
+    {
+        curOrga.Gsesios.Remove(atr);
+
+        // Register delete with OData context
+        // Extract PK using your helper
+        var key = GetEntityKey(atr);
+
+        // Queue delete in guard
+        //_guard.TrackDelete<TDto>(GetEntitySetName<TDto>(), key);
+        _guard.TrackDelete("Gsesios", key);
+        Console.WriteLine($"🗑️ {atr.Liba} queued for delete");
+
+        await NotifyPendingChanges();
+    }
+
+    private async Task StartAdd()
+    {
+        isAdding = true;
+        draftSes = new GsesioDto();
+        //draftSes.Liba = await calCess(); //saisieaaaammxxx
+    }
+
+    private async Task SaveAdd()
+    {
+        draftSes.Rowguid = Guid.NewGuid();
+        draftSes.Idorg = curOrga.Idorg;
+        // draftSes.Gvars = 13; //sessions
+        // draftSes.Itb = IGpSes; //parent
+        draftSes.Igpe = IGpSes; //1accueil2paras...
+
+        draftSes.Refa = await calCess(); 
+
+        //draftSes.Abg = toChild.inExo.Scdrub ?? "EXO";//exercice
+        //draftSes.Etyp = curOrga.; //aaaamm
+        // Register add with OData context
+        _guard.TrackInsert("Gsesios", draftSes);
+        Console.WriteLine($"➕ NEW {draftSes.Liba} → TrackInsert");
+        isAdding = false;
+        await NotifyPendingChanges();
+    }
+    private object GetEntityKey<TDto>(TDto entity)
+    {
+        switch (entity)
+        {
+            case GsesioDto pln:
+                return pln.Id;
+            // case RubhieDto rub:
+            //     return rub.Id;
+            // case RubpstDto fmt:
+            //     return fmt.Id;
+            default:
+                throw new InvalidOperationException($"Unknown entity type {typeof(TDto).Name}");
+        }
+    }
+    private async Task<string> calCess()
+    {
+        var exo = toChild.inExo?.Abg ?? "EXO?";
+        var ses = GSesios.LastOrDefault(s => s.Otyp == IGpSes)?.Liba ?? "SES?";
+        return await Task.FromResult($"{exo}_{ses}");
+    }
+    // Notify guard/UI of pending changes
+    private async Task NotifyPendingChanges()
+    {
+        await OnPendingStateChanged.InvokeAsync(new PendingState(
+            _guard.HasPendingChanges(),
+            _guard.GetPendingChangesCount()
+        ));
+
+        NbChanges = _guard.GetPendingChangesCount();
+        await NbChangesChanged.InvokeAsync(NbChanges);
+        StateHasChanged();
+    }
+}

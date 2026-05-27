@@ -1,6 +1,6 @@
 ﻿@page "/atest"
-@using GxShared.Formulas.ForaModels
-@using GxShared.Formulas.ForaContext
+@using GxFormula.ForaModels
+@using GxFormula.ForaContext
 
 <h3>Atest</h3>
 
@@ -146,8 +146,8 @@
         var tokens = FormulaTokenizer.Tokenize(formula);
         var resolver = new FormulaSemanticResolver(tokens, inputData);
         var resolved = resolver.Resolve();
-
-        var evaluator = new FormulaEvaluator(resolved);
+            
+        var evaluator = new FormulaEvaluationService(resolved);
         var result = evaluator.Evaluate();
         wResultat = result;
         Console.WriteLine($"Result: {result.Value} ({result.Type})");

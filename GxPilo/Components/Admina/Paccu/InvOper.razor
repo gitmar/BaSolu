@@ -22,7 +22,7 @@
 @inject ILocalStorageService _localStorage
 @inject HttpClientService _clieManager
 @inject LinkSerialiser _linkSerialiser
-@inject NavigationManager _navmanager
+@inject NavigationManager _navManager
 @inject SessionContextService _sessionContext
 @inject IJSRuntime _jsRun
 @inject RendAgres _rendAgres
@@ -65,6 +65,20 @@ else
                                         <label>Ref.appel:</label>
                                         <InputText @bind-Value="_invModel.Refapl" class="form-control" />
                                     </div>
+
+                                    <!-- Groupe -->
+                                    @* <div class="col-md-4">
+                                        <label>Groupe:</label>
+                                        <InputSelect @bind-Value="_invModel.Utyp" class="form-select">
+                                            <option value="0">Sélectionner...</option>
+                                            @foreach (var ut in _invUtyps.Where(g => g.Gp1 == 1))
+                                            {
+                                                <option value="@ut.Elea" @onclick="() => SelUtyp(ut)">@ut.Liba</option>
+                                            }
+                                        </InputSelect>
+                                    </div> *@
+
+                                    
                                     <!-- Role -->
                                     <div class="col-md-4">
                                         <label>Role:</label>
@@ -77,19 +91,8 @@ else
                                         </InputSelect>
                                     </div>
                                     <div class="col-md-4"></div>
-                                    <!-- Quality -->
-                                    <div class="col-md-4">
-                                        <label>Qualité:</label>
-                                        <InputSelect @bind-Value="_invModel.Utyp" class="form-select">
-                                            <option value="0">Sélectionner...</option>
-                                            @foreach (var ut in _invUtyps)
-                                            {
-                                                <option value="@ut.Elea" @onclick="() => SelUtyp(ut)">@ut.Liba</option>
-                                            }
-                                        </InputSelect>
-                                    </div>
                                     <!-- Raison (si tiers : client/fournis/patern) -->
-                                    @if (_invModel.Utyp == 6 || _invModel.Utyp == 7 || _invModel.Utyp == 8)
+                                    @* @if (_invModel.Utyp == 6 || _invModel.Utyp == 7 || _invModel.Utyp == 8)
                                     {
                                         <div class="col-md-4">
                                             <label>Raison:</label>
@@ -100,7 +103,7 @@ else
                                     {
                                         <div class="col-md-4"></div>
                                     }
-                                    <div class="col-md-4"></div>
+                                    <div class="col-md-4"></div> *@
                                     <!-- Nom -->
                                     <div class="col-md-4">
                                         <label>Nom:</label>
@@ -121,6 +124,35 @@ else
                                         <label>Téléphone:</label>
                                         <InputText @bind-Value="_invModel.PhoneNumber" class="form-control" />
                                     </div>
+                                    <div class="col-md-4"></div>
+                                    <!-- Groupes tiers -->
+                                    <div class="col-md-4">
+                                        <label>G.Origine:</label>
+                                        <InputSelect @bind-Value="_invModel.Itgpe" @onchange="() => SelDomITies()" class="form-select">
+                                            <option value="0">Institution</option>
+                                            @foreach (var gte in _iVgties)
+                                            {
+                                                <option value="@gte.Elea">@gte.Liba</option>
+                                            }
+                                        </InputSelect>
+                                    </div>
+                                    <!-- Gpes ID tiers -->
+                                    @if (_invModel.Itgpe != 0)
+                                    {
+                                        <div class="col-md-4">
+                                            <label>Tiers:</label>
+                                            <InputSelect @bind-Value="_invModel.Itgid" class="form-select">
+                                                <option value="0">Chx?Tiers</option>
+                                                @foreach (var tie in _iVtiers)
+                                                {
+                                                    <option value="@tie.Id">@tie.Raison</option>
+                                                }
+                                            </InputSelect>
+                                        </div>
+                                    } else
+                                    {
+                                        <div class="col-md-4"></div>
+                                    }
                                     <div class="col-md-4"></div>
                                     <!-- Services -->
                                     <div class="col-md-4">
@@ -186,7 +218,7 @@ else
                                             }
                                         </InputSelect>
                                     </div>
-                                    <div class="col-md-4"></div>
+                                    @* <div class="col-md-4"></div>
                                     <!-- Quality -->
                                     <div class="col-md-4">
                                         <label>Qualité:</label>
@@ -197,13 +229,43 @@ else
                                                 <option value="@ut.Elea" @onclick="() => SelUtyp(ut)">@ut.Liba</option>
                                             }
                                         </InputSelect>
-                                    </div>
+                                    </div> *@
                                     <!-- Raison (si tiers : client/fournis/patern) -->
-                                    @if (_invModel.Utyp == 6 || _invModel.Utyp == 7 || _invModel.Utyp == 8)
+                                    @* @if (_invModel.Utyp == 6 || _invModel.Utyp == 7 || _invModel.Utyp == 8)
                                     {
                                         <div class="col-md-4">
                                             <label>Raison:</label>
                                             <InputText @bind-Value="_invModel.TRaison" class="form-control" />
+                                        </div>
+                                    }
+                                    else
+                                    {
+                                        <div class="col-md-4"></div>
+                                    } *@
+                                    <div class="col-md-4"></div>
+                                    <!-- Groupes tiers -->
+                                    <div class="col-md-4">
+                                        <label>G.Origine:</label>
+                                        <InputSelect @bind-Value="_invModel.Itgpe" @onchange="() => SelDomITies()" class="form-select">
+                                            <option value="0">Institution</option>
+                                            @foreach (var gte in _iVgties)
+                                            {
+                                                <option value="@gte.Elea">@gte.Liba</option>
+                                            }
+                                        </InputSelect>
+                                    </div>
+                                    <!-- Gpes ID tiers -->
+                                    @if (_invModel.Itgpe != 0)
+                                    {
+                                        <div class="col-md-4">
+                                            <label>Tiers:</label>
+                                            <InputSelect @bind-Value="_invModel.Itgid" class="form-select">
+                                                <option value="0">Chx?Tiers</option>
+                                                @foreach (var tie in _iVtiers)
+                                                {
+                                                    <option value="@tie.Id">@tie.Raison</option>
+                                                }
+                                            </InputSelect>
                                         </div>
                                     }
                                     else
@@ -414,10 +476,12 @@ else
         .Where(d => d.Ihie == _invModel.Ihie)
         .SelectMany(d => d.Divpsts)
         .ToList();
+    private List<TierspDto> _iVtiers = new();
     //GlobModels
     private Userbag _usrBag = new Userbag();
     int uMinrol = 0;
     private List<Gpfixe> LsFixes = new();
+    private List<Gpfixe> _iVgties = new();
     private Gpfixe _curUtyp = new();
     private List<Grole> _usrRoles = new();
     private List<string> invalidLines = new();    
@@ -483,10 +547,14 @@ else
                 .ToList();
             Console.WriteLine($"bon roles : {_invRoles.Count()}");
             //1minis2sout4cible6client7fournis8paten
-            _invUtyps = LsFixes.Where(uf => uf.Gvars == 36 && uf.Itb == 11 && (uf.Gp1 == 1 || uf.Gp1 == 3) && uf.Elea != 0)
+            _invUtyps = LsFixes.Where(uf => uf.Gvars == 36 && uf.Itb == 6 && uf.Gp1 == 1 && uf.Elea != 0)
                 .OrderBy(ut => ut.Elea)
                 .ToList();
             _invModel.Utyp = 0; //cible
+            //Groupe tiers
+            _iVgties = _usrBag.Ufixes
+                .Where(ut => ut.Gvars == 36 && ut.Itb == 6 && ut.Gp1 == 1 && ut.Elea != 0)
+                .ToList();
             _invModel.IvTiep = 0; //a controler au server (Tiersp/Tiewel)
             await LoadOrgaAsync(_usrBag.Idorg);
             Console.WriteLine($"AUTHENTICATION OK et orga recu {curOrga.Raison}");
@@ -502,7 +570,7 @@ else
         {
             // Query directly into DTO (recommended for Blazor WASM)
             curOrga = await _clieManager
-                .GetDtoWithExpandAsync<GxorgaDto>("Gxorgas", key, "Tiewels");
+                .GetDtoWithExpandAsync<GxorgaDto>("Gxorgas", key, "Tiewels, Tiersps");
             // curOrga = await ODataClient
             //     .For<GxorgaDto>("Gxorgas")
             //     .Key(key)
@@ -518,6 +586,11 @@ else
         {
             Console.WriteLine(ex);
         }
+    }
+    private async Task SelDomITies()
+    {
+        _iVtiers = curOrga.Tiersps.Where(t => t.Utyp == _invModel.Itgpe)
+            .ToList();
     }
     private async Task SendIndividualInvite()
     {

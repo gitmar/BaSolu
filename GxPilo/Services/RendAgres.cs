@@ -46,6 +46,22 @@ namespace GxPilo.Services
                 return new();
             }
         }
+        public async Task<List<Gxuser>> LoadOrgaUsers()
+        {
+            //FmtPsts
+            var json = await _clieManager.SendRequestAsync("AuthClient", HttpMethod.Get, "lgauth/allusers");
+            var result = JsonConvert.DeserializeObject<List<Gxuser>>(json);
+            if (result.Any())
+            {
+                Console.WriteLine($"Nb Roles : {result.Count}");
+                return result.ToList();
+            }
+            else
+            {
+                Console.WriteLine("Nb Roles : null");
+                return new();
+            }
+        }
         public async Task<List<Gtabl>> LoadOrgaTables()
         {
             var json = await _clieManager.SendRequestAsync(

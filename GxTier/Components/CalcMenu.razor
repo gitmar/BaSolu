@@ -5,7 +5,7 @@
 @using System.Security.Claims
 @using BlazorBootstrap
 @using Blazored.LocalStorage
-@using GxShared.Formulas.ForaModels
+@using GxFormula.ForaModels
 @using GxShared.Sess
 @using GxShared.Others
 @using GxShared.Interfaces
@@ -46,7 +46,7 @@
                            Groups="@Groupes"
                            MenuSelected="@_chxMenu"
                            MenuSelectedChanged="@SelMenu"
-                           GroupSelected="@_chxGpe"
+                           GroupSelected="@Ugpe"
                            GroupSelectedChanged="@SelGpe"
                            OnBack="@NavigateBack" />
                
@@ -54,25 +54,11 @@
                 <div class="row mb-2">
                     <div class="d-flex align-items-center gap-2">
                         <label>Exercice:</label>
-                        <InputSelect id="exoId" @bind-Value="froMenu.Uexo">
-                            <option value="0">exo?</option>
-                            @foreach (var exo in EnsExos)
-                            {
-                                <option value="@exo.Id">@exo.Sref</option>
-                            }
-                        </InputSelect>
-
+                        <InputText @bind-Value="strExo" disabled />
                         <label>Session:</label>
-                        <InputSelect id="sesId" @bind-Value="froMenu.Usesio">
-                            <option value="0">session?</option>
-                            @foreach (var ses in EnsSess)
-                            {
-                                <option value="@ses.Id">@ses.Sref</option>
-                            }
-                        </InputSelect>
+                        <InputText @bind-Value="strSes" disabled />
                     </div>
                 </div>
-
                 <div class="row mb-2">
                     <div class="d-flex align-items-center gap-2">
                         <label>Programme :</label>
@@ -81,7 +67,7 @@
                                 <option value="0">progr?</option>
                                 @foreach (var pgr in LsProgs)
                                 {
-                                    <option value="@pgr.Id">@pgr.Liba</option>
+                                    <option value="@pgr.Id" @onclick="() => GetSelectedProg(pgr)">@pgr.Liba</option>
                                 }
                             </InputSelect>
                         </div>
@@ -92,19 +78,33 @@
                                 <option value="0">Aucun</option>
                                 @foreach (var divo in LsDivs)
                                 {
-                                    <option value="@divo.Ihie">@divo.Abg-@divo.Liba</option>
+                                    <option value="@divo.Ihie" @onclick="@trierTiers">@divo.Abg-@divo.Liba</option>
                                 }
                             </InputSelect>
                         </div>
-                    </div>
-                </div>
 
+                    </div>
                     @if (!string.IsNullOrEmpty(Imessage))
                     {
                         <span class="bg-info bg-opacity-10 text-danger px-2" style="font-style: italic;">
                             &nbsp;--> @Imessage
                         </span>
                     }
+                </div>
+                <div class="row mb-2">
+                    <div class="d-flex align-items-center gap-2">
+                        <label>Session des variables :</label>
+                        <div class="text-center">
+                            <InputSelect id="pgrId" @bind-Value="ImyVSes">
+                                <option value="0">session?</option>
+                                @foreach (var sess in EnsSess)
+                                {
+                                    <option value="@sess.Elea">@sess.Liba</option>
+                                }
+                            </InputSelect>
+                        </div>
+                    </div>
+                </div>
                 <!-- Main Content //a integer froMenu -->
                 @if (_chxMenu != 0 && curOrga != null && toChild != null)
                 {
@@ -115,22 +115,13 @@
                                @bind-NbChanges="_nbChanges"
                                _guard="@_guard"
                                toChild="@toChild"
-                               allEnable="@allEnable"
+                               ImyDiv="@ImyDiv"
+                               ChxGpe="@Ugpe"
                                _InODaClient="@_MyODaClient">
                                     <ChildContent>
                                         @* <h2 class="child-box">Hello TABLES</h2> *@
                                     </ChildContent>
                         </CalcResLnes>
-
-                        @* <CalcResLnes @ref="mygcalc"
-                                     curOrga="@curOrga"
-                                     toChild="@toChild"
-                                     allEnable="@allEnable"
-                                     InODaClient="@_MyODaClient">
-                            <ChildContent>
-                                <h2 class="child-box">Hello GRILLES</h2>
-                            </ChildContent>
-                        </CalcResLnes> *@
                     }
                     else if (_chxMenu == 2)
                     {
@@ -179,11 +170,73 @@
     public ChildVars toChild = new();
     public MyMenuVars froMenu = new();
     private bool allEnable = false;
-    private string Imessage = "";
+    private string Imessage = "", strExo = "", strSes = "";
 
     private CalcResLnes mygcalc;
     //public int ImyDiv = 0;
     //public int ImyProg = 0;
+
+    public List<Gplan> LsProgs = new();
+
+    [Parameter]
+    public RenderFragment Atributs { get; set; }
+    [Parameter]
+    public RenderFragment Gtables { get; set; }
+    [Parameter]
+    public RenderFragment Grilles { get; set; }
+    [CascadingParameter]
+
+    private Task<AuthenticationState>? AuthState { get; set; }
+    public ClaimsPrincipal authUser;
+    public bool isAuthenticated = false;
+
+    public PlngenDto curProg = new();
+    public Gsedat curSes = new();
+
+    public List<TierspDto> EnsTiers { get; set; } = new();
+    public List<PlngenDto> EnsProgs { get; set; } = new();
+    public List<TierspDto> PreTiers { get; set; } = new();
+
+    public string _strOrga = "", _curSigle = "", strmeta = "", strmeta2 = "";
+    private int Ugpe = 0;
+    private string gpeLiba = "";
+
+    public List<GxGroupe> Groupes = new();
+
+    //entities load
+    private IEnumerable<GxorgaDto> _lsOrgas = new List<GxorgaDto>();
+
+    //GlobModels
+    public Userbag _usrBag = new Userbag();
+    public List<Gpfixe> LsFixes = new();
+    public List<RubvarDto> EnsRubrs = new();
+    private string EnsExos = "";
+    //private List<GsgfixDto> EnsSess = new();
+
+    public List<Gpvar> LsVars = new();
+    public List<Gplan> LsPlans = new();
+    public List<Gpdivh> LsDivs = new();
+    //public List<Gplan> LsProgs = new List<Gplan>();
+    public List<Gpvar> LsTabls = new();
+    public List<Gpfixe> LsGties = new();
+    public List<Grole> _invRoles = new();
+    public List<Gpvar> EnsSess = new();
+    //public List<Gpvar> TbElems = new List<Gpvar>();
+    //public List<Clvar> LsCols = new List<Clvar>();
+    //public List<Rubhie> LsDivs = new List<Rubhie>();
+    //gpe choix
+    //private List<Apirole> _invRoles = new List<Apirole>();
+    //Navigation
+    private int _chxGpe = 0, _chxMenu = 1;
+    private string strComp = "Calculs";
+
+    //modal management
+    private string SidebarStyle = "width: 200px;";
+    private bool IsOpen => Ugpe != 0;
+    private bool FirstLoadCompleted = false;
+    private bool ContentLoaded = false;
+
+    private bool isFilteringEnabled = false;
     private int _imyProg = 0;
     public int ImyProg
     {
@@ -213,72 +266,20 @@
             trierTiers(); // your existing method, adjust if it needs the selected Id
         }
     }
-
-    public List<Gplan> LsProgs = new();
-
-    [Parameter]
-    public RenderFragment Atributs { get; set; }
-    [Parameter]
-    public RenderFragment Gtables { get; set; }
-    [Parameter]
-    public RenderFragment Grilles { get; set; }
-
-    [CascadingParameter]
-    private Task<AuthenticationState>? AuthState { get; set; }
-    public ClaimsPrincipal authUser;
-    public bool isAuthenticated = false;
-
-    public PlngenDto curProg = new PlngenDto();
-    public List<TierspDto> EnsTiers { get; set; } = new();
-    public List<PlngenDto> EnsProgs { get; set; } = new();
-    public List<TierspDto> PreTiers { get; set; } = new();
-
-    public string _strOrga = "", _curSigle = "", strmeta = "", strmeta2 = "";
-    private int Ugpe = 0;
-    private string gpeLiba = "";
-
-    //menus
-    public List<GxMenuItem> MenuItems = new()
+    private int _imyVSes = 0;
+    public int ImyVSes
     {
-        new GxMenuItem { Id = 1, Text = "Calcul", Icon = "bi bi-box-arrow-in-down" },
-        new GxMenuItem { Id = 2, Text = "Validation", Icon = "bi bi-house-door" },
-        //new MenuItem { Id = 4, Text = "Mutation", Icon = "bi bi-arrow-repeat" },
-    };
-    public List<GxGroupe> Groupes = new();
-
-    //entities load
-    private IEnumerable<GxorgaDto> _lsOrgas = new List<GxorgaDto>();
-
-    //GlobModels
-    public Userbag _usrBag = new Userbag();
-    public List<Gpfixe> LsFixes = new();
-    public List<RubvarDto> EnsRubrs = new();
-    private string EnsExos = "";
-    private List<GsgfixDto> EnsSess = new();
-
-    public List<Gpvar> LsVars = new();
-    public List<Gplan> LsPlans = new();
-    public List<Gpdivh> LsDivs = new();
-    //public List<Gplan> LsProgs = new List<Gplan>();
-    public List<Gpvar> LsTabls = new();
-    public List<Gpfixe> LsGties = new();
-    public List<Grole> _invRoles = new();
-    //public List<Gpvar> TbElems = new List<Gpvar>();
-    //public List<Clvar> LsCols = new List<Clvar>();
-    //public List<Rubhie> LsDivs = new List<Rubhie>();
-    //gpe choix
-    //private List<Apirole> _invRoles = new List<Apirole>();
-    //Navigation
-    private int _gIdTie = 0, _chxGpe = 0, _chxMenu = 1;
-    private string strComp = "Calculs";
-
-    //modal management
-    private string SidebarStyle = "width: 200px;";
-    private bool IsOpen = true;
-    private bool FirstLoadCompleted = false;
-    private bool ContentLoaded = false;
-
-    private bool isFilteringEnabled = false;
+        get => _imyVSes;
+        set
+        {
+            _imyVSes = value;
+            GetSelectedSess(value);
+        }
+    }
+    //TieSaies
+    int year = DateTime.Now.Year;
+    int month = DateTime.Now.Month;
+    IEnumerable<ActsaieDto> LsActs = new List<ActsaieDto>();
     //Guard
     private int _nbChanges = 0;
     private IDisposable? _locationHandler;
@@ -286,6 +287,14 @@
     private int insertCount => _guard.GetInsertCount();
     private int updateCount => _guard.GetUpdateCount();
     private int deleteCount => _guard.GetDeleteCount();
+    //menus
+    public List<GxMenuItem> MenuItems = new()
+    {
+        new GxMenuItem { Id = 1, Text = "Calcul", Icon = "bi bi-box-arrow-in-down" },
+        new GxMenuItem { Id = 2, Text = "Validation", Icon = "bi bi-house-door" },
+        //new MenuItem { Id = 4, Text = "Mutation", Icon = "bi bi-arrow-repeat" },
+    };
+
     private async Task CancelAllChanges()
     {
         Console.WriteLine("🗑️ CancelAllChanges START");
@@ -314,7 +323,7 @@
             return;
         }
         _usrBag = await _sessionContext.GetUserbagAsync();
-        _gIdTie = _usrBag.Usorga.Gdtie;
+        //_gIdTie = _usrBag.Usorga.Gdtie;
         LsVars = _usrBag.Usorga.Uvars.ToList();
         LsFixes = _usrBag.Ufixes.ToList();
         LsPlans = _usrBag.Usorga.Uplns.ToList();
@@ -334,21 +343,22 @@
         {
             Groupes.Add(new GxGroupe { Itb = gr.Itb, Elea = gr.Elea, Liba = gr.Liba });
         }
+        EnsSess = LsVars.Where(v => v.Gvars == 11 && v.Itb == 4 && v.Eta == 1).ToList();
         //Console.WriteLine($"inv roles : {_invRoles.Count()}");
         _invRoles = await _rendAgres.LoadOrgaRoles();
         Ugpe = 1; //initial Cible
-        // _guard.RegisterUnconfirmedPredicate<Actsaie>(e => e.Xadd1 == -1 || e.Xedt1 == -1 || e.Xdel1 == -1);
-        // _guard.RegisterUnconfirmedPredicate<Actdet>(d => d.Xadd1 == -1 || d.Xedt1 == -1 || d.Xdel1 == -1);
-        // _guard.RegisterUnconfirmedPredicate<Resdon>(e => e.Xadd1 == -1);
-        // _guard.RegisterUnconfirmedPredicate<Resdet>(d => d.Xadd1 == -1);
-        // _guard.RegisterUnconfirmedPredicate<Resbro>(d => d.Xadd1 == -1);
+                  // _guard.RegisterUnconfirmedPredicate<Actsaie>(e => e.Xadd1 == -1 || e.Xedt1 == -1 || e.Xdel1 == -1);
+                  // _guard.RegisterUnconfirmedPredicate<Actdet>(d => d.Xadd1 == -1 || d.Xedt1 == -1 || d.Xdel1 == -1);
+                  // _guard.RegisterUnconfirmedPredicate<Resdon>(e => e.Xadd1 == -1);
+                  // _guard.RegisterUnconfirmedPredicate<Resdet>(d => d.Xadd1 == -1);
+                  // _guard.RegisterUnconfirmedPredicate<Resbro>(d => d.Xadd1 == -1);
         _nbChanges = _guard.GetPendingChangesCount();  // Initial value
         Console.WriteLine("Authentication ENTREE");
-        await LoadSaieOrgaAsync(_usrBag.Idorg);
+        await LoadCalcOrgaAsync(_usrBag.Idorg);
         //pita = 5;
         Console.WriteLine("TIERS A ETE TESTE");
         //sessions de saisies ouvertes pour l=exercice
-        EnsSess = curOrga.Gsesios.Where(us => us.Styp == 3 && us.Sicur == 1 && us.Sieta == 1).ToList(); //saisies ouversts
+        //EnsSess = curOrga.Gsesios.Where(us => us.Styp == 3 && us.Sicur == 1 && us.Sieta == 1).ToList(); //saisies ouversts
         toChild.authUser = authUser;
         toChild.isAuthenticated = isAuthenticated;
         toChild.Ugpe = Ugpe;
@@ -356,15 +366,36 @@
         toChild.LsFixes = LsFixes;
         toChild.LsPlans = LsPlans;
         toChild.LsTabls = LsTabls;
+        toChild.inExo = LsVars.LastOrDefault(v => v.Gvars == 11 && v.Itb == 1 && v.Eta == 1);
+        strExo = toChild.inExo?.Liba ?? "";
+        var lsSes = await _rendAgres.LoadOrgaSessios();
+        curSes = lsSes.FirstOrDefault(su => su.Eta == 1); //ouvert
+        strSes = curSes?.Liba; //toChild.inSes?.Liba ?? "";
+                               //toChild.inExo = LsVars.FirstOrDefault(v => v.Gvars == 11 && v.Itb == 1 && v.Eta == 1);
+                               //toChild.inSes = LsVars.FirstOrDefault(v => v.Gvars == 12 && v.Itb == 1 && v.Eta == 1);
+
         isLoading = false;
     }
-    //CRUD
-    private async Task LoadSaieOrgaAsync(int key)
+    //CRUD[
+    private async Task LoadCalcOrgaAsync(int key)
     {
         int pisa = 2;
         try
         {
-            curOrga = await _guard.GetTiebagsAsync(key);
+            try
+            {
+                curOrga = await _guard.GetTiebagsAsync(key);
+                LsActs = await _guard.GetSessionActsaiesAsync(
+                    key, year, month
+                );
+
+                Console.WriteLine($"loadOrgaAsync completed : {curOrga?.Raison}");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Load error: {ex.Message}");
+            }
+
             // curOrga = await ODataClient
             //     .For<GxorgaDto>("Gxorgas")
             //     .Key(key)
@@ -393,9 +424,9 @@
         {
             Console.WriteLine($"probleme chargement Tiers");
         }
-        EnsExos = curOrga.Gsesios.ToList();
+        //EnsExos = curOrga.Gsesios.ToList();
     }
-    
+
     private void OnGpeChanged(EventArgs args)
     {
         //prise rolno et label
@@ -453,26 +484,28 @@
     //     Console.WriteLine($"ICI RUBRIQUES : {curProg.Rubvars.Count()}");
     //     //return _curProg;
     // }
-    void GetSelectedExos(string myexo)
-    {
-        toChild.MainOptsOk = false;
-        toChild.curExo = myexo;
-        if (Ugpe != 0 && froMenu.Uexo != 0 && froMenu.Usesio != 0)
-        {
-            toChild.MainOptsOk = true;
-            toChild.curExo = myexo;
-            StateHasChanged();
-        }
-    }
+    // void GetSelectedExos(string myexo)
+    // {
+    //     toChild.MainOptsOk = false;
+
+    //     toChild.curExo = myexo;
+    //     if (Ugpe != 0 && froMenu.Uexo != 0 && froMenu.Usesio != 0)
+    //     {
+    //         toChild.MainOptsOk = true;
+    //         toChild.curExo = myexo;
+    //         StateHasChanged();
+    //     }
+    // }
 
     void GetSelectedSesio(string mysesio)
     {
         toChild.MainOptsOk = false;
-        toChild.curSes = mysesio;
+
+        //toChild.curSes = mysesio;
         if (Ugpe != 0 && froMenu.Uexo != 0 && froMenu.Usesio != 0)
         {
             toChild.MainOptsOk = true;
-            toChild.curSes = EnsSess.Where(us => us.Elea == froMenu.Usesio).FirstOrDefault().Liba;
+            //toChild.curSes = EnsSess.Where(us => us.Elea == froMenu.Usesio).FirstOrDefault().Liba;
             StateHasChanged();
         }
     }
@@ -503,6 +536,10 @@
             }
         }
         //Console.WriteLine($"ICI RUBRIQUES : {curProg.Rubvars.Count()}");
+    }
+    private void GetSelectedSess(int ises)
+    {
+
     }
     private void trierTiers()
     {
@@ -552,7 +589,7 @@
     // {
     //     curODContext = await _contextFactory.CreateAsync();
     //     _guard.AttachContext(curODContext);
-            
+
     //     var expand1 =
     //         "Tiersps($expand=Actsaies($expand=Actdets),Resdons($expand=Resdets),Resbros)";
     //     await curODContext.LoadFilteredAsync<Gxorga>(expand: expand1);

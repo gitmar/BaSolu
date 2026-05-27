@@ -4,7 +4,8 @@
 @using BlazorBootstrap
 @using Blazored.LocalStorage
 @using GxShared.Helpers
-@using GxPilo.Services
+@using GxStk.Components.Onlne
+@using GxStk.Services
 @using Simple.OData.Client
 @using AutoMapper
 @using GxShared.GxDtos
@@ -30,35 +31,46 @@
             }
         </InputSelect>
         <label>G.session</label>
-        <InputSelect @bind-Value="IMySes">
+        <InputSelect @bind-Value="IGpSes">
             @foreach (var ses in GSesios)
             {
-                <option value="@ses.Elea">@ses.Liba</option>
+                <option value="@ses.Otyp">@ses.Liba</option>
             }
         </InputSelect>  
     </div>
     <Button Color="ButtonColor.Success" @onclick="() => StartAdd()">Add New Session</Button>
     @if (isAdding)
     {
+        // calcul/cumul prise variables defaults:
+        // -//auto-manu 
+        // -//an-mois-jour
+        // si auto et an prevaaaa + (1)
+        // si auto et mois prevmm + (1)
+        // si auto et jour prevjj + (1)
+        // si manu et an saisir aaaa + (1)
+        // si manu et mois saisir mm + (1)
+        // si manu et jour saisir jj + (1)
+        // -session a ouvrir : clcaaaammxxx
         <div class="mt-3">
-            <InputText @bind-Value="draftSes.Liba" placeholder="Label" />
-            <InputDate @bind-Value="draftSes.Dval" placeholder="Debut" />
-            <InputDate @bind-Value="draftSes.Fval" placeholder="Fin" />
+            <InputText @bind-Value="draftSes.Liba" placeholder="Label" />        
+            <InputDate @bind-Value="draftSes.Ddat" placeholder="Debut" />
+            <InputDate @bind-Value="draftSes.Fdat" placeholder="Fin" />
+            
             <Button Color="ButtonColor.Success" @onclick="() => SaveAdd()">Add</Button>
             <Button Color="ButtonColor.Secondary" @onclick="() => CancelAdd()">Cancel</Button>
         </div>
     }
-    @if (DaExos.Any())
+    @if (DaSess.Any())
     {
-        <Grid TItem="GsgfixDto"
-              Data="@DaExos"
+        <Grid TItem="GsesioDto"
+              Data="@DaSess.Where(s => s.Igpe == IGpSes).ToList()"
               AllowPaging="true"
               Responsive="true">
             <GridColumns>
-                <GridColumn TItem="GsgfixDto" HeaderText="No" Class="xcol1">
-                    <ChildContent Context="item">@item.Elea</ChildContent>
+                <GridColumn TItem="GsesioDto" HeaderText="No" Class="xcol1">
+                    <ChildContent Context="item">@item.Id</ChildContent>
                 </GridColumn>
-                <GridColumn TItem="GsgfixDto" HeaderText="Designation" Class="xcol3">
+                <GridColumn TItem="GsesioDto" HeaderText="Designation" Class="xcol3">
                     <ChildContent Context="item">
                         @if (editRowguid == item.Rowguid)
                         {
@@ -70,49 +82,55 @@
                         }
                     </ChildContent>
                 </GridColumn>
-                <GridColumn TItem="GsgfixDto" HeaderText="Type" Class="xcol1">
+                <GridColumn TItem="GsesioDto" HeaderText="Type" Class="xcol1">
                     <ChildContent Context="item">
-                        @if (editRowguid == item.Rowguid)
+                        @* @if (editRowguid == item.Rowguid)
                         {
-                            <InputSelect @bind-Value="draftSes.Etyp" class="me-3" style="width:auto">
-                                <option value="1">aaaamm</option>
-                                <option value="2">aaaa</option>
+                            <InputSelect @bind-Value="draftSes.Otyp" class="me-3" style="width:auto" disabled>
+                                <option value="1">param</option>
+                                <option value="2">accueil</option>
+                                <option value="3">saisies</option>
+                                <option value="4">calculs</option>
+                                <option value="5">analyses</option>
                             </InputSelect>
                         }
                         else
-                        {
-                            <InputSelect @bind-Value="draftSes.Etyp" class="me-3" style="width:auto" disabled>
-                                <option value="1">aaaamm</option>
-                                <option value="2">aaaa</option>
+                        { *@
+                            <InputSelect @bind-Value="draftSes.Igpe" class="me-3" style="width:auto" disabled>
+                                <option value="1">param</option>
+                                <option value="2">accueil</option>
+                                <option value="3">saisies</option>
+                                <option value="4">calculs</option>
+                                <option value="5">analyses</option>
                             </InputSelect>
-                        }
+                        @* } *@
                     </ChildContent>
                 </GridColumn>
-                <GridColumn TItem="GsgfixDto" HeaderText="Depart" Class="xcol1">
+                <GridColumn TItem="GsesioDto" HeaderText="Depart" Class="xcol1">
                     <ChildContent Context="item">
                         @if (editRowguid == item.Rowguid)
                         {
-                            <InputDate @bind-Value="draftSes.Dval" />
+                            <InputDate @bind-Value="draftSes.Ddat" />
                         }
                         else
                         {
-                            @item.Dval?.ToShortDateString()
+                            @item.Ddat?.ToShortDateString()
                         }
                     </ChildContent>
                 </GridColumn>
-                <GridColumn TItem="GsgfixDto" HeaderText="Fin" Class="xcol1">
+                <GridColumn TItem="GsesioDto" HeaderText="Fin" Class="xcol1">
                     <ChildContent Context="item">
                         @if (editRowguid == item.Rowguid)
                         {
-                            <InputDate @bind-Value="draftSes.Fval" />
+                            <InputDate @bind-Value="draftSes.Fdat" />
                         }
                         else
                         {
-                            @item.Fval?.ToShortDateString()
+                            @item.Fdat?.ToShortDateString()
                         }
                     </ChildContent>
                 </GridColumn>
-                <GridColumn TItem="GsgfixDto" HeaderText="Actions">
+                <GridColumn TItem="GsesioDto" HeaderText="Actions">
                     <ChildContent Context="item">
                         @if (editRowguid == item.Rowguid)
                         {
@@ -232,15 +250,19 @@
     public EventCallback<int> NbChangesChanged { get; set; }
 
 
-    private int IMyExo = 0, IMySes = 0;
+    private int IMyExo = 0, IGpSes = 0;
+    //exo-session:saisie-Otyp1saisie
+    private List<Gpvar> LsVars = new();
+    private Gpvar inExo = new();
+    //private GsesioDto inSes = new();
     private List<Gpvar> LsExos = new();
     private List<Gpvar> GSesios = new();
     //[Parameter] public ItemClientService ItemService { get; set; }
     //[Parameter] public StockClientService StockService { get; set; }
-    private List<GsgfixDto> DaExos = new();
+    private List<GsesioDto> DaSess = new();
     private Guid? editRowguid;
     private bool isAdding = false;
-    private GsgfixDto draftSes = new();
+    private GsesioDto draftSes = new();
 
     private void CancelAdd() => isAdding = false;
 
@@ -263,41 +285,49 @@
             // }
             LsExos = toChild.LsVars.Where(v => v.Gvars == 11).ToList();
             GSesios = toChild.LsVars.Where(v => v.Gvars == 12).ToList();
+            //exo-session:saisie-Otyp1saisie
+            LsVars = toChild.LsVars;
+            inExo = LsVars.Where(v => v.Gvars == 11 && v.Itb == 1 && v.Otyp == 1 && v.Eta == 1).FirstOrDefault();
+            //inSes = LsVars.Where(v => v.Gvars == 12 && v.Itb == 1 && v.Eta == 1).FirstOrDefault();
             // //LsVars = toChild.LsVars;
             // LsFixes = toChild.LsFixes;
             //LsDoms = toChild.LsFixes.Where(ut => ut.Gvars == 36 && ut.Itb == 4 && ut.Gp1 == 3 && ut.Elea != 0).ToList();
             //LsDoms = LsFixes.Where(ut => ut.Gvars == 36 && ut.Itb == 4 && ut.Gp1 == 3 && ut.Elea != 0).ToList();
             //LsSites = toChild.LsSites;
             //_lgcdu = 3;
-            DaExos = curOrga?.Gsgfixes.Where(f => f.Gvars == 11).ToList();
+            DaSess = curOrga?.Gsesios.ToList();
         }
         catch (Exception ex)
         {
             Console.WriteLine($"22error loading atr-Stk: {ex.Message}");
         }
     }
-    private void StartEdit(GsgfixDto atr)
+    private void StartEdit(GsesioDto atr)
     {
         editRowguid = atr.Rowguid;
-        draftSes = new GsgfixDto { Xseq = atr.Xseq, Liba = atr.Liba, Atyp = atr.Atyp, Rowguid = atr.Rowguid };
+        draftSes = new GsesioDto { Id = atr.Id, Liba = atr.Liba, Igpe = atr.Igpe, Rowguid = atr.Rowguid };
     }
 
-    private async Task SaveEdit(GsgfixDto atr)
+    private async Task SaveEdit(GsesioDto atr)
     {
         atr.Liba = draftSes.Liba;
-        atr.Atyp = draftSes.Atyp;
+        atr.Igpe = draftSes.Igpe;
+        atr.Refa = draftSes.Refa;
+        atr.Ddat = draftSes.Ddat;
+        atr.Fdat = draftSes.Fdat;
         // Register update with OData context
         var key = GetEntityKey(atr); // helper to extract PK
-        _guard.TrackUpdate("Gsgfixes", key, atr);
+        _guard.TrackUpdate("Gsesios", key, atr);
+        DaSess.Insert(0, atr);
         editRowguid = null;
         await NotifyPendingChanges();
     }
 
     private void CancelEdit() => editRowguid = null;
 
-    private async Task DeleteAttribute(GsgfixDto atr)
+    private async Task DeleteAttribute(GsesioDto atr)
     {
-        curOrga.Gsgfixes.Remove(atr);
+        curOrga.Gsesios.Remove(atr);
 
         // Register delete with OData context
         // Extract PK using your helper
@@ -305,24 +335,33 @@
 
         // Queue delete in guard
         //_guard.TrackDelete<TDto>(GetEntitySetName<TDto>(), key);
-        _guard.TrackDelete("Gsgfixes", key);
+        _guard.TrackDelete("Gsesios", key);
         Console.WriteLine($"🗑️ {atr.Liba} queued for delete");
-        
+
         await NotifyPendingChanges();
     }
 
-    private void StartAdd()
+    private async Task StartAdd()
     {
         isAdding = true;
-        draftSes = new GsgfixDto();
+        draftSes = new GsesioDto();
+        //draftSes.Liba = await calCess(); //saisieaaaammxxx
     }
 
     private async Task SaveAdd()
     {
         draftSes.Rowguid = Guid.NewGuid();
         draftSes.Idorg = curOrga.Idorg;
+        // draftSes.Gvars = 13; //sessions
+        // draftSes.Itb = IGpSes; //parent
+        draftSes.Igpe = IGpSes; //1accueil2paras...
+
+        draftSes.Refa = await calCess(); 
+
+        //draftSes.Abg = toChild.inExo.Scdrub ?? "EXO";//exercice
+        //draftSes.Etyp = curOrga.; //aaaamm
         // Register add with OData context
-        _guard.TrackInsert("Gsgfixes", draftSes);
+        _guard.TrackInsert("Gsesios", draftSes);
         Console.WriteLine($"➕ NEW {draftSes.Liba} → TrackInsert");
         isAdding = false;
         await NotifyPendingChanges();
@@ -331,8 +370,8 @@
     {
         switch (entity)
         {
-            case GsgfixDto pln:
-                return pln.Xseq;
+            case GsesioDto pln:
+                return pln.Id;
             // case RubhieDto rub:
             //     return rub.Id;
             // case RubpstDto fmt:
@@ -340,6 +379,12 @@
             default:
                 throw new InvalidOperationException($"Unknown entity type {typeof(TDto).Name}");
         }
+    }
+    private async Task<string> calCess()
+    {
+        var exo = toChild.inExo?.Abg ?? "EXO?";
+        var ses = GSesios.LastOrDefault(s => s.Otyp == IGpSes)?.Liba ?? "SES?";
+        return await Task.FromResult($"{exo}_{ses}");
     }
     // Notify guard/UI of pending changes
     private async Task NotifyPendingChanges()

@@ -1,5 +1,5 @@
-﻿using GxShared.Formulas.ForaContext;
-using GxShared.Formulas.ForaModels;
+﻿using GxFormula.ForaContext;
+using GxFormula.ForaModels;
 
 using GxShared.GxDtos;
 

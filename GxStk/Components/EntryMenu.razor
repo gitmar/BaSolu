@@ -144,7 +144,7 @@ else
     public List<Gplan> LsPlans = new();
     public List<Gpvar> LtTabls = new();
     public List<Gpvar> LsTabls = new();
-    private int _gIdTie = 0, _chxGpe = 0, _chxMenu = 1;
+    private int _chxGpe = 0, _chxMenu = 1;
 
     //modal management
     private string SidebarStyle = "width: 200px;";
@@ -158,7 +158,7 @@ else
             if (!authState.User.Identity.IsAuthenticated) return;
             // Load lightweight user data FIRST
             _usrBag = await _sessionContext.GetUserbagAsync();
-            _gIdTie = _usrBag.Usorga.Gdtie;
+            //_gIdTie = _usrBag.Usorga.Gdtie;
             LsVars = _usrBag.Usorga.Uvars.ToList();
             LsFixes = _usrBag.Ufixes.ToList();
             LsPlans = _usrBag.Usorga.Uplns.Where(pl => pl.Ptyp == 2 || pl.Ptyp == 3 || pl.Ptyp == 4).ToList();

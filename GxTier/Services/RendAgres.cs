@@ -13,6 +13,23 @@ namespace GxTie.Services
         {
             _clieManager = clieManager;
         }
+
+        public async Task<List<Gsedat>> LoadOrgaSessios()
+        {
+            //FmtPsts
+            var json = await _clieManager.SendRequestAsync("AuthClient", HttpMethod.Get, "lgauth/allsesios");
+            var result = JsonConvert.DeserializeObject<List<Gsedat>>(json);
+            if (result.Any())
+            {
+                Console.WriteLine($"Nb sessions : {result.Count}");
+                return result.ToList();
+            }
+            else
+            {
+                Console.WriteLine("Nb sessions : null");
+                return new();
+            }
+        }
         public async Task<List<Gpdivh>> LoadOrgaPostes()
         {
             //FmtPsts

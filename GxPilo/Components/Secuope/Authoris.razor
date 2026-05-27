@@ -1,0 +1,467 @@
+﻿@page "/authoris"
+@layout SecuMenu
+
+@using BlazorBootstrap
+@using Blazored.LocalStorage
+@using GxShared.Helpers
+@using GxPilo.Services
+@using Simple.OData.Client
+@using AutoMapper
+@using GxShared.GxDtos
+@using GxShared.Interfaces
+@using GxShared.Sess
+@using GxShared.Others
+@using GxPilo.Components.Secuope
+@* @using Microsoft.EntityFrameworkCore *@
+@using Newtonsoft.Json
+
+@inject ILocalStorageService _localStorage
+@inject NavigationManager _navManager
+@inject HttpClientService _clieManager
+@inject RendAgres _rendAgres
+@inject IMapper Mapper
+@inject IJSRuntime _jsRun
+
+    <div class="container mt-3">
+        @* <h3>Autorisations</h3> *@
+        <div class="d-flex align-items-center gap-2 mb-2">
+            <label>G.ope:</label>
+            <InputSelect id="opId" @bind-Value="curGope">
+                <option value="0">chx.?</option>
+                <option value="1">pilotage</option>
+                <option value="2">personne</option>
+                <option value="3">matiere</option>
+            </InputSelect>
+            <label>Utilisateur:</label>
+            <InputSelect id="iUsr" @bind-Value="curUsId">
+                <option value="0">chx.?</option>
+                @foreach (var ur in allUsers)
+                {
+                    <option value="@ur.Id">@ur.Iele - @ur.Nom @ur.Pnom</option>
+                }
+            </InputSelect>
+        </div>
+    <Button Color="ButtonColor.Success" @onclick="() => StartAdd()">Add New Autorisation</Button>
+    @if (isAdding)
+    {
+        <div class="row mt-3">
+            <InputSelect @bind-Value="@curGmenu" style="width:auto">
+                <option value="0">chx.?</option>
+                @foreach (var um in _lsOperats.Where(o => o.Itb == curGope && o.Gp1 != 0 && o.Gp2 == 0).ToList())
+                {
+                    <option value="@um.Gp1">@um.Liba</option>
+                }
+            </InputSelect>
+            <InputSelect @bind-Value="@curSmenu" style="width:auto">
+                <option value="0">chx.?</option>
+                @foreach (var um in _lsOperats.Where(o => o.Itb == curGope && o.Gp1 == curGmenu && o.Gp2 != 0 && o.Gp3 == 0).ToList())
+                {
+                    <option value="@um.Gp2">@um.Liba</option>
+                }
+            </InputSelect>
+        </div>
+        <div class="d-flex flex-row mt-3">
+            @if (curGope == 2 || curGope == 3)
+            {
+                <InputSelect @bind-Value="draftExo.Ihie" style="width:auto">
+                    <option value="0">chx.?</option>
+                    @foreach (var ur in authDivs)
+                    {
+                        <option value="@ur.Ihie">@ur.Liba</option>
+                    }
+                </InputSelect>
+            }
+            <InputSelect @bind-Value="draftExo.Iope" style="width:auto">
+                <option value="0">chx.?</option>
+                @foreach (var ur in _lsOperats.Where(o => o.Itb == curGope && o.Gp1 == curGmenu && o.Gp2 == curSmenu && o.Gp3 != 0).ToList())
+                {
+                    <option value="@ur.Gp3">@ur.Liba</option>
+                }
+            </InputSelect>
+            <div class="flex-wrap">
+                <InputCheckbox @bind-Value="draftExo.CanRead" /> <span class="me-2">Lect.</span>
+                <InputCheckbox @bind-Value="draftExo.CanWrite" /> <span class="me-2">Écrit.</span>
+                <InputCheckbox @bind-Value="draftExo.CanUpdate" /> <span class="me-2">Modif.</span>
+                <InputCheckbox @bind-Value="draftExo.CanDelete" /> <span class="me-2">Suppr.</span>
+                <InputCheckbox @bind-Value="draftExo.CanAll"
+                               @onchange="() => ToggleAll(draftExo)" /> <span class="me-2">Tout</span>
+            </div>
+            <div class="col-md-2">
+                <Button Color="ButtonColor.Success" @onclick="() => SaveAdd()">Add</Button>
+                <Button Color="ButtonColor.Secondary" @onclick="() => CancelAdd()">Cancel</Button>
+            </div>
+        </div>
+    }
+    @if (DaAuths.Any())
+    {
+        <Grid TItem="GsauthDto"
+              Data="@DaAuths.Where(a => a.Otyp == 1).ToList()"
+              AllowPaging="true"
+              Responsive="true">
+            <GridColumns>
+                <GridColumn TItem="GsauthDto" HeaderText="No" Class="xcol1">
+                    <ChildContent Context="item">@item.Elea</ChildContent>
+                </GridColumn>
+                <GridColumn TItem="GsauthDto" HeaderText="Division" Class="xcol1">
+                    <ChildContent Context="item">
+                        @if (editRowguid == item.Rowguid)
+                        {
+                            <InputDate @bind-Value="draftExo.Ihie" />
+                        }
+                        else
+                        {
+                            @item.Ihie
+                        }
+                    </ChildContent>
+                </GridColumn>
+                <GridColumn TItem="GsauthDto" HeaderText="Operateur" Class="xcol3">
+                    <ChildContent Context="item">
+                        @if (editRowguid == item.Rowguid)
+                        {
+                            <InputText @bind-Value="draftExo.Usrid" />
+                        }
+                        else
+                        {
+                            @item.Usrid
+                        }
+                    </ChildContent>
+                </GridColumn>
+                <GridColumn TItem="GsauthDto" HeaderText="oper" Class="xcol1">
+                    <ChildContent Context="item">
+                        @if (editRowguid == item.Rowguid)
+                        {
+                            <InputSelect @bind-Value="draftExo.Iope" class="me-3" style="width:auto">
+                                <option value="1">??</option>
+                                <option value="2">???</option>
+                            </InputSelect>
+                        }
+                        else
+                        {
+                            <InputSelect @bind-Value="draftExo.Iope" class="me-3" style="width:auto" disabled>
+                                <option value="1">??</option>
+                                <option value="2">???</option>
+                            </InputSelect>
+                        }
+                    </ChildContent>
+                </GridColumn>
+                <GridColumn TItem="GsauthDto" HeaderText="Tache" Class="xcol1">
+                    <ChildContent Context="item">
+                        @if (editRowguid == item.Rowguid)
+                        {
+                            <InputDate @bind-Value="draftExo.Itach" />
+                        }
+                        else
+                        {
+                            @item.Itach
+                        }
+                    </ChildContent>
+                </GridColumn>
+                <GridColumn TItem="GsauthDto" HeaderText="@nameof(draftExo.Iact)" Class="xcol2">
+                    <ChildContent Context="item">
+                        @if (editRowguid == item.Rowguid)
+                        {
+                            <div class="d-flex flex-row flex-wrap">
+                                <InputCheckbox @bind-Value="item.CanRead" /> <span class="me-2">Lect.</span>
+                                <InputCheckbox @bind-Value="item.CanWrite" /> <span class="me-2">Écrit.</span>
+                                <InputCheckbox @bind-Value="item.CanUpdate" /> <span class="me-2">Modif.</span>
+                                <InputCheckbox @bind-Value="item.CanDelete" /> <span class="me-2">Suppr.</span>
+                                <InputCheckbox @bind-Value="item.CanAll" /> <span class="me-2">Tout</span>
+                            </div>
+                        } else
+                        {
+                            <div class="d-flex flex-row flex-wrap">
+                                @item.CanRead <span class="me-2">Lect.</span>
+                                @item.CanWrite <span class="me-2">Écrit.</span>
+                                @item.CanUpdate <span class="me-2">Modif.</span>
+                                @item.CanDelete <span class="me-2">Suppr.</span>
+                                @item.CanAll <span class="me-2">Tout</span>
+                            </div>
+                        }
+                    </ChildContent>
+                </GridColumn>
+                <GridColumn TItem="GsauthDto" HeaderText="Actions">
+                    <ChildContent Context="item">
+                        @if (editRowguid == item.Rowguid)
+                        {
+                            <Button Color="ButtonColor.Primary" Size="ButtonSize.Small"
+                                    @onclick="() => SaveEdit(item)">
+                                Save
+                            </Button>
+                            <Button Color="ButtonColor.Secondary" Size="ButtonSize.Small"
+                                    @onclick="() => CancelEdit()">
+                                Cancel
+                            </Button>
+                        }
+                        else
+                        {
+                            @if (item.Eta == 0)
+                            { //nouveau
+                                <Button Color="ButtonColor.Warning" Size="ButtonSize.Small"
+                                        @onclick="() => StartEdit(item)">
+                                    Ouvrir
+                                </Button>
+                                <Button Color="ButtonColor.Danger" Size="ButtonSize.Small"
+                                        @onclick="() => DeleteAttribute(item)">
+                                    Delete
+                                </Button>
+                            }
+                            else if (item.Eta == 1)
+                            {
+                                <Button Color="ButtonColor.Danger" Size="ButtonSize.Small"
+                                        @onclick="() => DeleteAttribute(item)">
+                                    Cloturer
+                                </Button>
+                            }
+                            else if (item.Eta == 2)
+                            {
+                                <Button Color="ButtonColor.Warning" Size="ButtonSize.Small"
+                                        @onclick="() => DeleteAttribute(item)">
+                                    Archiver
+                                </Button>
+                            }
+                            else
+                            {
+                                <Button Color="ButtonColor.Warning" Size="ButtonSize.Small"
+                                        @onclick="() => DeleteAttribute(item)">
+                                    Visible
+                                </Button>
+                            }
+                        }
+                    </ChildContent>
+                </GridColumn>
+            </GridColumns>
+        </Grid>
+    }
+</div>
+<style>
+    .xcolx {
+        width: 40px !important;
+    }
+
+    .xcol1 {
+        width: 60px;
+    }
+
+    .xcol2 {
+        width: 120px;
+    }
+
+    .xcol3 {
+        width: 180px;
+    }
+
+    .xcol4 {
+        width: 240px;
+    }
+        /* Ensure inputs inside these columns fill the width */
+        .xcol1 input,
+        .xcol2 input,
+        .xcol3 input,
+        .xcol4 input {
+            width: 100%;
+            box-sizing: border-box; /* prevents overflow due to padding/border */
+        }
+
+    .editing-row {
+        pointer-events: none; /* Blocks all clicks on row */
+    }
+
+        .editing-row * {
+            pointer-events: auto; /* Re-enables clicks on buttons/inputs */
+        }
+</style>
+@code {
+    private bool isLoading = true;
+
+    [Parameter]
+    public IODataClient _InODaClient { get; set; }
+    [Parameter]
+    public GxorgaDto curOrga { get; set; }
+    [Parameter]
+    public int Orig { get; set; }
+    [Parameter]
+    public ChildVars toChild { get; set; }
+    [Parameter]
+    public int toMenu { get; set; }
+    [Parameter]
+    public RenderFragment ChildContent { get; set; }
+    [Parameter]
+    public List<Gpdivh> authDivs { get; set; }
+
+    // Guard
+    [Parameter]
+    public IPendingChangesGuard _guard { get; set; }
+    [Parameter]
+    public EventCallback<PendingState> OnPendingStateChanged { get; set; }
+    [Parameter]
+    public int NbChanges { get; set; }
+    [Parameter]
+    public EventCallback<int> NbChangesChanged { get; set; }
+
+    //[Parameter] public ItemClientService ItemService { get; set; }
+    //[Parameter] public StockClientService StockService { get; set; }
+    private List<GsauthDto> DaAuths = new();
+    private Guid? editRowguid;
+    private bool isAdding = false;
+    private int curGope = 0, curGmenu = 0, curSmenu = 0;
+    private string curUsId = "";
+    private List<Gpfixe> _lsOperats = new();
+    private List<Gxuser> allUsers = new();
+
+    private GsauthDto draftExo = new();
+
+    private void CancelAdd() => isAdding = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        isLoading = true;
+        try
+        {
+            // if (toChild == null || curOrga == null)
+            // {
+            //     Console.WriteLine("Missing parent data");
+            //     return;
+            // }
+            // isAuthenticated = toChild.isAuthenticated;
+            // authUser = toChild.authUser;
+            // if (!isAuthenticated)
+            // {
+            //     Imessage = "CONNEXION, Utilisateur non authentifie";
+            //     return;
+            // }
+            // //LsVars = toChild.LsVars;
+            // LsFixes = toChild.LsFixes;
+            //LsDoms = toChild.LsFixes.Where(ut => ut.Gvars == 36 && ut.Itb == 4 && ut.Gp1 == 3 && ut.Elea != 0).ToList();
+            //LsDoms = LsFixes.Where(ut => ut.Gvars == 36 && ut.Itb == 4 && ut.Gp1 == 3 && ut.Elea != 0).ToList();
+            //LsSites = toChild.LsSites;
+            //_lgcdu = 3;
+            DaAuths = curOrga?.Gsauths.ToList();
+            _lsOperats = toChild.LsFixes.Where(f => f.Gvars == 43).ToList();
+            allUsers = await _rendAgres.LoadOrgaUsers();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"22error loading atr-Stk: {ex.Message}");
+        }
+    }
+    private void StartEdit(GsauthDto atr)
+    {
+        editRowguid = atr.Rowguid;
+        draftExo = new GsauthDto { Id = atr.Id, Usrid = atr.Usrid, Iact = atr.Iact, Iope = atr.Iope, Rowguid = atr.Rowguid };
+    }
+
+    private async Task SaveEdit(GsauthDto atr)
+    {
+        atr.Usrid = draftExo.Usrid;
+        atr.Iact = draftExo.Iact;
+        atr.Iope = draftExo.Iope;
+        // Register update with OData context
+        var key = GetEntityKey(atr); // helper to extract PK
+        _guard.TrackUpdate("Gsauths", key, atr);
+        editRowguid = null;
+        await NotifyPendingChanges();
+    }
+
+    private void CancelEdit() => editRowguid = null;
+
+    private async Task DeleteAttribute(GsauthDto atr)
+    {
+        curOrga.Gsauths.Remove(atr);
+
+        // Register delete with OData context
+        // Extract PK using your helper
+        var key = GetEntityKey(atr);
+
+        // Queue delete in guard
+        //_guard.TrackDelete<TDto>(GetEntitySetName<TDto>(), key);
+        _guard.TrackDelete("Gsauths", key);
+        Console.WriteLine($"🗑️ {atr.Usrid} queued for delete");
+
+        await NotifyPendingChanges();
+    }
+
+    private void StartAdd()
+    {
+        isAdding = true;
+        draftExo = new GsauthDto
+        {
+            Rowguid = Guid.NewGuid(),
+            Idorg = curOrga.Idorg,
+            Otyp = 1, //1auth2jetons
+            Usrid = curUsId,
+            Agpe = curGope,
+            Amnu = curGmenu,
+            Asmnu = curSmenu
+
+        };
+
+    }
+
+    private async Task SaveAdd()
+    {
+        draftExo.Rowguid = Guid.NewGuid();
+        // Register add with OData context
+        _guard.TrackInsert("Gsauths", draftExo);
+        Console.WriteLine($"➕ NEW {draftExo.Usrid} → TrackInsert");
+        isAdding = false;
+        await NotifyPendingChanges();
+    }
+    private object GetEntityKey<TDto>(TDto entity)
+    {
+        switch (entity)
+        {
+            case GsauthDto pln:
+                return pln.Id;
+            // case RubhieDto rub:
+            //     return rub.Id;
+            // case RubpstDto fmt:
+            //     return fmt.Id;
+            default:
+                throw new InvalidOperationException($"Unknown entity type {typeof(TDto).Name}");
+        }
+    }
+    private void ToggleAll(GsauthDto row)
+    {
+        if (row.CanAll)
+        {
+            row.CanRead = true;
+            row.CanWrite = true;
+            row.CanUpdate = true;
+            row.CanDelete = true;
+        }
+        else
+        {
+            row.CanRead = false;
+            row.CanWrite = false;
+            row.CanUpdate = false;
+            row.CanDelete = false;
+        }
+        UpdateIact(row);
+    }
+    private void UpdateIact(GsauthDto row)
+    {
+        // Example: encode choices into an int
+        // You can adapt this to your own mapping scheme
+        if (row.CanAll)
+            row.Iact = 5;
+        else if (row.CanRead && row.CanWrite && row.CanUpdate && row.CanDelete)
+            row.Iact = 5;
+        else if (row.CanRead) row.Iact = 1;
+        else if (row.CanWrite) row.Iact = 2;
+        else if (row.CanUpdate) row.Iact = 3;
+        else if (row.CanDelete) row.Iact = 4;
+        else row.Iact = 0;
+    }
+    // Notify guard/UI of pending changes
+    private async Task NotifyPendingChanges()
+    {
+        await OnPendingStateChanged.InvokeAsync(new PendingState(
+            _guard.HasPendingChanges(),
+            _guard.GetPendingChangesCount()
+        ));
+
+        NbChanges = _guard.GetPendingChangesCount();
+        await NbChangesChanged.InvokeAsync(NbChanges);
+        StateHasChanged();
+    }
+}

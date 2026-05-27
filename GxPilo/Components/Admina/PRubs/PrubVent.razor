@@ -25,7 +25,7 @@
 @using Newtonsoft.Json
 
 @inject ILocalStorageService _localStorage
-@inject NavigationManager _navmanager
+@inject NavigationManager _navManager
 @inject HttpClientService _clieManager
 @inject IMapper Mapper
 @inject IJSRuntime _jsRun
@@ -176,7 +176,10 @@ else
                                                 {
                                                     <button class="btn btn-primary btn-sm @(isAddPln || isEdtPln ? "disabled-action" : "")"
                                                             @onclick="StartPlnNew">
-                                                        ➕ Add New
+                                                        <span style="display:inline-flex; align-items:center; gap:2px;">
+                                                            <span>➕</span>
+                                                            <span>Add</span>
+                                                        </span>
                                                     </button>
                                                 }
                                             </HeaderContent>
@@ -482,7 +485,10 @@ else
                                                                             <button class="btn btn-primary btn-sm
                                                                                  @(AllowMultipleEdits || !isAddRub ? "" : "disabled-action")"
                                                                                     @onclick="() => StartRubNew(selectedPln)">
-                                                                                ➕ Add
+                                                                                <span style="display:inline-flex; align-items:center; gap:2px;">
+                                                                                    <span>➕</span>
+                                                                                    <span>Add</span>
+                                                                                </span>
                                                                             </button>
                                                                         }
                                                                     </HeaderContent>
@@ -592,7 +598,10 @@ else
                                                                                     }
                                                                                 </InputSelect>
                                                                                 <button class="btn btn-primary btn-sm" @onclick="() => StartFmtNew(selectedRub)">
-                                                                                    ➕ Add
+                                                                                    <span style="display:inline-flex; align-items:center; gap:2px;">
+                                                                                        <span>➕</span>
+                                                                                        <span>Add</span>
+                                                                                    </span>
                                                                                 </button>
                                                                             </div>
                                                                         </div>
@@ -1099,7 +1108,21 @@ else
             StateHasChanged();
         }
     }
-
+    // and call this in OnParametersSet
+    protected override void OnParametersSet()
+    {
+        SubscribeToGuard();
+    }
+    // set up subscription locally
+    private void SubscribeToGuard()
+    {
+        _guard.OnChanges += async () =>
+        {
+            NbChanges = _guard.GetPendingChangesCount();
+            await NbChangesChanged.InvokeAsync(NbChanges);
+            StateHasChanged();
+        };
+    }
     private async Task StartPlnNew()
     {
         Console.WriteLine("🚨 StartPlnNew");
@@ -1173,8 +1196,8 @@ else
             Iui = lsnb, //nextSeq(2),
             Torub = 0,
             Utyp = IMyDom, //services
-            Sigrid = 0, //est grille
-            Gdact = 0, //declenche (ajt rubriq Actsaie)
+            //Sigrid = 0, //est grille
+            //Gdact = 0, //declenche (ajt rubriq Actsaie)
             Ustyp = 0, //de base
             Dtperi = 0, //toujours
             Liba = "",

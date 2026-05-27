@@ -1,0 +1,290 @@
+﻿@page "/affecta"
+
+@using GxShared.Helpers
+@using GxTie.Services
+@using GxShared.Sess
+@using GxShared.Others
+@using GxShared.GxDtos
+@using GxShared.Interfaces
+@using Simple.OData.Client
+@using Microsoft.EntityFrameworkCore;
+
+<h3>Internal Transfer</h3>
+
+<!-- Transfer header -->
+<div class="mb-3">
+    @*<label>Warehouse</label>
+     <InputSelect @bind-Value="curTransfer.">
+        @foreach (var dep in Departments)
+        {
+            <option value="@dep.Ihie">@dep.Liba</option>
+        }
+    </InputSelect> *@
+
+    <label>Date</label>
+    <InputDate @bind-Value="curTransfer.Tdate" />
+    <label>Type</label>
+    <InputSelect @bind-Value="curTransfer.Mtyp">
+        <option value="2">Inter</option>
+    </InputSelect>
+</div>
+
+<Button Color="ButtonColor.Success" @onclick="() => StartAdd()">Add New Line</Button>
+
+<Grid TItem="TiemvlneDto" Data="@curTransfer.Tiemvlnes" AllowPaging="true" Responsive="true">
+    <GridColumns>
+        <GridColumn TItem="TiemvlneDto" HeaderText="Item">
+            <ChildContent Context="line">
+                @if (editRowguid == line.Rowguid)
+                {
+                    <InputSelect @bind-Value="draftLine.Imvt">
+                        @foreach (var item in DaItems)
+                        {
+                            <option value="@item.Id">@item.Title</option>
+                        }
+                    </InputSelect>
+                }
+                else
+                {
+
+                    @DaItems.FirstOrDefault(i => i.Id == line.Imvt)?.Title
+                }
+            </ChildContent>
+        </GridColumn>
+
+        <GridColumn TItem="TiemvlneDto" HeaderText="From Location">
+            <ChildContent Context="line">
+                @if (editRowguid == line.Rowguid)
+                {
+                    <InputSelect @bind-Value="draftLine.Froloc">
+                        @foreach (var loc in OriginLocations)
+                        {
+                            <option value="@loc.Ihie">@loc.Liba</option>
+                        }
+                    </InputSelect>
+                }
+                else
+                {
+
+                    @OriginLocations.FirstOrDefault(l => l.Ihie == line.Froloc)?.Liba
+                }
+            </ChildContent>
+        </GridColumn>
+
+        <GridColumn TItem="TiemvlneDto" HeaderText="To Location">
+            <ChildContent Context="line">
+                @if (editRowguid == line.Rowguid)
+                {
+                    <InputSelect @bind-Value="draftLine.Toloc">
+                        @foreach (var loc in DestinationLocations)
+                        {
+                            <option value="@loc.Ihie">@loc.Liba</option>
+                        }
+                    </InputSelect>
+                }
+                else
+                {
+
+                    @DestinationLocations.FirstOrDefault(l => l.Ihie == line.Toloc)?.Liba
+                }
+            </ChildContent>
+        </GridColumn>
+
+        <GridColumn TItem="TiemvlneDto" HeaderText="Quantity">
+            <ChildContent Context="line">
+                @if (editRowguid == line.Rowguid)
+                {
+                    <InputNumber @bind-Value="draftLine.Qty" />
+                }
+                else
+                {
+
+                    @line.Qty
+                }
+            </ChildContent>
+        </GridColumn>
+
+        <GridColumn TItem="TiemvlneDto" HeaderText="Batch">
+            <ChildContent Context="line">
+                @if (editRowguid == line.Rowguid)
+                {
+                    <InputNumber @bind-Value="draftLine.Ibtch" />
+                }
+                else
+                {
+
+                    @line.Ibtch
+                }
+            </ChildContent>
+        </GridColumn>
+
+        <GridColumn TItem="TiemvlneDto" HeaderText="Actions">
+            <ChildContent Context="line">
+                @if (editRowguid == line.Rowguid)
+                {
+                    <Button Color="ButtonColor.Primary" @onclick="() => SaveEdit(line)">Save</Button>
+                    <Button Color="ButtonColor.Secondary" @onclick="() => CancelEdit()">Cancel</Button>
+                }
+                else
+                {
+                    <Button Color="ButtonColor.Warning" @onclick="() => StartEdit(line)">Edit</Button>
+                    <Button Color="ButtonColor.Danger" @onclick="() => DeleteLine(line)">Delete</Button>
+                }
+            </ChildContent>
+        </GridColumn>
+    </GridColumns>
+</Grid>
+
+@if (isAdding)
+{
+    <div class="mt-3">
+        <h5>New Line</h5>
+        <InputSelect @bind-Value="draftLine.Imvt">
+            @foreach (var item in DaItems)
+            {
+                <option value="@item.Id">@item.Title</option>
+            }
+        </InputSelect>
+        <InputSelect @bind-Value="draftLine.Froloc">
+            @foreach (var loc in OriginLocations)
+            {
+                <option value="@loc.Ihie">@loc.Liba</option>
+            }
+        </InputSelect>
+        <InputSelect @bind-Value="draftLine.Toloc">
+            @foreach (var loc in DestinationLocations)
+            {
+                <option value="@loc.Ihie">@loc.Liba</option>
+            }
+        </InputSelect>
+        <InputNumber @bind-Value="draftLine.Qty" placeholder="Quantity" />
+        <InputNumber @bind-Value="draftLine.Ibtch" placeholder="Batch" />
+        <Button Color="ButtonColor.Success" @onclick="() => SaveAdd()">Add</Button>
+        <Button Color="ButtonColor.Secondary" @onclick="() => CancelAdd()">Cancel</Button>
+    </div>
+}
+
+@code {
+    [Parameter] public IODataClient _InODaClient { get; set; }
+    [Parameter] public GxorgaDto curOrga { get; set; }
+    [Parameter] 
+    public List<Gpdivh> LsDivs { get; set; }
+    [Parameter]
+    public List<Gplan> LsPlans { get; set; }
+    [Parameter]
+    public List<Gtabl> EnsTbls { get; set; }
+   
+    [Parameter] public ChildVars toChild { get; set; }
+    [Parameter] public int toMenu { get; set; }
+    // [Parameter] public StockClientService stockService { get; set; }
+    // [Parameter] public ItemClientService itemService { get; set; }
+    [Parameter] public IPendingChangesGuard _guard { get; set; }
+    [Parameter] public EventCallback<PendingState> OnPendingStateChanged { get; set; }
+    [Parameter] public int NbChanges { get; set; }
+    [Parameter] public EventCallback<int> NbChangesChanged { get; set; }
+
+    private TiemvtDto curTransfer = new();
+    private TiemvlneDto draftLine = new();
+    private Guid? editRowguid;
+    private bool isAdding = false;
+
+    private List<TiemvtDto> DaItems = new();
+    //A verifier
+    //private List<TielocaDto> DaTielocas new();
+    private List<TiemvlneDto> DaTiemvlnes = new();
+    private HashSet<TiemvlneDto> SelDaTiemvs = new();
+
+    private List<Gpdivh> Departments = new();
+    private List<Gpdivh> OriginLocations = new();
+    private List<Gpdivh> DestinationLocations = new();
+    // private List<Divpst> OriginLocations =>
+    //     LsDivs.Where(d => d.Ihie == curTransfer.Fromhie)
+    //       .FirstOrDefault()?
+    //       .Divpsts?.ToList() ?? new List<Divpst>();
+
+    // private List<Divpst> DestinationLocations =>
+    //     LsDivs.Where(d => d.Ihie == curTransfer.Tohie)
+    //           .FirstOrDefault()?
+    //           .Divpsts?.ToList() ?? new List<Divpst>();
+  
+    protected override async Task OnInitializedAsync()
+    {
+        DaItems = curOrga.Tiemvts?.ToList() ?? new();
+        Departments = LsDivs; //await stockService.GetDepartmentsAsync();
+        //WarehouseLocations = await stockService.GetWarehousesAsync();
+
+        curTransfer.Rowguid = Guid.NewGuid();
+        curTransfer.Tdate = DateTime.Now;
+        curTransfer.Mtyp = 2; // Inter
+        curTransfer.Tiemvlnes = new();
+    }
+
+    private void StartAdd() { isAdding = true; draftLine = new TiemvlneDto(); }
+
+    private async Task SaveAdd()
+    {
+        draftLine.Rowguid = Guid.NewGuid();
+        draftLine.Imvt = curTransfer.Id;
+        _guard.TrackInsert("Tiemvlnes", draftLine);
+        curTransfer.Tiemvlnes.Add(draftLine);
+        isAdding = false;
+        await NotifyPendingChanges();
+    }
+
+    private void CancelAdd() => isAdding = false;
+
+    private void StartEdit(TiemvlneDto line)
+    {
+        editRowguid = line.Rowguid;
+        draftLine = new TiemvlneDto { Rowguid = line.Rowguid, Imvt = line.Imvt, Qty = line.Qty, Ibtch = line.Ibtch, Froloc = line.Froloc, Toloc = line.Toloc };
+    }
+
+    private async Task SaveEdit(TiemvlneDto line)
+    {
+        line.Imvt = draftLine.Imvt;
+        line.Qty = draftLine.Qty;
+        line.Ibtch = draftLine.Ibtch;
+        line.Froloc = draftLine.Froloc;
+        line.Toloc = draftLine.Toloc;
+        var key = GetEntityKey(draftLine); // helper to extract PK
+        _guard.TrackUpdate("Tiemvlnes", key, draftLine);
+        editRowguid = null;
+        await NotifyPendingChanges();
+    }
+
+    private void CancelEdit() => editRowguid = null;
+
+    private async Task DeleteLine(TiemvlneDto line)
+    {
+        curTransfer.Tiemvlnes.Remove(line);
+        // Extract PK using your helper
+        var key = GetEntityKey(line);
+        _guard.TrackDelete("Tiemvlnes", key);
+        Console.WriteLine($"🗑️ {line.Id} queued for delete");
+        await NotifyPendingChanges();
+    }
+    private object GetEntityKey<TDto>(TDto entity)
+    {
+        switch (entity)
+        {
+            case TiemvlneDto pln:
+                return pln.Id;
+            // case RubvarDto rub:
+            //     return rub.Id;
+            // case RubfmtDto fmt:
+            //     return fmt.Id;
+            default:
+                throw new InvalidOperationException($"Unknown entity type {typeof(TDto).Name}");
+        }
+    }
+    private async Task NotifyPendingChanges()
+    {
+        await OnPendingStateChanged.InvokeAsync(new PendingState(_guard.HasPendingChanges(), _guard.GetPendingChangesCount()));
+        NbChanges = _guard.GetPendingChangesCount();
+        await NbChangesChanged.InvokeAsync(NbChanges);
+        StateHasChanged();
+    }
+
+    // public async Task SaveAllChanges() { await curODContext.SaveChangesAsync(); await NotifyPendingChanges(); }
+    // public void CancelAllChanges() { _guard.RejectAllChanges(); NotifyPendingChanges(); }
+}

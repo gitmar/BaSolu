@@ -1,0 +1,296 @@
+﻿@page "/ptraitmenu"
+@inherits LayoutComponentBase
+@layout FreeLayout
+
+@using System.Security.Claims
+@using BlazorBootstrap
+@using Blazored.LocalStorage
+@using GxTie.Components.Paras
+@using GxTie.Services
+@using GxTie.StaticHelpers
+@using GxShared.Helpers
+@using GxShared.Sess
+@using Simple.OData.Client
+@using GxShared.GxDtos
+@using GxShared.Interfaces
+@using AutoMapper
+@using Newtonsoft.Json
+
+@implements IDisposable
+
+@inject NavigationManager _navManager
+@inject ILocalStorageService _localStorage
+@inject HttpClientService _clieManager
+@inject IODataClient _MyODaClient
+@inject SessionContextService _sessionContext
+@inject RendAgres _rendAgres
+@inject IPendingChangesGuard _guard
+@inject IJSRuntime _JsRUN
+@inject IMessageService _messageService
+
+@if (isLoading)
+{
+    <div class="text-center">
+        <Spinner Color="SpinnerColor.Primary" Size="SpinnerSize.Large" />
+        <p>ASTREINTES/Saisies Loading...</p>
+    </div>
+}
+else
+{
+    <div class="gx-screen-layout">
+        <div class="container gx-parent-container" style="height: 100vh;">
+            <div class="d-flex flex-column" style="height: 100%;">
+                <!-- Top Menu -->
+                <GxNavMenu BrandText="A24soft Gx-Solutions"
+                           MenuItems="@MenuItems"
+                           YaGroup="false"
+                           Groups="@Groupes"
+                           MenuSelected="@_chxMenu"
+                           MenuSelectedChanged="@SelMenu"
+                           GroupSelected="@_chxGpe"
+                           GroupSelectedChanged="@SelGpe"
+                           OnBack="@NavigateBack" />
+
+                <!-- Main Content -->
+                @if (this != null)
+                {
+                    @if (_chxMenu != 0 && toChild != null && curOrga != null)
+                    {
+                        @if (_chxMenu == 1)
+                        { //durables
+                
+                        }
+                        else if (_chxMenu == 2)
+                        { //echeancier
+                            <IctEches @ref="myiech"
+                                      toMenu="@_chxMenu"
+                                      @bind-NbChanges="_nbChanges"
+                                      _guard="_guard"
+                                      curOrga="@curOrga"
+                                      toChild="@toChild"
+                                      _InODaClient="@_MyODaClient">
+                                <ChildContent>
+                                </ChildContent>
+                            </IctEches>
+                        }
+                        else if (_chxMenu == 3)
+                        { 
+                          //ref="myapln"
+                        }
+                    }
+                }
+            </div>
+        </div>
+    </div>
+    <div class="alert alert-warning d-flex justify-content-between align-items-center py-1 px-2 position-fixed bottom-0 end-0"
+         style="background-color: transparent; z-index: 1050; max-width: 400px;">
+        <div class="d-flex gap-2 align-items-center">
+            <Button class="w-auto flex-grow-0 flex-shrink-0" Color="ButtonColor.Info" @onclick="SaveAllChanges"
+                    Enabled="@_guard.HasPendingChanges()">
+                Save All (@_guard.GetPendingChangesCount() changes)
+            </Button>
+            <Button class="w-auto flex-grow-0 flex-shrink-0" Color="ButtonColor.Secondary" @onclick="CancelAllChanges"
+                    Enabled="@_guard.HasPendingChanges()">
+                Cancel All
+            </Button>
+        </div>
+    </div>
+}
+
+@code {
+    private bool isLoading = true;
+    public GxorgaDto curOrga = new GxorgaDto();
+    public ChildVars toChild = new();
+
+    private IctEches myiech = new();
+   
+    [CascadingParameter]
+    private Task<AuthenticationState>? AuthState { get; set; }
+    public ClaimsPrincipal authUser;
+
+    //Guard
+    private int _nbChanges = 0;
+    private IDisposable? _locationHandler;
+    private int pendingCount => _guard.GetPendingChangesCount();
+    private int insertCount => _guard.GetInsertCount();
+    private int updateCount => _guard.GetUpdateCount();
+    private int deleteCount => _guard.GetDeleteCount();
+    private async Task CancelAllChanges()
+    {
+        Console.WriteLine("🗑️ CancelAllChanges START");
+        await _guard.CancelChanges();  // 🔥 AWAIT - blocks until done
+        _messageService.Show("✅ CancelAllChanges successfully", ToastType.Success);
+        StateHasChanged();
+        Console.WriteLine($"✅ CancelAllChanges END - Pending: {_guard.GetPendingChangesCount()}");
+    }
+    private async Task SaveAllChanges()
+    {
+        await _guard.FlushAsync();  // 🔥 AWAIT - blocks until done
+        _messageService.Show("✅ Saved successfully", ToastType.Success);
+        StateHasChanged();
+    }
+    //menus
+    private string strComp = "Saisie.DURABLES";
+    public List<GxMenuItem> MenuItems = new()
+    {
+        new GxMenuItem { Id = 1, Text = "Saisie.DURABLES", Icon = "bi bi-box-arrow-in-down" },
+        new GxMenuItem { Id = 2, Text = "Saisie.ECHEANCIER", Icon = "bi bi-house-door" },
+    };
+    public List<GxGroupe> Groupes = new();
+
+    public string Jmessage = "";
+    public Userbag _usrBag = new Userbag();
+    public List<Gpfixe> LsFixes = new();
+    public List<Gpdivh> LsDivs = new();
+    public List<Gpvar> LsVars = new();
+    public List<Gplan> LsPlans = new();
+    public List<Gpvar> LtTabls = new();
+    public List<Gpvar> LsTabls = new();
+    private int _chxGpe = 0, _chxMenu = 1;
+
+    //modal management
+    private string SidebarStyle = "width: 200px;";
+
+    protected override async Task OnInitializedAsync()
+    {
+        isLoading = true;
+        try
+        {
+            var authState = await AuthState;
+            if (!authState.User.Identity.IsAuthenticated) return;
+            // Load lightweight user data FIRST
+            _usrBag = await _sessionContext.GetUserbagAsync();
+            //_gIdTie = _usrBag.Usorga.Gdtie;
+            LsVars = _usrBag.Usorga.Uvars.ToList();
+            LsFixes = _usrBag.Ufixes.ToList();
+            LsPlans = _usrBag.Usorga.Uplns.Where(pl => pl.Ptyp == 2 || pl.Ptyp == 3 || pl.Ptyp == 4).ToList();
+            LtTabls = _usrBag.Usorga.Uvars.Where(tb => tb.Gvars == 4).ToList();
+            LsTabls = _usrBag.Usorga.Uvars.Where(tb => tb.Gvars == 5).ToList();
+            await LoadOrgaAsync(_usrBag.Idorg);
+
+            Console.WriteLine($"Usrbag plans : {_usrBag.Usorga.Uplns.Count()}");
+            toChild = new ChildVars
+            {
+                authUser = authState.User,
+                isAuthenticated = true,
+                LsDivs = await _rendAgres.LoadOrgaPostes(),
+                LsVars = LsVars.ToList(),
+                LsFixes = LsFixes.ToList(),
+                LsPlans = LsPlans.ToList(),
+                LsTabls = LsTabls.ToList()
+            };
+            _nbChanges = _guard.GetPendingChangesCount();  // Initial value
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        if (firstRender)
+        {
+            _locationHandler = _navManager.RegisterLocationChangingHandler(OnLocationChangingAsync);
+            //Console.WriteLine("📌 LocationChangingHandler registered");
+        }
+    }
+    private async Task LoadOrgaAsync(int key)
+    {
+        try
+        {
+            try
+            {
+                // curOrga = await _MyODaClient
+                //     .For<GxorgaDto>("Gxorgas")
+                //     .Key(key)
+                //     //.Expand(o => o.Plngens.Select(p => p.Rubvars))
+                //     //.Expand(o => o.Plngens.Select(p => p.Rubhies.Select(t => t.Rubpsts)))
+                //     .Expand(o => o.Plngens
+                //         .Select(p => new
+                //         {
+                //             p.Rubvars,
+                //             Rubhies = p.Rubhies.Select(t => t.Rubpsts)
+                //         }))
+                //     .FindEntryAsync();
+                curOrga = await _MyODaClient
+                    .For<GxorgaDto>("Gxorgas")
+                    .Key(key)
+                    .Expand("Plngens($expand=Rubvars,Rubhies($expand=Rubpsts))")
+                    .FindEntryAsync();
+                Console.WriteLine($"loadOrgaAsync completed :{curOrga?.Raison}");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Load error: {ex.Message}");
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex);
+        }
+    }
+    private async ValueTask OnLocationChangingAsync(LocationChangingContext context)
+    {
+        Console.WriteLine($"🌐 Intercepted: {context.TargetLocation}");
+
+        if (!_guard.HasPendingChanges())
+        {
+            Console.WriteLine("✅ Clean - allowing navigation");
+            return;
+        }
+
+        context.PreventNavigation();  // BLOCK navigation
+        Console.WriteLine($"🚫 Showing confirm dialog {context.TargetLocation}");
+
+        try
+        {
+            var save = await _JsRUN.InvokeAsync<bool>("confirm", "Save changes before leaving?");
+
+            if (save)
+            {
+                // 🔥 YES: SaveAllChanges() → Navigate away
+                await SaveAllChanges();
+                Console.WriteLine("💾 Saved - navigating away");
+                _navManager.NavigateTo(context.TargetLocation, forceLoad: false);
+            }
+            else
+            {
+                // 🔥 NO: STAY on page - NO CancelAllChanges()
+                Console.WriteLine("❌ User chose NO - staying on page");
+                // User stays - sees SaveAllChanges() / CancelAllChanges() buttons ENABLED
+                // They can now manually: SaveAllChanges() OR CancelAllChanges()
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"❌ Error: {ex.Message}");
+            // Safety: stay on page
+        }
+    }
+
+    private async Task SelMenu(int noM)
+    {
+        _chxMenu = noM;
+        if (_chxMenu == 1) strComp = $"Saisie.DURABLES";
+        if (_chxMenu == 2) strComp = $"Saisie.ECHEANCIER";
+        StateHasChanged();
+        await Task.Delay(1);
+    }
+    private async Task SelGpe(int noG)
+    {
+        _chxGpe = noG;
+        StateHasChanged();
+        Console.WriteLine("PAS 2");
+        await Task.Delay(1);
+    }
+    public void Dispose()
+    {
+        _locationHandler?.Dispose();
+    }
+
+    void NavigateBack()
+    {
+        _navManager.NavigateTo("/");
+    }
+  }

@@ -256,6 +256,16 @@ else
                                                             }
                                                         </ChildContent>
                                                     </GridColumn>
+                                                    <GridColumn TItem="Tiersp" HeaderText="Nouv.Fonct." Class="xcol1">
+                                                        <ChildContent Context="item">
+                                                            <InputSelect @bind-Value="item.Nwfonc" style="font-weight:bold">
+                                                            @foreach (var tob in EnsTbls.FirstOrDefault(t => t.Tref == 14)?.TbItems ?? new List<Gtvar>())
+                                                            {
+                                                                <option value="@tob.Elea">@tob.Liba</option>
+                                                            }
+                                                            </InputSelect>
+                                                        </ChildContent>
+                                                    </GridColumn>
                                                 <GridColumn TItem="Tiersp" HeaderText="Actions" Filterable="false" Class="xcol2 actions-col">
                                                     <ChildContent Context="item">
                                                         @switch (GetRowState(item.Rowguid))
