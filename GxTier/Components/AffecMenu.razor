@@ -27,6 +27,7 @@
 @inject IODataClient _MyODaClient
 @inject IMapper Mapper
 @inject SessionContextService _sessionContext
+@inject MyAuthStateProvider _authProvider
 @inject RendAgres _rendAgres
 @inject IPendingChangesGuard _guard
 @inject IJSRuntime _JsRUN
@@ -136,9 +137,9 @@ else
     //private Affecref myaref = new();
     //private Affecfonct myresp = new();
 
-    [CascadingParameter]
-    private Task<AuthenticationState>? AuthState { get; set; }
-
+    //[CascadingParameter]
+    //private Task<AuthenticationState>? AuthState { get; set; }
+    private bool isAuthenticated = false;
     public GxorgaDto curOrga = new GxorgaDto();
     public ChildVars toChild = new();
 
@@ -194,8 +195,9 @@ else
         isLoading = true;
         try
         {
-            var authState = await AuthState;
-            if (!authState.User.Identity.IsAuthenticated) return;
+            var authState = await _authProvider.GetAuthenticationStateAsync();
+            isAuthenticated = authState.User.Identity?.IsAuthenticated ?? false;
+            if (!isAuthenticated) return;
             // Load lightweight user data FIRST
             _usrBag = await _sessionContext.GetUserbagAsync();
             LsDivs = await _rendAgres.LoadOrgaPostes();

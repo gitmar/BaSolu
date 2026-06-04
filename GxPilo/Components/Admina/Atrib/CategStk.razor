@@ -94,14 +94,24 @@
                         }
                         else
                         {
-                            <Button Color="ButtonColor.Warning" Size="ButtonSize.Small"
-                            @onclick="() => StartEdit(item)">
-                                Edit
-                            </Button>
-                            <Button Color="ButtonColor.Danger" Size="ButtonSize.Small"
-                            @onclick="() => DeleteCategory(item)">
-                                Delete
-                            </Button>
+                            @if (item.Id > 0)@* Prevent deletion of unsaved new entry *@
+                            {
+                                <Button Color="ButtonColor.Warning" Size="ButtonSize.Small"
+                                @onclick="() => StartEdit(item)">
+                                    Edit
+                                </Button>
+                                <Button Color="ButtonColor.Danger" Size="ButtonSize.Small"
+                                @onclick="() => DeleteCategory(item)">
+                                    Delete
+                                </Button>
+                            }
+                            @* else
+                            {
+                                <Button Color="ButtonColor.Secondary" Size="ButtonSize.Small"
+                                        @onclick="() => CancelAdd(2, item)">
+                                    Cancel
+                                </Button>
+                            } *@
                         }
                     </ChildContent>
                 </GridColumn>
@@ -115,7 +125,7 @@
             <InputText @bind-Value="draftCat.Liba" placeholder="Label" />
             <InputNumber @bind-Value="draftCat.Prix" placeholder="Price" />
             <Button Color="ButtonColor.Success" @onclick="() => SaveAdd()">Add</Button>
-            <Button Color="ButtonColor.Secondary" @onclick="() => CancelAdd()">Cancel</Button>
+            <Button Color="ButtonColor.Secondary" @onclick="() => CancelAdd(1, draftCat)">Cancel</Button>
         </div>
     }
 </div>
@@ -190,8 +200,6 @@
     private Guid? editRowguid;
     private bool isAdding = false;
     private StkcatDto draftCat = new();
-
-    private void CancelAdd() => isAdding = false;
 
 
     protected override async Task OnInitializedAsync()
@@ -276,7 +284,7 @@
         //_guard.TrackDelete<TDto>(GetEntitySetName<TDto>(), key);
         _guard.TrackDelete("Stkcats", key);
         Console.WriteLine($"🗑️ {atr.Liba} queued for delete");
-        
+
         await NotifyPendingChanges();
     }
 
@@ -284,6 +292,7 @@
     {
         isAdding = true;
         draftCat = new StkcatDto();
+        draftCat.Idorg = curOrga.Idorg;
     }
 
     private async Task SaveAdd()
@@ -291,10 +300,23 @@
         draftCat.Rowguid = Guid.NewGuid();
         draftCat.Idorg = curOrga.Idorg;
         // Register add with OData context
+        curOrga.Stkcats.Add(draftCat);
         _guard.TrackInsert("Stkcats", draftCat);
         Console.WriteLine($"➕ NEW {draftCat.Liba} → TrackInsert");
         isAdding = false;
         await NotifyPendingChanges();
+    }
+    private void CancelAdd(int orig, StkcatDto uncat)
+    {
+        if (orig == 2)
+        {
+            curOrga.Stkcats.Remove(uncat);
+        }
+        else
+        {
+            draftCat = new();
+        }
+        isAdding = false;
     }
     private object GetEntityKey<TDto>(TDto entity)
     {

@@ -18,6 +18,7 @@
 @inject IUsrdaService _dbusrManager
 @inject IInputService _usaieManager
 @inject ILocalStorageService _localStorage
+@inject MyauthStateProvider _authProvider
 @inject HttpClientService _cliemanager
 
 <h3>Prog/PlanMenu</h3>
@@ -80,9 +81,9 @@
     [Parameter]
     public RenderFragment Gtables { get; set; }
 
-    [CascadingParameter]
-    private Task<AuthenticationState>
-    ? AuthState { get; set; }
+    //[CascadingParameter]
+    //private Task<AuthenticationState>
+    //? AuthState { get; set; }
     private bool isOwner = false;
     public ClaimsPrincipal authUser;
     public bool isAuthenticated = false;
@@ -183,9 +184,8 @@
                                                                                                                                                                 {
                                                                                                                                                                 ////Console.WriteLine("TIERS EN TEST");
                                                                                                                                                                 //MainTiw = this;
-                                                                                                                                                                var authState = await AuthState;
-                                                                                                                                                                authUser = authState.User;
-                                                                                                                                                                isAuthenticated = authUser.Identity.IsAuthenticated;
+                                                                                                                                                                var authState = await _authProvider.GetAuthenticationStateAsync();
+                                                                                                                                                                isAuthenticated = authState.User.Identity?.IsAuthenticated ?? false;
                                                                                                                                                                 if (!isAuthenticated)
                                                                                                                                                                 {
                                                                                                                                                                 Console.WriteLine("Authentication ECHEC");

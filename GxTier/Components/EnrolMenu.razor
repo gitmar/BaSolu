@@ -12,7 +12,6 @@
 @using GxTie.Services
 @using GxTie.StaticHelpers
 @using GxShared.Sess
-@using GxShared.Helpers
 @using GxShared.Others
 @using Simple.OData.Client
 @using GxShared.GxDtos
@@ -29,6 +28,7 @@
 @inject IODataClient _MyODaClient
 @inject IMapper Mapper
 @inject SessionContextService _sessionContext
+@inject MyAuthStateProvider _authProvider
 @inject RendAgres _rendAgres
 @inject IPendingChangesGuard _guard
 @inject IJSRuntime _JsRUN
@@ -141,7 +141,9 @@ else
     private InscTiw myetiw = new();
     //private InvOper myginv = new();
 
-    private MyAuthStateProvider _authProvider { get; set; }
+    //private MyAuthStateProvider _authProvider { get; set; }
+    private bool isAuthenticated = false;
+    private ClaimsPrincipal authUser;
     public Userbag _usrBag = new();
 
     [Parameter]
@@ -151,11 +153,11 @@ else
     [Parameter]
     public RenderFragment InviTiw { get; set; } 
 
-    [CascadingParameter]
-    private Task<AuthenticationState>? AuthState { get; set; }
+    // [CascadingParameter]
+    // private Task<AuthenticationState>? AuthState { get; set; }
 
-    private ClaimsPrincipal authUser;
-    private bool isAuthenticated = false;
+    // private ClaimsPrincipal authUser;
+    // private bool isAuthenticated = false;
 
     //Guard
     private int _nbChanges = 0;
@@ -261,9 +263,9 @@ else
         isLoading = true;
         LoadLabel = "data is loading";
         await SetLoadingState(); // 75, "Fetching data...");
-        var authState = await AuthState;
+        var authState = await _authProvider.GetAuthenticationStateAsync();
+        isAuthenticated = authState.User.Identity?.IsAuthenticated ?? false;
         authUser = authState.User;
-        isAuthenticated = authUser.Identity.IsAuthenticated;
         if (!isAuthenticated)
         {
             Console.WriteLine("Authentication in Enrol Utilisateur ECHEC");

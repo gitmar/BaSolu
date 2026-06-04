@@ -24,6 +24,7 @@
 @inject HttpClientService _clieManager
 @inject IODataClient _MyODaClient
 @inject SessionContextService _sessionContext
+@inject MyAuthStateProvider _authProvider
 @inject RendAgres _rendAgres
 @inject IPendingChangesGuard _guard
 @inject IJSRuntime _JsRUN
@@ -109,10 +110,10 @@ else
     private Affecref myaref = new();
     private Ordreref myoref = new();
    
-    [CascadingParameter]
-    private Task<AuthenticationState>? AuthState { get; set; }
-    public ClaimsPrincipal authUser;
-
+    //[CascadingParameter]
+    //private Task<AuthenticationState>? AuthState { get; set; }
+    private ClaimsPrincipal authUser;
+    private bool isAuthenticated = false;
     //Guard
     private int _nbChanges = 0;
     private IDisposable? _locationHandler;
@@ -161,8 +162,9 @@ else
         isLoading = true;
         try
         {
-            var authState = await AuthState;
-            if (!authState.User.Identity.IsAuthenticated) return;
+            var authState = await _authProvider.GetAuthenticationStateAsync();
+            isAuthenticated = authState.User.Identity?.IsAuthenticated ?? false;
+            if (!isAuthenticated) return;
             // Load lightweight user data FIRST
             _usrBag = await _sessionContext.GetUserbagAsync();
             //_gIdTie = _usrBag.Usorga.Gdtie;

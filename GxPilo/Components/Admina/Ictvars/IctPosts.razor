@@ -72,9 +72,9 @@ else
                             <option value="@tob.Gp2">@tob.Liba</option>
                         }
                     </InputSelect>
-                    <label class="me-2">Plan :</label>
+                    <label class="me-2">Modele :</label>
                     <InputSelect @bind-Value="IMyPlan" @onchange="() => curPlanPlan(IMyPlan)" class="me-3" style="width:auto">
-                        <option value="0">?plan</option>
+                        <option value="0">?modele</option>
                         @foreach (var upl in LsPlans.Where(pl => pl.Todom == IMyDom).ToList())
                         {
                             <option value="@upl.Id">@upl.Liba</option>
@@ -105,7 +105,7 @@ else
                                                 <div class="row">
                                                     <div class="col-12">
                                                         <Grid TItem="RubhieDto"
-                                                              Data="@curPlan.Rubhies"
+                                                              Data="@curPlan.Rubhies.Where(r => r.Ipln == IMyPlan).ToList()"
                                                               @key="RubRenderKey"
                                                               AllowDetailView="true"
                                                               RowClass="@((item) => GetRubRowClass(item))"
@@ -1588,7 +1588,25 @@ else
     //     {
     //         InvokeAsync(StateHasChanged);
     //     }
-    // }
+    // 
+    private void curPlanDom(int domId)
+    {
+        IMyPlan = 0;
+        if (IMyDom != 0)
+        {
+            //LsGties = LsFixes.Where(ut => ut.Gvars == 36 && ut.Itb == gtib && ut.Elea != 0 && ut.Elea != 9).ToList();
+        }
+        else
+        {
+            //LsGties = new();
+        }
+        // Example: check if all selections are valid
+        // if (IMyDom != 0 && IMyPlan != 0)
+        // {
+        //     // All three have values → single render
+        //     InvokeAsync(StateHasChanged);
+        // }
+    }
     private void curPlanPlan(int plnId)
     {
         IMyPlan = plnId;
@@ -1605,31 +1623,13 @@ else
         }
 
         // Example: check if all selections are valid
-        if (IMyPlan != 0 && IMyDom != 0)
-        {
-            // All three have values → single render
-            InvokeAsync(StateHasChanged);
-        }
+        //if (IMyPlan != 0 && IMyDom != 0)
+        //{
+        // All three have values → single render
+        InvokeAsync(StateHasChanged);
+        //}
     }
-    private void curPlanDom(int domId)
-    {
-        IMyDom = domId;
-        if (IMyDom != 0)
-        {
-            //LsGties = LsFixes.Where(ut => ut.Gvars == 36 && ut.Itb == gtib && ut.Elea != 0 && ut.Elea != 9).ToList();
-        }
-        else
-        {
-            //LsGties = new();
-        }
-
-        // Example: check if all selections are valid
-        if (IMyDom != 0 && IMyPlan != 0)
-        {
-            // All three have values → single render
-            InvokeAsync(StateHasChanged);
-        }
-    }
+    
     private void UpdateAllDom(int plnId, int domId)
     {
         IMyPlan = plnId;

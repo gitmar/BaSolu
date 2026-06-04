@@ -21,6 +21,7 @@
 @inject HttpClientService _cliemanager
 @inject IODataClient _MyODaClient
 @inject SessionContextService _sessionContext
+@inject MyAuthStateProvider _authProvider
 @inject RendAgres _rendAgres
 @inject IPendingChangesGuard _guard
 @inject IMessageService _messageService
@@ -184,11 +185,10 @@
     public RenderFragment Gtables { get; set; }
     [Parameter]
     public RenderFragment Grilles { get; set; }
-    [CascadingParameter]
-
+    //[CascadingParameter]
     private Task<AuthenticationState>? AuthState { get; set; }
-    public ClaimsPrincipal authUser;
-    public bool isAuthenticated = false;
+    private ClaimsPrincipal authUser;
+    private bool isAuthenticated = false;
 
     public PlngenDto curProg = new();
     public Gsedat curSes = new();
@@ -314,9 +314,9 @@
     {
         isLoading = true;
         int pita = 0;
-        var authState = await AuthState;
+        var authState = await _authProvider.GetAuthenticationStateAsync();
+        isAuthenticated = authState.User.Identity?.IsAuthenticated ?? false;
         authUser = authState.User;
-        isAuthenticated = authUser.Identity.IsAuthenticated;
         if (!isAuthenticated)
         {
             Console.WriteLine("Authentication SaieMenu ECHEC");

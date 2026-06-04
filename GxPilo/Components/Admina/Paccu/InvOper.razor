@@ -45,7 +45,7 @@
 {
     <div class="text-center">
         <Spinner Color="SpinnerColor.Primary" Size="SpinnerSize.Medium" />
-        <p>INVITE Data is loading...</p>
+        <p>PARAMETRAGE/Operateurs is loading...</p>
     </div>
 }
 else
@@ -59,6 +59,8 @@ else
                     <Tabs>
                         <Tab Title="Individuelle" Name="IndTab" onClick="() => OnTabChanged(1)">
                             <Content>
+                                <!-- Sender Email -->
+                                <label class="fw-bold">Sender Email: @_invModel.SendEmail</label>
                                 <div class="row g-3">
                                     <!-- Rappel -->
                                     <div class="col-md-4">
@@ -159,7 +161,7 @@ else
                                         <label>Services:</label>
                                         <InputSelect @bind-Value="_invModel.Ihie" class="form-select">
                                             <option value="0">Aucun</option>
-                                            @foreach (var div in _lsDivs)
+                                            @foreach (var div in _lsDivs.Where(d => d.Rpdom == 1 && d.Tyhie == 1))
                                             {
                                                 <option value="@div.Ihie">@div.Liba</option>
                                             }
@@ -199,26 +201,28 @@ else
                                 </div>
                             </Content>
                         </Tab>
-                        <Tab Title="De groupe" Name="GpeTab" onClick="() => OnTabChanged(2)">
-                            <Content>
-                                <div class="row g-3">
-                                    <!-- Reference -->
-                                    <div class="col-md-4">
-                                        <label>Ref.appel:</label>
-                                        <InputText @bind-Value="_invModel.Refapl" class="form-control" />
-                                    </div>
-                                    <!-- Role -->
-                                    <div class="col-md-4">
-                                        <label>Role:</label>
-                                        <InputSelect @bind-Value="_invModel.Ivrole" class="form-select">
-                                            <option value="0">Sélectionner...</option>
-                                            @foreach (var role in _invRoles)
-                                            {
-                                                <option value="@role.Level">@role.Name</option>
-                                            }
-                                        </InputSelect>
-                                    </div>
-                                    @* <div class="col-md-4"></div>
+                        @if (yagroup)
+                        {
+                            <Tab Title="De groupe" Name="GpeTab" onClick="() => OnTabChanged(2)">
+                                <Content>
+                                    <div class="row g-3">
+                                        <!-- Reference -->
+                                        <div class="col-md-4">
+                                            <label>Ref.appel:</label>
+                                            <InputText @bind-Value="_invModel.Refapl" class="form-control" />
+                                        </div>
+                                        <!-- Role -->
+                                        <div class="col-md-4">
+                                            <label>Role:</label>
+                                            <InputSelect @bind-Value="_invModel.Ivrole" class="form-select">
+                                                <option value="0">Sélectionner...</option>
+                                                @foreach (var role in _invRoles)
+                                                {
+                                                    <option value="@role.Level">@role.Name</option>
+                                                }
+                                            </InputSelect>
+                                        </div>
+                                        @* <div class="col-md-4"></div>
                                     <!-- Quality -->
                                     <div class="col-md-4">
                                         <label>Qualité:</label>
@@ -230,8 +234,8 @@ else
                                             }
                                         </InputSelect>
                                     </div> *@
-                                    <!-- Raison (si tiers : client/fournis/patern) -->
-                                    @* @if (_invModel.Utyp == 6 || _invModel.Utyp == 7 || _invModel.Utyp == 8)
+                                        <!-- Raison (si tiers : client/fournis/patern) -->
+                                        @* @if (_invModel.Utyp == 6 || _invModel.Utyp == 7 || _invModel.Utyp == 8)
                                     {
                                         <div class="col-md-4">
                                             <label>Raison:</label>
@@ -242,135 +246,135 @@ else
                                     {
                                         <div class="col-md-4"></div>
                                     } *@
-                                    <div class="col-md-4"></div>
-                                    <!-- Groupes tiers -->
-                                    <div class="col-md-4">
-                                        <label>G.Origine:</label>
-                                        <InputSelect @bind-Value="_invModel.Itgpe" @onchange="() => SelDomITies()" class="form-select">
-                                            <option value="0">Institution</option>
-                                            @foreach (var gte in _iVgties)
-                                            {
-                                                <option value="@gte.Elea">@gte.Liba</option>
-                                            }
-                                        </InputSelect>
-                                    </div>
-                                    <!-- Gpes ID tiers -->
-                                    @if (_invModel.Itgpe != 0)
-                                    {
+                                        <div class="col-md-4"></div>
+                                        <!-- Groupes tiers -->
                                         <div class="col-md-4">
-                                            <label>Tiers:</label>
-                                            <InputSelect @bind-Value="_invModel.Itgid" class="form-select">
-                                                <option value="0">Chx?Tiers</option>
-                                                @foreach (var tie in _iVtiers)
+                                            <label>G.Origine:</label>
+                                            <InputSelect @bind-Value="_invModel.Itgpe" @onchange="() => SelDomITies()" class="form-select">
+                                                <option value="0">Institution</option>
+                                                @foreach (var gte in _iVgties)
                                                 {
-                                                    <option value="@tie.Id">@tie.Raison</option>
+                                                    <option value="@gte.Elea">@gte.Liba</option>
                                                 }
                                             </InputSelect>
                                         </div>
-                                    }
-                                    else
-                                    {
-                                        <div class="col-md-4"></div>
-                                    }
-                                    <div class="col-md-4"></div>
-                                    <!-- Services -->
-                                    <div class="col-md-4">
-                                        <label>Services:</label>
-                                        <InputSelect @bind-Value="_invModel.Ihie" class="form-select">
-                                            <option value="0">Aucun</option>
-                                            @foreach (var div in _lsDivs)
-                                            {
-                                                <option value="@div.Ihie">@div.Liba</option>
-                                            }
-                                        </InputSelect>
-                                    </div>
-                                    <!-- Poste -->
-                                    <div class="col-md-4">
-                                        <label>Poste:</label>
-                                        <InputSelect @bind-Value="_invModel.Ipst" class="form-select">
-                                            <option value="0">Aucun</option>
-                                            @foreach (var pst in _lsPsts)
-                                            {
-                                                <option value="@pst.Ipst">@pst.Liba</option>
-                                            }
-                                        </InputSelect>
-                                    </div>
-                                    <div class="col-md-4"></div>
-                                </div>
-                                <EditForm Model="newRecipient">
-                                    <DataAnnotationsValidator />
-                                    <ValidationSummary />
-
-                                    <!-- Title + Add button row -->
-                                    <div class="row g-3 align-items-center">
-                                        <div class="col-md-7">
-                                            <label>Liste Identites invites</label>
-                                            <button type="button"
-                                            class="btn btn-primary ms-2"
-                                            @onclick="AddOpeRecipient"
-                                            disabled="@(!CanAddRecipient)">
-                                                Add
-                                            </button>
-                                        </div>
-                                    </div>
-
-                                    <!-- Input fields row -->
-                                    <div class="d-flex gap-2 mt-2">
-                                        <InputText @bind-Value="newRecipient.Email"
-                                        class="form-control"
-                                        placeholder="Email"
-                                        @onblur="() => StateHasChanged()" />
-
-                                        <InputText @bind-Value="newRecipient.PhoneNumber"
-                                        class="form-control"
-                                        placeholder="Phone"
-                                        @onblur="() => StateHasChanged()" />
-
-                                        <InputText @bind-Value="newRecipient.FirstName"
-                                        class="form-control"
-                                        placeholder="First Name"
-                                        @onblur="() => StateHasChanged()" />
-
-                                        <InputText @bind-Value="newRecipient.LastName"
-                                        class="form-control"
-                                        placeholder="Last Name"
-                                        @onblur="() => StateHasChanged()" />
-                                    </div>
-                                </EditForm>
-                                <div class="row g-2">
-                                    <div class="col-md-2"></div>
-                                    <div class="col-md-8">
-                                        @if (!string.IsNullOrEmpty(Imessage))
+                                        <!-- Gpes ID tiers -->
+                                        @if (_invModel.Itgpe != 0)
                                         {
-                                            <div>
-                                                <p style="color:red;">@Imessage</p>
+                                            <div class="col-md-4">
+                                                <label>Tiers:</label>
+                                                <InputSelect @bind-Value="_invModel.Itgid" class="form-select">
+                                                    <option value="0">Chx?Tiers</option>
+                                                    @foreach (var tie in _iVtiers)
+                                                    {
+                                                        <option value="@tie.Id">@tie.Raison</option>
+                                                    }
+                                                </InputSelect>
                                             </div>
                                         }
-                                    </div>
-                                    <div class="col-md-2"></div>
-                                </div>
-                                @if (operecipients.Any())
-                                {
-                                    <h5 class="mt-3">Recipients valides:</h5>
-                                    <ul class="list-group">
-                                        @foreach (var r in operecipients)
+                                        else
                                         {
-                                            <li class="list-group-item">
-                                                @r.Email - @r.PhoneNumber - @r.FirstName @r.LastName
-                                            </li>
+                                            <div class="col-md-4"></div>
                                         }
-                                    </ul>
-                                }
-                                @if (invalidEntries.Any())
-                                {
-                                    <div class="alert alert-warning mt-2">
-                                        <strong>Entrees invalides:</strong>
-                                        <ul>
-                                            @foreach (var e in invalidEntries)
+                                        <div class="col-md-4"></div>
+                                        <!-- Services -->
+                                        <div class="col-md-4">
+                                            <label>Services:</label>
+                                            <InputSelect @bind-Value="_invModel.Ihie" class="form-select">
+                                                <option value="0">Aucun</option>
+                                                @foreach (var div in _lsDivs)
+                                                {
+                                                    <option value="@div.Ihie">@div.Liba</option>
+                                                }
+                                            </InputSelect>
+                                        </div>
+                                        <!-- Poste -->
+                                        <div class="col-md-4">
+                                            <label>Poste:</label>
+                                            <InputSelect @bind-Value="_invModel.Ipst" class="form-select">
+                                                <option value="0">Aucun</option>
+                                                @foreach (var pst in _lsPsts)
+                                                {
+                                                    <option value="@pst.Ipst">@pst.Liba</option>
+                                                }
+                                            </InputSelect>
+                                        </div>
+                                        <div class="col-md-4"></div>
+                                    </div>
+                                    <EditForm Model="newRecipient">
+                                        <DataAnnotationsValidator />
+                                        <ValidationSummary />
+
+                                        <!-- Title + Add button row -->
+                                        <div class="row g-3 align-items-center">
+                                            <div class="col-md-7">
+                                                <label>Liste Identites invites</label>
+                                                <button type="button"
+                                                class="btn btn-primary ms-2"
+                                                @onclick="AddOpeRecipient"
+                                                disabled="@(!CanAddRecipient)">
+                                                    Add
+                                                </button>
+                                            </div>
+                                        </div>
+
+                                        <!-- Input fields row -->
+                                        <div class="d-flex gap-2 mt-2">
+                                            <InputText @bind-Value="newRecipient.Email"
+                                            class="form-control"
+                                            placeholder="Email"
+                                            @onblur="() => StateHasChanged()" />
+
+                                            <InputText @bind-Value="newRecipient.PhoneNumber"
+                                            class="form-control"
+                                            placeholder="Phone"
+                                            @onblur="() => StateHasChanged()" />
+
+                                            <InputText @bind-Value="newRecipient.FirstName"
+                                            class="form-control"
+                                            placeholder="First Name"
+                                            @onblur="() => StateHasChanged()" />
+
+                                            <InputText @bind-Value="newRecipient.LastName"
+                                            class="form-control"
+                                            placeholder="Last Name"
+                                            @onblur="() => StateHasChanged()" />
+                                        </div>
+                                    </EditForm>
+                                    <div class="row g-2">
+                                        <div class="col-md-2"></div>
+                                        <div class="col-md-8">
+                                            @if (!string.IsNullOrEmpty(Imessage))
                                             {
-                                                <li>@e</li>
+                                                <div>
+                                                    <p style="color:red;">@Imessage</p>
+                                                </div>
+                                            }
+                                        </div>
+                                        <div class="col-md-2"></div>
+                                    </div>
+                                    @if (operecipients.Any())
+                                    {
+                                        <h5 class="mt-3">Recipients valides:</h5>
+                                        <ul class="list-group">
+                                            @foreach (var r in operecipients)
+                                            {
+                                                <li class="list-group-item">
+                                                    @r.Email - @r.PhoneNumber - @r.FirstName @r.LastName
+                                                </li>
                                             }
                                         </ul>
+                                    }
+                                    @if (invalidEntries.Any())
+                                    {
+                                        <div class="alert alert-warning mt-2">
+                                            <strong>Entrees invalides:</strong>
+                                            <ul>
+                                                @foreach (var e in invalidEntries)
+                                                {
+                                                    <li>@e</li>
+                                                }
+                                            </ul>
                                     </div>
                                 }
                                 <div class="row g-3">
@@ -381,6 +385,7 @@ else
                                 </div>
                             </Content>
                         </Tab>
+                        }
                         <Tab Title="Re-Email" Name="RenvTab">
                             <Content>
                                 <!-- Email -->
@@ -466,6 +471,7 @@ else
     private List<string> invalidEmails = new();
     private List<OpeRecipient> lastSavedRecipients = new();
     private bool operecipientsSaved = false;
+    private bool yagroup = false;
     // Errors
     private List<string> ErrorsList = new();
     // Data
@@ -530,10 +536,14 @@ else
             //     Console.WriteLine("No organization found for the current user.");
             //     return;
             // }
+            //.SendEmail = authUser.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Email)?.Value;
+            _usrBag = await _sessionContext.GetUserbagAsync() ?? new Userbag();
             _invModel.Idorg = curOrga.Idorg; // convert.toint16(user.findfirst("insidorg")?.value);                                                        //Console.WriteLine(usrBag.Lkorga.Idorg);
             _invModel.Raison = curOrga.Raison;
             // Load roles, divisions, fixes (your existing logic)
-            _usrBag = await _sessionContext.GetUserbagAsync() ?? new Userbag();
+            _invModel.SendEmail = _usrBag.Usprof.Uemail;
+            _invModel.SendId = _usrBag.Usprof.Userid;
+
             LsFixes = _usrBag.Ufixes.ToList();
             _lsDivs = await _rendAgres.LoadOrgaPostes();
             //current min user level and list
@@ -594,6 +604,14 @@ else
     }
     private async Task SendIndividualInvite()
     {
+        _invModel.Idorg = _usrBag.Idorg;
+        if (_invModel.Itgpe == 0)
+        { //institution
+            _invModel.Utyp = 1; //admin-ministre
+        } else
+        { //client/fournis/patern
+            _invModel.Utyp = _invModel.Itgpe;
+        }
         Console.WriteLine("Sending Invite");
         try
         {
@@ -617,6 +635,16 @@ else
                 "AuthClient",
                 HttpMethod.Post,
                 "regis/generate-invite", _invModel);
+            // if (!response.)
+            // {
+            //     Imessage = await response.Content.ReadAsStringAsync();
+            //     isSuccess = false;
+            // }
+            // else
+            // {
+            //     Imessage = "Registration successful! Please check your email for confirmation.";
+            //     isSuccess = true;
+            // }
             // var response = await _clieManager.SendRequestAsync("AuthClient", HttpMethod.Post,
             //     "regis/generate-invite", new IndividualInviteRequest
             //     {
@@ -635,7 +663,7 @@ else
     private void SendGroupInvite()
     {
         lastSavedRecipients.Clear();
-
+        _invModel.Idorg = _usrBag.Idorg;
         // Structured recipients
         lastSavedRecipients.AddRange(operecipients);
 
@@ -797,10 +825,10 @@ else
         {
             ErrorsList.Add("Echec, Role obligatoire.");
         }
-        if (_invModel.Utyp < 1)
-        {
-            ErrorsList.Add("Echec, Qualite obligatoire.");
-        }
+        // if (_invModel.Utyp < 1)
+        // {
+        //     ErrorsList.Add("Echec, Qualite obligatoire.");
+        // }
         if (gpe == 1)
         {
             if (String.IsNullOrEmpty(_invModel.FirstName))

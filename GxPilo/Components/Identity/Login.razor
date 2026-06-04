@@ -28,7 +28,7 @@
 {
     <div class="text-center">
         <Spinner Color="SpinnerColor.Primary" Size="SpinnerSize.Large" />
-        <p>Admin Loading...</p>
+        <p>Pilotage Loading...</p>
     </div>
 }
 else
@@ -313,7 +313,7 @@ else
                 isLoading = false;
                 return;
             }
-
+            //Console.WriteLine($"Login successful. User: {_logresult.Userid}, Support: {_logresult.SiSupport}, Admin: {_logresult.SiAdmin}");
             // Handle support role
             if (_logresult.SiSupport)
             {
@@ -325,7 +325,8 @@ else
             }
 
             // Handle admin role
-            if (!_logresult.SiAdmin && !_logresult.SiSupport)
+            var isDeveloper = _logresult.Roles != null && _logresult.Roles.Contains("Developer");
+            if (!_logresult.SiAdmin && !_logresult.SiSupport && !isDeveloper)
             {
                 Error = "Accès refusé.";
                 Jmessage = "Vous n'êtes pas autorisé.";

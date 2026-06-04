@@ -48,11 +48,23 @@
                     <ChildContent Context="item">
                         @if (editRowguid == item.Rowguid)
                         {
-                            <InputNumber @bind-Value="draftAtr.Atyp" />
+                            <InputSelect @bind-Value="draftAtr.Atyp" class="me-3" style="width:auto">
+                                <option value="0">?choisir</option>
+                                @foreach (var fx in LsFixes.Where(u => u.Gvars == 32 && u.Itb == 2 && u.Elea != 0))
+                                {
+                                    <option value="@fx.Elea">@fx.Liba</option>
+                                }
+                            </InputSelect>
                         }
                         else
                         {
-                            @item.Atyp
+                            <InputSelect @bind-Value="draftAtr.Atyp" class="me-3" style="width:auto" disabled>
+                                <option value="0">?choisir</option>
+                                @foreach (var fx in LsFixes.Where(u => u.Gvars == 32 && u.Itb == 2 && u.Elea != 0))
+                                {
+                                    <option value="@fx.Elea">@fx.Liba</option>
+                                }
+                            </InputSelect>
                         }
                     </ChildContent>
                 </GridColumn>
@@ -95,14 +107,24 @@
                         }
                         else
                         {
-                            <Button Color="ButtonColor.Warning" Size="ButtonSize.Small"
-                            @onclick="() => StartEdit(item)">
-                                Edit
-                            </Button>
-                            <Button Color="ButtonColor.Danger" Size="ButtonSize.Small"
-                            @onclick="() => DeleteAttribute(item)">
-                                Delete
-                            </Button>
+                            @if (item.Id > 0)@* Prevent deletion of unsaved new entry *@
+                            {
+                                <Button Color="ButtonColor.Warning" Size="ButtonSize.Small"
+                                @onclick="() => StartEdit(item)">
+                                    Edit
+                                </Button>
+                                <Button Color="ButtonColor.Danger" Size="ButtonSize.Small"
+                                @onclick="() => DeleteAttribute(item)">
+                                    Delete
+                                </Button>
+                            }
+                            @* else
+                            {
+                                <Button Color="ButtonColor.Secondary" Size="ButtonSize.Small"
+                                        @onclick="() => CancelAdd(2, item)">
+                                    Cancel 
+                                </Button>
+                            } *@
                         }
                     </ChildContent>
                 </GridColumn>
@@ -114,9 +136,15 @@
         <div class="mt-3">
             <h5>New Attribute</h5>
             <InputText @bind-Value="draftAtr.Liba" placeholder="Label" />
-            <InputNumber @bind-Value="draftAtr.Atyp" placeholder="Type" />
+            <InputSelect @bind-Value="draftAtr.Atyp" class="me-3" style="width:auto">
+                <option value="0">?choisir</option>
+                @foreach (var fx in LsFixes.Where(u => u.Gvars == 32 && u.Itb == 2 && u.Elea != 0))
+                {
+                    <option value="@fx.Elea">@fx.Liba</option>
+                }
+            </InputSelect>
             <Button Color="ButtonColor.Success" @onclick="() => SaveAdd()">Add</Button>
-            <Button Color="ButtonColor.Secondary" @onclick="() => CancelAdd()">Cancel</Button>
+            <Button Color="ButtonColor.Secondary" @onclick="() => CancelAdd(1, draftAtr)">Cancel</Button>
         </div>
     }
 </div>
@@ -159,7 +187,7 @@
 </style>
 @code {
     private bool isLoading = true;
-    
+
     [Parameter] 
     public IODataClient _InODaClient { get; set; }
     [Parameter] 
@@ -188,11 +216,10 @@
     //[Parameter] public ItemClientService ItemService { get; set; }
     //[Parameter] public StockClientService StockService { get; set; }
     private List<StkatrDto> LsAtrs = new();
+    private List<Gpfixe> LsFixes = new();
     private Guid? editRowguid;
     private bool isAdding = false;
     private StkatrDto draftAtr = new();
-
-    private void CancelAdd() => isAdding = false;
 
     protected override async Task OnInitializedAsync()
     {
@@ -218,6 +245,7 @@
             //LsSites = toChild.LsSites;
             //_lgcdu = 3;
             LsAtrs = curOrga?.Stkatrs.ToList();
+            LsFixes = toChild.LsFixes.ToList();
         }
         catch (Exception ex)
         {
@@ -270,7 +298,7 @@
         //_guard.TrackDelete<TDto>(GetEntitySetName<TDto>(), key);
         _guard.TrackDelete("Stkatrs", key);
         Console.WriteLine($"🗑️ {atr.Liba} queued for delete");
-        
+
         await NotifyPendingChanges();
     }
 
@@ -278,6 +306,7 @@
     {
         isAdding = true;
         draftAtr = new StkatrDto();
+        draftAtr.Idorg = curOrga.Idorg;
     }
 
     private async Task SaveAdd()
@@ -285,10 +314,24 @@
         draftAtr.Rowguid = Guid.NewGuid();
         draftAtr.Idorg = curOrga.Idorg;
         // Register add with OData context
+        curOrga.Stkatrs.Add(draftAtr);
         _guard.TrackInsert("Stkatrs", draftAtr);
         Console.WriteLine($"➕ NEW {draftAtr.Liba} → TrackInsert");
         isAdding = false;
         await NotifyPendingChanges();
+    }
+    private void CancelAdd(int orig, StkatrDto unatr)
+    {
+        if (orig == 2)
+        {
+            var key = GetEntityKey(unatr);
+            //curOrga.Stkatrs.Remove(unatr);
+            //_guard.TrackDelete("Stkatrs", key);
+        } else
+        {
+            draftAtr = new();
+        }
+        isAdding = false;
     }
     private object GetEntityKey<TDto>(TDto entity)
     {

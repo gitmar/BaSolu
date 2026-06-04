@@ -116,7 +116,7 @@
         <GridColumn TItem="TiemvlneDto" HeaderText="Anc_Division" Class="xcol2">
             <ChildContent Context="line">
                 <InputSelect @bind-Value="line.Froloc">
-                    @foreach (var dep in LsDivs.Where(d => d.Pdom == 1)) //adm
+                    @foreach (var dep in LsDivs.Where(d => d.Rpdom == 1)) //adm
                     {
                         <option value="@dep.Ihie">@dep.Liba</option>
                     }
@@ -136,7 +136,7 @@
         <GridColumn TItem="TiemvlneDto" HeaderText="Nouv_Division" Class="xcol2">
             <ChildContent Context="line">
                 <InputSelect @bind-Value="line.Nwhie">
-                    @foreach (var dep in LsDivs.Where(d => d.Pdom == 1)) //adm
+                    @foreach (var dep in LsDivs.Where(d => d.Rpdom == 1)) //adm
                     {
                         <option value="@dep.Ihie">@dep.Liba</option>
                     }

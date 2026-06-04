@@ -68,7 +68,7 @@
               Responsive="true">
             <GridColumns>
                 <GridColumn TItem="GsesioDto" HeaderText="No" Class="xcol1">
-                    <ChildContent Context="item">@item.Id</ChildContent>
+                    <ChildContent Context="item">@item.Iele</ChildContent>
                 </GridColumn>
                 <GridColumn TItem="GsesioDto" HeaderText="Designation" Class="xcol3">
                     <ChildContent Context="item">
@@ -148,7 +148,7 @@
                             @if (item.Eta == 0)
                             { //nouveau
                                 <Button Color="ButtonColor.Warning" Size="ButtonSize.Small"
-                                        @onclick="() => StartEdit(item)">
+                                        @onclick="() => StartEdit(item, 1)">
                                     Ouvrir
                                 </Button>
                                 <Button Color="ButtonColor.Danger" Size="ButtonSize.Small"
@@ -159,21 +159,21 @@
                             else if (item.Eta == 1)
                             {
                                 <Button Color="ButtonColor.Danger" Size="ButtonSize.Small"
-                                        @onclick="() => DeleteAttribute(item)">
+                                        @onclick="() => StartEdit(item, 2)">
                                     Cloturer
                                 </Button>
                             }
                             else if (item.Eta == 2)
                             {
                                 <Button Color="ButtonColor.Warning" Size="ButtonSize.Small"
-                                        @onclick="() => DeleteAttribute(item)">
+                                        @onclick="() => StartEdit(item, 3)">
                                     Archiver
                                 </Button>
                             }
                             else
                             {
                                 <Button Color="ButtonColor.Warning" Size="ButtonSize.Small"
-                                        @onclick="() => DeleteAttribute(item)">
+                                        @onclick="() => StartEdit(item, 5)">
                                     Visible
                                 </Button>
                             }
@@ -302,10 +302,28 @@
             Console.WriteLine($"22error loading atr-Stk: {ex.Message}");
         }
     }
-    private void StartEdit(GsesioDto atr)
+    private void StartEdit(GsesioDto atr, int iope)
     {
         editRowguid = atr.Rowguid;
-        draftSes = new GsesioDto { Id = atr.Id, Liba = atr.Liba, Igpe = atr.Igpe, Rowguid = atr.Rowguid };
+        draftSes = new GsesioDto 
+        { 
+            Id = atr.Id, 
+            Liba = atr.Liba, 
+            Igpe = atr.Igpe, 
+            Rowguid = atr.Rowguid 
+        };
+        if (iope == 1)
+        { //ouvrir
+            draftSes.Eta = 1;
+        }
+        else if (iope == 2)
+        { //cloturer
+            draftSes.Eta = 2;
+        }
+        else if (iope == 3)
+        { //archiver
+            draftSes.Eta = 3;
+        }
     }
 
     private async Task SaveEdit(GsesioDto atr)
@@ -315,10 +333,10 @@
         atr.Refa = draftSes.Refa;
         atr.Ddat = draftSes.Ddat;
         atr.Fdat = draftSes.Fdat;
+        atr.Eta = draftSes.Eta;
         // Register update with OData context
         var key = GetEntityKey(atr); // helper to extract PK
         _guard.TrackUpdate("Gsesios", key, atr);
-        DaSess.Insert(0, atr);
         editRowguid = null;
         await NotifyPendingChanges();
     }
@@ -352,18 +370,17 @@
     {
         draftSes.Rowguid = Guid.NewGuid();
         draftSes.Idorg = curOrga.Idorg;
-        // draftSes.Gvars = 13; //sessions
-        // draftSes.Itb = IGpSes; //parent
         draftSes.Igpe = IGpSes; //1accueil2paras...
 
-        draftSes.Refa = await calCess(); 
-
+        draftSes.Refa = await calCess();
+        draftSes.Eta = 0;
         //draftSes.Abg = toChild.inExo.Scdrub ?? "EXO";//exercice
         //draftSes.Etyp = curOrga.; //aaaamm
         // Register add with OData context
         _guard.TrackInsert("Gsesios", draftSes);
         Console.WriteLine($"➕ NEW {draftSes.Liba} → TrackInsert");
         isAdding = false;
+        DaSess.Insert(0, draftSes);
         await NotifyPendingChanges();
     }
     private object GetEntityKey<TDto>(TDto entity)
@@ -372,10 +389,6 @@
         {
             case GsesioDto pln:
                 return pln.Id;
-            // case RubhieDto rub:
-            //     return rub.Id;
-            // case RubpstDto fmt:
-            //     return fmt.Id;
             default:
                 throw new InvalidOperationException($"Unknown entity type {typeof(TDto).Name}");
         }

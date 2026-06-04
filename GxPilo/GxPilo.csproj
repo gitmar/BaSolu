@@ -10,15 +10,19 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Connected Services\**" />
     <Compile Remove="Formulas\**" />
     <Compile Remove="Services\Mform\**" />
     <Compile Remove="YYYFormulas\**" />
+    <Content Remove="Connected Services\**" />
     <Content Remove="Formulas\**" />
     <Content Remove="Services\Mform\**" />
     <Content Remove="YYYFormulas\**" />
+    <EmbeddedResource Remove="Connected Services\**" />
     <EmbeddedResource Remove="Formulas\**" />
     <EmbeddedResource Remove="Services\Mform\**" />
     <EmbeddedResource Remove="YYYFormulas\**" />
+    <None Remove="Connected Services\**" />
     <None Remove="Formulas\**" />
     <None Remove="Services\Mform\**" />
     <None Remove="YYYFormulas\**" />
@@ -108,7 +112,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Connected Services\" />
     <Folder Include="wwwroot\_content\Blazor.Bootstrap\" />
   </ItemGroup>
 

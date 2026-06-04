@@ -24,6 +24,7 @@
 @inject HttpClientService _clieManager
 @inject IODataClient _MyODaClient
 @inject SessionContextService _sessionContext
+@inject MyAuthStateProvider _authProvider
 @inject RendAgres _rendAgres
 @inject IJSRuntime _JsRUN
 @inject IPendingChangesGuard _guard
@@ -163,10 +164,10 @@
     private Jetons mygjet = new();
     private Gexos mygexo = new();
 
-    [CascadingParameter]
-    private Task<AuthenticationState>? AuthState { get; set; }
-    public ClaimsPrincipal authUser;
-    public bool isAuthenticated = false;
+    //[CascadingParameter]
+    //private Task<AuthenticationState>? AuthState { get; set; }
+    private ClaimsPrincipal authUser;
+    private bool isAuthenticated = false;
     //in DATA
     public List<GsgfixDto> LsTables = new();
 
@@ -234,8 +235,9 @@
             isLoading = true;
 
             // 1. CRITICAL: AUTH FIRST
-            var authState = await AuthState!;
-            if (!authState.User.Identity.IsAuthenticated)
+            var authState = await _authProvider.GetAuthenticationStateAsync();
+            isAuthenticated = authState.User.Identity?.IsAuthenticated ?? false;
+            if (!isAuthenticated)
             {
                 _messageService.Show("❌ Utilisateur non authentifié", ToastType.Danger);
                 return;  // STOP EXECUTION
@@ -260,7 +262,7 @@
             //var allDivsTask = _rendAgres.LoadOrgaPostes();
             authDivs = await _rendAgres.LoadOrgaPostes();
             //var allDivs = await allDivsTask;
-            LsDivs = authDivs.Where(ud => ud.Pdom == 6 && ud.Patr == 1).ToList();
+            LsDivs = authDivs.Where(ud => ud.Rpdom == 6 && ud.Rpatr == 1).ToList();
 
             await LoadOrgaAsync(_usrBag.Idorg);
             // 4. NOW pass to child (all data ready)

@@ -11,6 +11,7 @@
 @inject IConfiguration _iconfig
 @inject NavigationManager _navManager
 @inject SessionContextService _sessionContext
+@inject MyAuthStateProvider _authProvider
 @inject ClieAppState _appState
 @inject IJSRuntime _JsRun
 
@@ -35,7 +36,7 @@
                     <!-- LEFT GROUP -->
                     <div class="d-flex align-items-center flex-nowrap gap-2" style="min-width: 0;">
 
-                        <span class="fw-bold text-muted flex-shrink-0">(Pilotage)</span>
+                        @* <span class="fw-bold text-muted flex-shrink-0">(Pilotage)</span> *@
 
                         <AuthorizeView>
                             <Authorized>
@@ -141,8 +142,8 @@ else
 @code {
     private bool _layoutReady = false, isLoading = false;
     private bool collapseUserMenu = false, canAdminLog = false;
-    [CascadingParameter]
-    private Task<AuthenticationState>? AuthState { get; set; }
+    //[CascadingParameter]
+    //private Task<AuthenticationState>? AuthState { get; set; }
 
     private bool isHelpLogin = false;
     private ClaimsPrincipal authUser;
@@ -150,8 +151,8 @@ else
 
     //private HttpClient _brzClient;
 
-    [Inject] private AuthenticationStateProvider _authProvider { get; set; }
-
+    // [Inject] private AuthenticationStateProvider _authProvider { get; set; }
+    //[Inject] private MyAuthStateProvider _myauthProvider { get; set; }
 
     
     // private async Task ToggleUserMenu()
@@ -180,18 +181,19 @@ else
 
         // Wait for AuthenticationStateProvider to reflect the new token
         //await Task.Delay(100); // Give NotifyUserAuthentication time to propagate
-
-        var authState = await AuthState;
+        var authState = await _authProvider.GetAuthenticationStateAsync();
+        isAuthenticated = authState.User.Identity?.IsAuthenticated ?? false;
         authUser = authState.User;
-        isAuthenticated = authUser.Identity?.IsAuthenticated ?? false;
+        //isAuthenticated = authUser.Identity?.IsAuthenticated ?? false;
 
         if (!isAuthenticated)
         {
             Console.WriteLine("Authentication in Main Layout ECHEC");
+            await _authProvider.NotifyUserLogout();
         }
         else
         {
-            if (authUser.IsInRole("Support") || authUser.IsInRole("Admin")) canAdminLog = true;
+            if (authUser.IsInRole("Support") || authUser.IsInRole("Admin") || authUser.IsInRole("Developper")) canAdminLog = true;
             Console.WriteLine("Authentication in Main Layout SUCCESS");
         }
 
@@ -216,6 +218,8 @@ else
         }
         var backendUrl = _iconfig["backendUrl"];
         var targetUrl = $"{backendUrl}/Identity/Account/JwtLandingPage?access_token={token}";
+        targetUrl = $"{backendUrl}/Identity/Account/JwtLandingPage?access_token={token}";
+        // Force full page reload to leave Blazor SPA
         _navManager.NavigateTo(targetUrl, forceLoad: true);
     }
     // private async Task VerifAppVersion()

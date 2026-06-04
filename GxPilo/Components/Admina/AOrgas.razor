@@ -242,17 +242,17 @@ else if (edOrgContext != null && curOrga != null)
                                                     </td>
                                                 </tr>
                                                 <tr>
-                                                    <td>Nom:</td>
-                                                    <td class="text-right">
-                                                        <InputText class="my-input" @bind-Value="curOrga.Rnom"
-                                                                   style="font-weight:bold" readonly="@(isEdOrg ? null : "readonly")" placeholder="Enter Admin nom" />
-                                                    </td>
-                                                </tr>
-                                                <tr>
                                                     <td>Prenom(s):</td>
                                                     <td class="text-right">
                                                         <InputText class="my-input" @bind-Value="curOrga.Rpnom"
                                                                    style="font-weight:bold" readonly="@(isEdOrg ? null : "readonly")" placeholder="Enter Admin prenom(s)" />
+                                                    </td>
+                                                </tr>
+                                                <tr>
+                                                    <td>Nom:</td>
+                                                    <td class="text-right">
+                                                        <InputText class="my-input" @bind-Value="curOrga.Rnom"
+                                                                   style="font-weight:bold" readonly="@(isEdOrg ? null : "readonly")" placeholder="Enter Admin nom" />
                                                     </td>
                                                 </tr>
                                                 <tr>
@@ -531,7 +531,7 @@ else if (edOrgContext != null && curOrga != null)
                                                         <div class="col-md-3">
                                                             <InputSelect @bind-Value="item.Jdiv">
                                                             <option value=0>choisir</option>
-                                                            @foreach (var udp in LsDivs.Where(dv => dv.Tyhie == 1))
+                                                            @foreach (var udp in LsDivs.Where(dv => dv.Rpdom == 1 && dv.Tyhie == 1))
                                                             {
                                                                 <option value="@udp.Ihie">@udp.Liba</option>
                                                             }
@@ -540,7 +540,7 @@ else if (edOrgContext != null && curOrga != null)
                                                         <div class="col-md-3">
                                                             <InputSelect @bind-Value="item.Kdiv">
                                                             <option value=0>choisir</option>
-                                                            @foreach (var udp in LsDivs.Where(dv => dv.Tyhie == 2))
+                                                            @foreach (var udp in LsDivs.Where(dv => dv.Rpdom == 3 && dv.Tyhie == 3))
                                                             {
                                                                 <option value="@udp.Ihie">@udp.Liba</option>
                                                             }
@@ -645,13 +645,13 @@ else if (edOrgContext != null && curOrga != null)
                                 <Content>
                                     <!-- Colonnes options -->
                                     <div class="d-flex align-items-end gap-3 flex-wrap">
-                                        <div>
+                                        @* <div>
                                             <label class="fw-bold">Domaine :</label>
                                             <InputSelect @bind-Value="IMyDom">
                                                 <option value="1">Tiers</option>
                                                 <option value="2">Matiere</option>
                                             </InputSelect>
-                                        </div>
+                                        </div> *@
                                         <div>
                                             <label class="fw-bold">Formulaire :</label>
                                             <InputSelect @bind-Value="IMyDest">

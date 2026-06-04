@@ -21,6 +21,7 @@
 @inject HttpClientService _clieManager
 @inject IODataContextFactory _contextFactory
 @inject SessionContextService _sessionContext
+@inject MyAuthStateProvider _authProvider
 @inject RendAgres _rendAgres
 @inject PendingChangesGuard _guard
 @inject IJSRuntime _JsRUN
@@ -97,9 +98,10 @@ else
 @code {
     private bool isLoading = true;
 
-    [CascadingParameter]
-    private Task<AuthenticationState>? AuthState { get; set; }
-
+    //[CascadingParameter]
+    //private Task<AuthenticationState>? AuthState { get; set; }
+    private ClaimsPrincipal authUser;
+    private bool isAuthenticated = false;
     public MyODataContext curODContext;
     public Gxorga curOrga = new Gxorga();
     public MyShareVars toChild = new();
@@ -130,8 +132,9 @@ else
         isLoading = true;
         try
         {
-            var authState = await AuthState;
-            if (!authState.User.Identity.IsAuthenticated) return;
+            var authState = await _authProvider.GetAuthenticationStateAsync();
+            isAuthenticated = authState.User.Identity?.IsAuthenticated ?? false;
+            if (!isAuthenticated) return;
             // Load lightweight user data FIRST
             _usrBag = await _sessionContext.GetUserbagAsync();
 

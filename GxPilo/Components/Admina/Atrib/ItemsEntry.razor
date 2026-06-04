@@ -121,13 +121,14 @@
     {
         isAdding = true;
         draftItem = new StkituDto();
+        draftItem.Idorg = curOrga.Idorg;
     }
 
     private async Task SaveAdd()
     {
         draftItem.Rowguid = Guid.NewGuid();
-
         // Register add with OData 
+        curOrga.Stkitus.Add(draftItem);
         _guard.TrackInsert("Stkitus", draftItem);
    
         curOrga.Stkitus.Add(draftItem);

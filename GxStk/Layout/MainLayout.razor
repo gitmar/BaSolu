@@ -12,6 +12,7 @@
 @inject ILocalStorageService _localStorage
 @inject SessionContextService _sessionContext
 @inject ClieAppState _appState
+@inject MyAuthStateProvider _authProvider
 @inject IJSRuntime _JsRun
 
 @if (_layoutReady)
@@ -35,7 +36,7 @@
                     <!-- LEFT GROUP -->
                     <div class="d-flex align-items-center flex-nowrap gap-2" style="min-width: 0;">
 
-                        <span class="fw-bold text-muted flex-shrink-0">(Matiere)</span>
+                        @* <span class="fw-bold text-muted flex-shrink-0">(Matiere)</span> *@
 
                         <AuthorizeView>
                             <Authorized>
@@ -142,11 +143,11 @@ else
 @code {
     private bool _layoutReady = false, isLoading = false;
     private bool collapseUserMenu = false, canTierLog = false;
-    [CascadingParameter]
-    private Task<AuthenticationState>? AuthState { get; set; }
+    //CascadingParameter]
+    //private Task<AuthenticationState>? AuthState { get; set; }
     private ClaimsPrincipal authUser;
     private bool isAuthenticated = false;
-    [Inject] private AuthenticationStateProvider _authProvider { get; set; }
+    //[Inject] private MyAuthStateProvider _authProvider { get; set; }
 
     // private void ToggleUserMenu()
     // {
@@ -169,18 +170,17 @@ else
 
         // Wait for AuthenticationStateProvider to reflect the new token
         //await Task.Delay(100); // Give NotifyUserAuthentication time to propagate
-
-        var authState = await AuthState;
+        var authState = await _authProvider.GetAuthenticationStateAsync();
+        isAuthenticated = authState.User.Identity?.IsAuthenticated ?? false;
         authUser = authState.User;
-        isAuthenticated = authUser.Identity?.IsAuthenticated ?? false;
-
         if (!isAuthenticated)
         {
             Console.WriteLine("Authentication in Main Layout ECHEC");
+            await _authProvider.NotifyUserLogout();
         }
         else
         {
-            if (authUser.IsInRole("Support") || authUser.IsInRole("Admin")) canTierLog = true;
+            //if (authUser.IsInRole("Support") || authUser.IsInRole("Admin")) canTierLog = true;
             Console.WriteLine("Authentication in Main Layout SUCCESS");
         }
 

@@ -228,7 +228,7 @@
             // 3. Parallel loads for performance
             var allDivsTask = _rendAgres.LoadOrgaPostes();
             var allDivs = await allDivsTask;
-            LsDivs = allDivs.Where(ud => ud.Pdom == 6 && ud.Patr == 1).ToList();
+            LsDivs = allDivs.Where(ud => ud.Rpdom == 6 && ud.Rpatr == 1).ToList();
 
             await LoadOrgaAsync(_usrBag.Idorg);
             // 4. NOW pass to child (all data ready)

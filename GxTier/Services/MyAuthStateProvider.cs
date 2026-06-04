@@ -47,6 +47,19 @@ namespace GxTie.Services
             {
                 var handler = new JwtSecurityTokenHandler();
                 var jwt = handler.ReadJwtToken(token);
+
+                // Expiration check
+                if (jwt.ValidTo < DateTime.UtcNow)
+                {
+                    Console.WriteLine("Token has expired.");
+                    await _localStorage.RemoveItemAsync("blazToken");
+                    await _localStorage.RemoveItemAsync("blazRoles");
+                    await _localStorage.RemoveItemAsync("blazExp");
+
+                    var anonymous = new ClaimsPrincipal(new ClaimsIdentity());
+                    return new AuthenticationState(anonymous);
+                }
+
                 var claims = jwt.Claims;
                 var user = new ClaimsPrincipal(new ClaimsIdentity(claims, "jwt"));
 
@@ -64,6 +77,39 @@ namespace GxTie.Services
                 return new AuthenticationState(anonymous);
             }
         }
+
+        //public override async Task<AuthenticationState> GetAuthenticationStateAsync()
+        //{
+        //    var token = await _localStorage.GetItemAsync<string>("blazToken");
+
+        //    if (string.IsNullOrWhiteSpace(token))
+        //    {
+        //        Console.WriteLine("Token is missing or empty.");
+        //        var anonymous = new ClaimsPrincipal(new ClaimsIdentity());
+        //        return new AuthenticationState(anonymous);
+        //    }
+
+        //    try
+        //    {
+        //        var handler = new JwtSecurityTokenHandler();
+        //        var jwt = handler.ReadJwtToken(token);
+        //        var claims = jwt.Claims;
+        //        var user = new ClaimsPrincipal(new ClaimsIdentity(claims, "jwt"));
+
+        //        var roles = claims.Where(c => c.Type == ClaimTypes.Role).Select(c => c.Value).ToList();
+        //        await _localStorage.SetItemAsync("blazRoles", roles);
+        //        await _localStorage.SetItemAsync("blazExp", jwt.ValidTo);
+
+        //        NotifyUserAuthentication(user);
+        //        return new AuthenticationState(user);
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        Console.WriteLine($"Token parsing failed: {ex.Message}");
+        //        var anonymous = new ClaimsPrincipal(new ClaimsIdentity());
+        //        return new AuthenticationState(anonymous);
+        //    }
+        //}
         public IEnumerable<Claim> ParseClaimsFromJwt(string jwt)
         {
             var claims = new List<Claim>();
