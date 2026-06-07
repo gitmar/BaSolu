@@ -66,26 +66,26 @@ else
             <div class="form-group">
                 <label class="me-2">Domaine :</label>
                 <InputSelect @bind-Value="IMyDom" @onchange="() => curPlanDom(IMyDom)" class="me-3" style="width:auto">
-                    <option value="0">?domaine</option>
+                    <option value=0>?domaine</option>
                     @foreach (var tob in LsDoms)
                     {
-                        <option value="@tob.Gp2">@tob.Liba</option>
+                        <option value=@tob.Gp2>@tob.Liba</option>
                     }
                 </InputSelect>
                 @* <label class="fw-bold">Attribut :</label>
                 <InputSelect @bind-Value="IMyAtr" @onchange="() => curPlanAtr(IMyAtr)" class="me-3" style="width:auto">
-                    <option value="0">?atrib</option>
+                    <option value=0>?atrib</option>
                     @foreach (var tob in LsAtrs)
                     {
-                        <option value="@tob.Elea">@tob.Liba</option>
+                        <option value=@tob.Elea>@tob.Liba</option>
                     }
                 </InputSelect> *@
                 <label class="fw-bold">Base :</label>
                 <InputSelect @bind-Value="IMyVue" @onchange="() => curPlanVue(IMyVue)" class="me-3" style="width:auto">
-                    <option value="0">?util</option>
+                    <option value=0>?util</option>
                     @foreach (var tob in LsVues)
                     {
-                        <option value="@tob.Gp2">@tob.Liba</option>
+                        <option value=@tob.Gp2>@tob.Liba</option>
                     }
                 </InputSelect>
             </div>
@@ -193,20 +193,20 @@ else
                                                 @if (EdPlnRowguid == item.Rowguid)
                                                 {
                                                     <InputSelect @bind-Value="draftPln.Eta">
-                                                        <option class="jchx" value="0">?choisir</option>
+                                                        <option class="jchx" value=0>?choisir</option>
                                                         @foreach (var tob in LsFixes.Where(ut => ut.Gvars == 32 && ut.Itb == 1 && ut.Elea != 0))
                                                         {
-                                                            <option value="@tob.Elea">@tob.Liba</option>
+                                                            <option value=@tob.Elea>@tob.Liba</option>
                                                         }
                                                     </InputSelect>
                                                 }
                                                 else
                                                 {
                                                     <InputSelect @bind-Value="item.Eta" disabled="true">
-                                                        <option class="jchx" value="0">?choisir</option>
+                                                        <option class="jchx" value=0>?choisir</option>
                                                         @foreach (var tob in LsFixes.Where(ut => ut.Gvars == 32 && ut.Itb == 1 && ut.Elea != 0))
                                                         {
-                                                            <option value="@tob.Elea">@tob.Liba</option>
+                                                            <option value=@tob.Elea>@tob.Liba</option>
                                                         }
                                                     </InputSelect>
                                                 }
@@ -365,7 +365,7 @@ else
                                                                             <InputSelect @bind-Value="draftRub.Atyp" class="col-md-1" style="width:auto">
                                                                                 @foreach (var tob in LsFixes.Where(ut => ut.Gvars == 32 && ut.Itb == 2 && ut.Elea != 0))
                                                                                 {
-                                                                                    <option value="@tob.Elea">@tob.Liba</option>
+                                                                                    <option value=@tob.Elea>@tob.Liba</option>
                                                                                 }
                                                                             </InputSelect>
                                                                         }
@@ -374,7 +374,7 @@ else
                                                                           <InputSelect @bind-Value="item.Atyp" class="col-md-1" style="width:auto" disabled>
                                                                                 @foreach (var tob in LsFixes.Where(ut => ut.Gvars == 32 && ut.Itb == 2 && ut.Elea != 0))
                                                                                 {
-                                                                                    <option value="@tob.Elea">@tob.Liba</option>
+                                                                                    <option value=@tob.Elea>@tob.Liba</option>
                                                                                 }
                                                                             </InputSelect>
                                                                         }
@@ -385,20 +385,20 @@ else
                                                                         @if (EdRubRowguid == item.Rowguid)
                                                                         {
                                                                             <InputSelect @bind-Value="draftRub.Ydpd">
-                                                                                <option class="jchx" value="0">?choisir</option>
+                                                                                <option class="jchx" value=0>?choisir</option>
                                                                                 @foreach (var utb in selectedPln.Rubhies)
                                                                                 {
-                                                                                    <option value="@utb.Id">@utb.Liba</option>
+                                                                                    <option value=@utb.Id>@utb.Liba</option>
                                                                                 }
                                                                             </InputSelect>
                                                                         }
                                                                         else
                                                                         {
                                                                             <InputSelect @bind-Value="item.Ydpd" disabled="true">
-                                                                                <option class="jchx" value="0">aucun</option>
+                                                                                <option class="jchx" value=0>aucun</option>
                                                                                 @foreach (var utb in selectedPln.Rubhies)
                                                                                 {
-                                                                                    <option value="@utb.Id">@utb.Liba</option>
+                                                                                    <option value=@utb.Id>@utb.Liba</option>
                                                                                 }
                                                                             </InputSelect>
                                                                         }
@@ -442,20 +442,20 @@ else
                                                                         @if (EdRubRowguid == item?.Rowguid)
                                                                         { // show draftPln inputs
                                                                           <InputSelect @bind-Value="draftRub.Eta" class="col-md-1" style="width:auto">
-                                                                              <option class="jchx" value="0">?etat</option>
+                                                                              <option class="jchx" value=0>?etat</option>
                                                                                 @foreach (var tob in LsFixes.Where(ut => ut.Gvars == 32 && ut.Itb == 1 && ut.Elea != 0))
                                                                                 {
-                                                                                    <option value="@tob.Elea">@tob.Liba</option>
+                                                                                    <option value=@tob.Elea>@tob.Liba</option>
                                                                                 }
                                                                             </InputSelect>
                                                                         }
                                                                         else
                                                                         { // show item as read-only
                                                                           <InputSelect @bind-Value="item.Eta" class="col-md-1" style="width:auto" disabled>
-                                                                              <option class="jchx" value="0">?etat</option>
+                                                                              <option class="jchx" value=0>?etat</option>
                                                                                 @foreach (var tob in LsFixes.Where(ut => ut.Gvars == 32 && ut.Itb == 1 && ut.Elea != 0))
                                                                                 {
-                                                                                    <option value="@tob.Elea">@tob.Liba</option>
+                                                                                    <option value=@tob.Elea>@tob.Liba</option>
                                                                                 }
                                                                             </InputSelect>
                                                                         }
@@ -558,7 +558,7 @@ else
                                                 <option value=0>choisir</option>
                                                 @foreach (var udp in LsDivs.Where(dv => dv.Simain == 1))
                                                 {
-                                                    <option value="@udp.Ihie">@udp.Liba</option>
+                                                    <option value=@udp.Ihie>@udp.Liba</option>
                                                 }
                                             </InputSelect>
                                         </td>

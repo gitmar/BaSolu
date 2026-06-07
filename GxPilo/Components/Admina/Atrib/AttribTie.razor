@@ -10,18 +10,20 @@
 @using GxShared.GxDtos
 @using GxShared.Interfaces
 @using GxShared.Sess
+@using GxShared.Others
 @* @using Microsoft.EntityFrameworkCore *@
 @using Newtonsoft.Json
 
 @inject ILocalStorageService _localStorage
 @inject NavigationManager _navManager
 @inject HttpClientService _clieManager
+@inject RendAgres _rendAgres
 @inject IMapper Mapper
 @inject IJSRuntime _jsRun
 
 <div class="container mt-3">
 
-    <Button Color="ButtonColor.Success" @onclick="() => StartAdd()">Add New Attribute</Button>
+    <Button Color="ButtonColor.Success" @onclick="() => StartAdd()">New Attribute</Button>
     @if (draftAtr != null)
     {
         <Grid TItem="TieatrDto"
@@ -29,8 +31,10 @@
         AllowPaging="true"
         Responsive="true">
             <GridColumns>
-                <GridColumn TItem="TieatrDto" HeaderText="Id" Class="xcol1">
-                    <ChildContent Context="item">@item.Id</ChildContent>
+                <GridColumn TItem="TieatrDto" HeaderText="No" Class="xcol1">
+                    <ChildContent Context="item">
+                        @item.Elea <div @key="@tieatrkey"></div>
+                    </ChildContent>
                 </GridColumn>
                 <GridColumn TItem="TieatrDto" HeaderText="Label" Class="xcol3">
                     <ChildContent Context="item">
@@ -44,25 +48,91 @@
                         }
                     </ChildContent>
                 </GridColumn>
+                <GridColumn TItem="TieatrDto" HeaderText="Origine" Class="xcol1">
+                    <ChildContent Context="item">
+                        @if (editRowguid == item.Rowguid)
+                        {
+                        <InputSelect @bind-Value="draftAtr.Zfro" class="me-3" style="width:auto">
+                            <option value=1>constante</option>
+                            <option value=2>table</option>
+                        </InputSelect>
+                        }
+                        else 
+                        {
+                            <InputSelect @bind-Value="item.Zfro" class="me-3" style="width:auto" disabled>
+                                <option value=1>constante</option>
+                                <option value=2>table</option>
+                            </InputSelect>
+                        }
+                    </ChildContent>
+                </GridColumn>
+                <GridColumn TItem="TieatrDto" HeaderText="Table" Class="xcol1">
+                    <ChildContent Context="item">
+                        @if (editRowguid == item.Rowguid)
+                        {
+                        <InputSelect @bind-Value="draftAtr.Ztbl">
+                            <option value=0>aucun</option>
+                            @foreach (var fx in EnsTbls.Where(t => t.Tenr == 1 && t.Btyp == 1))
+                            {
+                                <option value=@fx.Tref>@fx.Liba</option>
+                            }
+                        </InputSelect>
+                        }
+                        else
+                        {
+                            <InputSelect @bind-Value="item.Ztbl" class="me-3" style="width:auto" disabled>
+                                <option value=0>aucun</option>
+                                @foreach (var fx in EnsTbls.Where(t => t.Tenr == 1 && t.Btyp == 1))
+                                {
+                                    <option value=@fx.Tref>@fx.Liba</option>
+                                }
+                            </InputSelect>
+                        }
+                    </ChildContent>
+                </GridColumn>
                 <GridColumn TItem="TieatrDto" HeaderText="Type" Class="xcol2">
                     <ChildContent Context="item">
                         @if (editRowguid == item.Rowguid)
                         {
                             <InputSelect @bind-Value="draftAtr.Atyp" class="me-3" style="width:auto">
-                                <option value="0">?choisir</option>
+                                <option value=0>?choisir</option>
                                 @foreach (var fx in LsFixes.Where(u => u.Gvars == 32 && u.Itb == 2 && u.Elea != 0))
                                 {
-                                    <option value="@fx.Elea">@fx.Liba</option>
+                                    <option value=@fx.Elea>@fx.Liba</option>
                                 }
                             </InputSelect>
                         }
                         else
                         {
-                            <InputSelect @bind-Value="draftAtr.Atyp" class="me-3" style="width:auto" disabled>
-                                <option value="0">?choisir</option>
+                            <InputSelect @bind-Value="item.Atyp" class="me-3" style="width:auto" disabled>
+                                <option value=0>aucun</option>
                                 @foreach (var fx in LsFixes.Where(u => u.Gvars == 32 && u.Itb == 2 && u.Elea != 0))
                                 {
-                                    <option value="@fx.Elea">@fx.Liba</option>
+                                    <option value=@fx.Elea>@fx.Liba</option>
+                                }
+                            </InputSelect>
+                        }
+                    </ChildContent>
+                </GridColumn>
+                <GridColumn TItem="TieatrDto" HeaderText="Eta">
+                    <ChildContent Context="item">
+                        @if (editRowguid == item.Rowguid)
+                        {
+                            <InputSelect @bind-Value="draftAtr.Eta">
+                                <option class="jchx" value=0>?choisir</option>
+                                @foreach (var tob in LsFixes.Where(ut => ut.Gvars == 32 && ut.Itb == 1 && ut.Elea != 0))
+                                {
+                                    <option value=@tob.Elea>@tob.Liba</option>
+                                }
+                            </InputSelect>
+                        }
+                        else
+                        {
+                            <InputSelect @bind-Value="item.Eta" disabled>
+                                <option class="jchx" value=0>?choisir</option>
+                                @foreach (var tob in LsFixes.Where(ut => ut.Gvars == 32 && ut.Itb == 1 && ut.Elea != 0))
+                                {
+                                    <option value=@tob.Elea>@tob.Liba</option>
                                 }
                             </InputSelect>
                         }
@@ -73,7 +143,7 @@
                         @if (editRowguid == item.Rowguid)
                         {
                             <Button Color="ButtonColor.Primary" Size="ButtonSize.Small"
-                            @onclick="() => SaveEdit(item)">
+                            @onclick="() => SaveEdit(draftAtr)">
                                 Save
                             </Button>
                             <Button Color="ButtonColor.Secondary" Size="ButtonSize.Small"
@@ -112,11 +182,31 @@
         <div class="mt-3">
             <h5>New Attribute</h5>
             <InputText @bind-Value="draftAtr.Liba" placeholder="Label" />
+            <InputSelect @bind-Value="inZfro" class="me-3" style="width:auto">
+                <option value=1>constante</option>
+                <option value=2>table</option>
+            </InputSelect>
+            @if(inZfro == 2)
+            {
+                <InputSelect @bind-Value="draftAtr.Ztbl" class="me-3" style="width:auto">
+                    @foreach (var fx in EnsTbls.Where(t => t.Tenr == 1 && t.Btyp == 1))
+                    {
+                        <option value=@fx.Elea>@fx.Liba</option>
+                    }
+                </InputSelect>
+            }
             <InputSelect @bind-Value="draftAtr.Atyp" class="me-3" style="width:auto">
-                <option value="0">?choisir</option>
+                <option value=0>?type</option>
                 @foreach (var fx in LsFixes.Where(u => u.Gvars == 32 && u.Itb == 2 && u.Elea != 0))
                 {
-                    <option value="@fx.Elea">@fx.Liba</option>
+                    <option value=@fx.Elea>@fx.Liba</option>
+                }
+            </InputSelect>
+            <InputSelect @bind-Value="draftAtr.Eta">
+                <option class="jchx" value=0>?etat</option>
+                @foreach (var tob in LsFixes.Where(ut => ut.Gvars == 32 && ut.Itb == 1 && ut.Elea != 0))
+                {
+                    <option value=@tob.Elea>@tob.Liba</option>
                 }
             </InputSelect>
             <Button Color="ButtonColor.Success" @onclick="() => SaveAdd()">Add</Button>
@@ -178,7 +268,8 @@
     public RenderFragment ChildContent { get; set; }
     [Parameter]
     public List<Gpdivh> LsDivs { get; set; }
-
+    [Parameter]
+    public List<Gtabl> EnsTbls { get; set; } // Dropdown options
     // Guard
     [Parameter]
     public IPendingChangesGuard _guard { get; set; }
@@ -193,7 +284,9 @@
     //[Parameter] public StockClientService StockService { get; set; }
     private List<TieatrDto> LsAtrs = new();
     private List<Gpfixe> LsFixes = new();
+    private int inZfro = 0;
     private Guid? editRowguid;
+    private string tieatrkey = "";
     private bool isAdding = false;
     private TieatrDto draftAtr = new();
 
@@ -246,18 +339,46 @@
     private void StartEdit(TieatrDto atr)
     {
         editRowguid = atr.Rowguid;
-        draftAtr = new TieatrDto { Id = atr.Id, Liba = atr.Liba, Atyp = atr.Atyp, Rowguid = atr.Rowguid };
+        draftAtr = new TieatrDto 
+        { 
+            Id = atr.Id,
+            Idorg = atr.Idorg,
+            Elea = atr.Elea,
+            Zfro = atr.Zfro,
+            Ztbl = atr.Ztbl,
+            Liba = atr.Liba,
+            Abg = atr.Abg,
+            Atyp = atr.Atyp, 
+            Eta = atr.Eta,
+            Rowguid = atr.Rowguid 
+        };
+        Console.WriteLine($"START -> zfro:{draftAtr.Zfro} ztbl:{draftAtr.Ztbl}");
     }
 
     private async Task SaveEdit(TieatrDto atr)
     {
-        atr.Liba = draftAtr.Liba;
-        atr.Atyp = draftAtr.Atyp;
+        //atr.Liba = draftAtr.Liba;
+        //atr.Abg = draftAtr.Abg;
+        //atr.Atyp = draftAtr.Atyp;
+        //atr.Zfro = draftAtr.Zfro;
+        //atr.Ztbl = draftAtr.Ztbl;
+        //atr.Eta = draftAtr.Eta;
+        Console.WriteLine($"EDIT -> zfro:{atr.Zfro} ztbl:{atr.Ztbl}");
+        if (atr.Zfro == 2) //table
+        {
+            if (atr.Atyp != 2)
+            {
+                atr.Atyp = 1; // default to string if table but no type chosen
+            }
+        }
+        atr.Satyp = GetSatyp(atr.Atyp);
         // Register update with OData context
         var key = GetEntityKey(atr); // helper to extract PK
         _guard.TrackUpdate("Tieatrs", key, atr);
         editRowguid = null;
+        tieatrkey = Guid.NewGuid().ToString();
         await NotifyPendingChanges();
+        StateHasChanged();
     }
 
     private void CancelEdit() => editRowguid = null;
@@ -274,7 +395,7 @@
         //_guard.TrackDelete<TDto>(GetEntitySetName<TDto>(), key);
         _guard.TrackDelete("Tieatrs", key);
         Console.WriteLine($"🗑️ {atr.Liba} queued for delete");
-        
+
         await NotifyPendingChanges();
     }
 
@@ -282,19 +403,37 @@
     {
         isAdding = true;
         draftAtr = new TieatrDto();
+        draftAtr.Rowguid = Guid.NewGuid();
         draftAtr.Idorg = curOrga.Idorg;
+        draftAtr.Zfro = 0;
+        draftAtr.Ztbl = 0;
+        draftAtr.Liba = "";
+        draftAtr.Abg = "";
+        draftAtr.Eta = 1;
+        inZfro = 1;
     }
 
     private async Task SaveAdd()
     {
-        draftAtr.Rowguid = Guid.NewGuid();
         draftAtr.Idorg = curOrga.Idorg;
+        draftAtr.Zfro = inZfro;
+        draftAtr.Eta = 1;
+        if (inZfro == 2) //table
+        {
+            if (draftAtr.Atyp != 2)
+            {
+                draftAtr.Atyp = 1; // default to string if table but no type chosen
+            }
+        }
+        draftAtr.Satyp = GetSatyp(draftAtr.Atyp);
         // Register add with OData context
         curOrga.Tieatrs.Add(draftAtr);
         _guard.TrackInsert("Tieatrs", draftAtr);
         Console.WriteLine($"➕ NEW {draftAtr.Liba} → TrackInsert");
         isAdding = false;
+        tieatrkey = Guid.NewGuid().ToString();
         await NotifyPendingChanges();
+        StateHasChanged();
     }
     private void CancelAdd(int orig, TieatrDto unatr)
     {
@@ -323,6 +462,36 @@
             default:
                 throw new InvalidOperationException($"Unknown entity type {typeof(TDto).Name}");
         }
+    }
+    private string GetSatyp(int? atyp)
+    {
+        if (atyp == null) return "string";
+        var strAtyp = "";
+        switch (atyp)
+        {
+            case 1:
+                strAtyp = "string";
+                break;
+            case 2:
+                strAtyp = "int";
+                break;
+            case 3:
+                strAtyp = "decimal";
+                break;
+            case 4:
+                strAtyp = "bool";
+                break;
+            case 5:
+                strAtyp = "date";
+                break;
+            case 6:
+                strAtyp = "adresse";
+                break;
+            default:
+                strAtyp = "string";
+                break;
+        }
+        return strAtyp;
     }
     // Notify guard/UI of pending changes
     private async Task NotifyPendingChanges()

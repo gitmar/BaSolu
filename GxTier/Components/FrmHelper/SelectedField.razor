@@ -5,10 +5,10 @@
     {
         <InputSelect Value="@BindValue" ValueChanged="@((int v) => BindValueChanged.InvokeAsync(v))" 
                      ValueExpression="@(() => BindValue)" class="form-select" Size="8">
-            <option value="0">?choisir</option>
+            <option value=0>?choisir</option>
             @foreach (var opt in Options)
             {
-                <option value="@opt.Elea">@opt.Liba</option>
+                <option value=@opt.Elea>@opt.Liba</option>
             }
         </InputSelect>
     }

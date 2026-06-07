@@ -20,7 +20,7 @@
         <InputSelect @bind-Value="IMyItu">
             @foreach (var item in curOrga.Stkitus.ToList())
             {
-                <option value="@item.Id" @onclick="() => SelPuns()">@item.Liba</option>
+                <option value=@item.Id @onclick="() => SelPuns()">@item.Liba</option>
             }
         </InputSelect>
     </div>

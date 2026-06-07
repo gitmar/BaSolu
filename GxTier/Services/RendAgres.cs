@@ -75,6 +75,17 @@ namespace GxTie.Services
 
             return result ?? new List<Gtabl>();
         }
+        public async Task<List<Gpatr>> LoadOrgaAtribs()
+        {
+            var json = await _clieManager.SendRequestAsync(
+                "AuthClient",
+                HttpMethod.Get,
+                "lgauth/allatribs");
+
+            var result = JsonConvert.DeserializeObject<List<Gpatr>>(json);
+
+            return result ?? new List<Gpatr>();
+        }
         public async Task<List<Gpcol>> LoadOrgaColons()
         {
             //FmtPsts

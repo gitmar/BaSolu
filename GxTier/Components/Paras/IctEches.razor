@@ -66,20 +66,20 @@ else
                 <div class="btn btn-group">
                     <label class="me-2">Plan :</label>
                     <InputSelect @bind-Value="IMyPlan" @onchange="() => curPlanPlan(IMyPlan)" class="me-3" style="width:auto">
-                        <option value="0">?plan</option>
+                        <option value=0>?plan</option>
                         @foreach (var upl in LsPlans)
                         {
-                            <option value="@upl.Id">@upl.Liba</option>
+                            <option value=@upl.Id>@upl.Liba</option>
                         }
                     </InputSelect>
                     <label class="fw-bold">@splnDom</label>
                     <label for="TypDiv">Service :</label>
                     <div>
                         <InputSelect id="TypDiv" @bind-Value="IMyDiv">
-                            <option value="0">Aucun</option>
+                            <option value=0>Aucun</option>
                             @foreach (var divo in LsDivs)
                             {
-                                <option value="@divo.Ihie">@divo.Abg-@divo.Liba</option>
+                                <option value=@divo.Ihie>@divo.Abg-@divo.Liba</option>
                             }
                         </InputSelect>
                     </div>
@@ -199,7 +199,7 @@ else
                                                                 <InputSelect @bind-Value="draftRub.Atyp" class="col-md-1" style="width:auto">
                                                                     @foreach (var tob in LsFixes.Where(ut => ut.Gvars == 32 && ut.Itb == 2 && ut.Elea != 0))
                                                                     {
-                                                                        <option value="@tob.Elea">@tob.Liba</option>
+                                                                        <option value=@tob.Elea>@tob.Liba</option>
                                                                     }
                                                                 </InputSelect>
                                                             }
@@ -208,7 +208,7 @@ else
                                                                 <InputSelect @bind-Value="item.Atyp" class="col-md-1" style="width:auto" disabled>
                                                                     @foreach (var tob in LsFixes.Where(ut => ut.Gvars == 32 && ut.Itb == 2 && ut.Elea != 0))
                                                                     {
-                                                                        <option value="@tob.Elea">@tob.Liba</option>
+                                                                        <option value=@tob.Elea>@tob.Liba</option>
                                                                     }
                                                                 </InputSelect>
                                                             }
@@ -239,20 +239,20 @@ else
                                                             @if (EdRubRowguid == item?.Rowguid)
                                                             { // show draftPln inputs
                                                                 <InputSelect @bind-Value="draftRub.Eta" class="col-md-1" style="width:auto">
-                                                                    <option class="jchx" value="0">?etat</option>
+                                                                    <option class="jchx" value=0>?etat</option>
                                                                     @foreach (var tob in LsFixes.Where(ut => ut.Gvars == 32 && ut.Itb == 1 && ut.Elea != 0))
                                                                     {
-                                                                        <option value="@tob.Elea">@tob.Liba</option>
+                                                                        <option value=@tob.Elea>@tob.Liba</option>
                                                                     }
                                                                 </InputSelect>
                                                             }
                                                             else
                                                             { // show item as read-only
                                                                 <InputSelect @bind-Value="item.Eta" class="col-md-1" style="width:auto" disabled>
-                                                                    <option class="jchx" value="0">?etat</option>
+                                                                    <option class="jchx" value=0>?etat</option>
                                                                     @foreach (var tob in LsFixes.Where(ut => ut.Gvars == 32 && ut.Itb == 1 && ut.Elea != 0))
                                                                     {
-                                                                        <option value="@tob.Elea">@tob.Liba</option>
+                                                                        <option value=@tob.Elea>@tob.Liba</option>
                                                                     }
                                                                 </InputSelect>
                                                             }
@@ -394,20 +394,20 @@ else
                                                                             @if (EdFmtRowguid == dt.Rowguid)
                                                                             { // show draftPln inputs
                                                                                 <InputSelect @bind-Value="draftFmt.Eta" class="col-md-1" style="width:auto">
-                                                                                    <option class="jchx" value="0">?etat</option>
+                                                                                    <option class="jchx" value=0>?etat</option>
                                                                                     @foreach (var tob in LsFixes.Where(ut => ut.Gvars == 32 && ut.Itb == 1 && ut.Elea != 0))
                                                                                     {
-                                                                                        <option value="@tob.Elea">@tob.Liba</option>
+                                                                                        <option value=@tob.Elea>@tob.Liba</option>
                                                                                     }
                                                                                 </InputSelect>
                                                                             }
                                                                             else
                                                                             { // show item as read-only
                                                                                 <select @bind="dt.Eta" class="col-md-1" style="width:auto" disabled>
-                                                                                    <option class="jchx" value="0">?etat</option>
+                                                                                    <option class="jchx" value=0>?etat</option>
                                                                                     @foreach (var tob in LsFixes.Where(ut => ut.Gvars == 32 && ut.Itb == 1 && ut.Elea != 0))
                                                                                     {
-                                                                                        <option value="@tob.Elea">@tob.Liba</option>
+                                                                                        <option value=@tob.Elea>@tob.Liba</option>
                                                                                     }
                                                                                 </select>
                                                                             }

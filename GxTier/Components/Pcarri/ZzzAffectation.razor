@@ -32,25 +32,25 @@
 <div class="mb-3">
     <label>Session:</label>
     <InputSelect id="sesId" @bind-Value="curSES" disabled>
-        <option value="0">session?</option>
+        <option value=0>session?</option>
         @* @foreach (var ses in EnsSess)
             {
-                <option value="@ses.Id">@ses.Sref</option>
+                <option value=@ses.Id>@ses.Sref</option>
             } *@
     </InputSelect>
     <label>Affectation en cours</label>
     <InputSelect @bind-Value="IMyAFEC" @onclick="() => SelCurAfec()">
-        <option value="0">choisir AFFEC</option>
+        <option value=0>choisir AFFEC</option>
         @foreach (var dep in LsAfecs)
         {
-            <option value="@dep.Id">@dep.Title</option>
+            <option value=@dep.Id>@dep.Title</option>
         }
     </InputSelect>
     <label>Date</label>
     <InputDate @bind-Value="curAFEC.Tdate" />
     @*<label>Type</label>
     <InputSelect @bind-Value="curAFEC.Mtyp">
-        <option value="1">Exter</option>
+        <option value=1>Exter</option>
     </InputSelect> *@
 </div>
 @* <div class="mb-3">
@@ -58,7 +58,7 @@
     <InputSelect @bind-Value="origDIV">
         @foreach (var dep in LsDivs.Where(d => d.Tyhie == 1))//adm
         {
-            <option value="@dep.Ihie">@dep.Liba</option>
+            <option value=@dep.Ihie>@dep.Liba</option>
         }
     </InputSelect>
 </div> *@
@@ -69,26 +69,26 @@
         <InputSelect @bind-Value="draftLine.Itie" @onclick="() => SelDomTie()">
             @foreach (var item in DaItems)
             {
-                <option value="@item.Id">@item.Nom - @item.Pnom</option>
+                <option value=@item.Id>@item.Nom - @item.Pnom</option>
             }
         </InputSelect>
         <InputSelect @bind-Value="draftLine.Froloc" disabled>
             @foreach (var loc in OriginLocations)
             {
-                <option value="@loc.Ipst">@loc.Liba</option>
+                <option value=@loc.Ipst>@loc.Liba</option>
             }
         </InputSelect>
         <InputSelect @bind-Value="draftLine.Toloc">
             @foreach (var loc in DestinationLocations)
             {
-                <option value="@loc.Ipst">@loc.Liba</option>
+                <option value=@loc.Ipst>@loc.Liba</option>
             }
         </InputSelect>
         <InputSelect @bind-Value="draftLine.Ifonc" style="font-weight:bold">
-            <option value="0">-- Select fonction --</option>
+            <option value="">-- Select fonction --</option>
             @foreach (var tob in EnsTbls.FirstOrDefault(t => t.Tref == 14)?.TbItems ?? new List<Gtvar>())
             {
-                <option value="@tob.Abg">@tob.Liba</option>
+                <option value=@tob.Abg>@tob.Liba</option>
             }
         </InputSelect>
         <Button Color="ButtonColor.Success" @onclick="() => SaveAdd()">Add</Button>
@@ -118,7 +118,7 @@
                 <InputSelect @bind-Value="line.Froloc">
                     @foreach (var dep in LsDivs.Where(d => d.Rpdom == 1)) //adm
                     {
-                        <option value="@dep.Ihie">@dep.Liba</option>
+                        <option value=@dep.Ihie>@dep.Liba</option>
                     }
                 </InputSelect>
             </ChildContent>
@@ -128,7 +128,7 @@
                 <InputSelect @bind-Value="line.Froloc" disabled>
                     @foreach (var loc in OriginLocations.ToList())
                     {
-                        <option value="@loc.Ipst">@loc.Liba</option>
+                        <option value=@loc.Ipst>@loc.Liba</option>
                     }
                     </InputSelect>
             </ChildContent>
@@ -138,7 +138,7 @@
                 <InputSelect @bind-Value="line.Nwhie">
                     @foreach (var dep in LsDivs.Where(d => d.Rpdom == 1)) //adm
                     {
-                        <option value="@dep.Ihie">@dep.Liba</option>
+                        <option value=@dep.Ihie>@dep.Liba</option>
                     }
                 </InputSelect>
             </ChildContent>
@@ -148,7 +148,7 @@
                 <InputSelect @bind-Value="line.Toloc">  
                     @foreach (var loc in DestinationLocations.ToList())
                     {
-                       <option value="@loc.Ipst">@loc.Liba</option>
+                       <option value=@loc.Ipst>@loc.Liba</option>
                     }
                 </InputSelect>
             </ChildContent>
@@ -158,7 +158,7 @@
                 <InputSelect @bind-Value="line.Nwfonc" style="font-weight:bold">
                     @foreach (var tob in EnsTbls.FirstOrDefault(t => t.Tref == 14)?.TbItems ?? new List<Gtvar>())
                     {
-                        <option value="@tob.Abg">@tob.Liba</option>
+                        <option value=@tob.Abg>@tob.Liba</option>
                     }
                 </InputSelect>
             </ChildContent>

@@ -27,17 +27,17 @@
     <div class="d-flex align-items-center gap-2 mb-2">
         <label>G.ope:</label>
         <InputSelect id="opId" @bind-Value="curGope">
-            <option value="0">chx.?</option>
-            <option value="1">pilotage</option>
-            <option value="2">personne</option>
-            <option value="3">matiere</option>
+            <option value=0>chx.?</option>
+            <option value=1>pilotage</option>
+            <option value=2>personne</option>
+            <option value=3>matiere</option>
         </InputSelect>
         <label>Utilisateur:</label>
         <InputSelect id="iUsr" @bind-Value="curUsId">
-            <option value="0">chx.?</option>
+            <option value=0>chx.?</option>
             @foreach (var ur in allUsers)
             {
-                <option value="@ur.Id">@ur.Iele - @ur.Nom @ur.Pnom</option>
+                <option value=@ur.Id>@ur.Iele - @ur.Nom @ur.Pnom</option>
             }
         </InputSelect>
     </div>

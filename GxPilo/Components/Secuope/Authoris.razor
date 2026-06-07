@@ -27,17 +27,17 @@
         <div class="d-flex align-items-center gap-2 mb-2">
             <label>G.ope:</label>
             <InputSelect id="opId" @bind-Value="curGope">
-                <option value="0">chx.?</option>
-                <option value="1">pilotage</option>
-                <option value="2">personne</option>
-                <option value="3">matiere</option>
+                <option value=0>chx.?</option>
+                <option value=1>pilotage</option>
+                <option value=2>personne</option>
+                <option value=3>matiere</option>
             </InputSelect>
             <label>Utilisateur:</label>
             <InputSelect id="iUsr" @bind-Value="curUsId">
-                <option value="0">chx.?</option>
+                <option value=0>chx.?</option>
                 @foreach (var ur in allUsers)
                 {
-                    <option value="@ur.Id">@ur.Iele - @ur.Nom @ur.Pnom</option>
+                    <option value=@ur.Id>@ur.Iele - @ur.Nom @ur.Pnom</option>
                 }
             </InputSelect>
         </div>
@@ -46,17 +46,17 @@
     {
         <div class="row mt-3">
             <InputSelect @bind-Value="@curGmenu" style="width:auto">
-                <option value="0">chx.?</option>
+                <option value=0>chx.?</option>
                 @foreach (var um in _lsOperats.Where(o => o.Itb == curGope && o.Gp1 != 0 && o.Gp2 == 0).ToList())
                 {
-                    <option value="@um.Gp1">@um.Liba</option>
+                    <option value=@um.Gp1>@um.Liba</option>
                 }
             </InputSelect>
             <InputSelect @bind-Value="@curSmenu" style="width:auto">
-                <option value="0">chx.?</option>
+                <option value=0>chx.?</option>
                 @foreach (var um in _lsOperats.Where(o => o.Itb == curGope && o.Gp1 == curGmenu && o.Gp2 != 0 && o.Gp3 == 0).ToList())
                 {
-                    <option value="@um.Gp2">@um.Liba</option>
+                    <option value=@um.Gp2>@um.Liba</option>
                 }
             </InputSelect>
         </div>
@@ -64,18 +64,18 @@
             @if (curGope == 2 || curGope == 3)
             {
                 <InputSelect @bind-Value="draftExo.Ihie" style="width:auto">
-                    <option value="0">chx.?</option>
+                    <option value=0>chx.?</option>
                     @foreach (var ur in authDivs)
                     {
-                        <option value="@ur.Ihie">@ur.Liba</option>
+                        <option value=@ur.Ihie>@ur.Liba</option>
                     }
                 </InputSelect>
             }
             <InputSelect @bind-Value="draftExo.Iope" style="width:auto">
-                <option value="0">chx.?</option>
+                <option value=0>chx.?</option>
                 @foreach (var ur in _lsOperats.Where(o => o.Itb == curGope && o.Gp1 == curGmenu && o.Gp2 == curSmenu && o.Gp3 != 0).ToList())
                 {
-                    <option value="@ur.Gp3">@ur.Liba</option>
+                    <option value=@ur.Gp3>@ur.Liba</option>
                 }
             </InputSelect>
             <div class="flex-wrap">
@@ -131,15 +131,15 @@
                         @if (editRowguid == item.Rowguid)
                         {
                             <InputSelect @bind-Value="draftExo.Iope" class="me-3" style="width:auto">
-                                <option value="1">??</option>
-                                <option value="2">???</option>
+                                <option value=1>??</option>
+                                <option value=2>???</option>
                             </InputSelect>
                         }
                         else
                         {
                             <InputSelect @bind-Value="draftExo.Iope" class="me-3" style="width:auto" disabled>
-                                <option value="1">??</option>
-                                <option value="2">???</option>
+                                <option value=1>??</option>
+                                <option value=2>???</option>
                             </InputSelect>
                         }
                     </ChildContent>

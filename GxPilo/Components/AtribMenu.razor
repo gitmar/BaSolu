@@ -70,6 +70,7 @@
                         curOrga="@curOrga"
                         @bind-NbChanges="_nbChanges"
                         _guard="_guard"
+                        EnsTbls="@EnsTbls"
                         Orig="1"
                         toChild="@toChild"
                                    _InODaClient="@_MyODaClient">
@@ -84,6 +85,7 @@
                         curOrga="@curOrga"
                         @bind-NbChanges="_nbChanges"
                         _guard="_guard"
+                        EnsTbls="@EnsTbls"
                         Orig="2"
                         toChild="@toChild"
                                    _InODaClient="@_MyODaClient">
@@ -98,6 +100,7 @@
                         curOrga="@curOrga"
                         @bind-NbChanges="_nbChanges"
                         _guard="_guard"
+                        EnsTbls="@EnsTbls"
                         Orig="1"
                         toChild="@toChild"
                             _InODaClient="@_MyODaClient">
@@ -112,6 +115,7 @@
                         curOrga="@curOrga"
                         @bind-NbChanges="_nbChanges"
                         _guard="_guard"
+                        EnsTbls="@EnsTbls"
                         Orig="2"
                         toChild="@toChild"
                            _InODaClient="@_MyODaClient">
@@ -128,6 +132,7 @@
                             toMenu="@_chxMenu"
                             @bind-NbChanges="_nbChanges"
                             _guard="_guard"
+                            EnsTbls="@EnsTbls"
                             _InODaClient="@_MyODaClient">
                         </ItemsEntry>
                     }
@@ -191,6 +196,7 @@
     private bool isAuthenticated = false;
     //in DATA
     public List<GsgfixDto> LsTables = new();
+    private List<Gtabl> EnsTbls = new();
 
     private string _strOrga = "", _curSigle = "", strmeta = "", strmeta2 = "";
     //private int _lgcdu = 0;
@@ -295,6 +301,7 @@
             toChild.LsTabls = LsTabls;
             toChild.curOrga = curOrga;  // ADD THIS!
             //_guard.RegisterUnconfirmedPredicate<Gsgfix>(g => g.Xadd1 == -1 || g.Xedt1 == -1 || g.Xdel1 == -1);
+            EnsTbls = await _rendAgres.LoadOrgaTables();
             _nbChanges = _guard.GetPendingChangesCount();  // Initial value
         }
         catch (Exception ex)

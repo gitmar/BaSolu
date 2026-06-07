@@ -28,12 +28,12 @@
 @inject RendAgres _rendAgres
 
 <PageTitle>OPERATEURS</PageTitle>
-@if (!string.IsNullOrEmpty(Imessage))
+@* @if (!string.IsNullOrEmpty(Imessage))
 {
     <div>
         <p style="color:red;">@Imessage</p>
     </div>
-}
+} *@
 @if (ErrorsList.Any())
 {
     foreach (var uner in ErrorsList)
@@ -57,7 +57,7 @@ else
                     <DataAnnotationsValidator />
                     <ValidationSummary />
                     <Tabs>
-                        <Tab Title="Individuelle" Name="IndTab" onClick="() => OnTabChanged(1)">
+                        <Tab Title="Invitation" Name="IndTab" onClick="() => OnTabChanged(1)">
                             <Content>
                                 <!-- Sender Email -->
                                 <label class="fw-bold">Sender Email: @_invModel.SendEmail</label>
@@ -72,10 +72,10 @@ else
                                     @* <div class="col-md-4">
                                         <label>Groupe:</label>
                                         <InputSelect @bind-Value="_invModel.Utyp" class="form-select">
-                                            <option value="0">Sélectionner...</option>
+                                            <option value=0>Sélectionner...</option>
                                             @foreach (var ut in _invUtyps.Where(g => g.Gp1 == 1))
                                             {
-                                                <option value="@ut.Elea" @onclick="() => SelUtyp(ut)">@ut.Liba</option>
+                                                <option value=@ut.Elea @onclick="() => SelUtyp(ut)">@ut.Liba</option>
                                             }
                                         </InputSelect>
                                     </div> *@
@@ -85,10 +85,10 @@ else
                                     <div class="col-md-4">
                                         <label>Role:</label>
                                         <InputSelect @bind-Value="_invModel.Ivrole" class="form-select">
-                                            <option value="0">Sélectionner...</option>
+                                            <option value=0>Sélectionner...</option>
                                             @foreach (var role in _invRoles)
                                             {
-                                                <option value="@role.Level">@role.Name</option>
+                                                <option value=@role.Level>@role.Name</option>
                                             }
                                         </InputSelect>
                                     </div>
@@ -131,10 +131,10 @@ else
                                     <div class="col-md-4">
                                         <label>G.Origine:</label>
                                         <InputSelect @bind-Value="_invModel.Itgpe" @onchange="() => SelDomITies()" class="form-select">
-                                            <option value="0">Institution</option>
+                                            <option value=0>Institution</option>
                                             @foreach (var gte in _iVgties)
                                             {
-                                                <option value="@gte.Elea">@gte.Liba</option>
+                                                <option value=@gte.Elea>@gte.Liba</option>
                                             }
                                         </InputSelect>
                                     </div>
@@ -144,10 +144,10 @@ else
                                         <div class="col-md-4">
                                             <label>Tiers:</label>
                                             <InputSelect @bind-Value="_invModel.Itgid" class="form-select">
-                                                <option value="0">Chx?Tiers</option>
+                                                <option value=0>Chx?Tiers</option>
                                                 @foreach (var tie in _iVtiers)
                                                 {
-                                                    <option value="@tie.Id">@tie.Raison</option>
+                                                    <option value=@tie.Id>@tie.Raison</option>
                                                 }
                                             </InputSelect>
                                         </div>
@@ -160,10 +160,10 @@ else
                                     <div class="col-md-4">
                                         <label>Services:</label>
                                         <InputSelect @bind-Value="_invModel.Ihie" class="form-select">
-                                            <option value="0">Aucun</option>
+                                            <option value=0>Aucun</option>
                                             @foreach (var div in _lsDivs.Where(d => d.Rpdom == 1 && d.Tyhie == 1))
                                             {
-                                                <option value="@div.Ihie">@div.Liba</option>
+                                                <option value=@div.Ihie>@div.Liba</option>
                                             }
                                         </InputSelect>
                                     </div>
@@ -171,10 +171,10 @@ else
                                     <div class="col-md-4">
                                         <label>Poste:</label>
                                         <InputSelect @bind-Value="_invModel.Ipst" class="form-select">
-                                            <option value="0">Aucun</option>
+                                            <option value=0>Aucun</option>
                                             @foreach (var pst in _lsPsts)
                                             {
-                                                <option value="@pst.Ipst">@pst.Liba</option>
+                                                <option value=@pst.Ipst>@pst.Liba</option>
                                             }
                                         </InputSelect>
                                     </div>
@@ -194,16 +194,59 @@ else
                                     <div class="col-md-2"></div>
                                     <div class="col-md-8">
                                         <Button color="ButtonColor.Primary" @onclick="() => SendIndividualInvite()">
-                                            Envoyer Invitation Individuelle
+                                            Envoyer Invitation
                                         </Button>
                                     </div>
                                     <div class="col-md-2"></div>
                                 </div>
                             </Content>
                         </Tab>
+                        <Tab Title="Revocation" Name="GpeRev" onClick="() => OnTabChanged(2)">
+                             <Content>
+                                <!-- Revocation ref -->
+                                <div class="col-md-4">
+                                    <label>Ref.revocation:</label>
+                                    <InputText @bind-Value="_invModel.Refapl" class="form-control" />
+                                </div>
+                                <!-- Operateur -->
+                                <div class="col-md-8">
+                                    <label>Operateur:</label>
+                                    <InputSelect @bind-Value="IMyUser" @onclick="() => SelDomUser()" class="form-select">
+                                        <option value="">Aucun</option>
+                                        @foreach (var ur in _allUsers)
+                                        {
+                                            <option value=@ur.Id>@ur.Email @ur.Nom @ur.Pnom</option>
+                                        }
+                                    </InputSelect>
+                                </div>
+                                <!-- Email -->
+                                <div class="col-md-8">
+                                    <label>Email:</label>
+                                    <label>@_curUser.Email</label>
+                                </div>
+                                <div class="col-md-4">
+                                    <label>Téléphone:</label>
+                                    <label>@_curUser.Phonenumber</label>
+                                </div>
+                                <div class="col-md-8">
+                                    <label>Nom:</label>
+                                    <label>@_curUser.Nom</label>
+                                </div>
+                                <div class="col-md-8">
+                                    <label>Pnom:</label>
+                                    <label>@_curUser.Pnom</label>
+                                </div>
+                                <div class="col-md-8">
+                                    <button class="btn btn-outline-danger btn-sm d-flex align-items-center" @onclick="() => ReVoquerUser()">
+                                        <i class="bi bi-envelope-check me-1"></i>
+                                        Revoquer
+                                    </button>
+                                </div>
+                             </Content>
+                        </Tab>
                         @if (yagroup)
                         {
-                            <Tab Title="De groupe" Name="GpeTab" onClick="() => OnTabChanged(2)">
+                            <Tab Title="De groupe" Name="GpeTab" onClick="() => OnTabChanged(3)">
                                 <Content>
                                     <div class="row g-3">
                                         <!-- Reference -->
@@ -215,10 +258,10 @@ else
                                         <div class="col-md-4">
                                             <label>Role:</label>
                                             <InputSelect @bind-Value="_invModel.Ivrole" class="form-select">
-                                                <option value="0">Sélectionner...</option>
+                                                <option value=0>Sélectionner...</option>
                                                 @foreach (var role in _invRoles)
                                                 {
-                                                    <option value="@role.Level">@role.Name</option>
+                                                    <option value=@role.Level>@role.Name</option>
                                                 }
                                             </InputSelect>
                                         </div>
@@ -227,10 +270,10 @@ else
                                     <div class="col-md-4">
                                         <label>Qualité:</label>
                                         <InputSelect @bind-Value="_invModel.Utyp" class="form-select">
-                                            <option value="0">Sélectionner...</option>
+                                            <option value=0>Sélectionner...</option>
                                             @foreach (var ut in _invUtyps)
                                             {
-                                                <option value="@ut.Elea" @onclick="() => SelUtyp(ut)">@ut.Liba</option>
+                                                <option value=@ut.Elea @onclick="() => SelUtyp(ut)">@ut.Liba</option>
                                             }
                                         </InputSelect>
                                     </div> *@
@@ -251,10 +294,10 @@ else
                                         <div class="col-md-4">
                                             <label>G.Origine:</label>
                                             <InputSelect @bind-Value="_invModel.Itgpe" @onchange="() => SelDomITies()" class="form-select">
-                                                <option value="0">Institution</option>
+                                                <option value=0>Institution</option>
                                                 @foreach (var gte in _iVgties)
                                                 {
-                                                    <option value="@gte.Elea">@gte.Liba</option>
+                                                    <option value=@gte.Elea>@gte.Liba</option>
                                                 }
                                             </InputSelect>
                                         </div>
@@ -264,10 +307,10 @@ else
                                             <div class="col-md-4">
                                                 <label>Tiers:</label>
                                                 <InputSelect @bind-Value="_invModel.Itgid" class="form-select">
-                                                    <option value="0">Chx?Tiers</option>
+                                                    <option value=0>Chx?Tiers</option>
                                                     @foreach (var tie in _iVtiers)
                                                     {
-                                                        <option value="@tie.Id">@tie.Raison</option>
+                                                        <option value=@tie.Id>@tie.Raison</option>
                                                     }
                                                 </InputSelect>
                                             </div>
@@ -281,10 +324,10 @@ else
                                         <div class="col-md-4">
                                             <label>Services:</label>
                                             <InputSelect @bind-Value="_invModel.Ihie" class="form-select">
-                                                <option value="0">Aucun</option>
+                                                <option value=0>Aucun</option>
                                                 @foreach (var div in _lsDivs)
                                                 {
-                                                    <option value="@div.Ihie">@div.Liba</option>
+                                                    <option value=@div.Ihie>@div.Liba</option>
                                                 }
                                             </InputSelect>
                                         </div>
@@ -292,10 +335,10 @@ else
                                         <div class="col-md-4">
                                             <label>Poste:</label>
                                             <InputSelect @bind-Value="_invModel.Ipst" class="form-select">
-                                                <option value="0">Aucun</option>
+                                                <option value=0>Aucun</option>
                                                 @foreach (var pst in _lsPsts)
                                                 {
-                                                    <option value="@pst.Ipst">@pst.Liba</option>
+                                                    <option value=@pst.Ipst>@pst.Liba</option>
                                                 }
                                             </InputSelect>
                                         </div>
@@ -490,6 +533,9 @@ else
     private List<Gpfixe> _iVgties = new();
     private Gpfixe _curUtyp = new();
     private List<Grole> _usrRoles = new();
+    private List<Gxuser> _allUsers = new();
+    private Gxuser _curUser = new();
+    private string IMyUser = "";
     private List<string> invalidLines = new();    
     private List<SimpleRecipient> ValidGroupEmails => ParseGroupEmails();
     private bool CanSendGroupInvite() => ValidGroupEmails.Any();
@@ -567,6 +613,7 @@ else
                 .ToList();
             _invModel.IvTiep = 0; //a controler au server (Tiersp/Tiewel)
             await LoadOrgaAsync(_usrBag.Idorg);
+            _allUsers = await _rendAgres.LoadOrgaUsers();
             Console.WriteLine($"AUTHENTICATION OK et orga recu {curOrga.Raison}");
         }
         catch(Exception ex)
@@ -601,6 +648,17 @@ else
     {
         _iVtiers = curOrga.Tiersps.Where(t => t.Utyp == _invModel.Itgpe)
             .ToList();
+    }
+    private async Task SelDomUser()
+    {
+        if (!string.IsNullOrEmpty(IMyUser))
+        {
+            _curUser = _allUsers.FirstOrDefault(au => au.Id == IMyUser);
+        } else 
+        {
+            _curUser = new();
+        }
+        Console.WriteLine($"current user : {_curUser?.Nom}");
     }
     private async Task SendIndividualInvite()
     {
@@ -650,7 +708,7 @@ else
             //     {
             //         InviteData = _invModel
             //     });
-            Imessage = "Succes Individual invite " + _invModel.FirstName + "/" + _invModel.LastName;
+            Imessage = "Succes invite " + _invModel.FirstName + "/" + _invModel.LastName;
             operecipientsSaved = true;
             StateHasChanged();
             // Success handling
@@ -783,6 +841,26 @@ else
                 "AuthClient",
                 HttpMethod.Post,
                 "regis/resendconfirm", _invModel);
+        // if (!response.IsSuccessStatusCode)
+        // {
+        //     var errorContent = await response.Content.ReadAsStringAsync();
+        //     Imessage = $"Failed: {response.StatusCode} - {errorContent}";
+        //     return false;
+        // }
+        return true;
+    }
+    private async Task<bool> ReVoquerUser()
+    {
+        OrgaCreateDto dto = new();
+        dto.Idorg = curOrga.Idorg;
+        dto.Email = _invModel.Email;
+        // Dynamic client per-customer
+        var clieUrl = _invModel.Weburl;
+        await _clieManager.SetAuthorizationHeaderAsync("AuthClient");
+        var response = await _clieManager.SendRequestAsync(
+                "AuthClient",
+                HttpMethod.Post,
+                "regis/revoqueruser", _invModel);
         // if (!response.IsSuccessStatusCode)
         // {
         //     var errorContent = await response.Content.ReadAsStringAsync();

@@ -3,6 +3,7 @@
 @using GxShared.Helpers
 @using GxPilo.Services
 @using GxShared.Sess
+@using GxShared.Others
 @using GxShared.GxDtos
 @using GxShared.Interfaces
 @using Simple.OData.Client
@@ -102,6 +103,8 @@
     [Parameter] public GxorgaDto curOrga { get; set; }
     [Parameter]
     public List<Gpdivh> LsDivs { get; set; }
+    [Parameter]
+    public List<Gtabl> EnsTbls { get; set; } // Dropdown options
     [Parameter] public ChildVars toChild { get; set; }
     [Parameter] public int toMenu { get; set; }
     // [Parameter] public ItemClientService itemService { get; set; }

@@ -27,14 +27,14 @@
         <InputSelect @bind-Value="IMyExo">
             @foreach (var exo in LsExos)
             {
-                <option value="@exo.Elea">@exo.Liba</option>
+                <option value=@exo.Elea>@exo.Liba</option>
             }
         </InputSelect>
         <label>G.session</label>
         <InputSelect @bind-Value="IGpSes">
             @foreach (var ses in GSesios)
             {
-                <option value="@ses.Otyp">@ses.Liba</option>
+                <option value=@ses.Otyp>@ses.Liba</option>
             }
         </InputSelect>  
     </div>
@@ -87,21 +87,21 @@
                         @* @if (editRowguid == item.Rowguid)
                         {
                             <InputSelect @bind-Value="draftSes.Otyp" class="me-3" style="width:auto" disabled>
-                                <option value="1">param</option>
-                                <option value="2">accueil</option>
-                                <option value="3">saisies</option>
-                                <option value="4">calculs</option>
-                                <option value="5">analyses</option>
+                                <option value=1>param</option>
+                                <option value=2>accueil</option>
+                                <option value=3>saisies</option>
+                                <option value=4>calculs</option>
+                                <option value=5>analyses</option>
                             </InputSelect>
                         }
                         else
                         { *@
                             <InputSelect @bind-Value="draftSes.Igpe" class="me-3" style="width:auto" disabled>
-                                <option value="1">param</option>
-                                <option value="2">accueil</option>
-                                <option value="3">saisies</option>
-                                <option value="4">calculs</option>
-                                <option value="5">analyses</option>
+                                <option value=1>param</option>
+                                <option value=2>accueil</option>
+                                <option value=3>saisies</option>
+                                <option value=4>calculs</option>
+                                <option value=5>analyses</option>
                             </InputSelect>
                         @* } *@
                     </ChildContent>

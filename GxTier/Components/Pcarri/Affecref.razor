@@ -24,10 +24,10 @@
     <div class="d-flex align-items-center gap-2">
         <label>Exercice:</label>
         <InputSelect id="exoId" @bind-Value="curEXO">
-            <option value="0">exo?</option>
+            <option value=0>exo?</option>
             @* @foreach (var exo in toChild.)
             {
-                <option value="@exo.Id">@exo.Sref</option>
+                <option value=@exo.Id>@exo.Sref</option>
             } *@
         </InputSelect>
         <Button Color="ButtonColor.Success" @onclick="() => StartAdd()">Add New Reference Affectation</Button>
@@ -41,7 +41,7 @@
             @* <InputSelect @bind-Value="draftMvt.Ipln" class="xcol2">
                 @foreach (var item in LsDivs.Where(p => p.Ptyp == 4))
                 {
-                    <option value="@item.Ipln">@item.Liba</option>
+                    <option value=@item.Ipln>@item.Liba</option>
                 }
             </InputSelect> *@
             <InputDate @bind-Value="draftMvt.Tdate" placeholder="date" class="xcol1" />
@@ -105,7 +105,7 @@
                             <InputSelect @bind-Value="item.Ipln">
                                 @foreach (var item in LsPlans.Where(p => p.Ptyp == 4))
                                 {
-                                    <option value="@item.Id">@item.Liba</option>
+                                    <option value=@item.Id>@item.Liba</option>
                                 }
                             </InputSelect>
                         }
@@ -114,7 +114,7 @@
                             <InputSelect @bind-Value="item.Ipln" disabled>
                                 @foreach (var item in LsPlans.Where(p => p.Ptyp == 4))
                                 {
-                                    <option value="@item.Id">@item.Liba</option>
+                                    <option value=@item.Id>@item.Liba</option>
                                 }
                             </InputSelect>
                         }
@@ -140,7 +140,7 @@
                         <InputSelect @bind-Value="item.Tperi">
                             @foreach (var item in LsFixes.Where(p => p.Gvars == 32 && p.Itb == 4 && p.Elea != 0))
                             {
-                                <option value="@item.Elea">@item.Liba</option>
+                                <option value=@item.Elea>@item.Liba</option>
                             }
                         </InputSelect>
                         @if (editRowguid == item.Rowguid)

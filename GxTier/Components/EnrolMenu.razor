@@ -74,6 +74,7 @@ else
                                      curOrga="@curOrga"
                                      @bind-NbChanges="_nbChanges"
                                      _guard="_guard"
+                                     EnsAtrs="@EnsAtrs"
                                      EnsTbls ="@EnsTbls"
                                      toChild="@toChild"
                                      _InODaClient="@_MyODaClient">
@@ -90,6 +91,7 @@ else
                                      curOrga="@curOrga"
                                      @bind-NbChanges="_nbChanges"
                                      _guard="_guard"
+                                     EnsAtrs="@EnsAtrs"
                                      EnsTbls="@EnsTbls"
                                      toChild="@toChild"
                                      _InODaClient="@_MyODaClient">
@@ -198,7 +200,7 @@ else
     private IEnumerable<GxorgaDto> _lsOrgas = new List<GxorgaDto>();
     private List<TiewelDto> InTwels = new List<TiewelDto>();
     private List<TierspDto> InTiers = new List<TierspDto>();
-    public IQueryable<GsaplDto> InApls = Enumerable.Empty<GsaplDto>().AsQueryable();
+    private IQueryable<GsaplDto> InApls = Enumerable.Empty<GsaplDto>().AsQueryable();
     public IEnumerable<TiewelDto> ResTiw;
     public IEnumerable<TierspDto> ResTie;
     public TiewelDto opTwel = new();
@@ -214,6 +216,7 @@ else
 
     private List<Grole> LsRoles = new();
     private List<Gtabl> EnsTbls = new();
+    private List<Gpatr> EnsAtrs = new();
     //Navigation
     private int _gIdTie = 0, _chxGpe = 0, _chxMenu = 1;
     private string strComp = $"Integration";
@@ -307,9 +310,10 @@ else
         //LsFcols = lscols.Where(tc => tc.Otyp == 2 && tc.Totyp == Ugpe && tc.Zfro == 1).ToList();
         Console.WriteLine("Authentication ENTREE");
         EnsTbls = await _rendAgres.LoadOrgaTables();
+        Console.WriteLine($"nb. tables : {EnsTbls.Count}");
         //TbItems = await _rendAgres.LoadOrgaTables();
         //Console.WriteLine($"nb. tbitems : {TbItems.Count}");
-        
+
         //_guard.RegisterUnconfirmedPredicate<Tiewel>(w => w.Xadd1 == -1 || w.Xedt1 == -1 || w.Xdel1 == -1);
         // _guard.RegisterUnconfirmedPredicate<Tiwatr>(wa => wa.Xadd1 == -1 || wa.Xedt1 == -1 || wa.Xdel1 == -1);
         // _guard.RegisterUnconfirmedPredicate<Tiwafl>(wf => wf.Xadd1 == -1 || wf.Xedt1 == -1 || wf.Xdel1 == -1);
@@ -318,11 +322,9 @@ else
         // _guard.RegisterUnconfirmedPredicate<TieaflDto>(ef => ef.Xadd1 == -1 || ef.Xedt1 == -1 || ef.Xdel1 == -1);
 
         _nbChanges = _guard.GetPendingChangesCount();  // Initial value
-        
         await LoadTieAplAsync(_usrBag.Idorg);
-
-        // pita = 5;
-        Console.WriteLine("TIERS A ETE TESTE");
+        EnsAtrs = await _rendAgres.LoadOrgaAtribs();
+        Console.WriteLine($"nb. attributs : {EnsAtrs.Count}");
         //option initiale
         strComp = $"Integration {gpeLiba}";
         //isLoading = false;
@@ -343,8 +345,8 @@ else
                 .Key(key)
                 .Expand(o => o.Tiewels.Select(t => t.Tiwafls))
                 .Expand(o => o.Tiersps.Select(t => t.Tieafls))
-                .Expand(o => o.Tiersps.Select(t => t.Tieatrs))
-                .Expand(o => o.Tiersps.Select(t => t.Tiecats))
+                .Expand(o => o.Tiersps.Select(t => t.Tiejatrs))
+                .Expand(o => o.Tiersps.Select(t => t.Tiegcats))
                 .FindEntryAsync();
             Console.WriteLine($"loadOrgaAsync completed : {curOrga?.Raison}");
         }

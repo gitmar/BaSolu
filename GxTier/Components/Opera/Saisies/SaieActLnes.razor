@@ -51,10 +51,10 @@
 {
     <div class="d-flex align-items-center gap-2">
         <InputSelect id="optId" @bind-Value="ImyOrient">
-            <option value="0">aucun</option>
+            <option value=0>aucun</option>
             @foreach (var uf in LsFixes.Where(xf => xf.Gvars == 33 && xf.Itb == 7 && xf.Gp1 == 4))
             {
-                <option value="@uf.Elea">par @uf.Liba</option>
+                <option value=@uf.Elea>par @uf.Liba</option>
             }
         </InputSelect>
         @if (CanSaie)
@@ -109,20 +109,20 @@
                       <label>Code :</label>
                       <div class="text-center">
                           <InputSelect id="rubrid-code" @bind-Value="ImyRubr">
-                              <option value="0">rubrique?</option>
+                              <option value=0>rubrique?</option>
                                 @foreach (var rub in EnsRubrs)
                                 {
-                                    <option value="@rub.Id">@rub.Scdrub</option>
+                                    <option value=@rub.Id>@rub.Scdrub</option>
                                 }
                             </InputSelect>
                         </div>
                       <label>Libelle :</label>
                       <div class="text-center">
                             <InputSelect id="rubrid-lib" @bind-Value="ImyRubr">
-                                <option value="0">rubrique?</option>
+                                <option value=0>rubrique?</option>
                                 @foreach (var rub in EnsRubrs)
                                 {
-                                    <option value="@rub.Id">@rub.Liba</option>
+                                    <option value=@rub.Id>@rub.Liba</option>
                                 }
                             </InputSelect>
                       </div>
@@ -173,20 +173,20 @@
                       <label>matricule :</label>
                       <div class="text-center">
                           <InputSelect id="Idtie" @bind-Value="ImyTier">
-                              <option value="0">tiers?</option>
+                              <option value=0>tiers?</option>
                                 @foreach (var tie in PreTiers)
                                 {
-                                    <option value="@tie.Id">@tie.Smatri</option>
+                                    <option value=@tie.Id>@tie.Smatri</option>
                                 }
                             </InputSelect>
                         </div>
                         <label class="text-center">nom/prenoms :</label>
                         <div class="text-center">
                             <InputSelect id="Idtie2" @bind-Value="ImyTier">
-                                <option value="0">tiers?</option>
+                                <option value=0>tiers?</option>
                                 @foreach (var tie in PreTiers)
                                 {
-                                    <option value="@tie.Id">@($"{tie.Nom} {tie.Pnom}")</option>
+                                    <option value=@tie.Id>@($"{tie.Nom} {tie.Pnom}")</option>
                                 }
                             </InputSelect>
                         </div>

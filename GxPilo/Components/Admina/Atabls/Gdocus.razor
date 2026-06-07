@@ -65,24 +65,24 @@ else
             <div class="form-group">
                 <label class="fw-bold">Gpe document :</label>
                 <InputSelect @bind-Value="ITyDoc" class="me-3" style="width:auto">
-                    <option value="0">?gpdoc</option>
+                    <option value=0>?gpdoc</option>
                     @foreach (var tob in LsDocs)
                     {
-                        <option value="@tob.Key">@tob.Value</option>
+                        <option value=@tob.Key>@tob.Value</option>
                     }
                 </InputSelect>
                 @* <InputSelect @bind-Value="ITyDoc" class="me-3" style="width:auto" @onchange="OnDocChanged">
-                    <option value="0">?gpdoc</option>
+                    <option value=0>?gpdoc</option>
                     @foreach (var tob in LsDocs)
                     {
-                        <option value="@tob.Key">@tob.Value</option>
+                        <option value=@tob.Key>@tob.Value</option>
                     }
                 </InputSelect> *@
                 @* <InputSelect @bind-Value="ITyDoc" class="me-3" style="width:auto">
-                    <option class="jchx" value="0">?gpdoc</option>
+                    <option class="jchx" value=0>?gpdoc</option>
                     @foreach (var tob in LsDocs) //LsFixes.Where(ut => ut.Gvars == 61 && ut.Itb == 1 & ut.Elea != 0))
                     {
-                        <option value="@tob.Key" @onclick="() => SelTypDoc(tob.Key)">@tob.Value</option>
+                        <option value=@tob.Key @onclick="() => SelTypDoc(tob.Key)">@tob.Value</option>
                     }
                 </InputSelect> *@
             </div>
@@ -155,7 +155,7 @@ else
                                                 <InputSelect @bind-Value="item.Ityp" disabled>
                                                     @foreach (var tob in LsFixes.Where(ut => ut.Gvars == 33 && ut.Itb == 8 && ut.Gp1 == 1 && ut.Elea != 0))
                                                     {
-                                                        <option value="@tob.Elea">@tob.Liba</option>
+                                                        <option value=@tob.Elea>@tob.Liba</option>
                                                     }
                                                 </InputSelect>
                                             </ChildContent>
@@ -165,7 +165,7 @@ else
                                                 <InputSelect @bind-Value="item.Jtyp" disabled>
                                                     @foreach (var tob in LsFixes.Where(ut => ut.Gvars == 33 && ut.Itb == 8 && ut.Gp1 == 2 && ut.Elea != 0))
                                                     {
-                                                        <option value="@tob.Elea">@tob.Liba</option>
+                                                        <option value=@tob.Elea>@tob.Liba</option>
                                                     }
                                                 </InputSelect>
                                             </ChildContent>
@@ -173,9 +173,9 @@ else
                                         <GridColumn TItem="GsgfixDto" HeaderText="jeton" IsVisible="ITyDoc == 3" Class="xcol1">
                                             <ChildContent Context="item">
                                                 <InputSelect @bind-Value="item.Ktyp" disabled>
-                                                    <option value="0">sans</option>
-                                                    <option value="1">oui</option>
-                                                    <option value="2">non</option>
+                                                    <option value=0>sans</option>
+                                                    <option value=1>oui</option>
+                                                    <option value=2>non</option>
                                                 </InputSelect>
                                             </ChildContent>
                                         </GridColumn>
@@ -200,20 +200,20 @@ else
                                                 @if (EdFixRowguid == item.Rowguid)
                                                 {
                                                     <InputSelect @bind-Value="draftFix.Eta">
-                                                        <option class="jchx" value="0">?choisir</option>
+                                                        <option class="jchx" value=0>?choisir</option>
                                                         @foreach (var tob in LsFixes.Where(ut => ut.Gvars == 32 && ut.Itb == 1 && ut.Elea != 0))
                                                         {
-                                                            <option value="@tob.Elea">@tob.Liba</option>
+                                                            <option value=@tob.Elea>@tob.Liba</option>
                                                         }
                                                     </InputSelect>
                                                 }
                                                 else
                                                 {
                                                     <InputSelect @bind-Value="item.Eta" disabled="true">
-                                                        <option class="jchx" value="0">?choisir</option>
+                                                        <option class="jchx" value=0>?choisir</option>
                                                         @foreach (var tob in LsFixes.Where(ut => ut.Gvars == 32 && ut.Itb == 1 && ut.Elea != 0))
                                                         {
-                                                            <option value="@tob.Elea">@tob.Liba</option>
+                                                            <option value=@tob.Elea>@tob.Liba</option>
                                                         }
                                                     </InputSelect>
                                                 }

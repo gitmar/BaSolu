@@ -17,7 +17,7 @@
      <InputSelect @bind-Value="curTransfer.">
         @foreach (var dep in Departments)
         {
-            <option value="@dep.Ihie">@dep.Liba</option>
+            <option value=@dep.Ihie>@dep.Liba</option>
         }
     </InputSelect> *@
 
@@ -25,7 +25,7 @@
     <InputDate @bind-Value="curTransfer.Tdate" />
     <label>Type</label>
     <InputSelect @bind-Value="curTransfer.Mtyp">
-        <option value="2">Inter</option>
+        <option value=2>Inter</option>
     </InputSelect>
 </div>
 
@@ -40,7 +40,7 @@
                     <InputSelect @bind-Value="draftLine.Imvt">
                         @foreach (var item in DaItems)
                         {
-                            <option value="@item.Id">@item.Title</option>
+                            <option value=@item.Id>@item.Title</option>
                         }
                     </InputSelect>
                 }
@@ -59,7 +59,7 @@
                     <InputSelect @bind-Value="draftLine.Froloc">
                         @foreach (var loc in OriginLocations)
                         {
-                            <option value="@loc.Ihie">@loc.Liba</option>
+                            <option value=@loc.Ihie>@loc.Liba</option>
                         }
                     </InputSelect>
                 }
@@ -78,7 +78,7 @@
                     <InputSelect @bind-Value="draftLine.Toloc">
                         @foreach (var loc in DestinationLocations)
                         {
-                            <option value="@loc.Ihie">@loc.Liba</option>
+                            <option value=@loc.Ihie>@loc.Liba</option>
                         }
                     </InputSelect>
                 }
@@ -142,19 +142,19 @@
         <InputSelect @bind-Value="draftLine.Imvt">
             @foreach (var item in DaItems)
             {
-                <option value="@item.Id">@item.Title</option>
+                <option value=@item.Id>@item.Title</option>
             }
         </InputSelect>
         <InputSelect @bind-Value="draftLine.Froloc">
             @foreach (var loc in OriginLocations)
             {
-                <option value="@loc.Ihie">@loc.Liba</option>
+                <option value=@loc.Ihie>@loc.Liba</option>
             }
         </InputSelect>
         <InputSelect @bind-Value="draftLine.Toloc">
             @foreach (var loc in DestinationLocations)
             {
-                <option value="@loc.Ihie">@loc.Liba</option>
+                <option value=@loc.Ihie>@loc.Liba</option>
             }
         </InputSelect>
         <InputNumber @bind-Value="draftLine.Qty" placeholder="Quantity" />

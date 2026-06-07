@@ -8,6 +8,7 @@
 @using GxShared.GxDtos
 @using GxShared.Interfaces
 @using GxShared.Sess
+@using GxShared.Others
 @* @using Microsoft.EntityFrameworkCore *@
 @using Newtonsoft.Json
 
@@ -19,7 +20,7 @@
 
 <div class="container mt-3">
 
-    <Button Color="ButtonColor.Success" @onclick="() => StartAdd()">Add New Category</Button>
+    <Button Color="ButtonColor.Success" @onclick="() => StartAdd()">New Category</Button>
     @if (draftCat != null)
     {
         <Grid TItem="TiecatDto"
@@ -27,8 +28,10 @@
         AllowPaging="true"
         Responsive="true">
             <GridColumns>
-                <GridColumn TItem="TiecatDto" HeaderText="Id" Class="xcol1">
-                    <ChildContent Context="item">@item.Id</ChildContent>
+                <GridColumn TItem="TiecatDto" HeaderText="No" Class="xcol1">
+                    <ChildContent Context="item">
+                        @item.Elea <div @key="tiecatkey"></div>
+                    </ChildContent>
                 </GridColumn>
                 <GridColumn TItem="TiecatDto" HeaderText="Label" Class="xcol3">
                     <ChildContent Context="item">
@@ -42,37 +45,49 @@
                         }
                     </ChildContent>
                 </GridColumn>
-                <GridColumn TItem="TiecatDto" HeaderText="Price" Class="xcol2">
-                    <ChildContent Context="item">
-                        @if (editRowguid == item.Rowguid)
-                        {
-                            <InputNumber @bind-Value="draftCat.Prix" />
-                        }
-                        else
-                        {
-                            @item.Prix
-                        }
-                    </ChildContent>
-                </GridColumn>
                 <GridColumn TItem="TiecatDto" HeaderText="Parent" Class="xcol2">
                     <ChildContent Context="item">
                         @if (editRowguid == item.Rowguid)
                         {
-                            <InputSelect @bind-Value="draftCat.Pid" class="me-3" style="width:auto">
-                                <option value="0">?choisir</option>
-                                @foreach (var utb in LsCats.Where(u => u.Id != draftCat.Id))
+                            <InputSelect @bind-Value="draftCat.Pid" class="me-3" style="width:auto" disabled>
+                                <option value=0>?chosir</option>
+                                @foreach (var utb in curOrga?.Tiecats.Where(c => c.Id != draftCat.Id))
                                 {
-                                    <option value="@utb.Id">@utb.Liba</option>
+                                    <option value=@utb.Id>@utb.Liba</option>
                                 }
                             </InputSelect>
                         }
                         else
                         {
-                            <InputSelect @bind-Value="draftCat.Pid" class="me-3" style="width:auto" disabled>
-                                <option value="0">?choisir</option>
-                                @foreach (var utb in LsCats.Where(u => u.Id != draftCat.Id))
+                            <InputSelect @bind-Value="item.Pid" class="me-3" style="width:auto" disabled>
+                                <option value=0>aucun</option>
+                                @foreach (var utb in curOrga?.Tiecats.Where(c => c.Id != item.Id))
                                 {
-                                    <option value="@utb.Id">@utb.Liba</option>
+                                    <option value=@utb.Id>@utb.Liba</option>
+                                }
+                            </InputSelect>
+                        }
+                    </ChildContent>
+                </GridColumn>
+                <GridColumn TItem="TiecatDto" HeaderText="Eta">
+                    <ChildContent Context="item">
+                        @if (editRowguid == item.Rowguid)
+                        {
+                            <InputSelect @bind-Value="draftCat.Eta">
+                                <option class="jchx" value=0>?choisir</option>
+                                @foreach (var tob in LsFixes.Where(ut => ut.Gvars == 32 && ut.Itb == 1 && ut.Elea != 0))
+                                {
+                                    <option value=@tob.Elea>@tob.Liba</option>
+                                }
+                            </InputSelect>
+                        }
+                        else
+                        {
+                            <InputSelect @bind-Value="item.Eta" disabled="true">
+                                <option class="jchx" value=0>?choisir</option>
+                                @foreach (var tob in LsFixes.Where(ut => ut.Gvars == 32 && ut.Itb == 1 && ut.Elea != 0))
+                                {
+                                    <option value=@tob.Elea>@tob.Liba</option>
                                 }
                             </InputSelect>
                         }
@@ -83,7 +98,7 @@
                         @if (editRowguid == item.Rowguid)
                         {
                             <Button Color="ButtonColor.Primary" Size="ButtonSize.Small"
-                            @onclick="() => SaveEdit(item)">
+                            @onclick="() => SaveEdit(draftCat)">
                                 Save
                             </Button>
                             <Button Color="ButtonColor.Secondary" Size="ButtonSize.Small"
@@ -122,7 +137,21 @@
         <div class="mt-3">
             <h5>New Category</h5>
             <InputText @bind-Value="draftCat.Liba" placeholder="Label" />
-            <InputNumber @bind-Value="draftCat.Prix" placeholder="Price" />
+            <InputSelect @bind-Value="draftCat.Pid" class="me-3" style="width:auto">
+                <option value=0>?choisir</option>
+                @foreach (var utb in curOrga?.Tiecats.Where(c => c.Id != draftCat.Id))
+                {
+                    <option value=@utb.Id>@utb.Liba</option>
+                }
+            </InputSelect>
+            <InputSelect @bind-Value="draftCat.Eta">
+                <option class="jchx" value=0>?choisir</option>
+                @foreach (var tob in LsFixes.Where(ut => ut.Gvars == 32 && ut.Itb == 1 && ut.Elea != 0))
+                {
+                    <option value=@tob.Elea>@tob.Liba</option>
+                }
+            </InputSelect>
+            @* <InputNumber @bind-Value="draftCat.Prix" placeholder="Price" /> *@
             <Button Color="ButtonColor.Success" @onclick="() => SaveAdd()">Add</Button>
             <Button Color="ButtonColor.Secondary" @onclick="() => CancelAdd(1, draftCat)">Cancel</Button>
         </div>
@@ -182,6 +211,8 @@
     public RenderFragment ChildContent { get; set; }
     [Parameter]
     public List<Gpdivh> LsDivs { get; set; }
+    [Parameter]
+    public List<Gtabl> EnsTbls { get; set; } // Dropdown options
 
     // Guard
     [Parameter]
@@ -196,7 +227,9 @@
     //[Parameter] public ItemClientService ItemService { get; set; }
     //[Parameter] public StockClientService StockService { get; set; }
     private List<TiecatDto> LsCats = new();
+    private List<Gpfixe> LsFixes = new();
     private Guid? editRowguid;
+    private string tiecatkey = ""; // Force grid refresh
     private bool isAdding = false;
     private TiecatDto draftCat = new();
 
@@ -224,6 +257,7 @@
             //LsSites = toChild.LsSites;
             //_lgcdu = 3;
             LsCats = curOrga?.Tiecats.ToList();
+            LsFixes = toChild.LsFixes.ToList();
         }
         catch (Exception ex)
         {
@@ -248,17 +282,31 @@
     private void StartEdit(TiecatDto atr)
     {
         editRowguid = atr.Rowguid;
-        draftCat = new TiecatDto { Id = atr.Id, Liba = atr.Liba, Xtyp = atr.Xtyp, Rowguid = atr.Rowguid };
+        draftCat = new TiecatDto 
+        { 
+            Id = atr.Id,
+            Liba = atr.Liba,
+            Abg = atr.Abg,
+            Pid = atr.Pid,
+            Xtyp = atr.Xtyp, 
+            Eta = atr.Eta,
+            Rowguid = atr.Rowguid 
+        };
     }
 
     private async Task SaveEdit(TiecatDto atr)
     {
-        atr.Liba = draftCat.Liba;
-        atr.Xtyp = draftCat.Xtyp;
+        //atr.Liba = draftCat.Liba;
+        //atr.Xtyp = draftCat.Xtyp;
+        //atr.Liba = draftCat.Liba;
+        //atr.Abg = draftCat.Abg;
+        //atr.Pid = draftCat.Pid;
+        //atr.Eta = draftCat.Eta;
         // Register update with OData context
         var key = GetEntityKey(atr); // helper to extract PK
         _guard.TrackUpdate("Tiecats", key, atr);
         editRowguid = null;
+        tiecatkey = Guid.NewGuid().ToString();
         await NotifyPendingChanges();
     }
 
@@ -284,12 +332,13 @@
     {
         isAdding = true;
         draftCat = new TiecatDto();
+        draftCat.Rowguid = Guid.NewGuid();
         draftCat.Idorg = curOrga.Idorg;
+        draftCat.Eta = 1;
     }
 
     private async Task SaveAdd()
     {
-        draftCat.Rowguid = Guid.NewGuid();
         draftCat.Idorg = curOrga.Idorg;
         // Register add with OData context
         curOrga.Tiecats.Add(draftCat);
@@ -297,6 +346,7 @@
         Console.WriteLine($"➕ NEW {draftCat.Liba} → TrackInsert");
         isAdding = false;
         await NotifyPendingChanges();
+        StateHasChanged();
     }
     private void CancelAdd(int orig, TiecatDto uncat)
     {
@@ -337,5 +387,3 @@
         StateHasChanged();
     }
 }
-
-

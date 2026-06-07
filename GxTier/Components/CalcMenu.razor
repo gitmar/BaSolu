@@ -65,10 +65,10 @@
                         <label>Programme :</label>
                         <div class="text-center">
                             <InputSelect id="pgrId" @bind-Value="ImyProg">
-                                <option value="0">progr?</option>
+                                <option value=0>progr?</option>
                                 @foreach (var pgr in LsProgs)
                                 {
-                                    <option value="@pgr.Id" @onclick="() => GetSelectedProg(pgr)">@pgr.Liba</option>
+                                    <option value=@pgr.Id @onclick="() => GetSelectedProg(pgr)">@pgr.Liba</option>
                                 }
                             </InputSelect>
                         </div>
@@ -76,10 +76,10 @@
                         <label for="TypDiv">Service :</label>
                         <div>
                             <InputSelect id="TypDiv" @bind-Value="ImyDiv">
-                                <option value="0">Aucun</option>
+                                <option value=0>Aucun</option>
                                 @foreach (var divo in LsDivs)
                                 {
-                                    <option value="@divo.Ihie" @onclick="@trierTiers">@divo.Abg-@divo.Liba</option>
+                                    <option value=@divo.Ihie @onclick="@trierTiers">@divo.Abg-@divo.Liba</option>
                                 }
                             </InputSelect>
                         </div>
@@ -97,10 +97,10 @@
                         <label>Session des variables :</label>
                         <div class="text-center">
                             <InputSelect id="pgrId" @bind-Value="ImyVSes">
-                                <option value="0">session?</option>
+                                <option value=0>session?</option>
                                 @foreach (var sess in EnsSess)
                                 {
-                                    <option value="@sess.Elea">@sess.Liba</option>
+                                    <option value=@sess.Elea>@sess.Liba</option>
                                 }
                             </InputSelect>
                         </div>
