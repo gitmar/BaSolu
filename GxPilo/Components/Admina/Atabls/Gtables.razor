@@ -230,14 +230,17 @@ else
                                                         </Button>
                                                         break;
                                                     case RowState.EditPending:
-                                                        <Button Color="ButtonColor.Success" Size="ButtonSize.Small"
-                                                                @onclick="() => ConfirmEdit(item, EntityLevel.Plan)">
-                                                            ✅ Confirm
-                                                        </Button>
-                                                        <Button Color="ButtonColor.Secondary" Size="ButtonSize.Small"
-                                                                @onclick="() => CancelEdit(item, EntityLevel.Plan)">
-                                                            ❌ Cancel
-                                                        </Button>
+                                                        @if (draftFix != null)
+                                                        {
+                                                            <Button Color="ButtonColor.Success" Size="ButtonSize.Small"
+                                                            @onclick="() => ConfirmEdit(draftFix, EntityLevel.Plan)">
+                                                                ✅ Confirm
+                                                            </Button>
+                                                            <Button Color="ButtonColor.Secondary" Size="ButtonSize.Small"
+                                                            @onclick="() => CancelEdit(draftFix, EntityLevel.Plan)">
+                                                                ❌ Cancel
+                                                            </Button>
+                                                        }
                                                         break;
                                                     default:
                                                         <Button Color="ButtonColor.Warning" Size="ButtonSize.Small"
@@ -361,14 +364,17 @@ else
                                                                 </Button>
                                                                 break;
                                                             case RowState.EditPending:
-                                                                <Button Color="ButtonColor.Success" Size="ButtonSize.Small"
-                                                                        @onclick="() => ConfirmEdit(item, EntityLevel.Rub)">
-                                                                    ✅ Confirm
-                                                                </Button>
-                                                                <Button Color="ButtonColor.Secondary" Size="ButtonSize.Small"
-                                                                        @onclick="() => CancelEdit(item, EntityLevel.Rub)">
-                                                                    ❌ Cancel
-                                                                </Button>
+                                                                @if (draftChl != null)
+                                                                {
+                                                                    <Button Color="ButtonColor.Success" Size="ButtonSize.Small"
+                                                                    @onclick="() => ConfirmEdit(draftChl, EntityLevel.Rub)">
+                                                                        ✅ Confirm
+                                                                    </Button>
+                                                                    <Button Color="ButtonColor.Secondary" Size="ButtonSize.Small"
+                                                                    @onclick="() => CancelEdit(draftChl, EntityLevel.Rub)">
+                                                                        ❌ Cancel
+                                                                    </Button>
+                                                                }
                                                                 break;
                                                             default:
                                                                 <Button Color="ButtonColor.Warning" Size="ButtonSize.Small"
@@ -963,13 +969,13 @@ else
             bool isNew = GetXadd1(entity) == -1;  // Assumes GetXadd1<T>
             if (isNew)
             {
-                _guard.TrackInsert(entitySet, entity);
+                await _guard.TrackInsert(entitySet, entity);
                 Console.WriteLine($"➕ NEW {typeof(TDto).Name} → TrackInsert");
             }
             else
             {
                 var key = GetEntityKey(entity); // helper to extract PK
-                _guard.TrackUpdate(entitySet, key, entity);
+                await _guard.TrackUpdate(entitySet, key, entity);
                 Console.WriteLine($"✏️ EXISTING {typeof(TDto).Name} → TrackUpdate");
             }
 
@@ -1310,9 +1316,9 @@ else
         {
             // 🔥 Generic delete logic
             RemoveFromParentCollection(item);
-            //_guard.TrackDelete<T>(GetEntitySet(item), GetEntityKey(item));
+            //await _guard.TrackDelete<T>(GetEntitySet(item), GetEntityKey(item));
             var key = GetEntityKey(item); // helper to extract PK
-            _guard.TrackDelete(GetEntitySetName<T>(), key);
+            await _guard.TrackDelete(GetEntitySetName<T>(), key, rowguid);
             
             SetDeleteFlags(item);
             SetRowState(rowguid, RowState.Normal);
@@ -1520,7 +1526,7 @@ else
 
     // ✅ 6. HELPERS - Mark Count and Clone
 
-    private void MarkAsModified<TDto>(TDto item, string entitySet) where TDto : class
+    private async Task MarkAsModified<TDto>(TDto item, string entitySet) where TDto : class
     {
         // Reset flags (your convention)
         SetFlags(item, 0, 0, 0);  // Xadd1=Xedt1=Xdel1=0
@@ -1529,7 +1535,7 @@ else
         var key = GetEntityKey(item);
 
         // Queue update in guard
-        _guard.TrackUpdate(entitySet, key, item);
+        await _guard.TrackUpdate(entitySet, key, item);
 
         Console.WriteLine($"modified liba {((dynamic)item).Liba} et abg {((dynamic)item).Abg}");
         Console.WriteLine($"✅ {entitySet} marked Modified (queued for update)");

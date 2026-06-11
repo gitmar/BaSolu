@@ -357,7 +357,7 @@
         atr.Iope = draftExo.Iope;
         // Register update with OData context
         var key = GetEntityKey(atr); // helper to extract PK
-        _guard.TrackUpdate("Gsauths", key, atr);
+        await _guard.TrackUpdate("Gsauths", key, atr);
         editRowguid = null;
         await NotifyPendingChanges();
     }
@@ -367,14 +367,14 @@
     private async Task DeleteAttribute(GsauthDto atr)
     {
         curOrga.Gsauths.Remove(atr);
-
+        var rowguid = GetRowguid(atr);
         // Register delete with OData context
         // Extract PK using your helper
         var key = GetEntityKey(atr);
 
         // Queue delete in guard
-        //_guard.TrackDelete<TDto>(GetEntitySetName<TDto>(), key);
-        _guard.TrackDelete("Gsauths", key);
+        //await _guard.TrackDelete<TDto>(GetEntitySetName<TDto>(), key);
+        await _guard.TrackDelete("Gsauths", key, rowguid);
         Console.WriteLine($"🗑️ {atr.Usrid} queued for delete");
 
         await NotifyPendingChanges();
@@ -420,6 +420,10 @@
                 throw new InvalidOperationException($"Unknown entity type {typeof(TDto).Name}");
         }
     }
+    // 🔥 Generic Rowguid (no reflection)
+    private static Guid GetRowguid<T>(T entity) where T : class
+        => ((dynamic)entity).Rowguid;  // Or property expression
+
     private void ToggleAll(GsauthDto row)
     {
         if (row.CanAll)

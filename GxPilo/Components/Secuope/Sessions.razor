@@ -316,7 +316,7 @@
         atr.Fdat = draftSes.Fdat;
         // Register update with OData context
         var key = GetEntityKey(atr); // helper to extract PK
-        _guard.TrackUpdate("Gsesios", key, atr);
+        await _guard.TrackUpdate("Gsesios", key, atr);
         DaSess.Insert(0, atr);
         editRowguid = null;
         await NotifyPendingChanges();
@@ -328,13 +328,14 @@
     {
         curOrga.Gsesios.Remove(atr);
 
+        var rowguid = GetRowguid(atr);
         // Register delete with OData context
         // Extract PK using your helper
         var key = GetEntityKey(atr);
 
         // Queue delete in guard
-        //_guard.TrackDelete<TDto>(GetEntitySetName<TDto>(), key);
-        _guard.TrackDelete("Gsesios", key);
+        //await _guard.TrackDelete<TDto>(GetEntitySetName<TDto>(), key);
+        await _guard.TrackDelete("Gsesios", key, rowguid);
         Console.WriteLine($"🗑️ {atr.Liba} queued for delete");
 
         await NotifyPendingChanges();
@@ -360,7 +361,7 @@
         //draftSes.Abg = toChild.inExo.Scdrub ?? "EXO";//exercice
         //draftSes.Etyp = curOrga.; //aaaamm
         // Register add with OData context
-        _guard.TrackInsert("Gsesios", draftSes);
+        await _guard.TrackInsert("Gsesios", draftSes);
         Console.WriteLine($"➕ NEW {draftSes.Liba} → TrackInsert");
         isAdding = false;
         await NotifyPendingChanges();
@@ -375,6 +376,20 @@
             //     return rub.Id;
             // case RubpstDto fmt:
             //     return fmt.Id;
+            default:
+                throw new InvalidOperationException($"Unknown entity type {typeof(TDto).Name}");
+        }
+    }
+    private Guid GetRowguid<TDto>(TDto entity)
+    {
+        switch (entity)
+        {
+            case GsesioDto pln:
+                return pln.Rowguid;
+            // case RubhieDto rub:
+            //     return rub.Rowguid;
+            // case RubpstDto fmt:
+            //     return fmt.Rowguid;
             default:
                 throw new InvalidOperationException($"Unknown entity type {typeof(TDto).Name}");
         }

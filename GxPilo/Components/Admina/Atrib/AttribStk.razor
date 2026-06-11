@@ -27,12 +27,13 @@
     {
         <Grid TItem="StkatrDto"
               Data="@curOrga?.Stkatrs.ToList()"
+              @key="stkatrkey"
               AllowPaging="true"
               Responsive="true">
             <GridColumns>
                 <GridColumn TItem="StkatrDto" HeaderText="No" Class="xcol1">
                     <ChildContent Context="item">
-                        @item.Elea <div @key="stkatrkey"></div>
+                        @item.Elea
                     </ChildContent>
                 </GridColumn>
                 <GridColumn TItem="StkatrDto" HeaderText="Label" Class="xcol3">
@@ -159,7 +160,7 @@
                                     Edit
                                 </Button>
                                 <Button Color="ButtonColor.Danger" Size="ButtonSize.Small"
-                                        @onclick="() => DeleteAttribute(item)">
+                                        @onclick="() => SaveDele(item)">
                                     Delete
                                 </Button>
                             }
@@ -188,9 +189,9 @@
             @if (inZfro == 2)
             {
                 <InputSelect @bind-Value="draftAtr.Ztbl" class="me-3" style="width:auto">
-                    @foreach (var fx in EnsTbls.Where(t => t.Tenr == 1 && t.Btyp ==2))
+                    @foreach (var fx in EnsTbls.Where(t => t.Tenr == 1 && t.Btyp == 2))
                     {
-                        <option value=@fx.Elea>@fx.Liba</option>
+                        <option value=@fx.Tenr>@fx.Liba</option>
                     }
                 </InputSelect>
             }
@@ -208,7 +209,7 @@
                     <option value=@tob.Elea>@tob.Liba</option>
                 }
             </InputSelect>
-            <Button Color="ButtonColor.Success" @onclick="() => SaveAdd()">Add</Button>
+            <Button Color="ButtonColor.Success" @onclick="() => SaveAdd(draftAtr)">Add</Button>
             <Button Color="ButtonColor.Secondary" @onclick="() => CancelAdd(1, draftAtr)">Cancel</Button>
         </div>
     }
@@ -352,49 +353,79 @@
             Rowguid = atr.Rowguid
         };
     }
-
-    private async Task SaveEdit(StkatrDto atr)
+    private async Task SaveAdd(StkatrDto atr)
     {
-        //atr.Liba = draftAtr.Liba;
-        //atr.Abg = draftAtr.Abg;
-        //atr.Atyp = draftAtr.Atyp;
-        //atr.Zfro = draftAtr.Zfro;
-        //atr.Ztbl = draftAtr.Ztbl;
-        //atr.Eta = draftAtr.Eta;
-        if (atr.Zfro == 2) //table
-        {
-            if (atr.Atyp != 2)
-            {
-                atr.Atyp = 1; // default to string if table but no type chosen
-            }
-        }
+        atr.Zfro = inZfro;
+        if (atr.Zfro == 2 && atr.Atyp != 2)
+            atr.Atyp = 1;
         atr.Satyp = GetSatyp(atr.Atyp);
-        // Register update with OData context
-        var key = GetEntityKey(atr); // helper to extract PK
-        _guard.TrackUpdate("Stkatrs", key, atr);
+
+        await _guard.TrackInsert("Stkatrs", atr);
+
+        if (curOrga.Stkatrs.All(x => x.Rowguid != atr.Rowguid))
+            curOrga.Stkatrs.Add(atr);
+
         editRowguid = null;
         stkatrkey = Guid.NewGuid().ToString();
         await NotifyPendingChanges();
-        StateHasChanged();
+        await InvokeAsync(StateHasChanged);
     }
+    private async Task SaveEdit(StkatrDto atr)
+    {
+        if (atr.Zfro == 2 && atr.Atyp != 2)
+            atr.Atyp = 1;
 
+        atr.Satyp = GetSatyp(atr.Atyp);
+
+        await _guard.TrackUpdate("Stkatrs", GetEntityKey(atr), atr);
+
+        Uihelper.ReplaceItem(curOrga.Stkatrs, x => x.Rowguid == atr.Rowguid, atr);
+
+        editRowguid = null;
+        stkatrkey = Guid.NewGuid().ToString();
+        await NotifyPendingChanges();
+        await InvokeAsync(StateHasChanged);
+    }
+    private async Task SaveDele(StkatrDto atr)
+    {
+        await _guard.TrackDelete("Stkatrs", GetEntityKey(atr), atr.Rowguid);
+        Uihelper.RemoveItem(curOrga.Stkatrs, x => x.Rowguid == atr.Rowguid);
+        if (editRowguid == atr.Rowguid)
+            editRowguid = null;
+
+        stkatrkey = Guid.NewGuid().ToString();
+        await NotifyPendingChanges();
+        await InvokeAsync(StateHasChanged);
+    }
+    // private async Task DeleteEdit(StkatrDto atr)
+    // {
+    //     await _guard.TrackDelete("Stkatrs", GetEntityKey(atr), atr.Rowguid);
+    //     Uihelper.RemoveItem(curOrga.Stkatrs, x => x.Rowguid == atr.Rowguid);
+    //     if (editRowguid == atr.Rowguid)
+    //         editRowguid = null;
+
+    //     stkatrkey = Guid.NewGuid().ToString();
+    //     await NotifyPendingChanges();
+    //     await InvokeAsync(StateHasChanged);
+    // }
     private void CancelEdit() => editRowguid = null;
 
-    private async Task DeleteAttribute(StkatrDto atr)
-    {
-        curOrga.Stkatrs.Remove(atr);
+    // private async Task SaveDele(StkatrDto atr)
+    // {
+    //     curOrga.Stkatrs.Remove(atr);
 
-        // Register delete with OData context
-        // Extract PK using your helper
-        var key = GetEntityKey(atr);
+    //     // Register delete with OData context
+    //     // Extract PK using your helper
+    //     var key = GetEntityKey(atr);
 
-        // Queue delete in guard
-        //_guard.TrackDelete<TDto>(GetEntitySetName<TDto>(), key);
-        _guard.TrackDelete("Stkatrs", key);
-        Console.WriteLine($"🗑️ {atr.Liba} queued for delete");
+    //     // Queue delete in guard
+    //     //await _guard.TrackDelete<TDto>(GetEntitySetName<TDto>(), key);
+    //     var rowguid = GetRowguid(atr);
+    //     await _guard.TrackDelete("Stkatrs", key, rowguid);
+    //     Console.WriteLine($"🗑️ {atr.Liba} queued for delete");
 
-        await NotifyPendingChanges();
-    }
+    //     await NotifyPendingChanges();
+    // }
 
     private void StartAdd()
     {
@@ -411,35 +442,13 @@
         inZfro = 1;
     }
 
-    private async Task SaveAdd()
-    {
-        draftAtr.Idorg = curOrga.Idorg;
-        draftAtr.Zfro = inZfro;
-        draftAtr.Eta = 1;
-        if (inZfro == 2) //table
-        {
-            if (draftAtr.Atyp != 2) 
-            {
-                draftAtr.Atyp = 1; // default to string if table but no type chosen
-            }
-        }
-        draftAtr.Satyp = GetSatyp(draftAtr.Atyp);
-        // Register add with OData context
-        curOrga.Stkatrs.Add(draftAtr);
-        _guard.TrackInsert("Stkatrs", draftAtr);
-        Console.WriteLine($"➕ NEW {draftAtr.Liba} → TrackInsert");
-        isAdding = false;
-        stkatrkey = Guid.NewGuid().ToString();
-        await NotifyPendingChanges();
-        StateHasChanged();
-    }
     private void CancelAdd(int orig, StkatrDto unatr)
     {
         if (orig == 2)
         {
             var key = GetEntityKey(unatr);
             //curOrga.Stkatrs.Remove(unatr);
-            //_guard.TrackDelete("Stkatrs", key);
+            //await _guard.TrackDelete("Stkatrs", key);
         }
         else
         {
@@ -459,6 +468,20 @@
             //     return fmt.Id;
             default:
                 throw new InvalidOperationException($"Unknown entity type {typeof(TDto).Name}");
+        }
+    }
+    private static Guid GetRowguid<T>(T entity) where T : class
+    {
+        switch (entity)
+        {
+            case StkatrDto pln:
+                return pln.Rowguid;
+            // case RubhieDto rub:
+            //     return rub.Rowguid;
+            // case RubpstDto fmt:
+            //     return fmt.Rowguid;
+            default:
+                throw new InvalidOperationException($"Unknown entity type {typeof(T).Name}");
         }
     }
     private string GetSatyp(int? atyp)

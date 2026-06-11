@@ -293,7 +293,7 @@
         atr.Atyp = draftExo.Atyp;
         // Register update with OData context
         var key = GetEntityKey(atr); // helper to extract PK
-        _guard.TrackUpdate("Gsgfixes", key, atr);
+        await _guard.TrackUpdate("Gsgfixes", key, atr);
         editRowguid = null;
         await NotifyPendingChanges();
     }
@@ -307,10 +307,11 @@
         // Register delete with OData context
         // Extract PK using your helper
         var key = GetEntityKey(atr);
+        var rowguid = GetRowguid(atr);
 
         // Queue delete in guard
-        //_guard.TrackDelete<TDto>(GetEntitySetName<TDto>(), key);
-        _guard.TrackDelete("Gsgfixes", key);
+        //await _guard.TrackDelete<TDto>(GetEntitySetName<TDto>(), key);
+        await _guard.TrackDelete("Gsgfixes", key, rowguid);
         Console.WriteLine($"🗑️ {atr.Liba} queued for delete");
         
         await NotifyPendingChanges();
@@ -327,7 +328,7 @@
         draftExo.Rowguid = Guid.NewGuid();
         draftExo.Idorg = curOrga.Idorg;
         // Register add with OData context
-        _guard.TrackInsert("Gsgfixes", draftExo);
+        await _guard.TrackInsert("Gsgfixes", draftExo);
         Console.WriteLine($"➕ NEW {draftExo.Liba} → TrackInsert");
         isAdding = false;
         await NotifyPendingChanges();
@@ -346,6 +347,9 @@
                 throw new InvalidOperationException($"Unknown entity type {typeof(TDto).Name}");
         }
     }
+    // 🔥 Generic Rowguid (no reflection)
+    private static Guid GetRowguid<T>(T entity) where T : class
+        => ((dynamic)entity).Rowguid;  // Or property expression
     // Notify guard/UI of pending changes
     private async Task NotifyPendingChanges()
     {

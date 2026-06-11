@@ -28,12 +28,13 @@
     {
         <Grid TItem="TieatrDto"
         Data="@curOrga?.Tieatrs.ToList()"
+        @key="tieatrkey"
         AllowPaging="true"
         Responsive="true">
             <GridColumns>
                 <GridColumn TItem="TieatrDto" HeaderText="No" Class="xcol1">
                     <ChildContent Context="item">
-                        @item.Elea <div @key="@tieatrkey"></div>
+                        @item.Elea
                     </ChildContent>
                 </GridColumn>
                 <GridColumn TItem="TieatrDto" HeaderText="Label" Class="xcol3">
@@ -191,7 +192,7 @@
                 <InputSelect @bind-Value="draftAtr.Ztbl" class="me-3" style="width:auto">
                     @foreach (var fx in EnsTbls.Where(t => t.Tenr == 1 && t.Btyp == 1))
                     {
-                        <option value=@fx.Elea>@fx.Liba</option>
+                        <option value=@fx.Tref>@fx.Liba</option>
                     }
                 </InputSelect>
             }
@@ -209,7 +210,7 @@
                     <option value=@tob.Elea>@tob.Liba</option>
                 }
             </InputSelect>
-            <Button Color="ButtonColor.Success" @onclick="() => SaveAdd()">Add</Button>
+            <Button Color="ButtonColor.Success" @onclick="() => SaveAdd(draftAtr)">Add</Button>
             <Button Color="ButtonColor.Secondary" @onclick="() => CancelAdd(1, draftAtr)">Cancel</Button>
         </div>
     }
@@ -354,32 +355,82 @@
         };
         Console.WriteLine($"START -> zfro:{draftAtr.Zfro} ztbl:{draftAtr.Ztbl}");
     }
+    
+    // private async Task SaveEdit(TieatrDto atr)
+    // {
+    //     if (atr.Zfro == 2 && atr.Atyp != 2)
+    //         atr.Atyp = 1;
 
-    private async Task SaveEdit(TieatrDto atr)
-    {
-        //atr.Liba = draftAtr.Liba;
-        //atr.Abg = draftAtr.Abg;
-        //atr.Atyp = draftAtr.Atyp;
-        //atr.Zfro = draftAtr.Zfro;
-        //atr.Ztbl = draftAtr.Ztbl;
-        //atr.Eta = draftAtr.Eta;
-        Console.WriteLine($"EDIT -> zfro:{atr.Zfro} ztbl:{atr.Ztbl}");
-        if (atr.Zfro == 2) //table
-        {
-            if (atr.Atyp != 2)
-            {
-                atr.Atyp = 1; // default to string if table but no type chosen
-            }
-        }
-        atr.Satyp = GetSatyp(atr.Atyp);
-        // Register update with OData context
-        var key = GetEntityKey(atr); // helper to extract PK
-        _guard.TrackUpdate("Tieatrs", key, atr);
-        editRowguid = null;
-        tieatrkey = Guid.NewGuid().ToString();
-        await NotifyPendingChanges();
-        StateHasChanged();
-    }
+    //     atr.Satyp = GetSatyp(atr.Atyp);
+
+    //     var key = GetEntityKey(atr);
+    //     await _guard.TrackUpdate("Tieatrs", key, atr);
+
+    //     var item = curOrga.Tieatrs?.FirstOrDefault(x => x.Rowguid == atr.Rowguid);
+    //     if (item != null && !ReferenceEquals(item, atr))
+    //     {
+    //         item.Liba = atr.Liba;
+    //         item.Abg = atr.Abg;
+    //         item.Atyp = atr.Atyp;
+    //         item.Zfro = atr.Zfro;
+    //         item.Ztbl = atr.Ztbl;
+    //         item.Eta = atr.Eta;
+    //         item.Satyp = atr.Satyp;
+    //     }
+
+    //     editRowguid = null;
+    //     tieatrkey = Guid.NewGuid().ToString();
+    //     await NotifyPendingChanges();
+    //     await InvokeAsync(StateHasChanged);
+    // }
+    // private async Task SaveEdit(TieatrDto atr)
+    // {
+    //     Console.WriteLine($"draft value : {draftAtr.Liba} et atr value : {atr.Liba}");
+    //     atr.Liba = draftAtr.Liba;
+    //     atr.Abg = draftAtr.Abg;
+    //     atr.Atyp = draftAtr.Atyp;
+    //     atr.Zfro = draftAtr.Zfro;
+    //     atr.Ztbl = draftAtr.Ztbl;
+    //     atr.Eta = draftAtr.Eta;
+
+    //     if (atr.Zfro == 2 && atr.Atyp != 2)
+    //         atr.Atyp = 1;
+
+    //     atr.Satyp = GetSatyp(atr.Atyp);
+
+    //     var key = GetEntityKey(atr);
+    //     await _guard.TrackUpdate("Tieatrs", key, atr);
+
+    //     editRowguid = null;
+    //     tieatrkey = Guid.NewGuid().ToString();
+    //     await NotifyPendingChanges();
+    //     StateHasChanged();
+    // }
+    // private async Task SaveEdit(TieatrDto atr)
+    // {
+    //     //atr.Liba = draftAtr.Liba;
+    //     //atr.Abg = draftAtr.Abg;
+    //     //atr.Atyp = draftAtr.Atyp;
+    //     //atr.Zfro = draftAtr.Zfro;
+    //     //atr.Ztbl = draftAtr.Ztbl;
+    //     //atr.Eta = draftAtr.Eta;
+    //     Console.WriteLine($"EDIT -> zfro:{atr.Zfro} ztbl:{atr.Ztbl}");
+    //     if (atr.Zfro == 2) //table
+    //     {
+    //         if (atr.Atyp != 2)
+    //         {
+    //             atr.Atyp = 1; // default to string if table but no type chosen
+    //         }
+    //     }
+    //     atr.Satyp = GetSatyp(atr.Atyp);
+    //     // Register update with OData context
+    //     var key = GetEntityKey(atr); // helper to extract PK
+    //     await _guard.TrackUpdate("Tieatrs", key, atr);
+    //     editRowguid = null;
+    //     tieatrkey = Guid.NewGuid().ToString();
+    //     await NotifyPendingChanges();
+    //     StateHasChanged();
+    // }
 
     private void CancelEdit() => editRowguid = null;
 
@@ -390,10 +441,10 @@
         // Register delete with OData context
         // Extract PK using your helper
         var key = GetEntityKey(atr);
-
+        var rowguid = atr.Rowguid;
         // Queue delete in guard
-        //_guard.TrackDelete<TDto>(GetEntitySetName<TDto>(), key);
-        _guard.TrackDelete("Tieatrs", key);
+        //await _guard.TrackDelete<TDto>(GetEntitySetName<TDto>(), key);
+        await _guard.TrackDelete("Tieatrs", key, rowguid);
         Console.WriteLine($"🗑️ {atr.Liba} queued for delete");
 
         await NotifyPendingChanges();
@@ -413,35 +464,81 @@
         inZfro = 1;
     }
 
-    private async Task SaveAdd()
+    private async Task SaveAdd(TieatrDto atr)
     {
-        draftAtr.Idorg = curOrga.Idorg;
-        draftAtr.Zfro = inZfro;
-        draftAtr.Eta = 1;
-        if (inZfro == 2) //table
-        {
-            if (draftAtr.Atyp != 2)
-            {
-                draftAtr.Atyp = 1; // default to string if table but no type chosen
-            }
-        }
-        draftAtr.Satyp = GetSatyp(draftAtr.Atyp);
-        // Register add with OData context
-        curOrga.Tieatrs.Add(draftAtr);
-        _guard.TrackInsert("Tieatrs", draftAtr);
-        Console.WriteLine($"➕ NEW {draftAtr.Liba} → TrackInsert");
-        isAdding = false;
+        atr.Zfro = inZfro;
+        if (atr.Zfro == 2 && atr.Atyp != 2)
+            atr.Atyp = 1;
+        atr.Satyp = GetSatyp(atr.Atyp);
+
+        await _guard.TrackInsert("Tieatrs", atr);
+
+        if (curOrga.Tieatrs.All(x => x.Rowguid != atr.Rowguid))
+            curOrga.Tieatrs.Add(atr);
+
+        editRowguid = null;
         tieatrkey = Guid.NewGuid().ToString();
         await NotifyPendingChanges();
-        StateHasChanged();
+        await InvokeAsync(StateHasChanged);
     }
+    private async Task SaveEdit(TieatrDto atr)
+    {
+        if (atr.Zfro == 2 && atr.Atyp != 2)
+            atr.Atyp = 1;
+
+        atr.Satyp = GetSatyp(atr.Atyp);
+
+        await _guard.TrackUpdate("Tieatrs", GetEntityKey(atr), atr);
+
+        Uihelper.ReplaceItem(curOrga.Tieatrs, x => x.Rowguid == atr.Rowguid, atr);
+
+        editRowguid = null;
+        tieatrkey = Guid.NewGuid().ToString();
+        await NotifyPendingChanges();
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private async Task SaveDele(TieatrDto atr)
+    {
+        await _guard.TrackDelete("Tieatrs", GetEntityKey(atr), atr.Rowguid);
+        Uihelper.RemoveItem(curOrga.Tieatrs, x => x.Rowguid == atr.Rowguid);
+        if (editRowguid == atr.Rowguid)
+            editRowguid = null;
+
+        tieatrkey = Guid.NewGuid().ToString();
+        await NotifyPendingChanges();
+        await InvokeAsync(StateHasChanged);
+    }
+    // private async Task SaveAdd()
+    // {
+    //     draftAtr.Idorg = curOrga.Idorg;
+    //     draftAtr.Zfro = inZfro;
+    //     draftAtr.Eta = 1;
+    //     if (inZfro == 2) //table
+    //     {
+    //         if (draftAtr.Atyp != 2)
+    //         {
+    //             draftAtr.Atyp = 1; // default to string if table but no type chosen
+    //         }
+    //     }
+    //     draftAtr.Satyp = GetSatyp(draftAtr.Atyp);
+    //     // Register add with OData context
+    //     curOrga.Tieatrs.Add(draftAtr);
+    //     await _guard.TrackInsert("Tieatrs", draftAtr);
+    //     Console.WriteLine($"➕ NEW {draftAtr.Liba} → TrackInsert");
+    //     isAdding = false;
+    //     tieatrkey = Guid.NewGuid().ToString();
+    //     await NotifyPendingChanges();
+    //     StateHasChanged();
+    // }
+    
     private void CancelAdd(int orig, TieatrDto unatr)
     {
         if (orig == 2)
         {
             var key = GetEntityKey(unatr);
             //curOrga.Tieatrs.Remove(unatr);
-            //_guard.TrackDelete("Tieatrs", key);
+            //await _guard.TrackDelete("Tieatrs", key);
         }
         else
         {

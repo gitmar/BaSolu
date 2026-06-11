@@ -1183,7 +1183,7 @@ else if (edOrgContext != null && curOrga != null)
         {
             curOrga.Xedt1 = 0;
             var key = curOrga.Idorg; // helper to extract PK
-            _guard.TrackUpdate("gxorgas", key, curOrga);
+            await _guard.TrackUpdate("gxorgas", key, curOrga);
              Console.WriteLine($"✏️ EXISTING GsgOrgas → TrackUpdate");
             //GorgEdRowguid = null;
             Console.WriteLine("Gsgfix marked as Modified");
@@ -1233,7 +1233,7 @@ else if (edOrgContext != null && curOrga != null)
             myfix.Xadd1 = 0;
             myfix.Xdel1 = 0;
             var key = myfix.Xseq; // helper to extract PK
-            _guard.TrackUpdate("gsgfixes", key, myfix);
+            await _guard.TrackUpdate("gsgfixes", key, myfix);
              Console.WriteLine($"✏️ EXISTING Gsgfixes → TrackUpdate");
             //GdomEdRowguid = null;
             isEdDom = false;
@@ -1290,7 +1290,7 @@ else if (edOrgContext != null && curOrga != null)
             myfix.Xadd1 = 0;
             myfix.Xdel1 = 0;
             var key = myfix.Xseq; // helper to extract PK
-            _guard.TrackUpdate("gsgfixes", key, myfix);
+            await _guard.TrackUpdate("gsgfixes", key, myfix);
              Console.WriteLine($"✏️ EXISTING Gsgfixes → TrackUpdate");
             //GaptEdRowguid = null;
             isEdApt = false;
@@ -1350,7 +1350,7 @@ else if (edOrgContext != null && curOrga != null)
             myfix.Xadd1 = 0;
             myfix.Xdel1 = 0;
             var key = myfix.Xseq; // helper to extract PK
-            _guard.TrackUpdate("gsgfixes", key, myfix);
+            await _guard.TrackUpdate("gsgfixes", key, myfix);
              Console.WriteLine($"✏️ EXISTING Gsgfixes → TrackUpdate");
             //GaflEdRowguid = null;
             isEdAfl = false;

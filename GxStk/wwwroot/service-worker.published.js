@@ -16,9 +16,12 @@ const base = "/";
 const baseUrl = new URL(base, self.origin);
 const manifestUrlList = self.assetsManifest.assets.map(asset => new URL(asset.url, baseUrl).href);
 
+// For cache renew manually update the version in service-worker.published.js and re-publish the application.
+const version = self.assetsManifest.version;
+console.log('Service worker: Version ' + version);
 async function onInstall(event) {
     console.info('Service worker: Install');
-
+    self.skipWaiting(); //essential to trigger the update lifecycle immediately after installation
     // Fetch and cache all matching items from the assets manifest
     const assetsRequests = self.assetsManifest.assets
         .filter(asset => offlineAssetsInclude.some(pattern => pattern.test(asset.url)))

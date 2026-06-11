@@ -352,10 +352,10 @@ else
                                                     @* <button class="btn btn-sm btn-outline-danger" @onclick="() => PromptPlnDelete(item)">
                                                             🗑️ Delete
                                                         </button> *@
-                                                    <button class="btn btn-sm btn-success" @onclick="() => ConfirmPlnDelete(item)">
+                                                    <button class="btn btn-sm btn-success" @onclick="() => ConfirmDelete(item)">
                                                         ✅ Confirm
                                                     </button>
-                                                    <button class="btn btn-sm btn-secondary" @onclick="CancelPlnDelete">
+                                                    <button class="btn btn-sm btn-secondary" @onclick="CancelDelete">
                                                         ❌ Cancel
                                                     </button>
                                                 }
@@ -1457,40 +1457,7 @@ else
     //     }
     //     EditingPlnRowGuid = Guid.Empty;
     // }
-    private void PromptPlnDelete(PlngenDto item)
-    {
-        ConfirmingPlnDeleteRowGuid = item.Rowguid;
-    }
-    private void CancelPlnDelete()
-    {
-        ConfirmingPlnDeleteRowGuid = Guid.Empty;
-    }
-    private void ConfirmPlnDelete(PlngenDto row)
-    {
-        var parent = curOrga;
-        if (parent == null)
-            return;
-        Console.WriteLine($"del parent {parent.Raison} and row id : {parent.Idorg}");
-        //Plngen svRow = row;
-        // For existing rows: mark for OData deletion and remove locally
-        if (curODContext.IsEntityTracked(row))
-        {
-            curODContext.DeleteObject(row); // Mark for deletion in OData context
-        }
-        else
-        {
-            curODContext.Detach(row); // Mark for deletion in OData context
-        }
-        //curPlan.Rubvars.ToList().RemoveAll(rf => rf.Id == svRow.Id);
-        //curOrga.Plngens.Remove(svRow); // Remove from tracked collection
-        //List<Plngen> nwrows = MyDaPlans;
-        //nwrows.Remove(row);
-        //MyDaPlans = nwrows;
-        curOrga.Plngens.Remove(row); // Remove from tracked collection
-        EditingPlnRowGuid = Guid.Empty;
-        ConfirmingPlnDeleteRowGuid = Guid.Empty;
-        StateHasChanged(); // Notify UI about changes
-    }
+    
     // private void PromptRubDelete(Rubvar item)
     // {
     //     ConfirmingRubDeleteRowGuid = item.Rowguid;

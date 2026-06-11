@@ -17,6 +17,7 @@
 @using GxShared.GxDtos
 @using GxShared.Interfaces
 @using Newtonsoft.Json
+@using System.Linq.Expressions
 
 @implements IDisposable
 
@@ -120,12 +121,10 @@
                                                           EdRowguid="@EdTiwRowguid" />
                                         }
                                     </div>
-
                                     <!-- Additional dynamic attributes -->
                                     <div class="card">
                                         <div class="card-body p-3">
-
-                                            @foreach (var ua in EnsAtrs.Where(a => a.Wgpe == 1))
+                                            @foreach (var ua in EnsAtrs.Where(a => a.Wgpe == 1 && a.Eta == 1))
                                             {
                                                 var icatr = curTie.Tiejatrs.FirstOrDefault(tat => tat.Iatr == ua.Id);
 
@@ -144,10 +143,9 @@
 
                                                     curTie.Tiejatrs.Add(icatr);
                                                 }
-
                                                 <div class="row mb-2 align-items-center">
                                                     <label class="col-sm-3 col-form-label">
-                                                        @ua.Liba
+                                                        <strong>@ua.Liba</strong>
                                                     </label>
                                                    <div class="col-sm-9">
                                                     @if ((isEdtTiw || isAddTiw) && ua.Eta == 1)
@@ -197,8 +195,12 @@
                                                     </div>
                                                 </div>
                                             }
-
                                         </div>
+                                    </div>
+                                    <!-- Multiple category selection -->
+                                    <label class="fw-bold">CATEGORIE(s)</label>
+                                    <div class="card-body p-3">
+                                        @RenderCategories(EnsCats.Where(c => c.Pid == null))
                                     </div>
                                 </EditForm>
                             </Content>
@@ -601,6 +603,8 @@
     public List<Gtabl> EnsTbls { get; set; } // Dropdown options
     [Parameter]
     public List<Gpatr> EnsAtrs { get; set; }
+    [Parameter]
+    public List<Gpcat> EnsCats { get; set; }
     //guard
     [Parameter]
     public IPendingChangesGuard _guard { get; set; }
@@ -657,7 +661,7 @@
     private bool isRubFilteringEnabled = false;
 
     //private IEnumerable<SelectOption> SelectOptions = Enumerable.Empty<SelectOption>();
-   
+
     //provisoire
     private bool CanEditChildren => 
         GtieMode != GridMode.TiersAdding && curTie.Xadd1 != -1;
@@ -1284,10 +1288,10 @@
                 draftAfl = null;
                 EdAflRowguid = null;
                 break;
-            // case nameof(Rubfmt):
-            //     draftFmt = null;
-            //     EdFmtRowguid = null;
-            //     break;
+                // case nameof(Rubfmt):
+                //     draftFmt = null;
+                //     EdFmtRowguid = null;
+                //     break;
         }
     }
     // ROWS MANAGEMENT
@@ -1527,7 +1531,7 @@
             _ => throw new ArgumentException($"Unknown entity type: {typeof(T).Name}")
         };
     }
-    
+
     private string GetEntitySet(object entity)
     {
         return entity switch
@@ -1729,6 +1733,79 @@
     {
         int maxSeq = source.Any() ? source.Max(selector) ?? 0 : 0;
         return maxSeq + 1;
+    }
+    // CATEGORIES
+    // Build full lineage string for display
+    private RenderFragment RenderCategories(IEnumerable<Gpcat> cats) => builder =>
+    {
+        foreach (var cat in cats)
+        {
+            builder.OpenElement(0, "div");
+            builder.AddAttribute(1, "class", cat.Pid == null ? "mb-2" : "form-check ms-3");
+
+            // Checkbox
+            builder.OpenComponent<InputCheckbox>(2);
+            builder.AddAttribute(3, "class", "form-check-input");
+            builder.AddAttribute(4, "Value", cat.IsSelected);
+            builder.AddAttribute(5, "ValueChanged", EventCallback.Factory.Create<bool>(this, args =>
+            {
+                cat.IsSelected = args;
+
+                // Cascade down
+                foreach (var child in cat.Children)
+                    child.IsSelected = args;
+
+                // Cascade up (recursive)
+                CascadeUp(cat.Parent, args);
+            }));
+            builder.AddAttribute(6, "ValueExpression", (Expression<Func<bool>>)(() => cat.IsSelected));
+            builder.CloseComponent();
+
+            // Label
+            builder.OpenElement(7, "label");
+            builder.AddAttribute(8, "class", "form-check-label");
+            builder.AddContent(9, cat.Liba);
+            builder.CloseElement();
+
+            // Recurse into children
+            if (cat.Children.Any())
+                builder.AddContent(10, RenderCategories(cat.Children));
+
+            builder.CloseElement();
+        }
+    };
+    private void CascadeUp(Gpcat? parent, bool selected)
+    {
+        if (parent == null) return;
+
+        if (selected)
+        {
+            parent.IsSelected = true;
+            CascadeUp(parent.Parent, true); // keep climbing
+        }
+        else
+        {
+            // only uncheck if ALL children are unchecked
+            if (parent.Children.All(c => !c.IsSelected))
+            {
+                parent.IsSelected = false;
+                CascadeUp(parent.Parent, false); // keep climbing
+            }
+        }
+    }
+    // Build hierarchy after fetching EnsCats
+    private void BuildHierarchy()
+    {
+        var lookup = EnsCats.ToDictionary(c => c.Id);
+
+        foreach (var cat in EnsCats)
+        {
+            if (cat.Pid != null && lookup.TryGetValue(cat.Pid.Value, out var parent))
+            {
+                cat.Parent = parent;
+                parent.Children.Add(cat);
+            }
+        }
     }
     //FILTRES
     private Grid<TierspDto> grid = default!;

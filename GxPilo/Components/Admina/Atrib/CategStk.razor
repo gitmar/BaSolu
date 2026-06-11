@@ -25,12 +25,13 @@
     {
         <Grid TItem="StkcatDto"
               Data="@curOrga?.Stkcats.ToList()"
+              @key="stkcatkey"
               AllowPaging="true"
               Responsive="true">
             <GridColumns>
                 <GridColumn TItem="StkcatDto" HeaderText="No" Class="xcol1">
                     <ChildContent Context="item">
-                        @item.Elea <div @key="stkcatkey"></div>
+                        @item.Elea
                     </ChildContent>
                 </GridColumn>
                 <GridColumn TItem="StkcatDto" HeaderText="Label" Class="xcol3">
@@ -49,7 +50,7 @@
                     <ChildContent Context="item">
                         @if (editRowguid == item.Rowguid)
                         {
-                            <InputSelect @bind-Value="draftCat.Pid" class="me-3" style="width:auto" disabled>
+                            <InputSelect @bind-Value="draftCat.Pid" class="me-3" style="width:auto">
                                 <option value=0>?choisir</option>
                                 @foreach (var utb in curOrga?.Tiecats.Where(c => c.Id != draftCat.Id))
                                 {
@@ -66,6 +67,18 @@
                                     <option value=@utb.Id>@utb.Liba</option>
                                 }
                             </InputSelect>
+                        }
+                    </ChildContent>
+                </GridColumn>
+                <GridColumn TItem="StkcatDto" HeaderText="Valeur" Class="xcol1">
+                    <ChildContent Context="item">
+                        @if (editRowguid == item.Rowguid)
+                        {
+                            <InputNumber @bind-Value="draftCat.Ival" placeholder="Lot" />
+                        }
+                        else
+                        {
+                            @item.Ival
                         }
                     </ChildContent>
                 </GridColumn>
@@ -162,7 +175,7 @@
                                     Edit
                                 </Button>
                                 <Button Color="ButtonColor.Danger" Size="ButtonSize.Small"
-                                        @onclick="() => DeleteCategory(item)">
+                                        @onclick="() => SaveDele(item)">
                                     Delete
                                 </Button>
                             }
@@ -191,6 +204,7 @@
                     <option value=@utb.Id>@utb.Liba</option>
                 }
             </InputSelect>
+            <InputNumber @bind-Value="draftCat.Ival" placeholder="Valeur" />
             <InputText @bind-Value="draftCat.Alot" placeholder="Lot" />
             <InputNumber @bind-Value="draftCat.Prix" placeholder="Price" />
             <InputNumber @bind-Value="draftCat.Kinit" placeholder="Q.init" />
@@ -202,7 +216,7 @@
                     <option value=@tob.Elea>@tob.Liba</option>
                 }
             </InputSelect>
-            <Button Color="ButtonColor.Success" @onclick="() => SaveAdd()">Add</Button>
+            <Button Color="ButtonColor.Success" @onclick="() => SaveAdd(draftCat)">Add</Button>
             <Button Color="ButtonColor.Secondary" @onclick="() => CancelAdd(1, draftCat)">Cancel</Button>
         </div>
     }
@@ -335,6 +349,7 @@
         draftCat = new StkcatDto
         {
             Id = atr.Id,
+            Idorg = atr.Idorg,
             Liba = atr.Liba,
             Abg = atr.Abg,
             Pid = atr.Pid,
@@ -347,43 +362,7 @@
         };
     }
 
-    private async Task SaveEdit(StkcatDto atr)
-    {
-        //atr.Liba = draftCat.Liba;
-        //atr.Xtyp = draftCat.Xtyp;
-        //atr.Liba = draftCat.Liba;
-        //atr.Abg = draftCat.Abg;
-        //atr.Pid = draftCat.Pid;
-        //atr.Prix = draftCat.Prix;
-        //atr.Kinit = draftCat.Kinit;
-        //atr.Kalert = draftCat.Kalert;
-        //atr.Eta = draftCat.Eta;
-        // Register update with OData context
-        var key = GetEntityKey(atr); // helper to extract PK
-        _guard.TrackUpdate("Stkcats", key, atr);
-        editRowguid = null;
-        stkcatkey = Guid.NewGuid().ToString();
-        await NotifyPendingChanges();
-        StateHasChanged();
-    }
-
     private void CancelEdit() => editRowguid = null;
-
-    private async Task DeleteCategory(StkcatDto atr)
-    {
-        curOrga.Stkcats.Remove(atr);
-
-        // Register delete with OData context
-        // Extract PK using your helper
-        var key = GetEntityKey(atr);
-
-        // Queue delete in guard
-        //_guard.TrackDelete<TDto>(GetEntitySetName<TDto>(), key);
-        _guard.TrackDelete("Stkcats", key);
-        Console.WriteLine($"🗑️ {atr.Liba} queued for delete");
-
-        await NotifyPendingChanges();
-    }
 
     private void StartAdd()
     {
@@ -391,20 +370,57 @@
         draftCat = new StkcatDto();
         draftCat.Rowguid = Guid.NewGuid();
         draftCat.Idorg = curOrga.Idorg;
+        draftCat.Pid = null;
         draftCat.Eta = 1;
     }
-
-    private async Task SaveAdd()
+    private async Task SaveAdd(StkcatDto cat)
     {
         draftCat.Idorg = curOrga.Idorg;
-        // Register add with OData context
-        curOrga.Stkcats.Add(draftCat);
-        _guard.TrackInsert("Stkcats", draftCat);
-        Console.WriteLine($"➕ NEW {draftCat.Liba} → TrackInsert");
-        isAdding = false;
+
+        await _guard.TrackInsert("Stkcats", cat);
+
+        if (curOrga.Stkcats.All(x => x.Rowguid != cat.Rowguid))
+            curOrga.Stkcats.Add(cat);
+
+        editRowguid = null;
+        stkcatkey = Guid.NewGuid().ToString();
         await NotifyPendingChanges();
-        StateHasChanged();
+        await InvokeAsync(StateHasChanged);
     }
+    private async Task SaveEdit(StkcatDto cat)
+    {
+        await _guard.TrackUpdate("Stkcats", GetEntityKey(cat), cat);
+
+        Uihelper.ReplaceItem(curOrga.Stkcats, x => x.Rowguid == cat.Rowguid, cat);
+
+        editRowguid = null;
+        stkcatkey = Guid.NewGuid().ToString();
+        await NotifyPendingChanges();
+        await InvokeAsync(StateHasChanged);
+    }
+    private async Task SaveDele(StkcatDto cat)
+    {
+        await _guard.TrackDelete("Stkcats", GetEntityKey(cat), cat.Rowguid);
+        Uihelper.RemoveItem(curOrga.Stkcats, x => x.Rowguid == cat.Rowguid);
+        if (editRowguid == cat.Rowguid)
+            editRowguid = null;
+
+        stkcatkey = Guid.NewGuid().ToString();
+        await NotifyPendingChanges();
+        await InvokeAsync(StateHasChanged);
+    }
+
+    // private async Task SaveAdd()
+    // {
+    //     draftCat.Idorg = curOrga.Idorg;
+    //     // Register add with OData context
+    //     curOrga.Stkcats.Add(draftCat);
+    //     await _guard.TrackInsert("Stkcats", draftCat);
+    //     Console.WriteLine($"➕ NEW {draftCat.Liba} → TrackInsert");
+    //     isAdding = false;
+    //     await NotifyPendingChanges();
+    //     StateHasChanged();
+    // }
     private void CancelAdd(int orig, StkcatDto uncat)
     {
         if (orig == 2)
@@ -431,6 +447,9 @@
                 throw new InvalidOperationException($"Unknown entity type {typeof(TDto).Name}");
         }
     }
+    // 🔥 Generic Rowguid (no reflection)
+    private static Guid GetRowguid<T>(T entity) where T : class
+        => ((dynamic)entity).Rowguid;  // Or property expression
     // Notify guard/UI of pending changes
     private async Task NotifyPendingChanges()
     {

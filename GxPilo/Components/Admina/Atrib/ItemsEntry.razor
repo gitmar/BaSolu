@@ -12,7 +12,11 @@
 
 <Button Color="ButtonColor.Success" @onclick="() => StartAdd()">Add New Item</Button>
 
-<Grid TItem="StkituDto" Data="@curOrga?.Stkitus" AllowPaging="true" Responsive="true">
+<Grid TItem="StkituDto" 
+            Data="@curOrga?.Stkitus"
+            @key="stkitukey"
+            AllowPaging="true" 
+            Responsive="true">
     <GridColumns>
         <GridColumn TItem="StkituDto" HeaderText="Id" Class="xcol1">
             <ChildContent Context="item">@item.Id</ChildContent>
@@ -78,7 +82,7 @@
                 else
                 {
                     <Button Color="ButtonColor.Warning" @onclick="() => StartEdit(item)">Edit</Button>
-                    <Button Color="ButtonColor.Danger" @onclick="() => DeleteItem(item)">Delete</Button>
+                    <Button Color="ButtonColor.Danger" @onclick="() => SaveDele(item)">Delete</Button>
                 }
             </ChildContent>
         </GridColumn>
@@ -93,7 +97,7 @@
         @* <InputText @bind-Value="draftItem.Liba" placeholder="Label" />
         <InputNumber @bind-Value="draftItem.Qty" placeholder="Quantity" />
         <InputNumber @bind-Value="draftItem.UnitCost" placeholder="Unit Cost" /> *@
-        <Button Color="ButtonColor.Success" @onclick="() => SaveAdd()">Add</Button>
+        <Button Color="ButtonColor.Success" @onclick="() => SaveAdd(draftItem)">Add</Button>
         <Button Color="ButtonColor.Secondary" @onclick="() => CancelAdd()">Cancel</Button>
     </div>
 }
@@ -117,6 +121,7 @@
     [Parameter] public EventCallback<int> NbChangesChanged { get; set; }
 
     private Guid? editRowguid;
+    private string stkitukey = ""; // Force grid refresh
     private bool isAdding = false;
     private StkituDto draftItem = new();
 
@@ -127,17 +132,39 @@
         draftItem.Idorg = curOrga.Idorg;
     }
 
-    private async Task SaveAdd()
+    private async Task SaveAdd(StkituDto itu)
     {
-        draftItem.Rowguid = Guid.NewGuid();
-        // Register add with OData 
-        curOrga.Stkitus.Add(draftItem);
-        _guard.TrackInsert("Stkitus", draftItem);
-   
-        curOrga.Stkitus.Add(draftItem);
-        isAdding = false;
+        await _guard.TrackInsert("Stkitus", itu);
 
+        if (curOrga.Stkitus.All(x => x.Rowguid != itu.Rowguid))
+            curOrga.Stkitus.Add(itu);
+
+        editRowguid = null;
+        stkitukey = Guid.NewGuid().ToString();
         await NotifyPendingChanges();
+        await InvokeAsync(StateHasChanged);
+    }
+    private async Task SaveEdit(StkituDto itu)
+    {
+        await _guard.TrackUpdate("Stkitus", GetEntityKey(itu), itu);
+        Uihelper.ReplaceItem(curOrga.Stkitus, x => x.Rowguid == itu.Rowguid, itu);
+
+        editRowguid = null;
+        stkitukey = Guid.NewGuid().ToString();
+        await NotifyPendingChanges();
+        await InvokeAsync(StateHasChanged);
+    }
+    private async Task SaveDele(StkituDto itu)
+    {
+        var rowguid = GetRowguid(itu);
+        await _guard.TrackDelete("Stkitus", GetEntityKey(itu), rowguid);
+        Uihelper.RemoveItem(curOrga.Stkitus, x => x.Rowguid == rowguid);
+        if (editRowguid == itu.Rowguid)
+            editRowguid = null;
+
+        stkitukey = Guid.NewGuid().ToString();
+        await NotifyPendingChanges();
+        await InvokeAsync(StateHasChanged);
     }
 
     private void CancelAdd() => isAdding = false;
@@ -155,33 +182,34 @@
         };
     }
 
-    private async Task SaveEdit(StkituDto item)
-    {
-        item.Liba = draftItem.Liba;
-        //item.Liba = draftItem.Liba;
-        //item.Quantity = draftItem.Quantity;
-        //item.UnitCost = draftItem.UnitCost;
-
-        // Register update with OData context
-        var key = GetEntityKey(item); // helper to extract PK
-        _guard.TrackUpdate("Stkitus", key, item);
-
-        editRowguid = null;
-        await NotifyPendingChanges();
-    }
-
     private void CancelEdit() => editRowguid = null;
+    
+    // private async Task SaveEdit(StkituDto item)
+    // {
+    //     item.Liba = draftItem.Liba;
+    //     //item.Liba = draftItem.Liba;
+    //     //item.Quantity = draftItem.Quantity;
+    //     //item.UnitCost = draftItem.UnitCost;
 
-    private async Task DeleteItem(StkituDto item)
-    {
-        curOrga.Stkitus.Remove(item);
+    //     // Register update with OData context
+    //     var key = GetEntityKey(item); // helper to extract PK
+    //     await _guard.TrackUpdate("Stkitus", key, item);
 
-        // Register delete with OData context
-        var key = GetEntityKey(item);
-        _guard.TrackDelete("Stkitus", key);
+    //     editRowguid = null;
+    //     await NotifyPendingChanges();
+    // }
+    // private async Task DeleteItem(StkituDto item)
+    // {
+    //     curOrga.Stkitus.Remove(item);
 
-        await NotifyPendingChanges();
-    }
+    //     // Register delete with OData context
+    //     var key = GetEntityKey(item);
+    //     var rowguid = GetRowguid(item);
+
+    //     await _guard.TrackDelete("Stkitus", key, rowguid);
+
+    //     await NotifyPendingChanges();
+    // }
     private object GetEntityKey<TDto>(TDto entity)
     {
         switch (entity)
@@ -196,6 +224,8 @@
                 throw new InvalidOperationException($"Unknown entity type {typeof(TDto).Name}");
         }
     }
+    private static Guid GetRowguid<T>(T entity) where T : class
+        => ((dynamic)entity).Rowguid;
     // and call this in OnParametersSet
     protected override void OnParametersSet()
     {

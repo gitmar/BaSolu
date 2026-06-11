@@ -1,4 +1,5 @@
 ﻿using GxShared.Others;
+using GxShared.Sess;
 
 namespace GxTie.StaticHelpers
 {

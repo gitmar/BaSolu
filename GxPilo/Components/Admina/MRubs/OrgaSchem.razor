@@ -1,0 +1,196 @@
+﻿@page "/orgaschem"
+
+@using GxShared.InDtos
+@using GxShared.GxDtos
+
+<div class="row">
+    <div class="col-md-12 input-group align-middle">
+        <span><b>Message :</b></span>
+        &nbsp;&nbsp;
+        @if (!String.IsNullOrEmpty(Imessage))
+        {
+            <span class="bg-info bg-opacity-10" style="font-style:italic;color:red">&nbsp;--> @Imessage</span>
+        }
+    </div>
+</div>
+<div class="form-group">
+    <label class="me-2">Organigramme :</label>
+    <InputSelect @bind-Value="IMyOgn" @onchange="() => ognPlanDom()" class="me-3" style="width:auto">
+        @foreach (var pln in LsOrgns)
+        {
+            <option value=@pln.Id>@pln.Liba</option>
+        }
+    </InputSelect>
+</div>
+
+@RenderOrganigram(_lsRuborgs.Where(r => r.Ydpd == null))
+
+<style>
+    .org-chart {
+        display: flex;
+        justify-content: center;
+        align-items: flex-start;
+        flex-wrap: wrap;
+    }
+
+    .org-node {
+        border: 1px solid #ccc;
+        padding: 6px 12px;
+        margin: 8px;
+        background-color: #f9f9f9;
+        border-radius: 4px;
+        text-align: center;
+        position: relative;
+    }
+
+    .org-children {
+        display: flex;
+        justify-content: center;
+        margin-top: 20px;
+        position: relative;
+    }
+
+        .org-children::before {
+            content: "";
+            position: absolute;
+            top: -20px;
+            left: 50%;
+            width: 2px;
+            height: 20px;
+            background: #ccc;
+        }
+
+        /* horizontal connectors between siblings */
+        .org-children > .org-node::before,
+        .org-children > .org-node::after {
+            content: "";
+            position: absolute;
+            top: -20px;
+            width: 50%;
+            height: 2px;
+            background: #ccc;
+        }
+
+        .org-children > .org-node::before {
+            left: 0;
+        }
+
+        .org-children > .org-node::after {
+            right: 0;
+        }
+</style>
+
+@code {
+    [Parameter]
+    public GxorgaDto curOrga { get; set; }
+    [Parameter]
+    public List<PlngenDto> LsOrgns { get; set; }
+
+    private int IMyOgn = 0;
+    private string Imessage = "";
+    private PlngenDto curOgn = new();
+    public List<OrgnDto> _lsRuborgs = new();
+
+    protected override void OnInitialized()
+    {
+        LsOrgns = curOrga.Plngens.Where(pl => pl.Ptyp == 4).ToList();
+        if (LsOrgns.Any())
+        {
+            curOgn = LsOrgns.FirstOrDefault();
+            IMyOgn = curOgn.Id;
+            ognPlanDom();
+        }
+    }
+    private void ognPlanDom()
+    {
+        Imessage = "";
+        curOgn = LsOrgns.FirstOrDefault(pl => pl.Id == IMyOgn);
+        if (curOgn != null)
+        {
+            var inRubhies = curOgn.Rubhies.ToList();
+            if (inRubhies.Any())
+            {
+                _lsRuborgs = inRubhies.Select(ru => new OrgnDto
+            {
+                Id = ru.Id,
+                Liba = ru.Liba,
+                Ydpd = ru.Ydpd
+            }).ToList();
+                BuildRubhieHierarchy();
+
+                // Debug log
+                foreach (var root in _lsRuborgs.Where(r => r.Ydpd == null))
+                {
+                    Console.WriteLine($"Root {root.Liba} has {root.Children.Count} children");
+                    foreach (var child in root.Children)
+                    {
+                        Console.WriteLine($"  Child {child.Liba} has {child.Children.Count} children");
+                    }
+                }
+            }
+            else
+            {
+                Imessage = "pas de fils";
+            }
+        }
+        else
+        {
+            Imessage = "organigramme absent";
+        }
+    }
+    private void BuildRubhieHierarchy()
+    {
+        var lookup = _lsRuborgs.ToDictionary(r => r.Id);
+
+        foreach (var node in _lsRuborgs)
+        {
+            if (node.Ydpd != null && lookup.TryGetValue(node.Ydpd.Value, out var parent))
+            {
+                node.Parent = parent;
+                parent.Children.Add(node);
+            }
+        }
+    }
+
+    private RenderFragment RenderOrganigram(IEnumerable<OrgnDto> nodes, int level = 0) => builder =>
+{
+    var seq = 0;
+    builder.OpenElement(seq++, "div");
+    builder.AddAttribute(seq++, "class", "org-children");
+
+    foreach (var node in nodes)
+    {
+        builder.OpenElement(seq++, "div");
+        builder.AddAttribute(seq++, "class", "org-node");
+
+        // Toggle button if children exist
+        if (node.Children.Count > 0)
+        {
+            builder.OpenElement(seq++, "button");
+            builder.AddAttribute(seq++, "class", "btn btn-sm btn-link p-0 me-2");
+            builder.AddAttribute(seq++, "onclick", EventCallback.Factory.Create(this, () =>
+            {
+                node.IsExpanded = !node.IsExpanded;
+                StateHasChanged();
+            }));
+            builder.AddContent(seq++, node.IsExpanded ? "−" : "+");
+            builder.CloseElement();
+        }
+
+        // Node label
+        builder.AddContent(seq++, node.Liba);
+
+        // Render children only if expanded
+        if (node.IsExpanded && node.Children.Count > 0)
+        {
+            builder.AddContent(seq++, RenderOrganigram(node.Children, level + 1));
+        }
+
+        builder.CloseElement();
+    }
+
+    builder.CloseElement();
+};
+
+}
+

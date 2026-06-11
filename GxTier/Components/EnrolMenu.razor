@@ -75,6 +75,7 @@ else
                                      @bind-NbChanges="_nbChanges"
                                      _guard="_guard"
                                      EnsAtrs="@EnsAtrs"
+                                     EnsCats="@EnsCats"
                                      EnsTbls ="@EnsTbls"
                                      toChild="@toChild"
                                      _InODaClient="@_MyODaClient">
@@ -92,6 +93,7 @@ else
                                      @bind-NbChanges="_nbChanges"
                                      _guard="_guard"
                                      EnsAtrs="@EnsAtrs"
+                                     EnsCats="@EnsCats"
                                      EnsTbls="@EnsTbls"
                                      toChild="@toChild"
                                      _InODaClient="@_MyODaClient">
@@ -217,6 +219,7 @@ else
     private List<Grole> LsRoles = new();
     private List<Gtabl> EnsTbls = new();
     private List<Gpatr> EnsAtrs = new();
+    private List<Gpcat> EnsCats = new();
     //Navigation
     private int _gIdTie = 0, _chxGpe = 0, _chxMenu = 1;
     private string strComp = $"Integration";
@@ -325,6 +328,10 @@ else
         await LoadTieAplAsync(_usrBag.Idorg);
         EnsAtrs = await _rendAgres.LoadOrgaAtribs();
         Console.WriteLine($"nb. attributs : {EnsAtrs.Count}");
+        EnsCats = await _rendAgres.LoadOrgaCategs();
+        Console.WriteLine($"nb. categories : {EnsCats.Count}");
+        // Build hierarchy once
+        BuildHierarchy();
         //option initiale
         strComp = $"Integration {gpeLiba}";
         //isLoading = false;
@@ -340,10 +347,13 @@ else
         // _guard.AttachContext(curODContext);
         try
         {
+            Console.WriteLine($"key : {key}");
             curOrga = await _MyODaClient
                 .For<GxorgaDto>("Gxorgas")
                 .Key(key)
                 .Expand(o => o.Tiewels.Select(t => t.Tiwafls))
+                .Expand(o => o.Tiewels.Select(t => t.Tiejatrs))
+                .Expand(o => o.Tiewels.Select(t => t.Tiegcats))
                 .Expand(o => o.Tiersps.Select(t => t.Tieafls))
                 .Expand(o => o.Tiersps.Select(t => t.Tiejatrs))
                 .Expand(o => o.Tiersps.Select(t => t.Tiegcats))
@@ -352,7 +362,7 @@ else
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Load error: {ex.Message}");
+            Console.WriteLine($"Load error: {ex.Message} et trace : {ex.StackTrace}");
         }
 
         try
@@ -457,6 +467,20 @@ else
         {
             Console.WriteLine($"❌ Error: {ex.Message}");
             // Safety: stay on page
+        }
+    }
+    //build hierarchy
+    private void BuildHierarchy()
+    {
+        var lookup = EnsCats.ToDictionary(c => c.Id);
+
+        foreach (var cat in EnsCats)
+        {
+            if (cat.Pid != null && lookup.TryGetValue(cat.Pid.Value, out var parent))
+            {
+                cat.Parent = parent;
+                parent.Children.Add(cat);
+            }
         }
     }
     //changes des selections
