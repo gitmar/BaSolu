@@ -170,9 +170,10 @@ else
             LsPlans = _usrBag.Usorga.Uplns.Where(pl => pl.Ptyp == 2 || pl.Ptyp == 3 || pl.Ptyp == 4).ToList();
             LtTabls = _usrBag.Usorga.Uvars.Where(tb => tb.Gvars == 4).ToList();
             LsTabls = _usrBag.Usorga.Uvars.Where(tb => tb.Gvars == 5).ToList();
+            
+            Console.WriteLine($"Usrbag plans : {_usrBag.Usorga.Uplns.Count()}");
             await LoadOrgaAsync(_usrBag.Idorg);
 
-            Console.WriteLine($"Usrbag plans : {_usrBag.Usorga.Uplns.Count()}");
             toChild = new ChildVars
             {
                 authUser = authState.User,
@@ -217,11 +218,21 @@ else
                 //             Rubhies = p.Rubhies.Select(t => t.Rubpsts)
                 //         }))
                 //     .FindEntryAsync();
+                Console.WriteLine($"Entry Key : {key}");
+
                 curOrga = await _MyODaClient
                     .For<GxorgaDto>("Gxorgas")
                     .Key(key)
-                    .Expand("Plngens($expand=Rubvars,Rubhies($expand=Rubpsts))")
+                    .Expand(o => o.Plngens.Select(p => p.Rubvars))
+                    .Expand(o => o.Tiersps.Select(t => t.Actsaies.Select(a => a.Actdets)))
                     .FindEntryAsync();
+
+                // curOrga = await _MyODaClient
+                //     .For<GxorgaDto>("Gxorgas")
+                //     .Key(key)
+                //     .Expand("Plngens($expand=Rubvars)")
+                //     .Expand("Tiersps($expand=Actsaies($expand=Actdets))")
+                //     .FindEntryAsync();
                 Console.WriteLine($"loadOrgaAsync completed :{curOrga?.Raison}");
             }
             catch (Exception ex)

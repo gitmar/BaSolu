@@ -111,6 +111,7 @@ else
                             <Tab Title="Plan" Name="IndaTab" onClick="() => OnHomeSelected()">
                                 <Content>
                         <div class="row">
+                            <div>dom : @IMyDom vue: @IMyVue</div>
                             @if (IMyDom != 0 && IMyVue != 0)
                             {
                                 <Grid TItem="PlngenDto"
@@ -161,7 +162,7 @@ else
                                                 }
                                             </ChildContent>
                                         </GridColumn>
-                                        <GridColumn TItem="PlngenDto" HeaderText="Formule" Class="xcol1">
+                                        @* <GridColumn TItem="PlngenDto" HeaderText="Formule" Class="xcol1">
                                             <ChildContent Context="item">
                                                 @if (EdPlnRowguid == item.Rowguid)
                                                 { // show draftPln inputs
@@ -180,10 +181,10 @@ else
                                                   </Button>
                                                 }
                                             </ChildContent>
-                                        </GridColumn>
+                                        </GridColumn> *@
                                         <GridColumn TItem="PlngenDto" HeaderText="Etat" Class="xcol1">
                                             <HeaderContent>
-                                                @if (IMyDom != 0 && IMyVue > 1)
+                                                @if (IMyDom != 0 && IMyVue != 0)
                                                 {
                                                     <button class="btn btn-primary btn-sm @(isAddPln || isEdtPln ? "disabled-action" : "")"
                                                             @onclick="StartPlnNew">
@@ -248,7 +249,7 @@ else
                                                                             </Button>
                                                                             <Button Color="ButtonColor.Success" Size="ButtonSize.Small"
                                                                                     @onclick="() => CancelAdd(draftPln, EntityLevel.Plan)">
-                                                                                ✅ AddCancel
+                                                                                ❌ AddCancel
                                                                             </Button>
                                                                         }
                                                                         else
@@ -257,11 +258,11 @@ else
                                                                                 @onclick="() => ConfirmEdit(draftPln, EntityLevel.Plan)">
                                                                                     ✅ Confirm
                                                                              </Button>
+                                                                            <Button Color="ButtonColor.Secondary" Size="ButtonSize.Small"
+                                                                                    @onclick="() => CancelEdit(draftPln, EntityLevel.Plan)">
+                                                                                ❌ Cancel
+                                                                            </Button>
                                                                         }
-                                                                        <Button Color="ButtonColor.Secondary" Size="ButtonSize.Small"
-                                                                        @onclick="() => CancelEdit(draftPln, EntityLevel.Plan)">
-                                                                            ❌ Cancel
-                                                                        </Button>
                                                                     }
                                                                     break;
                                                     default:
@@ -347,7 +348,7 @@ else
                                                                         </div>
                                                                     </ChildContent>
                                                                 </GridColumn>
-                                                                <GridColumn TItem="RubhieDto" HeaderText="Designation" Class="xcol3">
+                                                                <GridColumn TItem="RubhieDto" HeaderText="Designation" Class="xcol2">
                                                                     <ChildContent Context="item">
                                                                         @if (EdRubRowguid == item.Rowguid)
                                                                         {
@@ -430,7 +431,7 @@ else
                                                                         }
                                                                     </ChildContent>
                                                                 </GridColumn>
-                                                                <GridColumn TItem="RubhieDto" HeaderText="Formule" Class="xcol1">
+                                                                @* <GridColumn TItem="RubhieDto" HeaderText="Formule" Class="xcol1">
                                                                     <ChildContent Context="item">
                                                                         @if (EdRubRowguid == item.Rowguid)
                                                                         { // show draftPln inputs
@@ -449,7 +450,7 @@ else
                                                                           </Button>
                                                                         }
                                                                     </ChildContent>
-                                                                </GridColumn>
+                                                                </GridColumn> *@
                                                                 <GridColumn TItem="RubhieDto" HeaderText="Eta" Class="xcol1">
                                                                     <HeaderContent>
                                                                         @if (selectedPln != null)
@@ -1107,6 +1108,9 @@ else
             Tovue = IMyVue,
             Liba = "",
             Abg = "",
+            Fpsrc = "",
+            Fpexe = "",
+            Fpisrc = 0,
             Styp = 0,
             Eta = 1,
             Xadd1 = -1,
@@ -1119,32 +1123,12 @@ else
         draftPln = (PlngenDto)DeepClone(newPln);
         EdPlnRowguid = draftPln.Rowguid;
         isAddPln = true;
-        isEdtPln = true;
+        //isEdtPln = true;
+        _rowPendingOpTypeByRow[draftPln.Rowguid] = PendingOpType.Insert;
         SetRowState(draftPln.Rowguid, RowState.EditPending);  // Shows Confirm/Cancel ✓
-        PlnRenderKey = draftPln.Rowguid;
+        PlnRenderKey = draftPln.Rowguid; 
         Console.WriteLine($"✅ New row added to curOrga.Plngens - Count: {curOrga.Plngens.Count}");
         StartRowEdit(draftPln.Rowguid, EntityLevel.Plan);
-        StateHasChanged();
-    }
-    private async Task StartPlnEdit(PlngenDto item, Guid rowguid)
-    {
-        //var client = (ODataClient)_InODaClient;
-        //bool isNew = await client.IsNewAsync<PlngenDto>("Plngens", item.Id);
-        bool isNew = item.Id == default; // for int, default == 0
-        if (isNew)
-        { //not saved yet
-            Imessage = "🚫 Cannot edit new Plan: Please save it first.";
-            return;
-        }
-        if (rowguid == Guid.Empty) return;
-        item.Xedt1 = -1;
-        if (item.Iele != 0) item.Iui = (int)item.Iele;
-        SetRowState(rowguid, RowState.EditPending);  // Shows Confirm/Cancel buttons
-        _edPlnOriginals[rowguid] = (PlngenDto)DeepClone(item);
-        EdPlnRowguid = AllowMultipleEdits ? null : rowguid;
-        draftPln = (PlngenDto)DeepClone(item);
-        isEdtPln = true;
-        StartRowEdit(rowguid, EntityLevel.Plan);
         StateHasChanged();
     }
     private async Task StartRubNew(PlngenDto mypln)
@@ -1175,15 +1159,16 @@ else
             Scdrub = "",
             Liba = "",
             Abg = "",
+            Frsrc = "",
+            Frexe = "",
+            Frisrc = 0,
             Ydpd = null,
             Weburl = curOrga.Weburl?.Substring(0, 199).ToString() ?? "",
             Adr = curOrga.Adr,
             Sigrid = 0,
             Ustyp = 0,
-            Ddval = 0,
-            Dfval = 0,
             Eaut = 0,
-            Atyp = 4,
+            Atyp = 3, //decimal
             Eta = 1,
             Xadd1 = -1,
             Xedt1 = 0,
@@ -1204,6 +1189,76 @@ else
         StartRowEdit(draftRub.Rowguid, EntityLevel.Rub);
         StateHasChanged();
     }
+    private async Task StartFmtNew(RubhieDto myrub)
+    {
+        if (myrub.Id <= 0)
+        {
+            Imessage = "🚫 Cannot add Format: Rubrique must be saved first.";
+            return;
+        }
+        var lsnb = NextSeq(myrub.Rubpsts, p => p.Iui);
+        Console.WriteLine("🚨 StartPstNew");
+        var newFmt = new RubpstDto
+        { /* init */
+            Rowguid = Guid.NewGuid(),
+            Ihie = myrub.Id, //pere Id
+            Iui = lsnb, //nextSeq(3),
+            Idzon = lsnb, //nextSeq(3),
+            Zcdrub = lsnb.ToString(),
+            Liba = "",
+            Abg = "",
+            Ftsrc = "",
+            Ftexe = "",
+            Tperi = 1,
+            Col = 1,
+            Lne = 1,
+            Ztyp = 4, //decimal
+            Eint = 0,
+            Eta = 1,
+            Xadd1 = -1,  //newly added/edited
+            Xedt1 = 0,
+            Xdel1 = 0
+        };
+        SetRowState(newFmt.Rowguid, RowState.AddPending);
+        SetLightBackground(newFmt.Rowguid, true);
+        if (myrub.Rubpsts == null)
+        {
+            myrub.Rubpsts = new List<RubpstDto>();  // ✅ Correct type
+        }
+        myrub.Rubpsts.Insert(0, newFmt);
+        draftFmt = (RubpstDto)DeepClone(newFmt);
+        EdFmtRowguid = draftFmt.Rowguid;
+        isAddFmt = true;
+        //isEdtFmt = true;
+        _rowPendingOpTypeByRow[draftFmt.Rowguid] = PendingOpType.Insert;
+        SetRowState(draftFmt.Rowguid, RowState.EditPending);  // 🔥 ADD
+        FmtRenderKey = draftFmt.Rowguid; //force Grid render
+        Console.WriteLine($"✅ New row added to RubhieDto.Rubpst - Count: {myrub.Rubpsts.Count}");
+        StartRowEdit(draftFmt.Rowguid, EntityLevel.Fmt);
+        StateHasChanged();
+    }
+    private async Task StartPlnEdit(PlngenDto item, Guid rowguid)
+    {
+        //var client = (ODataClient)_InODaClient;
+        //bool isNew = await client.IsNewAsync<PlngenDto>("Plngens", item.Id);
+        bool isNew = item.Id == default; // for int, default == 0
+        if (isNew)
+        { //not saved yet
+            Imessage = "🚫 Cannot edit new Plan: Please save it first.";
+            return;
+        }
+        if (rowguid == Guid.Empty) return;
+        item.Xedt1 = -1;
+        if (item.Iele != 0) item.Iui = (int)item.Iele;
+        SetRowState(rowguid, RowState.EditPending);  // Shows Confirm/Cancel buttons
+        _rowPendingOpTypeByRow[rowguid] = PendingOpType.Update;
+        _edPlnOriginals[rowguid] = (PlngenDto)DeepClone(item);
+        EdPlnRowguid = AllowMultipleEdits ? null : rowguid;
+        draftPln = (PlngenDto)DeepClone(item);
+        isEdtPln = true;
+        StartRowEdit(rowguid, EntityLevel.Plan);
+        StateHasChanged();
+    }
     private async Task StartRubEdit(RubhieDto item, Guid rowguid)
     {
         bool isNew = item.Id == default;
@@ -1215,7 +1270,7 @@ else
         if (rowguid == Guid.Empty) return;
         item.Xedt1 = -1;
         if (item.Iele != 0) item.Iui = (int)item.Iele;
-        SetRowState(rowguid, RowState.EditPending);
+        SetRowState(rowguid, RowState.EditPending);  // Shows Confirm/Cancel buttons
         _rowPendingOpTypeByRow[rowguid] = PendingOpType.Update;
         _edRubOriginals[rowguid] = (RubhieDto)DeepClone(item);
         EdRubRowguid = AllowMultipleEdits ? null : rowguid;

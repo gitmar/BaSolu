@@ -68,8 +68,8 @@ else
                     {
                         @if (_chxMenu == 1 && Ugpe != 0 && Tgpe != 0)
                         {
-                            <ValdTie @ref="mygvld"
-                                     Ugpe="@Ugpe"
+                            @* <ValdTie @ref="mygvld"
+                                    Ugpe="@Ugpe"
                                      Tgpe="@Tgpe"
                                      curOrga="@curOrga"
                                      @bind-NbChanges="_nbChanges"
@@ -78,11 +78,12 @@ else
                                      EnsCats="@EnsCats"
                                      EnsTbls ="@EnsTbls"
                                      toChild="@toChild"
-                                     _InODaClient="@_MyODaClient">
+                                     _InODaClient="@_MyODaClient"
+                                     >
                                 <ChildContent>
-                                    @* <h2 class="child-box">Hello INTEGRATION</h2> *@
+                                    <h2 class="child-box">Hello INTEGRATION</h2>
                                 </ChildContent>
-                            </ValdTie>
+                            </ValdTie> *@
                         }
                         else if (_chxMenu == 2 && Ugpe != 0) // && Tgpe != 0 && ParentOK)
                         {
@@ -141,7 +142,7 @@ else
     public GxorgaDto curOrga = new();
     public ChildVars toChild = new();
 
-    private ValdTie mygvld = new();
+    //private ValdTie mygvld = new();
     private InscTiw myetiw = new();
     //private InvOper myginv = new();
 
@@ -359,6 +360,7 @@ else
                 .Expand(o => o.Tiersps.Select(t => t.Tiegcats))
                 .FindEntryAsync();
             Console.WriteLine($"loadOrgaAsync completed : {curOrga?.Raison}");
+            Console.WriteLine($"Nb. Tiersps {curOrga.Tiersps.Count} Nb. Tiewels : {curOrga?.Tiewels.Count}");
         }
         catch (Exception ex)
         {

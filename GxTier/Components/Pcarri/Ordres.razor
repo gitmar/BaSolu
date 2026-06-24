@@ -395,7 +395,8 @@
         //curTransfer.Tiemvlnes.Remove(line);
         // Register delete with OData context
         var key = GetEntityKey(line);
-        _guard.TrackDelete("Tiemvlnes", key);
+        var rowguid = line.Rowguid;
+        _guard.TrackDelete("Tiemvlnes", key, rowguid);
 
         await NotifyPendingChanges();
     }

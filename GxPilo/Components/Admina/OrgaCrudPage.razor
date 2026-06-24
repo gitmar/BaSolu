@@ -1,0 +1,79 @@
+﻿@page "/orgacrudpage"
+<h3>OrgaCrudPage</h3>
+
+@using GxShared.Helpers
+@using GxShared.GxDtos
+@using Microsoft.AspNetCore.Components
+@using GxPilo.Components.Plans
+
+@inherits MultiLevelCrudBase
+
+<div class="orga-crud-page">
+    @if (!string.IsNullOrEmpty(Imessage))
+    {
+        <div class="alert alert-info">@Imessage</div>
+    }
+
+    <!-- Plans grid -->
+    <h4>Plans</h4>
+    <Grid TItem="PlngenDto" Data="@MyDaPlans" AllowDetailView="true">
+        <GridColumn TItem="PlngenDto" HeaderText="Designation">
+            <ChildContent Context="item">
+                @{
+                    var state = GetRowState(EntityLevel.Plan, item.Rowguid);
+                }
+                @if (state == RowState.EditPending)
+                {
+                    <InputText @bind-Value="((PlngenDto)GetDraft(EntityLevel.Plan)).Liba" />
+                }
+                else
+                {
+                    @item.Liba
+                }
+            </ChildContent>
+        </GridColumn>
+
+        <GridColumn TItem="PlngenDto" HeaderText="Actions">
+            <ChildContent Context="item">
+                @{
+                    var state = GetRowState(EntityLevel.Plan, item.Rowguid);
+                }
+                @if (state == RowState.AddPending)
+                {
+                    <Button @onclick="() => ConfirmAdd(EntityLevel.Plan, true)">✅ Confirm</Button>
+                    <Button @onclick="() => CancelAdd(EntityLevel.Plan, item)">❌ Cancel</Button>
+                }
+                else if (state == RowState.EditPending)
+                {
+                <Button @onclick="() => ConfirmEdit(EntityLevel.Plan, true)">✅ Confirm</Button>
+                <Button @onclick="() => CancelEdit(EntityLevel.Plan, item)">❌ Cancel</Button>
+                }
+                else
+                {
+                <Button @onclick="() => StartEdit(EntityLevel.Plan, item)">✏️ Edit</Button>
+                <Button @onclick="() => StartDelete(EntityLevel.Plan, item)">🗑 Delete</Button>
+                }
+            </ChildContent>
+        </GridColumn>
+
+        <GridDetailView TItem="PlngenDto" Context="selectedPlan">
+            @if (selectedPlan != null)
+            {
+                <!-- Rubs grid (details of Plan) -->
+                <h5>Rubriques</h5>
+                <Grid TItem="RubvarDto" Data="@MyDaRubs">
+                    <!-- Similar columns/actions for Rub, using EntityLevel.Rub -->
+                </Grid>
+
+                <!-- You can also nest Fmt grid inside RubDetailView if needed -->
+            }
+        </GridDetailView>
+    </Grid>
+
+    <Button @onclick="SaveAll" Color="ButtonColor.Primary">
+        💾 Save All (@NbChanges)
+    </Button>
+</div>
+@code {
+    
+}

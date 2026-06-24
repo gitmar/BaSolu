@@ -350,10 +350,10 @@
         // Register delete with OData context
         // Extract PK using your helper
         var key = GetEntityKey(atr);
-
+        var rowguid = atr.Rowguid;
         // Queue delete in guard
         //_guard.TrackDelete<TDto>(GetEntitySetName<TDto>(), key);
-        _guard.TrackDelete("Gsesios", key);
+        _guard.TrackDelete("Gsesios", key, rowguid);
         Console.WriteLine($"🗑️ {atr.Liba} queued for delete");
 
         await NotifyPendingChanges();

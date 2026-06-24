@@ -343,8 +343,9 @@
         curOrga?.Tiemvts.Remove(vlne);
         // Extract PK using your helper
         var key = GetEntityKey(vlne);
+        var rowguid = vlne.Rowguid;
         // Queue delete in guard
-        _guard.TrackDelete("Tiemvts", key);
+        _guard.TrackDelete("Tiemvts", key, rowguid);
         Console.WriteLine($"🗑️ {vlne.Title} queued for delete");
         await NotifyPendingChanges();
     }

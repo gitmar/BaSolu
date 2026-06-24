@@ -356,6 +356,7 @@ else
                                                                                         case RowState.Locked:
                                                                                             <span class="text-muted">—</span>
                                                                                             break;
+
                                                                                         case RowState.DeletePending:
                                                                                             <Button Color="ButtonColor.Danger" Size="ButtonSize.Small"
                                                                                                     @onclick="() => ConfirmDelete(rf, EntityLevel.Fmt)">
@@ -366,6 +367,16 @@ else
                                                                                                 ❎ Cancel
                                                                                             </Button>
                                                                                             break;
+                                                                                case RowState.AddPending:
+                                                                                   @*  <Button Color="ButtonColor.Success" Size="ButtonSize.Small"
+                                                                                            @onclick="() => ConfirmAdd(draftFmt, EntityLevel.Fmt)">
+                                                                                        ✅ Confirm
+                                                                                    </Button>
+                                                                                    <Button Color="ButtonColor.Success" Size="ButtonSize.Small"
+                                                                                            @onclick="() => CancelAdd(draftPln, EntityLevel.Fmt)">
+                                                                                        ❌ Cancel
+                                                                                    </Button> *@
+                                                                                    break;
                                                                                         case RowState.EditPending:
                                                                                             @if (draftFmt != null)
                                                                                             {    
@@ -692,7 +703,7 @@ else
     private bool isFiltre { get; set; } = false;  
 
 
-    private Guid? PlanRenderKey = null;
+    private Guid? PlnRenderKey = null;
     private Dictionary<Guid, PlngenDto> _edPlnOriginals = new();
     private PlngenDto? draftPln = null;
     private bool isAddPln = false;
@@ -851,7 +862,7 @@ else
         isAddPln = true;
         isEdtPln = true;
         SetRowState(draftPln.Rowguid, RowState.EditPending);  // Shows Confirm/Cancel ✓
-        PlanRenderKey = draftPln.Rowguid;
+        PlnRenderKey = draftPln.Rowguid;
         Console.WriteLine($"✅ New row added to curOrga.Plngens - Count: {curOrga.Plngens.Count}");
         StartRowEdit(draftPln.Rowguid, EntityLevel.Plan);
         StateHasChanged();
@@ -1301,7 +1312,7 @@ else
         EdPlnRowguid = null;
         DlPlnRowguid = null;
 
-        PlanRenderKey = Guid.NewGuid();  // Force grid refresh
+        PlnRenderKey = Guid.NewGuid();  // Force grid refresh
         StateHasChanged();
     }
     private void ResetRubUI()

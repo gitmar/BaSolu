@@ -259,7 +259,8 @@
         curTransfer.Tiemvlnes.Remove(line);
         // Extract PK using your helper
         var key = GetEntityKey(line);
-        _guard.TrackDelete("Tiemvlnes", key);
+        var rowguid = line.Rowguid;
+        _guard.TrackDelete("Tiemvlnes", key, rowguid);
         Console.WriteLine($"🗑️ {line.Id} queued for delete");
         await NotifyPendingChanges();
     }

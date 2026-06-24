@@ -97,7 +97,7 @@ else
                         }
                         else if (_chxMenu == 4)
                         { //ECHEANCIER
-                            <PrubEchs @ref="myrech"
+                            @* <PrubEchs @ref="myrech"
                                 toMenu="@_chxMenu"
                                 @bind-NbChanges="_nbChanges"
                                 _guard="_guard"
@@ -105,9 +105,9 @@ else
                                 toChild="@toChild"
                                 _InODaClient="@_MyODaClient">
                                 <ChildContent>
-                                    @* <h2 class="child-box">Hello GRILLES</h2> *@
+                                    <h2 class="child-box">Hello GRILLES</h2>
                                 </ChildContent>
-                            </PrubEchs>
+                            </PrubEchs> *@
                         }
                         else if (_chxMenu == 5)
                         { //durables rubriques
@@ -122,6 +122,16 @@ else
                                     @* <h2 class="child-box">Hello GRILLES</h2> *@
                                 </ChildContent>
                             </PrubCalc>
+                        } else if (_chxMenu == 6)
+                        {
+                            <PTestEchs @ref="mygtest"
+                                        curOrga="curOrga"
+                                       toChild="toChild"
+                                       toMenu="_chxMenu"
+                                       _guard="@_guard"
+                                       @bind-NbChanges="_nbChanges"
+                                       _InODaClient="@_MyODaClient">
+                            </PTestEchs>
                         }
                     }
                 }
@@ -152,7 +162,8 @@ else
     private PrubSaie mygsai = new();
     private PrubCalc mygclc = new();
     private PrubVent mygvnt = new();
-    private PrubEchs myrech = new();
+    //private PrubEchs myrech = new();
+    private PTestEchs? mygtest; // no 'new'
 
     //[CascadingParameter]
     //private Task<AuthenticationState>? AuthState { get; set; }
@@ -189,6 +200,7 @@ else
         new GxMenuItem { Id = 3, Text = "VENTILATION", Icon = "bi bi-house-door" },
         new GxMenuItem { Id = 4, Text = "ECHEANCIER", Icon = "bi bi-arrow-repeat" },
         new GxMenuItem { Id = 5, Text = "DURABLES", Icon = "bi bi-arrow-repeat" },
+        new GxMenuItem { Id = 6, Text = "TEST ECHEANCIER", Icon = "bi bi-arrow-repeat" },
     };
     public List<GxGroupe> Groupes = new();
     public Userbag _usrBag = new Userbag();
@@ -238,6 +250,7 @@ else
         {
             isLoading = false;
         }
+        Console.WriteLine($"isLoading value {isLoading}");
     }
     private async Task LoadOrgaAsync(int key)
     {
@@ -313,6 +326,7 @@ else
         if (_chxMenu == 3) strComp = $"VENTILATION";
         if (_chxMenu == 4) strComp = $"ECHEANCIER";
         if (_chxMenu == 5) strComp = $"DURABLES";
+        if (_chxMenu == 6) strComp = $"TEST ECHEANCIER";
         //if (_chxMenu == 5) strComp = "Colonnes";
         StateHasChanged();
         await Task.Delay(1);

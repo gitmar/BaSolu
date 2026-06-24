@@ -99,7 +99,7 @@ else
                             {
                                 <Grid TItem="PlngenDto"
                                       Data="@MyDaPlans.Where(vu => vu.Tovue == IMyVue && vu.Totyp == IMyAtr)"
-                                      @key="PlanRenderKey"
+                                      @key="PlnRenderKey"
                                       AllowDetailView="true"
                                       AllowPaging="true"
                                       RowClass="@((item) => GetPlnRowClass(item))"
@@ -1088,7 +1088,7 @@ else
     private bool AllowMultipleEdits { get; set; } = false;
     private bool isFiltre { get; set; } = false;    
     //PLAN
-    private Guid? PlanRenderKey = null;
+    private Guid? PlnRenderKey = null;
     private Dictionary<Guid, PlngenDto> _edPlnOriginals = new();
     private PlngenDto? draftPln = null;
     private bool isAddPln = false;
@@ -1228,6 +1228,9 @@ else
             Styp = 0,
             Liba = "",
             Abg = "",
+            Fpsrc = "",
+            Fpexe = "",
+            Fpisrc = 0,
             Eta = 1,
             Xadd1 = -1,
             Xedt1 = 0,
@@ -1241,7 +1244,7 @@ else
         isAddPln = true;
         isEdtPln = true;
         SetRowState(draftPln.Rowguid, RowState.EditPending);  // Shows Confirm/Cancel ✓
-        PlanRenderKey = draftPln.Rowguid;
+        PlnRenderKey = draftPln.Rowguid;
         Console.WriteLine($"✅ New row added to curOrga.Plngens - Count: {curOrga.Plngens.Count}");
         StartRowEdit(draftPln.Rowguid, EntityLevel.Plan);
         StateHasChanged();
@@ -1290,11 +1293,14 @@ else
             Dtperi = 0, //toujours
             Liba = "",
             Abg = "",
+            Frsrc = "",
+            Frexe = "",
+            Frisrc = 0,
             //Xcod = "",
             Ddval = 0,
             Dfval = 0,
             Eaut = 0, //supprimable
-            Atyp = 4,
+            Atyp = 3, //decimal
             Eint = 0,
             Eta = 1,
             Xadd1 = -1, //newly added/edited
@@ -1749,7 +1755,7 @@ else
         EdPlnRowguid = null;
         DlPlnRowguid = null;
 
-        PlanRenderKey = Guid.NewGuid();  // Force grid refresh
+        PlnRenderKey = Guid.NewGuid();  // Force grid refresh
         StateHasChanged();
     }
     private void ResetRubUI()

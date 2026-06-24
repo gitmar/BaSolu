@@ -120,9 +120,16 @@ else if (edOrgContext != null && curOrga != null)
                                                 <tr>
                                                     <td>Hierarchie:</td>
                                                     <td class="text-right">
-                                                        <InputSelect @bind-Value="curOrga.Jpoint" disabled="@(!isEdOrg)" style="font-weight:bold">
+                                                        @* <InputSelect @bind-Value="curOrga.Jpoint" disabled="@(!isEdOrg)" style="font-weight:bold">
                                                             <option value=0>Noeud</option>
-                                                            @* <option value=1>Libre</option> *@
+                                                            <option value=1>Libre</option>
+                                                        </InputSelect> *@
+                                                        <InputSelect @bind-Value="curOrga.Jpoint" disabled="@(!isEdOrg)" style="font-weight:bold">
+                                                            <option value=0>?hierarch.</option>
+                                                            @foreach (var pln in LsPlans.Where(p => p.Ptyp == 4 && p.Todom == 1).ToList())
+                                                            {
+                                                                <option value=@pln.Id>@pln.Liba</option>
+                                                            }
                                                         </InputSelect>
                                                     </td>
                                                 </tr>
@@ -841,6 +848,7 @@ else if (edOrgContext != null && curOrga != null)
     private List<Gpfixe> ClGties = new();
     private List<Gpfixe> LsDoms = new();
     private List<Gpdivh> LsDivs = new();
+    private List<Gplan> LsPlans = new();
     private List<Gpfixe> LsOcols = new();
     private List<Gpcol> LsPcols = new();
     private List<Gpcol> LsFcols = new();
@@ -976,6 +984,7 @@ else if (edOrgContext != null && curOrga != null)
         }
         LsDivs = await _rendAgres.LoadOrgaPostes();
         LsFixes = _usrBag.Ufixes.ToList();
+        LsPlans = _usrBag.Usorga.Uplns.ToList();
         LsGties = _usrBag.Ufixes
             .Where(ut => ut.Gvars == 36 && ut.Itb == 6 && ut.Elea != 0 && ut.Gp1 != 4 && ut.Elea != 9)
             .ToList();
