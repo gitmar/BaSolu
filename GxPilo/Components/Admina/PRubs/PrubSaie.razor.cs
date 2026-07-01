@@ -1,13 +1,14 @@
 ﻿using GxShared.GxDtos;
 using GxShared.Helpers;
 using GxShared.Interfaces;
+
 using GxPilo.Components.Plans;
 
 namespace GxPilo.Components.Admina.PRubs
 {
-    public partial class PTestEchs : CompUICrudBase
+    public partial class PrubSaie : CompUICrudBase
     {
-        public PTestEchs(IPendingChangesGuard guard) : base(guard)
+        public PrubSaie(IPendingChangesGuard guard) : base(guard)
         {
         }
 
@@ -105,6 +106,14 @@ namespace GxPilo.Components.Admina.PRubs
                     FmtRenderKey = Guid.Empty;
                     break;
             }
+        }
+        private void curPlanVue(int xvue)
+        {
+
+        }
+        private void curPlanFor(int xvue)
+        {
+
         }
         private void curPlanTier(int xtie)
         {

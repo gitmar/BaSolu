@@ -6,6 +6,7 @@
 
 @using System
 @using GxShared.Helpers
+@using GxShared.Helpers.CrudHelpers
 @using GxShared.Sess
 @using Simple.OData.Client
 @using GxShared.GxDtos
@@ -18,16 +19,13 @@
 @using Microsoft.AspNetCore.WebUtilities
 @using Newtonsoft.Json
 
+@inject NavigationManager _navManager
+@inject IJSRuntime _JsRUN
+@inject IMessageService _messageService
+
 @if (isLoading) 
 {
-    <p>Loading...</p> 
-}
-else
-{
-    <p>@Imessage</p>
-}
-@if (isLoading)
-{
+    <p>Loading...</p>
     <div class="text-center">
         <Spinner Color="SpinnerColor.Primary" Size="SpinnerSize.Medium" />
         <p>Plan.Echeancier Loading...</p>
@@ -106,7 +104,6 @@ else
                                       Data="@MyDaPlans"
                                       @key="PlnRenderKey"
                                       AllowDetailView="true"
-                                      AllowPaging="true"
                                       RowClass="@((item) => GetPlanRowClass(item))"
                                       Responsive="true">
                                     <GridColumns>
@@ -124,7 +121,7 @@ else
                                         </GridColumn>
                                         <GridColumn TItem="PlngenDto" HeaderText="Designation" Class="xcol3">
                                             <ChildContent Context="item">
-                                                @if (IsPlanEditing(item))
+                                                @if (IsPlanEditing(item) && draftPln is not null)
                                                 {
 
                                                     <InputText @bind-Value="draftPln.Liba" />
@@ -137,7 +134,7 @@ else
                                         </GridColumn>
                                         <GridColumn TItem="PlngenDto" HeaderText="abrege" Class="xcol2">
                                             <ChildContent Context="item">
-                                                @if (IsPlanEditing(item))
+                                                @if (IsPlanEditing(item) && draftPln is not null)
                                                 {
 
                                                     <InputText @bind-Value="draftPln.Abg" />
@@ -163,7 +160,7 @@ else
                                                 }
                                             </HeaderContent>
                                             <ChildContent Context="item">
-                                                @if (IsPlanEditing(item))
+                                                @if (IsPlanEditing(item) && draftPln is not null)
                                                 {
                                                     <InputSelect @bind-Value="draftPln.Eta">
                                                         <option class="jchx" value=0>?choisir</option>
@@ -193,23 +190,13 @@ else
                                                         <span class="text-muted">—</span>
                                                         break;
 
-                                                    case RowState.DeletePending:
-                                                        <Button Color="ButtonColor.Danger" Size="ButtonSize.Small"
-                                                                @onclick="() => ConfirmDelete(EntityLevel.Plan, item, true)">
-                                                            ⚠️ Confirm
-                                                        </Button>
-                                                        <Button Color="ButtonColor.Secondary" Size="ButtonSize.Small"
-                                                                @onclick="() => CancelDelete(EntityLevel.Plan, item)">
-                                                            ❎ Cancel
-                                                        </Button>
-                                                        break;
                                                     case RowState.AddPending:
                                                         <Button Color="ButtonColor.Success" Size="ButtonSize.Small"
                                                                 @onclick="() => ConfirmAdd(EntityLevel.Plan, draftPln, true)">
                                                             ✅ Confirm
                                                         </Button>
                                                         <Button Color="ButtonColor.Success" Size="ButtonSize.Small"
-                                                                @onclick="() => CancelAdd(EntityLevel.Plan, draftPln)">
+                                                                @onclick="() => StartCancelAdd(EntityLevel.Plan, draftPln)">
                                                             ❌ Cancel
                                                         </Button>
                                                         break;
@@ -219,8 +206,18 @@ else
                                                             ✅ Confirm
                                                         </Button>
                                                         <Button Color="ButtonColor.Secondary" Size="ButtonSize.Small"
-                                                                @onclick="() => CancelEdit(EntityLevel.Plan, false)">
+                                                                @onclick="() => CancelEdit(EntityLevel.Plan, item)">
                                                             ❌ Cancel
+                                                        </Button>
+                                                        break;
+                                                    case RowState.DeletePending:
+                                                        <Button Color="ButtonColor.Danger" Size="ButtonSize.Small"
+                                                                @onclick="() => ConfirmDelete(EntityLevel.Plan, item, true)">
+                                                            ⚠️ Confirm
+                                                        </Button>
+                                                        <Button Color="ButtonColor.Secondary" Size="ButtonSize.Small"
+                                                                @onclick="() => CancelDelete(EntityLevel.Plan, item)">
+                                                            ❎ Cancel
                                                         </Button>
                                                         break;
                                                     default:
@@ -238,7 +235,7 @@ else
                                         </GridColumn>
                                     </GridColumns>
                                     <GridDetailView TItem="PlngenDto" Context="selectedPln">
-                                        @if (selectedPln != null)
+                                        @if (selectedPln is not null)
                                         {
                                             <div class="mt-2 border-start border-primary border-3 bg-light bg-opacity-25 rounded-end">
                                                 <div class="row align-items-center mb-2">
@@ -284,7 +281,7 @@ else
                                                                     </HeaderContent>
                                                                     <ChildContent Context="item">
                                                                         <div style="width:90px" class="rubpoint">
-                                                                            @if (IsRubEditing(item))
+                                                                            @if (IsRubEditing(item) && draftRub is not null)
                                                                             {
                                                                                 <InputText @bind-Value="draftRub.Scdrub"
                                                                                            placeholder="code"
@@ -306,7 +303,7 @@ else
                                                                 </GridColumn>
                                                                 <GridColumn TItem="RubvarDto" HeaderText="Designation" Class="xcol3">
                                                                     <ChildContent Context="item">
-                                                                        @if (IsRubEditing(item))
+                                                                        @if (IsRubEditing(item) && draftRub is not null)
                                                                         {
                                                                             <InputText @bind-Value="draftRub.Liba" />
                                                                         }
@@ -318,7 +315,7 @@ else
                                                                 </GridColumn>
                                                                 <GridColumn TItem="RubvarDto" HeaderText="Abrege" Class="xcol2">
                                                                     <ChildContent Context="item">
-                                                                        @if (IsRubEditing(item))
+                                                                        @if (IsRubEditing(item) && draftRub is not null)
                                                                         {
                                                                             <InputText @bind-Value="draftRub.Abg" />
                                                                         }
@@ -330,7 +327,7 @@ else
                                                                 </GridColumn>
                                                                 <GridColumn TItem="RubvarDto" HeaderText="Ajustmt" Class="xcol1">
                                                                     <ChildContent Context="item">
-                                                                        @if (IsRubEditing(item))
+                                                                        @if (IsRubEditing(item) && draftRub is not null)
                                                                         {
                                                                             <InputSelect @bind-Value="draftRub.Ajstyp">
                                                                                 @foreach (var typ in LsFixes.Where(f => f.Gvars == 33 && f.Itb == 2).ToList())
@@ -352,7 +349,7 @@ else
                                                                 </GridColumn>
                                                                 <GridColumn TItem="RubvarDto" HeaderText="Type" Class="xcol1">
                                                                     <ChildContent Context="item">
-                                                                        @if (IsRubEditing(item))
+                                                                        @if (IsRubEditing(item) && draftRub is not null)
                                                                         {
                                                                             <InputSelect @bind-Value="draftRub.Ectype">
                                                                                 @foreach (var typ in LsFixes.Where(f => f.Gvars == 33 && f.Itb == 1).ToList())
@@ -374,7 +371,7 @@ else
                                                                 </GridColumn>
                                                                 <GridColumn TItem="RubvarDto" HeaderText="Mode" Class="xcol1">
                                                                     <ChildContent Context="item">
-                                                                        @if (IsRubEditing(item))
+                                                                        @if (IsRubEditing(item) && draftRub is not null)
                                                                         {
                                                                             <InputSelect @bind-Value="draftRub.Ecmode">
                                                                                 @foreach (var typ in LsFixes.Where(f => f.Gvars == 33 && f.Itb == 4).ToList())
@@ -397,7 +394,7 @@ else
 
                                                                 <GridColumn TItem="RubvarDto" HeaderText="Max Amount" Class="xcol1">
                                                                     <ChildContent Context="item">
-                                                                        @if (IsRubEditing(item))
+                                                                        @if (IsRubEditing(item) && draftRub is not null)
                                                                         {
                                                                             <InputNumber @bind-Value="draftRub.Ecmount" TValue="Decimal?" />
                                                                         }
@@ -410,7 +407,7 @@ else
 
                                                                 <GridColumn TItem="RubvarDto" HeaderText="Montt/Nbre" IsVisible="@inModM" Class="xcol1">
                                                                     <ChildContent Context="item">
-                                                                        @if (IsRubEditing(item))
+                                                                        @if (IsRubEditing(item) && draftRub is not null)
                                                                         {
                                                                             <InputNumber @bind-Value="draftRub.Ecannu" TValue="Decimal?" />
                                                                         }
@@ -422,7 +419,7 @@ else
                                                                 </GridColumn>
                                                                 <GridColumn TItem="RubvarDto" HeaderText="Nb.Ech." IsVisible="@outModM" Class="xcol1">
                                                                     <ChildContent Context="item">
-                                                                        @if (IsRubEditing(item))
+                                                                        @if (IsRubEditing(item) && draftRub is not null)
                                                                         {
                                                                             <InputNumber @bind-Value="draftRub.Nbech" />
                                                                         }
@@ -434,7 +431,7 @@ else
                                                                 </GridColumn>
                                                                 <GridColumn TItem="RubvarDto" HeaderText="Formule" Class="xcol1">
                                                                     <ChildContent Context="item">
-                                                                        @if (IsRubEditing(item))
+                                                                        @if (IsRubEditing(item) && draftRub is not null)
                                                                         { // show draftPln inputs
                                                                             <Button Color="ButtonColor.Secondary" Class="btn btn-default btn-sm d-inline-flex align-items-center gap-1"
                                                                                     @onclick="() => showFrRubModal(draftRub, 1)">
@@ -454,10 +451,10 @@ else
                                                                 </GridColumn>
                                                                 <GridColumn TItem="RubvarDto" HeaderText="Eta">
                                                                     <HeaderContent>
-                                                                        @if (selectedPln != null)
+                                                                        @if (selectedPln is not null)
                                                                         {
                                                                             <button class="btn btn-primary btn-sm @(IsLevelBusy(EntityLevel.Rub) ? "disabled-action" : "")"
-                                                                                disabled="@IsLevelBusy(EntityLevel.Rub)"
+                                                                                    disabled="@IsLevelBusy(EntityLevel.Rub)"
                                                                                     @onclick="() => StartRubNew(selectedPln)">
                                                                                 <span style="display:inline-flex; align-items:center; gap:4px;">
                                                                                     <span>➕</span>
@@ -467,7 +464,7 @@ else
                                                                         }
                                                                     </HeaderContent>
                                                                     <ChildContent Context="item">
-                                                                        @if (IsRubEditing(item))
+                                                                        @if (IsRubEditing(item) && draftRub is not null)
                                                                         { // show draftPln inputs
                                                                             <InputSelect @bind-Value="draftRub.Eta" class="col-md-1" style="width:auto">
                                                                                 <option class="jchx" value=0>?etat</option>
@@ -505,23 +502,13 @@ else
                                                                                 <span class="text-muted">—</span>
                                                                                 break;
 
-                                                                            case RowState.DeletePending:
-                                                                                <Button Color="ButtonColor.Danger" Size="ButtonSize.Small"
-                                                                                        @onclick="() => ConfirmDelete(EntityLevel.Rub, item, true)">
-                                                                                    ⚠️ Confirm
-                                                                                </Button>
-                                                                                <Button Color="ButtonColor.Secondary" Size="ButtonSize.Small"
-                                                                                        @onclick="() => CancelDelete(EntityLevel.Rub, item)">
-                                                                                    ❎ Cancel
-                                                                                </Button>
-                                                                                break;
                                                                             case RowState.AddPending:
                                                                                 <Button Color="ButtonColor.Success" Size="ButtonSize.Small"
                                                                                         @onclick="() => ConfirmAdd(EntityLevel.Rub, draftRub, true)">
                                                                                     ✅ Confirm
                                                                                 </Button>
                                                                                 <Button Color="ButtonColor.Success" Size="ButtonSize.Small"
-                                                                                        @onclick="() => CancelAdd(EntityLevel.Rub, draftRub)">
+                                                                                        @onclick="() => StartCancelAdd(EntityLevel.Rub, draftRub)">
                                                                                     ❌ Cancel
                                                                                 </Button>
                                                                                 break;
@@ -531,8 +518,18 @@ else
                                                                                     ✅ Confirm
                                                                                 </Button>
                                                                                 <Button Color="ButtonColor.Secondary" Size="ButtonSize.Small"
-                                                                                        @onclick="() => CancelEdit(EntityLevel.Rub, draftRub)">
+                                                                                        @onclick="() => CancelEdit(EntityLevel.Rub, item)">
                                                                                     ❌ Cancel
+                                                                                </Button>
+                                                                                break;
+                                                                            case RowState.DeletePending:
+                                                                                <Button Color="ButtonColor.Danger" Size="ButtonSize.Small"
+                                                                                        @onclick="() => ConfirmDelete(EntityLevel.Rub, item, true)">
+                                                                                    ⚠️ Confirm
+                                                                                </Button>
+                                                                                <Button Color="ButtonColor.Secondary" Size="ButtonSize.Small"
+                                                                                        @onclick="() => CancelDelete(EntityLevel.Rub, item)">
+                                                                                    ❎ Cancel
                                                                                 </Button>
                                                                                 break;
                                                                             default:
@@ -742,6 +739,7 @@ else
     [Parameter]
     public EventCallback<int> NbChangesChanged { get; set; }  // 🔥 CRITICAL
 
+    private IDisposable? _locationHandler;
     //Global
     private int _lgcdu = 0;
     private int IMyGpln = 2; //2Echeancier
@@ -760,7 +758,6 @@ else
     private int _UorgId = 0;
 
     private Dictionary<Guid, bool> _isLightBg = new();  // Track light background
-    
     private bool IsRowEditing(Guid rowguid) => _activeEditRowguid == rowguid;
     private bool IsAnyRowEditing => _activeEditRowguid != null;
 
@@ -786,12 +783,9 @@ else
     private bool inModM => draftRub?.Ecmode != 1;
     private bool outModM => draftRub?.Ecmode == 1;
     //data
-    private List<PlngenDto> _myDaPlans = new();
-    public List<PlngenDto> MyDaPlans => _myDaPlans;
-    private List<RubvarDto> _myDaRubs = new();
-    public List<RubvarDto> MyDaRubs => _myDaRubs;
-    private List<RubfmtDto> _myDaFmts = new();
-    public List<RubfmtDto> MyDaFmts => _myDaFmts;
+    public List<PlngenDto> MyDaPlans => PlanItems;
+    public List<RubvarDto> MyDaRubs => RubItems;
+    public List<RubfmtDto> MyDaFmts => FmtItems;
 
     private List<PlngenDto> LsPlsEchs => curOrga.Plngens.Where(pl => pl.Ptyp == 2).ToList();
     private List<PlngenDto> LsPlsGris => curOrga.Plngens.Where(pl => pl.Ptyp == 3).ToList();
@@ -823,7 +817,7 @@ else
         Imessage = "TestConfirm reached";
         await InvokeAsync(StateHasChanged);
     }
-    
+
     protected override async Task OnInitializedAsync()
     {
         isLoading = true;
@@ -853,9 +847,7 @@ else
             if (noslims.Any()) _lgcdu = noslims.FirstOrDefault().Ivala;
 
             Console.WriteLine($"lsplans {LsPlans.Count} IS NULL");
-            Console.WriteLine($"Child init: Plngens={_myDaPlans?.Count ?? 0}");
 
-            // ðŸ”¥ Initialize filtered lists (cached fields)
             InitializeMyDaPlans();
             InitializeMyDaRubs();  // If you have this
             InitializeMyDaFmts();
@@ -881,10 +873,22 @@ else
     {
         SubscribeToGuard();
     }
+    // Register guards and handlers ONCE when the component is initialized
+    protected override void OnAfterRender(bool firstRender)
+    {
+        base.OnAfterRender(firstRender);
+        if (firstRender)
+        {
+            _locationHandler = _navManager.RegisterLocationChangingHandler(OnLocationChangingAsync);
+        }
+    }
     public async Task StartPlnNew()
     {
-        if (IsAnyRowEditing) return;
-
+        if (IsAnyRowEditing) 
+        {
+            Imessage = "prog cannot be added when any row is editing";
+            return;
+        }
         var lsnb = NextSeq(MyDaPlans, p => p.Iui);
         var newPln = new PlngenDto
         {
@@ -905,29 +909,40 @@ else
             Styp = 0,
             Eta = 1,
             Xadd1 = -1,
-            Xedt1 = 0,
-            Xdel1 = 0
+            Xedt1 = 0
         };
 
-        MyDaPlans.Insert(0, newPln);
+        PlanItems.Insert(0, newPln);
         curOrga.Plngens.Insert(0, newPln);
 
-        draftPln = DeepClone(newPln);
-        BeginAdd(EntityLevel.Plan, newPln.Rowguid, draftPln);
+        SetRowState(EntityLevel.Plan, newPln.Rowguid, RowState.AddPending);
+        //SetLightBackground(newPln.Rowguid, true);
 
+        draftPln = DeepClone(newPln);
+        //Console.WriteLine($"NEWPLN : {newPln.Rowguid}");
+        //Console.WriteLine($"DRAFTPLN : {newPln.Rowguid}");
+        BeginAdd(EntityLevel.Plan, newPln.Rowguid, draftPln);
+        //AddRowguid == item.Rowguid
+        //Console.WriteLine($"{newPln.Ptyp} et {newPln.Totyp} et {newPln.Todom} et {newPln.Tovue}");
         PlnRenderKey = newPln.Rowguid;
-        StateHasChanged();
+
+        //SetRowState(EntityLevel.Plan, draftPln.Rowguid, RowState.AddPending);
+        await InvokeAsync(StateHasChanged);
     }
     public async Task StartRubNew(PlngenDto mypln)
     {
         if (mypln.Id <= 0)
         {
             Imessage = "🚫 Cannot add Rubrique: Plan must be saved first.";
+            await InvokeAsync(StateHasChanged);
             return;
         }
 
-        if (IsAnyRowEditing) return;
-
+        if (IsAnyRowEditing) 
+        {
+            Imessage = "rub cannot be added when any row is editing";
+            return;
+        }
         var lsnb = NextSeq(MyDaRubs, p => p.Iui);
         var newRub = new RubvarDto
         {
@@ -935,6 +950,7 @@ else
             Prowguid = mypln.Rowguid,
             Idorg = mypln.Idorg,
             Ipln = mypln.Id,
+            Scdrub = "",
             Iui = lsnb,
             Torub = 0,
             Utyp = 2,
@@ -956,18 +972,17 @@ else
             Eint = 0,
             Eta = 1,
             Xadd1 = -1,
-            Xedt1 = 0,
-            Xdel1 = 0
+            Xedt1 = 0
         };
 
-        MyDaRubs.Insert(0, newRub);
+        RubItems.Insert(0, newRub);
         curPlan.Rubvars.Insert(0, newRub);
 
         draftRub = DeepClone(newRub);
         BeginAdd(EntityLevel.Rub, newRub.Rowguid, draftRub);
 
         RubRenderKey = newRub.Rowguid;
-        StateHasChanged();
+        await InvokeAsync(StateHasChanged);
     }
     public async Task StartFmtNew(RubvarDto myrub)
     {
@@ -977,7 +992,11 @@ else
             return;
         }
 
-        if (IsAnyRowEditing) return;
+        if (IsAnyRowEditing)
+        {
+            Imessage = "fmt cannot be added when any row is editing";
+            return;
+        }
 
         var lsnb = NextSeq(MyDaFmts, p => p.Iui);
         var newFmt = new RubfmtDto
@@ -988,6 +1007,7 @@ else
             Iui = lsnb,
             Idzon = lsnb,
             Zcdrub = lsnb.ToString(),
+            Ftsrc = "",
             Liba = "",
             Abg = "",
             Tperi = 1,
@@ -997,18 +1017,17 @@ else
             Eint = 0,
             Eta = 1,
             Xadd1 = -1,
-            Xedt1 = 0,
-            Xdel1 = 0
+            Xedt1 = 0
         };
 
-        MyDaFmts.Insert(0, newFmt);
+        FmtItems.Insert(0, newFmt);
         myrub.Rubfmts.Insert(0, newFmt);
 
         draftFmt = DeepClone(newFmt);
         BeginAdd(EntityLevel.Fmt, newFmt.Rowguid, draftFmt);
 
         FmtRenderKey = newFmt.Rowguid;
-        StateHasChanged();
+        await InvokeAsync(StateHasChanged);
     }
     public async Task StartPlnEdit(PlngenDto item)
     {
@@ -1071,22 +1090,106 @@ else
 
         StateHasChanged();
     }
+    private void StartCancelAdd(EntityLevel level, object entity)
+    {
+        var rowguid = MLEntityKeyHelper.GetRowguidAsGuid(entity);
+        switch (level)
+        {
+            case EntityLevel.Plan:
+                CancelAdd(level, entity);
+                curOrga.Plngens.RemoveAll(x => x.Rowguid == rowguid);
+                PlnRenderKey = Guid.Empty;
+                break;
+            case EntityLevel.Rub:
+                CancelAdd(level, entity);
+                curPlan.Rubvars.RemoveAll(x => x.Rowguid == rowguid);
+                RubRenderKey = Guid.Empty;
+                break;
+            case EntityLevel.Fmt:
+                CancelAdd(level, entity);
+                curRubr.Rubfmts.RemoveAll(x => x.Rowguid == rowguid);
+                FmtRenderKey = Guid.Empty;
+                break;
+        }
+    }
+    // private void CommitPlnDraft(PlngenDto target, PlngenDto source)
+    // {
+    //     target.Idorg = source.Idorg;
+    //     target.Iui = source.Iui;
+    //     target.Ptyp = source.Ptyp;
+    //     target.Todom = source.Todom;
+    //     target.Ogtyp = source.Ogtyp;
+    //     target.Totyp = source.Totyp;
+    //     target.Toatr = source.Toatr;
+    //     target.Tovue = source.Tovue;
+    //     target.Liba = source.Liba;
+    //     target.Abg = source.Abg;
+    //     target.Fpsrc = source.Fpsrc;
+    //     target.Fpexe = source.Fpexe;
+    //     target.Fpisrc = source.Fpisrc;
+    //     target.Styp = source.Styp;
+    //     target.Eta = source.Eta;
+    //     target.Xadd1 = source.Xadd1;
+    //     target.Xedt1 = source.Xedt1;
+    // }
+    // private void CommitRubDraft(RubvarDto target, RubvarDto source)
+    // {
+    //     target.Idorg = source.Idorg;
+    //     target.Iui = source.Iui;
+    //     target.Atyp = source.Atyp;
+    //     target.Scdrub = source.Scdrub;
+    //     target.Frsrc = source.Frsrc;
+    //     //target.Rtyp = source.Rtyp;
+    //     //target.Toatr = source.Toatr;
+    //     target.Tovue = source.Tovue;
+    //     target.Liba = source.Liba;
+    //     target.Abg = source.Abg;
 
-    private bool IsPlanEditing(PlngenDto item)
-    {
-        var es = GetEditState(EntityLevel.Plan);
-        return es.IsEdit && es.EditRowguid == item.Rowguid;
-    }
-    private bool IsRubEditing(RubvarDto item)
-    {
-        var es = GetEditState(EntityLevel.Rub);
-        return es.IsEdit && es.EditRowguid == item.Rowguid;
-    }
-    private bool IsFmtEditing(RubfmtDto item)
-    {
-        var es = GetEditState(EntityLevel.Fmt);
-        return es.IsEdit && es.EditRowguid == item.Rowguid;
-    }
+    //     target.Eta = source.Eta;
+    //     target.Xadd1 = source.Xadd1;
+    //     target.Xedt1 = source.Xedt1;
+    // }
+    // private void CommitFmtDraft(RubfmtDto target, RubfmtDto source)
+    // {
+    //     target.Idorg = source.Idorg;
+    //     target.Iui = source.Iui;
+    //     target.Ztyp = source.Ztyp;
+    //     target.Zcdrub = source.Zcdrub;
+    //     target.Ftsrc = source.Ftsrc;
+    //     //target.Rtyp = source.Rtyp;
+    //     //target.Toatr = source.Toatr;
+    //     //target.Tovue = source.Tovue;
+    //     target.Liba = source.Liba;
+    //     target.Abg = source.Abg;
+
+    //     target.Eta = source.Eta;
+    //     target.Xadd1 = source.Xadd1;
+    //     target.Xedt1 = source.Xedt1;
+    // }
+    // private bool IsPlanEditing(PlngenDto item)
+    // {
+    //     var es = GetEditState(EntityLevel.Plan);
+    //     return (es.IsAdd || es.IsEdit) &&
+    //            ((es.IsAdd && es.AddRowguid == item.Rowguid) ||
+    //             (es.IsEdit && es.EditRowguid == item.Rowguid));
+    // }
+    
+
+    // private bool IsRubEditing(RubvarDto item)
+    // {
+    //     var es = GetEditState(EntityLevel.Rub);
+    //     return (es.IsAdd || es.IsEdit) &&
+    //            ((es.IsAdd && es.AddRowguid == item.Rowguid) ||
+    //             (es.IsEdit && es.EditRowguid == item.Rowguid));
+    // }
+
+    // private bool IsFmtEditing(RubfmtDto item)
+    // {
+    //     var es = GetEditState(EntityLevel.Fmt);
+    //     return (es.IsAdd || es.IsEdit) &&
+    //            ((es.IsAdd && es.AddRowguid == item.Rowguid) ||
+    //             (es.IsEdit && es.EditRowguid == item.Rowguid));
+    // }
 
     //FILTRES
     private Grid<PlngenDto> grid = default!;
@@ -1102,42 +1205,47 @@ else
     // Update method -call this when source data changes
     private void InitializeMyDaPlans()
     {
-        _myDaPlans = curOrga.Plngens?.Where(pl => pl.Ptyp == IMyGpln && pl.Todom == IMyDom).ToList()
-                     ?? new List<PlngenDto>();
+        PlanItems.Clear();
+        PlanItems.AddRange(
+            curOrga.Plngens?.Where(pl => pl.Ptyp == IMyGpln && pl.Todom == IMyDom)
+            ?? Enumerable.Empty<PlngenDto>());
     }
     private void InitializeMyDaRubs()
     {
-        _myDaRubs = curPlan?.Rubvars.ToList()
-                    ?? new List<RubvarDto>();
+        RubItems.Clear();
+        RubItems.AddRange(
+            curPlan.Rubvars.ToList()
+            ?? Enumerable.Empty<RubvarDto>());
     }
     private void InitializeMyDaFmts()
     {
-        _myDaFmts = curRubr?.Rubfmts.ToList()
-                    ?? new List<RubfmtDto>();
+        FmtItems.Clear();
+        FmtItems.AddRange(
+            curRubr.Rubfmts.ToList()
+        ?? Enumerable.Empty<RubfmtDto>());
     }
     private void UpdateMyDaPlans()
     {
-        _myDaPlans = curOrga.Plngens?.Where(pl => pl.Ptyp == IMyGpln && pl.Todom == IMyDom).ToList()
-                     ?? new List<PlngenDto>();
-        StateHasChanged();
+        RubItems.Clear();
+        PlanItems.AddRange(
+            curOrga.Plngens?.Where(pl => pl.Ptyp == IMyGpln && pl.Todom == IMyDom)
+            ?? Enumerable.Empty<PlngenDto>());
     }
     private void UpdateMyDaRubs()
     {
-        _myDaRubs = curPlan?.Rubvars.ToList()
-                    ?? new List<RubvarDto>();
-        StateHasChanged();
+        RubItems.Clear();
+        RubItems.AddRange(
+            curPlan.Rubvars.ToList()
+            ?? Enumerable.Empty<RubvarDto>());
     }
     private void UpdateMyDaFmts()
     {
-        _myDaFmts = curRubr?.Rubfmts.ToList()
-                    ?? new List<RubfmtDto>();
-        StateHasChanged();
+        FmtItems.Clear();
+        FmtItems.AddRange(
+            curRubr.Rubfmts.ToList()
+            ?? Enumerable.Empty<RubfmtDto>());
     }
-    private void BeginRowEdit(Guid rowguid, EntityLevel level)
-    {
-        _activeEditRowguid = rowguid;
-        _activeEditLevel = level;
-    }
+
     //PLAN Formule modals
     void showFrPlnModal(PlngenDto mypln, int orig)
     {
@@ -1241,6 +1349,45 @@ else
             return false;
         }
         return true;
+    }
+    private async ValueTask OnLocationChangingAsync(LocationChangingContext context)
+    {
+        Console.WriteLine($"🌐 Intercepted: {context.TargetLocation}");
+
+        if (!_guard.HasPendingChanges())
+        {
+            Console.WriteLine("✅ Clean - allowing navigation");
+            return;
+        }
+
+        context.PreventNavigation();  // BLOCK navigation
+        Console.WriteLine($"🚫 Showing confirm dialog {context.TargetLocation}");
+
+        try
+        {
+            var save = await _JsRUN.InvokeAsync<bool>("confirm", "Save changes before leaving?");
+
+            if (save)
+            {
+                // 🔥 YES: SaveAllChanges() → Navigate away
+                await SaveAllChanges();
+                Console.WriteLine("💾 Saved - navigating away");
+                _messageService.Show("✅ Saved successfully", ToastType.Success);
+                _navManager.NavigateTo(context.TargetLocation, forceLoad: false);
+            }
+            else
+            {
+                // 🔥 NO: STAY on page - NO CancelAllChanges()
+                Console.WriteLine("❌ User chose NO - staying on page");
+                // User stays - sees SaveAllChanges() / CancelAllChanges() buttons ENABLED
+                // They can now manually: SaveAllChanges() OR CancelAllChanges()
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"❌ Error: {ex.Message}");
+            // Safety: stay on page
+        }
     }
     public void Dispose()  // â† ADD THIS
     {

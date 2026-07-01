@@ -15,18 +15,32 @@ namespace GxPilo.Components.Plans
     {
         protected readonly IPendingChangesGuard Guard;
 
+        protected readonly Dictionary<EntityLevel, EntityEditState> _editStates = new();
         protected readonly Dictionary<(EntityLevel level, Guid rowguid), RowState> _rowStates = new();
         protected readonly Dictionary<(EntityLevel level, Guid rowguid), PendingOpType> _rowPendingOpTypeByRow = new();
         protected readonly Dictionary<(EntityLevel level, Guid rowguid), PendingOpInfo> _rowOpInfoByRow = new();
-
+        protected readonly Dictionary<Guid, Guid> _pendingOpIdsByRow = new();
         protected Guid? _activeEditRowguid;
         protected EntityLevel? _activeEditLevel;
-
         protected readonly Dictionary<Guid, bool> _isLightBg = new();
+
+        protected readonly List<PlngenDto> PlanItems = new();
+        protected readonly List<RubvarDto> RubItems = new();
+        protected readonly List<RubfmtDto> FmtItems = new();
+        protected readonly List<RubhieDto> HieItems = new();
+        protected readonly List<RubpstDto> PstItems = new();
+        protected readonly List<TierspDto> TieItems = new();
+        protected readonly List<ActsaieDto> ActItems = new();
+        protected readonly List<ActdetDto> AdtItems = new();
+        protected readonly List<ResdonDto> ResItems = new();
+        protected readonly List<ResdetDto> RdtItems = new();
+        protected readonly List<ResbroDto> BroItems = new();
 
         protected object? _draftPlan { get; set; }
         protected object? _draftRub { get; set; }
         protected object? _draftFmt { get; set; }
+        protected object? _draftHie { get; set; }
+        protected object? _draftPst { get; set; }
         protected object? _draftTie { get; set; }
         protected object? _draftAct { get; set; }
         protected object? _draftAdt { get; set; }
@@ -47,12 +61,16 @@ namespace GxPilo.Components.Plans
         protected abstract void SubscribeToGuard();
         protected abstract string GetEntitySet(EntityLevel level);
         protected abstract void AddToLocalCollection(EntityLevel level, object entity);
-        protected abstract void RemoveFromLocalCollection(EntityLevel level, object entity);
+        //protected abstract void RemoveFromLocalCollection(EntityLevel level, object entity);
         protected abstract void RollbackPendingState(EntityLevel level, object entity, bool isNew);
         protected abstract void ReplaceInLocalCollection(EntityLevel level, object entity);
         protected abstract void CopyDraftToGridItem(EntityLevel level, object entity);
+        protected abstract void RestoreOriginalGridItem(EntityLevel level, object entity);
         protected abstract void FinalizeConfirmedState(EntityLevel level, object entity, string message);
-        protected abstract void EndEdit(EntityLevel level);
+        //protected abstract void EndEdit(EntityLevel level);
+        protected virtual void OnEntitySaved(EntityLevel level, object entity)
+        {
+        }
         protected virtual bool Validate(EntityLevel level, object entity) => true;
         
         protected T DeepClone<T>(T entity)
@@ -100,53 +118,26 @@ namespace GxPilo.Components.Plans
                 : null;
 
         protected async Task ConfirmAdd(EntityLevel level, object? draft, bool isConfirm)
-        {
+        {           // EndEdit(level);
+        
             await UnifiedAddAction(level, draft, isConfirm);
-            EndEdit(level);
+            await InvokeAsync(StateHasChanged);
         }
 
         protected async Task ConfirmEdit(EntityLevel level, object? draft, bool isConfirm)
         {
-            Console.WriteLine("11EDIT PASS");
-            //var draft = GetDraft(level);
-            Console.WriteLine("22EDIT PASS");
             if (draft is null) return;
-
-            Console.WriteLine("33EDIT PASS");
             await UnifiedEditAction(level, draft, isConfirm);
-            EndEdit(level);
+            EndRowEdit(); //
+            await InvokeAsync(StateHasChanged);
         }
 
-        protected async Task ConfirmDelete(EntityLevel level, object entity, bool isConfirm)
-        {
-            await UnifiedDeleteAction(level, entity, isConfirm);
-            EndEdit(level);
-        }
-
-        protected async Task CancelAdd(EntityLevel level, object entity)
-        {
-            await UnifiedCancelAction(level, entity, PendingOpType.Insert);
-            EndEdit(level);
-        }
-
-        protected async Task CancelEdit(EntityLevel level, object entity)
-        {
-            await UnifiedCancelAction(level, entity, PendingOpType.Update);
-            EndEdit(level);
-        }
-
-        protected async Task CancelDelete(EntityLevel level, object entity)
-        {
-            await UnifiedCancelAction(level, entity, PendingOpType.Delete);
-            EndEdit(level);
-        }
+        
         private async Task UnifiedAddAction(EntityLevel level, object entity, bool isConfirm)
         {
             var rowguid = MLEntityKeyHelper.GetRowguidAsGuid(entity);
-            if (!isConfirm)
+            if (!isConfirm) //cancel
             {
-                // Cancel new row → remove from local collection
-                RemoveFromLocalCollection(level, entity);
                 RollbackPendingState(level, entity, true);
                 return;
             }
@@ -167,15 +158,14 @@ namespace GxPilo.Components.Plans
 
             // Ensure the new entity is in the local collection
             AddToLocalCollection(level, entity);
+            OnEntitySaved(level, entity);
 
             FinalizeConfirmedState(level, entity, $"✅ {entity.GetType().Name} tracked (insert)");
         }
 
         private async Task UnifiedEditAction(EntityLevel level, object entity, bool isConfirm)
         {
-            Console.WriteLine($"EDIT Rowguid here");
             var rowguid = MLEntityKeyHelper.GetRowguidAsGuid(entity);
-            Console.WriteLine($"EDIT Rowguid {rowguid}");
             if (!isConfirm)
             {
                 RollbackPendingState(level, entity, false);
@@ -195,43 +185,71 @@ namespace GxPilo.Components.Plans
             SetOpInfo(level, rowguid, new PendingOpInfo(opId, PendingOpType.Update));
 
             ReplaceInLocalCollection(level, entity);
+            OnEntitySaved(level, entity);
+
             FinalizeConfirmedState(level, entity, $"✅ {entity.GetType().Name} tracked");
+        }       
+        
+        protected void RemoveByRowguid(EntityLevel level, Guid rowguid)
+        {
+            switch (level)
+            {
+                case EntityLevel.Plan:
+                    PlanItems.RemoveAll(x => x.Rowguid == rowguid);
+                    break;
+                case EntityLevel.Rub:
+                    RubItems.RemoveAll(x => x.Rowguid == rowguid);
+                    break;
+                case EntityLevel.Fmt:
+                    FmtItems.RemoveAll(x => x.Rowguid == rowguid);
+                    break;
+                case EntityLevel.Hie:
+                    HieItems.RemoveAll(x => x.Rowguid == rowguid);
+                    break;
+                case EntityLevel.Pst:
+                    PstItems.RemoveAll(x => x.Rowguid == rowguid);
+                    break;
+                case EntityLevel.Tie:
+                    TieItems.RemoveAll(x => x.Rowguid == rowguid);
+                    break;
+                case EntityLevel.Act:
+                    ActItems.RemoveAll(x => x.Rowguid == rowguid);
+                    break;
+                case EntityLevel.Adt:
+                    AdtItems.RemoveAll(x => x.Rowguid == rowguid);
+                    break;
+                case EntityLevel.Res:
+                    ResItems.RemoveAll(x => x.Rowguid == rowguid);
+                    break;
+                case EntityLevel.Rdt:
+                    RdtItems.RemoveAll(x => x.Rowguid == rowguid);
+                    break;
+                case EntityLevel.Bro:
+                    BroItems.RemoveAll(x => x.Rowguid == rowguid);
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(level));
+            }
+            EndRowEdit();
+        }
+        protected class EntityEditState
+        {
+            public bool IsAdd { get; set; }
+            public bool IsEdit { get; set; }
+            public Guid? AddRowguid { get; set; }
+            public Guid? EditRowguid { get; set; }
+            public Guid? DeleteRowguid { get; set; }
         }
 
-        private async Task UnifiedDeleteAction(EntityLevel level, object entity, bool isConfirm)
+        protected EntityEditState GetEditState(EntityLevel level)
         {
-            var rowguid = MLEntityKeyHelper.GetRowguidAsGuid(entity);
-
-            if (!isConfirm)
+            if (!_editStates.TryGetValue(level, out var state))
             {
-                SetRowState(level, rowguid, RowState.Default);
-                return;
+                state = new EntityEditState();
+                _editStates[level] = state;
             }
-
-            var entitySet = GetEntitySet(level);
-            var key = MLEntityKeyHelper.GetKeyAsObject(entity);
-            var opId = await Guard.TrackDelete(entitySet, key, rowguid);
-
-            SetPendingOpType(level, rowguid, PendingOpType.Delete);
-            SetOpInfo(level, rowguid, new PendingOpInfo(opId, PendingOpType.Delete));
-
-            RemoveFromLocalCollection(level, entity);
-            FinalizeConfirmedState(level, entity, $"✅ {entity.GetType().Name} deletion tracked");
-        }
-
-        private async Task UnifiedCancelAction(EntityLevel level, object entity, PendingOpType opType)
-        {
-            var rowguid = MLEntityKeyHelper.GetRowguidAsGuid(entity);
-            var opInfo = GetOpInfo(level, rowguid);
-
-            if (opInfo is null)
-            {
-                RollbackPendingState(level, entity, opType == PendingOpType.Insert);
-                return;
-            }
-
-            await Guard.CancelTrackAsync(opInfo.OpId, opType);
-            RollbackPendingState(level, entity, opType == PendingOpType.Insert);
+            Console.WriteLine($"State : {state}");
+            return state;
         }
 
         //ROW MANAGEMENT
@@ -252,6 +270,10 @@ namespace GxPilo.Components.Plans
             var isLight = IsLightBackground(rowguid);
             var isActiveEdit = _activeEditRowguid == rowguid;
             var isOtherRowEditing = _activeEditRowguid != null && !isActiveEdit;
+            
+            //var item = _PlanItems.FirstOrDefault(x => x.Rowguid == rowguid);
+            ///var cancelled = item?.IsCancelled == true ? "cancelled" : "";
+
 
             return GetRowCss(state, isLight, rowguid, isActiveEdit, isOtherRowEditing);
         }
@@ -259,6 +281,8 @@ namespace GxPilo.Components.Plans
         protected string GetPlanRowClass(PlngenDto pln) => GetRowCssFor(EntityLevel.Plan, pln.Rowguid);
         protected string GetRubRowClass(RubvarDto rub) => GetRowCssFor(EntityLevel.Rub, rub.Rowguid);
         protected string GetFmtRowClass(RubfmtDto fmt) => GetRowCssFor(EntityLevel.Fmt, fmt.Rowguid);
+        protected string GetHieRowClass(RubhieDto hie) => GetRowCssFor(EntityLevel.Hie, hie.Rowguid);
+        protected string GetPstRowClass(RubpstDto pst) => GetRowCssFor(EntityLevel.Pst, pst.Rowguid);
         protected string GetTieRowClass(TierspDto tie) => GetRowCssFor(EntityLevel.Tie, tie.Rowguid);
         protected string GetActRowClass(ActsaieDto act) => GetRowCssFor(EntityLevel.Act, act.Rowguid);
         protected string GetAdtRowClass(ActdetDto adt) => GetRowCssFor(EntityLevel.Adt, adt.Rowguid);
@@ -267,10 +291,21 @@ namespace GxPilo.Components.Plans
         protected string GetBroRowClass(ResbroDto bro) => GetRowCssFor(EntityLevel.Bro, bro.Rowguid);
 
         protected RowState GetRowState(EntityLevel level, Guid rowguid)
-            => _rowStates.TryGetValue((level, rowguid), out var value) ? value : RowState.Default;
+        {
+            var state = _rowStates.TryGetValue((level, rowguid), out var value)
+       ? value
+       : RowState.Default;
+
+            return state;
+        }
+        //=> _rowStates.TryGetValue((level, rowguid), out var value) ? value : RowState.Default;
 
         protected void SetRowState(EntityLevel level, Guid rowguid, RowState state)
-            => _rowStates[(level, rowguid)] = state;
+        {
+            Console.WriteLine($"row state IS SET : {state}");
+            _rowStates[(level, rowguid)] = state;
+        }
+           // => _rowStates[(level, rowguid)] = state;
 
         protected void StartRowDelete(EntityLevel level, Guid rowguid)
         {
@@ -313,7 +348,6 @@ namespace GxPilo.Components.Plans
                     css.Add("bg-secondary-subtle opacity-75");
                     break;
             }
-
             return string.Join(" ", css);
         }
     }

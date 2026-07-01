@@ -1,13 +1,14 @@
 ﻿using GxShared.GxDtos;
 using GxShared.Helpers;
 using GxShared.Interfaces;
+
 using GxPilo.Components.Plans;
 
 namespace GxPilo.Components.Admina.PRubs
 {
-    public partial class PTestEchs : CompUICrudBase
+    public partial class PrubCalc : CompUICrudBase
     {
-        public PTestEchs(IPendingChangesGuard guard) : base(guard)
+        public PrubCalc(IPendingChangesGuard guard) : base(guard)
         {
         }
 
@@ -106,10 +107,20 @@ namespace GxPilo.Components.Admina.PRubs
                     break;
             }
         }
-        private void curPlanTier(int xtie)
+        private void curPlanVue(int xvue)
         {
-            if (IMyDom != 0 && IMyAtr != 0 && IMyVue != 0)
-                InvokeAsync(StateHasChanged);
+
         }
+        private void curPlanFor(int xvue)
+        {
+
+        }
+        //private void curPlanTier(int xtie)
+        //{
+        //    if (IMyDom != 0 && IMyAtr != 0 && IMyVue != 0)
+        //        InvokeAsync(StateHasChanged);
+        //}
     }
 }
+
+

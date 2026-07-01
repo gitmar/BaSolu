@@ -1046,7 +1046,8 @@ else if (edOrgContext != null && curOrga != null)
             curOrga = await _MyODaClient
                 .For<GxorgaDto>("Gxorgas")
                 .Key(key)
-                .Expand(o => o.Gsgfixes)
+                .Expand("Gsgfixes")
+                //.Expand(o => o.Gsgfixes)
                 .FindEntryAsync();
             Console.WriteLine($"loadOrgaAsync completed :{curOrga?.Raison}");
         }

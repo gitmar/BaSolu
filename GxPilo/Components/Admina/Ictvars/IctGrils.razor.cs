@@ -1,13 +1,14 @@
 ﻿using GxShared.GxDtos;
 using GxShared.Helpers;
 using GxShared.Interfaces;
+
 using GxPilo.Components.Plans;
 
-namespace GxPilo.Components.Admina.PRubs
+namespace GxPilo.Components.Admina.Ictvars
 {
-    public partial class PTestEchs : CompUICrudBase
+    public partial class IctGrils : CompUICrudBase
     {
-        public PTestEchs(IPendingChangesGuard guard) : base(guard)
+        public IctGrils(IPendingChangesGuard guard) : base(guard)
         {
         }
 
@@ -20,12 +21,6 @@ namespace GxPilo.Components.Admina.PRubs
             EntityLevel.Plan => "Plngens",
             EntityLevel.Rub => "Rubvars",
             EntityLevel.Fmt => "Rubfmts",
-            EntityLevel.Tie => "Tiersps",
-            EntityLevel.Act => "Actsaies",
-            EntityLevel.Adt => "Actdets",
-            EntityLevel.Res => "Resdons",
-            EntityLevel.Rdt => "Resdets",
-            EntityLevel.Bro => "Resbros",
             _ => throw new ArgumentOutOfRangeException(nameof(level))
         };
         protected override void OnEntitySaved(EntityLevel level, object entity)
@@ -106,10 +101,63 @@ namespace GxPilo.Components.Admina.PRubs
                     break;
             }
         }
-        private void curPlanTier(int xtie)
+        // ✅ 6. SELECTIONS
+    private void curPlanPlan(int plnId)
+    {
+        IMyPlan = plnId;
+        if (IMyPlan != 0)
         {
-            if (IMyDom != 0 && IMyAtr != 0 && IMyVue != 0)
-                InvokeAsync(StateHasChanged);
+            int gtib = 7;
+            curPlan = curOrga?.Plngens.FirstOrDefault(pln => pln.Ptyp == 3);
+            //LsGties = LsFixes.Where(ut => ut.Gvars == 36 && ut.Itb == gtib && ut.Elea != 0 && ut.Elea != 9).ToList();
         }
+        else
+        {
+            curPlan = new();
+            //LsGties = new();
+        }
+        Console.WriteLine($"selected Plan : {curPlan?.Rubvars.Count}");
+        RubRenderKey = Guid.NewGuid();
+        // Example: check if all selections are valid
+        if (IMyPlan > 0 && IMyDom != 0)
+        {
+            // All three have values → single render
+            InvokeAsync(StateHasChanged);
+        }
+    }
+    private void curPlanRub()
+    {
+        if (IMyRub != 0)
+        {
+            curRubr = curPlan?.Rubvars.FirstOrDefault(rub => rub.Id == IMyRub);
+            //LsGties = LsFixes.Where(ut => ut.Gvars == 36 && ut.Itb == gtib && ut.Elea != 0 && ut.Elea != 9).ToList();
+        }
+        else
+        {
+            curRubr = new();
+            //LsGties = new();
+        }
+        Console.WriteLine($"selected Rubs : {curPlan?.Rubvars.Count}");
+        RubRenderKey = Guid.NewGuid();
+        // Example: check if all selections are valid
+        if (IMyPlan > 0 && IMyRub != 0)
+        {
+            // All three have values → single render
+            InvokeAsync(StateHasChanged);
+        }
+    }
+        private void curPlanVue(int xvue)
+        {
+
+        }
+        private void curPlanFor(int xvue)
+        {
+
+        }
+        //private void curPlanTier(int xtie)
+        //{
+        //    if (IMyDom != 0 && IMyAtr != 0 && IMyVue != 0)
+        //        InvokeAsync(StateHasChanged);
+        //}
     }
 }

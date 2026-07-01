@@ -1,4 +1,9 @@
-﻿using GxShared.GxDtos;
+﻿using System.Collections.Generic;
+using System.Security.Cryptography;
+
+using BlazorBootstrap;
+
+using GxShared.GxDtos;
 using GxShared.Helpers;
 using GxShared.Helpers.CrudHelpers;
 using GxShared.Interfaces;
@@ -8,42 +13,24 @@ namespace GxPilo.Components.Plans
 {
     public abstract class CompUICrudBase : MultiLevelCrudBase
     {
-        protected readonly List<PlngenDto> PlanItems = new();
-        protected readonly List<RubvarDto> RubItems = new();
-        protected readonly List<RubfmtDto> FmtItems = new();
-        protected readonly List<TierspDto> TieItems = new();
-        protected readonly List<ActsaieDto> ActItems = new();
-        protected readonly List<ActdetDto> AdtItems = new();
-        protected readonly List<ResdonDto> ResItems = new();
-        protected readonly List<ResdetDto> RdtItems = new();
-        protected readonly List<ResbroDto> BroItems = new();
-
-        protected readonly Dictionary<EntityLevel, EntityEditState> _editStates = new();
         protected readonly Dictionary<Guid, PendingOpType> _rowPendingOpTypeByRow = new();
-        protected readonly Dictionary<Guid, Guid> _pendingOpIdsByRow = new();
-        protected object? DraftEntity { get; set; }
+        protected readonly Dictionary<Guid, PlngenDto> _edPlnOriginals = new();
+        protected readonly Dictionary<Guid, RubvarDto> _edRubOriginals = new();
+        protected readonly Dictionary<Guid, RubfmtDto> _edFmtOriginals = new();
+        protected readonly Dictionary<Guid, RubhieDto> _edHieOriginals = new();
+        protected readonly Dictionary<Guid, RubpstDto> _edPstOriginals = new();
+        protected readonly Dictionary<Guid, TierspDto> _edTieOriginals = new();
+        protected readonly Dictionary<Guid, ActsaieDto> _edActOriginals = new();
+        protected readonly Dictionary<Guid, ActdetDto> _edAdtOriginals = new();
+        protected readonly Dictionary<Guid, ResdonDto> _edResOriginals = new();
+        protected readonly Dictionary<Guid, ResdetDto> _edRdtOriginals = new();
+        protected readonly Dictionary<Guid, ResbroDto> _edBroOriginals = new();
         protected CompUICrudBase(IPendingChangesGuard guard) : base(guard)
         {
-        }
-        protected class EntityEditState
-        {
-            public bool IsAdd { get; set; }
-            public bool IsEdit { get; set; }
-            public Guid? AddRowguid { get; set; }
-            public Guid? EditRowguid { get; set; }
-            public Guid? DeleteRowguid { get; set; }
-        }
-        
-        protected EntityEditState GetEditState(EntityLevel level)
-        {
-            if (!_editStates.TryGetValue(level, out var state))
-            {
-                state = new EntityEditState();
-                _editStates[level] = state;
-            }
-            return state;
-        }
 
+        }
+        protected abstract void ClearAddRow(EntityLevel level, Guid rowguid);
+        protected abstract void ClearEditRow(EntityLevel level, Guid rowguid);
         protected void BeginEdit(EntityLevel level, Guid rowguid, object draft)
         {
             var s = GetEditState(level);
@@ -53,12 +40,81 @@ namespace GxPilo.Components.Plans
             s.EditRowguid = rowguid;
             s.DeleteRowguid = null;
 
-            SetDraft(level, draft);
+            //SetDraft(level, draft);
             BeginEditRow(level, rowguid, draft);
-            SetRowState(level, rowguid, RowState.EditPending);
-            _rowPendingOpTypeByRow[rowguid] = PendingOpType.Update;
+            //SetRowState(level, rowguid, RowState.EditPending);
+            ////_rowPendingOpTypeByRow[rowguid] = PendingOpType.Update;
         }
+        protected async Task CancelAdd(EntityLevel level, object entity)
+        {
+            var rowguid = MLEntityKeyHelper.GetRowguidAsGuid(entity);
+            await UnifiedCancelAction(level, entity, PendingOpType.Insert, rowguid);
+            ClearAddRow(level, rowguid);
+            EndRowEdit();
+        }
+        protected async Task ConfirmDelete(EntityLevel level, object entity, bool isConfirm)
+        {
+            var rowguid = MLEntityKeyHelper.GetRowguidAsGuid(entity);
+            await UnifiedDeleteAction(level, entity, isConfirm);
+            ClearAddRow(level, rowguid);
+            await InvokeAsync(StateHasChanged);
+        }
+        protected async Task CancelEdit(EntityLevel level, object entity)
+        {
+            var rowguid = MLEntityKeyHelper.GetRowguidAsGuid(entity);
+            Console.WriteLine($"CancelEdit rowguid = {rowguid}");
+            //await UnifiedCancelAction(level, entity, PendingOpType.Update);
+            await UnifiedCancelAction(level, entity, PendingOpType.Update, rowguid);
+            ClearEditRow(level, rowguid);
+            //await ClearEditRow(level, entity);
+            EndRowEdit();
+        }
+        protected async Task CancelDelete(EntityLevel level, object entity)
+        {
+            var rowguid = MLEntityKeyHelper.GetRowguidAsGuid(entity);
+            await UnifiedCancelAction(level, entity, PendingOpType.Delete, rowguid);
+        }
+        private async Task UnifiedCancelAction(EntityLevel level, object entity, PendingOpType opType, Guid rowguid)
+        {
+            var opInfo = GetOpInfo(level, rowguid);
 
+            if (opInfo is not null)
+                await Guard.CancelTrackAsync(opInfo.OpId, opType);
+
+            switch (opType)
+            {
+                case PendingOpType.Insert:
+                    //emoveByRowguid(level, rowguid);
+                    RollbackPendingState(level, entity, true);
+                    SetRowState(level, rowguid, RowState.Default);
+                    break;
+
+                case PendingOpType.Update:
+                    //RestoreOriginalGridItem(level, entity);
+                    RollbackPendingState(level, entity, false);
+                    SetRowState(level, rowguid, RowState.Default);
+                    break;
+
+                case PendingOpType.Delete:
+                    RollbackPendingState(level, entity, false);
+                    SetRowState(level, rowguid, RowState.Default);
+                    break;
+            }
+        }
+        private async Task UnifiedDeleteAction(EntityLevel level, object item, bool isConfirm)
+        {
+            var rowguid = MLEntityKeyHelper.GetRowguidAsGuid(item);
+            var entitySet = GetEntitySet(level);
+            var key = MLEntityKeyHelper.GetKeyAsObject(item);
+            var opId = await Guard.TrackDelete(entitySet, key, rowguid);
+            SetPendingOpType(level, rowguid, PendingOpType.Delete);
+            SetOpInfo(level, rowguid, new PendingOpInfo(opId, PendingOpType.Delete));
+            RemoveByRowguid(level, rowguid);
+            SetDeleteFlags(item);
+            Console.WriteLine($"ROW is removed");
+            await InvokeAsync(StateHasChanged);
+        }
+        
         protected void BeginAdd(EntityLevel level, Guid rowguid, object draft)
         {
             var s = GetEditState(level);
@@ -68,16 +124,160 @@ namespace GxPilo.Components.Plans
             s.EditRowguid = null;
             s.DeleteRowguid = null;
 
-            SetDraft(level, draft);
-            BeginEditRow(level, rowguid, draft);
-            SetRowState(level, rowguid, RowState.AddPending);
+            //SetDraft(level, draft);
+            BeginAddRow(level, rowguid, draft);
+            //SetRowState(level, rowguid, RowState.AddPending);
             _rowPendingOpTypeByRow[rowguid] = PendingOpType.Insert;
         }
-
-        protected void ClearEditState(EntityLevel level)
+        protected void CommitPlnDraft(PlngenDto target, PlngenDto source)
         {
-            _editStates[level] = new EntityEditState();
+            target.Idorg = source.Idorg;
+            target.Rowguid = source.Rowguid;
+            target.Iui = source.Iui;
+            target.Ptyp = source.Ptyp;
+            target.Todom = source.Todom;
+            target.Ogtyp = source.Ogtyp;
+            target.Totyp = source.Totyp;
+            target.Toatr = source.Toatr;
+            target.Tovue = source.Tovue;
+            target.Liba = source.Liba;
+            target.Abg = source.Abg;
+            target.Fpsrc = source.Fpsrc;
+            target.Fpexe = source.Fpexe;
+            target.Fpisrc = source.Fpisrc;
+            target.Styp = source.Styp;
+            target.Eta = source.Eta;
+            target.Xadd1 = source.Xadd1;
+            target.Xedt1 = source.Xedt1;
         }
+        protected void CommitRubDraft(RubvarDto target, RubvarDto source)
+        {
+            target.Idorg = source.Idorg;
+            target.Rowguid = source.Rowguid;
+            target.Ipln = source.Ipln;
+            target.Iui = source.Iui;
+            target.Atyp = source.Atyp;
+            target.Scdrub = source.Scdrub;
+            target.Frsrc = source.Frsrc;
+            //target.Rtyp = source.Rtyp;
+            //target.Toatr = source.Toatr;
+            target.Tovue = source.Tovue;
+            target.Liba = source.Liba;
+            target.Abg = source.Abg;
+
+            target.Eta = source.Eta;
+            target.Xadd1 = source.Xadd1;
+            target.Xedt1 = source.Xedt1;
+        }
+        protected void CommitFmtDraft(RubfmtDto target, RubfmtDto source)
+        {
+            target.Idorg = source.Idorg;
+            target.Rowguid = source.Rowguid;
+            target.Irub = source.Irub;
+            target.Iui = source.Iui;
+            target.Ztyp = source.Ztyp;
+            target.Zcdrub = source.Zcdrub;
+            target.Ftsrc = source.Ftsrc;
+            //target.Rtyp = source.Rtyp;
+            //target.Toatr = source.Toatr;
+            //target.Tovue = source.Tovue;
+            target.Liba = source.Liba;
+            target.Abg = source.Abg;
+
+            target.Eta = source.Eta;
+            target.Xadd1 = source.Xadd1;
+            target.Xedt1 = source.Xedt1;
+        }
+        protected void CommitHieDraft(RubhieDto target, RubhieDto source)
+        {
+            target.Idorg = source.Idorg;
+            target.Rowguid = source.Rowguid;
+            target.Ipln = source.Ipln;
+            target.Iui = source.Iui;
+            target.Atyp = source.Atyp;
+            target.Scdrub = source.Scdrub;
+            target.Frsrc = source.Frsrc;
+            //target.Rtyp = source.Rtyp;
+            //target.Toatr = source.Toatr;
+            target.Tovue = source.Tovue;
+            target.Liba = source.Liba;
+            target.Abg = source.Abg;
+
+            target.Eta = source.Eta;
+            target.Xadd1 = source.Xadd1;
+            target.Xedt1 = source.Xedt1;
+        }
+        protected void CommitPstDraft(RubpstDto target, RubpstDto source)
+        {
+            target.Idorg = source.Idorg;
+            target.Rowguid = source.Rowguid;
+            target.Ihie = source.Ihie;
+            target.Iui = source.Iui;
+            target.Ztyp = source.Ztyp;
+            target.Zcdrub = source.Zcdrub;
+            target.Ftsrc = source.Ftsrc;
+            //target.Rtyp = source.Rtyp;
+            //target.Toatr = source.Toatr;
+            //target.Tovue = source.Tovue;
+            target.Liba = source.Liba;
+            target.Abg = source.Abg;
+
+            target.Eta = source.Eta;
+            target.Xadd1 = source.Xadd1;
+            target.Xedt1 = source.Xedt1;
+        }
+        protected bool IsPlanEditing(PlngenDto item) => IsEditing(EntityLevel.Plan, item.Rowguid);
+        protected bool IsRubEditing(RubvarDto item) => IsEditing(EntityLevel.Rub, item.Rowguid);
+        protected bool IsFmtEditing(RubfmtDto item) => IsEditing(EntityLevel.Fmt, item.Rowguid);
+        protected bool IsHieEditing(RubhieDto item) => IsEditing(EntityLevel.Hie, item.Rowguid);
+        protected bool IsPstEditing(RubpstDto item) => IsEditing(EntityLevel.Pst, item.Rowguid);
+
+        protected bool IsEditing(EntityLevel level, Guid rowguid)
+        {
+            var es = GetEditState(level);
+            return (es.IsAdd || es.IsEdit) &&
+                   ((es.IsAdd && es.AddRowguid == rowguid) ||
+                    (es.IsEdit && es.EditRowguid == rowguid));
+        }
+
+        //protected bool IsPlanEditing(PlngenDto item)
+        //{
+        //    var es = GetEditState(EntityLevel.Plan);
+        //    return (es.IsAdd || es.IsEdit) &&
+        //           ((es.IsAdd && es.AddRowguid == item.Rowguid) ||
+        //            (es.IsEdit && es.EditRowguid == item.Rowguid));
+        //}
+
+
+        //protected bool IsRubEditing(RubvarDto item)
+        //{
+        //    var es = GetEditState(EntityLevel.Rub);
+        //    return (es.IsAdd || es.IsEdit) &&
+        //           ((es.IsAdd && es.AddRowguid == item.Rowguid) ||
+        //            (es.IsEdit && es.EditRowguid == item.Rowguid));
+        //}
+
+        //protected bool IsFmtEditing(RubfmtDto item)
+        //{
+        //    var es = GetEditState(EntityLevel.Fmt);
+        //    return (es.IsAdd || es.IsEdit) &&
+        //           ((es.IsAdd && es.AddRowguid == item.Rowguid) ||
+        //            (es.IsEdit && es.EditRowguid == item.Rowguid));
+        //}
+        protected void ClearEditState(EntityLevel level, Guid rowguid)
+        {
+            _editStates[level] = new EntityEditState
+            {
+                IsAdd = false,
+                IsEdit = false,
+                AddRowguid = null,
+                EditRowguid = null,
+                DeleteRowguid = null
+            };
+            Console.WriteLine("editstate = edit false");
+            SetLightBackground(rowguid, false);
+        }
+
         protected void SetEditState(EntityLevel level, bool isAdd, bool isEdit, Guid? rowguid)
         {
             var s = GetEditState(level);
@@ -87,11 +287,30 @@ namespace GxPilo.Components.Plans
             s.EditRowguid = isEdit ? rowguid : null;
             s.DeleteRowguid = null;
         }
+        private void SetDeleteFlags(object item) => SetFlags(item, 0, 0, -1);
+        // Generic flag setter
+        private void SetFlags<T>(T entity, int xadd1, int xedt1, int xdel1)
+        {
+            typeof(T).GetProperty("Xadd1")?.SetValue(entity, xadd1);
+            typeof(T).GetProperty("Xedt1")?.SetValue(entity, xedt1);
+            typeof(T).GetProperty("Xdel1")?.SetValue(entity, xdel1);
+        }
         protected bool IsLevelBusy(EntityLevel level)
         {
             var es = GetEditState(level);
             return es.IsAdd || es.IsEdit;
         }
+        protected async Task SaveAllChanges()
+        {
+            await Guard.FlushAsync();  // 🔥 AWAIT - blocks until done
+            //_messageService.Show("✅ Saved successfully", ToastType.Success);
+            StateHasChanged();
+        }
+        //protected void ClearRowState(EntityLevel level, Guid rowguid)
+        //{
+        //    _rowStates.Remove((level, rowguid));
+        //    Console.WriteLine("22Pln ROW cleared");
+        //}
         //protected void ClearEditFlags()
         //{
         //    IsAdd = false;
@@ -106,7 +325,9 @@ namespace GxPilo.Components.Plans
             SetDraft(level, draft);
             StartRowEdit(rowguid, level);
             SetRowState(level, rowguid, RowState.AddPending);
-            _rowPendingOpTypeByRow[rowguid] = PendingOpType.Insert;
+            //var opId = await CommitAddOrUpdateAsync(entity, isNew, entitySet);
+            ////_rowPendingOpTypeByRow[rowguid] = PendingOpType.Insert;
+            //_pendingOpIdsByRow[rowguid] = opId;
             SetLightBackground(rowguid, true);
         }
         protected void BeginEditRow(EntityLevel level, Guid rowguid, object draft)
@@ -114,7 +335,10 @@ namespace GxPilo.Components.Plans
             SetDraft(level, draft);
             StartRowEdit(rowguid, level);
             SetRowState(level, rowguid, RowState.EditPending);
-            _rowPendingOpTypeByRow[rowguid] = PendingOpType.Update;
+            //var opId = await CommitAddOrUpdateAsync(entity, isNew, entitySet);
+            ////_rowPendingOpTypeByRow[rowguid] = PendingOpType.Update;
+            SetLightBackground(rowguid, true);
+            //_pendingOpIdsByRow[rowguid] = opId;
         }
         private void SetLightBackground(Guid rowguid, bool isLight)
         {
@@ -159,87 +383,34 @@ namespace GxPilo.Components.Plans
                     throw new ArgumentOutOfRangeException(nameof(level));
             }
         }
-        protected override void RemoveFromLocalCollection(EntityLevel level, object entity)
-        {
-            switch (level)
-            {
-                case EntityLevel.Plan:
-                    if (entity is PlngenDto plan) PlanItems.RemoveAll(x => x.Rowguid == plan.Rowguid);
-                    break;
-                case EntityLevel.Rub:
-                    if (entity is RubvarDto rub) RubItems.RemoveAll(x => x.Rowguid == rub.Rowguid);
-                    break;
-                case EntityLevel.Fmt:
-                    if (entity is RubfmtDto fmt) FmtItems.RemoveAll(x => x.Rowguid == fmt.Rowguid);
-                    break;
-                case EntityLevel.Tie:
-                    if (entity is TierspDto tie) TieItems.RemoveAll(x => x.Rowguid == tie.Rowguid);
-                    break;
-                case EntityLevel.Act:
-                    if (entity is ActsaieDto act) ActItems.RemoveAll(x => x.Rowguid == act.Rowguid);
-                    break;
-                case EntityLevel.Adt:
-                    if (entity is ActdetDto adt) AdtItems.RemoveAll(x => x.Rowguid == adt.Rowguid);
-                    break;
-                case EntityLevel.Res:
-                    if (entity is ResdonDto res) ResItems.RemoveAll(x => x.Rowguid == res.Rowguid);
-                    break;
-                case EntityLevel.Rdt:
-                    if (entity is ResdetDto rdt) RdtItems.RemoveAll(x => x.Rowguid == rdt.Rowguid);
-                    break;
-                case EntityLevel.Bro:
-                    if (entity is ResbroDto bro) BroItems.RemoveAll(x => x.Rowguid == bro.Rowguid);
-                    break;
-                default:
-                    throw new ArgumentOutOfRangeException(nameof(level));
-            }
-        }
         protected override void RollbackPendingState(EntityLevel level, object entity, bool isNew)
         {
-            switch (level)
-            {
-                case EntityLevel.Plan:
-                    if (entity is PlngenDto plan && isNew)
-                        PlanItems.RemoveAll(x => x.Rowguid == plan.Rowguid);
-                    break;
-                case EntityLevel.Rub:
-                    if (entity is RubvarDto rub && isNew)
-                        RubItems.RemoveAll(x => x.Rowguid == rub.Rowguid);
-                    break;
-                case EntityLevel.Fmt:
-                    if (entity is RubfmtDto fmt && isNew)
-                        FmtItems.RemoveAll(x => x.Rowguid == fmt.Rowguid);
-                    break;
-                case EntityLevel.Tie:
-                    if (entity is TierspDto tie && isNew)
-                        TieItems.RemoveAll(x => x.Rowguid == tie.Rowguid);
-                    break;
-                case EntityLevel.Act:
-                    if (entity is ActsaieDto act && isNew)
-                        ActItems.RemoveAll(x => x.Rowguid == act.Rowguid);
-                    break;
-                case EntityLevel.Adt:
-                    if (entity is ActdetDto adt && isNew)
-                        AdtItems.RemoveAll(x => x.Rowguid == adt.Rowguid);
-                    break;
-                case EntityLevel.Res:
-                    if (entity is ResdonDto res && isNew)
-                        ResItems.RemoveAll(x => x.Rowguid == res.Rowguid);
-                    break;
-                case EntityLevel.Rdt:
-                    if (entity is ResdetDto rdt && isNew)
-                        RdtItems.RemoveAll(x => x.Rowguid == rdt.Rowguid);
-                    break;
-                case EntityLevel.Bro:
-                    if (entity is ResbroDto bro && isNew)
-                        BroItems.RemoveAll(x => x.Rowguid == bro.Rowguid);
-                    break;
-                default:
-                    throw new ArgumentOutOfRangeException(nameof(level));
-            }
+            var rowguid = MLEntityKeyHelper.GetRowguidAsGuid(entity);
 
-            EndRowEdit();
+            if (isNew)
+            {
+                Console.WriteLine($"NEW ROW TO REMOVE : {rowguid}");
+                RemoveByRowguid(level, rowguid);
+                ClearAddRow(level, rowguid);
+            }
+            //RemoveFromLocalCollection(level, entity);
+            else
+                RestoreOriginalGridItem(level, entity);
+
+            ClearEditState(level, rowguid);
+
+            _rowStates.Remove((level, rowguid));
+
+            // add this
+            _rowPendingOpTypeByRow.Remove(rowguid);
+
+            // if you use this too:
+            _pendingOpIdsByRow.Remove(rowguid);
+
+            //EndRowEdit();
+            SetLightBackground(rowguid, false);
         }
+
         protected override void ReplaceInLocalCollection(EntityLevel level, object entity)
         {
             switch (level)
@@ -472,6 +643,64 @@ namespace GxPilo.Components.Plans
                     throw new ArgumentOutOfRangeException(nameof(level));
             }
         }
+        protected override void RestoreOriginalGridItem(EntityLevel level, object entity)
+        {
+            switch (level)
+            {
+                case EntityLevel.Plan:
+                    if (entity is PlngenDto plan &&
+                        _edPlnOriginals.TryGetValue(plan.Rowguid, out var originalPlan))
+                    {
+                        plan.Rowguid = originalPlan.Rowguid;
+                        plan.Idorg = originalPlan.Idorg;
+                        plan.Liba = originalPlan.Liba;
+                        plan.Abg = originalPlan.Abg;
+                        plan.Fpsrc = originalPlan.Fpsrc;
+                        plan.Eta = originalPlan.Eta;
+                    }
+                    break;
+
+                case EntityLevel.Rub:
+                    if (entity is RubvarDto rub &&
+                        _edRubOriginals.TryGetValue(rub.Rowguid, out var originalRub))
+                    {
+                        rub.Rowguid = originalRub.Rowguid;
+                        rub.Idorg = originalRub.Idorg;
+                        rub.Ipln = originalRub.Ipln;
+                        rub.Liba = originalRub.Liba;
+                        rub.Abg = originalRub.Abg;
+                        rub.Scdrub = originalRub.Scdrub;
+                        rub.Zcod = originalRub.Zcod;
+                        rub.Atyp = originalRub.Atyp;
+                        rub.Frsrc = originalRub.Frsrc;
+                        rub.Ecmount = originalRub.Ecmount;
+                        rub.Ecannu = originalRub.Ecannu;
+                        rub.Nbech = originalRub.Nbech;
+                        rub.Eta = originalRub.Eta;
+                    }
+                    break;
+                case EntityLevel.Fmt:
+                    if (entity is RubfmtDto fmt &&
+                        _edFmtOriginals.TryGetValue(fmt.Rowguid, out var originalFmt))
+                    {
+                        fmt.Rowguid = originalFmt.Rowguid;
+                        fmt.Idorg = originalFmt.Idorg; //orga
+                        fmt.Irub = originalFmt.Irub; //parent
+                        fmt.Liba = originalFmt.Liba; //designation
+                        fmt.Abg = originalFmt.Abg; //abrege
+                        fmt.Zcdrub = originalFmt.Zcdrub; //code
+                        fmt.Zcod = originalFmt.Zcod; //refer
+                        fmt.Ztyp = originalFmt.Ztyp; //ztyp
+
+                        fmt.Ftsrc = originalFmt.Ftsrc; //formule
+                        fmt.Col = originalFmt.Col; //col
+                        fmt.Lne = originalFmt.Lne; //lne
+                        fmt.Lgtf = originalFmt.Lgtf; //lgtf
+                        fmt.Eta = originalFmt.Eta; //etat
+                    }
+                    break;
+            }
+        }
         protected object? GetDraft(EntityLevel level)
         {
             return level switch
@@ -499,6 +728,12 @@ namespace GxPilo.Components.Plans
                     _draftRub = draft;
                     break;
                 case EntityLevel.Fmt:
+                    _draftFmt = draft;
+                    break;
+                case EntityLevel.Hie:
+                    _draftRub = draft;
+                    break;
+                case EntityLevel.Pst:
                     _draftFmt = draft;
                     break;
                 case EntityLevel.Tie:
@@ -536,7 +771,7 @@ namespace GxPilo.Components.Plans
             s.EditRowguid = null;
             s.DeleteRowguid = null;
 
-            EndEdit(level);
+            EndRowEdit(); //
             StateHasChanged();
         }
 
@@ -547,9 +782,9 @@ namespace GxPilo.Components.Plans
             if (index >= 0)
                 items[index] = entity;
         }
-        protected override void EndEdit(EntityLevel level)
-        {
-            EndRowEdit();
-        }
+        //protected override void EndEdit(EntityLevel level)
+        //{
+        //    EndRowEdit();
+        //}
     }
 }

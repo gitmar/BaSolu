@@ -1,13 +1,14 @@
 ﻿using GxShared.GxDtos;
 using GxShared.Helpers;
 using GxShared.Interfaces;
+
 using GxPilo.Components.Plans;
 
-namespace GxPilo.Components.Admina.PRubs
+namespace GxPilo.Components.Admina.MRubs
 {
-    public partial class PTestEchs : CompUICrudBase
+    public partial class RubGrils : CompUICrudBase
     {
-        public PTestEchs(IPendingChangesGuard guard) : base(guard)
+        public RubGrils(IPendingChangesGuard guard) : base(guard)
         {
         }
 
@@ -73,6 +74,15 @@ namespace GxPilo.Components.Admina.PRubs
                     draftFmt = null;
                     FmtRenderKey = Guid.Empty;
                     break;
+                case EntityLevel.Hie:
+                    draftRub = null;
+                    RubRenderKey = Guid.Empty;
+                    break;
+
+                case EntityLevel.Pst:
+                    draftFmt = null;
+                    FmtRenderKey = Guid.Empty;
+                    break;
             }
 
             //await InvokeAsync(StateHasChanged);
@@ -104,7 +114,29 @@ namespace GxPilo.Components.Admina.PRubs
                     draftFmt = null;
                     FmtRenderKey = Guid.Empty;
                     break;
+                case EntityLevel.Hie:
+                    var idxh = HieItems.FindIndex(x => x.Rowguid == rowguid);
+                    if (idxh >= 0)
+                        HieItems[idxh] = DeepClone(_edHieOriginals[rowguid]);
+                    draftRub = null;
+                    RubRenderKey = Guid.Empty;
+                    break;
+                case EntityLevel.Pst:
+                    var idxs = PstItems.FindIndex(x => x.Rowguid == rowguid);
+                    if (idxs >= 0)
+                        PstItems[idxs] = DeepClone(_edPstOriginals[rowguid]);
+                    draftFmt = null;
+                    FmtRenderKey = Guid.Empty;
+                    break;
             }
+        }
+        private void curPlanVue(int xvue)
+        {
+
+        }
+        private void curPlanFor(int xvue)
+        {
+
         }
         private void curPlanTier(int xtie)
         {

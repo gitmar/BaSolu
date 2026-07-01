@@ -1,13 +1,14 @@
 ﻿using GxShared.GxDtos;
 using GxShared.Helpers;
 using GxShared.Interfaces;
+
 using GxPilo.Components.Plans;
 
 namespace GxPilo.Components.Admina.PRubs
 {
-    public partial class PTestEchs : CompUICrudBase
+    public partial class PrubEchs : CompUICrudBase
     {
-        public PTestEchs(IPendingChangesGuard guard) : base(guard)
+        public PrubEchs(IPendingChangesGuard guard) : base(guard)
         {
         }
 
@@ -20,12 +21,6 @@ namespace GxPilo.Components.Admina.PRubs
             EntityLevel.Plan => "Plngens",
             EntityLevel.Rub => "Rubvars",
             EntityLevel.Fmt => "Rubfmts",
-            EntityLevel.Tie => "Tiersps",
-            EntityLevel.Act => "Actsaies",
-            EntityLevel.Adt => "Actdets",
-            EntityLevel.Res => "Resdons",
-            EntityLevel.Rdt => "Resdets",
-            EntityLevel.Bro => "Resbros",
             _ => throw new ArgumentOutOfRangeException(nameof(level))
         };
         protected override void OnEntitySaved(EntityLevel level, object entity)
@@ -113,3 +108,4 @@ namespace GxPilo.Components.Admina.PRubs
         }
     }
 }
+

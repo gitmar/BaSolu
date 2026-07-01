@@ -1,0 +1,137 @@
+﻿@page "/cruduidemo"
+@inherits CompUICrudBase
+
+@layout PrubMenu
+
+@using GxShared.Interfaces
+@using GxPilo.Components.Plans
+
+<h3>Minimal Grid Cancel Repro</h3>
+
+<Grid TItem="DemoDto"
+          Data="@Items"
+          @key="PlnRenderKey"
+          Responsive="true">
+    <GridColumns>
+    <!-- Bound column for Name -->
+        <GridColumn TItem="DemoDto" HeaderText="Rowguid">
+            <ChildContent Context="item">
+                @item.Rowguid"
+            </ChildContent>
+        </GridColumn>
+    <GridColumn TItem="DemoDto" HeaderText="Designation">
+        <ChildContent Context="item">
+                <InputText @bind-Value="item.Name" />
+         </ChildContent>
+    </GridColumn>
+
+    <GridColumn TItem="DemoDto" HeaderText="Actions">
+    <ChildContent Context="item">
+        @switch (GetRowState(item.Rowguid))
+        {
+            case RowState.AddPending:
+                <button @onclick="() => ConfirmAdd(item)">✅ Confirm</button>
+                <button @onclick="() => CancelAdd(item)">❌ Cancel</button>
+                break;
+            case RowState.EditPending:
+                <button @onclick="() => ConfirmEdit(item)">✅ Confirm</button>
+                <button @onclick="() => CancelEdit(item)">❌ Cancel</button>
+                break;
+            default:
+                <button @onclick="() => StartEdit(item)">✏️ Edit</button>
+                <button @onclick="() => StartAdd()">➕ Add</button>
+                break;
+        }
+    </ChildContent>
+</GridColumn>
+    </GridColumns>
+</Grid>
+<ul>
+    @foreach (var item in Items)
+    {
+        <li>@item.Name (@GetRowState(item.Rowguid))</li>
+    }
+</ul>
+
+@code {
+    public class DemoDto
+    {
+        public Guid Rowguid { get; set; } = Guid.NewGuid();
+        public string Name { get; set; } = "";
+    }
+
+    //private List<DemoDto> Items = new();
+    private Dictionary<Guid, RowState> _rowStates = new();
+
+    private DemoDto? draftItem;
+    private Guid PlnRenderKey = Guid.Empty;
+
+    // Guard
+    [Parameter]
+    public IPendingChangesGuard _guard { get; set; }
+
+    private RowState GetRowState(Guid rowguid)
+        => _rowStates.TryGetValue(rowguid, out var state) ? state : RowState.Default;
+    // Seed with two items so the grid shows rows
+    private List<DemoDto> Items = new()
+    {
+        new DemoDto { Name = "Alpha" },
+        new DemoDto { Name = "Beta" }
+    };
+    // and call this in OnParametersSet
+    protected override void OnParametersSet()
+    {
+        SubscribeToGuard();
+    }
+    private void StartAdd()
+    {
+        var newItem = new DemoDto { Name = "" };
+        Items.Insert(0, newItem);
+        draftItem = newItem;
+        PlnRenderKey = newItem.Rowguid;
+        _rowStates[newItem.Rowguid] = RowState.AddPending;
+    }
+
+    private void StartEdit(DemoDto item)
+    {
+        draftItem = new DemoDto { Rowguid = item.Rowguid, Name = item.Name };
+        PlnRenderKey = item.Rowguid;
+        _rowStates[item.Rowguid] = RowState.EditPending;
+    }
+
+    private void CancelAdd(DemoDto item)
+    {
+        Items = Items.Where(x => x.Rowguid != item.Rowguid).ToList();
+        _rowStates.Remove(item.Rowguid);
+        draftItem = null;
+        PlnRenderKey = Guid.Empty;
+    }
+
+    private void CancelEdit(DemoDto item)
+    {
+        var idx = Items.FindIndex(x => x.Rowguid == item.Rowguid);
+        if (idx >= 0)
+            Items[idx] = new DemoDto { Rowguid = item.Rowguid, Name = "Restored" };
+
+        _rowStates.Remove(item.Rowguid);
+        draftItem = null;
+        PlnRenderKey = Guid.Empty;
+    }
+
+    private void ConfirmAdd(DemoDto item)
+    {
+        _rowStates[item.Rowguid] = RowState.Default;
+        draftItem = null;
+        PlnRenderKey = Guid.Empty;
+    }
+
+    private void ConfirmEdit(DemoDto item)
+    {
+        _rowStates[item.Rowguid] = RowState.Default;
+        draftItem = null;
+        PlnRenderKey = Guid.Empty;
+    }
+
+    public enum RowState { Default, AddPending, EditPending }
+}
+
