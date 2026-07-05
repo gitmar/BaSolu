@@ -66,19 +66,43 @@
             <!-- FIELD 6: Statut (int) -->
             <FormField Label="Statut" IsVisible="@Visibility.GetValueOrDefault("Statut", true)">
                 <InputSelect @bind-Value="Draft!.Statut"
+                             class="form-select">
+                    <option value=0>Choisir...</option>
+                    @foreach (var tob in
+                        EnsTbls.FirstOrDefault(t =>
+                            t.Tenr == 1 &&
+                            t.Tref == 11)?.TbItems
+                        ?? new List<Gtvar>())
+                    {
+                        <option value="@tob.Tref">@tob.Liba</option>
+                    }
+                </InputSelect>
+                @*<InputSelect @bind-Value="Draft!.Statut"
                              class="form-select"
                              disabled="@(!isEditing)">
                     <option value=0>?choisir</option>
-                    @foreach (var opt in GetOptions(11))
+                    foreach (var opt in GetOptions(11))
                     {
                         <option value=@opt.Elea>@opt.Liba</option>
                     }
-                </InputSelect>
+                </InputSelect> *@
             </FormField>
             
             <!-- FIELD 7: Relat (int) -->
             <FormField Label="Relation" IsVisible="@Visibility.GetValueOrDefault("Relat", true)">
                 <InputSelect @bind-Value="Draft!.Relat"
+                             class="form-select">
+                    <option value=0>Choisir...</option>
+                    @foreach (var tob in
+                        EnsTbls.FirstOrDefault(t =>
+                            t.Tenr == 1 &&
+                            t.Tref == 18)?.TbItems
+                        ?? new List<Gtvar>())
+                    {
+                        <option value="@tob.Tref">@tob.Liba</option>
+                    }
+                </InputSelect>
+                @* <InputSelect @bind-Value="Draft!.Relat"
                              class="form-select"
                              disabled="@(!isEditing)">
                     <option value=0>?choisir</option>
@@ -86,11 +110,23 @@
                     {
                         <option value=@opt.Elea>@opt.Liba</option>
                     }
-                </InputSelect>
+                </InputSelect> *@
             </FormField>
             <!-- FIELD 8: Sexe (int) -->
             <FormField Label="Sexe" IsVisible="@Visibility.GetValueOrDefault("Sexe", true)">
                 <InputSelect @bind-Value="Draft!.Sexe"
+                             class="form-select">
+                    <option value=0>Choisir...</option>
+                    @foreach (var tob in
+                        EnsTbls.FirstOrDefault(t =>
+                            t.Tenr == 1 &&
+                            t.Tref == 12)?.TbItems
+                        ?? new List<Gtvar>())
+                    {
+                        <option value="@tob.Tref">@tob.Liba</option>
+                    }
+                </InputSelect>
+                @* <InputSelect @bind-Value="Draft!.Sexe"
                              class="form-select"
                              disabled="@(!isEditing)">
                     <option value=0>?choisir</option>
@@ -98,12 +134,24 @@
                     {
                         <option value=@opt.Elea>@opt.Liba</option>
                     }
-                </InputSelect>
+                </InputSelect> *@
             </FormField>
 
             <!-- FIELD 9: Sitmat (int) -->
             <FormField Label="Sit.Mat." IsVisible="@Visibility.GetValueOrDefault("Sitmat", true)">
                 <InputSelect @bind-Value="Draft!.Sitmat"
+                             class="form-select">
+                    <option value=0>Choisir...</option>
+                    @foreach (var tob in
+                        EnsTbls.FirstOrDefault(t =>
+                            t.Tenr == 1 &&
+                            t.Tref == 13)?.TbItems
+                        ?? new List<Gtvar>())
+                    {
+                        <option value="@tob.Tref">@tob.Liba</option>
+                    }
+                </InputSelect>
+                @* <InputSelect @bind-Value="Draft!.Sitmat"
                              class="form-select"
                              disabled="@(!isEditing)">
                     <option value=0>?choisir</option>
@@ -111,12 +159,24 @@
                     {
                         <option value=@opt.Elea>@opt.Liba</option>
                     }
-                </InputSelect>
+                </InputSelect> *@
             </FormField>
         
             <!-- FIELD 10: Fonction -->
             <FormField Label="Fonction" IsVisible="@Visibility.GetValueOrDefault("Ifonc", true)">
                 <InputSelect @bind-Value="Draft!.Ifonc"
+                             class="form-select">
+                    <option value=0>Choisir...</option>
+                    @foreach (var tob in
+                        EnsTbls.FirstOrDefault(t =>
+                            t.Tenr == 1 &&
+                            t.Tref == 14)?.TbItems
+                        ?? new List<Gtvar>())
+                    {
+                        <option value="@tob.Tref">@tob.Liba</option>
+                    }
+                </InputSelect>
+                @* <InputSelect @bind-Value="Draft!.Ifonc"
                              class="form-select"
                              disabled="@(!isEditing)">
                     <option value=0>?choisir</option>
@@ -124,12 +184,24 @@
                     {
                         <option value=@opt.Elea>@opt.Liba</option>
                     }
-                </InputSelect>
+                </InputSelect> *@
             </FormField>
        
             <!-- FIELD 11: Grade -->
             <FormField Label="Grade" IsVisible="@Visibility.GetValueOrDefault("Igrad", true)">
                 <InputSelect @bind-Value="Draft!.Igrad"
+                             class="form-select">
+                    <option value=0>Choisir...</option>
+                    @foreach (var tob in
+                        EnsTbls.FirstOrDefault(t =>
+                            t.Tenr == 1 &&
+                            t.Tref == 15)?.TbItems
+                        ?? new List<Gtvar>())
+                    {
+                        <option value="@tob.Tref">@tob.Liba</option>
+                    }
+                </InputSelect>
+                @* <InputSelect @bind-Value="Draft!.Igrad"
                              class="form-select"
                              disabled="@(!isEditing)">
                     <option value=0>?choisir</option>
@@ -137,7 +209,7 @@
                     {
                         <option value=@opt.Elea>@opt.Liba</option>
                     }
-                </InputSelect>
+                </InputSelect> *@
             </FormField>
    
             <!-- FIELD 12: Email -->
@@ -204,6 +276,18 @@
             <!-- FIELD 17: Responsabilité -->
             <FormField Label="Responsable" IsVisible="@Visibility.GetValueOrDefault("Respon", true)">
                 <InputSelect @bind-Value="Draft!.Respon"
+                             class="form-select">
+                    <option value=0>Choisir...</option>
+                    @foreach (var tob in
+                        EnsTbls.FirstOrDefault(t =>
+                            t.Tenr == 1 &&
+                            t.Tref == 17)?.TbItems
+                        ?? new List<Gtvar>())
+                    {
+                        <option value="@tob.Tref">@tob.Liba</option>
+                    }
+                </InputSelect>
+                @* <InputSelect @bind-Value="Draft!.Respon"
                              class="form-select"
                              disabled="@(!isEditing)">
                     <option value=0>?choisir</option>
@@ -211,12 +295,24 @@
                     {
                         <option value=@opt.Elea>@opt.Liba</option>
                     }
-                </InputSelect>
+                </InputSelect> *@
             </FormField>
         
             <!-- FIELD 18: Pays de résidence -->
             <FormField Label="Residence" IsVisible="@Visibility.GetValueOrDefault("Rpays", true)">
                 <InputSelect @bind-Value="Draft!.Rpays"
+                             class="form-select">
+                    <option value=0>Choisir...</option>
+                    @foreach (var tob in
+                        EnsTbls.FirstOrDefault(t =>
+                            t.Tenr == 1 &&
+                            t.Tref == 31)?.TbItems
+                        ?? new List<Gtvar>())
+                    {
+                        <option value="@tob.Tref">@tob.Liba</option>
+                    }
+                </InputSelect>
+                @* <InputSelect @bind-Value="Draft!.Rpays"
                              class="form-select"
                              disabled="@(!isEditing)">
                     <option value="">?choisir</option>
@@ -224,12 +320,24 @@
                     {
                         <option value=@opt.Abg>@opt.Liba</option>
                     }
-                </InputSelect>
+                </InputSelect> *@
             </FormField>
            
             <!-- FIELD 19: Nationalité (string) -->
             <FormField Label="Nationalite" IsVisible="@Visibility.GetValueOrDefault("Natio", true)">
                 <InputSelect @bind-Value="Draft!.Natio"
+                             class="form-select">
+                    <option value=0>Choisir...</option>
+                    @foreach (var tob in
+                        EnsTbls.FirstOrDefault(t =>
+                            t.Tenr == 1 &&
+                            t.Tref == 31)?.TbItems
+                        ?? new List<Gtvar>())
+                    {
+                        <option value="@tob.Tref">@tob.Liba</option>
+                    }
+                </InputSelect>
+                @* <InputSelect @bind-Value="Draft!.Natio"
                              class="form-select"
                              disabled="@(!isEditing)">
                     <option value="">?choisir</option>
@@ -237,12 +345,24 @@
                     {
                         <option value=@opt.Abg>@opt.Liba</option>
                     }
-                </InputSelect>
+                </InputSelect> *@
             </FormField>
   
             <!-- FIELD 20: Méthode de paiement -->
             <FormField Label="P.Meth" IsVisible="@Visibility.GetValueOrDefault("Ipaid", true)">
                 <InputSelect @bind-Value="Draft!.Ipaid"
+                      class="form-select">
+                    <option value=0>Choisir...</option>
+                    @foreach (var tob in
+                        EnsTbls.FirstOrDefault(t =>
+                            t.Tenr == 1 &&
+                            t.Tref == 24)?.TbItems
+                        ?? new List<Gtvar>())
+                    {
+                        <option value="@tob.Tref">@tob.Liba</option>
+                    }
+                </InputSelect>
+                @* <InputSelect @bind-Value="Draft!.Ipaid"
                              class="form-select"
                              disabled="@(!isEditing)">
                     <option value=0>?choisir</option>
@@ -250,7 +370,7 @@
                     {
                         <option value=@opt.Elea>@opt.Liba</option>
                     }
-                </InputSelect>
+                </InputSelect> *@
             </FormField>
         </div>
     </div>

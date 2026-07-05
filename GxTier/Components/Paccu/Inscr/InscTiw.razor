@@ -147,7 +147,7 @@
                                     </div>
 
                                     <!-- Additional dynamic attributes -->
-                                    <label class="fw-bold">ATTRIBUT(s)</label>
+                                    <label class="fw-bold">ATTRIBUT++(s)</label>
                                     <div class="card">
                                         <div class="card-body p-3">
                                             @foreach (var ua in EnsAtrs.Where(a => a.Wgpe == 1 && a.Eta == 1))
@@ -188,7 +188,6 @@
                                                                 {
                                                                     <option value="@tob.Tref">@tob.Liba</option>
                                                                 }
-
                                                             </InputSelect>
                                                         }
                                                         else if (ua.Satyp == "int")
@@ -599,6 +598,13 @@
         font-size: 0.75rem; /* smaller text */
         line-height: 1.2;
     }
+
+    .checkbox-bordered {
+        border: 1px solid #000; /* black border */
+        width: 1.2em;
+        height: 1.2em;
+        border-radius: 0.25em; /* keep it square-ish */
+    }
 </style>
 
 @code {
@@ -614,6 +620,8 @@
     public IODataClient _InODaClient { get; set; }
     [Parameter]
     public GxorgaDto curOrga { get; set; } = new();
+    [Parameter]
+    public List<TiewelDto> orgTwels { get; set; } = new();
     [Parameter]
     public ChildVars toChild { get; set; }
     [Parameter]
@@ -814,14 +822,14 @@
 
             //TbGpes = datbls?.Hdtbls ?? new List<Gtabl>();
             LsPlans = toChild?.LsPlans;
-            Console.WriteLine($"Child init: Tiewels={curOrga.Tiewels?.Count ?? 0}");
+            Console.WriteLine($"Child init: Tiewels={orgTwels?.Count ?? 0}");
             //editcontext Model initialising
             curTiw ??= new();  // Or load data here
-            if (curOrga.Tiewels != null && curOrga.Tiewels.Any())
+            if (orgTwels != null && orgTwels.Any())
             {
-                Console.WriteLine($"Tiewels loaded: {curOrga.Tiewels.Count}");
+                Console.WriteLine($"Tiewels loaded: {orgTwels.Count}");
 
-                MyDaTies = curOrga.Tiewels.ToList();
+                MyDaTies = orgTwels.ToList();
 
                 if (MyDaTies.Any())
                 {
@@ -830,7 +838,7 @@
             }
             else
             {
-                Console.WriteLine("Tiewels null/empty - initializing empty collections");
+                Console.WriteLine("orgTwels null/empty - initializing empty collections");
                 //MyDaTies = new ObservableCollection<Tiewel>();
                 MyDaTies = new();
             }
@@ -850,16 +858,26 @@
     }
     private async Task LoadTieVisibilityAsync()
     {
-        Console.WriteLine("Visibility loaded 1");
+        Console.WriteLine($"Visibility loaded 1 : {curOrga.Idorg}");
         // ✅ Fix 1: Await authorization (no .Wait())
         await _clieManager.SetAuthorizationHeaderAsync("AuthClient");
-
-        var urlPrinc = $"regis/colsvisibility/{curOrga.Idorg}/1/1/{Ugpe}/1";
+        
+        var urlPrinc = $"regis/colsvisibility/{curOrga.Idorg}/1/2/{Ugpe}/1";
         var jsonPrinc = await _clieManager.SendRequestAsync("AuthClient", HttpMethod.Get, urlPrinc);
 
         Visibility = System.Text.Json.JsonSerializer.Deserialize<Dictionary<string, bool>>(jsonPrinc) ?? new();
         Console.WriteLine("Visibility loaded 2");
-    }
+        var visib = Visibility.GetValueOrDefault("Respon", true);
+        Console.WriteLine($"Respon visibilite : {visib}");
+        visib = Visibility.GetValueOrDefault("Statut", true);
+        Console.WriteLine($"Statut visibilite : {visib}");
+        visib = Visibility.GetValueOrDefault("Ifonc", true);
+        Console.WriteLine($"Fonction visibilite : {visib}");
+        visib = Visibility.GetValueOrDefault("Bnom", true);
+        Console.WriteLine($"Bnom visibilite : {visib}");
+        visib = Visibility.GetValueOrDefault("Tele2", true);
+        Console.WriteLine($"Tele2 visibilite : {visib}");
+    }   
 
     private async Task LoadAflVisibilityAsync()
     {
@@ -969,7 +987,7 @@
         SetRowState(draftAfl.Rowguid, RowState.EditPending);
         RubRenderKey = draftAfl.Rowguid;
 
-        Console.WriteLine($"✅ New row added to curOrga.Tiewels - Count: {parentTiw.Tiwafls.Count}");
+        Console.WriteLine($"✅ New row added to Tiewels - Count: {parentTiw.Tiwafls.Count}");
         curAfl = newRub;
 
         StartRowEdit(draftAfl.Rowguid, EntityLevel.Rub);
@@ -987,7 +1005,7 @@
     private async Task StartTiwEdit(TiewelDto item, Guid rowguid)
     {
         //var client = (ODataClient)_InODaClient;
-        //bool isNew = await client.IsNewAsync<TiewelDto>("Tiewels", item.Id);
+        //bool isNew = await client.IsNewAsync<TiewelDto>("orgTwels", item.Id);
         bool isNew = item.Id == default; // for int, default == 0
         if (isNew)
         { //not saved yet
@@ -1152,8 +1170,8 @@
                         atr,
                         isConfirm,
                         "Tiewels",
-                        x => Uihelper.AddItem(curOrga.Tiewels, x),
-                        x => Uihelper.RemoveItem(curOrga.Tiewels, y => y.Rowguid == x.Rowguid));
+                        x => Uihelper.AddItem(orgTwels, x),
+                        x => Uihelper.RemoveItem(orgTwels, y => y.Rowguid == x.Rowguid));
                     break;
                 }
             case EntityLevel.Rub:
@@ -1193,7 +1211,7 @@
                         isConfirm,
                         "Tiewels",
                         ValidatePln,
-                        x => Uihelper.ReplaceItem(curOrga.Tiewels, y => y.Rowguid == x.Rowguid, x));
+                        x => Uihelper.ReplaceItem(orgTwels, y => y.Rowguid == x.Rowguid, x));
                     break;
                 }
             case EntityLevel.Rub:
@@ -1248,7 +1266,7 @@
                         atr,
                         isConfirm,
                         "Tiewels",
-                        x => Uihelper.RemoveItem(curOrga.Tiewels, y => y.Rowguid == x.Rowguid));
+                        x => Uihelper.RemoveItem(orgTwels, y => y.Rowguid == x.Rowguid));
                     break;
                 }
             case EntityLevel.Rub:
@@ -2180,14 +2198,14 @@
     // Build full lineage string for display
     private RenderFragment RenderCategories(IEnumerable<Gpcat> cats) => builder =>
     {
-        foreach (var cat in cats)
+        foreach (var cat in cats.Where(c => c.Eta != 0))
         {
             builder.OpenElement(0, "div");
             builder.AddAttribute(1, "class", cat.Pid == null ? "mb-2" : "form-check ms-3");
 
             // Checkbox
             builder.OpenComponent<InputCheckbox>(2);
-            builder.AddAttribute(3, "class", "form-check-input");
+            builder.AddAttribute(3, "class", "form-check-input checkbox-bordered");
             builder.AddAttribute(4, "Value", cat.IsSelected);
             builder.AddAttribute(5, "ValueChanged", EventCallback.Factory.Create<bool>(this, args =>
             {

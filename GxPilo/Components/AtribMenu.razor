@@ -324,6 +324,8 @@
 
             // Console.WriteLine(bound.ToString()); // shows the OData query URL
 
+
+            //simple attributs
             curOrga = await _MyODaClient
                 .For<GxorgaDto>("Gxorgas")
                 .Key(key)
@@ -335,6 +337,22 @@
                 .Expand(o => o.Stktrsfs.Select(p => p.Stktflnes))
                 .FindEntryAsync();
             Console.WriteLine($"loadOrgaAsync completed :{curOrga?.Raison}");
+
+
+            // curOrga = await _MyODaClient
+            //     .For<GxorgaDto>("Gxorgas")
+            //     .Key(key)
+            //     //.Expand(o => o.Gsgfixes)
+            //     .Expand(o => o.Gstabls)
+            //     .FindEntryAsync();
+            // // Second query: load fixes only when needed
+            // var msgs = await _MyODaClient
+            //     .For<GsgfixDto>("Gsgfixes")
+            //     .Filter(f => f.Idorg == key && (f.Gvars == 3 || f.Gvars == 41))
+            //     //.Select("Idorg, Xseq, Elea,Gp1")
+            //     .FindEntriesAsync();
+            // orgFixes = msgs.ToList();
+            // Console.WriteLine($"loadOrgaAsync completed :{curOrga?.Raison}");
         }
         catch (Exception ex)
         {

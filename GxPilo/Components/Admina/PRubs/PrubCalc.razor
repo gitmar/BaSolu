@@ -209,19 +209,21 @@ else
                                                 @switch (GetRowState(EntityLevel.Plan, item.Rowguid))
                                                 {
                                                     case RowState.Locked:
-                                                        <span class="text-muted">—</span>
-                                                        break;
-
                                                     case RowState.AddPending:
                                                         <Button Color="ButtonColor.Success" Size="ButtonSize.Small"
                                                                 @onclick="() => ConfirmAdd(EntityLevel.Plan, draftPln, true)">
                                                             ✅ Confirm
                                                         </Button>
                                                         <Button Color="ButtonColor.Success" Size="ButtonSize.Small"
-                                                                @onclick="() =>StartCancelAdd(EntityLevel.Plan, draftPln)">
+                                                                @onclick="() => StartCancelAdd(EntityLevel.Plan, draftPln)">
                                                             ❌ Cancel
                                                         </Button>
                                                         break;
+
+                                                        <span class="text-muted">—</span>
+                                                        break;
+
+                                                    
                                                     case RowState.EditPending:
                                                         <Button Color="ButtonColor.Success" Size="ButtonSize.Small"
                                                                 @onclick="() => ConfirmEdit(EntityLevel.Plan, draftPln, true)">
@@ -1309,8 +1311,9 @@ else
         if (rowguid == Guid.Empty) return;
         if (IsAnyRowEditing && !IsRowEditing(rowguid)) return;
 
-        _edPlnOriginals[rowguid] = DeepClone(item);
+        
         draftPln = DeepClone(item);
+        _edPlnOriginals[rowguid] = DeepClone(item);
 
         BeginEdit(EntityLevel.Plan, rowguid, draftPln);
         _rowPendingOpTypeByRow[rowguid] = PendingOpType.Update;
@@ -1532,7 +1535,7 @@ else
 
         if (pForuModal != null)
         {
-            pForuModal.BodyCssClass = (orig == 1) ? "editable" : "readonly";
+            //pForuModal.BodyCssClass = (orig == 1) ? "editable" : "readonly";
             pForuModal.ShowAsync();
         }
     }
@@ -1549,7 +1552,7 @@ else
 
         if (rForuModal != null)
         {
-            rForuModal.BodyCssClass = (orig == 1) ? "editable" : "readonly";
+            //rForuModal.BodyCssClass = (orig == 1) ? "editable" : "readonly";
             rForuModal.ShowAsync();
         }
     }
@@ -1566,7 +1569,7 @@ else
 
         if (gForuModal != null)
         {
-            gForuModal.BodyCssClass = (orig == 1) ? "editable" : "readonly";
+            ///gForuModal.BodyCssClass = (orig == 1) ? "editable" : "readonly";
             gForuModal.ShowAsync();
         }
     }

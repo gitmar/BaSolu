@@ -68,10 +68,11 @@ else
                     {
                         @if (_chxMenu == 1 && Ugpe != 0 && Tgpe != 0)
                         {
-                            @* <ValdTie @ref="mygvld"
+                            <ValdTie @ref="mygvld"
                                     Ugpe="@Ugpe"
                                      Tgpe="@Tgpe"
                                      curOrga="@curOrga"
+                                     orgTiers="@orgTiers"
                                      @bind-NbChanges="_nbChanges"
                                      _guard="_guard"
                                      EnsAtrs="@EnsAtrs"
@@ -83,7 +84,7 @@ else
                                 <ChildContent>
                                     <h2 class="child-box">Hello INTEGRATION</h2>
                                 </ChildContent>
-                            </ValdTie> *@
+                            </ValdTie>
                         }
                         else if (_chxMenu == 2 && Ugpe != 0) // && Tgpe != 0 && ParentOK)
                         {
@@ -91,6 +92,7 @@ else
                                      Ugpe="@Ugpe"
                                      Tgpe="@Tgpe"
                                      curOrga="@curOrga"
+                                     orgTwels="@orgTwels"
                                      @bind-NbChanges="_nbChanges"
                                      _guard="_guard"
                                      EnsAtrs="@EnsAtrs"
@@ -142,7 +144,7 @@ else
     public GxorgaDto curOrga = new();
     public ChildVars toChild = new();
 
-    //private ValdTie mygvld = new();
+    private ValdTie mygvld = new();
     private InscTiw myetiw = new();
     //private InvOper myginv = new();
 
@@ -201,8 +203,8 @@ else
     private string Jmessage = "";
     //entities load
     private IEnumerable<GxorgaDto> _lsOrgas = new List<GxorgaDto>();
-    private List<TiewelDto> InTwels = new List<TiewelDto>();
-    private List<TierspDto> InTiers = new List<TierspDto>();
+    public List<TiewelDto> orgTwels = new();
+    public List<TierspDto> orgTiers = new();
     private IQueryable<GsaplDto> InApls = Enumerable.Empty<GsaplDto>().AsQueryable();
     public IEnumerable<TiewelDto> ResTiw;
     public IEnumerable<TierspDto> ResTie;
@@ -315,16 +317,7 @@ else
         Console.WriteLine("Authentication ENTREE");
         EnsTbls = await _rendAgres.LoadOrgaTables();
         Console.WriteLine($"nb. tables : {EnsTbls.Count}");
-        //TbItems = await _rendAgres.LoadOrgaTables();
-        //Console.WriteLine($"nb. tbitems : {TbItems.Count}");
-
-        //_guard.RegisterUnconfirmedPredicate<Tiewel>(w => w.Xadd1 == -1 || w.Xedt1 == -1 || w.Xdel1 == -1);
-        // _guard.RegisterUnconfirmedPredicate<Tiwatr>(wa => wa.Xadd1 == -1 || wa.Xedt1 == -1 || wa.Xdel1 == -1);
-        // _guard.RegisterUnconfirmedPredicate<Tiwafl>(wf => wf.Xadd1 == -1 || wf.Xedt1 == -1 || wf.Xdel1 == -1);
-        // _guard.RegisterUnconfirmedPredicate<TierspDto>(e => e.Xadd1 == -1 || e.Xedt1 == -1 || e.Xdel1 == -1);
-        // _guard.RegisterUnconfirmedPredicate<Tieatr>(ea => ea.Xadd1 == -1 || ea.Xedt1 == -1 || ea.Xdel1 == -1);
-        // _guard.RegisterUnconfirmedPredicate<TieaflDto>(ef => ef.Xadd1 == -1 || ef.Xedt1 == -1 || ef.Xdel1 == -1);
-
+  
         _nbChanges = _guard.GetPendingChangesCount();  // Initial value
         await LoadTieAplAsync(_usrBag.Idorg);
         EnsAtrs = await _rendAgres.LoadOrgaAtribs();
@@ -352,14 +345,45 @@ else
             curOrga = await _MyODaClient
                 .For<GxorgaDto>("Gxorgas")
                 .Key(key)
-                .Expand(o => o.Tiewels.Select(t => t.Tiwafls))
-                .Expand(o => o.Tiewels.Select(t => t.Tiejatrs))
-                .Expand(o => o.Tiewels.Select(t => t.Tiegcats))
-                .Expand(o => o.Tiersps.Select(t => t.Tieafls))
-                .Expand(o => o.Tiersps.Select(t => t.Tiejatrs))
-                .Expand(o => o.Tiersps.Select(t => t.Tiegcats))
+                //.Expand(o => o.Gsgfixes)
+                ////.Expand(o => o.Gstabls)
                 .FindEntryAsync();
-            Console.WriteLine($"loadOrgaAsync completed : {curOrga?.Raison}");
+            // Second query: load tiewels only
+            var msgsiw = await _MyODaClient
+                .For<TiewelDto>("Tiewels")
+                .Filter(f => f.Idorg == key)
+                .Expand(o => o.Tiwafls)
+                .Expand(o => o.Tiejatrs.Where(j => j.Itiw != 0))
+                .Expand(o => o.Tiegcats.Where(g => g.Itiw != 0))
+                //.Select("Idorg, Xseq, Elea,Gp1")
+                .FindEntriesAsync();
+            orgTwels = msgsiw.ToList();
+            // Third query : load Tiersp only
+            var msgsie = await _MyODaClient
+                .For<TierspDto>("Tierps")
+                .Filter(f => f.Idorg == key)
+                .Expand(o => o.Tieafls)
+                .Expand(o => o.Tiejatrs.Where(j => j.Itie != 0))
+                .Expand(o => o.Tiegcats.Where(g => g.Itie != 0))
+                //.Select("Idorg, Xseq, Elea,Gp1")
+                .FindEntriesAsync();
+            orgTiers = msgsie.ToList();
+            Console.WriteLine($"loadOrgaAsync completed :{curOrga?.Raison}");
+
+
+            // curOrga = await _MyODaClient
+            //     .For<GxorgaDto>("Gxorgas")
+            //     .Key(key)
+            //     .Expand(o => o.Tiewels.Select(t => t.Tiwafls))
+            //     .Expand(o => o.Tiewels.Select(t => t.Tiejatrs))
+            //     .Expand(o => o.Tiewels.Select(t => t.Tiegcats))
+            //     .Expand(o => o.Tiersps.Select(t => t.Tieafls))
+            //     .Expand(o => o.Tiersps.Select(t => t.Tiejatrs))
+            //     .Expand(o => o.Tiersps.Select(t => t.Tiegcats))
+            //     .FindEntryAsync();
+
+
+            //Console.WriteLine($"loadOrgaAsync completed : {curOrga?.Raison}");
             Console.WriteLine($"Nb. Tiersps {curOrga.Tiersps.Count} Nb. Tiewels : {curOrga?.Tiewels.Count}");
         }
         catch (Exception ex)

@@ -7,6 +7,7 @@
 @using System.Web
 @using System.ComponentModel.DataAnnotations
 @using System.Text.Json
+@using Newtonsoft.Json
 @using System.Dynamic
 @using BlazorBootstrap
 @using Blazored.LocalStorage
@@ -19,6 +20,8 @@
 @using GxShared.Sess
 @using GxShared.Others
 @using GxShared.Identity
+@using GxShared.Helpers
+@using GxShared.Helpers.CrudHelpers
 @using GxPilo.StaticHelpers
 @using GxPilo.Services
 
@@ -84,7 +87,7 @@ else if (edOrgContext != null && curOrga != null)
                                         <DataAnnotationsValidator />
                                         <ValidationSummary />
                                     <div class="col-md-2">
-                                        @if(!isEdOrg)
+                                        @if(!isEdingOrg)
                                         {
                                             <button class="btn btn-warning btn-sm" @onclick="() => StartOrgEdit()">Edit</button>
                                         } else
@@ -99,136 +102,264 @@ else if (edOrgContext != null && curOrga != null)
                                                 <tr>
                                                     <td>Raison sociale:</td>
                                                     <td class="text-right">
-                                                        <InputText class="my-input" @bind-Value="curOrga.Raison" required
-                                                                   style="font-weight:bold" readonly="@(isEdOrg ? null : "readonly")" placeholder="Enter sigle" />
+                                                        @if (isEdingOrg)
+                                                        {
+                                                            <InputText class="my-input" @bind-Value="draftOrg.Raison" required
+                                                                   style="font-weight:bold" placeholder="Enter sigle" />
+                                                        }
+                                                        else
+                                                        {
+                                                            <span style="font-weight:bold">@curOrga.Raison</span>
+                                                        }
                                                     </td>
                                                 </tr>
                                                 <tr>
                                                     <td>Sigle:</td>
                                                     <td class="text-right">
-                                                        <InputText class="my-input" @bind-Value="curOrga.Sigle" required
-                                                                   style="font-weight:bold" readonly="@(isEdOrg ? null : "readonly")" placeholder="Enter sigle" />
+                                                        @if (isEdingOrg)
+                                                        {
+                                                            <InputText class="my-input" @bind-Value="draftOrg.Sigle" required
+                                                                   style="font-weight:bold" placeholder="Enter sigle" />
+                                                        }
+                                                        else
+                                                        {
+                                                            <span style="font-weight:bold">@curOrga.Sigle</span>
+                                                        }
                                                     </td>
                                                 </tr>
                                                 <tr>
                                                     <td>Nom Cible:</td>
                                                     <td class="text-right">
-                                                        <InputText class="my-input" @bind-Value="curOrga.Stcible" required
-                                                                   style="font-weight:bold" readonly="@(isEdOrg ? null : "readonly")" placeholder="Enter sigle" />
+                                                        @if (isEdingOrg)
+                                                        {
+                                                            <InputText class="my-input" @bind-Value="draftOrg.Stcible" required
+                                                                   style="font-weight:bold" placeholder="Enter sigle" />
+                                                        }
+                                                        else
+                                                        {
+                                                            <span style="font-weight:bold">@curOrga.Stcible</span>
+                                                        }
                                                     </td>
                                                 </tr>
                                                 <tr>
                                                     <td>Hierarchie:</td>
                                                     <td class="text-right">
-                                                        @* <InputSelect @bind-Value="curOrga.Jpoint" disabled="@(!isEdOrg)" style="font-weight:bold">
-                                                            <option value=0>Noeud</option>
-                                                            <option value=1>Libre</option>
-                                                        </InputSelect> *@
-                                                        <InputSelect @bind-Value="curOrga.Jpoint" disabled="@(!isEdOrg)" style="font-weight:bold">
-                                                            <option value=0>?hierarch.</option>
-                                                            @foreach (var pln in LsPlans.Where(p => p.Ptyp == 4 && p.Todom == 1).ToList())
-                                                            {
-                                                                <option value=@pln.Id>@pln.Liba</option>
-                                                            }
-                                                        </InputSelect>
+                                                        @if (isEdingOrg)
+                                                        {
+                                                            <InputSelect @bind-Value="draftOrg.Jpoint" style="font-weight:bold">
+                                                                <option value=0>?hierarch.</option>
+                                                                @foreach (var pln in LsPlans.Where(p => p.Ptyp == 4 && p.Todom == 1).ToList())
+                                                                {
+                                                                    <option value=@pln.Id>@pln.Liba</option>
+                                                                }
+                                                            </InputSelect>
+                                                        }
+                                                        else
+                                                        {
+                                                           <InputSelect @bind-Value="curOrga.Jpoint" style="font-weight:bold" disabled>
+                                                                <option value=0>?hierarch.</option>
+                                                                @foreach (var pln in LsPlans.Where(p => p.Ptyp == 4 && p.Todom == 1).ToList())
+                                                                {
+                                                                    <option value=@pln.Id>@pln.Liba</option>
+                                                                }
+                                                            </InputSelect> 
+                                                        }
                                                     </td>
                                                 </tr>
                                                 <tr>
                                                     <td>Parrain:</td>
                                                     <td class="text-right">
-                                                        <InputSelect @bind-Value="curOrga.Kpoint" disabled="@(!isEdOrg)" style="font-weight:bold">
-                                                            <option value=0>integre</option>
-                                                            <option value=1>flottant</option>
-                                                        </InputSelect>
+                                                        @if (isEdingOrg)
+                                                        {
+                                                            <InputSelect @bind-Value="draftOrg.Kpoint" style="font-weight:bold">
+                                                                <option value=0>integre</option>
+                                                                <option value=1>flottant</option>
+                                                            </InputSelect>
+                                                        } else {
+                                                            <InputSelect @bind-Value="curOrga.Kpoint" style="font-weight:bold" disabled>
+                                                                <option value=0>integre</option>
+                                                                <option value=1>flottant</option>
+                                                            </InputSelect>
+
+                                                        }
                                                     </td>
                                                 </tr> 
                                                 <tr>
                                                     <td>Si jeton:</td>
                                                     <td class="text-right">
-                                                        <InputNumber class="my-input" @bind-Value="curOrga.Sijet" required
-                                                                     style="font-weight:bold" readonly="@(isEdOrg ? null : "readonly")" />
+                                                        @if (isEdingOrg)
+                                                        {
+                                                            <InputNumber class="my-input" @bind-Value="draftOrg.Sijet" required
+                                                                     style="font-weight:bold" />
+                                                        } else 
+                                                        {
+                                                            <span style="font-weight:bold">@curOrga.Sijet</span>
+                                                        }
                                                     </td>
                                                 </tr>
                                                 <tr>
                                                     <td>No RCM:</td>
                                                     <td class="text-right">
-                                                        <InputText class="my-input" @bind-Value="curOrga.Rcm"
-                                                                   style="font-weight:bold" readonly="@(isEdOrg ? null : "readonly")" placeholder="Enter RCM" />
+                                                        @if (isEdingOrg)
+                                                        {
+                                                            <InputText class="my-input" @bind-Value="draftOrg.Rcm"
+                                                                   style="font-weight:bold" placeholder="Enter RCM" />
+                                                        } else 
+                                                        {
+                                                            <span style="font-weight:bold">@curOrga.Rcm</span>
+                                                        }
                                                     </td>
                                                 </tr>
                                                 <tr>
                                                     <td>No IFU:</td>
                                                     <td class="text-right">
-                                                        <InputText class="my-input" @bind-Value="curOrga.Rifu"
-                                                                   style="font-weight:bold" readonly="@(isEdOrg ? null : "readonly")" placeholder="Enter IFU" />
+                                                        @if (isEdingOrg)
+                                                        {
+                                                            <InputText class="my-input" @bind-Value="draftOrg.Rifu"
+                                                                   style="font-weight:bold" placeholder="Enter IFU" />
+                                                        } 
+                                                        else 
+                                                        {
+                                                            <span style="font-weight:bold">@curOrga.Rifu</span>
+                                                        }
+
                                                     </td>
                                                 </tr>
                                                 <tr>
                                                     <td>Adresse:</td>
                                                     <td class="text-right">
-                                                        <InputText class="my-input" @bind-Value="curOrga.Adr"
-                                                                   style="font-weight:bold" readonly="@(isEdOrg ? null : "readonly")" placeholder="Enter Adresse" />
+                                                        @if (isEdingOrg)
+                                                        {
+                                                            <InputText class="my-input" @bind-Value="draftOrg.Adr"
+                                                                   style="font-weight:bold" placeholder="Enter Adresse" />
+                                                        } 
+                                                        else 
+                                                        {
+                                                            <span style="font-weight:bold">@curOrga.Adr</span>
+                                                        }
+
                                                     </td>
                                                 </tr>
                                                 <tr>
                                                     <td>Adresse2:</td>
                                                     <td class="text-right">
-                                                        <InputText class="my-input" @bind-Value="curOrga.Adr2"
-                                                                   style="font-weight:bold" readonly="@(isEdOrg ? null : "readonly")" placeholder="Enter Adresse2" />
+                                                        @if (isEdingOrg)
+                                                        {
+                                                            <InputText class="my-input" @bind-Value="draftOrg.Adr2"
+                                                                   style="font-weight:bold" placeholder="Enter Adresse2" />
+                                                        } 
+                                                        else
+                                                        {
+                                                            <span style="font-weight:bold">@curOrga.Adr2</span>
+                                                        }
                                                     </td>
                                                 </tr>
                                                 <tr>
                                                     <td>Ville:</td>
                                                     <td class="text-right">
-                                                        <InputNumber class="my-input" @bind-Value="curOrga.Icity"
-                                                                   style="font-weight:bold" readonly="@(isEdOrg ? null : "readonly")" placeholder="Enter CITY" />
+                                                        @if (isEdingOrg)
+                                                        {
+                                                            <InputNumber class="my-input" @bind-Value="draftOrg.Icity"
+                                                                   style="font-weight:bold" placeholder="Enter CITY" />
+                                                        } 
+                                                        else
+                                                        {
+                                                            <span style="font-weight:bold">@curOrga.Icity</span>
+                                                        }
                                                     </td>
                                                 </tr>
                                                 <tr>
                                                     <td>Province:</td>
                                                     <td class="text-right">
-                                                        <InputNumber class="my-input" @bind-Value="curOrga.Iprovi"
-                                                                   style="font-weight:bold" readonly="@(isEdOrg ? null : "readonly")" placeholder="Enter PROVI" />
+                                                        @if (isEdingOrg)
+                                                        {
+                                                            <InputNumber class="my-input" @bind-Value="draftOrg.Iprovi"
+                                                                   style="font-weight:bold" placeholder="Enter PROVI" />
+                                                        }
+                                                        else
+                                                        {
+                                                            <span style="font-weight:bold">@curOrga.Iprovi</span>
+                                                        }
                                                     </td>
                                                 </tr>
                                                 <tr>
                                                     <td>Region:</td>
                                                     <td class="text-right">
-                                                        <InputNumber class="my-input" @bind-Value="curOrga.Iregio"
-                                                                   style="font-weight:bold" readonly="@(isEdOrg ? null : "readonly")" placeholder="Enter REGION" />
+                                                        @if (isEdingOrg)
+                                                        {
+                                                            <InputNumber class="my-input" @bind-Value="draftOrg.Iregio"
+                                                                   style="font-weight:bold" placeholder="Enter REGION" />
+                                                        }
+                                                        else
+                                                        {
+                                                            <span style="font-weight:bold">@curOrga.Iregio</span>
+                                                        }
                                                     </td>
                                                 </tr>
                                                 <tr>
                                                     <td>Pays:</td>
                                                     <td class="text-right">
-                                                        <InputSelect @bind-Value="curOrga.Npays" disabled="@(!isEdOrg)" style="font-weight:bold">
-                                                            <option value="">-- Select a country --</option>
-                                                            @foreach (var tob in EnsTbls.FirstOrDefault(t => t.Tref == 31)?.TbItems ?? new List<Gtvar>())
-                                                            {
-                                                                <option value=@tob.Abg>@tob.Liba</option>
-                                                            }
-                                                        </InputSelect>
+                                                        @if (isEdingOrg)
+                                                        {
+                                                            <InputSelect @bind-Value="draftOrg.Npays" style="font-weight:bold">
+                                                                <option value="">-- Select a country --</option>
+                                                                @foreach (var tob in EnsTbls.FirstOrDefault(t => t.Tref == 31)?.TbItems ?? new List<Gtvar>())
+                                                                {
+                                                                    <option value=@tob.Abg>@tob.Liba</option>
+                                                                }
+                                                            </InputSelect>
+                                                        } else 
+                                                        {
+                                                            <InputSelect @bind-Value="curOrga.Npays" style="font-weight:bold" disabled>
+                                                                <option value="">-- Select a country --</option>
+                                                                @foreach (var tob in EnsTbls.FirstOrDefault(t => t.Tref == 31)?.TbItems ?? new List<Gtvar>())
+                                                                {
+                                                                    <option value=@tob.Abg>@tob.Liba</option>
+                                                                }
+                                                            </InputSelect>
+                                                        }
                                                     </td>
                                                 </tr>
                                                 <tr>
                                                     <td>Telephone:</td>
                                                     <td class="text-right">
-                                                        <InputText class="my-input" @bind-Value="curOrga.Phone"
-                                                                   style="font-weight:bold" readonly="@(isEdOrg ? null : "readonly")" placeholder="Enter TELE" />
+                                                        @if (isEdingOrg)
+                                                        {
+                                                            <InputText class="my-input" @bind-Value="draftOrg.Phone"
+                                                                   style="font-weight:bold" placeholder="Enter TELE" />
+                                                        } 
+                                                        else
+                                                        {
+                                                            <span style="font-weight:bold">@curOrga.Phone</span>
+                                                        }
                                                     </td>
                                                 </tr>
                                                 <tr>
                                                     <td>WhatsApp:</td>
                                                     <td class="text-right">
-                                                        <InputText class="my-input" @bind-Value="curOrga.Whatsapp"
-                                                                   style="font-weight:bold" readonly="@(isEdOrg ? null : "readonly")" placeholder="Enter WhatsApp" />
+                                                        @if (isEdingOrg)
+                                                        {
+                                                            <InputText class="my-input" @bind-Value="draftOrg.Whatsapp"
+                                                                   style="font-weight:bold" placeholder="Enter WhatsApp" />
+                                                        }
+                                                        else
+                                                        {
+                                                            <span style="font-weight:bold">@curOrga.Whatsapp</span>
+                                                        }
                                                     </td>
                                                 </tr>
                                                 <tr>
                                                     <td>Siteweb:</td>
                                                     <td class="text-right">
-                                                        <InputText class="my-input" @bind-Value="curOrga.Weburl"
-                                                                   style="font-weight:bold" readonly placeholder="Enter SITEWEB" />
+                                                        @if (isEdingOrg)
+                                                        {
+                                                            <InputText class="my-input" @bind-Value="draftOrg.Weburl"
+                                                                   style="font-weight:bold" placeholder="Enter SITEWEB" />
+                                                        }
+                                                        else
+                                                        {
+                                                            <span style="font-weight:bold">@curOrga.Weburl</span>
+                                                        }
                                                     </td>
                                                 </tr>
                                                 <tr>
@@ -237,40 +368,77 @@ else if (edOrgContext != null && curOrga != null)
                                                 <tr>
                                                     <td>Telephone:</td>
                                                     <td class="text-right">
-                                                        <InputText class="my-input" @bind-Value="curOrga.Phon2"
-                                                                   style="font-weight:bold" readonly="@(isEdOrg ? null : "readonly")" placeholder="Enter Admin tele" />
+                                                        @if (isEdingOrg)
+                                                        {
+                                                            <InputText class="my-input" @bind-Value="draftOrg.Phon2"
+                                                                   style="font-weight:bold" placeholder="Enter Admin tele" />
+                                                        }
+                                                        else
+                                                        {
+                                                            <span style="font-weight:bold">@curOrga.Phon2</span>
+                                                        }
                                                     </td>
                                                 </tr>
                                                 <tr>
                                                     <td>Email:</td>
                                                     <td class="text-right">
-                                                        <InputText class="my-input" @bind-Value="curOrga.Email"
-                                                                   style="font-weight:bold" readonly="@(isEdOrg ? null : "readonly")" placeholder="Enter Admin email" />
+                                                        @if (isEdingOrg)
+                                                        {
+                                                            <InputText class="my-input" @bind-Value="draftOrg.Email"
+                                                                   style="font-weight:bold" placeholder="Enter Admin email" />
+                                                        } 
+                                                        else
+                                                        {
+                                                            <span style="font-weight:bold">@curOrga.Email</span>
+                                                        }
                                                     </td>
                                                 </tr>
                                                 <tr>
                                                     <td>Prenom(s):</td>
                                                     <td class="text-right">
-                                                        <InputText class="my-input" @bind-Value="curOrga.Rpnom"
-                                                                   style="font-weight:bold" readonly="@(isEdOrg ? null : "readonly")" placeholder="Enter Admin prenom(s)" />
+                                                        @if (isEdingOrg)
+                                                        {
+                                                            <InputText class="my-input" @bind-Value="draftOrg.Rpnom"
+                                                                   style="font-weight:bold" placeholder="Enter Admin prenom(s)" />
+                                                        }
+                                                        else
+                                                        {
+                                                            <span style="font-weight:bold">@curOrga.Rpnom</span>
+                                                        }
                                                     </td>
                                                 </tr>
                                                 <tr>
                                                     <td>Nom:</td>
                                                     <td class="text-right">
-                                                        <InputText class="my-input" @bind-Value="curOrga.Rnom"
-                                                                   style="font-weight:bold" readonly="@(isEdOrg ? null : "readonly")" placeholder="Enter Admin nom" />
+                                                        @if (isEdingOrg)
+                                                        {
+                                                            <InputText class="my-input" @bind-Value="draftOrg.Rnom"
+                                                                   style="font-weight:bold" placeholder="Enter Admin nom" />
+                                                        }
+                                                        else
+                                                        {
+                                                            <span style="font-weight:bold">@curOrga.Rnom</span>
+                                                        }
                                                     </td>
                                                 </tr>
                                                 <tr>
                                                     <td>Installe le :</td>
                                                     <td class="input-group">
-                                                        <InputNumber class="my-input" @bind-Value="curOrga.Depexy"
-                                                                     style="font-weight:bold;width:65px" readonly="@(isEdOrg ? null : "readonly")" placeholder="annee" />
-                                                        <InputNumber class="my-input" @bind-Value="curOrga.Depexm"
-                                                                     style="font-weight:bold;width:50px" readonly="@(isEdOrg ? null : "readonly")" placeholder="mois" />
-                                                        <InputNumber class="my-input" @bind-Value="curOrga.Depexd"
-                                                                     style="font-weight:bold;width:50px" readonly="@(isEdOrg ? null : "readonly")" placeholder="jour" />
+                                                        @if (isEdingOrg)
+                                                        {
+                                                            <InputNumber class="my-input" @bind-Value="draftOrg.Depexy"
+                                                                     style="font-weight:bold;width:65px" placeholder="annee" />
+                                                            <InputNumber class="my-input" @bind-Value="draftOrg.Depexm"
+                                                                     style="font-weight:bold;width:50px" placeholder="mois" />
+                                                            <InputNumber class="my-input" @bind-Value="draftOrg.Depexd"
+                                                                     style="font-weight:bold;width:50px"  placeholder="jour" />
+                                                        } 
+                                                        else 
+                                                        {
+                                                            <span class="my-input" style="font-weight:bold;width:65px">|@curOrga.Depexy</span>
+                                                            <span class="my-input" style="font-weight:bold;width:50px">|@curOrga.Depexm</span>
+                                                            <span class="my-input" style="font-weight:bold;width:50px">|@curOrga.Depexd</span>
+                                                        }
                                                     </td>
                                                 </tr>
                                                 <tr>
@@ -279,23 +447,41 @@ else if (edOrgContext != null && curOrga != null)
                                                 <tr>
                                                     <td>(Exo)Debut.:</td>
                                                     <td class="input-group">
-                                                        <InputNumber class="my-input" @bind-Value="curOrga.Prvexy"
-                                                                     style="font-weight:bold;width:65px" readonly="@(isEdOrg ? null : "readonly")" placeholder="annee" />
-                                                        <InputNumber class="my-input" @bind-Value="curOrga.Prvexm"
-                                                                     style="font-weight:bold;width:50px" readonly="@(isEdOrg ? null : "readonly")" placeholder="mois" />
-                                                        <InputNumber class="my-input" @bind-Value="curOrga.Prvexd"
-                                                                     style="font-weight:bold;width:50px" readonly="@(isEdOrg ? null : "readonly")" placeholder="jour" />
+                                                        @if (isEdingOrg)
+                                                        {
+                                                        <InputNumber class="my-input" @bind-Value="draftOrg.Prvexy"
+                                                                     style="font-weight:bold;width:65px" placeholder="annee" />
+                                                        <InputNumber class="my-input" @bind-Value="draftOrg.Prvexm"
+                                                                     style="font-weight:bold;width:50px" placeholder="mois" />
+                                                        <InputNumber class="my-input" @bind-Value="draftOrg.Prvexd"
+                                                                     style="font-weight:bold;width:50px" placeholder="jour" />
+                                                        } 
+                                                        else 
+                                                        {
+                                                            <span class="my-input" style="font-weight:bold;width:65px">|@curOrga.Prvexy</span>
+                                                            <span class="my-input" style="font-weight:bold;width:50px">|@curOrga.Prvexm</span>
+                                                            <span class="my-input" style="font-weight:bold;width:50px">|@curOrga.Prvexd</span>
+                                                        }
                                                     </td>
                                                 </tr>
                                                 <tr>
                                                     <td>(Exo)Fin:</td>
                                                     <td class="input-group">
-                                                        <InputNumber class="my-input" @bind-Value="curOrga.Finexy"
-                                                                     style="font-weight:bold;width:65px" readonly="@(isEdOrg ? null : "readonly")" placeholder="annee" />
-                                                        <InputNumber class="my-input" @bind-Value="curOrga.Finexm"
-                                                                     style="font-weight:bold;width:50px" readonly="@(isEdOrg ? null : "readonly")" placeholder="mois" />
-                                                        <InputNumber class="my-input" @bind-Value="curOrga.Finexd"
-                                                                     style="font-weight:bold;width:50px" readonly="@(isEdOrg ? null : "readonly")" placeholder="jour" />
+                                                        @if (isEdingOrg)
+                                                        {
+                                                            <InputNumber class="my-input" @bind-Value="draftOrg.Finexy"
+                                                                     style="font-weight:bold;width:65px" placeholder="annee" />
+                                                            <InputNumber class="my-input" @bind-Value="draftOrg.Finexm"
+                                                                     style="font-weight:bold;width:50px" placeholder="mois" />
+                                                            <InputNumber class="my-input" @bind-Value="draftOrg.Finexd"
+                                                                     style="font-weight:bold;width:50px" placeholder="jour" />
+                                                        } 
+                                                        else 
+                                                        {
+                                                            <span class="my-input" style="font-weight:bold;width:65px">|@curOrga.Finexy</span>
+                                                            <span class="my-input" style="font-weight:bold;width:50px">|@curOrga.Finexm</span>
+                                                            <span class="my-input" style="font-weight:bold;width:50px">|@curOrga.Finexd</span>
+                                                        }
                                                     </td>
                                                 </tr>
                                             </tbody>
@@ -321,9 +507,10 @@ else if (edOrgContext != null && curOrga != null)
                                                 </InputSelect>
                                             </div>
                                         </div>
-                                        <Grid Data="@curOrga.Gsgfixes.Where(utl => utl.Gvars == 21 && utl.Itb == Rubtto && utl.Elea != 0)" 
-                                                TItem="GsgfixDto"
-                                                Responsive="true">
+                                        @* @orgFixes.Where(utl => utl.Gvars == 21 && utl.Itb == Rubtto && utl.Elea != 0) *@
+                                        <Grid TItem="GsgfixDto"
+                                              Data="@MyDaDoms.Where(utl => utl.Itb == Rubtto)"
+                                              Responsive="true">
                                             <GridColumns>
                                                 <GridColumn TItem="GsgfixDto" HeaderText="No" Class="xcol1">
                                                     <ChildContent Context="item">@item.Elea</ChildContent>
@@ -373,8 +560,15 @@ else if (edOrgContext != null && curOrga != null)
                                                 </GridColumn>
                                                 <GridColumn TItem="GsgfixDto" HeaderText="Valeur" Class="xcol1">
                                                     <ChildContent Context="item">
-                                                        <InputNumber class="my-input" @bind-Value="item.Ivala"
-                                                                     style="font-weight:bold;width:50px" readonly="@(item.Rowguid == EdDomRowguid ? null : "readonly")" placeholder="annee" />
+                                                        @if (item.Rowguid == EdDomRowguid)
+                                                        {
+                                                            <InputNumber class="my-input" @bind-Value="draftDom.Ivala"
+                                                                style="font-weight:bold;width:50px" placeholder="annee" />
+                                                        } 
+                                                        else
+                                                        {
+                                                            <span style="font-weight:bold; width:100%">@item.Ivala</span>
+                                                        }
                                                     </ChildContent>
                                                 </GridColumn>
                                                 <GridColumn TItem="GsgfixDto" HeaderText="Format" Class="xcol2">
@@ -385,8 +579,15 @@ else if (edOrgContext != null && curOrga != null)
                                                                 @if (item.Elea != 1 && item.Elea != 2)
                                                                 {
                                                                     <span>
-                                                                        <InputText class="my-input" @bind-Value="item.Lgft"
-                                                                                   style="font-weight:bold; width:100%" readonly="@(item.Rowguid == EdDomRowguid  ? null : "readonly")" />
+                                                                        @if (item.Rowguid == EdDomRowguid)
+                                                                        {
+                                                                            <InputText class="my-input" @bind-Value="draftDom.Lgft"
+                                                                                   style="font-weight:bold; width:100%" />
+                                                                        }
+                                                                        else
+                                                                        {
+                                                                            <span style="font-weight:bold; width:100%">@item.Lgft</span>
+                                                                        }
                                                                     </span>
                                                                 }
                                                                 @if (item.Elea == 1 && item.Elea == 2)
@@ -404,11 +605,11 @@ else if (edOrgContext != null && curOrga != null)
                                                          <div class="col-md-2 d-flex gap-2">
                                                             @if (EdDomRowguid  != item.Rowguid)
                                                             {
-                                                                <button class="btn btn-warning btn-sm @(!isEdDom && EdDomRowguid != item.Rowguid ? "" : "disabled-action")" @onclick="() => StartDomEdit(item)">Edit</button>
+                                                                <button class="btn btn-warning btn-sm @(!isEdingDom && EdDomRowguid != item.Rowguid ? "" : "disabled-action")" @onclick="() => StartDomEdit(item)">Edit</button>
                                                             }
                                                             else
                                                             {
-                                                                <button class="btn btn-warning btn-sm @(EdDomRowguid  == item.Rowguid ? "" : "disabled-action")" @onclick="() => ConfGdom(item)">Confirm</button>
+                                                                <button class="btn btn-warning btn-sm @(EdDomRowguid  == item.Rowguid ? "" : "disabled-action")" @onclick="() => ConfGdom(draftDom)">Confirm</button>
                                                                 <button class="btn btn-danger btn-sm @(EdDomRowguid  == item.Rowguid ? "" : "disabled-action")" @onclick="() => CancGdom(item)">Annul</button>
                                                             }
                                                         </div>
@@ -445,7 +646,7 @@ else if (edOrgContext != null && curOrga != null)
                                         <div class="row mt-2">
                                             <span style="font-weight:bold"> Filiation -> Base</span>
                                         </div>
-                                        <Grid Data="@curOrga.Gsgfixes.Where(uf => uf.Gvars == 3 && uf.Itb == 5 && uf.Atyp == 1 && uf.Elea != 0).OrderBy(uo => uo.Elea)"
+                                        <Grid Data="@MyDaApts"
                                                 TItem="GsgfixDto"
                                                 AllowDetailView="true"
                                                 Responsive="true">
@@ -460,23 +661,41 @@ else if (edOrgContext != null && curOrga != null)
                                                 </GridColumn>
                                                 <GridColumn TItem="GsgfixDto" HeaderText="Libelle" Class="xcol2">
                                                     <ChildContent Context="item">
-                                                            <InputText @bind-Value="@item.Sliba" style="width:100%"
-                                                                   readonly="@(item.Rowguid == EdAptRowguid ? null : "readonly")" />
+                                                        @if (item.Rowguid == EdAptRowguid)
+                                                        {
+                                                            <InputText @bind-Value="@draftApt.Sliba" style="width:100%" />
+                                                        }
+                                                        else
+                                                        {
+                                                            <span style="width:100%">@item.Sliba</span>
+                                                        }
                                                     </ChildContent>
                                                 </GridColumn>
                                                 <GridColumn TItem="GsgfixDto" HeaderText="Opt." Class="xcol1">
                                                     <ChildContent Context="item">
-                                                        <InputSelect @bind-Value="item.Ityp" disabled="@(!isEdApt)">
-                                                                    @foreach (var tob in LsFixes.Where(ut => ut.Gvars == 31 && ut.Itb == 2 && ut.Gp1 == 1))
-                                                                    {
-                                                                        <option value=@tob.Elea>@tob.Liba</option>
-                                                                    }
-                                                                </InputSelect>
+                                                        @if (item.Rowguid == EdAptRowguid)
+                                                        {
+                                                        <InputSelect @bind-Value="draftApt.Ityp">
+                                                                @foreach (var tob in LsFixes.Where(ut => ut.Gvars == 31 && ut.Itb == 2 && ut.Gp1 == 1))
+                                                                {
+                                                                    <option value=@tob.Elea>@tob.Liba</option>
+                                                                }
+                                                            </InputSelect>
+                                                        }
+                                                        else
+                                                        {
+                                                            <InputSelect @bind-Value="item.Ityp" disabled>
+                                                                @foreach (var tob in LsFixes.Where(ut => ut.Gvars == 31 && ut.Itb == 2 && ut.Gp1 == 1))
+                                                                {
+                                                                    <option value=@tob.Elea>@tob.Liba</option>
+                                                                }
+                                                            </InputSelect>
+                                                        }
                                                     </ChildContent>
                                                 </GridColumn>
                                                 @* <GridColumn TItem="GsgfixDto" HeaderText="Genr." Class="xcol1">
                                                     <ChildContent Context="item">
-                                                        <InputSelect @bind-Value="item.Ktyp" disabled="@(!isEdApt)">
+                                                        <InputSelect @bind-Value="item.Ktyp" disabledd="@(!isEdApt)">
                                                             @foreach (var tob in LsFixes.Where(ut => ut.Gvars == 31 && ut.Itb == 2 && ut.Gp1 == 1))
                                                             {
                                                                 <option value=@tob.Elea>@tob.Liba</option>
@@ -487,29 +706,60 @@ else if (edOrgContext != null && curOrga != null)
                                                 <GridColumn TItem="GsgfixDto" HeaderText="Avis" Class="xcol1">
                                                     <ChildContent Context="item">
                                                         <div class="col-1">
-                                                            <InputSelect @bind-Value="item.Jtyp" disabled="@(!isEdApt)">
-                                                                @foreach (var tob in LsFixes.Where(ut => ut.Gvars == 31 && ut.Itb == 6 && ut.Gp1 == 1))
-                                                                {
-                                                                    <option value=@tob.Elea>@tob.Liba</option>
-                                                                }
-                                                            </InputSelect>
+                                                            @if (item.Rowguid == EdAptRowguid)
+                                                            {
+                                                            <InputSelect @bind-Value="draftApt.Jtyp">
+                                                                    @foreach (var tob in LsFixes.Where(ut => ut.Gvars == 31 && ut.Itb == 6 && ut.Gp1 == 1))
+                                                                    {
+                                                                        <option value=@tob.Elea>@tob.Liba</option>
+                                                                    }
+                                                                </InputSelect>
+                                                            }
+                                                            else
+                                                            {
+                                                                <InputSelect @bind-Value="item.Jtyp" disabled>
+                                                                    @foreach (var tob in LsFixes.Where(ut => ut.Gvars == 31 && ut.Itb == 6 && ut.Gp1 == 1))
+                                                                    {
+                                                                        <option value=@tob.Elea>@tob.Liba</option>
+                                                                    }
+                                                                </InputSelect>
+                                                            }
                                                         </div>
                                                     </ChildContent>
                                                 </GridColumn>
                                                 <GridColumn TItem="GsgfixDto" HeaderText="max." Class="xcol1">
                                                     <ChildContent Context="item">
-                                                        <InputNumber class="my-input" @bind-Value="item.Mtyp"
-                                                                     style="font-weight:bold;width:80px" readonly="@(item.Rowguid == EdAptRowguid ? null : "readonly")" />
+                                                    @if (item.Rowguid == EdAptRowguid)
+                                                    {
+                                                        <InputNumber class="my-input" @bind-Value="draftApt.Mtyp"
+                                                                     style="font-weight:bold;width:80px" />
+                                                    }
+                                                    else
+                                                    {
+                                                        <span style="font-weight:bold;width:80px">@item.Mtyp</span>
+                                                    }
                                                     </ChildContent>
                                                 </GridColumn>
                                                 <GridColumn TItem="GsgfixDto" HeaderText="notif." Class="xcol1">
                                                     <ChildContent Context="item">
-                                                            <InputSelect @bind-Value="item.Ntyp" disabled="@(!isEdApt)" style="width:100%">
+                                                            @if (item.Rowguid == EdAptRowguid)
+                                                            {
+                                                                <InputSelect @bind-Value="draftApt.Ntyp">
+                                                                    @foreach (var tob in LsFixes.Where(ut => ut.Gvars == 31 && ut.Itb == 4 && ut.Gp1 == 1))
+                                                                    {
+                                                                        <option value=@tob.Elea>@tob.Liba</option>
+                                                                    }
+                                                                </InputSelect>
+                                                            }
+                                                            else
+                                                            {
+                                                            <InputSelect @bind-Value="item.Ntyp" disabled>
                                                                 @foreach (var tob in LsFixes.Where(ut => ut.Gvars == 31 && ut.Itb == 4 && ut.Gp1 == 1))
                                                                 {
                                                                     <option value=@tob.Elea>@tob.Liba</option>
                                                                 }
                                                             </InputSelect>
+                                                            }
                                                     </ChildContent>
                                                 </GridColumn>
                                                 <GridColumn TItem="GsgfixDto" HeaderText="Actions" Class="xcol2">
@@ -517,11 +767,11 @@ else if (edOrgContext != null && curOrga != null)
                                                         <div class="col-md-2 d-flex gap-2">
                                                             @if (EdAptRowguid  != item.Rowguid)
                                                             {
-                                                                <button class="btn btn-warning btn-sm @(!isEdApt && EdAptRowguid != item.Rowguid ? "" : "disabled-action")" @onclick="() => StartAptEdit(item)">Edit</button>
+                                                                <button class="btn btn-warning btn-sm @(!isEdingApt && EdAptRowguid != item.Rowguid ? "" : "disabled-action")" @onclick="() => StartAptEdit(item)">Edit</button>
                                                             }
                                                             else
                                                             {
-                                                                <button class="btn btn-warning btn-sm @(EdAptRowguid  == item.Rowguid ? "" : "disabled-action")" @onclick="() => ConfGapt(item)">Confirm</button>
+                                                                <button class="btn btn-warning btn-sm @(EdAptRowguid  == item.Rowguid ? "" : "disabled-action")" @onclick="() => ConfGapt(draftApt)">Confirm</button>
                                                                 <button class="btn btn-danger btn-sm @(EdAptRowguid  == item.Rowguid ? "" : "disabled-action")" @onclick="() => CancGapt(item)">Annul</button>
                                                             }
                                                         </div>
@@ -536,23 +786,49 @@ else if (edOrgContext != null && curOrga != null)
                                                     <div class="row">
                                                         <div class="col-md-2"></div>
                                                         <div class="col-md-3">
-                                                            <InputSelect @bind-Value="item.Jdiv">
+                                                        @if (item.Rowguid == EdAptRowguid)
+                                                        {
+                                                            <InputSelect @bind-Value="draftApt.Jdiv">
                                                             <option value=0>choisir</option>
                                                             @foreach (var udp in LsDivs.Where(dv => dv.Rpdom == 1 && dv.Tyhie == 1))
                                                             {
                                                                 <option value=@udp.Ihie>@udp.Liba</option>
                                                             }
                                                             </InputSelect>
+                                                            }
+                                                            else
+                                                            {
+                                                            <InputSelect @bind-Value="item.Jdiv" disabled>
+                                                            <option value=0>choisir</option>
+                                                            @foreach (var udp in LsDivs.Where(dv => dv.Rpdom == 1 && dv.Tyhie == 1))
+                                                            {
+                                                                <option value=@udp.Ihie>@udp.Liba</option>
+                                                            }
+                                                            </InputSelect>
+                                                            }
                                                         </div>
                                                         <div class="col-md-3">
-                                                            <InputSelect @bind-Value="item.Kdiv">
+                                                            @if (item.Rowguid == EdAptRowguid)
+                                                            {
+                                                            <InputSelect @bind-Value="draftApt.Kdiv">
                                                             <option value=0>choisir</option>
                                                             @foreach (var udp in LsDivs.Where(dv => dv.Rpdom == 3 && dv.Tyhie == 3))
                                                             {
                                                                 <option value=@udp.Ihie>@udp.Liba</option>
                                                             }
                                                             </InputSelect>
-                                                        </div>
+                                                            }
+                                                            else
+                                                        {
+                                                            <InputSelect @bind-Value="item.Kdiv" disabled>
+                                                                <option value=0>choisir</option>
+                                                                @foreach (var udp in LsDivs.Where(dv => dv.Rpdom == 3 && dv.Tyhie == 3))
+                                                                {
+                                                                    <option value=@udp.Ihie>@udp.Liba</option>
+                                                                }
+                                                            </InputSelect>
+                                                        }
+                                                    </div>
                                                     </div>
                                                 </GridDetailView>
                                             </GridColumns>
@@ -561,7 +837,7 @@ else if (edOrgContext != null && curOrga != null)
                                         <div class="row mt-3">
                                             <span style="font-weight:bold"> Filiation -> Affilies Cible</span>
                                         </div>
-                                        <Grid Data="@curOrga.Gsgfixes.Where(uf => uf.Gvars == 3 && uf.Itb == 6 && uf.Atyp == 1 && uf.Elea != 0).OrderBy(uo => uo.Elea)"
+                                        <Grid Data="@orgFixes.Where(uf => uf.Gvars == 3 && uf.Itb == 6 && uf.Atyp == 1 && uf.Elea != 0).OrderBy(uo => uo.Elea)"
                                                 TItem="GsgfixDto"
                                                 Responsive="true">
                                             <GridColumns>
@@ -575,18 +851,36 @@ else if (edOrgContext != null && curOrga != null)
                                                 </GridColumn>
                                                 <GridColumn TItem="GsgfixDto" HeaderText="Libelle" Class="xcol2">
                                                     <ChildContent Context="ita">
-                                                            <InputText @bind-Value="@ita.Sliba" style="width:100%"
-                                                                   readonly="@(ita.Rowguid == EdAflRowguid ? null : "readonly")" />
-                                                    </ChildContent>
+                                                        @if (ita.Rowguid == EdAflRowguid)
+                                                            {
+                                                            <InputText @bind-Value="@draftAfl.Sliba" style="width:100%" />
+                                                            }
+                                                            else
+                                                    {
+                                                        <span style="width:100%">@ita.Sliba</span>
+                                                    }
+                                                </ChildContent>
                                                 </GridColumn>
                                                 <GridColumn TItem="GsgfixDto" HeaderText="Opt." Class="xcol1">
                                                     <ChildContent Context="ita">
-                                                        <InputSelect @bind-Value="ita.Ityp" disabled="@(!isEdAfl)">
-                                                                    @foreach (var tob in LsFixes.Where(ut => ut.Gvars == 31 && ut.Itb == 2 && ut.Gp1 == 1))
-                                                                    {
-                                                                        <option value=@tob.Elea>@tob.Liba</option>
-                                                                    }
-                                                                </InputSelect>
+                                                        @if (ita.Rowguid == EdAflRowguid)
+                                                        {
+                                                            <InputSelect @bind-Value="draftAfl.Ityp">
+                                                                @foreach (var tob in LsFixes.Where(ut => ut.Gvars == 31 && ut.Itb == 2 && ut.Gp1 == 1))
+                                                                {
+                                                                    <option value=@tob.Elea>@tob.Liba</option>
+                                                                }
+                                                            </InputSelect>
+                                                        }
+                                                        else
+                                                        {
+                                                            <InputSelect @bind-Value="ita.Ityp" disabled>
+                                                                @foreach (var tob in LsFixes.Where(ut => ut.Gvars == 31 && ut.Itb == 2 && ut.Gp1 == 1))
+                                                                {
+                                                                    <option value=@tob.Elea>@tob.Liba</option>
+                                                                }
+                                                            </InputSelect>
+                                                        }
                                                     </ChildContent>
                                                 </GridColumn>
                                                 @* <GridColumn TItem="GsgfixDto" HeaderText="Genr." Class="xcol1">
@@ -602,41 +896,72 @@ else if (edOrgContext != null && curOrga != null)
                                                 <GridColumn TItem="GsgfixDto" HeaderText="Avis" Class="xcol1">
                                                     <ChildContent Context="ita">
                                                         <div class="col-1">
-                                                            <InputSelect @bind-Value="ita.Jtyp" disabled="@(!isEdAfl)">
+                                                            @if (ita.Rowguid == EdAflRowguid)
+                                                            {
+                                                            <InputSelect @bind-Value="draftAfl.Jtyp">
                                                                 @foreach (var tob in LsFixes.Where(ut => ut.Gvars == 31 && ut.Itb == 6 && ut.Gp1 == 1))
                                                                 {
                                                                     <option value=@tob.Elea>@tob.Liba</option>
                                                                 }
                                                             </InputSelect>
+                                                            }
+                                                            else
+                                                            {
+                                                            <InputSelect @bind-Value="ita.Jtyp" disabled>
+                                                                @foreach (var tob in LsFixes.Where(ut => ut.Gvars == 31 && ut.Itb == 6 && ut.Gp1 == 1))
+                                                                {
+                                                                    <option value=@tob.Elea>@tob.Liba</option>
+                                                                }
+                                                            </InputSelect>
+                                                            }
                                                         </div>
                                                     </ChildContent>
                                                 </GridColumn>
                                                 <GridColumn TItem="GsgfixDto" HeaderText="max." Class="xcol1">
                                                     <ChildContent Context="ita">
-                                                        <InputNumber class="my-input" @bind-Value="ita.Mtyp"
-                                                                     style="font-weight:bold;width:80px" readonly="@(ita.Rowguid == EdAflRowguid ? null : "readonly")" />
-                                                    </ChildContent>
+                                                        @if (ita.Rowguid == EdAflRowguid)
+                                                            {
+                                                                <InputNumber class="my-input" @bind-Value="draftAfl.Mtyp"
+                                                                     style="font-weight:bold;width:80px" />
+                                                            }
+                                                            else
+                                                            {
+                                                                <span style="font-weight:bold;width:80px">@ita.Mtyp</span>
+                                                            }
+                                                     </ChildContent>
                                                 </GridColumn>
                                                 <GridColumn TItem="GsgfixDto" HeaderText="notif." Class="xcol1">
                                                     <ChildContent Context="ita">
-                                                            <InputSelect @bind-Value="ita.Ntyp" disabled="@(!isEdAfl)" style="width:100%">
+                                                        @if (ita.Rowguid == EdAflRowguid)
+                                                            {
+                                                            <InputSelect @bind-Value="draftAfl.Ntyp" style="width:100%">
                                                                 @foreach (var tob in LsFixes.Where(ut => ut.Gvars == 31 && ut.Itb == 4 && ut.Gp1 == 1))
                                                                 {
                                                                     <option value=@tob.Elea>@tob.Liba</option>
                                                                 }
                                                             </InputSelect>
-                                                    </ChildContent>
+                                                            }
+                                                            else
+                                                        {
+                                                        <InputSelect @bind-Value="ita.Ntyp" style="width:100%" disabled>
+                                                                @foreach (var tob in LsFixes.Where(ut => ut.Gvars == 31 && ut.Itb == 4 && ut.Gp1 == 1))
+                                                                {
+                                                                    <option value=@tob.Elea>@tob.Liba</option>
+                                                                }
+                                                            </InputSelect>  
+                                                    }
+                                                </ChildContent>
                                                 </GridColumn>
                                                 <GridColumn TItem="GsgfixDto" HeaderText="Actions" Class="xcol2">
                                                     <ChildContent Context="ita">
                                                         <div class="col-md-2 d-flex gap-2">
                                                             @if (EdAflRowguid  != ita.Rowguid)
                                                             {
-                                                                <button class="btn btn-warning btn-sm @(!isEdAfl && EdAflRowguid != ita.Rowguid ? "" : "disabled-action")" @onclick="() => StartAflEdit(ita)">Edit</button>
+                                                                <button class="btn btn-warning btn-sm @(!isEdingAfl && EdAflRowguid != ita.Rowguid ? "" : "disabled-action")" @onclick="() => StartAflEdit(ita)">Edit</button>
                                                             }
                                                             else
                                                             {
-                                                                <button class="btn btn-warning btn-sm @(EdAflRowguid  == ita.Rowguid ? "" : "disabled-action")" @onclick="() => ConfGafl(ita)">Confirm</button>
+                                                                <button class="btn btn-warning btn-sm @(EdAflRowguid  == ita.Rowguid ? "" : "disabled-action")" @onclick="() => ConfGafl(draftAfl)">Confirm</button>
                                                                 <button class="btn btn-danger btn-sm @(EdAflRowguid  == ita.Rowguid ? "" : "disabled-action")" @onclick="() => CancGafl(ita)">Annul</button>
                                                             }
                                                         </div>
@@ -681,6 +1006,7 @@ else if (edOrgContext != null && curOrga != null)
                                         <div class="row">
                                         <Aogcols @ref="myicols"
                                                  curOrga="@curOrga"
+                                                 orgFixes="@orgFixes"
                                                  IMyDom="@IMyDom"
                                                  EtRef="@IMyDest"
                                                  IMyGpe="IMyGpe"
@@ -825,12 +1151,17 @@ else if (edOrgContext != null && curOrga != null)
     private Task<AuthenticationState>? AuthState { get; set; }
     private ClaimsPrincipal authUser;
     private bool isAuthenticated = false;
-    private GxorgaDto curOrga = new GxorgaDto();
-    private GsgfixDto curFix = new GsgfixDto();
+    private GxorgaDto curOrga = new();
+    private List<GsgfixDto> orgFixes = new();
+    private GsgfixDto curFix = new();
     private EditContext edOrgContext;
     private EditContext edFixContext;
     public EventCallback<PendingState> OnPendingStateChanged { get; set; }
     //private EditContext edColContext;
+    
+    private Guid? DomRenderKey = null;
+    private Guid? AptRenderKey = null;
+    private Guid? AflRenderKey = null;
 
     private Aogcols myicols;
     private string colstore = "", aflcolstore = "";
@@ -842,6 +1173,9 @@ else if (edOrgContext != null && curOrga != null)
     public string _UserId = "";
     public int _UorgId = 0;
     private Userbag _usrBag = new Userbag();
+    //dictionnaires anciennes valeurs
+    private Dictionary<Guid, GxorgaDto> _origOrgGuid = new();
+    private Dictionary<Guid, GsgfixDto> _origFixGuid = new();
     //initialisat
     private List<Gpfixe> LsFixes = new();
     private List<Gpfixe> LsGties = new();
@@ -894,17 +1228,7 @@ else if (edOrgContext != null && curOrga != null)
 
     GsgfixDto newTfl = new();
 
-    //editing Org
-    bool isEdOrg = false;
 
-    bool isEdDom = false;
-    Guid? EdDomRowguid = null;
-
-    bool isEdAfl = false;
-    Guid? EdAflRowguid = null;
-
-    bool isEdApt = false;
-    Guid? EdAptRowguid = null;
 
     //bool isEdCol = false;
     //Guid? EdColRowguid = null;
@@ -915,26 +1239,40 @@ else if (edOrgContext != null && curOrga != null)
     bool isGenDelTfl = false;
     Guid? GenerRowguid = null;
 
-    //editing Dom
-    GsgfixDto? editingDom = null;
-    bool isEdingDom = false;
-    bool isDelingTdo = false;
-    //editing Apt
-    GsgfixDto? editingApt = null;
-    bool isEdingApt = false;
-    bool isDelingTpt = false;
-    //editing AFL
-    GsgfixDto? editingAfl = null;
-    bool isEdingAfl = false;
-    bool isDelingTfl = false;
 
+    //editing Orga
+    GxorgaDto? draftOrg = null;
+    bool isEdingOrg = false;
+    //editing Dom
+    Guid? EdDomRowguid = null;
+    GsgfixDto? draftDom = null;
+    bool isEdingDom = false;
+    //bool isDelingTdo = false;
+    List<GsgfixDto> MyDaDoms = new();
+    //GsgfixDto? curDom = null;
+
+    Grid<GsgfixDto> domref;
+    //editing Apt
+    Guid? EdAptRowguid = null;
+    GsgfixDto? draftApt = null;
+    bool isEdingApt = false;
+    //bool isDelingTpt = false;
+    List<GsgfixDto> MyDaApts = new();
+    //GsgfixDto? curApt = null;
+    //editing AFL
+    Guid? EdAflRowguid = null;
+    GsgfixDto? draftAfl = null;
+    bool isEdingAfl = false;
+    //bool isDelingTfl = false;
+    List<GsgfixDto> MyDaAfls = new();
+    //GsgfixDto? curAfl = null;
 
     //editing COL
     //Gsglne? editingCol = null;
     //bool isEdingCol = false;
 
     //row GFIX
-    GsgfixDto curGfix = new();
+    //GsgfixDto curGfix = new();
     Guid? GfixEdRowguid = null;
 
     //row GLNE
@@ -994,36 +1332,51 @@ else if (edOrgContext != null && curOrga != null)
             .ToList();
         //dom tiers zfro=1
         LsOcols = LsFixes.Where(uv => uv.Gvars == 65 && uv.Itb == 1).ToList();
-        var lscols = await _rendAgres.LoadOrgaColons();
+        var postesTask = _rendAgres.LoadOrgaPostes();
+        var colsTask = _rendAgres.LoadOrgaColons();
+        var rolesTask = _rendAgres.LoadOrgaRoles();
+        var tablesTask = _rendAgres.LoadOrgaTables();
+        await Task.WhenAll(postesTask, colsTask, rolesTask, tablesTask);
+        ////var lscols = await _rendAgres.LoadOrgaColons();
+        var lscols = (await colsTask).Where(tc => tc.Otyp == 2).ToList();
+        _invRoles = await rolesTask;
+        EnsTbls = await tablesTask;
         //Otyp == 1parent/2afil..4tables
         //Totyp(1cibl2oper3clie...
         //Efrm(1accu/2enrol/3suite)
         //Zfro(1tiers/2mat)
         //Ityp(2cnj3par4enf..//dans gsgfixes
-        LsPcols = lscols.Where(tc => tc.Otyp == 1).ToList();
+
+        LsPcols = lscols.Where(tc => tc.Otyp == 2).ToList();
         LsFcols = lscols.Where(tc => tc.Otyp == 2 && tc.Totyp == IMyGpe && tc.Efrm == IMyDest && tc.Btyp == IMyDom).ToList();
         //LsPcols = _usrBag.Usorga.Uvars.Where(tc => tc.Gvars == 8 && tc.Itb == 1).ToList();
         //LsFcols = _usrBag.Usorga.Uvars.Where(tc => tc.Gvars == 8 && tc.Itb == 2).ToList();
         LsAfils = _usrBag.Usorga.Uvars.Where(tc => tc.Gvars ==  3 && tc.Itb == 6 && tc.Elea != 0).ToList();
         Console.WriteLine($"Colonnes disponibles : {LsOcols.Count} ET {LsPcols.Count}");
-        _invRoles = await _rendAgres.LoadOrgaRoles();
+        ////_invRoles = await _rendAgres.LoadOrgaRoles();
         Console.WriteLine($"Roles disponibles : {_invRoles.Count}");
         //int key = _usrBag.Idorg;
         await LoadOrgaAsync(_usrBag.Idorg);
         //Console.WriteLine("LoadOrga is working");
-        EnsTbls = await _rendAgres.LoadOrgaTables();
+        ////EnsTbls = await _rendAgres.LoadOrgaTables();
         //TbItems = alltbls.SelectMany(x => x.Tbelems).ToList();
         //Console.WriteLine($"nb items : {TbItems?.Count} et {TbItems?.FirstOrDefault()?.Liba}");
         _nbChanges = _guard.GetPendingChangesCount();
-
+        //itb = rubtto
+        MyDaDoms = orgFixes.Where(utl => utl.Gvars == 21 && utl.Elea != 0).ToList();
+        //itb = 5
+        MyDaApts = orgFixes.Where(uf => uf.Gvars == 3 && uf.Itb == 5 && uf.Atyp == 1 && uf.Elea != 0).OrderBy(uo => uo.Elea).ToList();
+        //itb = 6
+        MyDaAfls = orgFixes.Where(uf => uf.Gvars == 3 && uf.Itb == 6 && uf.Atyp == 1 && uf.Elea != 0).OrderBy(uo => uo.Elea).ToList();
         // 🔥 FIXED - EditContext on UI thread
         await InvokeAsync(() =>
         {
             edOrgContext = new EditContext(curOrga ?? new GxorgaDto());
-            var firstFix = curOrga?.Gsgfixes?.FirstOrDefault() ?? new GsgfixDto { Idorg = _usrBag.Idorg };
+            var firstFix = orgFixes.FirstOrDefault() ?? new GsgfixDto { Idorg = _usrBag.Idorg };
             edFixContext = new EditContext(firstFix);
         });
         isLoading = false;
+        Console.WriteLine("ON INTIALIZED TERMINATED");
     }
     protected override void OnAfterRender(bool firstRender)
     {
@@ -1043,12 +1396,29 @@ else if (edOrgContext != null && curOrga != null)
     {
         try
         {
+            // curOrga = await _MyODaClient
+            //     .For<GxorgaDto>("Gxorgas")
+            //     .Key(key)
+            //     .Expand("Gsgfixes($select=Idorg,Elea)")
+            //     //.Select("Idorg,Raison")
+
+            //     //.Expand("Gsgfixes")
+            //     //.Expand(o => o.Gsgfixes)
+            //     .FindEntryAsync();
+            // First query: lightweight org info
             curOrga = await _MyODaClient
                 .For<GxorgaDto>("Gxorgas")
                 .Key(key)
-                .Expand("Gsgfixes")
-                //.Expand(o => o.Gsgfixes)
+                //.Select("Idorg,RowGuid,Raison")
                 .FindEntryAsync();
+
+            // Second query: load fixes only when needed
+            var msgs = await _MyODaClient
+                .For<GsgfixDto>("Gsgfixes")
+                .Filter(f => f.Idorg == key && (f.Gvars == 3 || f.Gvars == 21))
+                //.Select("Idorg, Xseq, Elea,Gp1")
+                .FindEntriesAsync();
+            orgFixes = msgs.ToList();
             Console.WriteLine($"loadOrgaAsync completed :{curOrga?.Raison}");
         }
         catch (Exception ex)
@@ -1120,7 +1490,7 @@ else if (edOrgContext != null && curOrga != null)
             }
             else
             {
-               // _guard.CancelChangesAsync();
+                // _guard.CancelChangesAsync();
                 Console.WriteLine("❌ Cancelled - staying put");
                 // Do NOT call NavigateTo here → user stays on current page
             }
@@ -1177,13 +1547,63 @@ else if (edOrgContext != null && curOrga != null)
     //EDITING Gxorga (orga)
     public async Task StartOrgEdit()
     {
+        //save original
+        var rowguid = MLEntityKeyHelper.GetRowguidAsGuid(curOrga);
+        _origOrgGuid[rowguid] = curOrga;
+        //SetRowState(rowguid, RowState.EditPending);  // Shows Confirm/Cancel buttons
         curOrga.Xedt1 = -1;  //editing
-        isEdOrg = true;
+        draftOrg = (GxorgaDto)DeepClone(curOrga);
+        isEdingOrg = true;
     }
-    public async Task CancEOrg()
+    //EDITING Gsgfix (dom)
+    void StartDomEdit(GsgfixDto myafil)
     {
-        curOrga.Xedt1 = 0;
-        isEdOrg = false;
+        //originals
+        var rowguid = MLEntityKeyHelper.GetRowguidAsGuid(myafil);
+        _origFixGuid[rowguid] = myafil;
+        Console.WriteLine($"ENTER ENTITY ROWGUID {rowguid}");
+        myafil.Xedt1 = -1; //editing
+        //.curGfix = myafil;
+        draftDom = (GsgfixDto)DeepClone(myafil);
+        EdDomRowguid = myafil.Rowguid;
+        isEdingDom = true; //pour le bouton
+    }
+    //EDITING Gsgfix (apt)
+    void StartAptEdit(GsgfixDto myapt)
+    {
+        //originals
+        var rowguid = MLEntityKeyHelper.GetRowguidAsGuid(myapt);
+        _origFixGuid[rowguid] = myapt;
+
+        myapt.Xedt1 = 0; //editing
+        draftApt = (GsgfixDto)DeepClone(myapt);
+        EdAptRowguid = myapt.Rowguid;
+        isEdingApt = true;
+    }
+    //EDITING Gsgfix (apl)
+    void StartAflEdit(GsgfixDto myafil)
+    {
+        var rowguid = MLEntityKeyHelper.GetRowguidAsGuid(myafil);
+        _origFixGuid[rowguid] = myafil;
+
+        myafil.Xedt1 = 0; //editing
+        //curGfix = myafil;
+        //if (myafil.Gvars == 21 && (myafil.Itb == 1 || myafil.Itb == 2 || myafil.Itb == 3))
+        //{ //lim
+        //    RefilGdom(myafil);
+        //}
+        // if (myafil.Gvars == 3 && myafil.Itb == 6)
+        // { //afil
+        //     ////RefilGafl(myafil);
+        // }
+        // else
+        // {
+        //     _origFixGuid.Remove(rowguid);
+        //     return;
+        // }
+        draftAfl = (GsgfixDto)DeepClone(myafil);
+        EdAflRowguid = myafil.Rowguid;
+        isEdingAfl = true;
     }
     private async Task ConfEOrg()
     {
@@ -1191,107 +1611,46 @@ else if (edOrgContext != null && curOrga != null)
 
         if (curOrga.Idorg > 0)
         {
+            //bloquer
             curOrga.Xedt1 = 0;
             var key = curOrga.Idorg; // helper to extract PK
+            curOrga = (GxorgaDto)DeepClone(draftOrg);
             await _guard.TrackUpdate("gxorgas", key, curOrga);
-             Console.WriteLine($"✏️ EXISTING GsgOrgas → TrackUpdate");
+            await OnEntitySaved(EntityOgpe.Org, curOrga);
+            Console.WriteLine($"✏️ EXISTING GsgOrgas → TrackUpdate");
             //GorgEdRowguid = null;
             Console.WriteLine("Gsgfix marked as Modified");
+            //debloquer
         }
-        isEdOrg = false;
+        isEdingOrg = false;
+        draftOrg = null;
     }
-    //EDITING Gsgfix (dom)
-    void StartDomEdit(GsgfixDto myafil)
-    {
-        myafil.Xedt1 = -1; //editing
-        curGfix = myafil;
-        if (myafil.Gvars == 21 && (myafil.Itb == 1 || myafil.Itb == 2))
-        { //lim
-            RefilGdom(myafil);
-        } 
-        // else if (myafil.Gvars == 3 && myafil.Itb == 5)
-        // { //afil
-        //     RefilGafl(myafil);
-        // } else if (myafil.Gvars == 3 && myafil.Itb == 4)
-        // { //relat tiers
-        //     RefilGrel(myafil);
-        else {
-            return;
-        }
-        isEdingDom = true;
-        isEdDom = true;
-        EdDomRowguid = myafil.Rowguid;
-        //GfixEdRowguid = myafil.Rowguid;
-    }
-    void CancGdom(GsgfixDto mytfl)
-    {
-        mytfl.Xadd1 = 0;
-        mytfl.Xedt1 = 0;
-        EmptyGdom();
-        //GfixEdRowguid = null;
-        isEdDom = false;
-        EdDomRowguid = null;
-        isEdingDom = false;
-        editingDom = null;
-        //curGfix = new();
-    }
+
     private async Task ConfGdom(GsgfixDto myfix)
     {
+        //var rowguid = MLEntityKeyHelper.GetRowguidAsGuid(myfix);
+        //Console.WriteLine($"EDITING ENTITY ROWGUID {rowguid}");
         if (myfix.Xseq > 0)
         {
             myfix.Xedt1 = 0;
             myfix.Xadd1 = 0;
             myfix.Xdel1 = 0;
             var key = myfix.Xseq; // helper to extract PK
+            //Console.WriteLine($"myfix ivala : {myfix.Ivala}");
+            //var upEnty = (GsgfixDto)DeepClone(draftDom);
+            ///Console.WriteLine($"upEnty ivala : {upEnty.Ivala}");
+            //Console.WriteLine($"SAVED ENTITY ROWGUID {upEnty.Rowguid}");
             await _guard.TrackUpdate("gsgfixes", key, myfix);
-             Console.WriteLine($"✏️ EXISTING Gsgfixes → TrackUpdate");
-            //GdomEdRowguid = null;
-            isEdDom = false;
+            await OnEntitySaved(EntityOgpe.Gdom, myfix);
+            //Console.WriteLine($"saved entity ivala : {myfix.Ivala}");
+            //Console.WriteLine($"SAVED SORTIE ROWGUID {myfix.Rowguid}");
             EdDomRowguid = null;
-
             isEdingDom = false;
-            editingDom = null;
-            Console.WriteLine("Gsgfix marked as Modified");
+            draftDom = null;
+            //Console.WriteLine("Gsgfix marked as Modified");
         }
     }
-    //EDITING Gsgfix (apt)
-    void StartAptEdit(GsgfixDto myapt)
-    {
-        myapt.Xedt1 = 0; //editing
-        //curGfix = myapt;
-        //if (myapt.Gvars == 21 && (myapt.Itb == 1 || myapt.Itb == 2 || myapt.Itb == 3))
-        //{ //lim
-        //    RefilGdom(myapt);
-        //}
-        if (myapt.Gvars == 3 && myapt.Itb == 5)
-        { //afil
-            RefilGapt(myapt);
-        }
-        else
-        {
-            return;
-        }
-        isEdingApt = true;
-        isEdApt = true;
-        EdAptRowguid = myapt.Rowguid;
 
-        //GaptEdRowguid = myapt.Rowguid;
-    }
-    void CancGapt(GsgfixDto mytfl)
-    {
-        mytfl.Xadd1 = 0;
-        mytfl.Xedt1 = 0;
-        //EmptyGapt();
-
-        //GaptEdRowguid = null;
-
-        isEdApt = false;
-        EdAptRowguid = null;
-        isEdingApt = false;
-        editingApt = null;
-        //curGapt = new();
-
-    }
     private async Task ConfGapt(GsgfixDto myfix)
     {
         if (myfix.Xseq > 0)
@@ -1301,55 +1660,13 @@ else if (edOrgContext != null && curOrga != null)
             myfix.Xdel1 = 0;
             var key = myfix.Xseq; // helper to extract PK
             await _guard.TrackUpdate("gsgfixes", key, myfix);
-             Console.WriteLine($"✏️ EXISTING Gsgfixes → TrackUpdate");
-            //GaptEdRowguid = null;
-            isEdApt = false;
+            await OnEntitySaved(EntityOgpe.Gapt, myfix);
+            //Console.WriteLine($"✏️ EXISTING Gsgfixes → TrackUpdate");
             EdAptRowguid = null;
             isEdingApt = false;
-            editingApt = null;
-            Console.WriteLine("Gsgfix marked as Modified");
+            draftApt = null;
+            //Console.WriteLine("Gsgfix marked as Modified");
         }
-    }
-
-    //EDITING Gsgfix (apl)
-    void StartAflEdit(GsgfixDto myafil)
-    {
-        myafil.Xedt1 = 0; //editing
-        //curGfix = myafil;
-        //if (myafil.Gvars == 21 && (myafil.Itb == 1 || myafil.Itb == 2 || myafil.Itb == 3))
-        //{ //lim
-        //    RefilGdom(myafil);
-        //}
-        if (myafil.Gvars == 3 && myafil.Itb == 6)
-        { //afil
-            RefilGafl(myafil);
-        }
-        else
-        {
-            return;
-        }
-        isEdingAfl = true;
-
-        isEdAfl = true;
-        EdAflRowguid = myafil.Rowguid;
-
-        //GfixEdRowguid = myafil.Rowguid;
-    }
-    void CancGafl(GsgfixDto mytfl)
-    {
-        mytfl.Xadd1 = 0;
-        mytfl.Xedt1 = 0;
-        EmptyGafl();
-
-        //GAflEdRowguid = null;
-
-        isEdAfl = false;
-        EdAflRowguid = null;
-
-        isEdingAfl = false;
-        editingAfl = null;
-        //curGAfl = new();
-
     }
 
     private async Task ConfGafl(GsgfixDto myfix)
@@ -1361,81 +1678,210 @@ else if (edOrgContext != null && curOrga != null)
             myfix.Xdel1 = 0;
             var key = myfix.Xseq; // helper to extract PK
             await _guard.TrackUpdate("gsgfixes", key, myfix);
-             Console.WriteLine($"✏️ EXISTING Gsgfixes → TrackUpdate");
-            //GaflEdRowguid = null;
-            isEdAfl = false;
+            await OnEntitySaved(EntityOgpe.Gafl, myfix);
+            //Console.WriteLine($"✏️ EXISTING Gsgfixes → TrackUpdate");
             EdAflRowguid = null;
             isEdingAfl = false;
-            editingAfl = null;
-            Console.WriteLine("Gsgfix marked as Modified");
+            draftAfl = null;
+            //Console.WriteLine("Gsgfix marked as Modified");
         }
     }
+    private async Task OnEntitySaved(EntityOgpe groupe, object entity)
+    {
+        switch (groupe)
+        {
+             case EntityOgpe.Org:
+                {
+                    var src = (GxorgaDto)entity;
+                    var target = curOrga; //MyDaOrgs.FirstOrDefault(x => x.Rowguid == src.Rowguid);
+                    if (target != null) CommitOrgDraft(target, src);
+                    await InvokeAsync(StateHasChanged);
+                    break;
+                }
+            case EntityOgpe.Gdom:
+                {
+                    var src = (GsgfixDto)entity;
+                    var target = MyDaDoms.FirstOrDefault(x => x.Rowguid == src.Rowguid);
+                    if (target != null) CommitDomDraft(target, src);
+                    await InvokeAsync(StateHasChanged);
+                    break;
+                }
+            case EntityOgpe.Gapt:
+                {
+                    var src = (GsgfixDto)entity;
+                    var target = MyDaApts.FirstOrDefault(x => x.Rowguid == src.Rowguid);
+                    if (target != null) CommitAptDraft(target, src);
+                    await InvokeAsync(StateHasChanged);
+                    break;
+                }
+            case EntityOgpe.Gafl:
+                {
+                    var src = (GsgfixDto)entity;
+                    var target = MyDaAfls.FirstOrDefault(x => x.Rowguid == src.Rowguid);
+                    if (target != null) CommitAflDraft(target, src);
+                    await InvokeAsync(StateHasChanged);
+                    break;
+                }
+        }
+    }
+    private void CommitOrgDraft(GxorgaDto target, GxorgaDto source)
+    {
+        //target.Idorg = source.Idorg; //orga
 
-    static void CopyScalarProperties<T>(T source, T target)
-    {
-        var props = typeof(T).GetProperties()
-            .Where(p => p.CanRead && p.CanWrite && 
-                        !p.PropertyType.IsClass || p.PropertyType == typeof(string));
-        foreach (var p in props)
-            p.SetValue(target, p.GetValue(source));
+        //editable fields
+        target.Raison = source.Raison;
+        target.Sigle = source.Sigle;
+        target.Stcible = source.Stcible;
+        target.Jpoint = source.Jpoint;
+        target.Kpoint = source.Kpoint;
+        target.Sijet = source.Sijet;
+        target.Rcm = source.Rcm;
+        target.Rifu = source.Rifu;
+        target.Adr = source.Adr;
+        target.Adr2 = source.Adr2;
+        target.Icity = source.Icity;
+        target.Iprovi = source.Iprovi;
+        target.Iregio = source.Iregio;
+        target.Npays = source.Npays;
+        target.Phone = source.Phone;
+        target.Whatsapp = source.Whatsapp;
+        target.Weburl = source.Weburl;
+        target.Phon2 = source.Phon2;
+        target.Email = source.Email;
+        target.Rpnom = source.Rpnom;
+        target.Rnom = source.Rnom;
+        target.Depexy = source.Depexy;
+        target.Depexm = source.Depexm;
+        target.Depexd = source.Depexd;
+        target.Prvexy = source.Prvexy;
+        target.Prvexm = source.Prvexm;
+        target.Prvexd = source.Prvexd;
+        target.Finexy = source.Finexy;
+        target.Finexm = source.Finexm;
+        target.Finexd = source.Finexd;
+
+        //target.Eta = source.Eta; //etat
     }
-    
-    void EmptyGdom()
+    private void CommitDomDraft(GsgfixDto target, GsgfixDto source)
     {
-        curGfix = new();
+        //target.Idorg = source.Idorg;
+        //target.Rowguid = source.Rowguid;
+        //target.Gvars = source.Gvars;
+        //target.Itb = source.Itb;
+        //target.Atyp = source.Atyp;
+        //target.Elea = source.Elea;
+
+        //editable fields
+        target.Ivala = source.Ivala;
+        target.Lgft = source.Lgft;
+
+        //target.Liba = source.Liba;
+        //target.Sliba = source.Sliba;
+        //target.Ityp = source.Ityp;
+        //target.Jtyp = source.Jtyp;
+        //target.Mtyp = source.Mtyp;
+        //target.Ntyp = source.Ntyp;
+        //target.Eta = source.Eta;
+        //target.Xedt1 = 0;
     }
-    void EmptyGapt()
+    private void CommitAptDraft(GsgfixDto target, GsgfixDto source)
     {
-        //curGafl = new();
+        // target.Idorg = source.Idorg;
+        // target.Rowguid = source.Rowguid;
+        // target.Gvars = source.Gvars;
+        // target.Itb = source.Itb;
+        // target.Atyp = source.Atyp;
+        // target.Elea = source.Elea;
+
+        //editable fields
+        target.Sliba = source.Sliba;
+        target.Ityp = source.Ityp;
+        target.Jtyp = source.Jtyp;
+        target.Mtyp = source.Mtyp;
+        target.Ntyp = source.Ntyp;
+        target.Jdiv = source.Jdiv;
+        target.Kdiv = source.Kdiv;
+
+        // target.Liba = source.Liba;
+        // target.Eta = source.Eta;
+        // target.Xedt1 = 0;
     }
-    void EmptyGafl()
+    private void CommitAflDraft(GsgfixDto target, GsgfixDto source)
     {
-        //curGafl = new();
+        // target.Idorg = source.Idorg;
+        // target.Rowguid = source.Rowguid;
+        // target.Gvars = source.Gvars;
+        // target.Itb = source.Itb;
+        // target.Atyp = source.Atyp;
+        // target.Elea = source.Elea;
+
+        //editable fields
+        target.Sliba = source.Sliba;
+        target.Ityp = source.Ityp;
+        target.Jtyp = source.Jtyp;
+        target.Mtyp = source.Mtyp;
+        target.Ntyp = source.Ntyp;
+
+
+        // target.Liba = source.Liba;
+        // target.Eta = source.Eta;
+        // target.Xedt1 = 0;
     }
-    void RefilGdom(GsgfixDto myfix) //dom
+    //cancelation
+    public async Task CancEOrg()
     {
-        curGfix = new GsgfixDto
+        curOrga.Xedt1 = 0;
+        // restore original back into curOrga
+        Imessage = "Annulation Institution en cours...";
+        var rowguid = MLEntityKeyHelper.GetRowguidAsGuid(curOrga);
+        if (_origOrgGuid.TryGetValue(rowguid, out var original))
         {
-            Liba = myfix.Liba,
-            Sliba = myfix.Sliba,
-            Abg = myfix.Abg,
-            Ityp = myfix.Ityp,
-            Jtyp = myfix.Jtyp,
-            Mtyp = myfix.Mtyp,
-            Ntyp = myfix.Ntyp,
-            Eta = myfix.Eta,
-        };
+            Imessage = "Annulation effectuee";
+            curOrga = original;
+        }
+        draftOrg = null;
+        isEdingOrg = false;
+        await InvokeAsync(StateHasChanged);
     }
-    void RefilGapt(GsgfixDto myfix) //afil
+    private async Task CancGdom(GsgfixDto mytfl)
     {
-        curGfix = new GsgfixDto
+        // restore original back into curOrga
+        var rowguid = MLEntityKeyHelper.GetRowguidAsGuid(mytfl);
+        if (_origFixGuid.TryGetValue(rowguid, out var original))
         {
-            Liba = myfix.Liba,
-            Sliba = myfix.Sliba,
-            Abg = myfix.Abg,
-            Ityp = myfix.Ityp,
-            Jtyp = myfix.Jtyp,
-            Mtyp = myfix.Mtyp,
-            Ntyp = myfix.Ntyp,
-            Eta = myfix.Eta,
-        };
+            mytfl = original;
+        }
+        EdDomRowguid = null;
+        isEdingDom = false;
+        draftDom = null;
+        await InvokeAsync(StateHasChanged);
     }
-    void RefilGafl(GsgfixDto myfix) //afil
+    private async Task CancGapt(GsgfixDto mytfl)
     {
-        curGfix = new GsgfixDto
-        {   
-            Liba = myfix.Liba,
-            Sliba = myfix.Sliba,
-            Abg = myfix.Abg,
-            Ityp = myfix.Ityp,
-            Jtyp = myfix.Jtyp,
-            Mtyp = myfix.Mtyp,
-            Ntyp = myfix.Ntyp,
-            Eta = myfix.Eta,
-        };
+        // restore original back into curOrga
+        var rowguid = MLEntityKeyHelper.GetRowguidAsGuid(mytfl);
+        if (_origFixGuid.TryGetValue(rowguid, out var original))
+        {
+            mytfl = original;
+        }
+        EdAptRowguid = null;
+        isEdingApt = false;
+        draftApt = null;
+        await InvokeAsync(StateHasChanged);
     }
-    
-   
+    private async Task CancGafl(GsgfixDto mytfl)
+    {
+        // restore original back into curOrga
+        var rowguid = MLEntityKeyHelper.GetRowguidAsGuid(mytfl);
+        if (_origFixGuid.TryGetValue(rowguid, out var original))
+        {
+            mytfl = original;
+        }
+        EdAflRowguid = null;
+        isEdingAfl = false;
+        draftAfl = null;
+        await InvokeAsync(StateHasChanged);
+    }
     // GENERATION
     private async Task PromptAddOneGener(GsgfixDto myacol)
     {
@@ -1457,14 +1903,7 @@ else if (edOrgContext != null && curOrga != null)
         GenerRowguid = myacol.Rowguid;
         isGenAddTfl = true;
     }
-          
-    private async Task CncOneGener(GsgfixDto myacol)
-    {
-        myacol.Xgen1 = 0;
-        mesAflGen = new MarkupString("");
-        GenerRowguid = null;
-        isGenAddTfl = false;
-    }
+
     //DELETION
     private async Task PromptDelOneGener(GsgfixDto myacol)
     {
@@ -1507,6 +1946,20 @@ else if (edOrgContext != null && curOrga != null)
         GenerRowguid = null;
         isGenDelTfl = false;
     }
+    private async Task CncOneGener(GsgfixDto myacol)
+    {
+        // restore original back into curOrga
+        var rowguid = MLEntityKeyHelper.GetRowguidAsGuid(myacol);
+        if (_origFixGuid.TryGetValue(rowguid, out var original))
+        {
+            myacol = original;
+        }
+
+        myacol.Xgen1 = 0;
+        mesAflGen = new MarkupString("");
+        GenerRowguid = null;
+        isGenAddTfl = false;
+    }
     private async Task CncDelOneGener(GsgfixDto myacol)
     {
         myacol.Xgen1 = 0;
@@ -1514,15 +1967,19 @@ else if (edOrgContext != null && curOrga != null)
         GenerRowguid = null;
         isGenDelTfl = false;
     }
-       
+
     public async Task SavAllAsync()
     {
+        _origOrgGuid.Clear();
+        _origFixGuid.Clear();
         await _guard.FlushAsync();
         NavigateBack();
     }
     public async ValueTask DisposeAsync()
     {
         Console.WriteLine("🧹 Component cleaning up");
+        _origOrgGuid.Clear();
+        _origFixGuid.Clear();
         _guard.CancelChanges(); // clears pending ops
         await _guard.DisposeAsync();
     }
@@ -1531,6 +1988,16 @@ else if (edOrgContext != null && curOrga != null)
     {
         if (noT == 0) tbTitle = "Cible";
         if (noT > 0) tbTitle = stTitle;
+    }
+    private object DeepClone(object entity)
+    {
+        var settings = new JsonSerializerSettings
+        {
+            ReferenceLoopHandling = ReferenceLoopHandling.Ignore
+        };
+
+        var json = JsonConvert.SerializeObject(entity, settings);
+        return JsonConvert.DeserializeObject(json, entity.GetType(), settings)!;
     }
     private void OnCheckboxChanged(Microsoft.AspNetCore.Components.ChangeEventArgs e, GstablDto scol, string propertyName)
     {
@@ -1585,7 +2052,13 @@ else if (edOrgContext != null && curOrga != null)
         }
     }
     
-    
+    public enum EntityOgpe
+    {
+        Org,
+        Gdom,
+        Gapt,
+        Gafl
+    }
     private async Task Save()
     {
         await _guard.FlushAsync();  // ✅ Parallel batch saves
@@ -1638,7 +2111,7 @@ else if (edOrgContext != null && curOrga != null)
     //         GfixEdRowguid = null;
     //         myfix.Xadd1 = 0;
     //         isEdingAfl = false;
-    //         editingAfl = null;
+    //         draftAfl = null;
     //         Console.WriteLine("Gsgfix marked as Modified");
     //     }
     // }

@@ -15,6 +15,7 @@
 @using Blazored.LocalStorage
 @using GxPilo.Services
 @using GxShared.Helpers
+@using GxShared.Helpers.CrudHelpers
 @using GxShared.Sess
 @using Simple.OData.Client
 @using GxShared.GxDtos
@@ -107,7 +108,7 @@ else
                             {
                                 <Grid TItem="GsgfixDto"
                                 Data="@MyDaDocus"
-                                @key="FixeRenderKey"
+                                @key="FixRenderKey"
                                 AllowDetailView="true"
                                 AllowPaging="true"
                                 RowClass="@((item) => GetPlnRowClass(item))"
@@ -227,6 +228,16 @@ else
                                                         <span class="text-muted">—</span>
                                                         break;
 
+                                                    case RowState.AddPending:
+                                                        <Button Color="ButtonColor.Success" Size="ButtonSize.Small"
+                                                                @onclick="() => ConfirmAdd(EntityLevel.Plan, draftFix)">
+                                                            ✅ Confirm
+                                                        </Button>
+                                                        <Button Color="ButtonColor.Success" Size="ButtonSize.Small"
+                                                                @onclick="() => StartCancelAdd(EntityLevel.Plan, draftFix)">
+                                                            ❌ Cancel
+                                                        </Button>
+                                                        break;
                                                     case RowState.DeletePending:
                                                         <Button Color="ButtonColor.Danger" Size="ButtonSize.Small"
                                                         @onclick="() => ConfirmDelete(item, EntityLevel.Plan)">
@@ -428,6 +439,8 @@ else
     [Parameter]
     public GxorgaDto curOrga { get; set; } = new();
     [Parameter]
+    public List<GsgfixDto> orgFixes { get; set; } = new();
+    [Parameter]
     public ChildVars toChild { get; set; }
     [Parameter]
     public int toMenu { get; set; }
@@ -485,9 +498,9 @@ else
         [2] = "Pieces",
         //[3] = "Sessions"
     };
- 
+
     private bool isFixFilteringEnabled = false;
-  
+
     //Global
     private int _lgcdu = 0;
     //private int ITyDoc = 1; //1Actes
@@ -504,12 +517,12 @@ else
     private string atrTitle = "";
 
     //data
-    private ObservableCollection<GsgfixDto> MyDaDocus { get; set; } = new();
+    private List<GsgfixDto> MyDaDocus { get; set; } = new();
     //add/edit options
     private bool AllowMultipleEdits { get; set; } = false;
     private bool isFiltre { get; set; } = false;
     //FIX
-    private Guid? FixeRenderKey = null;
+    private Guid? FixRenderKey = null;
     private Dictionary<Guid, GsgfixDto> _edFixOriginals = new();
     private GsgfixDto? draftFix = null;
     private bool isAddFix = false;
@@ -549,20 +562,21 @@ else
             //var noslims = LsVars.Where(uv => uv.Idhie == 0 && uv.Gvars == 21 && uv.Itb == 1 && uv.Elea == 1);
             //if (noslims.Any()) _lgcdu = noslims.FirstOrDefault().Ivala;
             //ChargeParentData;
-            Console.WriteLine($"Child init: Gsgfixes={curOrga.Gsgfixes?.Count ?? 0}");
+            ////await connection.StartAsync();
+            Console.WriteLine($"Child init: Gsgfixes={orgFixes?.Count ?? 0}");
 
             // 🔥 SAFE - Only initialize if Gsgfixs EXISTS
-            if (curOrga.Gsgfixes != null && curOrga.Gsgfixes.Any())
+            if (orgFixes != null && orgFixes.Any())
             {
-                MyDaDocus = new ObservableCollection<GsgfixDto>(curOrga.Gsgfixes
+                MyDaDocus = orgFixes
                     .Where(uv => uv.Gvars == 3 && uv.Itb == 1 && uv.Elea >= 1)
-                    .ToList());
-                Console.WriteLine($"Gsgfixes loaded: {curOrga.Gsgfixes.Count}");
+                    .ToList();
+                Console.WriteLine($"Gsgfixes loaded: {orgFixes.Count}");
             }
             else
             {
                 Console.WriteLine("Gsgfixes null/empty - initializing empty collections");
-                MyDaDocus = new ObservableCollection<GsgfixDto>();
+                MyDaDocus = new();
             }
             atrTitle = "Saisie";
         }
@@ -619,7 +633,7 @@ else
         {//docP
             newDoc = new GsgfixDto
             {
-            //Rowguid = Guid.NewGuid(),
+                //Rowguid = Guid.NewGuid(),
                 Rowguid = Guid.NewGuid(),
                 Idorg = curOrga.Idorg, //pere Id
                 Iui = lsnb,
@@ -645,9 +659,9 @@ else
         draftFix = (GsgfixDto)DeepClone(newDoc);
         EdFixRowguid = draftFix.Rowguid;
         isAddFix = true;
-        isEdtFix = true;
-        SetRowState(draftFix.Rowguid, RowState.EditPending);  // Shows Confirm/Cancel ✓
-        FixeRenderKey = draftFix.Rowguid;
+        isEdtFix = false;
+        //SetRowState(draftFix.Rowguid, RowState.EditPending);  // Shows Confirm/Cancel ✓
+        FixRenderKey = draftFix.Rowguid;
         //Console.WriteLine($"✅ New row added to curOrga.Gsgfixes - Count: {curOrga.Gsgfixes.Count}");
         StartRowEdit(draftFix.Rowguid, EntityLevel.Plan);
         StateHasChanged();
@@ -686,7 +700,7 @@ else
 
     // ✅ 2.2 CANCEL OPERATIONS
     private async Task CancelDocuEdit(GsgfixDto item) =>
-        await UnifiedEditAction(item, false, EntityLevel.Plan);
+        await UnifiedEditAction(item, true, EntityLevel.Plan);
 
     private async Task UnifiedEditAction(object item, bool isConfirm, EntityLevel level)
     {
@@ -707,7 +721,7 @@ else
     where T : class
     {
         Console.WriteLine($"🔄 Process{typeof(T).Name}: {(isConfirm ? "CONFIRM" : "CANCEL")}");
-    
+
         if (entity == null)
         {
             Imessage = "entity nulle";
@@ -719,7 +733,7 @@ else
         {
             // 🔥 1. Copy draft → entity (for validation)
             CopyDraftToGridItem(entity);
-        
+
             // 🔥 2. VALIDATE (now has updated values)
             if (!validate(entity))
             {
@@ -727,7 +741,7 @@ else
                 StateHasChanged();
                 return;
             }
-        
+
             // 🔥 3. NEW vs EXISTING (SINGLE operation)
             bool isNew = GetXadd1(entity) == -1;  // Assumes GetXadd1<T>
             if (isNew)
@@ -741,10 +755,10 @@ else
                 await _guard.TrackUpdate(entitySet, key, entity);
                 Console.WriteLine($"✏️ EXISTING {typeof(T).Name} → TrackUpdate");
             }
-        
+
             // 🔥 4. Confirm flags ONCE
             SetFlags(entity, 0, -1, 0);  // Xadd1=0 confirmed
-        
+
             // 🔥 6. UI + notify
             var rowguid = GetRowguid(entity);  // Generic helper
             ResetRowState(rowguid);
@@ -795,15 +809,15 @@ else
     // Remove from parent collection
     private void RemoveFromParentCollection<T>(T entity)
     {
-        // Gsgfix: top-level
-        // // if (entity is Gsgfix pln && MyDaDocus.Any(p => p.Rowguid == pln.Rowguid))
-        // //     MyDaDocus.Remove(pln);
-        // // // Rubvar: parent Gsgfixes.Rubvars
-        // // else if (entity is Rubvar rub)
-        // // {
-        // //     var parent = MyDaDocus.FirstOrDefault(p => p.Xseq == rub.Ipln);
-        // //     parent?.Rubvars?.Remove(rub);
-        // // }
+        //Gsgfix: top-level
+        if (entity is GsgfixDto pln && MyDaDocus.Any(p => p.Rowguid == pln.Rowguid))
+            MyDaDocus.Remove(pln);
+        // Rubvar: parent Gsgfixes.Rubvars
+        // else if (entity is RubvarDto rub)
+        // {
+        //     var parent = MyDaDocus.FirstOrDefault(p => p.Xseq == rub.Ipln);
+        //     parent?.Rubvars?.Remove(rub);
+        // }
     }
     // private async Task MarkAsModified<T>(T item, string entitySet) where T : class
     // {
@@ -911,7 +925,7 @@ else
         EdFixRowguid = null;
         DlFixRowguid = null;
 
-        FixeRenderKey = Guid.NewGuid();  // Force grid refresh
+        FixRenderKey = Guid.NewGuid();  // Force grid refresh
         StateHasChanged();
     }
     // ✅ 3. NOTIFICATIONS
@@ -958,6 +972,12 @@ else
     }
 
     private void SetDeleteFlags(object item) => SetFlags(item, 0, 0, -1);
+    // SINGLE method handles ALL confirm operations
+    private async Task ConfirmAdd<T>(EntityLevel level, T item) where T : class
+    {
+        await UnifiedEditAction(item, true, level);
+        EndRowEdit();  // Close single edit mode
+    }
 
     // SINGLE method handles ALL confirm operations
     private async Task ConfirmEdit<T>(T item, EntityLevel level) where T : class
@@ -966,8 +986,39 @@ else
         EndRowEdit();  // Close single edit mode
     }
     // SINGLE method handles ALL cancel operations
+    private async Task StartCancelAdd<T>(EntityLevel level, T item) where T : class
+    {
+        //Console.WriteLine("CancelAdding");
+        var rowguid = MLEntityKeyHelper.GetRowguidAsGuid(item);
+        try
+        {
+            // Console.WriteLine($"Before MyDaDocus {MyDaDocus.Count} et rowguid {rowguid}");
+            // foreach (var udoc in MyDaDocus)
+            // {
+            //     Console.WriteLine($"Rowguid in MyDaDocus: {udoc.Rowguid}");
+            // }
+            MyDaDocus.RemoveAll(x => x.Rowguid == rowguid);
+            // Console.WriteLine($"After MyDaDocus {MyDaDocus.Count} et rowguid {rowguid}");
+            // Console.WriteLine($"Before Gsgfixes {curOrga.Gsgfixes.Count} et rowguid {rowguid}");
+            orgFixes.RemoveAll(x => x.Rowguid == rowguid);
+            //Console.WriteLine($"After Gsgfixes {orgFixes.Count} et rowguid {rowguid}");
+            EndRowEdit();
+            FixRenderKey = null;
+        }
+        catch(Exception ex)
+        {
+            Console.WriteLine($"erreur message {ex.Message}");
+        }
+        await InvokeAsync(StateHasChanged);
+        // if (_origOrgGuid.TryGetValue(rowguid, out var original))
+        // {
+        //     Imessage = "Annulation effectuee";
+        //     curGfixe = original;
+        // }
+    }
     private async Task CancelEdit<T>(T item, EntityLevel level) where T : class
     {
+        Console.WriteLine("CancelEditing");
         await UnifiedEditAction(item, false, level);
         EndRowEdit();  // Close single edit mode
     }
@@ -1118,17 +1169,17 @@ else
     {
         if (xdom == 1 || xdom == 2)
         {
-            MyDaDocus = new ObservableCollection<GsgfixDto>(curOrga.Gsgfixes
+            MyDaDocus = orgFixes
               .Where(uv => uv.Gvars == 3 && uv.Itb == xdom && uv.Elea >= 1)
-              .ToList());
+              .ToList();
         } else if (xdom == 3)
         {
-            MyDaDocus = new ObservableCollection<GsgfixDto>(curOrga.Gsgfixes
+            MyDaDocus = orgFixes
               .Where(uv => uv.Gvars == 41 && uv.Itb == 1 && uv.Elea != 0)
-              .ToList());
+              .ToList();
         } else
         {
-           MyDaDocus = new ObservableCollection<GsgfixDto>();
+           MyDaDocus = new();
         }
         Console.WriteLine($"Nb. documents : {MyDaDocus.Count}");
         StateHasChanged();

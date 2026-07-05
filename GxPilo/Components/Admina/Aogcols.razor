@@ -10,7 +10,6 @@
 
 @using Newtonsoft.Json;
 
-@using Simple.OData.Client
 @using GxShared.GxDtos
 
 @inject HttpClientService _clieManager
@@ -19,7 +18,7 @@
     <div class="card-header">
         @if(!string.IsNullOrEmpty(Imessage))
         {
-            <label>@Imessage</label>
+            <span class="bg-info bg-opacity-10" style="font-style:italic;color:red">&nbsp;--> @Imessage</span>
         }
     </div>
     <div class="card-body">
@@ -50,8 +49,9 @@
                 </GridColumn>
                 <GridColumn TItem="LSelCol" HeaderText="Adaptee">
                     <HeaderContent>
+
                         <span>Adaptee</span> &nbsp;
-                        <button class="btn btn-primary mt-2"
+                        <button class="btn btn-primary mt-2" style="@(!isSaving ? "" : "disabled-action")"
                                 @onclick="SavePrefParent">
                             Save
                         </button>
@@ -65,6 +65,12 @@
         @* @if(IMyGpe == 1)
         { *@
         <div>
+            <div class="card-header">
+                @if (!string.IsNullOrEmpty(Jmessage))
+                {
+                    <span class="bg-info bg-opacity-10" style="font-style:italic;color:red">&nbsp;--> @Imessage</span>
+                }
+            </div>
             <label class="fw-bold">Affilié :</label>
             <InputSelect @bind-Value="IMyAfl" @bind-Value:after="ChargeAflCols">
                 <option value=0>chx?</option>
@@ -95,7 +101,7 @@
                     <GridColumn TItem="LSelCol" HeaderText="Adaptee">
                         <HeaderContent>
                             <span>Adaptee</span> &nbsp;
-                            <button class="btn btn-primary mt-2"
+                            <button class="btn btn-primary mt-2" style="@(!isSaving ? "" : "disabled-action")"
                                     @onclick="SavePrefAfil">
                                 Save
                             </button>
@@ -108,12 +114,19 @@
         @* } *@
     </div>
 </div>
-
+<style>
+    .disabled-action {
+        pointer-events: none;
+        opacity: 0.5;
+    }
+</style>
 @code {
     [Parameter]
     public IODataClient _InODaClient { get; set; }
     [Parameter]
     public GxorgaDto curOrga { get; set; }
+    [Parameter]
+    public List<GsgfixDto> orgFixes { get; set; }
     [Parameter]
     public int IMyDom { get; set; } = 0; //1tiers2mati
     [Parameter]
@@ -136,8 +149,9 @@
     public int IMyAfl { get; set; } = 0; //1cnj2par3enf4pair
     public List<LSelCol> Columns { get; set; } = new();
     public List<LSelCol> AflColumns { get; set; } = new();
-    private string Imessage = "";
-
+    private string Imessage = "", Jmessage = "";
+    private bool isSaving = false;
+ 
     protected override async Task OnInitializedAsync()
     {
         //Zfro(1tiers/2mat)
@@ -200,20 +214,30 @@
     }
     private async Task SavePrefParent()
     {
+        isSaving = true;
         var serialized = ColsPreferences.SerializePreferences(Columns);
         await OnOptcolsSave(serialized, 1, 0);
+        Imessage = "Succes Colonnes Base options saved ";
+        isSaving = false;
+        StateHasChanged();
     }
     private async Task SavePrefAfil()
     {
+        isSaving = true;
         var serialized = ColsPreferences.SerializePreferences(AflColumns);
         await OnOptcolsSave(serialized, 2, IMyAfl);
+        Jmessage = "Succes Colonnes Affilie options saved ";
+        isSaving = false;
+        StateHasChanged();
     }
     private async Task OnOptcolsSave(string svcolos, int curItb, int inAfl)
     {
         ColsToSave ctosave = new();
         ctosave.Idorg = curOrga.Idorg;
-        ctosave.Zfro = IMyDom; //1tiers/2mat
-        ctosave.Otyp = curItb; //1princ/2afil
+        ctosave.Btyp = IMyDom; //1tiers/2mat
+        ctosave.Otyp =  2; //colonnes
+        ctosave.Styp = curItb; //1princ/2afil
+        ctosave.Tref = 0;
         //ctosave.Itb = curItb; //1princ/2afil
         if (curItb == 2)
         {
@@ -229,9 +253,8 @@
             "AuthClient",
             HttpMethod.Post,
             "regis/save-cols", ctosave);
-        Imessage = "Succes Colonnes options saved ";
         //operecipientsSaved = true;
-        StateHasChanged();
+        //StateHasChanged();
         await Task.Delay(1);
     }
 
@@ -258,7 +281,7 @@
             });
         }
         string storecolsCible = ColsPreferences.SerializePreferences(nwlscolsCible);
-        var curGsg = curOrga.Gsgfixes.FirstOrDefault(gs => gs.Xseq == mygtie.Xseq);
+        var curGsg = orgFixes.FirstOrDefault(gs => gs.Xseq == mygtie.Xseq);
         if (curGsg != null)
         {
             //efrm=1accu/1er formulaire

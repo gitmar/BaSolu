@@ -15,6 +15,7 @@
 @using Blazored.LocalStorage
 @using GxPilo.Services
 @using GxShared.Helpers
+@using GxShared.Helpers.CrudHelpers
 @using GxShared.Sess
 @using Simple.OData.Client
 @using GxShared.GxDtos
@@ -217,6 +218,17 @@ else
                                                 {
                                                     case RowState.Locked:
                                                         <span class="text-muted">—</span>
+                                                        break;
+                                                    
+                                                    case RowState.AddPending:
+                                                        <Button Color="ButtonColor.Success" Size="ButtonSize.Small"
+                                                                @onclick="() => ConfirmAdd(EntityLevel.Plan, draftFix)">
+                                                            ✅ Confirm
+                                                        </Button>
+                                                        <Button Color="ButtonColor.Success" Size="ButtonSize.Small"
+                                                                @onclick="() => StartCancelAdd(EntityLevel.Plan, draftFix)">
+                                                            ❌ Cancel
+                                                        </Button>
                                                         break;
 
                                                     case RowState.DeletePending:
@@ -642,8 +654,8 @@ else
     private string atrTitle = "";
 
     //data
-    private ObservableCollection<GstablDto> MyDaRubrs { get; set; } = new();
-    private ObservableCollection<GstablDto> MyDaChlds { get; set; } = new();
+    private List<GstablDto> MyDaRubrs { get; set; } = new();
+    private List<GstablDto> MyDaChlds { get; set; } = new();
     //add/edit options
     private bool AllowMultipleEdits { get; set; } = false;
     private bool isFiltre { get; set; } = false;
@@ -711,18 +723,15 @@ else
             if (curOrga.Gstabls != null && curOrga.Gstabls.Any())
             {
                 // Parent collection: Rubrics - otyp1tables - tenr1base
-                MyDaRubrs = new ObservableCollection<GstablDto>(
-                    curOrga.Gstabls
+                MyDaRubrs = curOrga.Gstabls
                         .Where(uv => (uv.Otyp == 1 || uv.Otyp == 2) && uv.Tenr == 1)
-                        .ToList()
-                //Otyp:1tiers2mat
-                );
+                        .ToList();
                 // Console.WriteLine($"Gstabls loaded: {curOrga.Gstabls.Count}");
                 var testa = MyDaRubrs?.FirstOrDefault();
                 Console.WriteLine($"Rubrics loaded: {MyDaRubrs?.Count} / etG {testa?.Gtyp} etB {testa?.Btyp}");
 
                 // Child collection: linked to Rubrics - otyp1tables - tenr2base
-                MyDaChlds = new ObservableCollection<GstablDto>();
+                MyDaChlds = new();
                 foreach (var iru in MyDaRubrs)
                 {
                     var children = curOrga.Gstabls
@@ -739,8 +748,8 @@ else
             else
             {
                 Console.WriteLine("Gstabls null/empty - initializing empty collections");
-                MyDaRubrs = new ObservableCollection<GstablDto>();
-                MyDaChlds = new ObservableCollection<GstablDto>();
+                MyDaRubrs = new();
+                MyDaChlds = new();
             }
             //Console.WriteLine($"elements tables{MyDaChlds.Count()}");
             atrTitle = "Saisie";
@@ -805,7 +814,7 @@ else
         EdFixRowguid = draftFix.Rowguid;
         isAddFix = true;
         isEdtFix = true;
-        SetRowState(draftFix.Rowguid, RowState.EditPending);  // Shows Confirm/Cancel ✓
+        //SetRowState(draftFix.Rowguid, RowState.EditPending);  // Shows Confirm/Cancel ✓
         FixRenderKey = draftFix.Rowguid;
         //Console.WriteLine($"✅ New row added to curOrga.Gstabls - Count: {curOrga.Gstabls.Count}");
         StartRowEdit(draftFix.Rowguid, EntityLevel.Plan);
@@ -902,15 +911,20 @@ else
         StateHasChanged();
     }
     // ✅ 2.1 CONFIRM OPERATIONS
+    private async Task ConfirmAdd<T>(EntityLevel level, T item) where T : class
+    {
+        await UnifiedEditAction(item, true, level);
+        EndRowEdit();  // Close single edit mode
+    }
     private async Task ConfirmDocuEdit(GstablDto item) =>
         await UnifiedEditAction(item, true, EntityLevel.Plan);
     private async Task ConfirmChlEdit(GstablDto item) =>
         await UnifiedEditAction(item, true, EntityLevel.Rub);
     // ✅ 2.2 CANCEL OPERATIONS
     private async Task CancelDocuEdit(GstablDto item) =>
-        await UnifiedEditAction(item, false, EntityLevel.Plan);
+        await UnifiedEditAction(item, true, EntityLevel.Plan);
     private async Task CancelChlEdit(GstablDto item) =>
-        await UnifiedEditAction(item, false, EntityLevel.Rub);
+        await UnifiedEditAction(item, true, EntityLevel.Rub);
 
     private async Task UnifiedEditAction(object item, bool isConfirm, EntityLevel level)
     {
@@ -1293,6 +1307,29 @@ else
         EndRowEdit();  // Close single edit mode
     }
     // SINGLE method handles ALL cancel operations
+    private async Task StartCancelAdd<T>(EntityLevel level, T item) where T : class
+    {
+        //Console.WriteLine("CancelAdding");
+        var rowguid = MLEntityKeyHelper.GetRowguidAsGuid(item);
+        try
+        {
+
+            MyDaRubrs.RemoveAll(x => x.Rowguid == rowguid);
+            curOrga.Gstabls.RemoveAll(x => x.Rowguid == rowguid);
+            EndRowEdit();
+            FixRenderKey = null;
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"erreur message {ex.Message}");
+        }
+        await InvokeAsync(StateHasChanged);
+        // if (_origOrgGuid.TryGetValue(rowguid, out var original))
+        // {
+        //     Imessage = "Annulation effectuee";
+        //     curGfixe = original;
+        // }
+    }
     private async Task CancelEdit<T>(T item, EntityLevel level) where T : class
     {
         await UnifiedEditAction(item, false, level);

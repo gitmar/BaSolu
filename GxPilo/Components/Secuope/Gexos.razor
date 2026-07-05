@@ -206,6 +206,8 @@
     [Parameter] 
     public GxorgaDto curOrga { get; set; }
     [Parameter]
+    public List<GsgfixDto> orgFixes { get; set; }
+    [Parameter]
     public int Orig { get; set; }
     [Parameter] 
     public ChildVars toChild { get; set; }
@@ -259,7 +261,7 @@
             //LsDoms = LsFixes.Where(ut => ut.Gvars == 36 && ut.Itb == 4 && ut.Gp1 == 3 && ut.Elea != 0).ToList();
             //LsSites = toChild.LsSites;
             //_lgcdu = 3;
-            DaExos = curOrga?.Gsgfixes.Where(f => f.Gvars == 11).ToList();
+            DaExos = orgFixes.Where(f => f.Gvars == 11).ToList();
         }
         catch (Exception ex)
         {
@@ -302,7 +304,7 @@
 
     private async Task DeleteAttribute(GsgfixDto atr)
     {
-        curOrga.Gsgfixes.Remove(atr);
+        orgFixes.Remove(atr);
 
         // Register delete with OData context
         // Extract PK using your helper
