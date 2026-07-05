@@ -14,7 +14,7 @@
 @using Microsoft.AspNetCore.Components.Forms
 @using System.Text.RegularExpressions
 @using System.Security.Claims
-@using GxPilo.Components.Plans
+@using GxPilo.Components.Uifrags
 @using GxPilo.Services
 @using BlazorBootstrap
 @using Blazored.LocalStorage
@@ -63,10 +63,17 @@ else
                         <option value=0>?domaine</option>
                         @foreach (var tob in LsDoms)
                         {
-                            <option value=@tob.Gp2>@tob.Liba</option>
+                            <option value=@tob.Elea>@tob.Liba</option>
                         }
                     </InputSelect>
-
+                    <label class="me-2">Attribut :</label>
+                    <InputSelect @bind-Value="IMyAtr" class="me-3" style="width:auto">
+                        <option value=0>?attribut</option>
+                        @foreach (var tob in LsAtrs)
+                        {
+                            <option value=@tob.Elea>@tob.Liba</option>
+                        }
+                    </InputSelect>
                     <label class="fw-bold">Base :</label>
                     <InputSelect @bind-Value="IMyVue" class="me-3" style="width:auto">
                         <option value=0>?util</option>
@@ -94,7 +101,7 @@ else
                             }
                         </div>
                         <div class="row">
-                            @if (IMyDom != 0 && IMyVue != 0)
+                            @if (isPlnVisible)
                             {
                                 <Grid TItem="PlngenDto"
                                       Data="@MyDaPlans"
@@ -165,7 +172,7 @@ else
                                         </GridColumn>
                                         <GridColumn TItem="PlngenDto" HeaderText="Eta">
                                             <HeaderContent>
-                                                @if (IMyDom != 0 && IMyVue != 0)
+                                                @if (isPlnVisible)
                                                 {
                                                     <button class="btn btn-primary btn-sm @(IsLevelBusy(EntityLevel.Plan) ? "disabled-action" : "")"
                                                             disabled="@IsLevelBusy(EntityLevel.Plan)"
@@ -954,29 +961,42 @@ else
     //Global
     private int _lgcdu = 0;
     private int IMyGpln = 5; //5Programme
-    //private int IMyDom = 3; //3Compta4Cumul
-    //private int IMyVue = 1; //1Reel2Virtuel
+    private int IMyDom = 0; //3Compta4Cumul
+    private int IMyAtr = 0; //1Tiers2Matiere
+    private int IMyVue = 0; //1Base2Virtuel3Geogr
     private int IMyCtprog = 0, IMyCtrub = 0;
-    private int _myDom = 3; //3Compta4Cumul
-    public int IMyDom
-    {
-        get => _myDom;
-        set
-        {
-            _myDom = value;
-            //curPlanDom(value);
-        }
-    }
-    private int _myVue = 1; //1Reel2Virtuel
-    public int IMyVue
-    {
-        get => _myVue;
-        set
-        {
-            _myVue = value;
-            curPlanVue(value);
-        }
-    }
+
+    private bool isPlnVisible => IMyDom != 0 && IMyAtr != 0 && IMyVue != 0;
+    // private int _myDom = 3; //3Compta4Cumul
+    // public int IMyDom
+    // {
+    //     get => _myDom;
+    //     set
+    //     {
+    //         _myDom = value;
+    //         //curPlanDom(value);
+    //     }
+    // }
+    // private int _myAtr = 1; //1Compta2Cumul
+    // public int IMyAtr
+    // {
+    //     get => _myAtr;
+    //     set
+    //     {
+    //         _myAtr = value;
+    //         //curPlanAtr(value);
+    //     }
+    // }
+    // private int _myVue = 1; //1Reel2Virtuel
+    // public int IMyVue
+    // {
+    //     get => _myVue;
+    //     set
+    //     {
+    //         _myVue = value;
+    //         curPlanVue(value);
+    //     }
+    // }
 
     //author
     private ClaimsPrincipal authUser;
@@ -1068,9 +1088,9 @@ else
             }
             LsVars = toChild.LsVars;
             LsFixes = toChild.LsFixes;
-            LsDoms = LsFixes.Where(ut => ut.Gvars == 36 && ut.Itb == 4 && ut.Gp1 == 3 && ut.Elea != 0).ToList();
-            LsAtrs = LsFixes.Where(ut => ut.Gvars == 36 && ut.Itb == 1 && ut.Gp1 == 3 && ut.Elea != 0).ToList();
-            LsVues = LsFixes.Where(ut => ut.Gvars == 36 && ut.Itb == 4 && ut.Gp1 == 4 && ut.Elea != 0).ToList();
+            LsDoms = LsFixes.Where(ut => ut.Gvars == 36 && ut.Itb == 2 && ut.Gp1 == 1 && ut.Elea != 0).ToList();
+            LsAtrs = LsFixes.Where(ut => ut.Gvars == 36 && ut.Itb == 4 && ut.Gp1 == 3 && ut.Elea != 0).ToList();
+            LsVues = LsFixes.Where(ut => ut.Gvars == 36 && ut.Itb == 4 && ut.Gp1 == 6 && ut.Elea != 0).ToList();
             LsGties = LsFixes.Where(ut => ut.Gvars == 36 && ut.Itb == 6 && ut.Elea != 0 && ut.Elea != 9).ToList();
             LsPlans = toChild.LsPlans;
             _lgcdu = 3;

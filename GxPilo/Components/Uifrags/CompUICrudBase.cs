@@ -3,13 +3,15 @@ using System.Security.Cryptography;
 
 using BlazorBootstrap;
 
+using GxPilo.Components.Plans;
+
 using GxShared.GxDtos;
 using GxShared.Helpers;
 using GxShared.Helpers.CrudHelpers;
 using GxShared.Interfaces;
 using GxShared.Sess;
 
-namespace GxPilo.Components.Plans
+namespace GxPilo.Components.Uifrags
 {
     public abstract class CompUICrudBase : MultiLevelCrudBase
     {

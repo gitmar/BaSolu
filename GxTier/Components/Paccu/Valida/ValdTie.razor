@@ -846,6 +846,11 @@
 
         Visibility = System.Text.Json.JsonSerializer.Deserialize<Dictionary<string, bool>>(jsonPrinc) ?? new();
         Console.WriteLine("Visibility loaded 2");
+        // Loop through all entries
+        foreach (var kvp in Visibility)
+        {
+            Console.WriteLine($"{kvp.Key} visibilite : {kvp.Value}");
+        }
     }
 
     private async Task LoadAflVisibilityAsync()

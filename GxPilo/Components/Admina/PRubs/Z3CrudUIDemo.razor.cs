@@ -1,5 +1,6 @@
 ﻿using GxPilo.Components.Plans;
 
+using GxPilo.Components.Uifrags;
 using GxShared.Helpers;
 using GxShared.Helpers.CrudHelpers;
 using GxShared.Interfaces;

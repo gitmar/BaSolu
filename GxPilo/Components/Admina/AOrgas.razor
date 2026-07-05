@@ -993,7 +993,7 @@ else if (edOrgContext != null && curOrga != null)
                                         </div>
                                         <div>
                                             <label class="fw-bold">Groupe :</label>
-                                            <InputSelect @bind-Value="IMyGpe" @onchange="OnGpeChanged">
+                                            <InputSelect @bind-Value="IMyGpe" @onchange="OnGpeChanged" dusabled = "IMyDest != 0">
                                                 @foreach (var tob in ClGties)
                                                 {
                                                     <option value=@tob.Elea>@tob.Liba</option>

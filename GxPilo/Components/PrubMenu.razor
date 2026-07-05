@@ -124,14 +124,14 @@ else
                             </PrubCalc>
                         } else if (_chxMenu == 6)
                         {
-                            <PTestEchs @ref="mygtest"
+                            @* <PTestEchs @ref="mygtest"
                                         curOrga="curOrga"
                                        toChild="toChild"
                                        toMenu="_chxMenu"
                                        _guard="@_guard"
                                        @bind-NbChanges="_nbChanges"
                                        _InODaClient="@_MyODaClient">
-                            </PTestEchs>
+                            </PTestEchs> *@
                         }
                     }
                 }
@@ -201,7 +201,7 @@ else
         new GxMenuItem { Id = 3, Text = "VENTILATION", Icon = "bi bi-house-door" },
         new GxMenuItem { Id = 4, Text = "ECHEANCIER", Icon = "bi bi-arrow-repeat" },
         new GxMenuItem { Id = 5, Text = "DURABLES", Icon = "bi bi-arrow-repeat" },
-        new GxMenuItem { Id = 6, Text = "TEST ECHEANCIER", Icon = "bi bi-arrow-repeat" },
+        //new GxMenuItem { Id = 6, Text = "TEST ECHEANCIER", Icon = "bi bi-arrow-repeat" },
     };
     public List<GxGroupe> Groupes = new();
     public Userbag _usrBag = new Userbag();
@@ -327,7 +327,7 @@ else
         if (_chxMenu == 3) strComp = $"VENTILATION";
         if (_chxMenu == 4) strComp = $"ECHEANCIER";
         if (_chxMenu == 5) strComp = $"DURABLES";
-        if (_chxMenu == 6) strComp = $"TEST ECHEANCIER";
+        //if (_chxMenu == 6) strComp = $"TEST ECHEANCIER";
         //if (_chxMenu == 5) strComp = "Colonnes";
         StateHasChanged();
         await Task.Delay(1);

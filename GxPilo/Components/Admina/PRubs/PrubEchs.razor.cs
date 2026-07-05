@@ -2,7 +2,7 @@
 using GxShared.Helpers;
 using GxShared.Interfaces;
 
-using GxPilo.Components.Plans;
+using GxPilo.Components.Uifrags;
 
 namespace GxPilo.Components.Admina.PRubs
 {

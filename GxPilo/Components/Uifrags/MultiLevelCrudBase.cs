@@ -1,4 +1,6 @@
-﻿using GxShared.GxDtos;
+﻿using GxPilo.Components.Plans;
+
+using GxShared.GxDtos;
 using GxShared.GxGuards;
 using GxShared.Helpers;
 using GxShared.Helpers.CrudHelpers;
@@ -9,7 +11,7 @@ using Microsoft.AspNetCore.Components;
 
 using Newtonsoft.Json;
 
-namespace GxPilo.Components.Plans
+namespace GxPilo.Components.Uifrags
 {
     public abstract class MultiLevelCrudBase : ComponentBase
     {

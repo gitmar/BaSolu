@@ -23,7 +23,7 @@
     </div>
     <div class="card-body">
         <Grid TItem="LSelCol"
-             Data="@Columns"
+             Data="@Columns.ToList()"
              AllowPaging="true"
              Responsive="true">
             <GridColumns>
@@ -80,7 +80,7 @@
                 }
             </InputSelect>
             <Grid TItem="LSelCol"
-                  Data="@AflColumns"
+                  Data="@AflColumns.ToList()"
                   AllowPaging="true"
                   Responsive="true">
                 <GridColumns>

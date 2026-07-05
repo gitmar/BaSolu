@@ -345,45 +345,50 @@ else
             curOrga = await _MyODaClient
                 .For<GxorgaDto>("Gxorgas")
                 .Key(key)
-                //.Expand(o => o.Gsgfixes)
-                ////.Expand(o => o.Gstabls)
                 .FindEntryAsync();
             // Second query: load tiewels only
+    //         var msgsiw = await _MyODaClient
+    // .For<TiewelDto>("Tiewels")
+    // .Filter(f => f.Idorg == key)
+    // //.Filter(f => f.Itiw != 0)   // filter at root
+    // .Expand(o => o.Tiwafls)     // nav property only
+    // .Expand(o => o.Tiejatrs)    // nav property only
+    // .Expand(o => o.Tiegcats)    // nav property only
+    // .FindEntriesAsync();
+
+    //         orgTwels = msgsiw.ToList();
+
+    //         // Third query : load Tiersp only
+    //         var msgsie = await _MyODaClient
+    // .For<TierspDto>("Tiersps")
+    // .Filter(f => f.Idorg == key)
+    // //.Filter(f => f.Itie != 0)
+    // .Expand(o => o.Tieafls)
+    // .Expand(o => o.Tiejatrs)
+    // .Expand(o => o.Tiegcats)
+    // .FindEntriesAsync();
+
             var msgsiw = await _MyODaClient
-                .For<TiewelDto>("Tiewels")
-                .Filter(f => f.Idorg == key)
-                .Expand(o => o.Tiwafls)
-                .Expand(o => o.Tiejatrs.Where(j => j.Itiw != 0))
-                .Expand(o => o.Tiegcats.Where(g => g.Itiw != 0))
-                //.Select("Idorg, Xseq, Elea,Gp1")
-                .FindEntriesAsync();
+            .For<TiewelDto>("Tiewels")
+            .Filter(f => f.Idorg == key)
+            .Expand("Tiwafls")
+            .Expand("Tiejatrs")
+            .Expand("Tiegcats")
+            .FindEntriesAsync();
+
             orgTwels = msgsiw.ToList();
-            // Third query : load Tiersp only
+
             var msgsie = await _MyODaClient
-                .For<TierspDto>("Tierps")
+                .For<TierspDto>("Tiersps")
                 .Filter(f => f.Idorg == key)
-                .Expand(o => o.Tieafls)
-                .Expand(o => o.Tiejatrs.Where(j => j.Itie != 0))
-                .Expand(o => o.Tiegcats.Where(g => g.Itie != 0))
-                //.Select("Idorg, Xseq, Elea,Gp1")
+                .Expand("Tieafls")
+                .Expand("Tiejatrs")
+                .Expand("Tiegcats")
                 .FindEntriesAsync();
+
             orgTiers = msgsie.ToList();
+
             Console.WriteLine($"loadOrgaAsync completed :{curOrga?.Raison}");
-
-
-            // curOrga = await _MyODaClient
-            //     .For<GxorgaDto>("Gxorgas")
-            //     .Key(key)
-            //     .Expand(o => o.Tiewels.Select(t => t.Tiwafls))
-            //     .Expand(o => o.Tiewels.Select(t => t.Tiejatrs))
-            //     .Expand(o => o.Tiewels.Select(t => t.Tiegcats))
-            //     .Expand(o => o.Tiersps.Select(t => t.Tieafls))
-            //     .Expand(o => o.Tiersps.Select(t => t.Tiejatrs))
-            //     .Expand(o => o.Tiersps.Select(t => t.Tiegcats))
-            //     .FindEntryAsync();
-
-
-            //Console.WriteLine($"loadOrgaAsync completed : {curOrga?.Raison}");
             Console.WriteLine($"Nb. Tiersps {curOrga.Tiersps.Count} Nb. Tiewels : {curOrga?.Tiewels.Count}");
         }
         catch (Exception ex)
