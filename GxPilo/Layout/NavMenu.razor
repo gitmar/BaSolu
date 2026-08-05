@@ -16,11 +16,11 @@
         <i class="bi bi-gear-fill"></i>
         <span>Gx-Solutions</span>
     </a>
-    <button class="navbar-toggler btn btn-sm ms-auto p-1 m-0"
+    @* <button class="navbar-toggler btn btn-sm ms-auto p-1 m-0"
             type="button"
             @onclick="ToggleNavMenu">
         <span class="navbar-toggler-icon"></span>
-    </button>
+    </button> *@
 
 </div>
 
@@ -40,11 +40,32 @@
                     <i class="bi bi-building nav-icon d-inline-flex align-items-center"></i>
                     <span class="nav-text" title="Test">Test</span>
                 </NavLink> *@
+
                 <!-- INSTITUTION -->
-                <NavLink class="nav-link nav-main text-light small d-flex align-items-center gap-2" href="aorgas">
+                <NavLink class="nav-link nav-main text-light small d-flex align-items-center gap-2"
+                         @onclick="ToggleSubOrga">
+                    <i class="bi bi-building nav-icon d-inline-flex align-items-center"></i>
+                    <span class="nav-text">Organisation</span>
+                    <i class="bi @(isSubOrgaVisible ? "bi-chevron-up" : "bi-chevron-down") nav-chevron"></i>
+                </NavLink>
+                <div class="submenu @(isSubOrgaVisible ? "open" : "")">
+                    <nav class="nav flex-column">
+                        <NavLink class="nav-link nav-sub text-light text-small d-flex align-items-center gap-2" href="aorgas">
+                            <i class="bi bi-table nav-icon"></i>
+                            <span class="nav-text">Institution</span>
+                        </NavLink>
+                        <NavLink class="nav-link nav-sub text-light text-small d-flex align-items-center gap-2" href="invoper">
+                            <i class="bi bi-people nav-icon"></i>
+                            <span class="nav-text">Opérateurs</span>
+                        </NavLink>
+                    </nav>
+                </div>
+
+                <!-- INSTITUTION -->
+                @* <NavLink class="nav-link nav-main text-light small d-flex align-items-center gap-2" href="aorgas">
                     <i class="bi bi-building nav-icon d-inline-flex align-items-center"></i>
                     <span class="nav-text" title="Institution">Institution</span>
-                </NavLink>
+                </NavLink> *@
 
                 <!-- PARAMÉTRAGE -->
                 <NavLink class="nav-link nav-main text-light small d-flex align-items-center gap-2"
@@ -59,7 +80,7 @@
                             <i class="bi bi-table nav-icon"></i>
                             <span class="nav-text">Constantes</span>
                         </NavLink>
-                        <NavLink class="nav-link nav-sub text-light text-small d-flex align-items-center gap-2" href="astrmenu">
+                        <NavLink class="nav-link nav-sub text-light text-small d-flex align-items-center gap-2" href="ictamenu">
                             <i class="bi bi-calendar-check nav-icon"></i>
                             <span class="nav-text">Astreintes</span>
                         </NavLink>
@@ -75,29 +96,29 @@
                             <i class="bi bi-tags nav-icon"></i>
                             <span class="nav-text">Attributs++</span>
                         </NavLink>
-                        <NavLink class="nav-link nav-sub text-light text-small d-flex align-items-center gap-2" href="invoper">
+                        @* <NavLink class="nav-link nav-sub text-light text-small d-flex align-items-center gap-2" href="invoper">
                             <i class="bi bi-people nav-icon"></i>
                             <span class="nav-text">Opérateurs</span>
-                        </NavLink>
+                        </NavLink> *@
                     </nav>
                 </div>
 
-                <!-- PROGRAMMES -->
+                <!-- ACTIVITES -->
                 <NavLink class="nav-link nav-main text-light text-small d-flex gap-2"
                          @onclick="ToggleSubProg">
                     <i class="bi bi-journal-code nav-icon d-inline-flex align-items-center"></i>
-                    <span class="nav-text">Programmes</span>
+                    <span class="nav-text">Activités</span>
                     <i class="bi @(isSubProgVisible ? "bi-chevron-up" : "bi-chevron-down") nav-chevron"></i>
                 </NavLink>
                 <div class="submenu @(isSubProgVisible ? "open" : "")">
                     <nav class="nav flex-column">
                         <NavLink class="nav-link nav-sub text-light small d-flex align-items-center gap-2" href="prubmenu">
                             <i class="bi bi-diagram-3 nav-icon"></i>
-                            <span class="nav-text">Plans</span>
+                            <span class="nav-text">Modèles</span>
                         </NavLink>
                         <NavLink class="nav-link nav-sub text-light small d-flex align-items-center gap-2" href="edtmenu">
                             <i class="bi bi-pencil-square nav-icon"></i>
-                            <span class="nav-text">Écriture</span>
+                            <span class="nav-text">Éditions</span>
                         </NavLink>
                     </nav>
                 </div>
@@ -258,6 +279,7 @@
 
     private Userbag _usrBag = new();
 
+    private bool isSubOrgaVisible = false;
     private bool isSubManagVisible = false;
     private bool isSubSecuVisible = false;
     private bool isSubOperVisible = false;
@@ -275,11 +297,15 @@
     {
         //_appState.OnChange -= StateHasChanged;
     }
-    private void ToggleNavMenu()
-    {
-        collapseNavMenu = !collapseNavMenu;
-    }
+    // private void ToggleNavMenu()
+    // {
+    //     collapseNavMenu = !collapseNavMenu;
+    // }
 
+    private void ToggleSubOrga()
+    {
+        isSubOrgaVisible = !isSubOrgaVisible;
+    }
     private void ToggleSubManag()
     {
         isSubManagVisible = !isSubManagVisible;

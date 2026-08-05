@@ -1,0 +1,529 @@
+﻿@page "/attribstk"
+@layout AtribMenu
+
+@using BlazorBootstrap
+@using Blazored.LocalStorage
+@using GxShared.Helpers
+@using GxPilo.Services
+@using Simple.OData.Client
+@using AutoMapper
+@using GxShared.GxDtos
+@using GxShared.Interfaces
+@using GxShared.Sess
+@using GxShared.Others
+@* @using Microsoft.EntityFrameworkCore *@
+@using Newtonsoft.Json
+
+@inject ILocalStorageService _localStorage
+@inject NavigationManager _navManager
+@inject HttpClientService _clieManager
+@inject IMapper Mapper
+@inject IJSRuntime _jsRun
+
+<div class="container mt-3">
+
+    <Button Color="ButtonColor.Success" @onclick="() => StartAdd()">Ajt Attribute</Button>
+    @if (draftAtr != null)
+    {
+        <Grid TItem="StkatrDto"
+              Data="@curOrga?.Stkatrs.ToList()"
+              @key="stkatrkey"
+              AllowPaging="true"
+              Responsive="true">
+            <GridColumns>
+                <GridColumn TItem="StkatrDto" HeaderText="No" Class="xcol1">
+                    <ChildContent Context="item">
+                        @item.Elea
+                    </ChildContent>
+                </GridColumn>
+                <GridColumn TItem="StkatrDto" HeaderText="Label" Class="xcol3">
+                    <ChildContent Context="item">
+                        @if (editRowguid == item.Rowguid)
+                        {
+                            <InputText @bind-Value="draftAtr.Liba" />
+                        }
+                        else
+                        {
+                            @item.Liba
+                        }
+                    </ChildContent>
+                </GridColumn>
+                <GridColumn TItem="StkatrDto" HeaderText="Origine" Class="xcol1">
+                    <ChildContent Context="item">
+                        @if (editRowguid == item.Rowguid)
+                        {
+                            <InputSelect @bind-Value="draftAtr.Zfro" class="me-3" style="width:auto">
+                                <option value=1>constante</option>
+                                <option value=2>table</option>
+                            </InputSelect>
+                        }
+                        else
+                        {
+                            <InputSelect @bind-Value="item.Zfro" class="me-3" style="width:auto" disabled>
+                                <option value=1>constante</option>
+                                <option value=2>table</option>
+                            </InputSelect>
+                        }
+                    </ChildContent>
+                </GridColumn>
+                <GridColumn TItem="StkatrDto" HeaderText="Table" Class="xcol1">
+                    <ChildContent Context="item">
+                        @if (editRowguid == item.Rowguid)
+                        {
+                            <InputSelect @bind-Value="draftAtr.Ztbl">
+                                <option value=0>aucun</option>
+                                @foreach (var fx in EnsTbls.Where(t => t.Tenr == 1 && t.Btyp == 2))
+                                {
+                                    <option value=@fx.Tref>@fx.Liba</option>
+                                }
+                            </InputSelect>
+                        }
+                        else
+                        {
+                            <InputSelect @bind-Value="item.Ztbl" class="me-3" style="width:auto" disabled>
+                                <option value=0>aucun</option>
+                                @foreach (var fx in EnsTbls.Where(t => t.Tenr == 1 && t.Btyp == 2))
+                                {
+                                    <option value=@fx.Tref>@fx.Liba</option>
+                                }
+                            </InputSelect>
+                        }
+                    </ChildContent>
+                </GridColumn>
+                <GridColumn TItem="StkatrDto" HeaderText="Type" Class="xcol2">
+                    <ChildContent Context="item">
+                        @if (editRowguid == item.Rowguid)
+                        {
+                            <InputSelect @bind-Value="draftAtr.Atyp" class="me-3" style="width:auto">
+                                <option value=0>?choisir</option>
+                                @foreach (var fx in LsFixes.Where(u => u.Gvars == 32 && u.Itb == 2 && u.Elea != 0))
+                                {
+                                    <option value=@fx.Elea>@fx.Liba</option>
+                                }
+                            </InputSelect>
+                        }
+                        else
+                        {
+                            <InputSelect @bind-Value="item.Atyp" class="me-3" style="width:auto" disabled>
+                                <option value=0>?choisir</option>
+                                @foreach (var fx in LsFixes.Where(u => u.Gvars == 32 && u.Itb == 2 && u.Elea != 0))
+                                {
+                                    <option value=@fx.Elea>@fx.Liba</option>
+                                }
+                            </InputSelect>
+                        }
+                    </ChildContent>
+                </GridColumn>
+                <GridColumn TItem="StkatrDto" HeaderText="Eta">
+                    <ChildContent Context="item">
+                        @if (editRowguid == item.Rowguid)
+                        {
+                            <InputSelect @bind-Value="draftAtr.Eta">
+                                <option class="jchx" value=0>?choisir</option>
+                                @foreach (var tob in LsFixes.Where(ut => ut.Gvars == 32 && ut.Itb == 1 && ut.Elea != 0))
+                                {
+                                    <option value=@tob.Elea>@tob.Liba</option>
+                                }
+                            </InputSelect>
+                        }
+                        else
+                        {
+                            <InputSelect @bind-Value="item.Eta" disabled>
+                                <option class="jchx" value=0>?choisir</option>
+                                @foreach (var tob in LsFixes.Where(ut => ut.Gvars == 32 && ut.Itb == 1 && ut.Elea != 0))
+                                {
+                                    <option value=@tob.Elea>@tob.Liba</option>
+                                }
+                            </InputSelect>
+                        }
+                    </ChildContent>
+                </GridColumn>
+                <GridColumn TItem="StkatrDto" HeaderText="Actions">
+                    <ChildContent Context="item">
+                        @if (editRowguid == item.Rowguid)
+                        {
+                            <Button Color="ButtonColor.Primary" Size="ButtonSize.Small"
+                                    @onclick="() => SaveEdit(draftAtr)">
+                                Save
+                            </Button>
+                            <Button Color="ButtonColor.Secondary" Size="ButtonSize.Small"
+                                    @onclick="() => CancelEdit()">
+                                Cancel
+                            </Button>
+                        }
+                        else
+                        {
+                            @if (item.Id > 0)@* Prevent deletion of unsaved new entry *@
+                            {
+                                <Button Color="ButtonColor.Warning" Size="ButtonSize.Small"
+                                        @onclick="() => StartEdit(item)">
+                                    Edit
+                                </Button>
+                                <Button Color="ButtonColor.Danger" Size="ButtonSize.Small"
+                                        @onclick="() => SaveDele(item)">
+                                    Delete
+                                </Button>
+                            }
+                            @* else
+                            {
+                                <Button Color="ButtonColor.Secondary" Size="ButtonSize.Small"
+                                        @onclick="() => CancelAdd(2, item)">
+                                    Cancel
+                                </Button>
+                            } *@
+                        }
+                    </ChildContent>
+                </GridColumn>
+            </GridColumns>
+        </Grid>
+    }
+    @if (isAdding)
+    {
+        <div class="mt-3">
+            <h5>Ajt Attribute</h5>
+            <InputText @bind-Value="draftAtr.Liba" placeholder="Label" />
+            <InputSelect @bind-Value="inZfro" class="me-3" style="width:auto">
+                <option value=1>constante</option>
+                <option value=2>table</option>
+            </InputSelect>
+            @if (inZfro == 2)
+            {
+                <InputSelect @bind-Value="draftAtr.Ztbl" class="me-3" style="width:auto">
+                    @foreach (var fx in EnsTbls.Where(t => t.Tenr == 1 && t.Btyp == 2))
+                    {
+                        <option value=@fx.Tenr>@fx.Liba</option>
+                    }
+                </InputSelect>
+            }
+            <InputSelect @bind-Value="draftAtr.Atyp" class="me-3" style="width:auto">
+                <option value=0>?type</option>
+                @foreach (var fx in LsFixes.Where(u => u.Gvars == 32 && u.Itb == 2 && u.Elea != 0))
+                {
+                    <option value=@fx.Elea>@fx.Liba</option>
+                }
+            </InputSelect>
+            <InputSelect @bind-Value="draftAtr.Eta">
+                <option class="jchx" value=0>?etat</option>
+                @foreach (var tob in LsFixes.Where(ut => ut.Gvars == 32 && ut.Itb == 1 && ut.Elea != 0))
+                {
+                    <option value=@tob.Elea>@tob.Liba</option>
+                }
+            </InputSelect>
+            <Button Color="ButtonColor.Success" @onclick="() => SaveAdd(draftAtr)">Add</Button>
+            <Button Color="ButtonColor.Secondary" @onclick="() => CancelAdd(1, draftAtr)">Cancel</Button>
+        </div>
+    }
+</div>
+<style>
+    .xcolx {
+        width: 40px !important;
+    }
+
+    .xcol1 {
+        width: 60px;
+    }
+
+    .xcol2 {
+        width: 120px;
+    }
+
+    .xcol3 {
+        width: 180px;
+    }
+
+    .xcol4 {
+        width: 240px;
+    }
+        /* Ensure inputs inside these columns fill the width */
+        .xcol1 input,
+        .xcol2 input,
+        .xcol3 input,
+        .xcol4 input {
+            width: 100%;
+            box-sizing: border-box; /* prevents overflow due to padding/border */
+        }
+
+    .editing-row {
+        pointer-events: none; /* Blocks all clicks on row */
+    }
+
+        .editing-row * {
+            pointer-events: auto; /* Re-enables clicks on buttons/inputs */
+        }
+</style>
+@code {
+    private bool isLoading = true;
+
+    [Parameter]
+    public IODataClient _InODaClient { get; set; }
+    [Parameter]
+    public GxorgaDto curOrga { get; set; }
+    [Parameter]
+    public int Orig { get; set; }
+    [Parameter]
+    public ChildVars toChild { get; set; }
+    [Parameter]
+    public int toMenu { get; set; }
+    [Parameter]
+    public RenderFragment ChildContent { get; set; }
+    [Parameter]
+    public List<Gpdivh> LsDivs { get; set; }
+    [Parameter]
+    public List<Gtabl> EnsTbls { get; set; } // Dropdown options
+    // Guard
+    [Parameter]
+    public IPendingChangesGuard _guard { get; set; }
+    [Parameter]
+    public EventCallback<PendingState> OnPendingStateChanged { get; set; }
+    [Parameter]
+    public int NbChanges { get; set; }
+    [Parameter]
+    public EventCallback<int> NbChangesChanged { get; set; }
+
+    //[Parameter] public ItemClientService ItemService { get; set; }
+    //[Parameter] public StockClientService StockService { get; set; }
+    private List<StkatrDto> LsAtrs = new();
+    private List<Gpfixe> LsFixes = new();
+    private int inZfro = 0;
+    private Guid? editRowguid;
+    private string stkatrkey = "";
+    private bool isAdding = false;
+    private StkatrDto draftAtr = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        isLoading = true;
+        try
+        {
+            // if (toChild == null || curOrga == null)
+            // {
+            //     Console.WriteLine("Missing parent data");
+            //     return;
+            // }
+            // isAuthenticated = toChild.isAuthenticated;
+            // authUser = toChild.authUser;
+            // if (!isAuthenticated)
+            // {
+            //     Imessage = "CONNEXION, Utilisateur non authentifie";
+            //     return;
+            // }
+            // //LsVars = toChild.LsVars;
+            // LsFixes = toChild.LsFixes;
+            //LsDoms = toChild.LsFixes.Where(ut => ut.Gvars == 36 && ut.Itb == 4 && ut.Gp1 == 3 && ut.Elea != 0).ToList();
+            //LsDoms = LsFixes.Where(ut => ut.Gvars == 36 && ut.Itb == 4 && ut.Gp1 == 3 && ut.Elea != 0).ToList();
+            //LsSites = toChild.LsSites;
+            //_lgcdu = 3;
+            LsAtrs = curOrga?.Stkatrs.ToList();
+            LsFixes = toChild.LsFixes.ToList();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"22error loading atr-Tie: {ex.Message}");
+        }
+    }
+    // and call this in OnParametersSet
+    protected override void OnParametersSet()
+    {
+        SubscribeToGuard();
+    }
+    // set up subscription locally
+    private void SubscribeToGuard()
+    {
+        _guard.OnChanges += async () =>
+        {
+            NbChanges = _guard.GetPendingChangesCount();
+            await NbChangesChanged.InvokeAsync(NbChanges);
+            StateHasChanged();
+        };
+    }
+    private void StartEdit(StkatrDto atr)
+    {
+        editRowguid = atr.Rowguid;
+        draftAtr = new StkatrDto
+        {
+            Id = atr.Id,
+            Idorg = atr.Idorg,
+            Elea = atr.Elea,
+            Zfro = atr.Zfro,
+            Ztbl = atr.Ztbl,
+            Liba = atr.Liba,
+            Abg = atr.Abg,
+            Atyp = atr.Atyp,
+            Eta = atr.Eta,
+            Rowguid = atr.Rowguid
+        };
+    }
+    private async Task SaveAdd(StkatrDto atr)
+    {
+        atr.Zfro = inZfro;
+        if (atr.Zfro == 2 && atr.Atyp != 2)
+            atr.Atyp = 1;
+        atr.Satyp = GetSatyp(atr.Atyp);
+
+        await _guard.TrackInsert("Stkatrs", atr);
+
+        if (curOrga.Stkatrs.All(x => x.Rowguid != atr.Rowguid))
+            curOrga.Stkatrs.Add(atr);
+
+        editRowguid = null;
+        stkatrkey = Guid.NewGuid().ToString();
+        await NotifyPendingChanges();
+        await InvokeAsync(StateHasChanged);
+    }
+    private async Task SaveEdit(StkatrDto atr)
+    {
+        if (atr.Zfro == 2 && atr.Atyp != 2)
+            atr.Atyp = 1;
+
+        atr.Satyp = GetSatyp(atr.Atyp);
+
+        await _guard.TrackUpdate("Stkatrs", GetEntityKey(atr), atr);
+
+        Uihelper.ReplaceItem(curOrga.Stkatrs, x => x.Rowguid == atr.Rowguid, atr);
+
+        editRowguid = null;
+        stkatrkey = Guid.NewGuid().ToString();
+        await NotifyPendingChanges();
+        await InvokeAsync(StateHasChanged);
+    }
+    private async Task SaveDele(StkatrDto atr)
+    {
+        await _guard.TrackDelete("Stkatrs", GetEntityKey(atr), atr.Rowguid);
+        Uihelper.RemoveItem(curOrga.Stkatrs, x => x.Rowguid == atr.Rowguid);
+        if (editRowguid == atr.Rowguid)
+            editRowguid = null;
+
+        stkatrkey = Guid.NewGuid().ToString();
+        await NotifyPendingChanges();
+        await InvokeAsync(StateHasChanged);
+    }
+    // private async Task DeleteEdit(StkatrDto atr)
+    // {
+    //     await _guard.TrackDelete("Stkatrs", GetEntityKey(atr), atr.Rowguid);
+    //     Uihelper.RemoveItem(curOrga.Stkatrs, x => x.Rowguid == atr.Rowguid);
+    //     if (editRowguid == atr.Rowguid)
+    //         editRowguid = null;
+
+    //     stkatrkey = Guid.NewGuid().ToString();
+    //     await NotifyPendingChanges();
+    //     await InvokeAsync(StateHasChanged);
+    // }
+    private void CancelEdit() => editRowguid = null;
+
+    // private async Task SaveDele(StkatrDto atr)
+    // {
+    //     curOrga.Stkatrs.Remove(atr);
+
+    //     // Register delete with OData context
+    //     // Extract PK using your helper
+    //     var key = GetEntityKey(atr);
+
+    //     // Queue delete in guard
+    //     //await _guard.TrackDelete<TDto>(GetEntitySetName<TDto>(), key);
+    //     var rowguid = GetRowguid(atr);
+    //     await _guard.TrackDelete("Stkatrs", key, rowguid);
+    //     Console.WriteLine($"🗑️ {atr.Liba} queued for delete");
+
+    //     await NotifyPendingChanges();
+    // }
+
+    private void StartAdd()
+    {
+        isAdding = true;
+        draftAtr = new StkatrDto();
+        draftAtr.Rowguid = Guid.NewGuid();
+        draftAtr.Idorg = curOrga.Idorg;
+        draftAtr.Zfro = 0;
+        draftAtr.Ztbl = 0;
+        draftAtr.Liba = "";
+        draftAtr.Abg = "";
+        draftAtr.Satyp = "";
+        draftAtr.Eta = 1;
+        inZfro = 1;
+    }
+
+    private void CancelAdd(int orig, StkatrDto unatr)
+    {
+        if (orig == 2)
+        {
+            var key = GetEntityKey(unatr);
+            //curOrga.Stkatrs.Remove(unatr);
+            //await _guard.TrackDelete("Stkatrs", key);
+        }
+        else
+        {
+            draftAtr = new();
+        }
+        isAdding = false;
+    }
+    private object GetEntityKey<TDto>(TDto entity)
+    {
+        switch (entity)
+        {
+            case StkatrDto pln:
+                return pln.Id;
+            // case RubhieDto rub:
+            //     return rub.Id;
+            // case RubpstDto fmt:
+            //     return fmt.Id;
+            default:
+                throw new InvalidOperationException($"Unknown entity type {typeof(TDto).Name}");
+        }
+    }
+    private static Guid GetRowguid<T>(T entity) where T : class
+    {
+        switch (entity)
+        {
+            case StkatrDto pln:
+                return pln.Rowguid;
+            // case RubhieDto rub:
+            //     return rub.Rowguid;
+            // case RubpstDto fmt:
+            //     return fmt.Rowguid;
+            default:
+                throw new InvalidOperationException($"Unknown entity type {typeof(T).Name}");
+        }
+    }
+    private string GetSatyp(int? atyp)
+    {
+        if (atyp == null) return "string";
+        var strAtyp = "";
+        switch (atyp)
+        {
+            case 1:
+                strAtyp = "string";
+                break;
+            case 2:
+                strAtyp = "int";
+                break;
+            case 3:
+                strAtyp = "decimal";
+                break;
+            case 4:
+                strAtyp = "bool";
+                break;
+            case 5:
+                strAtyp = "date";
+                break;
+            case 6:
+                strAtyp = "adresse";
+                break;
+            default:
+                strAtyp = "string";
+                break;
+        }
+        return strAtyp;
+    }
+    // Notify guard/UI of pending changes
+    private async Task NotifyPendingChanges()
+    {
+        await OnPendingStateChanged.InvokeAsync(new PendingState(
+            _guard.HasPendingChanges(),
+            _guard.GetPendingChangesCount()
+        ));
+
+        NbChanges = _guard.GetPendingChangesCount();
+        await NbChangesChanged.InvokeAsync(NbChanges);
+        StateHasChanged();
+    }
+}

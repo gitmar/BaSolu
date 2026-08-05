@@ -49,4 +49,17 @@ namespace GxTie.StaticHelpers
         public static readonly Func<Gtabl, string> NatioValue = g => g.Abg ?? "";
         public static readonly Func<Gtabl, string> NatioLabel = g => g.Liba ?? "";
     }
-}
+    public static class MyConverters
+    {
+
+        public static decimal? Trunc1000(object? value)
+        {
+            if (value is null)
+                return null;
+
+            return decimal.TryParse(value.ToString(), out var d)
+                ? Math.Round(d, 3)
+                : null;
+        }
+    }
+    }

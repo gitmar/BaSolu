@@ -2,11 +2,20 @@
 @using System.ComponentModel.DataAnnotations
 @using GxShared.ShdServices
 @using GxShared.Sess
+@using System.Net.Http.Json
+@using System.Text.RegularExpressions
 
 @inject IHttpClientFactory _httpClientFactory
-@inject NavigationManager Nav
+@inject NavigationManager _navManager
 
 <h2>ENREGISTREMENT SUR GX-SOLUTIONS</h2> 
+
+@* <style>
+    .readonly-form {
+        pointer-events: none;
+        opacity: 0.7;
+    }
+</style> *@
 
 @if (!string.IsNullOrEmpty(Imessage))
 {
@@ -21,116 +30,99 @@
 }
 else
 {
-    @* class= " @(isRegistered ? "readonly -form" : "" )" *@
     <EditForm Model="@MyRegisDto" OnValidSubmit="HandleRegister">
         <DataAnnotationsValidator />
         <ValidationSummary />
-        <div class="d-flex flex-row align-items-center g-2"> 
+
         <!-- Organisation info -->
+        <div class="d-flex flex-row align-items-center g-2">
             <label class="fw-bold">@OgSigle</label>
             <label>-</label>
             <label class="fw-bold">@OgRaison</label>
         </div>
-        <div class="d-flex flex-row align-items-center  g-2">
-            <!-- Organisation info -->
+        <div class="d-flex flex-row align-items-center g-2">
             <label class="fw-bold">@ResNom</label>
             <label>..</label>
             <label class="fw-bold">@ResPnom</label>
         </div>
 
+        <!-- Email (readonly) -->
         <div class="row g-3">
-            <!-- Email (readonly) -->
             <label>Email</label>
             <div class="col-md-4">
                 <InputText class="form-control" @bind-Value="MyRegisDto.Email" disabled />
             </div>
         </div>
-        @* <div class="row g-3">
-            <!-- Email (readonly) -->
-            <label>Email or Username</label>
-            <div class="col-md-4">
-                <InputText class="form-control" @bind-Value="MyRegisDto.EmailOrUsername" />
-                @if (!MyRegisDto.IsValidEmailOrUsername())
-                {
-                    <div class="text-danger">
-                        Must be a valid email OR a username (7–15 letters/digits, no spaces or accents).
-                    </div>
-                }
-            </div>
-        </div> *@
+
         @if (!isSuccess)
         {
             <div class="row g-3">
-                <!-- Nom -->
-                <label>Nom</label>
+                <label>Pseudo <span class="fw-bold text-danger">(7–15 chars, no space/accent)</span></label>
                 <div class="col-md-4">
-                    <InputText class="form-control" @bind-Value="MyRegisDto.Nom" />
-                </div>
-            </div>
-            <div class="row g-3">
-                <!-- Pnom -->
-                <label>Pnom</label>
-                <div class="col-md-4">
-                    <InputText class="form-control" @bind-Value="MyRegisDto.Pnom" />
-                </div>
-            </div>
-            <!-- Username -->
-            <div class="row g-3">
-                <label>Pseudo<span class="fw-bold text-danger">(7-15 chars, no space/accent)</span></label>
-                <div class="col-md-4">
-                    <InputText class="form-control" @bind-Value="MyRegisDto.Username" />
+                    <input class="form-control"
+                           @bind="MyRegisDto.Username"
+                           @bind:event="oninput" />
                     <ValidationMessage For="@(() => MyRegisDto.Username)" />
                 </div>
             </div>
-            <!-- Password -->
+
             <div class="row g-3">
-                <label>Password</label>
-                <div class="col-md-4">
-                    <InputText type="password" class="form-control" @bind-Value="MyRegisDto.Password" />
-                </div>
-            </div>
-            <!-- Confirm -->
-            <div class="row g-3 mb-3">
-                <label>Confirm Password</label>
-                <div class="col-md-4">
-                    <InputText type="password" class="form-control" @bind-Value="MyRegisDto.ConfirmPassword" />
-                </div>
-            </div>
-            @if(!string.IsNullOrEmpty(MyRegisDto.Username))
-            {
-                if(MyRegisDto.Username.Length >= 7)
-                {
-                    <button class="btn btn-primary" disabled="@isSubmitting">
-                        @(isSubmitting ? "Registering..." : "Register")
+                <label>
+                    Password
+                    <span class="fw-bold text-danger">
+                        (≥1 capital, ≥1 number, ≥1 special character)
+                    </span>
+                </label>
+                <div class="col-md-4 input-group">
+                    <input type="@passwordInputType"
+                           class="form-control"
+                           @bind="MyRegisDto.Password"
+                           @bind:event="oninput" />
+                    <button type="button" class="btn btn-outline-secondary" @onclick="TogglePassword">
+                        @(passwordInputType == "password" ? "Show" : "Hide")
                     </button>
-                }
-                else
-                {
-                    <div>La longueur doit etre au moins egal a 7</div>
-                }
-            }
+                </div>
+                <ValidationMessage For="@(() => MyRegisDto.Password)" />
+            </div>
+
+            <div class="row g-3 mb-3">
+                <label>
+                    Confirm Password
+                    <span class="fw-bold text-danger">
+                        (idem password)
+                    </span>
+                </label>
+                <div class="col-md-4 input-group">
+                    <input type="@confirmPasswordInputType"
+                           class="form-control"
+                           @bind="MyRegisDto.ConfirmPassword"
+                           @bind:event="oninput" />
+                    <button type="button" class="btn btn-outline-secondary" @onclick="ToggleConfirmPassword">
+                        @(confirmPasswordInputType == "password" ? "Show" : "Hide")
+                    </button>
+                </div>
+                <ValidationMessage For="@(() => MyRegisDto.ConfirmPassword)" />
+            </div>
+            <button type="submit" class="btn btn-primary" disabled="@(isSubmitting || !CanSubmit)">
+                @(isSubmitting ? "Registering..." : "Register")
+            </button>
         }
     </EditForm>
 }
-<style>
-    .readonly-form {
-        pointer-events: none;
-        opacity: 0.7;
-    }
-</style>
+
+<p class="mt-3 text-info">@Imessage</p>
+
 @code {
     [Parameter]
     [SupplyParameterFromQuery(Name = "cdlink")]
-
     public string? CdLink { get; set; }
+
     private HttpClient _apiClient;
     private RegisterDto MyRegisDto = new();
     private InviteLinkData? InviteData;
 
     private bool isLoaded = false, isSuccess = false;
     private bool isSubmitting = false;
-    //private bool isRegistered = false;
-
     private string? Imessage = "";
 
     // UI fields
@@ -143,9 +135,32 @@ else
     private string ResNom = "";
     private string ResPnom = "";
 
+    // Password visibility toggles
+    private string passwordInputType = "password";
+    private string confirmPasswordInputType = "password";
+
+    private void TogglePassword()
+    {
+        passwordInputType = passwordInputType == "password" ? "text" : "password";
+    }
+
+    private void ToggleConfirmPassword()
+    {
+        confirmPasswordInputType = confirmPasswordInputType == "password" ? "text" : "password";
+    }
+
+    // Enable submit only when rules are satisfied
+    private bool CanSubmit =>
+        !string.IsNullOrWhiteSpace(MyRegisDto.Username) &&
+        MyRegisDto.Username.Length >= 7 &&
+        !string.IsNullOrWhiteSpace(MyRegisDto.Password) &&
+        Regex.IsMatch(MyRegisDto.Password, @"^(?=.*[A-Z])(?=.*\d)(?=.*[^a-zA-Z0-9]).+$") &&
+        !string.IsNullOrWhiteSpace(MyRegisDto.ConfirmPassword) &&
+        MyRegisDto.Password == MyRegisDto.ConfirmPassword;
+
+
     protected override async Task OnInitializedAsync()
     {
-        Console.WriteLine("A BIEN ATTERRI");
         _apiClient = _httpClientFactory.CreateClient("AuthClient");
 
         if (string.IsNullOrEmpty(CdLink))
@@ -154,37 +169,24 @@ else
             return;
         }
 
-        // Use CdLink directly
-        var cdlink = CdLink;
-
-        Console.WriteLine($"cdlink  : {cdlink}");
-        if (string.IsNullOrEmpty(cdlink))
-        {
-            isLoaded = true;
-            return;
-        }
-
         try
         {
-            // 🔥 IMPORTANT: move decoding to API (recommended)
             var response = await _apiClient.GetFromJsonAsync<InviteLinkData>(
-                $"regis/decode?cdlink={cdlink}");
+                $"regis/decode?cdlink={CdLink}");
 
-            if (response == null)
-                return;
+            if (response == null) return;
 
             InviteData = response;
-            //user Idorg data
             var usrorg = await _apiClient.GetFromJsonAsync<Gporga>($"lgauth/tetorga/{InviteData.Idorg}");
-            if (usrorg == null)
-                return;
-            // Prefill DTO (same as you if (response == null)
+            if (usrorg == null) return;
+
             MyRegisDto.Email = InviteData.Email;
             MyRegisDto.Username = "";
             MyRegisDto.Nom = InviteData.Nom;
             MyRegisDto.Pnom = InviteData.Pnom;
             MyRegisDto.PhoneNumber = InviteData.PhoneNumber;
             MyRegisDto.Idorg = InviteData.Idorg;
+
             OgRaison = usrorg.Raison;
             OgSigle = usrorg.Sigle;
             OgWeb = usrorg.Weburl;
@@ -193,16 +195,10 @@ else
             OgNatio = usrorg.Natio;
             ResNom = usrorg.Rnom;
             ResPnom = usrorg.Rpnom;
-
-            // org info (you may also fetch via API)
-            //Raison = InviteData.Raison;
-            //Sigle = InviteData.Sigle;
-
-            //isValid = true;
         }
         catch
         {
-            //isValid = false;
+            Imessage = "Failed to load invite data.";
         }
 
         isLoaded = true;
@@ -210,43 +206,57 @@ else
 
     private async Task HandleRegister()
     {
+
+        if (!IsValidEmail(MyRegisDto.Email))
+        {
+            Imessage = $"Email incorrect: {MyRegisDto.Email}";
+            isSuccess = false;
+            return;
+        }
         isSubmitting = true;
         Imessage = "Enregistrement en cours...";
         await InvokeAsync(StateHasChanged);
-        await Task.Yield(); // allow render
+
         try
         {
-            // merge invite data (like your OnPost)
             MyRegisDto.Idorg = InviteData.Idorg;
             MyRegisDto.Ivrole = InviteData.Ivrole;
             MyRegisDto.Itoken = InviteData.Itoken;
             MyRegisDto.SendEmail = InviteData.SendEmail;
+            MyRegisDto.FbackUrl = _navManager.Uri;
+            var response = await _apiClient.PostAsJsonAsync("regis/register", MyRegisDto);
 
-            var response = await _apiClient.PostAsJsonAsync(
-                "regis/register",
-                MyRegisDto);
-            if (!response.IsSuccessStatusCode)
-            {
-                //Imessage = await response.Content.ReadAsStringAsync();
-                Imessage = "Echec, deja enregistre ou lien expire";
-                isSuccess = false;
-            }
-            else
+            if (response.IsSuccessStatusCode)
             {
                 Imessage = "Registration successful! Please check your email for confirmation.";
                 isSuccess = true;
             }
+            else
+            {
+                // Read the error message returned by the API
+                var errorContent = await response.Content.ReadAsStringAsync();
+
+                // You can decide how to display it:
+                // - show raw message
+                // - or parse JSON if your API returns structured error
+                Imessage = $"Registration failed: {errorContent}";
+                isSuccess = false;
+            }
         }
-        catch
+        catch (Exception ex)
         {
-            Imessage = "Registration failed.";
+            Imessage = $"Registration failed: {ex.Message}";
+            isSuccess = false;
         }
         finally
         {
             isSubmitting = false;
-            //isRegistered = true;
             await InvokeAsync(StateHasChanged);
         }
-        //StateHasChanged();
+    }
+    private bool IsValidEmail(string email)  // ✅ Instance method
+    {
+        if (string.IsNullOrWhiteSpace(email)) return false;
+        return System.Text.RegularExpressions.Regex.IsMatch(email, @"^[^@\s]+@[^@\s]+\.[^@\s]+$");
     }
 }

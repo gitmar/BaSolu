@@ -34,6 +34,7 @@ namespace GxTie.Services
             var keyValue = keySelector(entity);
             return keyValue == 0; // default int means not saved
         }
+            
         //public static class ODataEntityHelper
         //{
 

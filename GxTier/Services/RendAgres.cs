@@ -113,5 +113,16 @@ namespace GxTie.Services
                 return new();
             }
         }
+        public async Task<List<Gpgrid>> LoadOrgaGdata(int ipl)
+        {
+            var json = await _clieManager.SendRequestAsync(
+                "AuthClient",
+                HttpMethod.Get,
+                $"lgauth/allgrids/{ipl}");
+
+            var result = JsonConvert.DeserializeObject<List<Gpgrid>>(json);
+
+            return result ?? new List<Gpgrid>();
+        }
     }
 }

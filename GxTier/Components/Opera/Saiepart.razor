@@ -1,0 +1,1592 @@
+﻿
+@page "/saiepart"
+@layout SaieMenu
+
+@using System.Net.Http.Headers
+@using BlazorBootstrap
+@using BlazorDownloadFile
+@using Blazored.LocalStorage
+@using GxShared.Helpers
+@using GxShared.Sess
+@using GxShared.Others
+@using GxShared.Interfaces
+@using GxShared.GxDtos
+@using GxShared.GxGuards
+@using GxTie.Services
+@using GxTie.Components
+@using GxTie.Components.Opera.RtOpe
+@using GxTie.StaticHelpers
+@using Simple.OData.Client
+@using System.Security.Claims
+@using GxFormula.ForaBizz
+@using GxFormula.Forasource
+@using GxTie.Services.Calculation
+
+@inject MyAuthStateProvider _authprovider
+@inject ILocalStorageService _localStorage
+@inject IBlazorDownloadFileService DownloadService
+@inject HttpClientService _cliemanager
+@inject FormulaEvaluationService _myFService
+@inject ICalculationPersistence _calcPersistence
+@inject FormulaEngine _myFEngine
+@inject RendAgres _rendAgres
+@inject ICalculationService _calcService
+@inject ICalculationWorkflow _workflowService
+@inject IProgramLineParser _myLineParser
+@inject IJSRuntime _jsRun
+
+@* <h3>Saiepart</h3> *@
+<PageTitle>Saisie Offline</PageTitle>
+@if (!string.IsNullOrEmpty(Imessage))
+{
+    <div>
+        @Imessage
+    </div>
+}
+
+<div class="my-container">
+    @if (toChild != null)
+    {
+        @ChildContent
+    }
+</div>
+
+@if (isLoading)
+{
+    <div>Loading...</div>
+}
+else
+{
+    if (CanSaie)
+    {
+        <div class="d-flex align-items-center gap-2 mb-2">
+            <div class="col-auto">
+                <label>Personne :</label>
+            </div>
+            <div class="col-auto">
+                <AutoComplete TItem="TierspDto"
+                              @bind-Value="InTSaie"
+                              DataProvider="LoadPreTiers"
+                              PropertyName="@(displayMode == DisplayMode.Matricule ? "Xmatri" : "Nom")"
+                              Placeholder="@(displayMode == DisplayMode.Matricule ? "Enter matricule..." : "Enter name...")"
+                              OnChanged="OnChanged">
+                </AutoComplete>
+            </div>
+    <!-- Toggle for display mode -->
+            <div class="col-auto">
+                <InputRadioGroup @bind-Value="displayMode" Orientation="Horizontal">
+                    <InputRadio Value="DisplayMode.Matricule">Matricule</InputRadio>
+                    <InputRadio Value="DisplayMode.Name">Nom/Prenom</InputRadio>
+                </InputRadioGroup>
+            </div>
+
+    <!-- Unified InputSelect -->
+    <div class="col-auto">
+                <InputSelect @bind-Value="ImyTie" @onclick="async () => await RendsTier(ImyTie)">
+                    <option value="0"></option>
+                    @foreach (var tie in PreTiers)
+                    {
+                        <option value="@tie.Id">
+                            @(displayMode == DisplayMode.Matricule
+                                ? tie.Xmatri
+                                : $"{tie.Nom} - {tie.Pnom}")
+                        </option>
+                    }
+                </InputSelect>
+
+        @* <InputSelect @bind-Value="ImyTie" @onclick="async () => await RendsTier(ImyTie)">
+            <option value="0"></option>
+            @foreach (var tie in PreTiers)
+            {
+                <option value="@tie.Id">
+                    @(displayMode == "matricule" 
+                        ? tie.Xmatri 
+                        : $"{tie.Nom} - {tie.Pnom}")
+                </option>
+            }
+        </InputSelect> *@
+    </div>
+</div>
+
+    }
+    <!--VISIBLE SAISIE-->
+        @if (isFicheVisible)
+        {
+            <RtS11Fic @ref="myfsaie"
+                curOrga="@curOrga"
+                toChild="@toChild"
+                _curTier="@_curTier"
+                _EdtODaClient="@_MyODaClient">
+                <ChildContent>
+                    <h2 class="child-box">Fiche de @curProg.Liba</h2>
+                </ChildContent>
+            </RtS11Fic>
+        }
+
+    <Grid TItem="RubVarRow" Data="@Session.RubVarRows" AllowPaging="true" Responsive="true">
+        <GridColumns>
+            <GridColumn TItem="RubVarRow" HeaderText="Code">
+                <ChildContent Context="r">@r.Scdrub</ChildContent>
+            </GridColumn>
+            <GridColumn TItem="RubVarRow" HeaderText="Label">
+                <ChildContent Context="r">@r.Liba</ChildContent>
+            </GridColumn>
+            <GridColumn TItem="RubVarRow" HeaderText="InpValue">
+                <ChildContent Context="r">
+                    <ValidateInput Atyp="@r.Atyp"
+                                   @bind-Value="r.InputValue"
+                                   ErrorMessage="Invalid value"
+                                   OnValidInput="val => HandleVarInput(r, val?.ToString() ?? string.Empty)" />
+                </ChildContent>
+            </GridColumn>
+            <GridColumn TItem="RubVarRow" HeaderText="Aval">
+                <ChildContent Context="r">@r.Aval</ChildContent>
+            </GridColumn>
+            <GridColumn TItem="RubVarRow" HeaderText="">
+                <HeaderContent>
+                    <div class="d-flex align-items-center gap-2">
+                        <Button Color="ButtonColor.Primary" Size="ButtonSize.Small"
+                                disabled="@(!CanCalc)"
+                                @onclick=" () => OnCalculateAsync()">
+                            Calculer
+                        </Button>
+                        <Button Color="ButtonColor.Success" Size="ButtonSize.Small"
+                                disabled="@(!CanSave)"
+                                @onclick="OnSaveAsync">
+                            Confirmer
+                        </Button>
+                    </div>
+                </HeaderContent>
+            </GridColumn>
+        </GridColumns>
+           <GridDetailView TItem="RubVarRow">
+            <Grid TItem="RubFmtRow" Data="@context.Details" AllowPaging="false" Responsive="true">
+                <GridColumns>
+                    <GridColumn TItem="RubFmtRow" HeaderText="Code">
+                        <ChildContent Context="d">@d.Scdfmt</ChildContent>
+                    </GridColumn>
+                    <GridColumn TItem="RubFmtRow" HeaderText="Label">
+                        <ChildContent Context="d">@d.Liba</ChildContent>
+                    </GridColumn>
+                    <GridColumn TItem="RubFmtRow" HeaderText="InpValue">
+                        <ChildContent Context="d">
+                            <ValidateInput Atyp = "@d.Atyp"
+                                           @bind-Value="d.InputValue"
+                                           ErrorMessage="Invalid value"
+                                           OnValidInput="val => HandleFmtInput(context, d, val?.ToString() ?? string.Empty)" />
+                         </ChildContent>
+                    </GridColumn>
+                    <GridColumn TItem="RubFmtRow" HeaderText="Aval">
+                        <ChildContent Context="d">@d.Aval</ChildContent>
+                    </GridColumn>
+                </GridColumns>
+            </Grid>
+        </GridDetailView>
+    </Grid>
+}
+
+@code {
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+    [Parameter] public GxorgaDto curOrga { get; set; } = new();
+    [Parameter] public ChildVars toChild { get; set; } = new();
+    [Parameter] public int ImyDiv { get; set; }
+    [Parameter] public int ChxGpe { get; set; }
+    [Parameter] public List<TierspDto> PreTiers { get; set; } = new();
+    [Parameter] public List<ActsaieDto> PreActs { get; set; }
+    [Parameter] public bool SessOpen { get; set; }
+
+    [Parameter] public IPendingChangesGuard _guard { get; set; }
+    [Parameter] public PendingSaveMode inSaveMode {get; set;}
+    [Parameter] public SaieSession? _saieSession { get; set; }
+    [Parameter] public CalcContext? _calcContext { get; set; }
+    //[Parameter] public CalcSession? _calcSession { get; set; }
+    [Parameter] public IODataClient _MyODaClient { get; set; }
+
+    [Parameter] public PlngenDto curProg { get; set; }
+    //public List<Gtabl> EnsTbls { get; set; }
+    //[Parameter] public int TierId { get; set; }
+
+    [Parameter] public int NbChanges { get; set; }
+    [Parameter] public EventCallback<int> NbChangesChanged { get; set; }
+
+    private RtS11Fic myfsaie;
+    private TierspDto? _curTier;
+    private int ImyTie = 0;
+    private string InTSaie = ""; 
+    //local data
+    private List<Gpgrid> _ingData = new();
+
+    private SaieSession Session { get; set; } = new();
+    private DisplayMode displayMode = DisplayMode.Matricule; // default
+    public enum DisplayMode
+    {
+        Matricule = 1,
+        Name = 2
+    }
+
+    // Computed properties
+    private bool Yatier => ImyTie != 0; //SaieDir == 1 || (Ditie != 0 && Fitie != 0);
+    private bool CanSaie => SessOpen && ImyDiv != 0;
+    private bool CanLoad => CanSaie && Yatier && !isBusy;
+    private bool CanInput => Session is not null && Session.RubVarRows.Any();
+    private bool CanCalc => CanInput && _hasUserInput && !isBusy;
+    private bool CanSave => CanInput && _hasCalculated && !isBusy;
+
+    private bool _hasUserInput;
+    private bool _hasCalculated;
+
+
+    private string Imessage = "";
+    private string stopenFich = "OuvrirFiche";
+
+    // Mode / selection
+    private int SaieDir = 1;
+    //private int Ditie = 0, Fitie = 0;
+    //private int curTie = 0;
+    //private string IdebTier = "";
+    //private string IfinTier = "";
+    private int _lgcdu = 3;
+
+    //private int ImyRubr = 0;
+    //private string IdebRub = "";
+    //private string IfinRub = "";
+
+    // Loading / UI state
+    private bool isLoading = true;
+    private bool isBusy = false;
+    private bool isAuthenticated = false;
+    private bool isFicheVisible = false;
+    private bool isFilteringEnabled = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        isLoading = false;
+        int igril = curProg.Plsgri ?? 0;
+        if (igril != 0)
+        {
+            _ingData = await _rendAgres.LoadOrgaGdata(igril);
+        }
+        else
+        {
+            _ingData = new List<Gpgrid>();
+        }
+
+        Console.WriteLine($"inv roles : {_ingData?.Count() ?? 0}");
+    }
+
+    protected override Task OnParametersSetAsync()
+    {
+        if (_saieSession is not null)
+        {
+            Session = _saieSession;
+            BindLocalStateFromSession(Session); // builds CalcContext
+        }
+
+        return Task.CompletedTask;
+    }
+
+    private async Task RendsTier(int idtie)
+    {
+        if (idtie == 0)
+        {
+            _curTier = new TierspDto();
+            if (Session is not null)
+                Session.RubVarRows = new List<RubVarRow>();
+        }
+        else
+        {
+            _curTier = PreTiers.FirstOrDefault(t => t.Id == idtie) ?? new TierspDto();
+            await OnLoadResetAsync();
+        }
+    }
+
+    private async Task OnLoadResetAsync()
+    {
+        if (!CanLoad)
+            return;
+
+        isBusy = true;
+        try
+        {
+            var ctx = BuildSingleContext();
+            if (ctx is null || ctx.Program is null || ctx.Tier is null)
+                return;
+
+            // Create a fresh SAIE session (no DB load here, just initialization)
+            Session = await _workflowService.CreateSaieSessionAsync(
+                ctx.Program,
+                ctx.Tier,
+                ctx.EnsTbls ?? new List<Gtabl>()
+            );
+
+            _saieSession = Session;
+
+            EnsureRubVarRowsAndDetails(Session);
+            BindLocalStateFromSession(Session); // rebuilds CalcContext from session
+
+            _hasUserInput = false;
+            _hasCalculated = false;
+        }
+        finally
+        {
+            isBusy = false;
+        }
+    }
+
+    private async Task OnCalculateAsync(bool isRecompute = false)
+    {
+        if (!CanCalc || _calcContext is null || Session is null)
+            return;
+
+        isBusy = true;
+        try
+        {
+            // Step 1: Calculate via workflow
+            Console.WriteLine("A COMMENCE");
+            Session = await _workflowService.CalculateSaieAsync(_calcContext, Session);
+            _saieSession = Session;
+            Console.WriteLine("A FINI");
+            // Step 2: Sync UI state from session
+            BindLocalStateFromSession(Session);
+            SyncSessionToGrid(Session);
+
+            _hasCalculated = true;
+
+            if (!isRecompute)
+                Imessage = "Passe3";
+        }
+        finally
+        {
+            isBusy = false;
+        }
+    }
+
+    private void SyncSessionToGrid(SaieSession session)
+    {
+        // Sync RubVarRows from Actsaies
+        foreach (var act in session.Actsaies)
+        {
+            var row = session.RubVarRows.FirstOrDefault(r => r.Irub == act.Irub);
+            if (row is not null)
+            {
+                row.Vgpe = act.Vgpe;
+                row.Aval = act.Aval;
+                row.Iraw = act.Iraw ?? string.Empty;
+                row.InputValue = act.Inptvalue ?? row.InputValue;
+            }
+        }
+
+        // Sync RubFmtRows (details) from Actdets
+        foreach (var det in session.Actdets)
+        {
+            var master = session.RubVarRows.FirstOrDefault(r => r.Irub == det.Irub);
+            if (master is null)
+                continue;
+
+            var detail = master.Details.FirstOrDefault(d => d.Ifmt == det.Ifmt);
+            if (detail is not null)
+            {
+                detail.Vgpe = det.Vgpe;
+                detail.Aval = det.Aval;
+                detail.Iraw = det.Iraw ?? string.Empty;
+                detail.InputValue = det.Inptvalue ?? detail.InputValue;
+            }
+        }
+    }
+
+    private IEnumerable<ProgramLine> GetSaieProgramLines(RubvarDto rubvar, IReadOnlyCollection<RubfmtDto> rubfmts)
+    {
+        var lines = _myLineParser.ParseProgramLines(rubvar?.Frsrc);
+        return EnrichRubvarProgramLines(lines, rubvar, rubfmts);
+    }
+
+    private List<ProgramLine> EnrichRubvarProgramLines(
+        List<ProgramLine> lines,
+        RubvarDto rubvar,
+        IReadOnlyCollection<RubfmtDto> rubfmts)
+    {
+        var fmtByLine = rubfmts
+            .Select(x => new { Item = x, Ok = int.TryParse(x.Zcdrub, out var n), Num = n })
+            .Where(x => x.Ok)
+            .GroupBy(x => x.Num)
+            .ToDictionary(g => g.Key, g => g.First().Item);
+
+        foreach (var line in lines)
+        {
+            fmtByLine.TryGetValue(line.LineNumber ?? 0, out var rubfmt);
+
+            line.Irub = rubvar.Id;
+            line.Ifmt = rubfmt?.Id;
+            line.Type = ProgramLineTypeMapper.MapType(line.Meta, rubvar, rubfmt);
+            line.Liba = rubfmt?.Liba ?? rubvar.Liba;
+            line.SaveDetail = ProgramLineTypeMapper.ShouldSaveDetail(line.Meta, rubvar, rubfmt);
+        }
+
+        return lines;
+    }
+
+    private void HandleVarInput(RubVarRow row, string val)
+    {
+        row.InputValue = val;
+        _hasUserInput = true;
+        _hasCalculated = false;
+    }
+
+    private void HandleFmtInput(RubVarRow master, RubFmtRow detail, string val)
+    {
+        detail.InputValue = val;
+        _hasUserInput = true;
+        _hasCalculated = false;
+    }
+
+    private async Task OnSaveAsync()
+    {
+        if (!CanSave || _calcContext is null || Session is null)
+            return;
+
+        isBusy = true;
+        try
+        {
+            await _calcPersistence.SaveSaieAsync(_calcContext, Session, inSaveMode);
+        }
+        finally
+        {
+            isBusy = false;
+        }
+    }
+
+    private void EnsureRubVarRowsAndDetails(SaieSession session)
+    {
+        session.RubVarRows ??= new List<RubVarRow>();
+
+        var actByRub = session.Actsaies
+            .Where(x => x.Irub.HasValue)
+            .GroupBy(x => x.Irub!.Value)
+            .ToDictionary(g => g.Key, g => g.First());
+
+        var detByRubFmt = session.Actdets
+            .Where(x => x.Irub.HasValue && x.Ifmt.HasValue)
+            .GroupBy(x => (x.Irub!.Value, x.Ifmt!.Value))
+            .ToDictionary(g => g.Key, g => g.First());
+
+        if (session.RubVarRows.Count == 0)
+        {
+            Console.WriteLine($"RubvarRows absents");
+            session.RubVarRows = session.Program.Rubvars
+                .Select(rubvar =>
+                {
+                    actByRub.TryGetValue(rubvar.Id, out var act);
+
+                    var details = rubvar.Rubfmts
+                        .Select(rubfmt =>
+                        {
+                            detByRubFmt.TryGetValue((rubvar.Id, rubfmt.Id), out var det);
+
+                            return new RubFmtRow
+                            {
+                                Id = rubfmt.Id,
+                                Irub = rubvar.Id,
+                                Vgpe = rubfmt.Vgpe,
+                                Ifmt = rubfmt.Id,
+                                Scdfmt = rubfmt.Zcdrub,
+                                Liba = rubfmt.Liba,
+                                Ftsrc = rubfmt.Ftsrc,
+                                InputValue = det?.Inptvalue ?? string.Empty,
+                                Aval = det?.Aval,
+                                Iraw = det?.Iraw?.ToString() ?? string.Empty
+                            };
+                        })
+                        .ToList();
+
+                    return new RubVarRow
+                    {
+                        Id = rubvar.Id,
+                        Irub = rubvar.Id,
+                        Vgpe = rubvar.Vgpe,
+                        Scdrub = rubvar.Scdrub,
+                        Liba = rubvar.Liba,
+                        Abg = rubvar.Liba,
+                        InputValue = act?.Inptvalue ?? string.Empty,
+                        Aval = act?.Aval,
+                        Iraw = act?.Iraw?.ToString() ?? string.Empty,
+                        Details = details
+                    };
+                })
+                .ToList();
+        }
+        else
+        {
+            Console.WriteLine($"RubvarRows exists");
+            foreach (var row in session.RubVarRows)
+            {
+                if (row.Irub.HasValue && actByRub.TryGetValue(row.Irub.Value, out var act))
+                {
+                    row.InputValue = act?.Inptvalue ?? row.InputValue;
+                    row.Aval = act?.Aval ?? row.Aval;
+                    row.Iraw = act?.Iraw?.ToString() ?? row.Iraw;
+                }
+
+                row.Details ??= new List<RubFmtRow>();
+
+                foreach (var detRow in row.Details)
+                {
+                    if (!detRow.Irub.HasValue || !detRow.Ifmt.HasValue)
+                        continue;
+
+                    if (detByRubFmt.TryGetValue((detRow.Irub.Value, detRow.Ifmt.Value), out var det))
+                    {
+                        detRow.InputValue = det?.Inptvalue ?? detRow.InputValue;
+                        detRow.Aval = det?.Aval ?? detRow.Aval;
+                        detRow.Iraw = det?.Iraw?.ToString() ?? detRow.Iraw;
+                    }
+                }
+            }
+        }
+    }
+
+    private void BindLocalStateFromSession(SaieSession session)
+    {
+        _calcContext = new CalcContext
+        {
+            Program = session.Program,
+            Tier = session.Tier,
+            EnsTbls = session.EnsTbls,
+            IsTestMode = false
+        };
+
+        _hasUserInput = false;
+        _hasCalculated = false;
+    }
+
+    private CalcContext? BuildSingleContext()
+    {
+        var tier = PreTiers.FirstOrDefault(t => t.Id == ImyTie);
+        var prog = curOrga.Plngens.FirstOrDefault(p => p.Id == curProg.Id);
+
+        if (tier is null || prog is null)
+            return null;
+
+        return new CalcContext
+        {
+            CurOrga = curOrga,
+            Program = prog,
+            Tier = tier,
+            EnsTbls = _saieSession?.EnsTbls ?? new List<Gtabl>(),
+            IsTestMode = false
+        };
+    }
+
+    private async Task OuvrirFiche(int orig)
+    {
+        isFicheVisible = !isFicheVisible;
+        stopenFich = isFicheVisible ? "FermerFiche" : "OuvrirFiche";
+        await InvokeAsync(StateHasChanged);
+    }
+
+    // Data provider for AutoComplete
+    private async Task<AutoCompleteDataProviderResult<TierspDto>> LoadPreTiers(
+        AutoCompleteDataProviderRequest<TierspDto> request)
+    {
+        var searchText = request.Filter?.Value ?? "";
+
+        IEnumerable<TierspDto> items;
+
+        if (displayMode == DisplayMode.Matricule)
+        {
+            items = PreTiers
+                .Where(t => string.IsNullOrEmpty(searchText) ||
+                            t.Xmatri.Contains(searchText, StringComparison.OrdinalIgnoreCase))
+                .OrderBy(t => t.Xmatri);
+        }
+        else
+        {
+            items = PreTiers
+                .Where(t => string.IsNullOrEmpty(searchText) ||
+                            t.Nom.Contains(searchText, StringComparison.OrdinalIgnoreCase) ||
+                            t.Pnom.Contains(searchText, StringComparison.OrdinalIgnoreCase) ||
+                            $"{t.Nom} {t.Pnom}".Contains(searchText, StringComparison.OrdinalIgnoreCase))
+                .OrderBy(t => t.Nom)
+                .ThenBy(t => t.Pnom);
+        }
+
+        return await Task.FromResult(new AutoCompleteDataProviderResult<TierspDto>
+        {
+            Data = items,
+            TotalCount = items.Count()
+        });
+    }
+
+    private async Task OnChanged(TierspDto selected)
+    {
+        if (selected is null)
+            return;
+
+        ImyTie = selected.Id;
+
+        if (displayMode == DisplayMode.Matricule)
+        {
+            InTSaie = selected.Xmatri;
+        }
+        else
+        {
+            InTSaie = $"{selected.Nom} {selected.Pnom}";
+        }
+
+        await RendsTier(ImyTie);
+    }
+
+    private async Task HandleLostFocus(FocusEventArgs args)
+    {
+        if (string.IsNullOrWhiteSpace(InTSaie))
+            return;
+
+        if (displayMode == DisplayMode.Matricule && InTSaie.Length >= 5)
+        {
+            var selected = PreTiers.FirstOrDefault(t =>
+                t.Xmatri.Equals(InTSaie, StringComparison.OrdinalIgnoreCase));
+            if (selected != null)
+            {
+                ImyTie = selected.Id;
+                await RendsTier(ImyTie);
+            }
+        }
+        else if (displayMode == DisplayMode.Name)
+        {
+            var selected = PreTiers.FirstOrDefault(t =>
+                t.Nom.Equals(InTSaie, StringComparison.OrdinalIgnoreCase) ||
+                t.Pnom.Equals(InTSaie, StringComparison.OrdinalIgnoreCase) ||
+                $"{t.Nom} {t.Pnom}".Equals(InTSaie, StringComparison.OrdinalIgnoreCase));
+            if (selected != null)
+            {
+                ImyTie = selected.Id;
+                await RendsTier(ImyTie);
+            }
+        }
+    }
+    // protected override async Task OnInitializedAsync()
+    // {
+    //     isLoading = false;
+    //     int igril = curProg.Plsgri ?? 0;
+    //     if (igril != 0)
+    //     {
+    //         _ingData = await _rendAgres.LoadOrgaGdata(igril);
+    //     }
+    //     else
+    //     {
+    //         _ingData = new();
+    //     }    
+    //     Console.WriteLine($"inv roles : {_ingData?.Count() ?? 0}");
+    //     //return Task.CompletedTask;
+    // }
+
+    // protected override Task OnParametersSetAsync()
+    // {
+    //     if (_saieSession is not null)
+    //     {
+    //         Session = _saieSession;
+    //         //SyncSessionToGrid(Session); // <-- ensure Vgpe flows into grid
+    //         BindLocalStateFromSession(Session); // builds CalcContext
+    //     }
+
+    //     return Task.CompletedTask;
+    // }
+    // private async Task RendsTier(int idtie)
+    // {
+    //     if (idtie == 0)
+    //     {
+    //         _curTier = new();
+    //         Session.RubVarRows = new();
+    //     }
+    //     else
+    //     {
+    //         _curTier = PreTiers.FirstOrDefault(t => t.Id == idtie);
+    //         await OnLoadResetAsync();
+    //     }
+    // }
+
+    // private async Task OnLoadResetAsync()
+    // {
+    //     if (!CanLoad)
+    //         return;
+
+    //     isBusy = true;
+    //     try
+    //     {
+    //         var ctx = BuildSingleContext();
+    //         if (ctx is null || ctx.Program is null || ctx.Tier is null)
+    //             return;
+
+    //         Session = await _workflowService.LoadSaieAsync(ctx.Program, ctx.Tier, ctx.EnsTbls);
+    //         _saieSession = Session;
+
+    //         EnsureRubVarRowsAndDetails(Session);
+    //         //SyncSessionToGrid(Session); // <-- ensure Vgpe flows into grid
+    //         BindLocalStateFromSession(Session); // <-- build CalcContext right after load
+
+    //         _hasUserInput = false;
+    //         _hasCalculated = false;
+    //     }
+    //     finally
+    //     {
+    //         isBusy = false;
+    //     }
+    // }
+    // // In Saiepart.razor
+    // private async Task OnCalculateAsync(bool isRecompute = false)
+    // {
+    //     if (!CanCalc || _calcContext is null || Session is null)
+    //         return;
+
+    //     isBusy = true;
+    //     try
+    //     {
+    //         // Step 1: Calculate via workflow
+    //         Session = await _workflowService.CalculateSaieAsync(_calcContext, Session);
+    //         _saieSession = Session;
+
+    //         // Step 2: Sync UI state from session
+    //         BindLocalStateFromSession(Session);
+    //         SyncSessionToGrid(Session);
+
+    //         _hasCalculated = true;
+
+    //         if (!isRecompute)
+    //             Imessage = "Passe3";
+    //     }
+    //     finally
+    //     {
+    //         isBusy = false;
+    //     }
+    // }
+    
+    // private void SyncSessionToGrid(SaieSession session)
+    // {
+    //     // Sync RubVarRows from Actsaies
+    //     foreach (var act in session.Actsaies)
+    //     {
+    //         var row = session.RubVarRows.FirstOrDefault(r => r.Irub == act.Irub);
+    //         if (row is not null)
+    //         {
+    //             row.Vgpe = act.Vgpe;
+    //             row.Aval = act.Aval;
+    //             row.Iraw = act.Iraw ?? string.Empty;
+    //             row.InputValue = act.Inptvalue ?? row.InputValue;
+    //         }
+    //     }
+
+    //     // Sync RubFmtRows (details) from Actdets
+    //     foreach (var det in session.Actdets)
+    //     {
+    //         var master = session.RubVarRows.FirstOrDefault(r => r.Irub == det.Irub);
+    //         if (master is null)
+    //             continue;
+
+    //         var detail = master.Details.FirstOrDefault(d => d.Ifmt == det.Ifmt);
+    //         if (detail is not null)
+    //         {
+    //             detail.Vgpe = det.Vgpe;
+    //             detail.Aval = det.Aval;
+    //             detail.Iraw = det.Iraw ?? string.Empty;
+    //             detail.InputValue = det.Inptvalue ?? detail.InputValue;
+    //         }
+    //     }
+    // }
+    
+    // private IEnumerable<ProgramLine> GetSaieProgramLines(RubvarDto rubvar, IReadOnlyCollection<RubfmtDto> rubfmts)
+    // {
+    //     var lines = _myLineParser.ParseProgramLines(rubvar?.Frsrc);
+    //     return EnrichRubvarProgramLines(lines, rubvar, rubfmts);
+    // }
+    // private List<ProgramLine> EnrichRubvarProgramLines(
+    // List<ProgramLine> lines,
+    // RubvarDto rubvar,
+    // IReadOnlyCollection<RubfmtDto> rubfmts)
+    // {
+    //     var fmtByLine = rubfmts
+    //         .Select(x => new { Item = x, Ok = int.TryParse(x.Zcdrub, out var n), Num = n })
+    //         .Where(x => x.Ok)
+    //         .GroupBy(x => x.Num)
+    //         .ToDictionary(g => g.Key, g => g.First().Item);
+
+    //     foreach (var line in lines)
+    //     {
+    //         fmtByLine.TryGetValue(line.LineNumber ?? 0, out var rubfmt);
+
+    //         line.Irub = rubvar.Id;
+    //         line.Ifmt = rubfmt?.Id;
+    //         line.Type = ProgramLineTypeMapper.MapType(line.Meta, rubvar, rubfmt);
+    //         line.Liba = rubfmt?.Liba ?? rubvar.Liba;
+    //         line.SaveDetail = ProgramLineTypeMapper.ShouldSaveDetail(line.Meta, rubvar, rubfmt); // <-- Fixed
+    //     }
+
+    //     return lines;
+    // }
+    // private void HandleVarInput(RubVarRow row, string val)
+    // {
+    //     row.InputValue = val;
+    //     _hasUserInput = true;
+    //     _hasCalculated = false;
+    // }
+
+    // private void HandleFmtInput(RubVarRow master, RubFmtRow detail, string val)
+    // {
+    //     detail.InputValue = val;
+    //     _hasUserInput = true;
+    //     _hasCalculated = false;
+    // }
+
+    // private async Task OnSaveAsync()
+    // {
+    //     if (!CanSave || _calcContext is null)
+    //         return;
+
+    //     isBusy = true;
+    //     try
+    //     {
+    //         await _calcPersistence.SaveSaieAsync(_calcContext, Session, inSaveMode);
+    //     }
+    //     finally
+    //     {
+    //         isBusy = false;
+    //     }
+    // }
+    
+    // private void EnsureRubVarRowsAndDetails(SaieSession session)
+    // {
+    //     session.RubVarRows ??= new List<RubVarRow>();
+
+    //     var actByRub = session.Actsaies
+    //         .Where(x => x.Irub.HasValue)
+    //         .GroupBy(x => x.Irub!.Value)
+    //         .ToDictionary(g => g.Key, g => g.First());
+
+    //     var detByRubFmt = session.Actdets
+    //         .Where(x => x.Irub.HasValue && x.Ifmt.HasValue)
+    //         .GroupBy(x => (x.Irub!.Value, x.Ifmt!.Value))
+    //         .ToDictionary(g => g.Key, g => g.First());
+
+    //     if (session.RubVarRows.Count == 0)
+    //     {
+    //         Console.WriteLine($"RubvarRows absents");
+    //         session.RubVarRows = session.Program.Rubvars
+    //             .Select(rubvar =>
+    //             {
+    //                 actByRub.TryGetValue(rubvar.Id, out var act);
+
+    //                 var details = rubvar.Rubfmts
+    //                     .Select(rubfmt =>
+    //                     {
+    //                         detByRubFmt.TryGetValue((rubvar.Id, rubfmt.Id), out var det);
+
+    //                         return new RubFmtRow
+    //                         {
+    //                             Id = rubfmt.Id,
+    //                             Irub = rubvar.Id,
+    //                             Vgpe = rubfmt.Vgpe,
+    //                             Ifmt = rubfmt.Id,
+    //                             Scdfmt = rubfmt.Zcdrub,
+    //                             Liba = rubfmt.Liba,
+    //                             Ftsrc = rubfmt.Ftsrc,
+    //                             InputValue = det?.Inptvalue ?? string.Empty,
+    //                             Aval = det?.Aval,
+    //                             Iraw = det?.Iraw?.ToString() ?? string.Empty
+    //                         };
+    //                     })
+    //                     .ToList();
+
+    //                 return new RubVarRow
+    //                 {
+    //                     Id = rubvar.Id,
+    //                     Irub = rubvar.Id,
+    //                     Vgpe = rubvar.Vgpe,
+    //                     Scdrub = rubvar.Scdrub,
+    //                     Liba = rubvar.Liba,
+    //                     Abg = rubvar.Liba,
+    //                     InputValue = act?.Inptvalue ?? string.Empty,
+    //                     Aval = act?.Aval,
+    //                     Iraw = act?.Iraw?.ToString() ?? string.Empty,
+    //                     Details = details
+    //                 };
+    //             })
+    //             .ToList();
+    //     }
+    //     else
+    //     {
+    //         Console.WriteLine($"RubvarRows exists");
+    //         foreach (var row in session.RubVarRows)
+    //         {
+    //             if (row.Irub.HasValue && actByRub.TryGetValue(row.Irub.Value, out var act))
+    //             {
+    //                 row.InputValue = act?.Inptvalue ?? row.InputValue;
+    //                 row.Aval = act?.Aval ?? row.Aval;
+    //                 row.Iraw = act?.Iraw?.ToString() ?? row.Iraw;
+    //             }
+
+    //             row.Details ??= new List<RubFmtRow>();
+
+    //             foreach (var detRow in row.Details)
+    //             {
+    //                 if (!detRow.Irub.HasValue || !detRow.Ifmt.HasValue)
+    //                     continue;
+
+    //                 if (detByRubFmt.TryGetValue((detRow.Irub.Value, detRow.Ifmt.Value), out var det))
+    //                 {
+    //                     detRow.InputValue = det?.Inptvalue ?? detRow.InputValue;
+    //                     detRow.Aval = det?.Aval ?? detRow.Aval;
+    //                     detRow.Iraw = det?.Iraw?.ToString() ?? detRow.Iraw;
+    //                 }
+    //             }
+    //         }
+    //     }
+    // }
+    // private void BindLocalStateFromSession(SaieSession session)
+    // {
+    //     _calcContext = new CalcContext
+    //     {
+    //         Program = session.Program,
+    //         Tier = session.Tier,
+    //         EnsTbls = session.EnsTbls,
+    //         IsTestMode = false
+    //     };
+
+    //     _hasUserInput = false;
+    //     _hasCalculated = false;
+    // }
+    
+    // private CalcContext? BuildSingleContext()
+    // {
+    //     var tier = PreTiers.FirstOrDefault(t => t.Id == ImyTie);
+    //     var prog = curOrga.Plngens.FirstOrDefault(p => p.Id == curProg.Id);
+
+    //     if (tier is null || prog is null)
+    //         return null;
+
+    //     return new CalcContext
+    //     {
+    //         CurOrga = curOrga,
+    //         Program = prog,
+    //         Tier = tier,
+    //         EnsTbls = _saieSession?.EnsTbls ?? new List<Gtabl>(),
+    //         IsTestMode = false,
+    //         //Idorg = curOrga.Idorg,
+    //         //Ipln = prog.Id,
+    //         //Itie = tier.Id
+    //     };
+    // }
+
+    // private async Task OuvrirFiche(int orig)
+    // {
+    //     isFicheVisible = !isFicheVisible;
+    //     stopenFich = isFicheVisible ? "FermerFiche" : "OuvrirFiche";
+    //     await InvokeAsync(StateHasChanged);
+    // }
+    // // Data provider for AutoComplete
+    // private async Task<AutoCompleteDataProviderResult<TierspDto>> LoadPreTiers(AutoCompleteDataProviderRequest<TierspDto> request)
+    // {
+    //     var searchText = request.Filter?.Value ?? "";
+
+    //     IEnumerable<TierspDto> items;
+
+    //     if (displayMode == DisplayMode.Matricule)
+    //     {
+    //         // Filter by matricule
+    //         items = PreTiers
+    //             .Where(t => string.IsNullOrEmpty(searchText) ||
+    //                         t.Xmatri.Contains(searchText, StringComparison.OrdinalIgnoreCase))
+    //             .OrderBy(t => t.Xmatri);
+    //     }
+    //     else
+    //     {
+    //         // Filter by name (partial match on Nom or Pnom)
+    //         items = PreTiers
+    //             .Where(t => string.IsNullOrEmpty(searchText) ||
+    //                         t.Nom.Contains(searchText, StringComparison.OrdinalIgnoreCase) ||
+    //                         t.Pnom.Contains(searchText, StringComparison.OrdinalIgnoreCase) ||
+    //                         $"{t.Nom} {t.Pnom}".Contains(searchText, StringComparison.OrdinalIgnoreCase))
+    //             .OrderBy(t => t.Nom)
+    //             .ThenBy(t => t.Pnom);
+    //     }
+
+    //     return await Task.FromResult(new AutoCompleteDataProviderResult<TierspDto>
+    //     {
+    //         Data = items,
+    //         TotalCount = items.Count()
+    //     });
+    // }
+
+    // private async Task OnChanged(TierspDto selected)
+    // {
+    //     if (selected is null)
+    //         return;
+
+    //     ImyTie = selected.Id;
+
+    //     if (displayMode == DisplayMode.Matricule)
+    //     {
+    //         InTSaie = selected.Xmatri;
+    //     }
+    //     else
+    //     {
+    //         InTSaie = $"{selected.Nom} {selected.Pnom}";
+    //     }
+
+    //     await RendsTier(ImyTie);
+    // }
+
+    // private async Task HandleLostFocus(FocusEventArgs args)
+    // {
+    //     if (string.IsNullOrWhiteSpace(InTSaie))
+    //         return;
+
+    //     if (displayMode == DisplayMode.Matricule && InTSaie.Length >= 5)
+    //     {
+    //         var selected = PreTiers.FirstOrDefault(t =>
+    //             t.Xmatri.Equals(InTSaie, StringComparison.OrdinalIgnoreCase));
+    //         if (selected != null)
+    //         {
+    //             ImyTie = selected.Id;
+    //             await RendsTier(ImyTie);
+    //         }
+    //     }
+    //     else if (displayMode == DisplayMode.Name)
+    //     {
+    //         var selected = PreTiers.FirstOrDefault(t =>
+    //             t.Nom.Equals(InTSaie, StringComparison.OrdinalIgnoreCase) ||
+    //             t.Pnom.Equals(InTSaie, StringComparison.OrdinalIgnoreCase) ||
+    //             $"{t.Nom} {t.Pnom}".Equals(InTSaie, StringComparison.OrdinalIgnoreCase));
+    //         if (selected != null)
+    //         {
+    //             ImyTie = selected.Id;
+    //             await RendsTier(ImyTie);
+    //         }
+    //     }
+    //}
+
+    // private Task<AutoCompleteDataProviderResult<TierspDto>> LoadPreTiers(AutoCompleteDataProviderRequest<TierspDto> request)
+    // {
+    //     var items = PreTiers.Where(t =>
+    //         string.IsNullOrEmpty(request.Filter) ||
+    //         t.Xmatri.Contains(request.Filter, StringComparison.OrdinalIgnoreCase));
+
+    //     return Task.FromResult(new AutoCompleteDataProviderResult<TierspDto>
+    //     {
+    //         Data = items,
+    //         TotalCount = items.Count()
+    //     });
+    // }// private async Task CalculateAsync(bool isRecompute = false)
+    // {
+    //     if (!CanCalc || CalcContext is null || Session is null)
+    //         return;
+
+    //     isBusy = true;
+    //     try
+    //     {
+    //         // Step 1: Calculate via workflow (this calls ISaieCalculator internally)
+    //         Session = await _workflowService.CalculateSaieAsync(CalcContext, Session);
+    //         SaieSession = Session;
+
+    //         // Step 2: Sync UI state from session
+    //         BindLocalStateFromSession(Session);
+    //         SyncSessionToGrid(Session); // <-- Your existing method to flow Vgpe/Aval to grid
+
+    //         _hasCalculated = true;
+
+    //         if (!isRecompute)
+    //             Imessage = "Passe3";
+    //     }
+    //     finally
+    //     {
+    //         isBusy = false;
+    //     }
+    // }
+    // private async Task CalculateAsync(bool isRecompute = false)
+    // {
+    //     if (!CanCalc || CalcContext is null || Session is null)
+    //         return;
+
+    //     isBusy = true;
+    //     try
+    //     {
+    //         // Step 1: Calculate via workflow (this calls ISaieCalculator internally)
+    //         Session = await _workflowService.CalculateSaieAsync(CalcContext, Session);
+    //         SaieSession = Session;
+
+    //         // Step 2: Sync UI state from session
+    //         BindLocalStateFromSession(Session);
+    //         SyncSessionToGrid(Session);
+
+    //         _hasCalculated = true;
+
+    //         if (!isRecompute)
+    //             Imessage = "Passe3";
+    //     }
+    //     finally
+    //     {
+    //         isBusy = false;
+    //     }
+    // }
+
+    // private async Task CalculateAsync(bool isRecompute = false)
+    // {
+    //     if (!CanCalc || CalcContext is null || Session is null)
+    //         return;
+
+    //     isBusy = true;
+    //     try
+    //     {
+    //         // Step 1: refresh session from workflow
+    //         Session = await _workflowService.CalculateSaieAsync(CalcContext, Session);
+    //         SaieSession = Session;
+
+    //         // Step 2: ensure rows are bound
+    //         EnsureRubVarRowsAndDetails(Session);
+
+    //         // Step 3: evaluate formulas
+    //         var executor = new FormulaLineExecutor(new FormulaEvaluationService(new TokenResolver()));
+    //         var context = new FormulaEvaluationContext
+    //         {
+    //             SessionDate = Session.Date,
+    //             Tier = Session.Tier,
+    //             Actsaies = Session.Actsaies,
+    //             Actdets = Session.Actdets,
+    //             PreviousLines = new List<FormulaLine>() // for Calcpart
+    //         };
+
+    //         foreach (var rubvarRow in Session.RubVarRows)
+    //         {
+    //             var source = new RubvarRowLineSource(rubvarRow, rubvarRow.Details);
+    //             executor.ExecuteSaiepart(source, context, Session);
+    //         }
+
+    //         // Step 4: bind results back to UI
+    //         BindLocalStateFromSession(Session);
+
+    //         if (!isRecompute)
+    //             Imessage = "Passe3";
+
+    //         _hasCalculated = true;
+    //     }
+    //     finally
+    //     {
+    //         isBusy = false;
+    //     }
+    // }
+
+    // private List<ProgramLine> EnrichRubvarProgramLines(
+    //     List<ProgramLine> lines,
+    //     RubvarDto rubvar,
+    //     IReadOnlyCollection<RubfmtDto> rubfmts)
+    // {
+    //     var fmtByLine = rubfmts
+    //         .Select(x => new { Item = x, Ok = int.TryParse(x.Zcdrub, out var n), Num = n })
+    //         .Where(x => x.Ok)
+    //         .GroupBy(x => x.Num)
+    //         .ToDictionary(g => g.Key, g => g.First().Item);
+
+    //     foreach (var line in lines)
+    //     {
+    //         fmtByLine.TryGetValue(line.LineNumber ?? 0, out var rubfmt);
+
+    //         line.Irub = rubvar.Id;
+    //         line.Ifmt = rubfmt?.Id;
+    //         line.Type = ProgramLineTypeMapper.MapType(line.Meta, rubvar, rubfmt);
+    //         line.Liba = rubfmt?.Liba ?? rubvar.Liba;
+    //         line.SaveDetail = ProgramLineDetailPolicy.ShouldSaveDetail(line.Meta, rubvar, rubfmt);
+    //     }
+
+    //     return lines;
+    // }
+    // private async Task OnLoadResetAsync()
+    // {
+    //     if (!CanLoad)
+    //         return;
+    //     if (SaieDir == 1)
+    //     {
+    //         Ditie = PreTiers.FirstOrDefault()?.Id ?? 0;
+    //         Fitie = PreTiers.LastOrDefault()?.Id ?? 0;
+    //     }
+    //     isBusy = true;
+    //     try
+    //     {
+    //         var ctx = BuildSingleContext();
+    //         if (ctx is null)
+    //             return;
+    //         Session = await _workflowService.LoadSaieAsync(ctx.Program.Id, ctx.Tie);
+    //         SaieSession = Session;
+
+    //         EnsureRubVarRowsAndDetails(Session);
+
+    //         _hasUserInput = false;
+    //         _hasCalculated = false;
+    //     }
+    //     finally
+    //     {
+    //         isBusy = false;
+    //     }
+    // }
+    // private void OnChanged(TierspDto selected)
+    // {
+    //     if (selected is null)
+    //         return;
+
+    //     ImyTie = selected.Id;
+    //     InTSaie = selected.Xmatri;
+    //     RendsTier(ImyTie);
+    // }
+
+    // Called when user leaves the field
+    
+    // private ActsaieDto
+    // private CalcContext? BuildSingleContext()
+    // {
+    //     var tier = PreTiers.FirstOrDefault(t => t.Id == Ditie);
+    //     var prog = curOrga.Plngens.FirstOrDefault(p => p.Id == curProg.Id);
+
+    //     if (tier is null || prog is null)
+    //         return null;
+
+    //     return new CalcContext
+    //     {
+    //         CurOrga = curOrga,
+    //         Program = prog,
+    //         Tier = tier,
+    //         IsTestMode = false,
+    //         //Idorg = curOrga?.Idorg,
+    //         //Ipln = prog.Id,
+    //         //Itie = tier.Id
+    //     };
+    // }(CalcContext ctx, RubvarDto rub, List<ActdetDto> dets)
+    // {
+    //     var result = _myFEngine.Evaluate(rub.Frsrc, BuildEvalContext(ctx, rub));
+
+    //     return new ActsaieDto
+    //     {
+    //         Itie = ctx.Itie,
+    //         Ipln = ctx.Ipln,
+    //         Irub = rub.Id,
+    //         Atyp = rub.Atyp,
+    //         Inptvalue = result?.Value?.ToString(),
+    //         Aval = result?.Raw,
+    //         Iraw = MyConverters.Trunc1000(result?.Raw)?.ToString(),
+    //         Actdets = dets
+    //     };
+    // }
+    // private void OnChanged(TierspDto selected)
+    // {
+    //     if (selected is null)
+    //         return;
+
+    //     ImyTie = selected.Id;
+    //     InTSaie = selected.Xmatri;
+    //     RendsTier(ImyTie);
+    // }
+    // private async Task<AutoCompleteDataProviderResult<TierspDto>> LoadPreTiers(AutoCompleteDataProviderRequest<TierspDto> request)
+    // {
+    //     var searchText = request.Filter?.Value ?? "";
+
+    //     var items = PreTiers
+    //         .Where(t => string.IsNullOrEmpty(searchText) ||
+    //                     t.Xmatri.Contains(searchText, StringComparison.OrdinalIgnoreCase))
+    //         .OrderBy(t => t.Xmatri);
+
+    //     return await Task.FromResult(new AutoCompleteDataProviderResult<TierspDto>
+    //     {
+    //         Data = items,
+    //         TotalCount = items.Count()
+    //     });
+    // }
+    // private void BindLocalStateFromSession(SaieSession session)
+    // {
+    //     CalcContext = new CalcContext
+    //     {
+    //         Program = session.Program,
+    //         Tier = session.Tier,
+    //         IsTestMode = false
+    //     };
+
+    //     _hasUserInput = false;
+    //     _hasCalculated = false;
+    // }
+    // private async Task RendsTier(int idtie)
+    // {
+    //     if (idtie == 0)
+    //     {
+    //         _curTier = new();
+    //         Session.RubVarRows = new();
+    //     } else
+    //     {
+    //         _curTier = PreTiers.FirstOrDefault(t => t.Id == idtie);
+    //         await OnLoadResetAsync();
+    //     }
+    // }
+
+    // private async Task OnCalculateAsync()
+    // {
+    //     if (!CanCalc || CalcContext is null || Session is null)
+    //         return;
+
+    //     // if (SaieDir == 1)
+    //     // {
+    //     //     Ditie = PreTiers.FirstOrDefault()?.Id ?? 0;
+    //     //     Fitie = PreTiers.LastOrDefault()?.Id ?? 0;
+    //     // }
+    //     isBusy = true;
+    //     try
+    //     {
+    //         Session = await _workflowService.CalculateSaieAsync(CalcContext, Session);
+    //         SaieSession = Session;
+
+    //         EnsureRubVarRowsAndDetails(Session);
+    //         BindLocalStateFromSession(Session);
+    //         Imessage = "Passe3";
+    //         _hasCalculated = true;
+    //     }
+    //     finally
+    //     {
+    //         isBusy = false;
+    //     }
+    // }
+
+    // private async Task RecomputeAsync()
+    // {
+    //     if (!CanCalc || CalcContext is null || Session is null)
+    //         return;
+
+    //     isBusy = true;
+    //     try
+    //     {
+    //         Session = await _workflowService.CalculateSaieAsync(CalcContext, Session);
+    //         SaieSession = Session;
+
+    //         BindLocalStateFromSession(Session);
+
+    //         _hasCalculated = true;
+    //     }
+    //     finally
+    //     {
+    //         isBusy = false;
+    //     }
+    // }
+    // private async Task OnCalculateAsync()
+    // {
+    //     if (SaieDir == 1)
+    //     { // tous
+    //         Ditie = PreTiers.FirstOrDefault()?.Id ?? 0;
+    //         Fitie = PreTiers.LastOrDefault()?.Id ?? 0;
+    //     }
+
+    //     var ctx = BuildSingleContext();
+    //     if (ctx is null)
+    //         return;
+
+    //     isBusy = true;
+    //     try
+    //     {
+    //         Session = await _workflowService.CalculateSaieAsync(ctx); // no save here
+    //         SaieSession = Session;
+    //         BindLocalStateFromSession(Session);
+    //     }
+    //     finally
+    //     {
+    //         isBusy = false;
+    //     }
+    // }
+    // private async Task RecomputeAsync()
+    // {
+    //     if (CalcContext is null)
+    //         return;
+
+    //     isBusy = true;
+    //     try
+    //     {
+    //         Session = await _workflowService.CalculateSaieAsync(CalcContext);
+    //         SaieSession = Session;
+    //         BindLocalStateFromSession(Session);
+    //     }
+    //     finally
+    //     {
+    //         isBusy = false;
+    //     }
+    // }
+    // protected override async Task OnParametersSetAsync()
+    // {
+    //     if (SaieSession is not null)
+    //     {
+    //         // bind local state from CalcSession here
+    //     }
+    // }
+    // private async Task OuvrirFiche(int orig)
+    // {
+    //     isFicheVisible = !isFicheVisible;
+    //     if (isFicheVisible)
+    //     {
+    //         stopenFich = "FermerFiche";
+    //     }
+    //     else
+    //     {
+    //         stopenFich = "OuvrirFiche";
+    //     }
+    // }
+    // // private async Task CalculateAsync()
+    // // {
+        
+    // // }
+    // private FormulaEvaluationContext BuildEvalContext(CalcContext ctx, RubvarDto rubvar)
+    // {
+    //     var scope = new RubvarEvaluationScope
+    //     {
+    //         Rubvar = rubvar,
+    //         Rubfmts = rubvar.Rubfmts
+    //     };
+
+    //     return new FormulaEvaluationContext
+    //     {
+    //         Idorg = ctx.Idorg,
+    //         Ipln = ctx.Ipln,
+    //         Itie = ctx.Itie,
+    //         SessionDate = DateTime.Today,
+    //         Scope = scope,
+    //         ResolveVariable = name => ResolveVariable(scope, name)
+    //     };
+    // }
+    //await _workflowService.CalculateAndSaveSaieAsync(ctx.Program.Id, ctx.Itie);
+    // private IEnumerable<ProgramLine> GetSaieProgramLines(RubvarDto rubvar, IReadOnlyCollection<RubfmtDto> rubfmts)
+    // {
+    //     var lines = ParseProgramLines(rubvar?.Frsrc);
+    //     return EnrichRubvarProgramLines(lines, rubvar, rubfmts);
+    // }
+    // private List<ProgramLine> EnrichRubvarProgramLines(
+    // List<ProgramLine> lines,
+    // RubvarDto rubvar,
+    // IReadOnlyCollection<RubfmtDto> rubfmts)
+    // {
+    //     var fmtByLine = rubfmts
+    //         .Select(x => new { Item = x, Ok = int.TryParse(x.Zcdrub, out var n), Num = n })
+    //         .Where(x => x.Ok)
+    //         .GroupBy(x => x.Num)
+    //         .ToDictionary(g => g.Key, g => g.First().Item);
+
+    //     foreach (var line in lines)
+    //     {
+    //         fmtByLine.TryGetValue(line.LineNumber ?? 0, out var rubfmt);
+
+    //         line.Irub = rubvar.Id;
+    //         line.Ifmt = rubfmt?.Id;
+    //         line.Type = MapType(line.Meta, rubvar, rubfmt);
+    //         line.Liba = rubfmt?.Liba ?? rubvar.Liba;
+    //         line.SaveDetail = ShouldSaveDetail(line.Meta, rubvar, rubfmt);
+    //     }
+
+    //     return lines;
+    // }
+    // private object? ResolveVariable(RubvarEvaluationScope scope, string name)
+    // {
+    //     if (string.IsNullOrWhiteSpace(name))
+    //         return null;
+
+    //     var key = name.Trim().ToUpperInvariant();
+
+    //     if (key.StartsWith("Z") && key.Length == 3 && int.TryParse(key[1..], out var n))
+    //     {
+    //         var zcode = $"Z{n:00}";
+
+    //         var match = scope.Rubfmts.FirstOrDefault(x =>
+    //             string.Equals(x.Zcdrub?.Trim(), zcode, StringComparison.OrdinalIgnoreCase));
+
+    //         return match?.Aval;
+    //     }
+
+    //     return null;
+    // }
+    // private ActsaieDto EvaluateRubVarRow(CalcContext ctx, RubvarDto rub, List<ActdetDto> dets)
+    // {
+    //     var result = _myFEngine.Evaluate(rub.Frsrc, BuildEvalContext(ctx, rub));
+
+    //     return new ActsaieDto
+    //     {
+    //         Itie = ctx.Itie,
+    //         Ipln = ctx.Ipln,
+    //         Irub = rub.Id,
+    //         Atyp = rub.Atyp,
+    //         Inptvalue = result?.Value?.ToString(),
+    //         Aval = result?.Raw,
+    //         Iraw = Trunc1000(result?.Raw).ToString(),
+    //         Actdets = dets
+    //     };
+    // }
+    // private async Task OnCalculateAsync()
+    // {
+    //     var ctx = BuildSingleContext();
+    //     if (ctx is null)
+    //         return;
+
+    //     isBusy = true;
+    //     SaieSession = await _workflowService.CalculateSaieAsync(ctx);
+    //     isBusy = false;
+    // }
+    // private CalcContext? BuildSingleContext()
+    // {
+    //     var tier = PreTiers.FirstOrDefault(t => t.Id == TierId);
+    //     var prog = curOrga.Plngens.FirstOrDefault(p => p.Id == curProg.Id);
+
+    //     if (tier is null || prog is null)
+    //         return null;
+
+    //     return new CalcContext
+    //     {
+    //         CurOrga = curOrga,
+    //         Program = prog,
+    //         Tier = tier,
+    //         IsTestMode = false
+    //     };
+    // }
+    // private async Task RecomputeAsync()
+    // {
+    //     isBusy = true;
+    //     Session = await _calcService.RecomputeSaieAsync(CalcContext, Session);
+    //     isBusy = false;
+    // }
+
+    // private async Task CalculateAsync(bool isRecompute = false)
+    // {
+    //     if (!CanCalc || CalcContext is null || Session is null)
+    //         return;
+
+    //     isBusy = true;
+    //     try
+    //     {
+    //         Session = await _workflowService.CalculateSaieAsync(CalcContext, Session);
+    //         SaieSession = Session;
+
+    //         EnsureRubVarRowsAndDetails(Session);
+
+    //         BindLocalStateFromSession(Session);
+
+    //         if (!isRecompute)
+    //             Imessage = "Passe3";
+
+    //         _hasCalculated = true;
+    //     }
+    //     finally
+    //     {
+    //         isBusy = false;
+    //     }
+    // }
+    // private async Task OnSaveAsync()
+    // {
+    //     isBusy = true;
+    //     await _calcService.SaveSaieAsync(CalcContext, Session);
+    //     isBusy = false;
+    // }
+
+    // private void HandleVarInput(RubVarRow row, string val)
+    // {
+    //     row.InputValue = val;
+    // }
+
+    // private void HandleFmtInput(RubVarRow master, RubFmtRow detail, string val)
+    // {
+    //     detail.InputValue = val;
+    // }
+//}
+}

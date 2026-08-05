@@ -38,7 +38,7 @@
             }
         </InputSelect>  
     </div>
-    <Button Color="ButtonColor.Success" @onclick="() => StartAdd()">Add New Session</Button>
+    <Button Color="ButtonColor.Success" @onclick="() => BeginSessAdd()">Add New Session</Button>
     @if (isAdding)
     {
         // calcul/cumul prise variables defaults:
@@ -56,7 +56,7 @@
             <InputDate @bind-Value="draftSes.Ddat" placeholder="Debut" />
             <InputDate @bind-Value="draftSes.Fdat" placeholder="Fin" />
             
-            <Button Color="ButtonColor.Success" @onclick="() => SaveAdd()">Add</Button>
+            <Button Color="ButtonColor.Success" @onclick="() => SessAddNew()">Add</Button>
             <Button Color="ButtonColor.Secondary" @onclick="() => CancelAdd()">Cancel</Button>
         </div>
     }
@@ -352,21 +352,20 @@
         var key = GetEntityKey(atr);
         var rowguid = atr.Rowguid;
         // Queue delete in guard
-        //_guard.TrackDelete<TDto>(GetEntitySetName<TDto>(), key);
         _guard.TrackDelete("Gsesios", key, rowguid);
         Console.WriteLine($"🗑️ {atr.Liba} queued for delete");
 
         await NotifyPendingChanges();
     }
 
-    private async Task StartAdd()
+    private async Task BeginSessAdd()
     {
         isAdding = true;
         draftSes = new GsesioDto();
         //draftSes.Liba = await calCess(); //saisieaaaammxxx
     }
 
-    private async Task SaveAdd()
+    private async Task SessAddNew()
     {
         draftSes.Rowguid = Guid.NewGuid();
         draftSes.Idorg = curOrga.Idorg;

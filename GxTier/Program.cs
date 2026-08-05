@@ -4,11 +4,11 @@ using BlazorDownloadFile;
 
 using Blazored.LocalStorage;
 
-using GxFormula.ForaContext;
-using GxFormula.ForaContext.GxFormula.ForaContext;
+using GxFormula;
+using GxFormula.ForaBizz;
+using GxFormula.Forasource;
 
 using GxShared.GxGuards;
-using GxShared.Helpers;
 using GxShared.Helpers;
 using GxShared.Interfaces;
 using GxShared.Mapping;
@@ -16,6 +16,7 @@ using GxShared.Sess;
 
 using GxTie;
 using GxTie.Services;
+using GxTie.Services.Calculation;
 
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Web;
@@ -145,14 +146,14 @@ builder.Services.AddSingleton<LoadingService>();
 
 // Load Plngen before building the host
 //var plngen = await LoadProgAsync(httpClient); // your custom method
-//var rubvars = plngen.Rubvars.ToList();
 
 //Formula services
 builder.Services.AddScoped<FormulaEngine>();
-builder.Services.AddScoped<ITokenResolver, TokenResolver>();
 builder.Services.AddScoped<FormulaEvaluationService>();
 builder.Services.AddScoped<FormulaEvaluationContext>();
-builder.Services.AddScoped<FormulaLineRegistry>();
+builder.Services.AddScoped<ITokenResolver, TokenResolver>();
+// Add calculation pipeline
+builder.Services.AddCalculationPipeline();
 
 var host = builder.Build();
 
@@ -224,6 +225,11 @@ public class ApiSettings
 //builder.Services.AddAuthorizationCore();
 //builder.Services.AddCascadingAuthenticationState();
 
+//builder.Services.AddScoped<FormulaLineRegistry>();
+//builder.Services.AddSingleton<ProgramLineParser>();
+////builder.Services.AddSingleton<ICalculationService, CalculationService>();
+////builder.Services.AddSingleton<ICalculationPersistence, CalculationPersistence>();
+////builder.Services.AddSingleton<ICalculationWorkflow, CalculationWorkflow>();
 //// ✅ Auth
 //builder.Services.AddScoped<MyAuthStateProvider>();
 //builder.Services.AddScoped<AuthenticationStateProvider>(provider => provider.GetRequiredService<MyAuthStateProvider>());

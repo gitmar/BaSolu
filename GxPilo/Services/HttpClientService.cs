@@ -82,6 +82,33 @@ namespace GxPilo.Services
 
             return await response.Content.ReadAsStringAsync();
         }
+        public async Task<HttpResponseMessage?> SendRequestRawAsync(
+    string clientName,
+    HttpMethod method,
+    string requestUri,
+    object? content = null)
+        {
+            var fresh = await _puzzleSync.EnsureSessionIsFreshAsync();
+            if (!fresh)
+                return null;
+
+            var token = await _localStorage.GetItemAsync<string>("blazToken");
+            if (string.IsNullOrWhiteSpace(token))
+                return null;
+
+            var client = _httpClientFactory.CreateClient(clientName);
+            var request = BuildRequest(method, requestUri, token, content);
+
+            var response = await client.SendAsync(request);
+
+            if (response.StatusCode == HttpStatusCode.Unauthorized)
+            {
+                await _puzzleSync.ForceLogoutAsync();
+                return null;
+            }
+
+            return response;
+        }
 
         private HttpRequestMessage BuildRequest(HttpMethod method, string uri, string token, object? content)
         {

@@ -1,6 +1,4 @@
-﻿using GxPilo.Components.Plans;
-
-using GxShared.GxDtos;
+﻿using GxShared.GxDtos;
 using GxShared.GxGuards;
 using GxShared.Helpers;
 using GxShared.Helpers.CrudHelpers;
@@ -86,16 +84,16 @@ namespace GxPilo.Components.Uifrags
             return JsonConvert.DeserializeObject<T>(json, settings)!;
         }
 
-        protected object DeepClone(object entity)
-        {
-            var settings = new JsonSerializerSettings
-            {
-                ReferenceLoopHandling = ReferenceLoopHandling.Ignore
-            };
+        //protected object DeepClone(object entity)
+        //{
+        //    var settings = new JsonSerializerSettings
+        //    {
+        //        ReferenceLoopHandling = ReferenceLoopHandling.Ignore
+        //    };
 
-            var json = JsonConvert.SerializeObject(entity, settings);
-            return JsonConvert.DeserializeObject(json, entity.GetType(), settings)!;
-        }
+        //    var json = JsonConvert.SerializeObject(entity, settings);
+        //    return JsonConvert.DeserializeObject(json, entity.GetType(), settings)!;
+        //}
 
         protected int NextSeq<T>(IEnumerable<T> source, Func<T, int?> selector)
         {
@@ -253,7 +251,28 @@ namespace GxPilo.Components.Uifrags
             Console.WriteLine($"State : {state}");
             return state;
         }
+        protected void ClearEditState(EntityLevel level, Guid rowguid)
+        {
+            _editStates[level] = new EntityEditState
+            {
+                IsAdd = false,
+                IsEdit = false,
+                AddRowguid = null,
+                EditRowguid = null,
+                DeleteRowguid = null
+            };
+            Console.WriteLine("editstate = edit false");
+        }
 
+        protected void SetEditState(EntityLevel level, bool isAdd, bool isEdit, Guid? rowguid)
+        {
+            var s = GetEditState(level);
+            s.IsAdd = isAdd;
+            s.IsEdit = isEdit;
+            s.AddRowguid = isAdd ? rowguid : null;
+            s.EditRowguid = isEdit ? rowguid : null;
+            s.DeleteRowguid = null;
+        }
         //ROW MANAGEMENT
         protected void StartRowEdit(Guid rowguid, EntityLevel level)
         {
@@ -279,7 +298,7 @@ namespace GxPilo.Components.Uifrags
 
             return GetRowCss(state, isLight, rowguid, isActiveEdit, isOtherRowEditing);
         }
-
+        
         protected string GetPlanRowClass(PlngenDto pln) => GetRowCssFor(EntityLevel.Plan, pln.Rowguid);
         protected string GetRubRowClass(RubvarDto rub) => GetRowCssFor(EntityLevel.Rub, rub.Rowguid);
         protected string GetFmtRowClass(RubfmtDto fmt) => GetRowCssFor(EntityLevel.Fmt, fmt.Rowguid);

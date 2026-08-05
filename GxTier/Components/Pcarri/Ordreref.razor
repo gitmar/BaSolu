@@ -260,6 +260,7 @@
 
     //[Parameter] public ItemClientService ItemService { get; set; }
     //[Parameter] public StockClientService StockService { get; set; }
+    
     private List<TiemvtDto> LsMvts = new();
     private Guid? editRowguid;
     private bool isAdding = false;
@@ -267,7 +268,6 @@
     private List<Gpfixe> LsFixes = new();
 
     private void CancelAdd() => isAdding = false;
-
 
     protected override async Task OnInitializedAsync()
     {
@@ -350,6 +350,7 @@
         Console.WriteLine($"🗑️ {vlne.Title} queued for delete");
         await NotifyPendingChanges();
     }
+
     private object GetEntityKey<TDto>(TDto entity)
     {
         switch (entity)

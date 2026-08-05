@@ -571,7 +571,7 @@ else if (edOrgContext != null && curOrga != null)
                                                         }
                                                     </ChildContent>
                                                 </GridColumn>
-                                                <GridColumn TItem="GsgfixDto" HeaderText="Format" Class="xcol2">
+                                                <GridColumn TItem="GsgfixDto" HeaderText="Format" isVisible="Rubtto == 1" Class="xcol2">
                                                     <ChildContent Context="item">
                                                         @if (Rubtto == 1)
                                                         {
@@ -586,7 +586,13 @@ else if (edOrgContext != null && curOrga != null)
                                                                         }
                                                                         else
                                                                         {
-                                                                            <span style="font-weight:bold; width:100%">@item.Lgft</span>
+                                                                            if (string.IsNullOrEmpty(item.Lgft))
+                                                                            {
+                                                                                <span>xxxxxxx</span>
+                                                                            } else
+                                                                            {
+                                                                                <span style="font-weight:bold; width:100%">@item.Lgft</span>
+                                                                            }
                                                                         }
                                                                     </span>
                                                                 }

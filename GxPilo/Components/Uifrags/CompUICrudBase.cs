@@ -266,29 +266,6 @@ namespace GxPilo.Components.Uifrags
         //           ((es.IsAdd && es.AddRowguid == item.Rowguid) ||
         //            (es.IsEdit && es.EditRowguid == item.Rowguid));
         //}
-        protected void ClearEditState(EntityLevel level, Guid rowguid)
-        {
-            _editStates[level] = new EntityEditState
-            {
-                IsAdd = false,
-                IsEdit = false,
-                AddRowguid = null,
-                EditRowguid = null,
-                DeleteRowguid = null
-            };
-            Console.WriteLine("editstate = edit false");
-            SetLightBackground(rowguid, false);
-        }
-
-        protected void SetEditState(EntityLevel level, bool isAdd, bool isEdit, Guid? rowguid)
-        {
-            var s = GetEditState(level);
-            s.IsAdd = isAdd;
-            s.IsEdit = isEdit;
-            s.AddRowguid = isAdd ? rowguid : null;
-            s.EditRowguid = isEdit ? rowguid : null;
-            s.DeleteRowguid = null;
-        }
         private void SetDeleteFlags(object item) => SetFlags(item, 0, 0, -1);
         // Generic flag setter
         private void SetFlags<T>(T entity, int xadd1, int xedt1, int xdel1)
@@ -400,6 +377,7 @@ namespace GxPilo.Components.Uifrags
                 RestoreOriginalGridItem(level, entity);
 
             ClearEditState(level, rowguid);
+            SetLightBackground(rowguid, false);
 
             _rowStates.Remove((level, rowguid));
 
@@ -553,6 +531,45 @@ namespace GxPilo.Components.Uifrags
                         tie.Pnom = draftTie.Pnom; //formule-non valider
                         tie.Eta = draftTie.Eta; //etat
                         break;
+                    }
+                    break;
+                case EntityLevel.Hie:
+                    if (entity is RubhieDto hie && _draftHie is RubhieDto draftHie)
+                    {
+                        if (draftHie == null) return;
+                        hie.Idorg = draftHie.Idorg; //orga
+                        hie.Ipln = draftHie.Ipln; //parent
+                        hie.Liba = draftHie.Liba; //designation
+                        //hieHIE
+                        if (string.IsNullOrEmpty(draftHie.Raison))
+                        {
+                            draftHie.Raison = draftHie.Liba;
+                        }
+                        hie.Abg = draftHie.Abg; //abrege
+                        hie.Scdrub = draftHie.Scdrub; //code
+                        hie.Zcod = draftHie.Zcod; //refer
+                        hie.Atyp = draftHie.Atyp; //atyp
+                        hie.Frsrc = draftHie.Frsrc; //formule
+                        hie.Eta = draftHie.Eta; //etat
+                    }
+                    break;
+                case EntityLevel.Pst:
+                    if (entity is RubpstDto pst && _draftPst is RubpstDto draftPst)
+                    {
+                        if (draftPst == null) return;
+                        pst.Idorg = draftPst.Idorg; //orga
+                        pst.Ihie = draftPst.Ihie; //parent
+                        pst.Liba = draftPst.Liba; //designation
+                        pst.Abg = draftPst.Abg; //abrege
+                        pst.Zcdrub = draftPst.Zcdrub; //code
+                        pst.Zcod = draftPst.Zcod; //refer
+                        pst.Ztyp = draftPst.Ztyp; //ztyp
+
+                        pst.Ftsrc = draftPst.Ftsrc; //formule
+                        pst.Col = draftPst.Col; //col
+                        pst.Lne = draftPst.Lne; //lne
+                        pst.Lgtf = draftPst.Lgtf; //lgtf
+                        pst.Eta = draftPst.Eta; //etat
                     }
                     break;
                 case EntityLevel.Act:

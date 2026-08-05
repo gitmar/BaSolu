@@ -1,0 +1,2398 @@
+﻿@page "/insctiw"
+@layout EnrolMenu
+
+@using System
+@using System.Collections.ObjectModel
+@using System.ComponentModel.DataAnnotations
+@using System.Dynamic
+@using System.Linq.Expressions
+@using System.Net.Http.Headers
+@using System.Reflection
+@using System.Security.Claims
+@using System.Text.RegularExpressions
+@using System.Web
+@using BlazorBootstrap
+@using Blazored.LocalStorage
+@using GxShared.Helpers
+@using GxShared.Sess
+@using GxTie.Services
+@using GxShared.Others
+@using Simple.OData.Client
+@using Simple.OData.Client.Extensions
+@using GxShared.GxDtos
+@using GxShared.Interfaces
+@using Microsoft.AspNetCore.Components.Forms
+@using GxTie.Components.FrmHelper
+@using Microsoft.AspNetCore.WebUtilities
+@using Newtonsoft.Json
+
+@implements IDisposable
+
+@inject NavigationManager _navManager
+@inject ILocalStorageService _localStorage
+@inject HttpClientService _clieManager
+@inject SessionContextService _sessionContext
+@inject RendAgres _rendAgres    
+@inject IJSRuntime _JsRUN
+@inject IMessageService _messageService
+
+<PageTitle>Saisie.Enrollement</PageTitle>
+<div>
+    @Imessage
+</div>
+@if (isLoading)
+{
+    <div class="text-center">
+        <Spinner Color="SpinnerColor.Primary" Size="SpinnerSize.Medium" />
+        <p>Saisie.Enrollement Loading...</p>
+    </div>
+}
+<!--downmodal-->
+@if (curTiw != null && isModalVisible == true)
+{
+    <GlobModal IsVisible="@isModalVisible"
+               IsVisibleChanged="@OnModalVisibilityChanged"
+               Title="Chargement des documents"
+               EntyTiw="@curTiw"
+               EntyTie="null"
+               LsmVars="@LsVars"
+               LsmFixes="@LsFixes"
+               
+               Oparent="2">
+    </GlobModal>
+    @* OnTiwSave = "@HandleTiwSave" *@
+}
+<div class="my-container">
+    @if (toChild != null)
+    {
+        @ChildContent
+    }
+</div>
+@if (!isLoading)
+{
+    <AuthorizeView>
+        <Authorized Context="authtiwcontext">
+            <div class="d-flex align-items-center gap-2">
+                <Button Color="ButtonColor.Primary"
+                        Size="ButtonSize.Small"
+                        Class="px-2 py-1 small-btn"
+                        Disabled="@(!AllowMultipleEdits && isAddTiw)"
+                        @onclick="StartTiwNew">
+                    ➕ Add
+                </Button>
+
+                @if (isAddTiw)
+                {
+                    <Button Color="ButtonColor.Info"
+                            Size="ButtonSize.Small"
+                            Class="px-2 py-1 small-btn"
+                            @onclick="ShowModal">
+                        piece(s)
+                    </Button>
+                    <Button Color="ButtonColor.Success"
+                            Size="ButtonSize.Small"
+                            Class="px-2 py-1 small-btn"
+                            @onclick="() => ConfirmAdd(EntityLevel.Tiw, draftTiw)">
+                        ✅ Confirm
+                    </Button>
+
+                    <Button Color="ButtonColor.Secondary"
+                            Size="ButtonSize.Small"
+                            Class="px-2 py-1 small-btn"
+                            @onclick="() => CancelAdd(EntityLevel.Tiw, draftTiw)">
+                        ❌ Cancel
+                    </Button>
+                } 
+                else if (isEdtTiw)
+                {
+                    <Button Color="ButtonColor.Success"
+                            Size="ButtonSize.Small"
+                            Class="px-2 py-1 small-btn"
+                            @onclick="() => ConfirmEdit(EntityLevel.Tiw, curTiw)">
+                        ✅ Confirm
+                    </Button>
+
+                    <Button Color="ButtonColor.Secondary"
+                            Size="ButtonSize.Small"
+                            Class="px-2 py-1 small-btn"
+                            @onclick="() => CancelEdit(EntityLevel.Tiw, curTiw)">
+                        ❌ Cancel
+                    </Button>
+                }
+            </div>
+
+            @if (isAddTiw || isEdtTiw)
+            {
+                <div class="container">
+                    <Tabs>
+                        <Tab Title="Membres">
+                            <Content>
+                                <!-- ✅ EditForm per tab - no nesting issues -->
+                                <EditForm Model="curTiw">
+                                    <DataAnnotationsValidator />
+                                    <ValidationSummary />
+                                    <div>
+                                        @if (draftTiw != null)
+                                        {
+                                            <PTiwGdHelper Draft="@draftTiw"
+                                                          RenderKey="parent-grid"
+                                                          GMode="@GtieMode"
+                                                          IsEditing="@isTieEditing"
+                                                          Visibility="@Visibility"
+                                                          EnsTbls="@EnsTbls"
+                                                          EdRowguid="@EdTiwRowguid" />
+                                        }
+                                    </div>
+
+                                    <!-- Additional dynamic attributes -->
+                                    <label class="fw-bold">ATTRIBUT++(s)</label>
+                                    <div class="card">
+                                        <div class="card-body p-3">
+                                            @foreach (var ua in EnsAtrs.Where(a => a.Wgpe == 1 && a.Eta == 1))
+                                            {
+                                                var icatr = curTiw.Tiejatrs.FirstOrDefault(tat => tat.Iatr == ua.Id);
+                                                if (icatr == null)
+                                                {
+                                                    icatr = new TiejatrDto
+                                                    {
+                                                        Xadd1 = -1,
+                                                        Atyp = ua.Atyp,
+                                                        Iatr = ua.Id,
+                                                        Itiw = curTiw.Id,
+                                                        //Itie = curTie.Id, pour valdTie
+                                                        Aval = "",
+                                                        Satyp = ua.Satyp,
+                                                        AtState = AEntState.NewAdded
+                                                    };
+                                                    curTiw.Tiejatrs.Add(icatr);
+                                                }
+                                                <div class="row mb-2 align-items-center">
+                                                    <label class="col-sm-3 col-form-label">
+                                                        <strong>@ua.Liba</strong>
+                                                    </label>
+                                                   <div class="col-sm-9">
+                                                    @if ((isEdtTiw || isAddTiw) && ua.Eta == 1)
+                                                    {
+                                                        @* Dropdown from reference table *@
+                                                        if (ua.Zfro == 2)
+                                                        {
+                                                            <InputSelect @bind-Value="icatr.AvalAsInt"
+                                                                         class="form-select">
+                                                                <option value=0>Choisir...</option>
+                                                                @foreach (var tob in
+                                                                    EnsTbls.FirstOrDefault(t =>
+                                                                        t.Tenr == 1 &&
+                                                                        t.Tref == ua.Ztbl)?.TbItems
+                                                                    ?? new List<Gtvar>())
+                                                                {
+                                                                    <option value="@tob.Tref">@tob.Liba</option>
+                                                                }
+                                                            </InputSelect>
+                                                        }
+                                                        else if (ua.Satyp == "int")
+                                                        {
+                                                            <InputNumber TValue="int?"
+                                                                         @bind-Value="icatr.AvalAsInt"
+                                                                         class="form-control" />
+                                                        }
+                                                        else if (ua.Satyp == "date")
+                                                        {
+                                                            <InputDate TValue="DateTime?"
+                                                                       @bind-Value="icatr.AvalAsDate"
+                                                                       class="form-control" />
+                                                        }
+                                                        else
+                                                        {
+                                                            <InputText @bind-Value="icatr.Aval"
+                                                                       class="form-control" />
+                                                        }
+                                                    }
+                                                    else
+                                                    {
+                                                        <div class="form-control-plaintext">
+                                                            @icatr.Aval
+                                                        </div>
+                                                    }
+                                                    </div>
+                                                </div>
+                                            }
+                                        </div>
+                                    </div>
+                                    <!-- Multiple category selection -->
+                                    <label class="fw-bold">CATEGORIE(s)</label>
+                                    <div class="card-body p-3">
+                                        @RenderCategories(EnsCats.Where(c => c.Pid == null))
+                                    </div>
+                                </EditForm>
+                                <div class="d-flex align-items-center gap-2">
+                                    <Button Color="ButtonColor.Primary"
+                                            Size="ButtonSize.Small"
+                                            Class="px-2 py-1 small-btn"
+                                            Disabled="@(!AllowMultipleEdits && isAddTiw)"
+                                            @onclick="StartTiwNew">
+                                        ➕ Add
+                                    </Button>
+
+                                    @if (isAddTiw)
+                                    {
+                                        <Button Color="ButtonColor.Info"
+                                                Size="ButtonSize.Small"
+                                                Class="px-2 py-1 small-btn"
+                                                @onclick="ShowModal">
+                                            piece(s)
+                                        </Button>
+                                        <Button Color="ButtonColor.Success"
+                                                Size="ButtonSize.Small"
+                                                Class="px-2 py-1 small-btn"
+                                                @onclick="() => ConfirmAdd(EntityLevel.Tiw, draftTiw)">
+                                            ✅ Confirm
+                                        </Button>
+
+                                        <Button Color="ButtonColor.Secondary"
+                                                Size="ButtonSize.Small"
+                                                Class="px-2 py-1 small-btn"
+                                                @onclick="() => CancelAdd(EntityLevel.Tiw, draftTiw)">
+                                            ❌ Cancel
+                                        </Button>
+                                    }
+                                    else if (isEdtTiw)
+                                    {
+                                        <Button Color="ButtonColor.Success"
+                                                Size="ButtonSize.Small"
+                                                Class="px-2 py-1 small-btn"
+                                                @onclick="() => ConfirmEdit(EntityLevel.Tiw, curTiw)">
+                                            ✅ Confirm
+                                        </Button>
+
+                                        <Button Color="ButtonColor.Secondary"
+                                                Size="ButtonSize.Small"
+                                                Class="px-2 py-1 small-btn"
+                                                @onclick="() => CancelEdit(EntityLevel.Tiw, curTiw)">
+                                            ❌ Cancel
+                                        </Button>
+                                    }
+                                </div>
+                            </Content>
+                        </Tab>
+                        <Tab title="Affilies">
+                            <Content>
+                                @if (CanEditChildren)
+                                {
+                                    <div class="d-flex align-items-center gap-2 mb-2">
+                                        <label>Group:</label>
+                                        <InputSelect id="gpId" @bind-Value="@IMyGAfl">
+                                            <option value=0>Select group...</option>
+                                            @foreach (var afl in LsGAfls.Where(af => af.Atyp == Ugpe))
+                                            {
+                                                <option value=@afl.Elea>@afl.Liba</option>
+                                            }
+                                        </InputSelect>
+                                        <Button Color="ButtonColor.Primary"
+                                                Size="ButtonSize.Small"
+                                                Disabled="@(IMyGAfl < 1)"
+                                                @onclick="() => StartRubNew(curTiw, IMyGAfl)">
+                                            ➕ Add Child
+                                        </Button>
+                                        @if (curTiw.Tiwafls.Any())
+                                        {
+                                            <Button Color="ButtonColor.Success"
+                                                    Size="ButtonSize.Small"
+                                                    Class="px-2 py-1 small-btn"
+                                                    @onclick="() => ConfirmEdit(EntityLevel.Rub, curAfil)">
+                                                ✅ Confirm
+                                            </Button>
+                                            <Button Color="ButtonColor.Secondary"
+                                                    Size="ButtonSize.Small"
+                                                    Disabled="@(IMyGAfl < 1)"
+                                                    @onclick="() => CancelEdit(EntityLevel.Rub, curAfil)">
+                                                ✖ Cancel
+                                            </Button>
+                                        }
+                                    </div>
+                                    <div>
+                                        @if (draftAfl != null)
+                                        {
+                                            <!-- Cascade stable reference -->
+                                            <CTiwGdHelper SubAfls="@curTiw.Tiwafls.ToList()"
+                                                          RenderKey="child-grid"
+                                                          GMode="@GaflMode"
+                                                          IsEditing="@isAflEditing"
+                                                          AflVisibility="@AflVisibility"
+                                                          EnsTbls="@EnsTbls"
+                                                          EdRowguid="@EdAflRowguid"
+                                                          SelectedGroup="@IMyGAfl"
+                                                          ConfirmEdit="@(p => ConfirmEdit(EntityLevel.Rub, p))"
+                                                          CancelEdit="@(p => CancelEdit(EntityLevel.Rub, p))"
+                                                          ConfirmDelete="@(p => ConfirmDelete(EntityLevel.Rub, p))"
+                                                          CancelDelete="@(p => CancelDelete(EntityLevel.Rub, p))"
+                                                          StartRubEdit="@(p => StartRubEdit(p, p.Rowguid))"
+                                                          StartRowDelete="@(id => StartRowDelete(id, EntityLevel.Rub))" />
+                                            <div class="d-flex align-items-center gap-2 mb-2">
+                                                <Button Color="ButtonColor.Primary"
+                                                        Size="ButtonSize.Small"
+                                                        Disabled="@(IMyGAfl < 1)"
+                                                        @onclick="() => StartRubNew(curTiw, IMyGAfl)">
+                                                    ➕ Add Child
+                                                </Button>
+                                                @if (curTiw.Tiwafls.Any())
+                                                {
+                                                    <Button Color="ButtonColor.Success"
+                                                            Size="ButtonSize.Small"
+                                                            Class="px-2 py-1 small-btn"
+                                                            @onclick="() => ConfirmEdit(EntityLevel.Rub, curAfil)">
+                                                        ✅ Confirm
+                                                    </Button>
+                                                    <Button Color="ButtonColor.Secondary"
+                                                            Size="ButtonSize.Small"
+                                                            Disabled="@(IMyGAfl < 1)"
+                                                            @onclick="() => CancelEdit(EntityLevel.Rub, curAfil)">
+                                                        ✖ Cancel
+                                                    </Button>
+                                                }
+                                            </div>
+                                        }
+                                    </div>
+                                }
+                                else
+                                {
+                                    <div class="alert alert-warning">
+                                        🚫 Save the main record before adding children.
+                                    </div>
+                                }
+                            </Content>
+                        </Tab>
+                        <Tab Title="Verification">
+                            <Content>
+                                @if (canbeVerified)
+                                {
+                                    <div class="container row">
+                                        @* SelectedItemsChanged="OnSelectedItemsChanged" *@
+                                        <Grid TItem="TiewelDto"
+                                              Data="@WaitingTiewels"
+                                              AllowSelection="true"
+                                              SelectionMode="GridSelectionMode.Multiple"
+                                              Responsive="true">
+                                            <GridColumns>
+                                                <GridColumn TItem="TiewelDto" HeaderText="No">
+                                                    <ChildContent Context="item">
+                                                        <span>@(item.Xedt1 == -1 ? item?.Iui : (item?.Iui == 0 ? item?.Iele : item?.Iui))</span>
+                                                    </ChildContent>
+                                                </GridColumn>
+                                                <GridColumn TItem="TiewelDto" HeaderText="Dossier">
+                                                    <ChildContent Context="item">
+                                                        @item.Xmatri
+                                                    </ChildContent>
+                                                </GridColumn>
+                                                <GridColumn TItem="TiewelDto" HeaderText="Nom">
+                                                    <ChildContent Context="item">
+                                                        @item.Nom
+                                                    </ChildContent>
+                                                </GridColumn>
+                                                <GridColumn TItem="TiewelDto" HeaderText="Pnom">
+                                                    <ChildContent Context="item">
+                                                        @item.Pnom
+                                                    </ChildContent>
+                                                </GridColumn>
+                                                <GridColumn TItem="TiewelDto" HeaderText="etat" IsVisible="true">
+                                                    <HeaderContent>
+                                                        @* @if (siyaItem)
+                                                                    {
+                                                                        <button class="btn btn-primary btn-sm"
+                                                                                @onclick="() => ValiderSelection()">
+                                                                            ➕ Valider?
+                                                                        </button>
+                                                                    }
+                                                                    else
+                                                                    {
+                                                                        <span>Eta</span>
+                                                                    } *@
+                                                    </HeaderContent>
+                                                    <ChildContent Context="item">
+                                                        <InputSelect @bind-Value="item.Eta" disabled="true">
+                                                            <option class="jchx" value=0>?choisir</option>
+                                                            @foreach (var tob in LsFixes.Where(ut => ut.Gvars == 32 && ut.Itb == 1 && ut.Elea != 0))
+                                                            {
+                                                                <option value=@tob.Elea>@tob.Liba</option>
+                                                            }
+                                                        </InputSelect>
+                                                    </ChildContent>
+                                                </GridColumn>
+                                                <GridColumn TItem="TiewelDto" HeaderText="Actions" Filterable="false" Class="xcol2 actions-col">
+                                                    <ChildContent Context="item">
+                                                        <Button Color="ButtonColor.Secondary" Size="ButtonSize.Small"
+                                                                @onclick="() => VueDetails(EntityLevel.Tiw, item)">
+                                                            Details
+                                                        </Button>
+                                                    </ChildContent>
+                                                </GridColumn>
+                                            </GridColumns>
+                                        </Grid>
+                                    </div>
+                                }
+                            </Content>
+                        </Tab>
+                    </Tabs>
+                </div>
+            }
+            <!--En bas ordinaire-->
+            <label>------------          ------------        ------------</label>
+            <div class="container row">
+                <Grid TItem="TiewelDto"
+                      Data="@WaitingTiewels"
+                      @key="TiwRenderKey"
+                      AllowDetailView="true"
+                      AllowPaging="true"
+                      Responsive="true">
+                    <GridColumns>
+                        <GridColumn TItem="TiewelDto" HeaderText="No">
+                            <ChildContent Context="item">
+                                <span>@(item.Xedt1 == -1 ? item?.Iui : (item?.Iui == 0 ? item?.Iele : item?.Iui))</span>
+                            </ChildContent>
+                        </GridColumn>
+                        <GridColumn TItem="TiewelDto" HeaderText="Dossier">
+                            <ChildContent Context="item">
+                                @item.Xmatri
+                            </ChildContent>
+                        </GridColumn>
+                        <GridColumn TItem="TiewelDto" HeaderText="Nom">
+                            <ChildContent Context="item">
+                                @item.Nom
+                            </ChildContent>
+                        </GridColumn>
+                        <GridColumn TItem="TiewelDto" HeaderText="Pnom">
+                            <ChildContent Context="item">
+                                @item.Pnom
+                            </ChildContent>
+                        </GridColumn>
+                        <GridColumn TItem="TiewelDto" HeaderText="etat" IsVisible="true">
+                            <ChildContent Context="item">
+                                <InputSelect @bind-Value="item.Eta" disabled="true">
+                                    <option class="jchx" value=0>?choisir</option>
+                                    @foreach (var tob in LsFixes.Where(ut => ut.Gvars == 32 && ut.Itb == 1 && ut.Elea != 0))
+                                    {
+                                        <option value=@tob.Elea>@tob.Liba</option>
+                                    }
+                                </InputSelect>
+                            </ChildContent>
+                        </GridColumn>
+                        <GridColumn TItem="TiewelDto" HeaderText="Actions" Filterable="false" Class="xcol2 actions-col">
+                            <ChildContent Context="item">
+                                @switch (GetRowState(item.Rowguid))
+                                {
+                                    case RowState.Locked:
+                                        <span class="text-muted">—</span>
+                                        break;
+
+                                    case RowState.DeletePending:
+                                        <Button Color="ButtonColor.Danger" Size="ButtonSize.Small"
+                                                @onclick="() => ConfirmDelete(EntityLevel.Tiw, item)">
+                                            ⚠️ Confirm
+                                        </Button>
+                                        <Button Color="ButtonColor.Secondary" Size="ButtonSize.Small"
+                                                @onclick="() => CancelDelete(EntityLevel.Tiw,item)">
+                                            ❎ Cancel
+                                        </Button>
+                                        break;
+                                    case RowState.EditPending:
+                                        <Button Color="ButtonColor.Success" Size="ButtonSize.Small"
+                                                Disabled="@(item.Xadd1 == -1)"
+                                                @onclick="() => ConfirmEdit(EntityLevel.Tiw, item)">
+                                            ✅ Confirm
+                                        </Button>
+                                        <Button Color="ButtonColor.Secondary" Size="ButtonSize.Small"
+                                                Disabled="@(item.Xadd1 == -1)"
+                                                @onclick="() => CancelEdit(EntityLevel.Tiw, item)">
+                                            ❌ Cancel
+                                        </Button>
+                                        break;
+                                    default:
+                                        <Button Color="ButtonColor.Warning" Size="ButtonSize.Small"
+                                                @onclick="() => StartManTiwEdit(item, 1)">
+                                            ✏️ Edit
+                                        </Button>
+                                        <Button Color="ButtonColor.Secondary" Size="ButtonSize.Small"
+                                                @onclick="() => VueDetails(EntityLevel.Tiw, item)">
+                                            ✏️ Details
+                                        </Button>
+                                        <Button Color="ButtonColor.Danger" Size="ButtonSize.Small"
+                                                @onclick="() => StartRowDelete(item.Rowguid, EntityLevel.Tiw)">
+                                            🗑 Delete
+                                        </Button>
+                                        break;
+                                }
+                            </ChildContent>
+                        </GridColumn>
+                    </GridColumns>
+                    <GridDetailView TItem="TiewelDto" Context="selectedPln">
+                        <Grid TItem="TiwaflDto"
+                              Data="@selectedPln.Tiwafls"
+                              @key="RubRenderKey"
+                              Responsive="true">
+                            <GridColumns>
+                                <GridColumn TItem="TiwaflDto" HeaderText="No">
+                                    <ChildContent Context="item">
+                                        <span>@(item.Xedt1 == -1 ? item?.Iui : (item?.Iui == 0 ? item?.Iele : item?.Iui))</span>
+                                    </ChildContent>
+                                </GridColumn>
+                                <GridColumn TItem="TiwaflDto" HeaderText="Dossier">
+                                    <ChildContent Context="item">
+                                        @item.Xmatri
+                                    </ChildContent>
+                                </GridColumn>
+                                <GridColumn TItem="TiwaflDto" HeaderText="Nom">
+                                    <ChildContent Context="item">
+                                        @item.Nom
+                                    </ChildContent>
+                                </GridColumn>
+                                <GridColumn TItem="TiwaflDto" HeaderText="Pnom">
+                                    <ChildContent Context="item">
+                                        @item.Pnom
+                                    </ChildContent>
+                                </GridColumn>
+                                <GridColumn TItem="TiwaflDto" HeaderText="etat" IsVisible="true">
+                                    <ChildContent Context="item">
+                                        <InputSelect @bind-Value="item.Eta" disabled="true">
+                                            <option class="jchx" value=0>?choisir</option>
+                                            @foreach (var tob in LsFixes.Where(ut => ut.Gvars == 32 && ut.Itb == 1 && ut.Elea != 0))
+                                            {
+                                                <option value=@tob.Elea>@tob.Liba</option>
+                                            }
+                                        </InputSelect>
+                                    </ChildContent>
+                                </GridColumn>
+                                <GridColumn TItem="TiwaflDto" HeaderText="Actions" Filterable="false" Class="xcol2 actions-col">
+                                    <ChildContent Context="item">
+                                        @switch (GetRowState(item.Rowguid))
+                                        {
+                                            case RowState.Locked:
+                                                <span class="text-muted">—</span>
+                                                break;
+
+                                            case RowState.DeletePending:
+                                                <Button Color="ButtonColor.Danger" Size="ButtonSize.Small"
+                                                        @onclick="() => ConfirmDelete(EntityLevel.Rub, item)">
+                                                    ⚠️ Confirm
+                                                </Button>
+                                                <Button Color="ButtonColor.Secondary" Size="ButtonSize.Small"
+                                                        @onclick="() => CancelDelete(EntityLevel.Rub, item)">
+                                                    ❎ Cancel
+                                                </Button>
+                                                break;
+                                            case RowState.EditPending:
+                                                <Button Color="ButtonColor.Success" Size="ButtonSize.Small"
+                                                        Disabled="@(item.Xadd1 == -1)"
+                                                        @onclick="() => ConfirmEdit(EntityLevel.Rub, item)">
+                                                    ✅ Confirm
+                                                </Button>
+                                                <Button Color="ButtonColor.Secondary" Size="ButtonSize.Small"
+                                                        Disabled="@(item.Xadd1 == -1)"
+                                                        @onclick="() => CancelEdit(EntityLevel.Rub, item)">
+                                                    ❌ Cancel
+                                                </Button>
+                                                break;
+                                            default:
+                                                <Button Color="ButtonColor.Warning" Size="ButtonSize.Small"
+                                                        @onclick="() => StartRubEdit(item, item.Rowguid)">
+                                                    ✏️ Edit
+                                                </Button>
+                                                <Button Color="ButtonColor.Secondary" Size="ButtonSize.Small"
+                                                        @onclick="() => VueDetails(EntityLevel.Rub, item)">
+                                                    ✏️ Details
+                                                </Button>
+                                                <Button Color="ButtonColor.Danger" Size="ButtonSize.Small"
+                                                        @onclick="() => StartRowDelete(item.Rowguid, EntityLevel.Rub)">
+                                                    🗑 Delete
+                                                </Button>
+                                                break;
+                                        }
+                                    </ChildContent>
+                                </GridColumn>
+                            </GridColumns>
+                        </Grid>
+                    </GridDetailView>
+                </Grid>
+            </div>
+        </Authorized>
+    </AuthorizeView>
+}
+<style>
+    .inputfl {
+        opacity: 0;
+        width: 0.1;
+        height: 0.1;
+        position: absolute;
+    }
+
+    .disabled {
+        pointer-events: none; /* Prevents clicking */
+        opacity: 0.5; /*visual cue for disabled state */
+    }
+
+    .gpe-select {
+        font-size: 24px;
+        font-weight: bold;
+    }
+
+        .gpe-select option {
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+    .my-container {
+        background-color: yellow;
+    }
+
+    .maxh-400 {
+        max-height: 400px;
+        overflow-y: auto;
+    }
+
+    .disabled-action {
+        pointer-events: none;
+        opacity: 0.5;
+    }
+
+    .grid-container {
+        display: grid;
+        grid-template-columns: max-content minmax(max-content, auto);
+        gap: 8px 16px;
+    }
+
+    .grid-row {
+        display: contents; /* makes children participate directly in the grid */
+    }
+    /* Add a border to the selection column */
+    .bb-grid-selection-column {
+        border: 1px solid #dee2e6; /* Bootstrap’s default border color */
+        background-color: #f8f9fa; /* optional: light background */
+    }
+
+        /* Optional: style the checkbox itself */
+        .bb-grid-selection-column input[type="checkbox"] {
+            margin: 0 auto; /* center the checkbox */
+            border: 1px solid #4c0bce; /* purple border */
+        }
+
+
+    .grid-container > div {
+        grid-column: 2;
+    }
+
+    .standard-width {
+        width: 200px; /* or any fixed width like 150px, 100%, etc */
+        max-width: 100%;
+    }
+
+    .fs-xs {
+        font-size: 0.65rem;
+    }
+
+    .small-btn {
+        font-size: 0.75rem; /* smaller text */
+        line-height: 1.2;
+    }
+
+    .checkbox-bordered {
+        border: 1px solid #000; /* black border */
+        width: 1.2em;
+        height: 1.2em;
+        border-radius: 0.25em; /* keep it square-ish */
+    }
+</style>
+
+@code {
+    private bool isLoading = true;
+    private string Imessage = "", Jmessage = "", Kmessage = "";
+    private bool yaPgLink = false;
+
+    [CascadingParameter]
+    private Task<AuthenticationState>? AuthState { get; set; }
+    [Parameter]
+    public RenderFragment ChildContent { get; set; }
+    [Parameter]
+    public IODataClient _InODaClient { get; set; }
+    [Parameter]
+    public GxorgaDto curOrga { get; set; } = new();
+    [Parameter]
+    public List<TiewelDto> orgTwels { get; set; } = new();
+    [Parameter]
+    public ChildVars toChild { get; set; }
+    [Parameter]
+    public int? Tgpe { get; set; }
+    [Parameter]
+    public int? Ugpe { get; set; }
+    [Parameter]
+    public int toMenu { get; set; }
+    [Parameter]
+    public List<Gtabl> EnsTbls { get; set; } // Dropdown options
+    [Parameter]
+    public List<Gpatr> EnsAtrs { get; set; }
+    [Parameter]
+    public List<Gpcat> EnsCats { get; set; }
+    //[Parameter] 
+    //public List<Gpcat> Cats { get; set; } = new();
+    //guard
+    [Parameter]
+    public IPendingChangesGuard _guard { get; set; }
+    [Parameter]
+    public EventCallback<PendingState> OnPendingStateChanged { get; set; }
+    [Parameter]
+    public int NbChanges { get; set; }
+    [Parameter]
+    public EventCallback<int> NbChangesChanged { get; set; }  // 🔥 CRITICAL
+
+    private EditContext? edTiwContext;
+    //private EditContext? edAflContext;
+    //author
+    private ClaimsPrincipal authUser;
+    private bool isAuthenticated = false;
+    //usrbag
+    private Userbag _usrBag = new Userbag();
+    private string _UserId = "";
+    private int _UorgId = 0;
+
+    private Dictionary<int, bool> EdState = new Dictionary<int, bool>();
+    private Dictionary<Guid, RowState> _rowStates = new();
+    private Dictionary<Guid, bool> _isLightBg = new();  // Track light background
+    // Disable ALL actions when ANY row editing
+    private Guid? _activeEditRowguid = null;
+    private EntityLevel? _activeEditLevel = null;
+    private bool IsAnyRowEditing => _activeEditRowguid != null;
+
+    public GridMode GtieMode = GridMode.None;
+    public GridMode GaflMode = GridMode.None;
+
+    private List<Gplan> LsPlans = new();
+    private List<Gpfixe> LsFixes = new();
+    private List<Gpvar> LsGAfls = new();
+    //public List<Gtabl> TbGpes = new();
+    //public List<Gpvar> TbCols = new();
+    private List<Gpvar> LsVars = new();
+    private List<Gpfixe> LsDoms = new();
+    private List<Gpfixe> LsVues = new();
+
+    //PLAN
+    // public Guid? PlnRenderKey = null;
+    // public Dictionary<Guid, TiewelDto> _edPlnOriginals = new();
+    // public TiewelDto? draftPln = null;
+
+    private bool isPlnFilteringEnabled = false;
+    private bool isRubFilteringEnabled = false;
+    //provisoire
+    private bool CanEditChildren =>
+        GtieMode != GridMode.TiersAdding && curTiw.Xadd1 != -1;
+    private bool isTieEditing => GtieMode == GridMode.TiersAdding
+            || GtieMode == GridMode.TiersEditing;
+    private bool isAflEditing => GaflMode == GridMode.AflsAdding
+            || GaflMode == GridMode.AflsEditing;
+
+
+    //Global
+    private int _lgcdu = 0;
+    private int IMyGpln = 5; //5Programme
+    private int IMyDom = 1; //1Saisie
+    private int IMyVue = 1; //1Reel2Virtuel
+    private int IMyGAfl = 0; //1cn2par3enf4pai5flh
+    //.private int _previousIMyGAfl = 0;
+    private string atrTitle = "";
+
+    private string atrDest = "Programmes de Saisie";
+
+    private TiewelDto curTiw = new();
+    private TiwaflDto curAfl = new();
+    //data
+    private List<TiewelDto> MyDaTies { get; set; } = new();
+    private List<TiwaflDto> MyDaAfls { get; set; } = new();
+
+    // Workflow flags
+    private bool isTieAdd;
+    private bool isAflAdd;
+    //private Guid EdAflRowguid;
+
+    // Visibility dictionaries
+    private Dictionary<string, bool> Visibility = new();
+    private Dictionary<string, bool> AflVisibility = new();
+
+    private TiwaflDto? curAfil = new();
+    //add/edit options
+    private bool AllowMultipleEdits { get; set; } = false;
+    private bool isFiltre { get; set; } = false;
+
+    private bool isRubCodeValid = false; //child
+    private readonly Dictionary<Guid, PendingOpType> _rowPendingOpTypeByRow = new();
+    private readonly Dictionary<Guid, Guid> _pendingOpIdsByRow = new();
+
+    //modals
+    private bool isModalVisible = false;
+    private List<TiewelDto> WaitingTiewels => MyDaTies.Where(tw => tw.Xadd1 != -1).ToList();
+    private bool canbeVerified => WaitingTiewels.Any();
+    private HashSet<TiewelDto> selectedTiewels = new();
+    private bool siyaItem => selectedTiewels.Any();
+    //TABS
+    private string ActiveTab { get; set; } = "Candidat";
+
+    //PLAN
+    private Guid? TiwRenderKey = null;
+    private Dictionary<Guid, TiewelDto> _edPlnOriginals = new();
+    private TiewelDto? draftTiw = null;
+    private bool isAddTiw = false;
+    private bool isEdtTiw = false;
+    private Guid? AdTiwRowguid = null;
+    private Guid? EdTiwRowguid = null;// Currently editing row ID
+    private Guid? DlTiwRowguid = null;
+    //RUBRIQUE
+    private Guid? RubRenderKey = null;
+    private Dictionary<Guid, TiwaflDto> _edRubOriginals = new();
+    private TiwaflDto? draftAfl = null;
+    private bool isAddAfl = false;
+    private bool isEdtRub = false;
+    private Guid? AdAflRowguid = null;
+    private Guid? EdAflRowguid = null;// Currently editing row ID
+    private Guid? DlAflRowguid = null;
+
+    bool IsTiwRowLocked(Guid rowGuid) =>
+        !AllowMultipleEdits &&
+        (EdTiwRowguid.HasValue || DlTiwRowguid.HasValue) &&
+        EdTiwRowguid != rowGuid &&
+        DlTiwRowguid != rowGuid;
+    bool IsRubRowLocked(Guid rowGuid) =>
+        !AllowMultipleEdits &&
+        (EdAflRowguid.HasValue || DlAflRowguid.HasValue) &&
+        EdAflRowguid != rowGuid &&
+        DlAflRowguid != rowGuid;
+
+    //private int renderCount;
+    protected override async Task OnInitializedAsync()
+    {
+        isLoading = true;
+        try
+        {
+            if (toChild == null || curOrga == null)
+            {
+                Console.WriteLine("Missing parent data");
+                return;
+            }
+            isAuthenticated = toChild.isAuthenticated;
+            authUser = toChild.authUser;
+            if (!isAuthenticated)
+            {
+                Imessage = "CONNEXION, Utilisateur non authentifie";
+                return;
+            }
+            Console.WriteLine("ValdTie Initializing...");
+            LsVars = toChild.LsVars;
+            LsFixes = toChild.LsFixes;
+            LsGAfls = LsVars.Where(uv => uv.Gvars == 3 && uv.Itb == 6 && uv.Ityp == 1 && uv.Elea != 0).ToList();
+            Console.WriteLine($"nb afil {LsGAfls.Count} et {Ugpe}");
+            //LsGAfls = toChild.LsFixes.Where(ua => ua.Gvars == 53 && ua.Itb == 6 && ua.Elea != 0).ToList();
+            _lgcdu = 3;
+            var noslims = LsVars.Where(uv => uv.Idhie == 0 && uv.Gvars == 21 && uv.Itb == 1 && uv.Elea == 1);
+            if (noslims.Any()) _lgcdu = noslims.FirstOrDefault().Ivala;
+            LsVues = LsFixes.Where(ut => ut.Gvars == 36 && ut.Itb == 4 && ut.Gp1 == 5 && ut.Elea != 0).ToList();
+
+            //TbGpes = datbls?.Hdtbls ?? new List<Gtabl>();
+            LsPlans = toChild?.LsPlans;
+            Console.WriteLine($"Child init: Tiewels={orgTwels?.Count ?? 0}");
+            //editcontext Model initialising
+            curTiw ??= new();  // Or load data here
+            if (orgTwels != null && orgTwels.Any())
+            {
+                Console.WriteLine($"Tiewels loaded: {orgTwels.Count}");
+
+                MyDaTies = orgTwels.ToList();
+
+                if (MyDaTies.Any())
+                {
+                    curTiw = MyDaTies.FirstOrDefault();
+                }
+            }
+            else
+            {
+                Console.WriteLine("orgTwels null/empty - initializing empty collections");
+                //MyDaTies = new ObservableCollection<Tiewel>();
+                MyDaTies = new();
+            }
+            // Load visibility rules
+            await LoadTieVisibilityAsync();
+            await LoadAflVisibilityAsync();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Child crash: {ex.Message}");
+            Console.WriteLine($"Stack: {ex.StackTrace}");  // 🔥 More debug info
+            Imessage = $"Erreur7 chargement: {ex.Message}";
+        }
+        // renderCount++;
+        // Console.WriteLine($"[MainGridHelper] AfterRender #{renderCount}");
+        isLoading = false;
+    }
+    private async Task LoadTieVisibilityAsync()
+    {
+        Console.WriteLine($"Visibility loaded 1 : {curOrga.Idorg}");
+        // ✅ Fix 1: Await authorization (no .Wait())
+        await _clieManager.SetAuthorizationHeaderAsync("AuthClient");
+
+        var urlPrinc = $"regis/colsvisibility/{curOrga.Idorg}/1/2/{Ugpe}/1";
+        var jsonPrinc = await _clieManager.SendRequestAsync("AuthClient", HttpMethod.Get, urlPrinc);
+
+        Visibility = System.Text.Json.JsonSerializer.Deserialize<Dictionary<string, bool>>(jsonPrinc) ?? new();
+        Console.WriteLine("Visibility loaded 2");
+        // Loop through all entries
+        foreach (var kvp in Visibility)
+        {
+            Console.WriteLine($"{kvp.Key} visibilite : {kvp.Value}");
+        }
+    }   
+
+    private async Task LoadAflVisibilityAsync()
+    {
+        Console.WriteLine("AflVisibility loaded 1");
+        // ✅ Fix 2: Same await pattern
+        await _clieManager.SetAuthorizationHeaderAsync("AuthClient");
+
+        var url = $"regis/colsvisibility/{curOrga.Idorg}/1/2/{IMyGAfl}/2";
+        var json = await _clieManager.SendRequestAsync("AuthClient", HttpMethod.Get, url);
+
+        AflVisibility = System.Text.Json.JsonSerializer.Deserialize<Dictionary<string, bool>>(json) ?? new();
+        Console.WriteLine("AflVisibility loaded 2");
+    }
+
+    public async Task StartTiwNew()
+    {
+        Console.WriteLine("🚨 StartTiwNew");
+
+        // 1. Create new entity
+        var lsnb = NextSeq(MyDaTies, p => p.Iui);
+        var newTiw = new TiewelDto
+        {
+            Rowguid = Guid.NewGuid(),
+            Idorg = curOrga.Idorg,          
+            Iui = lsnb,
+            Utyp = Ugpe,
+            Tiedcl = 0, // pas declencheur
+            Jwlc = 1, //added
+            Nom = "",
+            Pnom = "",
+            Datc = DateTime.Now,
+            Eta = 1,
+            Ein = 3,
+            Xadd1 = -1,
+            Xedt1 = 0,
+            Xdel1 = 0
+        };
+
+        // 2. Mutate data collection once
+        MyDaTies.Insert(0, newTiw);
+
+        // 3. Prepare stable UI mirror (only once per add)
+        Console.WriteLine($"etape 1 : {newTiw.Id}");
+        draftTiw = DeepClone(newTiw);
+        Console.WriteLine($"etape 2 : {newTiw.Id}");
+        EdTiwRowguid = draftTiw.Rowguid;
+        GtieMode = GridMode.TiersAdding;
+        isEdtTiw = false;
+        isAddTiw = true; // keep add separate from edit
+        // 4. Set row states clearly (avoid double states)
+        SetRowState(newTiw.Rowguid, RowState.AddPending);
+        TiwRenderKey = draftTiw.Rowguid;
+        SetLightBackground(newTiw.Rowguid, true);
+
+        Console.WriteLine($"✅ New row added - Count: {MyDaTies.Count}");
+
+        // 5. Schedule UI refresh safely
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private async Task StartRubNew(TiewelDto parentTiw, int rubType)
+    {
+        //Ensure parent is persisted before adding children
+        if (parentTiw.Id <= 0)
+        {
+            Imessage = "🚫 Cannot add Affilie: Candidat must be saved first.";
+            return;
+        }
+
+        Console.WriteLine("🚨 StartRubNew");
+
+        // Compute next sequence
+        var nextSeq = NextSeq(parentTiw.Tiwafls, p => p.Iui);
+
+        // Create new Rubrique
+        var newRub = new TiwaflDto
+        {
+            Rowguid = Guid.NewGuid(),
+            Prowguid = parentTiw.Rowguid,
+            Itiw = parentTiw.Id,
+            Ttyp = Ugpe,
+            Tyafl = rubType,
+            Irang = nextSeq,
+            Nom = "Fils Martin",
+            Pnom = "Ilboudo",
+            Datc = DateTime.Now,
+            Liba = "",
+            Abg = "",
+            Eta = 1,
+            Xadd1 = -1, // newly added
+            Xedt1 = 0,
+            Xdel1 = 0
+        };
+        // Row state + UI hints
+        SetRowState(newRub.Rowguid, RowState.AddPending);
+        SetLightBackground(newRub.Rowguid, true);
+
+        // Ensure child collection exists
+        if (parentTiw.Tiwafls == null)
+            parentTiw.Tiwafls = new List<TiwaflDto>();
+
+        // Insert into domain collection
+        parentTiw.Tiwafls.Insert(0, newRub);
+        draftAfl = (TiwaflDto)DeepClone(newRub);
+        EdAflRowguid = draftAfl?.Rowguid;
+        GaflMode = GridMode.AflsAdding;
+        isAddAfl = true;
+        isEdtRub = true;
+        SetRowState(draftAfl.Rowguid, RowState.EditPending);
+        RubRenderKey = draftAfl.Rowguid;
+
+        Console.WriteLine($"✅ New row added to Tiewels - Count: {parentTiw.Tiwafls.Count}");
+        curAfl = newRub;
+
+        StartRowEdit(draftAfl.Rowguid, EntityLevel.Rub);
+        //@curTiw.Tiwafls.Add(curAfl);
+        StateHasChanged();
+    }
+
+    private async Task StartManTiwEdit(TiewelDto mytiw, int mytst)
+    {
+        // Domain-level tracking
+        curTiw = mytiw;
+        await StartTiwEdit(mytiw, mytiw.Rowguid);
+    }
+
+    private async Task StartTiwEdit(TiewelDto item, Guid rowguid)
+    {
+        //var client = (ODataClient)_InODaClient;
+        //bool isNew = await client.IsNewAsync<TiewelDto>("orgTwels", item.Id);
+        bool isNew = item.Id == default; // for int, default == 0
+        if (isNew)
+        { //not saved yet
+            Imessage = "🚫 Cannot edit new Tiewel: Please save it first.";
+            return;
+        }
+        if (rowguid == Guid.Empty) return;
+        item.Xedt1 = -1;
+        if (item.Iele != 0) item.Iui = (int)item.Iele;
+        SetRowState(rowguid, RowState.EditPending);  // Shows Confirm/Cancel buttons
+        _edPlnOriginals[rowguid] = (TiewelDto)DeepClone(item);
+        EdTiwRowguid = AllowMultipleEdits ? null : rowguid;
+        draftTiw = (TiewelDto)DeepClone(item);
+        GtieMode = GridMode.TiersEditing;
+        isAddTiw = false;
+        isEdtTiw = true;
+        StartRowEdit(rowguid, EntityLevel.Tiw);
+        StateHasChanged();
+    }
+
+    // This is the method wired to ChildGridHelper
+    private async Task StartRubEdit(TiwaflDto item, Guid rowguid)
+    {
+        bool isNew = item.Id == default; // for int, default == 0
+        if (isNew)
+        { //not saved yet
+            Imessage = "🚫 Cannot edit new Rubrique: Please save it first.";
+            return;
+        }
+        if (rowguid == Guid.Empty) return;
+
+        item.Xedt1 = -1;
+        if (item.Iele != 0) item.Iui = (int)item.Iele;
+        SetRowState(rowguid, RowState.EditPending);  // Shows Confirm/Cancel buttons
+        _edRubOriginals[rowguid] = (TiwaflDto)DeepClone(item);
+        EdAflRowguid = AllowMultipleEdits ? null : rowguid;
+        draftAfl = (TiwaflDto)DeepClone(item);
+        isAddAfl = false;
+        isEdtRub = true;
+        StartRowEdit(rowguid, EntityLevel.Rub);
+        StateHasChanged();
+    }
+    // --- CRUD actions ---
+    private async Task ConfirmAdd(EntityLevel level, object entity)
+    {
+        await UnifiedAddAction(level, entity);
+        await InvokeAsync(StateHasChanged);
+        EndRowEdit();
+    }
+
+    private async Task ConfirmEdit(EntityLevel level, object entity)
+    {
+        await UnifiedEditAction(entity, true, level);
+        await InvokeAsync(StateHasChanged);
+        EndRowEdit();
+    }
+    private async Task CancelAdd(EntityLevel level, object entity)
+    {
+        await UnifiedCancelAction(entity, level, PendingOpType.Insert);
+        EndRowEdit();
+    }
+
+    private async Task CancelEdit(EntityLevel level, object entity)
+    {
+        await UnifiedCancelAction(entity, level, PendingOpType.Update);
+        EndRowEdit();
+    }
+    private async Task CancelDelete<T>(T item, EntityLevel level) where T : class
+    {
+        await UnifiedCancelAction(item, level, PendingOpType.Delete);
+        EndRowEdit();
+    }
+    private async Task ConfirmDelete(EntityLevel level, object entity)
+    {
+        await UnifiedDeleteAction(entity, true, level);
+        EndRowEdit();
+    }
+
+
+    private async Task CancelDelete(EntityLevel level, object entity)
+    {
+        await UnifiedCancelAction(entity, level, PendingOpType.Delete);
+        EndRowEdit();
+    }
+    private async Task VueDetails(EntityLevel level, object entity)
+    {
+
+    }
+    private async Task TieatSaveAsync()
+    {
+        // foreach (var atr in curTiw.Tiwatrs)
+        // {
+        //     if (atr.AtState == AEntState.NewAdded)
+        //     {
+        //         curODContext.AddObject("Tiwatrs", atr);  // Tracks + prepares INSERT
+        //         Console.WriteLine($"➕ NEW {typeof(Tiwatr).Name} → AddObject");
+        //     }
+        //     else
+        //     {
+        //         curODContext.SafeAttachOrUpdate(atr, "Tiwatrs", false);  // Your method!
+        //         Console.WriteLine($"✏️ EXISTING → SafeAttachOrUpdate");
+        //     }
+        //     curODContext.UpdateObject(atr);
+        //     Console.WriteLine($"✅ {typeof(Tiwatr).Name} confirmed → tracked");
+        // }
+    }
+
+
+    // Dispatcher for ADD
+    private async Task UnifiedAddAction(EntityLevel level, object entity)
+    {
+        //var rowguid = MLEntityKeyHelper.GetRowguidAsGuid(entity);
+        // if (!isConfirm) //cancel
+        // {
+        //     RollbackPendingState(level, entity, true);
+        //     return;
+        // }
+
+        if (!ValidateEntity(entity))
+            return;
+
+        // Copy draft values into the grid item
+        CopyDraftToGridItem(entity);
+        var entitySet = GetEntitySet(level);
+        // 🔥 Always insert for new rows
+        var opId = await _guard.TrackInsert(entitySet, entity);
+
+        //SetPendingOpType(level, rowguid, PendingOpType.Insert);
+        // SetOpInfo(level, rowguid, new PendingOpInfo(opId, PendingOpType.Insert));
+
+        // // Ensure the new entity is in the local collection
+        // AddToLocalCollection(level, entity);
+        // OnEntitySaved(level, entity);
+
+        FinalizeConfirmedState(entity, $"✅ {entity.GetType().Name} tracked (insert)");
+    }
+    // Dispatcher for EDIT
+    private async Task UnifiedEditAction(object item, bool isConfirm, EntityLevel level)
+    {
+        switch (level)
+        {
+            case EntityLevel.Tiw:
+                {
+                    var pln = (TiewelDto?)item;
+                    await ProcessEditing(
+                        pln,
+                        isConfirm,
+                        "Tiewels",
+                        ValidatePln,
+                        x => Uihelper.ReplaceItem(orgTwels, y => y.Rowguid == x.Rowguid, x));
+                    break;
+                }
+            case EntityLevel.Rub:
+                {
+                    var rub = (TiwaflDto?)item;
+                    await ProcessEditing(
+                        rub,
+                        isConfirm,
+                        "Tiwafls",
+                        ValidateRub,
+                        x => Uihelper.ReplaceItem(curTiw.Tiwafls, y => y.Rowguid == x.Rowguid, x));
+                    break;
+                }
+            case EntityLevel.Fmt:
+                {
+                    var fmt = (RubfmtDto?)item;
+                    // await ProcessEditing(
+                    //     fmt,
+                    //     isConfirm,
+                    //     "Rubfmts",
+                    //     ValidateFmt,
+                    //     x => Uihelper.ReplaceItem(curAfl.Rubfmts, y => y.Rowguid == x.Rowguid, x));
+                    break;
+                }
+        }
+    }
+    // Dispatcher for CANCEL
+    private async Task UnifiedCancelAction(object item, EntityLevel level, PendingOpType opType)
+    {
+        switch (level)
+        {
+            case EntityLevel.Tiw:
+                await ProcessCancel((TiewelDto?)item, opType);
+                break;
+            case EntityLevel.Rub:
+                await ProcessCancel((TiwaflDto?)item, opType);
+                break;
+            case EntityLevel.Fmt:
+                //await ProcessCancel((RubfmtDto?)item, opType);
+                break;
+        }
+    }
+    // Dispatcher for DELETE
+    private async Task UnifiedDeleteAction(object item, bool isConfirm, EntityLevel level)
+    {
+        switch (level)
+        {
+            case EntityLevel.Tiw:
+                {
+                    var atr = (TiewelDto?)item;
+                    await ProcessDeleting(
+                        atr,
+                        isConfirm,
+                        "Tiewels",
+                        x => Uihelper.RemoveItem(orgTwels, y => y.Rowguid == x.Rowguid));
+                    break;
+                }
+            case EntityLevel.Rub:
+                {
+                    var atr = (TiwaflDto?)item;
+                    await ProcessDeleting(
+                        atr,
+                        isConfirm,
+                        "Tiwafls",
+                        x => Uihelper.RemoveItem(curTiw.Tiwafls, y => y.Rowguid == x.Rowguid));
+                    break;
+                }
+            case EntityLevel.Fmt:
+                {
+                    var atr = (RubfmtDto?)item;
+                    // await ProcessDeleting(
+                    //     atr,
+                    //     isConfirm,
+                    //     "Rubfmts",
+                    //     x => Uihelper.RemoveItem(curAfl.Rubfmts, y => y.Rowguid == x.Rowguid));
+                    break;
+                }
+        }
+    }
+    // ADD process
+    private async Task ProcessAdding<TDto>(
+    TDto? entity,
+    bool isConfirm,
+    string entitySet,
+    Action<TDto> addToCollection,
+    Action<TDto> removeFromCollection)
+    where TDto : class
+    {
+        if (entity is null)
+            return;
+
+        var rowguid = GetRowguid(entity);
+        _rowPendingOpTypeByRow.TryGetValue(rowguid, out var pendingType);
+        var isNew = pendingType == PendingOpType.Insert;
+
+        if (!isConfirm)
+        {
+            if (isNew)
+                removeFromCollection(entity);
+
+            RollbackPendingState(entity, isNew);
+            await InvokeAsync(StateHasChanged);
+            return;
+        }
+
+        CopyDraftToGridItem(entity);
+        ResetEntityUIState<TDto>();
+
+        var opId = await CommitAddOrUpdateAsync(entity, isNew, entitySet);
+        _rowPendingOpTypeByRow[rowguid] = isNew ? PendingOpType.Insert : PendingOpType.Update;
+        _pendingOpIdsByRow[rowguid] = opId;
+
+        if (isNew)
+        {
+            removeFromCollection(entity);
+            addToCollection(entity);
+        }
+
+        FinalizeConfirmedState(entity, $"✅ {typeof(TDto).Name} confirmed");
+        await InvokeAsync(StateHasChanged);
+    }
+    // EDIT process
+    private async Task ProcessEditing<TDto>(
+    TDto? entity,
+    bool isConfirm,
+    string entitySet,
+    Func<TDto, bool> validate,
+    Action<TDto> replaceInCollection)
+    where TDto : class
+    {
+        if (entity is null)
+        {
+            Imessage = "Entity is null";
+            await InvokeAsync(StateHasChanged);
+            return;
+        }
+
+        var rowguid = GetRowguid(entity);
+        _rowPendingOpTypeByRow.TryGetValue(rowguid, out var pendingType);
+        var isNew = pendingType == PendingOpType.Insert;
+
+        if (!isConfirm)
+        {
+            RollbackPendingState(entity, isNew);
+            await InvokeAsync(StateHasChanged);
+            return;
+        }
+
+        CopyDraftToGridItem(entity);
+        ResetEntityUIState<TDto>();
+
+        if (!validate(entity))
+        {
+            await InvokeAsync(StateHasChanged);
+            return;
+        }
+
+        var opId = await CommitAddOrUpdateAsync(entity, isNew, entitySet);
+        _rowPendingOpTypeByRow[rowguid] = isNew ? PendingOpType.Insert : PendingOpType.Update;
+        _pendingOpIdsByRow[rowguid] = opId;
+
+        replaceInCollection(entity);
+
+        FinalizeConfirmedState(entity, $"✅ {typeof(TDto).Name} confirmed");
+        await InvokeAsync(StateHasChanged);
+    }
+    // DELETE process
+    private async Task ProcessDeleting<TDto>(
+    TDto? item,
+    bool isConfirm,
+    string entitySet,
+    Action<TDto> removeFromCollection)
+    where TDto : class
+    {
+        if (item is null)
+            return;
+
+        var rowguid = GetRowguid(item);
+
+        if (!isConfirm)
+        {
+            ResetRowState(rowguid);
+            await InvokeAsync(StateHasChanged);
+            return;
+        }
+
+        removeFromCollection(item);
+
+        var key = GetEntityKey(item);
+        var opId = await _guard.TrackDelete(entitySet, key, rowguid);
+        _pendingOpIdsByRow[rowguid] = opId;
+
+        SetDeleteFlags(item);
+        ResetRowState(rowguid);
+        _rowPendingOpTypeByRow.Remove(rowguid);
+
+        await InvokeAsync(StateHasChanged);
+    }
+    // CANCEL process
+    private async Task ProcessCancel<TDto>(TDto? entity, PendingOpType opType) where TDto : class
+    {
+        if (entity is null)
+            return;
+
+        var rowguid = GetRowguid(entity);
+
+        if (_pendingOpIdsByRow.TryGetValue(rowguid, out var opId))
+        {
+            await _guard.CancelTrackAsync(opId, opType);
+            _pendingOpIdsByRow.Remove(rowguid);
+        }
+
+        _rowPendingOpTypeByRow.Remove(rowguid);
+
+        if (opType == PendingOpType.Insert)
+            RemoveFromParentCollection(entity);
+        else
+            ClearDraft<TDto>();
+
+        ResetRowState(rowguid);
+        ResetEntityUIState<TDto>();
+        Imessage = string.Empty;
+        StateHasChanged();
+    }
+    // Pending and others UI Helpers
+    private Guid? GetPendingOpId<TDto>(TDto entity) where TDto : class
+    {
+        var rowguid = GetRowguid(entity);
+        return _pendingOpIdsByRow.TryGetValue(rowguid, out var opId) ? opId : null;
+    }
+    private void RollbackPendingState<TDto>(TDto entity, bool isNew)
+    where TDto : class
+    {
+        var rowguid = GetRowguid(entity);
+
+        if (isNew)
+            RemoveFromParentCollection(entity);
+        else
+            ClearDraft<TDto>();
+
+        _rowPendingOpTypeByRow.Remove(rowguid);
+        _pendingOpIdsByRow.Remove(rowguid);
+        ResetRowState(rowguid);
+        ResetEntityUIState<TDto>();
+        Imessage = string.Empty;
+    }
+    private async Task<Guid> CommitAddOrUpdateAsync<TDto>(
+    TDto entity,
+    bool isNew,
+    string entitySet)
+    where TDto : class
+    {
+        if (isNew)
+            return await _guard.TrackInsert(entitySet, entity);
+
+        var key = GetEntityKey(entity);
+        return await _guard.TrackUpdate(entitySet, key, entity);
+    }
+    private void FinalizeConfirmedState<TDto>(TDto entity, string confirmMessage)
+        where TDto : class
+    {
+        var rowguid = GetRowguid(entity);
+
+        SetFlags(entity, 0, -1, 0);
+        ResetRowState(rowguid);
+        SetLightBackground(rowguid, false);
+        ResetEntityUIState<TDto>();
+        Imessage = confirmMessage;
+    }
+    //Others
+    private void SetDeleteFlags(object item) => SetFlags(item, 0, 0, -1);
+    private string GetEntitySetName<T>() where T : class
+    {
+        return typeof(T) switch
+        {
+            Type t when t == typeof(TiewelDto) => "Tiewels",
+            Type t when t == typeof(TiwaflDto) => "Tiwafls",
+            Type t when t == typeof(RubfmtDto) => "Rubfmts",
+            _ => throw new ArgumentException($"Unknown entity type: {typeof(T).Name}")
+        };
+    }
+    private string GetEntitySet(object entity)
+    {
+        return entity switch
+        {
+            TiewelDto _ => "Tiewels",
+            TiwaflDto _ => "Tiwafls",
+            RubfmtDto _ => "Rubfmts",
+            _ => throw new ArgumentException("Unknown entity type")
+        };
+    }
+    private object GetEntityKey<TDto>(TDto entity)
+    {
+        switch (entity)
+        {
+            case TiewelDto pln:
+                return pln.Id;
+            case TiwaflDto rub:
+                return rub.Id;
+            case RubfmtDto fmt:
+                return fmt.Id;
+            default:
+                throw new InvalidOperationException($"Unknown entity type {typeof(TDto).Name}");
+        }
+    }
+    // 🔥 Generic Rowguid (no reflection)
+    private static Guid GetRowguid<T>(T entity) where T : class
+        => ((dynamic)entity).Rowguid;  // Or property expression
+    // 🔥 Generic Rowguid (no reflection)
+    // Generic Xadd1 getter
+    private int GetXadd1<T>(T entity)
+    {
+        return (int)typeof(T).GetProperty("Xadd1")?.GetValue(entity)!;
+    }
+    // Remove from parent collection
+    private void RemoveFromParentCollection<T>(T entity)
+    {
+        // Plngen: top-level
+        if (entity is TiewelDto tiw && MyDaTies.Any(p => p.Rowguid == tiw.Rowguid))
+            MyDaTies.Remove(tiw);
+        // Rubvar: parent Plngen.Rubvars
+        else if (entity is TiwaflDto rub)
+        {
+            var parent = MyDaTies.FirstOrDefault(p => p.Id == rub.Itiw);
+            parent?.Tiwafls?.Remove(rub);
+        }
+    }
+    private void CopyDraftToGridItem<T>(T gridItem) where T : class
+    {
+        switch (typeof(T).Name)
+        { // ONLY editable UI fields - 5-10x faster than reflection!
+            case nameof(TiewelDto):
+                if (draftTiw == null) return;
+                var pln = (TiewelDto)(object)gridItem;
+                pln.Smatri = draftTiw.Smatri; //designation
+                pln.Xmatri = draftTiw.Xmatri; //abrege
+                pln.Nom = draftTiw.Nom; //formule-non valider
+                pln.Pnom = draftTiw.Pnom;
+                pln.Raison = draftTiw.Raison;
+                pln.Eta = draftTiw.Eta; //etat
+                pln.Xadd1 = draftTiw.Xadd1;
+                pln.Xedt1 = draftTiw.Xedt1;
+                break;
+            case nameof(TiwaflDto):
+                if (draftAfl == null) return;
+                var rub = (TiwaflDto)(object)gridItem;
+                rub.Irang = draftAfl.Irang;
+                rub.Smatri = draftAfl.Smatri; //designation
+                rub.Xmatri = draftAfl.Xmatri; //abrege
+                rub.Nom = draftAfl.Nom; //formule-non valider
+                rub.Pnom = draftAfl.Pnom;
+                rub.Raison = draftAfl.Raison;
+                rub.Eta = draftAfl.Eta; //etat
+                rub.Xadd1 = draftAfl.Xadd1;
+                rub.Xedt1 = draftAfl.Xedt1;
+                break;
+                // case nameof(Rubfmt):
+                //     if (draftFmt == null) return;
+                //     var fmt = (Rubfmt)(object)gridItem;
+                //     fmt.Liba = draftFmt.Liba; //designation
+                //     fmt.Abg = draftFmt.Abg; //abrege
+                //     fmt.Zcdrub = draftFmt.Zcdrub; //code
+                //     fmt.Xcod = draftFmt.Xcod; //refer
+                //     fmt.Ztyp = draftFmt.Ztyp; //ztyp
+                //     fmt.Ftsrc = draftFmt.Ftsrc; //formule
+                //     fmt.Col = draftFmt.Col; //col
+                //     fmt.Lne = draftFmt.Lne; //lne
+                //     fmt.Lgtf = draftFmt.Lgtf; //lgtf
+                //     fmt.Eta = draftFmt.Eta; //etat
+                //     fmt.Xadd1 = draftFmt.Xadd1;
+                //     fmt.Xedt1 = draftFmt.Xedt1;
+                //     break;
+        }
+    }
+    private void ClearDraft<T>()
+    {
+        switch (typeof(T).Name)
+        {
+            case nameof(TiewelDto):
+                draftTiw = null;
+                Console.WriteLine("EdTiwRowguid is become null");
+                EdTiwRowguid = null;
+                break;
+            case nameof(TiwaflDto):
+                draftAfl = null;
+                EdAflRowguid = null;
+                break;
+                // case nameof(Rubfmt):
+                //     draftFmt = null;
+                //     EdFmtRowguid = null;
+                //     break;
+        }
+    }
+    // Generic flag setter
+    private void SetFlags<T>(T entity, int xadd1, int xedt1, int xdel1)
+    {
+        typeof(T).GetProperty("Xadd1")?.SetValue(entity, xadd1);
+        typeof(T).GetProperty("Xedt1")?.SetValue(entity, xedt1);
+        typeof(T).GetProperty("Xdel1")?.SetValue(entity, xdel1);
+    }
+
+    private async Task MarkAsModified<TDto>(TDto item, string entitySet) where TDto : class
+    {
+        // Reset flags (your convention)
+        SetFlags(item, 0, 0, 0);  // Xadd1=Xedt1=Xdel1=0
+
+        // Extract PK using your helper
+        var key = GetEntityKey(item);
+
+        // Queue update in guard
+        await _guard.TrackUpdate(entitySet, key, item);
+
+        Console.WriteLine($"modified liba {((dynamic)item).Liba} et abg {((dynamic)item).Abg}");
+        Console.WriteLine($"✅ {entitySet} marked Modified (queued for update)");
+    }
+
+    // ✅ 6. VALIDATIONS
+    private bool ValidateEntity<T>(T item)
+    {
+        return item switch
+        {
+            TiewelDto tiw => ValidateTiw(tiw),
+            TiwaflDto afl => ValidateAfl(afl),
+            _ => true
+        };
+    }
+    private bool ValidateTiw(TiewelDto? mytiw)
+    {
+        Console.WriteLine($"A verifier {mytiw.Nom}");
+        //liba
+        if (string.IsNullOrEmpty(mytiw.Nom)
+            || mytiw.Nom.Length < 3)
+        {
+            Imessage = "designation obligatoire/longueur";
+            return false;
+        }
+        //abrege
+        // if (string.IsNullOrEmpty(mypln.Abg)
+        //     || mypln.Abg.Length < 4)
+        // {
+        //     Imessage = "abrege obligatoire/longueur";
+        //     return false;
+        // }
+        // //etat
+        // if (mypln.Eta < 0)
+        // {
+        //     Imessage = "etat obligatoire";
+        //     return false;
+        // }
+        return true;
+    }
+    private bool ValidateAfl(TiwaflDto? mytiw)
+    {
+        Console.WriteLine($"A verifier {mytiw.Nom}");
+        //liba
+        if (string.IsNullOrEmpty(mytiw.Nom)
+            || mytiw.Nom.Length < 6)
+        {
+            Imessage = "designation obligatoire/longueur";
+            return false;
+        }
+        return true;
+    }
+
+    // ROWS MANAGEMENT
+    private void StartRowEdit(Guid rowguid, EntityLevel level)
+    {
+        _activeEditRowguid = rowguid;
+        _activeEditLevel = level;
+        StateHasChanged();
+    }
+    private void EndRowEdit()
+    {
+        _activeEditRowguid = null;
+        _activeEditLevel = null;
+        StateHasChanged();
+    }
+    private string GetTiwRowClass(TiewelDto pln)
+    {
+        var state = GetRowState(pln.Rowguid);
+        var isLight = IsLightBackground(pln.Rowguid);  // 🔥 Uses your existing
+
+        // 🔥 NEW: Single Active Row Editing
+        var isActiveEdit = _activeEditRowguid == pln.Rowguid;
+        var isOtherRowEditing = _activeEditRowguid != null && !isActiveEdit;
+
+        return GetRowCss(state, isLight, pln.Rowguid, isActiveEdit, isOtherRowEditing);
+    }
+    private string GetRubRowClass(TiwaflDto rub)
+    {
+        var state = GetRowState(rub.Rowguid);
+        var isLight = IsLightBackground(rub.Rowguid);  // 🔥 Uses your existing
+
+        // 🔥 NEW: Single Active Row Editing
+        var isActiveEdit = _activeEditRowguid == rub.Rowguid;
+        var isOtherRowEditing = _activeEditRowguid != null && !isActiveEdit;
+
+        return GetRowCss(state, isLight, rub.Rowguid, isActiveEdit, isOtherRowEditing);
+    }
+    // private string GetFmtRowClass(Rubfmt fmt)
+    // {
+    //     var state = GetRowState(fmt.Rowguid);
+    //     var isLight = IsLightBackground(fmt.Rowguid);  // 🔥 Uses your existing
+
+    //     // 🔥 NEW: Single Active Row Editing
+    //     var isActiveEdit = _activeEditRowguid == fmt.Rowguid;
+    //     var isOtherRowEditing = _activeEditRowguid != null && !isActiveEdit;
+
+    //     return GetRowCss(state, isLight, fmt.Rowguid, isActiveEdit, isOtherRowEditing);
+    // }
+    private RowState GetRowState(Guid rowguid, object? parent = null)
+    {
+        if (_rowStates.TryGetValue(rowguid, out var state)) return state;
+
+        // Context-aware lookup
+        if (parent is TiewelDto mytiw)
+        {
+            if (mytiw.Rowguid == rowguid && IsTiwRowLocked(rowguid)) return RowState.Locked;
+            var rub = mytiw.Tiwafls?.FirstOrDefault(r => r.Rowguid == rowguid);
+            if (rub != null && IsRubRowLocked(rowguid)) return RowState.Locked;
+        }
+        // else if (parent is Tiwafl myrub)
+        // {
+        //     var fmt = myrub.Rubfmts?.FirstOrDefault(f => f.Rowguid == rowguid);
+        //     if (fmt != null && IsFmtRowLocked(rowguid)) return RowState.Locked;
+        // }
+
+        // Full hierarchy fallback
+        // ... same as above
+        //Dictionary lookup by RowGuid
+        // 🔥 MISSING: Final return for normal state
+        return _rowStates.TryGetValue(rowguid, out var cachedState) ? cachedState : RowState.Normal;
+    }
+    private void SetRowState(Guid rowguid, RowState state)  // Remove <T>
+    {
+        _rowStates[rowguid] = state;
+    }
+    private void ResetRowState(Guid rowguid)  // Reset specific row
+    {
+        _rowStates.Remove(rowguid);  // Back to Normal
+    }
+    private bool IsLightBackground(Guid rowguid)
+    {
+        return _isLightBg.ContainsKey(rowguid) && _isLightBg[rowguid];
+    }
+
+    private void ResetEntityUIState<T>()
+    {
+        switch (typeof(T).Name)
+        {
+            case nameof(TiewelDto): ResetPlnUI(); break;
+            case nameof(TiwaflDto): ResetRubUI(); break;
+                //case nameof(Rubfmt): ResetFmtUI(); break;
+        }
+    }
+    private void ResetPlnUI()
+    {
+        Console.WriteLine("🔄 ResetPlnUI");
+
+        // 🔥 CLEAR ALL MODES
+        isEdtTiw = false;
+        isAddTiw = false;  // ← CRITICAL - Exits add mode
+
+        draftTiw = null;
+        EdTiwRowguid = null;
+        DlTiwRowguid = null;
+
+        TiwRenderKey = Guid.NewGuid();  // Force grid refresh
+        StateHasChanged();
+    }
+    private void ResetRubUI()
+    {
+        draftAfl = null;
+        EdAflRowguid = AdAflRowguid = null;
+        isEdtRub = isAddAfl = false;
+        RubRenderKey = null;
+    }
+    // private void ResetFmtUI()
+    // {
+    //     draftFmt = null; EdFmtRowguid = AdFmtRowguid = null;
+    //     isEdtFmt = isAddFmt = false; FmtRenderKey = null;
+    // }
+    // ✅ 3. NOTIFICATIONS
+    private async Task NotifyPendingChanges()
+    {
+        await OnPendingStateChanged.InvokeAsync(new PendingState(
+            _guard.HasPendingChanges(),
+            _guard.GetPendingChangesCount()
+        ));
+
+        NbChanges = _guard.GetPendingChangesCount();
+        Console.WriteLine($"🔔 Pending changes: {NbChanges}");
+        await NbChangesChanged.InvokeAsync(NbChanges);
+        StateHasChanged();
+    }
+    private void StartRowDelete(Guid rowguid, EntityLevel level)
+    {
+        // 🔥 1. Set DeletePending → triggers your @switch
+        SetRowState(rowguid, RowState.DeletePending);
+
+        // 🔥 2. Enable single-row editing (CSS)
+        StartRowEdit(rowguid, level);
+
+        StateHasChanged();
+    }
+   
+    
+    private bool ValidatePln(TiewelDto? mytiw)
+    {
+        Console.WriteLine($"A verifier {mytiw.Nom}");
+        //liba
+        if (string.IsNullOrEmpty(mytiw.Nom)
+            || mytiw.Nom.Length < 4)
+        {
+            Imessage = "designation obligatoire/longueur";
+            return false;
+        }
+        //abrege
+        if (string.IsNullOrEmpty(mytiw.Pnom)
+            || mytiw.Pnom.Length < 4)
+        {
+            Imessage = "abrege obligatoire/longueur";
+            return false;
+        }
+        // //etat
+        // if (mytiw.Eta < 0)
+        // {
+        //     Imessage = "etat obligatoire";
+        //     return false;
+        // }
+        return true;
+    }
+    private bool ValidateRub(TiwaflDto myrub)
+    {
+        //liba
+        if (string.IsNullOrEmpty(myrub.Nom)
+            || myrub.Nom.Length < 4)
+        {
+            Imessage = "designation obligatoire/longueur";
+            return false;
+        }
+        //abrege
+        if (string.IsNullOrEmpty(myrub.Pnom)
+            || myrub.Pnom.Length < 4)
+        {
+            Imessage = "abrege obligatoire/longueur";
+            return false;
+        }
+        //scdrub
+        // if (string.IsNullOrEmpty(myrub.Scdrub)
+        //     || myrub.Scdrub.Length != _lgcdu)
+        // {
+        //     Imessage = "code obligatoire/longueur";
+        //     return false;
+        // }
+        // //etat
+        // if (myrub.Eta < 0)
+        // {
+        //     Imessage = "etat obligatoire";
+        //     return false;
+        // }
+        return true;
+    }
+    
+    // ✅ 6. ROW Management
+    private string GetRowCss(RowState state, bool isLight, Guid rowguid,
+                        bool isActiveEdit, bool isOtherRowEditing)
+    {
+        var css = new List<string>();
+
+        if (isLight) css.Add("bg-light");
+
+        // 🔥 YOUR EXISTING: NEW ADD detection (Xadd1 == -1)
+        var isNewAdd = ((dynamic)MyDaTies.FirstOrDefault(p => p.Rowguid == rowguid))?.Xadd1 == -1;
+
+        // 🔥 HIGHEST PRIORITY: Single Row Editing
+        if (isActiveEdit)
+        {
+            css.Add("row-active-edit");  // Thick yellow border + highlight
+            return string.Join(" ", css);  // EARLY RETURN - editing overrides all
+        }
+
+        // 🔥 NEXT: Other rows when editing active → READONLY
+        if (isOtherRowEditing)
+        {
+            css.Add("row-readonly");
+            css.Add("opacity-65");
+            css.Add("cursor-not-allowed");
+        }
+
+        // 🔥 YOUR EXISTING RowState logic
+        switch (state)
+        {
+            case RowState.AddPending:
+
+            case RowState.EditPending when isNewAdd:
+                css.Add("border-start border-warning border-3");
+                //css.Add("new-add-indicator");
+                break;
+            case RowState.EditPending:
+                css.Add("border-start border-info border-3");
+                break;
+            case RowState.DeletePending:
+                css.Add("bg-danger-subtle");
+                break;
+            case RowState.Locked:
+                css.Add("bg-secondary-subtle opacity-75");
+                break;
+        }
+
+        return string.Join(" ", css);
+    }
+    private void SetLightBackground(Guid rowguid, bool isLight)
+    {
+        _isLightBg[rowguid] = isLight;
+    }
+    private bool GetLightBackground(Guid rowguid)
+    {
+        return _isLightBg.GetValueOrDefault(rowguid, false);
+    }
+    // ✅ 6. SELECTIONS
+    private void SelPlanVue(int xdom)
+    {
+        if (xdom != 0)
+        {
+
+        }
+    }
+    
+    protected T DeepClone<T>(T entity)
+    {
+        var settings = new JsonSerializerSettings
+        {
+            ReferenceLoopHandling = ReferenceLoopHandling.Ignore
+        };
+
+        var json = JsonConvert.SerializeObject(entity, settings);
+        return JsonConvert.DeserializeObject<T>(json, settings)!;
+    }
+
+    private Task OnSelectedItemsChanged(HashSet<TiewelDto> myties)
+    {
+        selectedTiewels = myties is not null && myties.Any() ? myties : new();
+        return Task.CompletedTask;
+    }
+    private async Task<bool> ValiderSelection()
+    {
+
+
+        return true;
+    }
+    bool AreRowsEqual(TiwaflDto row1, TiwaflDto row2) =>
+        row1.Liba == row2.Liba && row1.Abg == row2.Abg;
+    private int NextSeq<T>(IEnumerable<T> source, Func<T, int?> selector)
+    {
+        int maxSeq = source.Any() ? source.Max(selector) ?? 0 : 0;
+        return maxSeq + 1;
+    }
+    // CATEGORIES
+    // Build full lineage string for display
+    private RenderFragment RenderCategories(IEnumerable<Gpcat> cats) => builder =>
+    {
+        foreach (var cat in cats.Where(c => c.Eta != 0))
+        {
+            builder.OpenElement(0, "div");
+            builder.AddAttribute(1, "class", cat.Pid == null ? "mb-2" : "form-check ms-3");
+
+            // Checkbox
+            builder.OpenComponent<InputCheckbox>(2);
+            builder.AddAttribute(3, "class", "form-check-input checkbox-bordered");
+            builder.AddAttribute(4, "Value", cat.IsSelected);
+            builder.AddAttribute(5, "ValueChanged", EventCallback.Factory.Create<bool>(this, args =>
+            {
+                cat.IsSelected = args;
+
+                // Cascade down
+                foreach (var child in cat.Children)
+                    child.IsSelected = args;
+
+                // Cascade up (recursive)
+                CascadeUp(cat.Parent, args);
+            }));
+            builder.AddAttribute(6, "ValueExpression", (Expression<Func<bool>>)(() => cat.IsSelected));
+            builder.CloseComponent();
+
+            // Label
+            builder.OpenElement(7, "label");
+            builder.AddAttribute(8, "class", "form-check-label");
+            builder.AddContent(9, cat.Liba);
+            builder.CloseElement();
+
+            // Recurse into children
+            if (cat.Children.Any())
+                builder.AddContent(10, RenderCategories(cat.Children));
+
+            builder.CloseElement();
+        }
+    };
+    private void CascadeUp(Gpcat? parent, bool selected)
+    {
+        if (parent == null) return;
+
+        if (selected)
+        {
+            parent.IsSelected = true;
+            CascadeUp(parent.Parent, true); // keep climbing
+        }
+        else
+        {
+            // only uncheck if ALL children are unchecked
+            if (parent.Children.All(c => !c.IsSelected))
+            {
+                parent.IsSelected = false;
+                CascadeUp(parent.Parent, false); // keep climbing
+            }
+        }
+    }
+    // Build hierarchy after fetching EnsCats
+    private void BuildHierarchy()
+    {
+        var lookup = EnsCats.ToDictionary(c => c.Id);
+
+        foreach (var cat in EnsCats)
+        {
+            if (cat.Pid != null && lookup.TryGetValue(cat.Pid.Value, out var parent))
+            {
+                cat.Parent = parent;
+                parent.Children.Add(cat);
+            }
+        }
+    }
+    //FILTRES
+    private Grid<TiewelDto> grid = default!;
+    private async void TogglePlnFiltering()
+    {
+        isPlnFilteringEnabled = !isPlnFilteringEnabled;
+        await grid.RefreshDataAsync(); // Refresh the grid to apply the change
+    }
+    private void ToggleRubFiltering()
+    {
+        isRubFilteringEnabled = !isRubFilteringEnabled;
+    }
+        
+    private void ShowModal()
+    {
+        // Optionally, set the current entity to edit
+        //currentEntity = new YourEntityType { Name = "Sample Name", Description = "Sample Description" }; // Example initialization
+        //_mdcTiwel = curTiwel;
+        Console.WriteLine($"ShowModal appele");
+        isModalVisible = true;
+    }
+    private Task OnModalVisibilityChanged(bool isVisible)
+    {
+        isModalVisible = isVisible;
+        return Task.CompletedTask;
+    }
+    
+    private Task HandleTiwSave(TiewelDto entity)
+    {
+        // Handle modal entity save
+        // For example, save to the database or update the UI
+        Console.WriteLine($"Entity saved: {entity.Nom}, {entity.Pnom}");
+        return Task.CompletedTask;
+    }
+    private void showPgLink()
+    {
+        yaPgLink = !yaPgLink;
+    }
+    private string GetCodeStyle()
+    {
+        return "width:50%;";
+    }
+    private string GetStyle(int? itemId)
+    {
+        int oId = Convert.ToInt32(itemId);
+        Console.WriteLine($" style state : {oId}");
+        return EdState.TryGetValue(oId, out bool onEditing) && onEditing
+        ? "background-color:yellow;"
+        : "";
+    }
+    private string GetButton(int itemId)
+    {
+        int oId = Convert.ToInt32(itemId);
+        return EdState.TryGetValue(oId, out bool onEditing) && onEditing ? "Confirm" : "Edit";
+    }
+
+    private void OnChlFocusHandler(TiewelDto mypl, TiwaflDto myvar)
+    {
+
+    }
+    private void HandleFieldChanged(object sender, FieldChangedEventArgs e)
+    {
+        //ChildUPDING = true;
+        //if (!isTiwInEditing) isTiwInEditing = true;
+        Console.WriteLine($"Field edited: {e.FieldIdentifier.FieldName}");
+        // Place your logic here when a field is edited
+    }
+    private void ResetEditContext(TiewelDto model)
+    {
+        // Dispose old handlers before replacing
+        if (edTiwContext != null)
+        {
+            edTiwContext.OnFieldChanged -= HandleFieldChanged;
+        }
+
+        edTiwContext = new EditContext(model);
+        edTiwContext.OnFieldChanged += HandleFieldChanged;
+    }
+    public void Dispose()  // ← ADD THIS
+    {
+        Console.WriteLine("🧹 Child Prubsaie cleaning up");
+        // _guard.DiscardUnconfirmedAdds<TiewelDto>();
+        // _guard.DiscardUnconfirmedAdds<TiwaflDto>();
+    }
+
+    
+    //private async Task ConfirmPlnEdit(TiewelDto item)
+    // private async Task ConfirmPlnEdit(TiewelDto item)
+    // {
+    //     await UnifiedEditAction(item, true, EntityLevel.Plan);
+    //     await TieatSaveAsync();
+    // }
+
+    // private async Task ConfirmRubEdit(TiwaflDto item) =>
+    //     await UnifiedEditAction(item, true, EntityLevel.Rub);
+    // // ✅ 2.2 CANCEL OPERATIONS
+    // private async Task CancelPlnEdit(TiewelDto item)
+    // {
+    //     await UnifiedEditAction(item, false, EntityLevel.Plan);
+    //     //TieatCancelAsync();
+    // }
+    // private async Task CancelRubEdit(TiwaflDto item) =>
+    //     await UnifiedEditAction(item, false, EntityLevel.Rub);// private void SelDomAfil()
+    // {
+    //     AflVisibility = new();
+    //     if (LsFcols.Any())
+    //     {
+    //         string StrStore = LsFcols.FirstOrDefault(uc => uc.Totyp == IMyGAfl).Fgsrc; //ColName;IsVisible;
+    //         List<LSelCol> Pcolumns = ColsPreferences.DeserializePreferences(StrStore);
+    //         Console.WriteLine($"nb cols {Pcolumns.Count} et {StrStore}");
+    //         AflVisibility = Pcolumns.ToDictionary(tc => tc.ColName, tc => tc.IsVisible);
+    //         Console.WriteLine($"totyp {Ugpe} et cols Afl in : {LsFcols.Count} et visibles : {AflVisibility.Values.Count}");
+    //         foreach (var uco in AflVisibility)
+    //         {
+    //             Console.WriteLine($"col: {uco.Key} visible: {uco.Value}");
+    //         }
+    //     }
+    // }
+
+    // void MarkAsModified<TDto>(TDto item, string entitySet) where TDto : class
+    // {
+    //     // Reset flags (your convention)
+    //     SetFlags(item, 0, 0, 0);  // Xadd1=Xedt1=Xdel1=0
+
+    //     // Extract PK using your helper
+    //     var key = GetEntityKey(item);
+
+    //     // Queue update in guard
+    //     _guard.TrackUpdate(entitySet, key, item);
+
+    //     Console.WriteLine($"modified liba {((dynamic)item).Liba} et abg {((dynamic)item).Abg}");
+    //     Console.WriteLine($"✅ {entitySet} marked Modified (queued for update)");
+    // }
+    // private async Task UnifiedEditAction(object item, bool isConfirm, EntityLevel level)
+    // {
+    //     switch (level)
+    //     {
+    //         case EntityLevel.Plan:
+    //             await ProcessPlan((TiewelDto)item, isConfirm);
+    //             break;
+    //         case EntityLevel.Rub:
+    //             await ProcessRub((TiwaflDto)item, isConfirm);
+    //             break;
+    //             // case EntityLevel.Rub:
+    //             //     await ProcessFmt((Rubfmt)item, isConfirm);
+    //             //     break;
+    //     }
+    // }
+    // private async Task ProcessPlan(TiewelDto pln, bool isConfirm)
+    // {
+    //     await ProcessEntity(pln, isConfirm, "Tiewels", p => ValidatePln(p));
+    // }
+    // private async Task ProcessRub(TiwaflDto rub, bool isConfirm)
+    // {
+    //     await ProcessEntity(rub, isConfirm, "Tiwafls", r => ValidateRub(r));
+    // }
+
+    // private async Task ProcessEntity<TDto>(
+    //     TDto entity,
+    //     bool isConfirm,
+    //     string entitySet,
+    //     Func<TDto, bool> validate)
+    //     where TDto : class
+    // {
+    //     Console.WriteLine($"🔄 Process{typeof(TDto).Name}: {(isConfirm ? "CONFIRM" : "CANCEL")}");
+
+    //     if (entity == null)
+    //     {
+    //         Imessage = "Entity is null";
+    //         StateHasChanged();
+    //         return;
+    //     }
+
+    //     if (isConfirm)
+    //     {
+    //         // 1. Copy draft → entity
+    //         CopyDraftToGridItem(entity);
+
+    //         // 2. Validate
+    //         if (!validate(entity))
+    //         {
+    //             Console.WriteLine($"❌ Validation failed: {Imessage}");
+    //             StateHasChanged();
+    //             return;
+    //         }
+
+    //         // 3. NEW vs EXISTING
+    //         bool isNew = GetXadd1(entity) == -1;
+    //         if (isNew)
+    //         {
+    //             _guard.TrackInsert(entitySet, entity);
+    //             Console.WriteLine($"➕ NEW {typeof(TDto).Name} → TrackInsert");
+    //         }
+    //         else
+    //         {
+    //             var key = GetEntityKey(entity); // helper to extract PK
+    //             _guard.TrackUpdate(entitySet, key, entity);
+    //             Console.WriteLine($"✏️ EXISTING {typeof(TDto).Name} → TrackUpdate");
+    //         }
+
+    //         // 4. Confirm flags
+    //         SetFlags(entity, 0, -1, 0);
+
+    //         // 5. UI + notify
+    //         var rowguid = GetRowguid(entity);
+    //         ResetRowState(rowguid);
+    //         SetLightBackground(rowguid, false);
+    //         ResetEntityUIState<TDto>();
+    //         //await NotifyPendingChanges();
+
+    //         Imessage = $"✅ {typeof(TDto).Name} confirmed";
+    //     }
+    //     else // CANCEL
+    //     {
+    //         if (GetXadd1(entity) == -1) // New only
+    //         {
+    //             RemoveFromParentCollection(entity);
+    //             Console.WriteLine($"🗑️ Removed new {typeof(TDto).Name}");
+    //         }
+    //         else
+    //         {
+    //             ClearDraft<TDto>();
+    //         }
+
+    //         var rowguid = GetRowguid(entity);
+    //         ResetRowState(rowguid);
+    //         ResetEntityUIState<TDto>();
+    //         Imessage = "";
+    //     }
+
+    //     StateHasChanged();
+    // }
+    // private object GetEntityKey<TDto>(TDto entity)
+    // {
+    //     switch (entity)
+    //     {
+    //         case TiewelDto pln:
+    //             return pln.Id;
+    //         case TiwaflDto rub:
+    //             return rub.Id;
+    //         //case RubfmtDto fmt:
+    //         //    return fmt.Id;
+    //         default:
+    //             throw new InvalidOperationException($"Unknown entity type {typeof(TDto).Name}");
+    //     }
+    // }
+    // // 🔥 Generic Rowguid (no reflection)
+    // private static Guid GetRowguid<T>(T entity) where T : class
+    //     => ((dynamic)entity).Rowguid;  // Or property expression
+
+
+    // // Generic flag setter
+    // private void SetFlags<T>(T entity, int xadd1, int xedt1, int xdel1)
+    // {
+    //     typeof(T).GetProperty("Xadd1")?.SetValue(entity, xadd1);
+    //     typeof(T).GetProperty("Xedt1")?.SetValue(entity, xedt1);
+    //     typeof(T).GetProperty("Xdel1")?.SetValue(entity, xdel1);
+    // }
+    // // Generic Xadd1 getter
+    // private int GetXadd1<T>(T entity)
+    // {
+    //     return (int)typeof(T).GetProperty("Xadd1")?.GetValue(entity)!;
+    // }
+    // // Remove from parent collection
+    // private void RemoveFromParentCollection<T>(T entity)
+    // {
+    //     // Plngen: top-level
+    //     if (entity is TiewelDto pln && MyDaTies.Any(p => p.Rowguid == pln.Rowguid))
+    //         MyDaTies.Remove(pln);
+    //     // Rubvar: parent Plngen.Tiwafls
+    //     else if (entity is TiwaflDto rub)
+    //     {
+    //         var parent = MyDaTies.FirstOrDefault(p => p.Id == rub.Itie);
+    //         parent?.Tiwafls?.Remove(rub);
+    //     }
+    // }
+    // private void CopyDraftToGridItem<T>(T gridItem) where T : class
+    // {
+    //     switch (typeof(T).Name)
+    //     { // ONLY editable UI fields - 5-10x faster than reflection!
+    //         case nameof(TiewelDto):
+    //             if (draftTiw == null) return;
+    //             var pln = (TiewelDto)(object)gridItem;
+    //             pln.Smatri = draftTiw.Smatri; //designation
+    //             pln.Xmatri = draftTiw.Xmatri; //abrege
+    //             pln.Nom = draftTiw.Nom; //formule-non valider
+    //             pln.Pnom = draftTiw.Pnom;
+    //             pln.Raison = draftTiw.Raison;
+    //             pln.Eta = draftTiw.Eta; //etat
+    //             pln.Xadd1 = draftTiw.Xadd1;
+    //             pln.Xedt1 = draftTiw.Xedt1;
+    //             break;
+    //         case nameof(TiwaflDto):
+    //             if (draftAfl == null) return;
+    //             var rub = (TiwaflDto)(object)gridItem;
+    //             rub.Irang = draftAfl.Irang;
+    //             rub.Smatri = draftAfl.Smatri; //designation
+    //             rub.Xmatri = draftAfl.Xmatri; //abrege
+    //             rub.Nom = draftAfl.Nom; //formule-non valider
+    //             rub.Pnom = draftAfl.Pnom;
+    //             rub.Raison = draftAfl.Raison;
+    //             rub.Eta = draftAfl.Eta; //etat
+    //             rub.Xadd1 = draftAfl.Xadd1;
+    //             rub.Xedt1 = draftAfl.Xedt1;
+    //             break;
+    //             // case nameof(Rubfmt):
+    //             //     if (draftFmt == null) return;
+    //             //     var fmt = (Rubfmt)(object)gridItem;
+    //             //     fmt.Liba = draftFmt.Liba; //designation
+    //             //     fmt.Abg = draftFmt.Abg; //abrege
+    //             //     fmt.Zcdrub = draftFmt.Zcdrub; //code
+    //             //     fmt.Xcod = draftFmt.Xcod; //refer
+    //             //     fmt.Ztyp = draftFmt.Ztyp; //ztyp
+    //             //     fmt.Ftsrc = draftFmt.Ftsrc; //formule
+    //             //     fmt.Col = draftFmt.Col; //col
+    //             //     fmt.Lne = draftFmt.Lne; //lne
+    //             //     fmt.Lgtf = draftFmt.Lgtf; //lgtf
+    //             //     fmt.Eta = draftFmt.Eta; //etat
+    //             //     fmt.Xadd1 = draftFmt.Xadd1;
+    //             //     fmt.Xedt1 = draftFmt.Xedt1;
+    //             //     break;
+    //     }
+    // }
+    // private void ClearDraft<T>()
+    // {
+    //     switch (typeof(T).Name)
+    //     {
+    //         case nameof(TiewelDto):
+    //             draftTiw = null;
+    //             Console.WriteLine("EdTiwRowguid is become null");
+    //             EdTiwRowguid = null;
+    //             break;
+    //         case nameof(TiwaflDto):
+    //             draftAfl = null;
+    //             EdAflRowguid = null;
+    //             break;
+    //         // case nameof(Rubfmt):
+    //         //     draftFmt = null;
+    //         //     EdFmtRowguid = null;
+    //         //     break;
+    //     }
+    // }
+}

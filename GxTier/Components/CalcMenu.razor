@@ -5,22 +5,26 @@
 @using System.Security.Claims
 @using BlazorBootstrap
 @using Blazored.LocalStorage
-@using GxFormula.ForaModels
 @using GxShared.Sess
 @using GxShared.Others
 @using GxShared.Interfaces
 @using GxShared.GxDtos 
 @using GxShared.Helpers
 @using GxTie.Services
-@using GxTie.Components.Opera.Calculs
+@using GxTie.Services.Calculation
+@using GxTie.Components.Opera
 @using Simple.OData.Client
 @using Newtonsoft.Json
+@using GxFormula.Forasource
+@using GxFormula.ForaBizz
+@using GxShared.GxGuards
 
 @inject NavigationManager _navmanager
 @inject ILocalStorageService _localStorage
 @inject HttpClientService _cliemanager
 @inject IODataClient _MyODaClient
 @inject SessionContextService _sessionContext
+@inject ICalculationService _calcService
 @inject MyAuthStateProvider _authProvider
 @inject RendAgres _rendAgres
 @inject IPendingChangesGuard _guard
@@ -65,7 +69,7 @@
                         <label>Programme :</label>
                         <div class="text-center">
                             <InputSelect id="pgrId" @bind-Value="ImyProg">
-                                <option value=0>progr?</option>
+                                <option value=0></option>
                                 @foreach (var pgr in LsProgs)
                                 {
                                     <option value=@pgr.Id @onclick="() => GetSelectedProg(pgr)">@pgr.Liba</option>
@@ -75,11 +79,12 @@
 
                         <label for="TypDiv">Service :</label>
                         <div>
-                            <InputSelect id="TypDiv" @bind-Value="ImyDiv">
-                                <option value=0>Aucun</option>
+                            <InputSelect id="TypDiv" @bind-Value="ImyDiv" @onclick="@trierTiers">
+                                <option value=0></option>
+                                <option value=-1>Tous</option>
                                 @foreach (var divo in LsDivs)
                                 {
-                                    <option value=@divo.Ihie @onclick="@trierTiers">@divo.Abg-@divo.Liba</option>
+                                    <option value=@divo.Ihie>@divo.Abg-@divo.Liba</option>
                                 }
                             </InputSelect>
                         </div>
@@ -92,7 +97,7 @@
                         </span>
                     }
                 </div>
-                <div class="row mb-2">
+                @* <div class="row mb-2">
                     <div class="d-flex align-items-center gap-2">
                         <label>Session des variables :</label>
                         <div class="text-center">
@@ -105,24 +110,29 @@
                             </InputSelect>
                         </div>
                     </div>
-                </div>
+                </div> *@
                 <!-- Main Content //a integer froMenu -->
                 @if (_chxMenu != 0 && curOrga != null && toChild != null)
                 {
                     @if (_chxMenu == 1)
                     {
-                        <CalcResLnes @ref="mygcalc"
-                               curOrga="@curOrga"
-                               @bind-NbChanges="_nbChanges"
-                               _guard="@_guard"
-                               toChild="@toChild"
-                               ImyDiv="@ImyDiv"
-                               ChxGpe="@Ugpe"
-                               _InODaClient="@_MyODaClient">
-                                    <ChildContent>
-                                        @* <h2 class="child-box">Hello TABLES</h2> *@
-                                    </ChildContent>
-                        </CalcResLnes>
+                        <Calcpart @ref="myfcalc"
+                                  CurOrga="@curOrga"
+                                  @bind-NbChanges="_nbChanges"
+                                  ToChild="@toChild"
+                                  ImyDiv="@ImyDiv"
+                                  curProg="@curProg"
+                                  ChxGpe="@Ugpe"
+                                  _guard="_guard"
+                                  PreTiers="@PreTiers"
+                                  SessOpen="@SessOpen"
+                                  CalcSession="@CurrentCalcSession"
+                                  CalcContext="@CurrentCalcContext"
+                                  _MyODaClient="@_MyODaClient">
+                            <ChildContent>
+
+                            </ChildContent>
+                        </Calcpart>
                     }
                     else if (_chxMenu == 2)
                     {
@@ -166,36 +176,35 @@
 </ErrorBoundary>
 }
 @code {
-    private bool isLoading = true;
     public GxorgaDto curOrga = new GxorgaDto();
     public ChildVars toChild = new();
     public MyMenuVars froMenu = new();
     private bool allEnable = false;
     private string Imessage = "", strExo = "", strSes = "";
 
-    private CalcResLnes mygcalc;
-    //public int ImyDiv = 0;
-    //public int ImyProg = 0;
+    //private CalcResLnes mygcalc;
+    private Calcpart myfcalc;
 
     public List<Gplan> LsProgs = new();
 
-    [Parameter]
-    public RenderFragment Atributs { get; set; }
-    [Parameter]
-    public RenderFragment Gtables { get; set; }
-    [Parameter]
-    public RenderFragment Grilles { get; set; }
+    // [Parameter]
+    // public RenderFragment Atributs { get; set; }
+    // [Parameter]
+    // public RenderFragment Gtables { get; set; }
+    // [Parameter]
+    // public RenderFragment Grilles { get; set; }
     //[CascadingParameter]
     private Task<AuthenticationState>? AuthState { get; set; }
     private ClaimsPrincipal authUser;
-    private bool isAuthenticated = false;
-
+    
     public PlngenDto curProg = new();
     public Gsedat curSes = new();
 
     public List<TierspDto> EnsTiers { get; set; } = new();
-    public List<PlngenDto> EnsProgs { get; set; } = new();
     public List<TierspDto> PreTiers { get; set; } = new();
+
+    public List<TierspDto> orgTiers = new();
+    public List<ActsaieDto> orgActs = new();
 
     public string _strOrga = "", _curSigle = "", strmeta = "", strmeta2 = "";
     private int Ugpe = 0;
@@ -226,13 +235,23 @@
     //public List<Rubhie> LsDivs = new List<Rubhie>();
     //gpe choix
     //private List<Apirole> _invRoles = new List<Apirole>();
+
+    //Formula service
+    private SaieSession? CurrentSaieSession;
+    private CalcSession? CurrentCalcSession;
+    private CalcContext? CurrentCalcContext;
     //Navigation
     private int _chxGpe = 0, _chxMenu = 1;
     private string strComp = "Calculs";
 
     //modal management
     private string SidebarStyle = "width: 200px;";
-    private bool IsOpen => Ugpe != 0;
+
+    //Conditional management
+    private bool isLoading = true;
+    private bool isAuthenticated = false;
+    private bool _isInitialized;
+    public bool SessOpen => Ugpe != 0 && ImyProg != 0 && ImyDiv != 0; //toChild.inExo != null && toChild.inSes != null;
     private bool FirstLoadCompleted = false;
     private bool ContentLoaded = false;
 
@@ -247,14 +266,9 @@
             var selected = LsProgs.FirstOrDefault(p => p.Id == value);
             if (selected != null)
             {
-                // fire-and-forget
                 _ = HandleSelectedProgAsync(selected);
             }
         }
-    }
-    private async Task HandleSelectedProgAsync(Gplan selected)
-    {
-        await GetSelectedProg(selected);
     }
     private int _imyDiv = 0;
     public int ImyDiv
@@ -266,16 +280,12 @@
             trierTiers(); // your existing method, adjust if it needs the selected Id
         }
     }
-    private int _imyVSes = 0;
-    public int ImyVSes
+
+    private async Task HandleSelectedProgAsync(Gplan selected)
     {
-        get => _imyVSes;
-        set
-        {
-            _imyVSes = value;
-            GetSelectedSess(value);
-        }
+        await GetSelectedProg(selected);
     }
+
     //TieSaies
     int year = DateTime.Now.Year;
     int month = DateTime.Now.Month;
@@ -312,123 +322,180 @@
 
     protected override async Task OnInitializedAsync()
     {
-        isLoading = true;
-        int pita = 0;
-        var authState = await _authProvider.GetAuthenticationStateAsync();
-        isAuthenticated = authState.User.Identity?.IsAuthenticated ?? false;
-        authUser = authState.User;
-        if (!isAuthenticated)
-        {
-            Console.WriteLine("Authentication SaieMenu ECHEC");
+        if (_isInitialized)
             return;
-        }
-        _usrBag = await _sessionContext.GetUserbagAsync();
-        //_gIdTie = _usrBag.Usorga.Gdtie;
-        LsVars = _usrBag.Usorga.Uvars.ToList();
-        LsFixes = _usrBag.Ufixes.ToList();
-        LsPlans = _usrBag.Usorga.Uplns.ToList();
-        //LsProgs = _usrBag.Usorga.Uplns.Where(pl => pl.Ptyp == 5).ToList();
-        //var idplnadm = _usrBag.Usorga.Schba;
-        //LtTabls = _usrBag.Usorga.Uvars.Where(tb => tb.Gvars == 4).ToList();
-        LsTabls = _usrBag.Usorga.Uvars.Where(tb => tb.Gvars == 5).ToList();
-        //xdom = 1/tiere
-        int xdom = 6;
-        LsGties = LsFixes.Where(ut => ut.Gvars == 36 && ut.Itb == xdom && ut.Elea != 0 && ut.Elea != 9).ToList();
-        if (LsGties.Count() > 0)
-        {
-            ////gpeLiba = LsGties.Where(ut => ut.Elea == 1).FirstOrDefault().Liba.ToUpperInvariant();
-        }
-        Groupes.Clear();
-        foreach (var gr in LsGties.Where(gr => gr.Itb == 6))
-        {
-            Groupes.Add(new GxGroupe { Itb = gr.Itb, Elea = gr.Elea, Liba = gr.Liba });
-        }
-        EnsSess = LsVars.Where(v => v.Gvars == 11 && v.Itb == 4 && v.Eta == 1).ToList();
-        //Console.WriteLine($"inv roles : {_invRoles.Count()}");
-        _invRoles = await _rendAgres.LoadOrgaRoles();
-        Ugpe = 1; //initial Cible
-                  // _guard.RegisterUnconfirmedPredicate<Actsaie>(e => e.Xadd1 == -1 || e.Xedt1 == -1 || e.Xdel1 == -1);
-                  // _guard.RegisterUnconfirmedPredicate<Actdet>(d => d.Xadd1 == -1 || d.Xedt1 == -1 || d.Xdel1 == -1);
-                  // _guard.RegisterUnconfirmedPredicate<Resdon>(e => e.Xadd1 == -1);
-                  // _guard.RegisterUnconfirmedPredicate<Resdet>(d => d.Xadd1 == -1);
-                  // _guard.RegisterUnconfirmedPredicate<Resbro>(d => d.Xadd1 == -1);
-        _nbChanges = _guard.GetPendingChangesCount();  // Initial value
-        Console.WriteLine("Authentication ENTREE");
-        await LoadCalcOrgaAsync(_usrBag.Idorg);
-        //pita = 5;
-        Console.WriteLine("TIERS A ETE TESTE");
-        //sessions de saisies ouvertes pour l=exercice
-        //EnsSess = curOrga.Gsesios.Where(us => us.Styp == 3 && us.Sicur == 1 && us.Sieta == 1).ToList(); //saisies ouversts
-        toChild.authUser = authUser;
-        toChild.isAuthenticated = isAuthenticated;
-        toChild.Ugpe = Ugpe;
-        toChild.LsVars = LsVars;
-        toChild.LsFixes = LsFixes;
-        toChild.LsPlans = LsPlans;
-        toChild.LsTabls = LsTabls;
-        toChild.inExo = LsVars.LastOrDefault(v => v.Gvars == 11 && v.Itb == 1 && v.Eta == 1);
-        strExo = toChild.inExo?.Liba ?? "";
-        var lsSes = await _rendAgres.LoadOrgaSessios();
-        curSes = lsSes.FirstOrDefault(su => su.Eta == 1); //ouvert
-        strSes = curSes?.Liba; //toChild.inSes?.Liba ?? "";
-                               //toChild.inExo = LsVars.FirstOrDefault(v => v.Gvars == 11 && v.Itb == 1 && v.Eta == 1);
-                               //toChild.inSes = LsVars.FirstOrDefault(v => v.Gvars == 12 && v.Itb == 1 && v.Eta == 1);
 
-        isLoading = false;
+        _isInitialized = true;
+        isLoading = true;
+
+        try
+        {
+            var authState = await _authProvider.GetAuthenticationStateAsync();
+            isAuthenticated = authState.User.Identity?.IsAuthenticated ?? false;
+            authUser = authState.User;
+
+            if (!isAuthenticated)
+            {
+                Console.WriteLine("Authentication SaieMenu ECHEC");
+                return;
+            }
+
+            _usrBag = await _sessionContext.GetUserbagAsync();
+            if (_usrBag?.Usorga == null)
+            {
+                Console.WriteLine("User bag or Usorga is null");
+                return;
+            }
+            LsVars = _usrBag.Usorga.Uvars?.ToList() ?? new();
+            LsFixes = _usrBag.Ufixes?.ToList() ?? new();
+            LsPlans = _usrBag.Usorga.Uplns?.ToList() ?? new();
+
+            //LsVars = _usrBag.Usorga.Uvars?.ToList() ?? new List<YourVarDto>();
+            //LsFixes = _usrBag.Ufixes?.ToList() ?? new List<YourFixDto>();
+            //LsPlans = _usrBag.Usorga.Uplns?.ToList() ?? new List<YourPlnDto>();
+            LsProgs = LsPlans.Where(pl => pl.Ptyp == 5 && pl.Todom == 1).ToList();
+            LsTabls = LsVars.Where(tb => tb.Gvars == 5).ToList();
+
+            Console.WriteLine($"Programmes en cours : {LsProgs.Count}");
+
+            int xdom = 6;
+            LsGties = LsFixes
+                .Where(ut => ut.Gvars == 36 && ut.Itb == xdom && ut.Elea != 0 && ut.Elea != 9)
+                .ToList();
+
+            Groupes.Clear();
+            foreach (var gr in LsGties.Where(gr => gr.Itb == 6))
+            {
+                Groupes.Add(new GxGroupe
+                {
+                    Itb = gr.Itb,
+                    Elea = gr.Elea,
+                    Liba = gr.Liba
+                });
+            }
+
+            _invRoles = await _rendAgres.LoadOrgaRoles();
+            Console.WriteLine($"inv roles : {_invRoles?.Count() ?? 0}");
+
+            Ugpe = 1;
+            Console.WriteLine("Authentication ENTREE");
+
+            if (toChild != null)
+            {
+                toChild.authUser = authUser;
+                toChild.isAuthenticated = isAuthenticated;
+                toChild.Ugpe = Ugpe;
+                toChild.curOrga = curOrga;
+                toChild.LsVars = LsVars;
+                toChild.LsFixes = LsFixes;
+                toChild.LsPlans = LsPlans;
+                toChild.LsTabls = LsTabls;
+                toChild.inExo = LsVars.LastOrDefault(v => v.Gvars == 11 && v.Itb == 1 && v.Eta == 1);
+            }
+
+            strExo = toChild?.inExo?.Liba ?? string.Empty;
+
+            var lsSes = await _rendAgres.LoadOrgaSessios();
+            curSes = lsSes?.FirstOrDefault(su => su.Eta == 1 && su.Igpe == 3);
+
+            if (curSes?.Ddat == null)
+            {
+                Console.WriteLine("No active session or Ddat is null");
+                return;
+            }
+
+            strSes = curSes.Liba;
+            if (toChild != null)
+                toChild.inSes = curSes;
+
+            await LoadCalcOrgaAsync(_usrBag.Idorg, curSes.Ddat.Value.Year, curSes.Ddat.Value.Month);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"OnInitializedAsync error: {ex.Message}");
+        }
+        finally
+        {
+            isLoading = false;
+        }
     }
     //CRUD[
-    private async Task LoadCalcOrgaAsync(int key)
+    private async Task LoadCalcOrgaAsync(int key, int year, int month)
     {
         int pisa = 2;
         try
         {
-            try
-            {
-                curOrga = await _guard.GetTiebagsAsync(key);
-                LsActs = await _guard.GetSessionActsaiesAsync(
-                    key, year, month
-                );
+            Console.WriteLine($"key : {key}");
+            curOrga = await _MyODaClient
+                .For<GxorgaDto>("Gxorgas")
+                .Expand("Plngens($expand=Rubvars)")
+                .Key(key)
+                .FindEntryAsync();
 
-                Console.WriteLine($"loadOrgaAsync completed : {curOrga?.Raison}");
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Load error: {ex.Message}");
-            }
+            var msgsie = await _MyODaClient
+                            .For<TierspDto>("Tiersps")
+                            .Filter(f => f.Idorg == key)
+                            .Expand("Tieafls")
+                            .Expand("Tiejatrs")
+                            .Expand("Tiegcats")
+                            .FindEntriesAsync();
+            orgTiers = msgsie.ToList();
 
-            // curOrga = await ODataClient
-            //     .For<GxorgaDto>("Gxorgas")
-            //     .Key(key)
-            //     .Expand(o => o.Gsesios)
-            //     .Expand(o => o.Tiersps.Select(t => t.Resbros))
-            //     .Expand(o => o.Tiersps.Select(t => t.Actsaies.Select(a => a.Actdets)))
-            //     .Expand(o => o.Tiersps.Select(t => t.Resdons.Select(a => a.Resdets)))
-            //     .Expand(o => o.Plngens.Select(p => p.Rubvars.Select(rv => rv.Rubfmts)))
-            //     .Expand(o => o.Plngens.Select(p => p.Rubhies.Select(rh => rh.Rubpsts)))
-            //     .FindEntryAsync();
+            var msgact = await _MyODaClient
+                            .For<ActsaieDto>("Actsaies")
+                            .Filter(a => a.Idorg == key &&
+                                         (
+                                             (a.Isset == 1 &&
+                                              a.Dtent <= new DateTime(year, month, 1) &&
+                                              a.Dtent >= new DateTime(year, month, 1))
+                                             || a.Isset == 2
+                                         ))
+                            .Expand(a => a.Actdets)
+                            .FindEntriesAsync();
+            orgActs = msgact.ToList();
             Console.WriteLine($"loadOrgaAsync completed : {curOrga?.Raison}");
         }
         catch (Exception ex)
         {
             Console.WriteLine($"Load error: {ex.Message}");
         }
-        pisa = 4;
-        Console.WriteLine($"nb tiers from orga  : {pisa} et {curOrga.Tiersps.Count()}");
-        var mytier = curOrga.Tiersps.FirstOrDefault();
+        if (curOrga == null)
+        {
+            Console.WriteLine("curOrga is null after LoadSaieOrgaAsync");
+            return;
+        }
+
+        Console.WriteLine($"orga recu {curOrga.Raison}");
+
+        EnsTiers = orgTiers?.ToList() ?? new List<TierspDto>();
+        Console.WriteLine($"orga recu {curOrga.Raison}");
+        var mytier = EnsTiers.FirstOrDefault();
         if (mytier != null)
         {
             Console.WriteLine($"nom selected tiers : {mytier.Nom} et {mytier.Pnom}");
-            Console.WriteLine($"selected tiers actsaies : {mytier.Actsaies.Count()}");
+            Console.WriteLine($"selected actsaies : {orgActs.Count()}");
         }
         else
         {
             Console.WriteLine($"probleme chargement Tiers");
         }
-        //EnsExos = curOrga.Gsesios.ToList();
     }
+    private void ConfigureCalcMode()
+    {
+        _guard.ConfigureSaveMode(PendingSaveMode.Deferred);
+    }
+    // // private ProgramTemplate BuildProgramTemplate(PlngenDto program)
+    // // {
+    // //     return new ProgramTemplate
+    // //     {
+    // //         Lines = ParseProgramLines(program.Fpsrc)
+    // //     };
+    // // }
+
 
     private void OnGpeChanged(EventArgs args)
     {
+        Console.WriteLine($"gpe changed : {EnsTiers.Count}");
         //prise rolno et label
         gpeLiba = "";
         Ugpe = 0;
@@ -439,11 +506,15 @@
             Ugpe = fixno;
             toChild.Ugpe = Ugpe;
             gpeLiba = LsGties.Where(ut => ut.Elea == fixno).FirstOrDefault().Liba.ToUpperInvariant();
-            EnsTiers = curOrga.Tiersps.Where(t => t.Utyp == fixno).ToList();
+            EnsTiers = orgTiers.Where(t => t.Utyp == fixno).ToList();
             //if (_inTwels.Count() > 0) {
             //    _LsTiers = _inTwels.Where(ut => ut.Ttyp == Ugpe).ToList();
             //}
+        } else
+        {
+            EnsTiers = new();
         }
+        Console.WriteLine($"ens Tiers : {EnsTiers.Count}");
     }
     // private async Task SelMenu(int noM)
     // {
@@ -514,25 +585,24 @@
         //Console.WriteLine($"ICI PROGRAMMES : {EnsProgs.Count()}");
         curProg = new();
         EnsRubrs = new();
-        if (EnsProgs.Any())
+        curProg = curOrga.Plngens.Where(pl => pl.Id == bropln.Id).FirstOrDefault();
+        if (curProg != null)
         {
-            curProg = EnsProgs.Where(pl => pl.Id == bropln.Id).FirstOrDefault();
-            if (curProg != null)
+            //Console.WriteLine($"ICI prog Id : {curProg.Idorg}");
+            toChild.curProg = curProg;
+            EnsRubrs = curProg.Rubvars.ToList();
+            //_rubvarResolver = new RubvarResolver(curProg.Rubvars.ToList());
+            var curDivpln = curOrga.Plngens.Where(pl => pl.Id == curProg.Plsdiv).FirstOrDefault();
+            if (curDivpln != null)
             {
-                //Console.WriteLine($"ICI prog Id : {curProg.Idorg}");
-                toChild.curProg = curProg;
-                EnsRubrs = curProg.Rubvars.ToList();
-                //_rubvarResolver = new RubvarResolver(curProg.Rubvars.ToList());
-                var curDivpln = curOrga.Plngens.Where(pl => pl.Id == curProg.Plsdiv).FirstOrDefault();
-                if (curDivpln != null)
-                {
-                    List<Gpdivh> inDivs = await _rendAgres.LoadOrgaPostes();
-                    LsDivs = inDivs?.Where(ud => ud.Ihie == curDivpln.Id && ud.Sidiv == 1).ToList();
-                }
-                else
-                {
-                    LsDivs = new();
-                }
+                List<Gpdivh> inDivs = await _rendAgres.LoadOrgaPostes();
+                LsDivs = inDivs?.Where(ud => ud.Ihie == curDivpln.Id && ud.Sidiv == 1).ToList();
+                Console.WriteLine($"nb.Divs : {LsDivs.Count}");
+            }
+            else
+            {
+                LsDivs = new();
+                Console.WriteLine($"CURDIV : {curProg.Plsdiv}");
             }
         }
         //Console.WriteLine($"ICI RUBRIQUES : {curProg.Rubvars.Count()}");
@@ -544,7 +614,7 @@
     private void trierTiers()
     {
         Console.WriteLine("TRIE Commence");
-        if (ImyDiv != 0)
+        if (ImyDiv > 0) //not -1 not 0
         {
             Console.WriteLine($"TRIE Prepare : {EnsTiers.Count}");
             Imessage = "Preparation de la liste en cours";
@@ -555,7 +625,17 @@
             Console.WriteLine($"TRIE termine : {PreTiers.Count}");
             StateHasChanged();
         }
-        Console.WriteLine("TRIE Fini");
+        else if (ImyDiv == -1)
+        {
+            PreTiers = EnsTiers
+                .OrderByDescending(um => um.Smatri)
+                .ToList();
+            //Imessage = "Tous les tiers prete";
+            Console.WriteLine($"TRIE termine : {PreTiers.Count}");
+            StateHasChanged();
+        }
+        Console.WriteLine($"Ens tiers :{EnsTiers.Count}");
+        Console.WriteLine($"Ens pretiers :{PreTiers.Count}");
     }
     private async Task SelMenu(int noM)
     {

@@ -1,0 +1,414 @@
+﻿@page "/categtie"
+@using BlazorBootstrap
+@using Blazored.LocalStorage
+@using GxShared.Helpers
+@using GxPilo.Services
+@using Simple.OData.Client
+@using AutoMapper
+@using GxShared.GxDtos
+@using GxShared.Interfaces
+@using GxShared.Sess
+@using GxShared.Others
+@* @using Microsoft.EntityFrameworkCore *@
+@using Newtonsoft.Json
+
+@inject ILocalStorageService _localStorage
+@inject NavigationManager _navManager
+@inject HttpClientService _clieManager
+@inject IMapper Mapper
+@inject IJSRuntime _jsRun
+
+<div class="container mt-3">
+
+    <Button Color="ButtonColor.Success" @onclick="() => StartAdd()">Ajt Category</Button>
+    @if (draftCat != null)
+    {
+        <Grid TItem="TiecatDto"
+        Data="@curOrga?.Tiecats.ToList()"
+              @key="tiecatkey"
+        AllowPaging="true"
+        Responsive="true">
+            <GridColumns>
+                <GridColumn TItem="TiecatDto" HeaderText="No" Class="xcol1">
+                    <ChildContent Context="item">
+                        @item.Elea
+                    </ChildContent>
+                </GridColumn>
+                <GridColumn TItem="TiecatDto" HeaderText="Label" Class="xcol3">
+                    <ChildContent Context="item">
+                        @if (editRowguid == item.Rowguid)
+                        {
+                            <InputText @bind-Value="draftCat.Liba" />
+                        }
+                        else
+                        {
+                            @item.Liba
+                        }
+                    </ChildContent>
+                </GridColumn>
+                <GridColumn TItem="TiecatDto" HeaderText="Parent" Class="xcol2">
+                    <ChildContent Context="item">
+                        @if (editRowguid == item.Rowguid)
+                        {
+                            <InputSelect @bind-Value="draftCat.Pid" class="me-3" style="width:auto">
+                                <option value=0>?chosir</option>
+                                @foreach (var utb in curOrga?.Tiecats.Where(c => c.Id != draftCat.Id))
+                                {
+                                    <option value=@utb.Id>@utb.Liba</option>
+                                }
+                            </InputSelect>
+                        }
+                        else
+                        {
+                            <InputSelect @bind-Value="item.Pid" class="me-3" style="width:auto" disabled>
+                                <option value=0>aucun</option>
+                                @foreach (var utb in curOrga?.Tiecats.Where(c => c.Id != item.Id))
+                                {
+                                    <option value=@utb.Id>@utb.Liba</option>
+                                }
+                            </InputSelect>
+                        }
+                    </ChildContent>
+                </GridColumn>
+                <GridColumn TItem="TiecatDto" HeaderText="Valeur" Class="xcol1">
+                    <ChildContent Context="item">
+                        @if (editRowguid == item.Rowguid)
+                        {
+                            <InputNumber @bind-Value="draftCat.Ival" placeholder="Lot" />
+                        }
+                        else
+                        {
+                            @item.Ival
+                        }
+                    </ChildContent>
+                </GridColumn>
+                <GridColumn TItem="TiecatDto" HeaderText="Eta">
+                    <ChildContent Context="item">
+                        @if (editRowguid == item.Rowguid)
+                        {
+                            <InputSelect @bind-Value="draftCat.Eta">
+                                <option class="jchx" value=0>?choisir</option>
+                                @foreach (var tob in LsFixes.Where(ut => ut.Gvars == 32 && ut.Itb == 1 && ut.Elea != 0))
+                                {
+                                    <option value=@tob.Elea>@tob.Liba</option>
+                                }
+                            </InputSelect>
+                        }
+                        else
+                        {
+                            <InputSelect @bind-Value="item.Eta" disabled="true">
+                                <option class="jchx" value=0>?choisir</option>
+                                @foreach (var tob in LsFixes.Where(ut => ut.Gvars == 32 && ut.Itb == 1 && ut.Elea != 0))
+                                {
+                                    <option value=@tob.Elea>@tob.Liba</option>
+                                }
+                            </InputSelect>
+                        }
+                    </ChildContent>
+                </GridColumn>
+                <GridColumn TItem="TiecatDto" HeaderText="Actions">
+                    <ChildContent Context="item">
+                        @if (editRowguid == item.Rowguid)
+                        {
+                            <Button Color="ButtonColor.Primary" Size="ButtonSize.Small"
+                            @onclick="() => SaveEdit(draftCat)">
+                                Save
+                            </Button>
+                            <Button Color="ButtonColor.Secondary" Size="ButtonSize.Small"
+                            @onclick="() => CancelEdit()">
+                                Cancel
+                            </Button>
+                        }
+                        else
+                        {
+                            @if (item.Id > 0)@* Prevent deletion of unsaved new entry *@
+                            {
+                                <Button Color="ButtonColor.Warning" Size="ButtonSize.Small"
+                                @onclick="() => StartEdit(item)">
+                                    Edit
+                                </Button>
+                                <Button Color="ButtonColor.Danger" Size="ButtonSize.Small"
+                                @onclick="() => SaveDele(item)">
+                                    Delete
+                                </Button>
+                            } 
+                            @* else
+                            {
+                                <Button Color="ButtonColor.Secondary" Size="ButtonSize.Small"
+                                        @onclick="() => CancelAdd(2, item)">
+                                    Cancel
+                                </Button>
+                            } *@
+                        }
+                    </ChildContent>
+                </GridColumn>
+            </GridColumns>
+        </Grid>
+    }
+    @if (isAdding)
+    {
+        <div class="mt-3">
+            <h5>Ajt Category</h5>
+            <InputText @bind-Value="draftCat.Liba" placeholder="Label" />
+            <InputSelect @bind-Value="draftCat.Pid" class="me-3" style="width:auto">
+                <option value=0>?choisir</option>
+                @foreach (var utb in curOrga?.Tiecats.Where(c => c.Id != draftCat.Id))
+                {
+                    <option value=@utb.Id>@utb.Liba</option>
+                }
+            </InputSelect>
+            <InputNumber @bind-Value="draftCat.Ival" placeholder="Valeur" />
+            <InputSelect @bind-Value="draftCat.Eta">
+                <option class="jchx" value=0>?choisir</option>
+                @foreach (var tob in LsFixes.Where(ut => ut.Gvars == 32 && ut.Itb == 1 && ut.Elea != 0))
+                {
+                    <option value=@tob.Elea>@tob.Liba</option>
+                }
+            </InputSelect>
+            @* <InputNumber @bind-Value="draftCat.Prix" placeholder="Price" /> *@
+            <Button Color="ButtonColor.Success" @onclick="() => SaveAdd(draftCat)">Add</Button>
+            <Button Color="ButtonColor.Secondary" @onclick="() => CancelAdd(1, draftCat)">Cancel</Button>
+        </div>
+    }
+</div>
+<style>
+    .xcolx {
+        width: 40px !important;
+    }
+
+    .xcol1 {
+        width: 60px;
+    }
+
+    .xcol2 {
+        width: 120px;
+    }
+
+    .xcol3 {
+        width: 180px;
+    }
+
+    .xcol4 {
+        width: 240px;
+    }
+        /* Ensure inputs inside these columns fill the width */
+        .xcol1 input,
+        .xcol2 input,
+        .xcol3 input,
+        .xcol4 input {
+            width: 100%;
+            box-sizing: border-box; /* prevents overflow due to padding/border */
+        }
+
+    .editing-row {
+        pointer-events: none; /* Blocks all clicks on row */
+    }
+
+        .editing-row * {
+            pointer-events: auto; /* Re-enables clicks on buttons/inputs */
+        }
+</style>
+@code {
+    private bool isLoading = true;
+
+    [Parameter]
+    public IODataClient _InODaClient { get; set; }
+    [Parameter]
+    public GxorgaDto curOrga { get; set; }
+    [Parameter]
+    public int Orig { get; set; }
+    [Parameter]
+    public ChildVars toChild { get; set; }
+    [Parameter]
+    public int toMenu { get; set; }
+    [Parameter]
+    public RenderFragment ChildContent { get; set; }
+    [Parameter]
+    public List<Gpdivh> LsDivs { get; set; }
+    [Parameter]
+    public List<Gtabl> EnsTbls { get; set; } // Dropdown options
+
+    // Guard
+    [Parameter]
+    public IPendingChangesGuard _guard { get; set; }
+    [Parameter]
+    public EventCallback<PendingState> OnPendingStateChanged { get; set; }
+    [Parameter]
+    public int NbChanges { get; set; }
+    [Parameter]
+    public EventCallback<int> NbChangesChanged { get; set; }
+
+    //[Parameter] public ItemClientService ItemService { get; set; }
+    //[Parameter] public StockClientService StockService { get; set; }
+    private List<TiecatDto> LsCats = new();
+    private List<Gpfixe> LsFixes = new();
+    private Guid? editRowguid;
+    private string tiecatkey = ""; // Force grid refresh
+    private bool isAdding = false;
+    private TiecatDto draftCat = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        isLoading = true;
+        try
+        {
+            // if (toChild == null || curOrga == null)
+            // {
+            //     Console.WriteLine("Missing parent data");
+            //     return;
+            // }
+            // isAuthenticated = toChild.isAuthenticated;
+            // authUser = toChild.authUser;
+            // if (!isAuthenticated)
+            // {
+            //     Imessage = "CONNEXION, Utilisateur non authentifie";
+            //     return;
+            // }
+            // //LsVars = toChild.LsVars;
+            // LsFixes = toChild.LsFixes;
+            //LsDoms = toChild.LsFixes.Where(ut => ut.Gvars == 36 && ut.Itb == 4 && ut.Gp1 == 3 && ut.Elea != 0).ToList();
+            //LsDoms = LsFixes.Where(ut => ut.Gvars == 36 && ut.Itb == 4 && ut.Gp1 == 3 && ut.Elea != 0).ToList();
+            //LsSites = toChild.LsSites;
+            //_lgcdu = 3;
+            LsCats = curOrga?.Tiecats.ToList();
+            LsFixes = toChild.LsFixes.ToList();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"22error loading cat-Tie: {ex.Message}");
+        }
+    }
+    // and call this in OnParametersSet
+    protected override void OnParametersSet()
+    {
+        SubscribeToGuard();
+    }
+    // set up subscription locally
+    private void SubscribeToGuard()
+    {
+        _guard.OnChanges += async () =>
+        {
+            NbChanges = _guard.GetPendingChangesCount();
+            await NbChangesChanged.InvokeAsync(NbChanges);
+            StateHasChanged();
+        };
+    }
+    private void StartEdit(TiecatDto atr)
+    {
+        editRowguid = atr.Rowguid;
+        draftCat = new TiecatDto 
+        { 
+            Id = atr.Id,
+            Idorg = atr.Idorg,
+            Liba = atr.Liba,
+            Abg = atr.Abg,
+            Pid = atr.Pid,
+            Xtyp = atr.Xtyp, 
+            Eta = atr.Eta,
+            Rowguid = atr.Rowguid 
+        };
+    }
+
+    
+
+    private void CancelEdit() => editRowguid = null;
+
+    private void StartAdd()
+    {
+        isAdding = true;
+        draftCat = new TiecatDto();
+        draftCat.Rowguid = Guid.NewGuid();
+        draftCat.Idorg = curOrga.Idorg;
+        draftCat.Pid = null;
+        draftCat.Eta = 1;
+    }
+
+    private async Task SaveAdd(TiecatDto cat)
+    {
+        draftCat.Idorg = curOrga.Idorg;
+
+        await _guard.TrackInsert("Tiecats", cat);
+
+        if (curOrga.Tiecats.All(x => x.Rowguid != cat.Rowguid))
+            curOrga.Tiecats.Add(cat);
+
+        editRowguid = null;
+        tiecatkey = Guid.NewGuid().ToString();
+        await NotifyPendingChanges();
+        await InvokeAsync(StateHasChanged);
+    }
+    private async Task SaveEdit(TiecatDto cat)
+    {
+        await _guard.TrackUpdate("Tiecats", GetEntityKey(cat), cat);
+
+        Uihelper.ReplaceItem(curOrga.Tiecats, x => x.Rowguid == cat.Rowguid, cat);
+
+        editRowguid = null;
+        tiecatkey = Guid.NewGuid().ToString();
+        await NotifyPendingChanges();
+        await InvokeAsync(StateHasChanged);
+    }
+    private async Task SaveDele(TiecatDto cat)
+    {
+        await _guard.TrackDelete("Tiecats", GetEntityKey(cat), cat.Rowguid);
+        Uihelper.RemoveItem(curOrga.Tiecats, x => x.Rowguid == cat.Rowguid);
+        if (editRowguid == cat.Rowguid)
+            editRowguid = null;
+
+        tiecatkey = Guid.NewGuid().ToString();
+        await NotifyPendingChanges();
+        await InvokeAsync(StateHasChanged);
+    }
+    private void CancelAdd(int orig, TiecatDto uncat)
+    {
+        if (orig == 2)
+        {
+            curOrga.Tiecats.Remove(uncat);
+        }
+        else
+        {
+            draftCat = new();
+        }
+        isAdding = false;
+    }
+    private object GetEntityKey<TDto>(TDto entity)
+    {
+        switch (entity)
+        {
+            case TiecatDto pln:
+                return pln.Id;
+            // case RubhieDto rub:
+            //     return rub.Id;
+            // case RubpstDto fmt:
+            //     return fmt.Id;
+            default:
+                throw new InvalidOperationException($"Unknown entity type {typeof(TDto).Name}");
+        }
+    }
+    private Guid GetRowguid<TDto>(TDto entity)
+    {
+        switch (entity)
+        {
+            case TiecatDto pln:
+                return pln.Rowguid;
+            // case RubhieDto rub:
+            //     return rub.Rowguid;
+            // case RubpstDto fmt:
+            //     return fmt.Rowguid;
+            default:
+                throw new InvalidOperationException($"Unknown entity type {typeof(TDto).Name}");
+        }
+    }
+    // Notify guard/UI of pending changes
+    private async Task NotifyPendingChanges()
+    {
+        await OnPendingStateChanged.InvokeAsync(new PendingState(
+            _guard.HasPendingChanges(),
+            _guard.GetPendingChangesCount()
+        ));
+
+        NbChanges = _guard.GetPendingChangesCount();
+        await NbChangesChanged.InvokeAsync(NbChanges);
+        StateHasChanged();
+    }
+}

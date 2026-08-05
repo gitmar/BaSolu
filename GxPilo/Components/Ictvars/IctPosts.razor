@@ -1,0 +1,1357 @@
+﻿@page "/ictposts"
+@inherits CompUICrudBase
+@namespace GxPilo.Components.Ictvars
+
+@layout IctaMenu
+
+@using System
+@using GxShared.Helpers
+@using GxShared.Sess
+@using Simple.OData.Client
+@using GxShared.GxDtos
+@using GxShared.Interfaces
+@using GxShared.Helpers.CrudHelpers
+@using Microsoft.AspNetCore.Components.Forms
+
+@using System.Text.RegularExpressions
+@using System.Security.Claims
+@using GxPilo.Components.Uifrags
+@using GxPilo.Components.MRubs
+@using GxPilo.Services
+@using BlazorBootstrap
+@using Blazored.LocalStorage
+@using AutoMapper
+
+@inject NavigationManager _navManager
+@inject IJSRuntime _JsRUN
+@inject IMessageService _messageService
+<!-- InscTiewComponent.razor -->
+<PageTitle>Saisie.Postes</PageTitle>
+
+@if (isLoading)
+{
+    <div class="text-center">
+        <Spinner Color="SpinnerColor.Primary" Size="SpinnerSize.Medium" />
+        <p>Saisie.Postes Loading...</p>
+    </div>
+}
+else
+{
+    <div class="d-flex flex-column">
+        <div class="my-container">
+            @if (toChild != null)
+            {
+                @ChildContent
+            }
+        </div>
+    </div>
+    <AuthorizeView>
+        <Authorized Context="AuthContext">
+            <div class="row">
+                <div class="col-md-12 input-group align-middle">
+                    <span><b>Message :</b></span>
+                    &nbsp;&nbsp;
+                    @if (!String.IsNullOrEmpty(Imessage))
+                    {
+                        <span class="bg-info bg-opacity-10" style="font-style:italic;color:red">&nbsp;--> @Imessage</span>
+                    }
+                </div>
+            </div>
+            <div class="form-group">
+                <div class="btn btn-group">
+                    <label class="fw-bold">Domaine :</label>
+                    <InputSelect @bind-Value="IMyDom" @onclick="() => curPlanDom(IMyDom)" class="me-3" style="width:auto">
+                        <option value=0>?domaine</option>
+                        @foreach (var tob in LsDoms)
+                        {
+                            <option value=@tob.Gp2>@tob.Liba</option>
+                        }
+                    </InputSelect>
+                    <label class="me-2">Modele :</label>
+                    <InputSelect @bind-Value="IMyPlan" @onclick="() => curPlanPlan(IMyPlan)" class="me-3" style="width:auto">
+                        <option value=0>?modele</option>
+                        @foreach (var upl in LsPlans.Where(pl => pl.Todom == IMyDom).ToList())
+                        {
+                            <option value=@upl.Id>@upl.Liba</option>
+                        }
+                    </InputSelect>
+                </div>
+            </div>
+            <div class="container-fluid-fixed-top">
+                @if (curOrga == null)
+                {
+                    <p style="color:red;">Warning: curOrga is unexpectedly null.</p>
+                }
+                else
+                {
+                    <EditForm Context="invform" Model="@curOrga">
+                        <DataAnnotationsValidator />
+                        <ValidationSummary />
+                        <div class="row">
+                            @if (!String.IsNullOrEmpty(Kmessage))
+                            {
+                                <span class="bg-info bg-opacity-10" style="font-style:italic;color:red">&nbsp;--> @Jmessage</span>
+                            }
+                        </div>
+                        <div class="row">
+                            @if (curPlan != null && IMyPlan != 0)
+                            {
+                                <div class="mt-2 border-start border-primary border-3 bg-light bg-opacity-25 rounded-end">
+                                    <div class="row">
+                                        <div class="col-12">
+                                            <Grid TItem="RubhieDto"
+                                                  Data="@MyDaHies"
+                                                  AllowDetailView="true"
+                                                  AllowRowClick="true"
+                                                  OnRowClick="OnPstRowClick"
+                                                  RowClass="@((item) => GetHieRowClass(item))"
+                                                  Responsive="true">
+                                                <GridColumns>
+                                                    <GridColumn TItem="RubhieDto" HeaderText="No" Class="xcol1">
+                                                        <ChildContent Context="item">
+                                                            @if (item.Xadd1 == -1)
+                                                            {
+                                                                <span>?@item?.Iui</span>
+                                                            }
+                                                            else
+                                                            {
+                                                                <span>
+                                                                    @(item.Xedt1 == -1 ? item?.Iui : (item?.Iui == 0 ? item?.Iele : item?.Iui))
+                                                                </span>
+                                                            }
+                                                        </ChildContent>
+                                                    </GridColumn>
+                                                    <GridColumn TItem="RubhieDto" HeaderText="" Class="xcol1">
+                                                        <!--
+                                                                    <HeaderContent>
+                                                                        Code
+                                                                        if (!String.IsNullOrEmpty(Jmessage))
+                                                                        {
+                                                                            <span class="bg-info bg-opacity-10" style="font-style:italic;color:red">&nbsp; Jmessage</span>
+                                                                        }
+                                                                    </HeaderContent>
+                                                                    -->
+                                                        <ChildContent Context="item">
+                                                            @item.Scdrub
+                                                        </ChildContent>
+                                                    </GridColumn>
+                                                    <GridColumn TItem="RubhieDto" HeaderText="Designation" Class="xcol3">
+                                                        <ChildContent Context="item">
+                                                            @item.Liba
+                                                        </ChildContent>
+                                                    </GridColumn>
+                                                    <GridColumn TItem="RubhieDto" HeaderText="Abrege" Class="xcol2">
+                                                        <ChildContent Context="item">
+                                                            @item.Abg
+                                                        </ChildContent>
+                                                    </GridColumn>
+                                                    <GridColumn TItem="RubhieDto" HeaderText="Refer" Class="xcol1">
+                                                        <ChildContent Context="item">
+                                                            @item.Zcod
+                                                        </ChildContent>
+                                                    </GridColumn>
+                                                    <GridColumn TItem="RubhieDto" HeaderText="Atyp">
+                                                        <ChildContent Context="item">
+                                                            <InputSelect @bind-Value="item.Atyp" class="col-md-1" style="width:auto" disabled>
+                                                                @foreach (var tob in LsFixes.Where(ut => ut.Gvars == 32 && ut.Itb == 2 && ut.Elea != 0))
+                                                                {
+                                                                    <option value=@tob.Elea>@tob.Liba</option>
+                                                                }
+                                                            </InputSelect>
+                                                        </ChildContent>
+                                                    </GridColumn>
+                                                    <GridColumn TItem="RubhieDto" HeaderText="Formule" Class="xcol1">
+                                                        <ChildContent Context="item">
+                                                            <Button Color="ButtonColor.Secondary" Class="btn btn-default btn-sm d-inline-flex align-items-center gap-1"
+                                                                    @onclick="() => showFrRubModal(item, 2)">
+                                                                <i class="bi bi-pencil-square"></i>
+                                                                <span class="text-truncate flex-grow-1">@item.Frsrc</span>
+                                                            </Button>
+                                                        </ChildContent>
+                                                    </GridColumn>
+                                                    <GridColumn TItem="RubhieDto" HeaderText="Eta">
+                                                        <ChildContent Context="item">
+                                                            <InputSelect @bind-Value="item.Eta" class="col-md-1" style="width:auto" disabled>
+                                                                <option class="jchx" value=0>?etat</option>
+                                                                @foreach (var tob in LsFixes.Where(ut => ut.Gvars == 32 && ut.Itb == 1 && ut.Elea != 0))
+                                                                {
+                                                                    <option value=@tob.Elea>@tob.Liba</option>
+                                                                }
+                                                            </InputSelect>
+                                                        </ChildContent>
+                                                    </GridColumn>
+                                                    <GridColumn TItem="RubhieDto" HeaderText="Actions" Filterable="false" Class="xcol2 actions-col">
+                                                        <HeaderContent>
+                                                            @if (!isFiltre)
+                                                            {
+                                                                <button class="btn btn-info btn-sm" @onclick="ToggleRubFiltering">
+                                                                    @(isRubFilteringEnabled ? "🚫 Out Filter" : "🔍 In Filter")
+                                                                </button>
+                                                            }
+                                                        </HeaderContent>
+                                                        <ChildContent Context="item">
+                                                            @switch (GetRowState(EntityLevel.Hie, item.Rowguid))
+                                                            {
+                                                                case RowState.Locked:
+                                                                    <span class="text-muted">—</span>
+                                                                    break;
+                                                                default:
+                                                                    <Button Color="ButtonColor.Dark" Size="ButtonSize.Small"
+                                                                            @onclick="() => ShowHieDetails(item, 2)">
+                                                                        Details
+                                                                    </Button>
+                                                                    break;
+                                                            }
+                                                        </ChildContent>
+                                                    </GridColumn>
+                                                </GridColumns>
+                                                <GridDetailView TItem="RubhieDto" Context="selectedRub">
+                                                    @if (selectedRub != null)
+                                                    {
+                                                        <div class="mt-2 border-start border-primary border-3 bg-light bg-opacity-25 rounded-end">
+                                                            <div class="row align-items-center mb-2">
+                                                                <div class="col-auto">
+                                                                    <i class="bi bi-chevron-right text-primary"></i>
+                                                                </div>
+                                                                <div class="col">
+                                                                    <small class="text-muted fw-semibold">
+                                                                        Rubrique ← @selectedRub.Liba (No: @selectedRub.Iele)
+                                                                    </small>
+                                                                </div>
+                                                            </div>
+                                                            <Grid TItem="RubpstDto"
+                                                                  Data="@MyDaPsts"
+                                                                  @key="FmtRenderKey"
+                                                                  AllowPaging="true"
+                                                                  RowClass="@((rf) => GetPstRowClass(rf))"
+                                                                  Responsive="true">
+                                                                <GridColumns>
+                                                                    <GridColumn TItem="RubpstDto" HeaderText="No" Class="xcol1">
+                                                                        <ChildContent Context="rf">
+                                                                            @if (rf.Xadd1 == -1)
+                                                                            {
+                                                                                <span>?@rf?.Iui</span>
+                                                                            }
+                                                                            else
+                                                                            {
+                                                                                <span>
+                                                                                    @(rf.Xedt1 == -1 ? rf?.Iui : (rf?.Iui == 0 ? rf?.Iele : rf?.Iui))
+                                                                                </span>
+                                                                            }
+                                                                        </ChildContent>
+                                                                    </GridColumn>
+                                                                    <GridColumn TItem="RubpstDto" HeaderText="Adresse" Class="xcol1">
+                                                                        <ChildContent Context="rf">
+                                                                            @if (IsPstEditing(rf) && draftFmt is not null)
+                                                                            {
+                                                                                <InputText @bind-Value="rf.Padres"
+                                                                                           @oninput="e => OnChlInput(e, rf)"
+                                                                                           @onfocus="() => OnChlFocusHandler(selectedRub, rf)"
+                                                                                           @onfocusout="() => OnChlBlurHandler(selectedRub, rf)"
+                                                                                           class="@(string.IsNullOrEmpty(Jmessage) ? "" : "is-invalid")" />
+
+                                                                                @if (!string.IsNullOrEmpty(Jmessage))
+                                                                                {
+                                                                                    <div class="text-danger small">@Jmessage</div>
+                                                                                }
+                                                                            }
+                                                                            else
+                                                                            {
+                                                                                @rf.Padres
+                                                                            }
+                                                                        </ChildContent>
+                                                                    </GridColumn>
+                                                                    <GridColumn TItem="RubpstDto" HeaderText="Libelle" Class="xcol3">
+                                                                        <ChildContent Context="rf">
+                                                                            @if (IsPstEditing(rf) && draftFmt is not null)
+                                                                            {
+                                                                                <input @bind="draftFmt.Liba" />
+                                                                            }
+                                                                            else
+                                                                            {
+                                                                                @rf.Liba
+                                                                            }
+                                                                        </ChildContent>
+                                                                    </GridColumn>
+                                                                    <GridColumn TItem="RubpstDto" HeaderText="Abrege" Class="xcol1">
+                                                                        <ChildContent Context="rf">
+                                                                            @if (IsPstEditing(rf) && draftFmt is not null)
+                                                                            {
+                                                                                <input @bind="draftFmt.Abg" />
+                                                                            }
+                                                                            else
+                                                                            {
+                                                                                @rf.Abg
+                                                                            }
+                                                                        </ChildContent>
+                                                                    </GridColumn>
+                                                                    <GridColumn TItem="RubpstDto" HeaderText="Eta" Class="xcol1">
+                                                                        <ChildContent Context="rf">
+                                                                            @if (IsPstEditing(rf) && draftFmt is not null)
+                                                                            { // show draftPln inputs
+                                                                                <InputSelect @bind-Value="draftFmt.Eta" class="col-md-1" style="width:auto">
+                                                                                    <option class="jchx" value=0>?etat</option>
+                                                                                    @foreach (var tob in LsFixes.Where(ut => ut.Gvars == 32 && ut.Itb == 2 && ut.Elea != 0))
+                                                                                    {
+                                                                                        <option value=@tob.Elea>@tob.Liba</option>
+                                                                                    }
+                                                                                </InputSelect>
+                                                                            }
+                                                                            else
+                                                                            { // show item as read-only
+                                                                                <select @bind="rf.Eta" class="col-md-1" style="width:auto" disabled>
+                                                                                    <option class="jchx" value=0>?etat</option>
+                                                                                    @foreach (var tob in LsFixes.Where(ut => ut.Gvars == 32 && ut.Itb == 1 && ut.Elea != 0))
+                                                                                    {
+                                                                                        <option value=@tob.Elea>@tob.Liba</option>
+                                                                                    }
+                                                                                </select>
+                                                                            }
+                                                                        </ChildContent>
+                                                                    </GridColumn>
+                                                                    <GridColumn TItem="RubpstDto" HeaderText="Actions" Class="xcol2 actions-col">
+                                                                        <HeaderContent>
+                                                                            <button class="btn btn-primary btn-sm @(IsLevelBusy(EntityLevel.Pst) ? "disabled-action" : "")"
+                                                                                    disabled="@IsLevelBusy(EntityLevel.Pst)"
+                                                                                    @onclick="() => StartFmtNew(selectedRub)">
+                                                                                <span style="display:inline-flex; align-items:center; gap:4px;">
+                                                                                    <span>➕</span>
+                                                                                    <span>Add</span>
+                                                                                </span>
+                                                                            </button>
+                                                                        </HeaderContent>
+                                                                        <ChildContent Context="rf">
+                                                                            @switch (GetRowState(EntityLevel.Pst, rf.Rowguid))
+                                                                            {
+                                                                                case RowState.Locked:
+                                                                                    <span class="text-muted">—</span>
+                                                                                    break;
+
+                                                                                case RowState.AddPending:
+                                                                                    <Button Color="ButtonColor.Success" Size="ButtonSize.Small"
+                                                                                            @onclick="() => ConfirmAdd(EntityLevel.Pst, draftFmt, true)">
+                                                                                        ✅ Confirm
+                                                                                    </Button>
+                                                                                    <Button Color="ButtonColor.Success" Size="ButtonSize.Small"
+                                                                                            @onclick="() => StartCancelAdd(EntityLevel.Pst, draftFmt)">
+                                                                                        ❌ Cancel
+                                                                                    </Button>
+                                                                                    break;
+                                                                                case RowState.EditPending:
+                                                                                    <Button Color="ButtonColor.Success" Size="ButtonSize.Small"
+                                                                                            @onclick="() => ConfirmEdit(EntityLevel.Pst, draftFmt, true)">
+                                                                                        ✅ Confirm
+                                                                                    </Button>
+                                                                                    <Button Color="ButtonColor.Secondary" Size="ButtonSize.Small"
+                                                                                            @onclick="() => CancelEdit(EntityLevel.Pst, rf)">
+                                                                                        ❌ Cancel
+                                                                                    </Button>
+                                                                                    break;
+                                                                                case RowState.DeletePending:
+                                                                                    <Button Color="ButtonColor.Danger" Size="ButtonSize.Small"
+                                                                                            @onclick="() => ConfirmDelete(EntityLevel.Pst, rf, true)">
+                                                                                        ⚠️ Confirm
+                                                                                    </Button>
+                                                                                    <Button Color="ButtonColor.Secondary" Size="ButtonSize.Small"
+                                                                                            @onclick="() => CancelDelete(EntityLevel.Pst, rf)">
+                                                                                        ❎ Cancel
+                                                                                    </Button>
+                                                                                    break;
+                                                                                default:
+                                                                                    <Button Color="ButtonColor.Warning" Size="ButtonSize.Small"
+                                                                                            @onclick="() => StartFmtEdit(rf)">
+                                                                                        ✏️ Edit
+                                                                                    </Button>
+                                                                                    <Button Color="ButtonColor.Danger" Size="ButtonSize.Small"
+                                                                                            @onclick="() => StartRowDelete(EntityLevel.Pst, rf.Rowguid)">
+                                                                                        🗑 Delete
+                                                                                    </Button>
+                                                                                    break;
+                                                                            }
+                                                                        </ChildContent>
+                                                                    </GridColumn>
+                                                                </GridColumns>
+                                                            </Grid>
+                                                        </div>
+                                                    }
+                                                </GridDetailView>
+                                            </Grid>
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    </EditForm>
+                }
+            </div>
+            <!-- Modal for RUBHIE EDIT -->
+            <Modal @ref="rHieModal" Size="ModalSize.Large" Title="Vue Division" ShowCloseButton="true">
+                <BodyTemplate>
+                    <div class="row">
+                        <div class="table-responsive">
+                            <table class="table w-auto" style="margin-left:10px">
+                                <tbody>
+                                    <tr>
+                                        <td>Raison sociale:</td>
+                                        <td class="text-right">
+                                            <InputText class="my-input" @bind-Value="draftRub.Raison" required
+                                                       style="font-weight:bold" />
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>Sigle:</td>
+                                        <td class="text-right">
+                                            <InputText class="my-input" @bind-Value="draftRub.Sigle" required
+                                                       style="font-weight:bold" />
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>Nom Cible:</td>
+                                        <td class="text-right">
+                                            <InputText class="my-input" @bind-Value="draftRub.Stcible" required
+                                                       style="font-weight:bold" />
+                                        </td>
+                                    </tr>
+                                    @* <tr>
+                                        <td>Poste Principal:</td>
+                                        <td class="text-right">
+                                            <InputSelect @bind-Value="draftRub.Kpst">
+                                                <option value=0>choisir</option>
+                                                @foreach (var udp in LsDivs.Where(dv => dv.Simain == 1))
+                                                {
+                                                    <option value=@udp.Ihie>@udp.Liba</option>
+                                                }
+                                            </InputSelect>
+                                        </td>
+                                    </tr> *@
+                                    @* <tr>
+                                        <td>Sigle:</td>
+                                        <td class="text-right">
+                                            <InputNumber class="my-input" @bind-Value="draftRub.Sigle" required
+                                                         style="font-weight:bold" />
+                                        </td>
+                                    </tr> *@
+                                    <tr>
+                                        <td>Adresse:</td>
+                                        <td class="text-right">
+                                            <InputText class="my-input" @bind-Value="draftRub.Adr"
+                                                       style="font-weight:bold" />
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>Ville:</td>
+                                        <td class="text-right">
+                                            <InputNumber class="my-input" @bind-Value="draftRub.Icity"
+                                                         style="font-weight:bold" />
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>Province:</td>
+                                        <td class="text-right">
+                                            <InputNumber class="my-input" @bind-Value="draftRub.Iprovi"
+                                                         style="font-weight:bold" />
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>Region:</td>
+                                        <td class="text-right">
+                                            <InputNumber class="my-input" @bind-Value="draftRub.Iregio"
+                                                         style="font-weight:bold" />
+                                        </td>
+                                    </tr>
+
+
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </BodyTemplate>
+                <FooterTemplate>
+                    <Button Color="ButtonColor.Secondary" @onclick="() => rHieModal.HideAsync()">Fermer</Button>
+                </FooterTemplate>
+            </Modal>
+            <!-- Modal for FORMULE PLAN -->
+            <Modal @ref="pForuModal" Size="ModalSize.Large" Title="Vue Plan Formula" ShowCloseButton="false">
+                <BodyTemplate>
+                    <div class="mb-3">
+                        <label class="form-label">Formula</label>
+                        <InputTextArea class="form-control"
+                                       @bind-Value="curPlan.Fpsrc"
+                                       rows="8"
+                                       style="resize: vertical;" />
+                    </div>
+                </BodyTemplate>
+                <FooterTemplate>
+                    <Button Color="ButtonColor.Secondary" @onclick="() => pForuModal.HideAsync()">Fermer</Button>
+                </FooterTemplate>
+            </Modal>
+            <!-- Modal for FORMULE RUB -->
+            <Modal @ref="rForuModal" Size="ModalSize.Large" Title="Vue Rubrique Formula" ShowCloseButton=false>
+                <BodyTemplate>
+                    <div class="mb-3">
+                        <label class="form-label">Formula</label>
+                        <InputTextArea class="form-control"
+                                       @bind-Value="curRubr.Frsrc"
+                                       rows="6"
+                                       style="resize: vertical;" />
+                    </div>
+                </BodyTemplate>
+                <FooterTemplate>
+                    <Button Color="ButtonColor.Secondary" @onclick="() => rForuModal.HideAsync()">Fermer</Button>
+                </FooterTemplate>
+            </Modal>
+            <!-- Modal for FORMULE FMT -->
+            @* <Modal @ref="gForuModal" Size="ModalSize.Large" Title="Edit Formula">
+                <BodyTemplate>
+                    <div class="mb-3">
+                        <label class="form-label">Formula</label>
+                        <InputTextArea class="form-control"
+                                       @bind-Value="curFmat.Ftsrc"
+                                       rows="3"
+                                       style="resize: vertical;" />
+                    </div>
+                </BodyTemplate>
+                <FooterTemplate>
+                    <Button Color="ButtonColor.Secondary" @onclick="() => gForuModal.HideAsync()">Cancel</Button>
+                </FooterTemplate>
+            </Modal> *@
+        </Authorized>
+    </AuthorizeView>
+}
+<style>
+    .modal-wide .modal-dialog {
+        max-width: 50vw;
+        width: auto;
+        margin: auto;
+    }
+
+    .rubModal-wide .modal-dialog {
+        max-width: 65vw;
+        width: auto;
+        margin: auto;
+    }
+
+    .disabled-action {
+        pointer-events: none;
+        opacity: 0.5;
+    }
+
+    .formul.button {
+        pointer-events: none;
+        opacity: 0.5;
+        height: 160px;
+    }
+
+    .plnpoint {
+        font-weight: bold;
+        background-color: blue;
+        color: white;
+    }
+
+    .rubpoint {
+        font-weight: bold;
+        background-color: yellow;
+        color: black;
+    }
+
+    .fmtpoint {
+        font-weight: bold;
+        background-color: darkolivegreen;
+        color: black;
+    }
+
+    .xcolx {
+        width: 40px !important;
+    }
+
+    .xcol1 {
+        width: 60px;
+    }
+
+    .xcol2 {
+        width: 120px;
+    }
+
+    .xcol3 {
+        width: 180px;
+    }
+
+    .xcol4 {
+        width: 240px;
+    }
+        /* Ensure inputs inside these columns fill the width */
+        .xcol1 input,
+        .xcol2 input,
+        .xcol3 input,
+        .xcol4 input {
+            width: 100%;
+            box-sizing: border-box; /* prevents overflow due to padding/border */
+        }
+
+    .editing-row {
+        pointer-events: none; /* Blocks all clicks on row */
+    }
+
+        .editing-row * {
+            pointer-events: auto; /* Re-enables clicks on buttons/inputs */
+        }
+
+    .new-add-indicator::after {
+        content: "➕ NEW";
+        float: right;
+        margin-left: 8px;
+        background: #ffc107;
+        color: #000;
+        font-size: 0.65em;
+        padding: 1px 4px;
+        border-radius: 8px;
+        font-weight: bold;
+    }
+
+    .readonly input,
+    .readonly textarea,
+    .readonly select,
+    .readonly button {
+        pointer-events: none;
+        background-color: #f8f9fa; /* light gray to indicate disabled */
+        opacity: 0.8;
+    }
+    /* Add to your CSS */
+    .row-active-edit {
+        background-color: #fff3cd !important; /* Light yellow */
+        border-left: 5px solid #ffc107 !important; /* Thick yellow border */
+        box-shadow: 0 2px 8px rgba(255,193,7,0.3);
+        z-index: 10;
+    }
+
+    .row-readonly {
+        opacity: 0.65 !important;
+        background-color: #f8f9fa !important;
+        cursor: not-allowed !important;
+    }
+
+        .row-readonly button,
+        .row-readonly .btn {
+            pointer-events: none !important;
+            opacity: 0.4 !important;
+        }
+
+    /* Make the whole cell a flex container so buttons line up horizontally */
+    .actions-col {
+        display: flex;
+        flex-direction: row;
+        gap: 6px; /* spacing between buttons */
+        align-items: center; /* vertical alignment */
+        justify-content: flex-start;
+    }
+        /* Apply to all buttons in your grid (or globally if you prefer) */
+        .actions-col .btn {
+            display: inline-flex; /* flex container */
+            flex-direction: row; /* horizontal layout */
+            align-items: center; /* vertical centering */
+            gap: 4px; /* spacing between emoji and text */
+            white-space: nowrap; /* prevent wrapping onto two lines */
+            line-height: 1.2; /* normalize baseline */
+        }
+
+</style>
+
+@code {
+    public bool isLoading = true;
+    public string Imessage = "", Jmessage = "", Kmessage = "";
+    public bool yaPgLink = false;
+    [CascadingParameter]
+    private Task<AuthenticationState>? AuthState { get; set; }
+    [Parameter]
+    public RenderFragment ChildContent { get; set; }
+    [Parameter]
+    public GxorgaDto curOrga { get; set; } = new();
+    [Parameter]
+    public List<PlngenDto> orgPlns { get; set; } = new();
+    [Parameter]
+    public IODataClient _InODaClient { get; set; }
+    [Parameter]
+    public ChildVars toChild { get; set; }
+    [Parameter]
+    public int toMenu { get; set; }
+    // Guard
+    [Parameter]
+    public IPendingChangesGuard _guard { get; set; }
+    [Parameter]
+    public EventCallback<PendingState> OnPendingStateChanged { get; set; }
+    [Parameter]
+    public int NbChanges { get; set; }
+    [Parameter]
+    public EventCallback<int> NbChangesChanged { get; set; }  // 🔥 CRITICAL
+
+    private IDisposable? _locationHandler;
+    //Global
+    //private int _lgcdu = 0;
+    //private int IMyGpln = 2; //2Echeancier
+    //private int IMyDom = 1; //1Saisie
+    //private int IMyVue = 1; //1Reel2Virtuel
+    //private int IMyAtr = 1; ////1Adm2Geo
+    //private int ItkDom = 0; //6Tiers7Mat
+    private int IMyGtie = 0; //1Cible/2Operat...
+    //organigramme
+    private OrgaSchem myorgn;
+    //Global
+    private int _lgcdu = 0;
+    private int IMyGpln = 4; //4Organigramme
+    private int IMyDom = 1; //1Saisie
+    private int ItkDom = 1; //?1Tiers2Mat
+    private int IMyVue = 1; //1Reel2Virtuel
+    private int IMyPlan = 0; //plan en cours
+
+    //author
+    private ClaimsPrincipal authUser;
+    private bool isAuthenticated = false;
+    //usrbag
+    private Userbag _usrBag = new Userbag();
+    private string _UserId = "";
+    private int _UorgId = 0;
+
+    private Dictionary<Guid, bool> _isLightBg = new();  // Track light background
+    private bool IsRowEditing(Guid rowguid) => _activeEditRowguid == rowguid;
+    private bool IsAnyRowEditing => _activeEditRowguid != null;
+
+    private List<Gplan> LsPlans = new();
+    private List<Gpfixe> LsFixes = new();
+    private List<Gpvar> LsVars = new();
+    private List<Gpfixe> LsDoms = new();
+    private List<Gpfixe> LsAtrs = new();
+    private List<Gpfixe> LsVues = new();
+    private List<Gpfixe> LsGties = new();
+
+    private bool ouvrirOrgn = false;
+    private bool isPlnFilteringEnabled = false;
+    private bool isRubFilteringEnabled = false;
+
+    private string atrTitle = "";
+    private string atrDest = "Programmes de Saisie";
+    //pour modals formulas
+    private PlngenDto curPlan = new();
+    private RubhieDto curRubr = new();
+    private RubpstDto curPmat = new();
+
+    private bool isRubCodeValid = false; //child blur
+    private CodeMode _mode = CodeMode.Numeric;
+    //private bool inModM => draftRub?.Ecmode != 1;
+    //private bool outModM => draftRub?.Ecmode == 1;
+    //data
+    public List<PlngenDto> MyDaPlans => PlanItems;
+    public List<RubhieDto> MyDaHies => HieItems;
+    public List<RubpstDto> MyDaPsts => PstItems;
+
+    private List<PlngenDto> LsPlsEchs => orgPlns.Where(pl => pl.Ptyp == 2).ToList();
+    private List<PlngenDto> LsPlsGris => orgPlns.Where(pl => pl.Ptyp == 3).ToList();
+    private List<PlngenDto> LsPlsDivs => orgPlns.Where(pl => pl.Ptyp == 4).ToList();
+    //add/edit options
+    private bool AllowMultipleEdits { get; set; } = false;
+    private bool isFiltre { get; set; } = false;
+    //PLAN
+    public Guid? PlnRenderKey = null;
+    public Dictionary<Guid, PlngenDto> _edPlnOriginals = new();
+    public PlngenDto? draftPln = null;
+    //RUBRIQUE
+    private Guid? RubRenderKey = null;
+    private Dictionary<Guid, RubhieDto> _edHieOriginals = new();
+    private RubhieDto? draftRub = null;
+
+    private Guid? FmtRenderKey = null;
+    private Dictionary<Guid, RubpstDto> _edPstOriginals = new();
+    private RubpstDto? draftFmt = null;
+    //Modals formule
+    Modal pForuModal = new(); //plans
+    Modal rForuModal = new(); //rubriques
+    Modal gForuModal = new(); //formats
+    Modal rHieModal = new(); //readonly rubhie
+
+    private string patTitle = "", chlTitle = "", gsnTitle = "";
+    private string patInitTitle = "", chlInitTitle = "", gsnInitTitle = "";
+    private string pstrFormu = "", rstrFormu = "", fstrFormu = "";
+    protected async Task TestConfirm()
+    {
+        Imessage = "TestConfirm reached";
+        await InvokeAsync(StateHasChanged);
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        isLoading = true;
+        try
+        {
+            if (toChild == null || curOrga == null)
+            {
+                Console.WriteLine("Missing parent data");
+                return;
+            }
+            isAuthenticated = toChild.isAuthenticated;
+            authUser = toChild.authUser;
+            if (!isAuthenticated)
+            {
+                Imessage = "CONNEXION, Utilisateur non authentifie";
+                return;
+            }
+            LsVars = toChild.LsVars;
+            LsFixes = toChild.LsFixes;
+            LsDoms = LsFixes.Where(ut => ut.Gvars == 36 && ut.Itb == 4 && ut.Gp1 == 3 && ut.Elea != 0).ToList();
+            LsAtrs = LsFixes.Where(ut => ut.Gvars == 36 && ut.Itb == 1 && ut.Gp1 == 3 && ut.Elea != 0).ToList();
+            LsVues = LsFixes.Where(ut => ut.Gvars == 36 && ut.Itb == 4 && ut.Gp1 == 4 && ut.Elea != 0).ToList();
+            LsGties = LsFixes.Where(ut => ut.Gvars == 36 && ut.Itb == 6 && ut.Elea != 0 && ut.Elea != 9).ToList();
+            LsPlans = toChild.LsPlans.Where(pl => pl.Ptyp == IMyGpln).ToList();
+            _lgcdu = 3;
+            var noslims = LsVars.Where(uv => uv.Idhie == 0 && uv.Gvars == 21 && uv.Itb == 1 && uv.Elea == 1);
+            if (noslims.Any()) _lgcdu = noslims.FirstOrDefault().Ivala;
+
+            Console.WriteLine($"lsplans {LsPlans.Count} IS NULL");
+
+            InitializeMyDaPlans();
+            InitializeMyDaHies();  // If you have this
+            InitializeMyDaPsts();
+
+            Console.WriteLine($"MyDaPlans initialized: {MyDaPlans.Count}");
+
+            atrTitle = "Saisie";
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Child crash: {ex.Message}");
+            Console.WriteLine($"Stack: {ex.StackTrace}");
+            Imessage = $"Erreur chargement: {ex.Message}";
+        }
+        finally
+        {
+            isLoading = false;
+            StateHasChanged();
+        }
+    }
+    // and call this in OnParametersSet
+    protected override void OnParametersSet()
+    {
+        SubscribeToGuard();
+    }
+    // Register guards and handlers ONCE when the component is initialized
+    protected override void OnAfterRender(bool firstRender)
+    {
+        base.OnAfterRender(firstRender);
+        if (firstRender)
+        {
+            _locationHandler = _navManager.RegisterLocationChangingHandler(OnLocationChangingAsync);
+        }
+    }
+
+    void OnPstRowClick(GridRowEventArgs<RubhieDto> args)
+    {
+        Console.WriteLine($"OnRubRowClick Triggered : {args.Item.Id}");
+        curRubr = args.Item; //get gRubsMap
+        Console.WriteLine($"Id {curRubr.Id}");
+        if (curRubr == null || curRubr.Id == 0)
+        {
+            return;
+        }
+        InitializeMyDaHies();
+        //MyDaHies = new ObservableCollection<RubvarDto>(curPlan.Rubvars);
+        StateHasChanged();
+    }
+    // public async Task StartPlnNew()
+    // {
+    //     if (IsAnyRowEditing)
+    //     {
+    //         Imessage = "prog cannot be added when any row is editing";
+    //         return;
+    //     }
+    //     Console.WriteLine("Commence ici");
+    //     var lsnb = NextSeq(MyDaPlans, p => p.Iui);
+    //     var newPln = new PlngenDto
+    //     {
+    //         Rowguid = Guid.NewGuid(),
+    //         Idorg = curOrga.Idorg,
+    //         Iui = lsnb,
+    //         Ptyp = IMyGpln,
+    //         Todom = IMyDom,
+    //         Ogtyp = 0,
+    //         Totyp = IMyGtie,
+    //         Toatr = 0,
+    //         Tovue = IMyVue,
+    //         Liba = "",
+    //         Abg = "",
+    //         Fpsrc = "",
+    //         Fpexe = "",
+    //         Fpisrc = 0,
+    //         Styp = 0,
+    //         Eta = 1,
+    //         Xadd1 = -1,
+    //         Xedt1 = 0
+    //     };
+
+    //     PlanItems.Insert(0, newPln);
+    //     orgPlns.Insert(0, newPln);
+
+    //     SetRowState(EntityLevel.Plan, newPln.Rowguid, RowState.AddPending);
+    //     //SetLightBackground(newPln.Rowguid, true);
+
+    //     draftPln = DeepClone(newPln);
+    //     Console.WriteLine($"NEWPLN : {newPln.Rowguid}");
+    //     Console.WriteLine($"DRAFTPLN : {newPln.Rowguid}");
+    //     BeginAdd(EntityLevel.Plan, newPln.Rowguid, draftPln);
+    //     //AddRowguid == item.Rowguid
+    //     //Console.WriteLine($"{newPln.Ptyp} et {newPln.Totyp} et {newPln.Todom} et {newPln.Tovue}");
+    //     PlnRenderKey = newPln.Rowguid;
+
+    //     //SetRowState(EntityLevel.Plan, draftPln.Rowguid, RowState.AddPending);
+    //     await InvokeAsync(StateHasChanged);
+    // }
+    // public async Task StartRubNew(PlngenDto mypln)
+    // {
+    //     if (mypln.Id <= 0)
+    //     {
+    //         Imessage = "🚫 Cannot add Rubrique: Plan must be saved first.";
+    //         await InvokeAsync(StateHasChanged);
+    //         return;
+    //     }
+
+    //     if (IsAnyRowEditing)
+    //     {
+    //         Imessage = "rub cannot be added when any row is editing";
+    //         await InvokeAsync(StateHasChanged);
+    //         return;
+    //     }
+    //     var lsnb = NextSeq(MyDaHies, p => p.Iui);
+    //     var newRub = new RubhieDto
+    //     {
+    //         Rowguid = Guid.NewGuid(),
+    //         Prowguid = mypln.Rowguid,
+    //         Idorg = mypln.Idorg,
+    //         Ipln = mypln.Id,
+    //         Scdrub = "",
+    //         Iui = lsnb,
+    //         Torub = 0,
+    //         Utyp = 2,
+    //         Tovue = mypln.Tovue,
+    //         Ustyp = 0,
+    //         //Dtperi = 0,
+    //         Liba = "",
+    //         Abg = "",
+    //         Frsrc = "",
+    //         Frexe = "",
+    //         Frisrc = 0,
+    //         //Ecmount = 0,
+    //         //Ecannu = 0,
+    //         //Nbech = 0,
+    //         //Ddval = 0,
+    //         //Dfval = 0,
+    //         Eaut = 0,
+    //         Atyp = 3,
+    //         //Eint = 0,
+    //         Eta = 1,
+    //         Xadd1 = -1,
+    //         Xedt1 = 0
+    //     };
+
+    //     HieItems.Insert(0, newRub);
+    //     curPlan.Rubhies.Insert(0, newRub);
+
+    //     draftRub = DeepClone(newRub);
+    //     BeginAdd(EntityLevel.Hie, newRub.Rowguid, draftRub);
+
+    //     RubRenderKey = newRub.Rowguid;
+    //     await InvokeAsync(StateHasChanged);
+    // }
+    public async Task StartFmtNew(RubhieDto myrub)
+    {
+        if (myrub.Id <= 0)
+        {
+            Imessage = "🚫 Cannot add Format: Rubrique must be saved first.";
+            await InvokeAsync(StateHasChanged);
+            return;
+        }
+
+        if (IsAnyRowEditing)
+        {
+            Imessage = "fmt cannot be added when any row is editing";
+            await InvokeAsync(StateHasChanged);
+            return;
+        }
+
+        var lsnb = NextSeq(MyDaPsts, p => p.Iui);
+        var newFmt = new RubpstDto
+        {
+            Rowguid = Guid.NewGuid(),
+            Prowguid = myrub.Rowguid,
+            Ihie = myrub.Id,
+            Vgpe = 4, //postes
+            Iui = lsnb,
+            Idzon = lsnb,
+            Zcdrub = lsnb.ToString(),
+            Ftsrc = "",
+            Liba = "",
+            Abg = "",
+            Tperi = 1,
+            Col = 1,
+            Lne = 1,
+            Ztyp = 4,
+            Eint = 0,
+            Eta = 1,
+            Xadd1 = -1,
+            Xedt1 = 0
+        };
+
+        PstItems.Insert(0, newFmt);
+        myrub.Rubpsts.Insert(0, newFmt);
+
+        //SetRowState(EntityLevel.Pst, newFmt.Rowguid, RowState.AddPending);
+        //SetLightBackground(newPln.Rowguid, true);
+        draftFmt = DeepClone(newFmt);
+        BeginAdd(EntityLevel.Pst, newFmt.Rowguid, draftFmt);
+
+        FmtRenderKey = newFmt.Rowguid;
+        await InvokeAsync(StateHasChanged);
+    }
+    public async Task StartPlnEdit(PlngenDto item)
+    {
+        var rowguid = item.Rowguid;
+        if (item.Id == default) return;
+        if (rowguid == Guid.Empty) return;
+        if (IsAnyRowEditing && !IsRowEditing(rowguid)) return;
+
+        _edPlnOriginals[rowguid] = DeepClone(item);
+        draftPln = DeepClone(item);
+
+        BeginEdit(EntityLevel.Plan, rowguid, draftPln);
+        _rowPendingOpTypeByRow[rowguid] = PendingOpType.Update;
+
+        StateHasChanged();
+    }
+    // public async Task StartRubEdit(RubhieDto item)
+    // {
+    //     var rowguid = item.Rowguid;
+    //     if (item.Id == default)
+    //     {
+    //         Imessage = "🚫 Cannot edit new Rubrique: Please save it first.";
+    //         return;
+    //     }
+
+    //     if (rowguid == Guid.Empty) return;
+    //     if (IsAnyRowEditing && !IsRowEditing(rowguid)) return;
+
+    //     //item.Xedt1 = -1;
+    //     //if (item.Iele != 0) item.Iui = (int)item.Iele;
+
+    //     _edHieOriginals[rowguid] = DeepClone(item);
+    //     draftRub = DeepClone(item);
+
+    //     RubRenderKey = rowguid;
+    //     BeginEdit(EntityLevel.Hie, rowguid, draftRub);
+
+    //     StateHasChanged();
+    // }
+    public async Task StartFmtEdit(RubpstDto item)
+    {
+        var rowguid = item.Rowguid;
+        if (item.Id == default)
+        {
+            Imessage = "🚫 Cannot edit new Fmt: Please save it first.";
+            return;
+        }
+
+        if (rowguid == Guid.Empty) return;
+        if (IsAnyRowEditing && !IsRowEditing(rowguid)) return;
+
+        item.Xedt1 = -1;
+        if (item.Iele != 0) item.Iui = (int)item.Iele;
+
+        _edPstOriginals[rowguid] = DeepClone(item);
+        draftFmt = DeepClone(item);
+
+        FmtRenderKey = rowguid;
+        BeginEdit(EntityLevel.Pst, rowguid, draftFmt);
+
+        StateHasChanged();
+    }
+    private void StartCancelAdd(EntityLevel level, object entity)
+    {
+        var rowguid = MLEntityKeyHelper.GetRowguidAsGuid(entity);
+        Console.WriteLine($"EST CANCELLED : {level}");
+        switch (level)
+        {
+            case EntityLevel.Plan:
+                CancelAdd(level, entity);
+                orgPlns.RemoveAll(x => x.Rowguid == rowguid);
+                //ResetRowState(level, rowguid);
+                PlnRenderKey = Guid.Empty;
+                break;
+            case EntityLevel.Hie:
+                CancelAdd(level, entity);
+                curPlan.Rubhies.RemoveAll(x => x.Rowguid == rowguid);
+                //ResetRowState(level, rowguid);
+                RubRenderKey = Guid.Empty;
+                break;
+            case EntityLevel.Pst:
+                CancelAdd(level, entity);
+                curRubr.Rubpsts.RemoveAll(x => x.Rowguid == rowguid);
+                //ResetRowState(level, rowguid);
+                FmtRenderKey = Guid.Empty;
+                break;
+        }
+    }
+
+    //FILTRES
+    private Grid<PlngenDto> grid = default!;
+    private async void TogglePlnFiltering()
+    {
+        isPlnFilteringEnabled = !isPlnFilteringEnabled;
+        await grid.RefreshDataAsync(); // Refresh the grid to apply the change
+    }
+    private void ToggleRubFiltering()
+    {
+        isRubFilteringEnabled = !isRubFilteringEnabled;
+    }
+    // Update method -call this when source data changes
+    private void InitializeMyDaPlans()
+    {
+        PlanItems.Clear();
+        PlanItems.AddRange(
+            orgPlns?.Where(pl => pl.Ptyp == IMyGpln && pl.Todom == IMyDom)
+            ?? Enumerable.Empty<PlngenDto>());
+    }
+    private void InitializeMyDaHies()
+    {
+        HieItems.Clear();
+        HieItems.AddRange(
+            curPlan?.Rubhies.ToList()
+            ?? Enumerable.Empty<RubhieDto>());
+        Console.WriteLine($"curPlan : {curPlan?.Id} et nb. Hies : {curPlan?.Rubhies.Count}");
+    }
+    private void InitializeMyDaPsts()
+    {
+        PstItems.Clear();
+        PstItems.AddRange(
+            curRubr?.Rubpsts.ToList()
+        ?? Enumerable.Empty<RubpstDto>());
+    }
+    private void UpdateMyDaPlans()
+    {
+        PlanItems.Clear();
+        PlanItems.AddRange(
+            orgPlns?.Where(pl => pl.Ptyp == IMyGpln && pl.Todom == IMyDom)
+            ?? Enumerable.Empty<PlngenDto>());
+    }
+    private void UpdateMyDaHies()
+    {
+        HieItems.Clear();
+        HieItems.AddRange(
+            curPlan?.Rubhies.ToList()
+            ?? Enumerable.Empty<RubhieDto>());
+    }
+    private void UpdateMyDaFmts()
+    {
+        PstItems.Clear();
+        PstItems.AddRange(
+            curRubr?.Rubpsts.ToList()
+            ?? Enumerable.Empty<RubpstDto>());
+    }
+
+    //PLAN Formule modals
+    void showFrPlnModal(PlngenDto mypln, int orig)
+    {
+        pstrFormu = "";
+        if (!string.IsNullOrEmpty(mypln.Fpsrc))
+        {
+            pstrFormu = mypln.Liba.Substring(0, 8);
+        }
+
+        curPlan = mypln;
+
+        if (pForuModal != null)
+        {
+            pForuModal.BodyCssClass = (orig == 1) ? "editable" : "readonly";
+            pForuModal.ShowAsync();
+        }
+    }
+    //RUBR Formule modals
+    void showFrRubModal(RubhieDto myrub, int orig)
+    {
+        rstrFormu = "";
+        if (!string.IsNullOrEmpty(myrub.Frsrc))
+        {
+            rstrFormu = myrub.Liba.Substring(0, 8);
+        }
+
+        curRubr = myrub;
+
+        if (rForuModal != null)
+        {
+            rForuModal.BodyCssClass = (orig == 1) ? "editable" : "readonly";
+            rForuModal.ShowAsync();
+        }
+    }
+    //FMT Formule modals
+    void showFrFmtModal(RubpstDto myfmt, int orig)
+    {
+        fstrFormu = "";
+        if (!string.IsNullOrEmpty(myfmt.Ftsrc))
+        {
+            fstrFormu = myfmt.Liba.Substring(0, 8);
+        }
+
+        curPmat = myfmt;
+
+        if (gForuModal != null)
+        {
+            gForuModal.BodyCssClass = (orig == 1) ? "editable" : "readonly";
+            gForuModal.ShowAsync();
+        }
+    }
+    void ShowHieDetails(RubhieDto myhie, int orig)
+    {
+        if (myhie.Id == default || myhie.Id < 1)
+        {
+            Imessage = "la division doit etre au prealable enregistree";
+        }
+        if (myhie != null && rHieModal != null)
+        {
+            var rowguid = myhie.Rowguid;
+            if (rowguid == Guid.Empty) return;
+            if (IsAnyRowEditing && !IsRowEditing(rowguid)) return;
+            myhie.Xedt1 = -1;
+            _edHieOriginals[rowguid] = DeepClone(myhie);
+            draftRub = DeepClone(myhie);
+
+            RubRenderKey = rowguid;
+            //BeginEdit(EntityLevel.Hie, rowguid, draftRub);
+            rHieModal.BodyCssClass = (orig == 1) ? "editable" : "readonly";
+            Console.WriteLine("DETAILS HAS BEEN SHOWNED");
+            rHieModal.ShowAsync();
+        }
+        else
+        {
+            Imessage = "details indisponible";
+        }
+    }
+    private void showPgLink()
+    {
+        yaPgLink = !yaPgLink;
+    }
+
+    private void OnChlBlurHandler(RubhieDto myrub, RubpstDto myvar)
+    {
+        Console.WriteLine("ATTENTION : En Blur....");
+        isRubCodeValid = HandleChlInput(myrub, myvar);
+        Imessage = $"OnBlur active : {isRubCodeValid}";
+        // Optionally trigger UI refresh or logging
+    }
+    private void OnChlFocusHandler(RubhieDto myrub, RubpstDto myvar)
+    {
+
+    }
+    private bool HandleChlInput(RubhieDto myrub, RubpstDto myvar)
+    {
+        var input = myvar.Padres?.Trim();
+        Jmessage = "";
+        Console.WriteLine($"code entre traiter {input}");
+        // Basic null/empty check
+        if (string.IsNullOrEmpty(input))
+        {
+            Jmessage = "Le code est requis.";
+            return false;
+        }
+        // Explicit length check
+        if (input.Length != _lgcdu)
+        {
+            Jmessage = $"Le code doit contenir exactement {_lgcdu} chiffres.";
+            return false;
+        }
+        // Digit-only check/No de poste peut ne pas etre numerique
+        if (!Regex.IsMatch(input, @"^[0-9]+$")) // @"^[a-zA-Z0-9_\-\/\\|{}]+$"))
+        {
+            //(!Regex.IsMatch(input, @"^\d+$")) /numeric
+            //(Regex.IsMatch(input, @"^[a-zA-Z0-9]+$")) /alphanumeric strict
+            //(Regex.IsMatch(input, @"^[a-zA-Z0-9_\-\/\\|{}]+$") /add some others characters
+            //(Regex.IsMatch(input, @"^[a-zA-Z0-9_\-\/\\|{}]{6}$")) //limit number to 6
+            //(Regex.IsMatch(input, @"^[a-zA-Z0-9_\-\/\\|{}]{4,10}$")) //limit a range 4-10
+            Jmessage = "Le code ne doit contenir que des chiffres.";
+            return false;
+        }
+        // Uniqueness check/sauf current
+        var exists = myrub.Rubpsts?.Any(uva => uva.Rowguid != myvar.Rowguid && uva.Padres == input) ?? false;
+        if (exists)
+        {
+            Jmessage = "Ce code adresse existe déjà.";
+            return false;
+        }
+        return true;
+    }
+    private void OnChlInput(ChangeEventArgs e, RubpstDto mypst)
+    {
+        var raw = e.Value?.ToString() ?? "";
+
+        string filtered = _mode switch
+        {
+            CodeMode.Numeric => new string(raw.Where(char.IsDigit).ToArray()),
+            CodeMode.AlphaNumeric => new string(raw.Where(char.IsLetterOrDigit).ToArray()),
+            CodeMode.Custom => Regex.Replace(raw, @"[^a-zA-Z0-9_\-\/\\|{}]", ""),
+            _ => raw
+        };
+
+        // Enforce max length
+        if (filtered.Length > _lgcdu)
+            filtered = filtered[.._lgcdu];
+
+        mypst.Padres = filtered;
+    }
+    private async ValueTask OnLocationChangingAsync(LocationChangingContext context)
+    {
+        Console.WriteLine($"🌐 Intercepted: {context.TargetLocation}");
+
+        if (!_guard.HasPendingChanges())
+        {
+            Console.WriteLine("✅ Clean - allowing navigation");
+            return;
+        }
+
+        context.PreventNavigation();  // BLOCK navigation
+        Console.WriteLine($"🚫 Showing confirm dialog {context.TargetLocation}");
+
+        try
+        {
+            var save = await _JsRUN.InvokeAsync<bool>("confirm", "Save changes before leaving?");
+
+            if (save)
+            {
+                // 🔥 YES: SaveAllChanges() → Navigate away
+                await SaveAllChanges();
+                Console.WriteLine("💾 Saved - navigating away");
+                _messageService.Show("✅ Saved successfully", ToastType.Success);
+                _navManager.NavigateTo(context.TargetLocation, forceLoad: false);
+            }
+            else
+            {
+                // 🔥 NO: STAY on page - NO CancelAllChanges()
+                Console.WriteLine("❌ User chose NO - staying on page");
+                // User stays - sees SaveAllChanges() / CancelAllChanges() buttons ENABLED
+                // They can now manually: SaveAllChanges() OR CancelAllChanges()
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"❌ Error: {ex.Message}");
+            // Safety: stay on page
+        }
+    }
+    private async Task OnOrgnSelected()
+    {
+        if (LsPlsDivs.Any())
+        {
+            ouvrirOrgn = true;
+        }
+    }
+    private async Task OnHomeSelected()
+    {
+        ouvrirOrgn = false;
+    }
+    public void Dispose()  // â† ADD THIS
+    {
+        Console.WriteLine("ðŸ§¹ Child Prubsaie cleaning up");
+    }
+}

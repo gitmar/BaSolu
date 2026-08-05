@@ -1,12 +1,18 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <!-- 🛡️ Dynamic Manifest + Service Worker Fix -->
+    <!-- 🛡️ Shared base path -->
+    <script>
+        window.appBasePath = (function () {
+            const base = document.querySelector('base')?.getAttribute('href') || '/';
+            return base.endsWith('/') ? base : base + '/';
+        })();
+    </script>
+
+    <!-- 🛡️ Dynamic Manifest -->
     <script>
         (function () {
-            const pathSegments = window.location.pathname.split('/');
-            const subsite = pathSegments.length > 1 && pathSegments[1] ? pathSegments[1] : '';
-            const basePath = subsite ? `/${subsite}/` : '/';
+            const basePath = window.appBasePath;
 
             let manifestLink = document.querySelector('link[rel="manifest"]');
             if (!manifestLink) {
@@ -14,13 +20,12 @@
                 manifestLink.setAttribute('rel', 'manifest');
                 document.head.appendChild(manifestLink);
             }
-            manifestLink.setAttribute('href', `${basePath}manifest.webmanifest`);
 
+            manifestLink.setAttribute('href', `${basePath}manifest.webmanifest`);
             console.log("Manifest URL set to:", manifestLink.href);
         })();
     </script>
 
-    <!-- other <link> tags follow -->
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>GxPilo</title>
@@ -30,9 +35,6 @@
     <link rel="stylesheet" href="css/app.css" />
     <link rel="icon" type="image/png" href="favicon.png" />
     <link href="GxPilo.styles.css" rel="stylesheet" />
-    <!-- Manifest will be dynamically adjusted -->
-    <!--<link rel="manifest" id="dynamic-manifest" />-->
-    <!--<link rel="manifest" href="manifest.webmanifest" />-->
     <link href="lib/bootstrap/css/bootstrap.min.css" rel="stylesheet" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
     <link href="_content/Blazor.Bootstrap/blazor.bootstrap.css" rel="stylesheet" />
@@ -62,42 +64,60 @@
     <!-- 🔄 Version Check and Cache Clear -->
     <script>
         (async function () {
-            if (window.location.search.includes("forceClear=true")) {
-                localStorage.removeItem("appVersion");
-            }
-
-            const response = await fetch('version.json', { cache: 'no-store' });
-            const currentVersion = await response.text();
-            const storedVersion = localStorage.getItem('appVersion');
-
-            console.log("Current version:", currentVersion, "Stored version:", storedVersion);
-
-            if (storedVersion !== currentVersion) {
-                // Clear service worker cache
-                const keys = await caches.keys();
-                for (const key of keys) {
-                    await caches.delete(key);
+            try {
+                const basePath = window.appBasePath || '/';
+                const response = await fetch(`${basePath}version.json`, { cache: 'no-store' });
+                console.log('enter version script');
+                if (!response.ok) {
+                    console.log("echec");
+                    console.error('version.json not found');
+                    return;
                 }
 
-                // Clear cookies
-                document.cookie.split(';').forEach(function (c) {
-                    document.cookie = c.trim().split('=')[0] + '=;expires=Thu, 01 Jan 1970 00:00:00 UTC;path=/';
-                });
+                const versionData = await response.json();
+                const appVersion = versionData.appVersion ?? '';
+                const schemaVersion = String(versionData.schemaVersion ?? '');
 
-                // Clear storage
-                localStorage.clear();
-                sessionStorage.clear();
+                const storedAppVersion = localStorage.getItem('appVersion');
+                const storedSchemaVersion = localStorage.getItem('schemaVersion');
 
-                // Delete IndexedDB
-                if (indexedDB.databases) {
-                    const dbs = await indexedDB.databases();
-                    for (const db of dbs) {
-                        indexedDB.deleteDatabase(db.name);
+                console.log('appVersion:', appVersion);
+                console.log('storedAppVersion:', storedAppVersion);
+                console.log('schemaVersion:', schemaVersion);
+                console.log('storedSchemaVersion:', storedSchemaVersion);
+
+                const appChanged = storedAppVersion !== appVersion;
+                const schemaChanged = storedSchemaVersion !== schemaVersion;
+
+                if (appChanged) {
+                    const keys = await caches.keys();
+                    await Promise.all(keys.map(key => caches.delete(key)));
+
+                    localStorage.removeItem('appVersion');
+                    sessionStorage.clear();
+                    console.log('cache cleared');
+                }
+
+                if (schemaChanged) {
+                    if (indexedDB.databases) {
+                        const dbs = await indexedDB.databases();
+                        await Promise.all(dbs.map(db => new Promise(resolve => {
+                            if (!db.name) return resolve();
+                            const req = indexedDB.deleteDatabase(db.name);
+                            req.onsuccess = req.onerror = req.onblocked = () => resolve();
+                        })));
+                        console.log('indexDB cleared');
                     }
+                    localStorage.setItem('schemaVersion', schemaVersion);
                 }
 
-                localStorage.setItem('appVersion', currentVersion);
-                location.reload();
+                localStorage.setItem('appVersion', appVersion);
+                console.log('new version ' + appVersion + ' stored in localStorage');
+                if (appChanged || schemaChanged) {
+                    location.reload();
+                }
+            } catch (err) {
+                console.error('Version check failed:', err);
             }
         })();
     </script>
@@ -107,11 +127,11 @@
     <script src="_framework/blazor.webassembly.js"></script>
     <script src="lib/bootstrap/js/bootstrap.bundle.min.js"></script>
     <script src="_content/Blazor.Bootstrap/blazor.bootstrap.js"></script>
+
+    <!-- Service Worker -->
     <script>
         (function () {
-            const pathSegments = window.location.pathname.split('/');
-            const subsite = pathSegments.length > 1 && pathSegments[1] ? pathSegments[1] : '';
-            const basePath = subsite ? `/${subsite}/` : '/';
+            const basePath = window.appBasePath || '/';
 
             if ('serviceWorker' in navigator) {
                 window.addEventListener('load', () => {
@@ -122,6 +142,7 @@
             }
         })();
     </script>
+
     <script src="interop.js"></script>
     <script src="js/grid.js"></script>
     <script src="js/confirm.js"></script>

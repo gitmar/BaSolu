@@ -60,47 +60,65 @@
     </div>
 
     <!-- 🔄 Version Check and Cache Clear -->
-    <!--<script>
+    <script>
         (async function () {
-            if (window.location.search.includes("forceClear=true")) {
-                localStorage.removeItem("appVersion");
-            }
-
-            const response = await fetch('version.json', { cache: 'no-store' });
-            const currentVersion = await response.text();
-            const storedVersion = localStorage.getItem('appVersion');
-
-            console.log("Current version:", currentVersion, "Stored version:", storedVersion);
-
-            if (storedVersion !== currentVersion) {
-                // Clear service worker cache
-                const keys = await caches.keys();
-                for (const key of keys) {
-                    await caches.delete(key);
+            try {
+                const basePath = window.appBasePath || '/';
+                const response = await fetch(`${basePath}version.json`, { cache: 'no-store' });
+                console.log('enter version script');
+                if (!response.ok) {
+                    console.log("echec");
+                    console.error('version.json not found');
+                    return;
                 }
 
-                // Clear cookies
-                document.cookie.split(';').forEach(function (c) {
-                    document.cookie = c.trim().split('=')[0] + '=;expires=Thu, 01 Jan 1970 00:00:00 UTC;path=/';
-                });
+                const versionData = await response.json();
+                const appVersion = versionData.appVersion ?? '';
+                const schemaVersion = String(versionData.schemaVersion ?? '');
 
-                // Clear storage
-                localStorage.clear();
-                sessionStorage.clear();
+                const storedAppVersion = localStorage.getItem('appVersion');
+                const storedSchemaVersion = localStorage.getItem('schemaVersion');
 
-                // Delete IndexedDB
-                if (indexedDB.databases) {
-                    const dbs = await indexedDB.databases();
-                    for (const db of dbs) {
-                        indexedDB.deleteDatabase(db.name);
+                console.log('appVersion:', appVersion);
+                console.log('storedAppVersion:', storedAppVersion);
+                console.log('schemaVersion:', schemaVersion);
+                console.log('storedSchemaVersion:', storedSchemaVersion);
+
+                const appChanged = storedAppVersion !== appVersion;
+                const schemaChanged = storedSchemaVersion !== schemaVersion;
+
+                if (appChanged) {
+                    const keys = await caches.keys();
+                    await Promise.all(keys.map(key => caches.delete(key)));
+
+                    localStorage.removeItem('appVersion');
+                    sessionStorage.clear();
+                    console.log('cache cleared');
+                }
+
+                if (schemaChanged) {
+                    if (indexedDB.databases) {
+                        const dbs = await indexedDB.databases();
+                        await Promise.all(dbs.map(db => new Promise(resolve => {
+                            if (!db.name) return resolve();
+                            const req = indexedDB.deleteDatabase(db.name);
+                            req.onsuccess = req.onerror = req.onblocked = () => resolve();
+                        })));
+                        console.log('indexDB cleared');
                     }
+                    localStorage.setItem('schemaVersion', schemaVersion);
                 }
 
-                localStorage.setItem('appVersion', currentVersion);
-                location.reload();
+                localStorage.setItem('appVersion', appVersion);
+                console.log('new version ' + appVersion + ' stored in localStorage');
+                if (appChanged || schemaChanged) {
+                    location.reload();
+                }
+            } catch (err) {
+                console.error('Version check failed:', err);
             }
         })();
-    </script>-->
+    </script>
 
     <!-- Blazor & Dependencies -->
     <script src="_content/Microsoft.AspNetCore.Components.WebAssembly.Authentication/AuthenticationService.js"></script>
@@ -113,6 +131,20 @@
             const pathSegments = window.location.pathname.split('/');
             const subsite = pathSegments.length > 1 && pathSegments[1] ? pathSegments[1] : '';
             const basePath = subsite ? `/${subsite}/` : '/';
+
+            if ('serviceWorker' in navigator) {
+                window.addEventListener('load', () => {
+                    navigator.serviceWorker.register(`${basePath}service-worker.js`, { scope: basePath })
+                        .then(reg => console.log('Service worker registered with scope:', reg.scope))
+                        .catch(err => console.error('Service worker registration failed:', err));
+                });
+            }
+        })();
+    </script>
+    <!-- Service Worker -->
+    <script>
+        (function () {
+            const basePath = window.appBasePath || '/';
 
             if ('serviceWorker' in navigator) {
                 window.addEventListener('load', () => {

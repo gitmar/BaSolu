@@ -3,14 +3,39 @@
     <TargetFramework>net9.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
+    <Version>1.1.3</Version>
+    <SchemaVersion>1</SchemaVersion>
     <ServiceWorkerAssetsManifest>service-worker-assets.js</ServiceWorkerAssetsManifest>
   </PropertyGroup>
-  <!-- Debug configuration must disable optimization and enable symbols -->
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|AnyCPU'">
     <Optimize>false</Optimize>
     <DebugType>full</DebugType>
     <DebugSymbols>true</DebugSymbols>
   </PropertyGroup>
+  <Target Name="GenerateVersionJson" BeforeTargets="ComputeFilesToPublish">
+    <Message Text="Generating version.json with Version=$(Version), SchemaVersion=$(SchemaVersion)" Importance="high" />
+    <WriteLinesToFile File="$(ProjectDir)wwwroot/version.json" Lines="{&quot;appVersion&quot;:&quot;$(Version)&quot;,&quot;schemaVersion&quot;:$(SchemaVersion)}" Overwrite="true" Encoding="UTF-8" />
+  </Target>
+  <!--<PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Version>1.0.0</Version>
+    <SchemaVersion>1</SchemaVersion>
+
+    <ServiceWorkerAssetsManifest>service-worker-assets.js</ServiceWorkerAssetsManifest>
+  </PropertyGroup>
+
+  --><!-- Debug configuration must disable optimization and enable symbols --><!--
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|AnyCPU'">
+    <Optimize>false</Optimize>
+    <DebugType>full</DebugType>
+    <DebugSymbols>true</DebugSymbols>
+  </PropertyGroup>
+
+  <Target Name="GenerateVersionJson" BeforeTargets="ComputeFilesToPublish">
+    <WriteLinesToFile File="$(ProjectDir)wwwroot\version.json" Lines="{&quot;appVersion&quot;:&quot;$(Version)&quot;,&quot;schemaVersion&quot;:$(SchemaVersion)}" Overwrite="true" />
+  </Target>-->
   
   <ItemGroup>
     <Compile Remove="Connected Services\**" />
@@ -33,8 +58,8 @@
 
   <ItemGroup>
     <Compile Remove="Components\Admina\OrgaCrudPage.razor.cs" />
-    <Compile Remove="Components\Admina\PRubs\CrudUIDemo.razor.cs" />
-    <Compile Remove="Components\Admina\PRubs\Z3CrudUIDemo.razor.cs" />
+    <Compile Remove="Components\PRubs\CrudUIDemo.razor.cs" />
+    <Compile Remove="Components\PRubs\Z3CrudUIDemo.razor.cs" />
     <Compile Remove="Components\Admina\Testaas.cs" />
     <Compile Remove="Components\Identity\GxRegister.cshtml.cs" />
     <Compile Remove="Components\Identity\RegisterSuccess.cshtml.cs" />
@@ -58,6 +83,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Content Remove="Components\Abrou\Z2Gplans.razor" />
     <Content Remove="Components\Abrou\Z2IctGrils.razor" />
     <Content Remove="Components\Abrou\Z2IctPosts.razor" />
     <Content Remove="Components\Abrou\Z2PrubCalc.razor" />
@@ -67,17 +93,17 @@
     <Content Remove="Components\Abrou\Z2RubGrils.razor" />
     <Content Remove="Components\Abrou\Z2RubPosts.razor" />
     <Content Remove="Components\Abrou\ZZRubGrils.razor" />
-    <Content Remove="Components\Admina\Atabls\Gplans.razor" />
-    <Content Remove="Components\Admina\Ictvars\Z2IctGrils.razor" />
-    <Content Remove="Components\Admina\Ictvars\Z2IctPosts.razor" />
+    <Content Remove="Components\Atabls\Gplans.razor" />
+    <Content Remove="Components\Ictvars\Z2IctGrils.razor" />
+    <Content Remove="Components\Ictvars\Z2IctPosts.razor" />
     <Content Remove="Components\Admina\OrgaCrudPage.razor" />
-    <Content Remove="Components\Admina\PRubs\Brou.razor" />
-    <Content Remove="Components\Admina\PRubs\CategMenu.razor" />
-    <Content Remove="Components\Admina\PRubs\CrudUIDemo.razor" />
-    <Content Remove="Components\Admina\PRubs\Z2PrubCalc.razor" />
-    <Content Remove="Components\Admina\PRubs\Z2PrubEchs.razor" />
-    <Content Remove="Components\Admina\PRubs\Z3CategMenu.razor" />
-    <Content Remove="Components\Admina\PRubs\Z3CrudUIDemo.razor" />
+    <Content Remove="Components\PRubs\Brou.razor" />
+    <Content Remove="Components\PRubs\CategMenu.razor" />
+    <Content Remove="Components\PRubs\CrudUIDemo.razor" />
+    <Content Remove="Components\PRubs\Z2PrubCalc.razor" />
+    <Content Remove="Components\PRubs\Z2PrubEchs.razor" />
+    <Content Remove="Components\PRubs\Z3CategMenu.razor" />
+    <Content Remove="Components\PRubs\Z3CrudUIDemo.razor" />
     <Content Remove="Components\Admina\SitesFlow.razor" />
     <Content Remove="Components\EditMenu.razor" />
     <Content Remove="Components\Identity\GxRegister.cshtml" />
@@ -90,12 +116,14 @@
     <Content Remove="Components\TestPage.razor" />
     <Content Remove="Layout\Logadm.razor" />
     <Content Remove="Layout\UsrMenu.razor" />
+    <Content Remove="Layout\ZZMainLayout.razor" />
     <Content Remove="Pages\TiersTest.razor" />
   </ItemGroup>
 
   <ItemGroup>
     <None Remove="Components\Abrou\Z2PrubSaie.razor.css" />
     <None Remove="Formulas\Connected Services\OData Service\OData ServiceCsdl.xml" />
+    <None Remove="Layout\ZZMainLayout.razor.css" />
   </ItemGroup>
   <ItemGroup>
     <None Update="wwwroot\manifest.webmanifest">
@@ -151,6 +179,6 @@
     <ProjectReference Include="..\..\GxSmenu\Gx.Components.csproj" />
   </ItemGroup>
 
-  <ProjectExtensions><VisualStudio><UserProperties /></VisualStudio></ProjectExtensions>
+  <ProjectExtensions><VisualStudio><UserProperties properties_4launchsettings_1json__JsonSchema="" /></VisualStudio></ProjectExtensions>
 
 </Project>

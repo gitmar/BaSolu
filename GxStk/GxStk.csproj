@@ -3,13 +3,26 @@
     <TargetFramework>net9.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
+    <Version>1.0.2</Version>
+    <SchemaVersion>1</SchemaVersion>
     <ServiceWorkerAssetsManifest>service-worker-assets.js</ServiceWorkerAssetsManifest>
-    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|AnyCPU'">
-    <Optimize>true</Optimize>
+    <Optimize>false</Optimize>
+    <DebugType>full</DebugType>
+    <DebugSymbols>true</DebugSymbols>
   </PropertyGroup>
-  
+  <Target Name="GenerateVersionJson" BeforeTargets="ComputeFilesToPublish">
+    <Message Text="Generating version.json with Version=$(Version), SchemaVersion=$(SchemaVersion)" Importance="high" />
+    <WriteLinesToFile
+      File="$(ProjectDir)wwwroot/version.json"
+      Lines='{"appVersion":"$(Version)","schemaVersion":$(SchemaVersion)}'
+      Overwrite="true"
+      Encoding="UTF-8" />
+  </Target>
+  <!--<PropertyGroup>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+  </PropertyGroup>-->
   <ItemGroup>
     <Compile Remove="ClieModels\**" />
     <Compile Remove="Components\Admina\**" />

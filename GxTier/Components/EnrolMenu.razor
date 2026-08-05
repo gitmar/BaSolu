@@ -6,8 +6,7 @@
 @using BlazorBootstrap
 @using Blazored.LocalStorage
 @using GxShared.Helpers
-@using GxTie.Components.Paccu.Valida
-@using GxTie.Components.Paccu.Inscr
+@using GxTie.Components.Paccu
 
 @using GxTie.Services
 @using GxTie.StaticHelpers
@@ -68,26 +67,6 @@ else
                     {
                         @if (_chxMenu == 1 && Ugpe != 0 && Tgpe != 0)
                         {
-                            <ValdTie @ref="mygvld"
-                                    Ugpe="@Ugpe"
-                                     Tgpe="@Tgpe"
-                                     curOrga="@curOrga"
-                                     orgTiers="@orgTiers"
-                                     @bind-NbChanges="_nbChanges"
-                                     _guard="_guard"
-                                     EnsAtrs="@EnsAtrs"
-                                     EnsCats="@EnsCats"
-                                     EnsTbls ="@EnsTbls"
-                                     toChild="@toChild"
-                                     _InODaClient="@_MyODaClient"
-                                     >
-                                <ChildContent>
-                                    <h2 class="child-box">Hello INTEGRATION</h2>
-                                </ChildContent>
-                            </ValdTie>
-                        }
-                        else if (_chxMenu == 2 && Ugpe != 0) // && Tgpe != 0 && ParentOK)
-                        {
                             <InscTiw @ref="myetiw"
                                      Ugpe="@Ugpe"
                                      Tgpe="@Tgpe"
@@ -104,6 +83,25 @@ else
                                     @* <h2 class="child-box">Hello ACCUEIL</h2> *@
                                 </ChildContent>
                             </InscTiw>
+                        }
+                        else if (_chxMenu == 2 && Ugpe != 0) // && Tgpe != 0 && ParentOK)
+                        {
+                            <ValdTie @ref="mygvld"
+                                     Ugpe="@Ugpe"
+                                     Tgpe="@Tgpe"
+                                     curOrga="@curOrga"
+                                     orgTiers="@orgTiers"
+                                     @bind-NbChanges="_nbChanges"
+                                     _guard="_guard"
+                                     EnsAtrs="@EnsAtrs"
+                                     EnsCats="@EnsCats"
+                                     EnsTbls="@EnsTbls"
+                                     toChild="@toChild"
+                                     _InODaClient="@_MyODaClient">
+                                <ChildContent>
+                                    <h2 class="child-box">Hello INTEGRATION</h2>
+                                </ChildContent>
+                            </ValdTie>
                         }
                         else if (_chxMenu == 3)
                         {
@@ -145,7 +143,7 @@ else
     public ChildVars toChild = new();
 
     private ValdTie mygvld = new();
-    private InscTiw myetiw = new();
+    private InscTiw myetiw;
     //private InvOper myginv = new();
 
     //private MyAuthStateProvider _authProvider { get; set; }
@@ -190,8 +188,8 @@ else
     //menus
     public List<GxMenuItem> MenuItems = new()
     {
-        new GxMenuItem { Id = 1, Text = "Integration", Icon = "bi bi-box-arrow-in-down" },
-        new GxMenuItem { Id = 2, Text = "Accueil/Site", Icon = "bi bi-house-door" },
+        new GxMenuItem { Id = 1, Text = "Accueil/Site", Icon = "bi bi-box-arrow-in-down" },
+        new GxMenuItem { Id = 2, Text = "Integration", Icon = "bi bi-house-door" },
         //new GxMenuItem { Id = 3, Text = "Invite/Online", Icon = "bi bi-envelope-paper" },
         //new GxMenuItem { Id = 4, Text = "ATest", Icon = "bi bi-envelope-paper" }
         //new MenuItem { Id = 4, Text = "Mutation", Icon = "bi bi-arrow-repeat" },
@@ -459,7 +457,7 @@ else
         if (firstRender)
         {
             _locationHandler = _navManager.RegisterLocationChangingHandler(OnLocationChangingAsync);
-            //Console.WriteLine("📌 LocationChangingHandler registered");
+            _guard.OnChanges += StateHasChanged;
         }
     }
     private async ValueTask OnLocationChangingAsync(LocationChangingContext context)
@@ -481,7 +479,7 @@ else
 
             if (save)
             {
-                // 🔥 YES: SaveAllChanges() → Navigate  away
+                // 🔥 YES: SaveAllChanges() → Navigate away
                 await SaveAllChanges();
                 Console.WriteLine("💾 Saved - navigating away");
                 _navManager.NavigateTo(context.TargetLocation, forceLoad: false);
@@ -527,12 +525,12 @@ else
         if (_chxMenu == 1) 
         {
             //_guardVisible = true;
-            strComp = $"Integration {gpeLiba}";
+            strComp = $"Accueil/Site {gpeLiba}";
         }
         if (_chxMenu == 2)
         {
             //_guardVisible = true;
-            strComp = $"Accueil/Site  {gpeLiba}";
+            strComp = $"Integration  {gpeLiba}";
         }
         StateHasChanged();
         await Task.Delay(1);
@@ -556,13 +554,6 @@ else
     public void Dispose()
     {
         _locationHandler?.Dispose();
-        // Parent-level cleanup
-        // _guard.DiscardUnconfirmedAdds<Tiewel>();
-        // _guard.DiscardUnconfirmedAdds<TierspDto>();
-        // _guard.DiscardUnconfirmedAdds<Tiwatr>();
-        // _guard.DiscardUnconfirmedAdds<Tieatr>();
-        // _guard.DiscardUnconfirmedAdds<Tiwafl>();
-        // _guard.DiscardUnconfirmedAdds<TieaflDto>();
     }
 
     void NavigateBack()

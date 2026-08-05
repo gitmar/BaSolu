@@ -5,7 +5,8 @@
 @using System.Security.Claims
 @using BlazorBootstrap
 @using Blazored.LocalStorage
-@using GxPilo.Components.Admina.PRubs
+@using GxPilo.Components.PRubs
+@using GxPilo.Components.MRubs
 @using GxPilo.Services
 @using GxPilo.StaticHelpers
 @using GxShared.Helpers
@@ -32,7 +33,7 @@
 {
     <div class="text-center">
         <Spinner Color="SpinnerColor.Primary" Size="SpinnerSize.Large" />
-        <p>PROGRAMMES/Plans Loading...</p>
+        <p>RESULTATS/Modeles Loading...</p>
     </div>
 }
 else
@@ -57,60 +58,20 @@ else
                     @if (_chxMenu != 0 && toChild != null && curOrga != null)
                     {
                         @if (_chxMenu == 1)
-                        { //SAISIES
+                        { //DURABLES
                             <PrubSaie @ref="mygsai"
-                            toMenu="@_chxMenu"
-                            @bind-NbChanges="_nbChanges"
-                            _guard="_guard"
-                            curOrga="@curOrga"
-                            toChild="@toChild"
-                                _InODaClient="@_MyODaClient">
+                                      toMenu="@_chxMenu"
+                                      @bind-NbChanges="_nbChanges"
+                                      _guard="_guard"
+                                      curOrga="@curOrga"
+                                      toChild="@toChild"
+                                      _InODaClient="@_MyODaClient">
                                 <ChildContent>
                                 </ChildContent>
                             </PrubSaie>
                         }
                         else if (_chxMenu == 2)
                         { //CALCULS
-                          <PrubCalc @ref="mygclc"
-                                    toMenu="@_chxMenu"
-                                    @bind-NbChanges="_nbChanges"
-                                    _guard="_guard"
-                                    curOrga="@curOrga"
-                                    toChild="@toChild"
-                                    _InODaClient="@_MyODaClient">
-                              <ChildContent>
-                              </ChildContent>
-                          </PrubCalc>
-                        }
-                        else if (_chxMenu == 3)
-                        { //VENTILATIONS
-                          <PrubVent @ref="mygvnt"
-                                    toMenu="@_chxMenu"
-                                    @bind-NbChanges="_nbChanges"
-                                    _guard="_guard"
-                                    curOrga="@curOrga"
-                                    toChild="@toChild"
-                                    _InODaClient="@_MyODaClient">
-                              <ChildContent>
-                              </ChildContent>
-                        </PrubVent>
-                        }
-                        else if (_chxMenu == 4)
-                        { //ECHEANCIER
-                            <PrubEchs @ref="myrech"
-                                toMenu="@_chxMenu"
-                                @bind-NbChanges="_nbChanges"
-                                _guard="_guard"
-                                curOrga="@curOrga"
-                                toChild="@toChild"
-                                _InODaClient="@_MyODaClient">
-                                <ChildContent>
-                                    <h2 class="child-box">Hello GRILLES</h2>
-                                </ChildContent>
-                            </PrubEchs>
-                        }
-                        else if (_chxMenu == 5)
-                        { //durables rubriques
                             <PrubCalc @ref="mygclc"
                                       toMenu="@_chxMenu"
                                       @bind-NbChanges="_nbChanges"
@@ -119,19 +80,36 @@ else
                                       toChild="@toChild"
                                       _InODaClient="@_MyODaClient">
                                 <ChildContent>
-                                    @* <h2 class="child-box">Hello GRILLES</h2> *@
                                 </ChildContent>
                             </PrubCalc>
-                        } else if (_chxMenu == 6)
-                        {
-                            @* <PTestEchs @ref="mygtest"
-                                        curOrga="curOrga"
-                                       toChild="toChild"
-                                       toMenu="_chxMenu"
-                                       _guard="@_guard"
-                                       @bind-NbChanges="_nbChanges"
-                                       _InODaClient="@_MyODaClient">
-                            </PTestEchs> *@
+                        }
+                        else if (_chxMenu == 3)
+                        { //VENTILATIONS
+                            <PrubVent @ref="mygvnt"
+                                      toMenu="@_chxMenu"
+                                      @bind-NbChanges="_nbChanges"
+                                      _guard="_guard"
+                                      curOrga="@curOrga"
+                                      toChild="@toChild"
+                                      _InODaClient="@_MyODaClient">
+                                <ChildContent>
+                                </ChildContent>
+                            </PrubVent>
+                        }
+                        else if (_chxMenu == 4)
+                        { //FACTURES
+                            <RubFact @ref="mygfac"
+                                     toMenu="@_chxMenu"
+                                     @bind-NbChanges="_nbChanges"
+                                     _guard="_guard"
+                                     curOrga="@curOrga"
+                                     toChild="@toChild"
+                                     _InODaClient="@_MyODaClient">
+                                <ChildContent>
+                                    @* <h2 class="child-box">Hello GRILLES</h2> *@
+                                </ChildContent>
+                            </RubFact>
+                             
                         }
                     }
                 }
@@ -161,9 +139,9 @@ else
 
     private PrubSaie mygsai;
     private PrubCalc mygclc;
-    private PrubVent mygvnt;
-    private PrubEchs myrech; //no 'new'
+    private PrubVent mygvnt; //no 'new'
     private PTestEchs? mygtest; // no 'new'
+    private RubFact mygfac;
     //private CrudUIDemo mycdemo;
 
     //[CascadingParameter]
@@ -193,15 +171,18 @@ else
         StateHasChanged();
     }
     //menus
-    private string strComp = "Prog.SAISIE";
+    private string strComp = "VARIABLES";
     public List<GxMenuItem> MenuItems = new()
     {
-        new GxMenuItem { Id = 1, Text = "Prog.SAISIE", Icon = "bi bi-box-arrow-in-down" },
-        new GxMenuItem { Id = 2, Text = "Prog.CALCUL", Icon = "bi bi-house-door" },
+        new GxMenuItem { Id = 1, Text = "VARIABLES", Icon = "bi bi-box-arrow-in-down" },
+        new GxMenuItem { Id = 2, Text = "CALCULS", Icon = "bi bi-house-door" },
         new GxMenuItem { Id = 3, Text = "VENTILATION", Icon = "bi bi-house-door" },
-        new GxMenuItem { Id = 4, Text = "ECHEANCIER", Icon = "bi bi-arrow-repeat" },
-        new GxMenuItem { Id = 5, Text = "DURABLES", Icon = "bi bi-arrow-repeat" },
-        //new GxMenuItem { Id = 6, Text = "TEST ECHEANCIER", Icon = "bi bi-arrow-repeat" },
+        new GxMenuItem { Id = 4, Text = "FACTURES", Icon = "bi bi-house-door" },
+        // new GxMenuItem { Id = 1, Text = "Prog.SAISIE", Icon = "bi bi-box-arrow-in-down" },
+        // new GxMenuItem { Id = 2, Text = "Prog.CALCUL", Icon = "bi bi-house-door" },
+        // new GxMenuItem { Id = 3, Text = "VENTILATION", Icon = "bi bi-house-door" },
+
+        //new GxMenuItem { Id = 4, Text = "TEST ECHEANCIER", Icon = "bi bi-arrow-repeat" },
     };
     public List<GxGroupe> Groupes = new();
     public Userbag _usrBag = new Userbag();
@@ -216,7 +197,7 @@ else
     //modal management
     private string SidebarStyle = "width: 200px;";
 
-    
+
     protected override async Task OnInitializedAsync()
     {
         isLoading = true;
@@ -322,11 +303,15 @@ else
     private async Task SelMenu(int noM)
     {
         _chxMenu = noM;
-        if (_chxMenu == 1) strComp = $"Prog.SAISIE";
-        if (_chxMenu == 2) strComp = $"Prog.CALCUL";
-        if (_chxMenu == 3) strComp = $"VENTILATION";
-        if (_chxMenu == 4) strComp = $"ECHEANCIER";
-        if (_chxMenu == 5) strComp = $"DURABLES";
+        // if (_chxMenu == 1) strComp = "Prog.SAISIE";
+        // if (_chxMenu == 2) strComp = "Prog.CALCUL";
+        // if (_chxMenu == 3) strComp = "VENTILATION";
+
+        if (_chxMenu == 1) strComp = "VARIABLES";
+        if (_chxMenu == 2) strComp = "CALCULS";
+        if (_chxMenu == 3) strComp = "VENTILATION";
+        if (_chxMenu == 4) strComp = "FACTURES";
+
         //if (_chxMenu == 6) strComp = $"TEST ECHEANCIER";
         //if (_chxMenu == 5) strComp = "Colonnes";
         StateHasChanged();

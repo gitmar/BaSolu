@@ -1,0 +1,646 @@
+﻿@page "/calcpart"
+
+@layout CalcMenu
+
+@using System.Net.Http.Headers
+@using System.Security.Claims
+@using BlazorBootstrap
+@using BlazorDownloadFile
+@using Blazored.LocalStorage
+@using GxFormula.Forasource
+@using GxShared.Helpers
+@using GxShared.Sess
+@using GxShared.Others
+@using GxShared.Interfaces
+@using GxShared.GxDtos
+@using GxShared.GxGuards
+@using GxTie.Services
+@using GxTie.Services.Calculation
+@using GxTie.Components.Opera.RtOpe
+@using GxTie.StaticHelpers
+@using Simple.OData.Client
+@using GxFormula.ForaBizz
+
+@inject MyAuthStateProvider _authprovider
+@inject ILocalStorageService _localStorage
+@inject IBlazorDownloadFileService DownloadService
+@inject HttpClientService _cliemanager
+@inject NavigationManager _navManager
+@inject FormulaEvaluationService _myFService
+@inject FormulaEngine _myFEngine
+@inject ICalculationService _calcService
+@inject ICalculationWorkflow _workflowService
+@inject IJSRuntime _jsRun
+
+<PageTitle>Saisie Offline</PageTitle>
+<div>
+    @Imessage
+</div>
+<div class="my-container">
+    @if (toChild != null)
+    {
+        @ChildContent
+    }
+</div>
+@if (isLoading)
+{
+    <div>Loading...</div>
+}
+else
+{
+    <div class="d-flex align-items-center g-2">
+        <InputRadioGroup @bind-Value="CalcDir">
+            <div class="col-2">
+                <div class="form-check">
+                    <InputRadio class="form-check-input border-1 border-dark" Value="1" />
+                    <label class="form-check-label">All</label>
+                </div>
+            </div>
+            <div class="col-auto">
+                <div class="form-check">
+                    <InputRadio class="form-check-input border-1 border-dark" Value="2" />
+                    <label class="form-check-label">From</label>
+                </div>
+            </div>
+        </InputRadioGroup>
+        <div class="col-auto">
+            <InputSelect @bind-Value="Ditie"
+                         disabled="@(CalcDir != 2)">
+                @foreach (var tie in PreTiers)
+                {
+                    <option value=@tie.Id>@tie.Smatri - @tie.Nom - @tie.Pnom</option>
+                }
+            </InputSelect>
+        </div>
+        <div class="col-auto">
+            <span>To</span>
+        </div>
+        <div class="col-auto">
+            <InputSelect @bind-Value="Fitie"
+                         disabled="@(CalcDir != 2)">
+                @foreach (var tie in PreTiers)
+                {
+                    <option value=@tie.Id>@tie.Smatri - @tie.Nom - @tie.Pnom</option>
+                }
+            </InputSelect>
+        </div>
+    </div>
+    <div class="d-flex align-items-center gap-2">
+        @if (CanCalc)
+        {
+            @if (inSaveMode == PendingSaveMode.Immediate)
+            {
+                @* <Button class="btn btn-sm btn-secondary btn me-2"
+                        @onclick="() => OnRunAsync()">
+                </Button> *@
+            }
+            <Button class="btn btn-warning btn-sm me-2" @onclick="() => OuvrirFiche(CalcDir)">@stopenFich</Button>
+            <Button class="btn btn-sm btn-secondary btnsz me-2"
+                    @onclick="() => OnSaveAsync()">
+                Calculer
+            </Button>
+        }
+    </div>
+    <!--VISIBLE SAISIE-->
+    @if (isFicheVisible)
+    {
+        <!--VISIBLE SAISIE-->
+        @if (isFicheVisible)
+        {
+            <RtC11Fic @ref="myfcalc"
+                      curOrga="@curOrga"
+                      toChild="@toChild"
+                      _curTier="@_curTier"
+                      _EdtODaClient="@_MyODaClient">
+                <ChildContent>
+                    <h2 class="child-box">Fiche de @curProg.Liba</h2>
+                </ChildContent>
+            </RtC11Fic>
+        }
+    }
+   @*  <div class="d-flex gap-2 mb-2">
+        <button class="btn btn-primary btn-sm" @onclick="OnCalculateGroupAsync" disabled="@isBusy">Calculer</button>
+        <button class="btn btn-primary btn-sm" @onclick="OnRunAsync" disabled="@isBusy">Run</button>
+        <button class="btn btn-success btn-sm" @onclick="OnSaveAsync" disabled="@isBusy">Save</button>
+    </div> *@
+
+    <div class="row">
+        <div class="col-md-4">
+            <h6>Resdon</h6>
+            @foreach (var x in Session.Resdons)
+            {
+                <div>@x.Ipln - @x.Aval</div>
+            }
+        </div>
+        <div class="col-md-4">
+            <h6>Resbro</h6>
+            @foreach (var x in Session.Resbros)
+            {
+                <div>@x.Ipln - @x.Aval</div>
+            }
+        </div>
+        <div class="col-md-4">
+            <h6>Resdet</h6>
+            @foreach (var x in Session.Resdets)
+            {
+                <div>@x.Ires - @x.Aval</div>
+            }
+        </div>
+    </div>
+}
+@code {
+
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+    [Parameter] public GxorgaDto curOrga { get; set; } = new();
+    [Parameter] public ChildVars toChild { get; set; } = new();
+    [Parameter] public int ImyDiv { get; set; }
+    [Parameter] public int ChxGpe { get; set; }
+    [Parameter] public List<TierspDto> PreTiers { get; set; } = new();
+    [Parameter] public bool SessOpen { get; set; }
+
+    [Parameter] public IPendingChangesGuard _guard { get; set; }
+    [Parameter] public PendingSaveMode inSaveMode { get; set; }
+
+    [Parameter] public SaieSession? SaieSession { get; set; }
+    [Parameter] public CalcContext? CalcContext { get; set; }
+    [Parameter] public CalcSession? CalcSession { get; set; }
+
+    [Parameter] public PlngenDto curProg { get; set; }
+    [Parameter] public IODataClient _MyODaClient { get; set; }
+    //[Parameter] public int ProgramId { get; set; }
+    //[Parameter] public int TierId { get; set; }
+    [Parameter] public bool IsTestMode { get; set; }
+
+    [Parameter] public int NbChanges { get; set; }
+    [Parameter] public EventCallback<int> NbChangesChanged { get; set; }
+
+    private CalcSession Session { get; set; } = new();
+    // Computed properties
+    private bool CanCalc => SessOpen && CalcDir != 0 && ImyDiv != 0 && ((Ditie != 0 && Fitie != 0) || CalcDir == 1); // && Session.R,
+    private string Imessage = "";
+
+    private RtC11Fic myfcalc;
+    private TierspDto? _curTier;
+    private string stopenFich = "OuvrirFiche";
+
+    private List<CalcSession> CalcSessions { get; set; }
+
+    // Mode / selection
+    private int CalcDir = 1;
+    private int Ditie = 0, Fitie = 0;
+    private int _lgcdu = 3;
+
+    // Loading / UI state
+    private bool isLoading = true;
+    private bool isBusy = false;
+    private bool isAuthenticated = false;
+    private bool isFicheVisible = false;
+    private bool isFilteringEnabled = false;
+
+    protected override Task OnInitializedAsync()
+    {
+        isLoading = true;
+
+        isLoading = false;
+       
+        return Task.CompletedTask;
+    }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (CalcSessions is not null)
+        {
+            // bind local state from CalcSession here
+        }
+    }
+    private async Task OuvrirFiche(int orig)
+    {
+        isFicheVisible = !isFicheVisible;
+        if (isFicheVisible)
+        {
+            stopenFich = "FermerFiche";
+        }
+        else
+        {
+            stopenFich = "OuvrirFiche";
+        }
+    }
+    // private IEnumerable<ProgramLine> GetCalcProgramLines(PlngenDto program)
+    // {
+    //     var lines = ParseProgramLines(program?.Fpsrc);
+    //     return EnrichProgramLines(lines, program.Rubvars, program.Rubfmts);
+    // }
+    
+    private async Task OnCalculateGroupAsync()
+    {
+        var contexts = BuildMassContexts();
+        if (contexts.Count == 0)
+            return;
+
+        isBusy = true;
+        CalcSessions = await _workflowService.CalculateCalcAsync(contexts);
+        isBusy = false;
+    }
+    private List<CalcContext> BuildMassContexts()
+    {
+        var prog = curOrga.Plngens.FirstOrDefault(p => p.Id == curProg.Id);
+        if (prog is null)
+            return new List<CalcContext>();
+
+        return PreTiers
+            .Where(t => t is not null)
+            .Select(t => new CalcContext
+            {
+                CurOrga = curOrga,
+                Program = prog,
+                Tier = t,
+                IsTestMode = false
+            })
+            .ToList();
+    }
+    private async Task RunMassCalcAsync()
+    {
+        var contexts = BuildMassContexts();
+        if (contexts.Count == 0)
+            return;
+
+        foreach (var ctx in contexts)
+        {
+            var session = new CalcSession
+            {
+                Program = ctx.Program,
+                Tier = ctx.Tier
+            };
+
+            session = await _calcService.RunCalcAsync(ctx, session);
+            // await _calcService.SaveCalcAsync(ctx, session);
+        }
+    }
+    private async Task OnRunAsync()
+    {
+        isBusy = true;
+        Session.Program = await LoadProgramAsync(curProg.Id);
+        Session.Tier = await LoadTierAsync(Ditie);
+        Session = await _calcService.RunCalcAsync(CalcContext, CalcSession);
+        isBusy = false;
+    }
+
+    private async Task OnSaveAsync()
+    {
+        // isBusy = true;
+        // await _calcService.SaveCalcAsync(CalcContext, CalcSession);
+        // isBusy = false;
+    }
+
+    private Task<PlngenDto> LoadProgramAsync(int id) => Task.FromResult(new PlngenDto { Id = id });
+    private Task<TierspDto> LoadTierAsync(int id) => Task.FromResult(new TierspDto { Id = id });
+}
+@* @code {
+    private bool isLoading = true;
+    private bool isRunning = false;
+    private bool showDetails = true;
+    private string message = "";
+
+    private bool HasResults => ActdetOutputs.Count > 0 || ActsaieOutputs.Count > 0 || FinalOutputs.Count > 0;
+
+    [Parameter] public PlngenDto? Program { get; set; }
+    [Parameter] public TierspDto? CurrentTier { get; set; }
+    [Parameter] public bool IsTestMode { get; set; }
+
+    [Parameter] public List<InDataLineStream> Inputs { get; set; } = new();
+    [Parameter] public List<OutDataLineStream> Outputs { get; set; } = new();
+
+    private List<ActdetDto> ActdetOutputs { get; set; } = new();
+    private List<ActsaieDto> ActsaieOutputs { get; set; } = new();
+    private List<ResdonDto> ResdonOutputs { get; set; } = new();
+    private List<ResbroDto> ResbroOutputs { get; set; } = new();
+    private List<ResdetDto> ResdetOutputs { get; set; } = new();
+    private List<OutDataLineStream> FinalOutputs { get; set; } = new();
+
+    private string Imessage = "";
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadSessionAsync();
+        isLoading = false;
+    }
+
+// private async Task BuildContextAsync()
+    // {
+    //     var tier = PreTiers.FirstOrDefault(t => t.Id == curTier.Id);
+
+    //     var prog = curOrga.Plngens.FirstOrDefault(p => p.Id == ProgramId);
+
+    //     if (tier != null && prog != null)
+    //     {
+    //         CalcContext = new CalcContext
+    //         {
+    //             CurOrga = curOrga,
+    //             Program = prog,
+    //             Tier = tier,
+    //             IsTestMode = false
+    //         };
+    //     }
+    // }
+    private async Task LoadSessionAsync()
+    {
+        message = "Session loaded.";
+        await Task.CompletedTask;
+    }
+
+    private async Task RunAllAsync()
+    {
+        if (Program is null || CurrentTier is null)
+        {
+            message = "Missing Program or Tier.";
+            return;
+        }
+
+        isRunning = true;
+        message = "Running calculation...";
+        ActdetOutputs.Clear();
+        ActsaieOutputs.Clear();
+        ResdonOutputs.Clear();
+        ResbroOutputs.Clear();
+        ResdetOutputs.Clear();
+        FinalOutputs.Clear();
+
+        try
+        {
+            var evalContext = BuildContext();
+            var rubfmtResult = await EvaluateRubfmtAsync(CurrentTier, evalContext);
+            ActdetOutputs.AddRange(rubfmtResult.Actdet);
+            Outputs.AddRange(rubfmtResult.OutLines);
+
+            var rubvarResult = await EvaluateRubvarAsync(CurrentTier, evalContext, ActdetOutputs);
+            ActsaieOutputs.AddRange(rubvarResult.Actsaie);
+            Outputs.AddRange(rubvarResult.OutLines);
+
+            var programResult = await EvaluateProgramAsync(CurrentTier, evalContext, ActsaieOutputs);
+            ResdetOutputs.AddRange(programResult.Resdet);
+            if (IsTestMode)
+                ResbroOutputs.AddRange(programResult.FinalBro);
+            else
+                ResdonOutputs.AddRange(programResult.FinalDon);
+
+            FinalOutputs.AddRange(programResult.OutLines);
+
+            message = "Calculation completed successfully.";
+        }
+        catch (Exception ex)
+        {
+            message = $"Calculation failed: {ex.Message}";
+        }
+        finally
+        {
+            isRunning = false;
+            StateHasChanged();
+        }
+    }
+
+    private FormulaEvaluationContext BuildContext()
+    {
+        return new FormulaEvaluationContext
+        {
+            Itie = CurrentTier?.Id ?? 0,
+            InputData = Inputs,
+            PreviousLines = Outputs,
+            SessionDate = DateTime.Today
+        };
+    }
+
+    private Task<(List<ActdetDto> Actdet, List<OutDataLineStream> OutLines)> EvaluateRubfmtAsync(
+        TierspDto tier,
+        FormulaEvaluationContext context)
+    {
+        var actdet = new List<ActdetDto>();
+        var outLines = new List<OutDataLineStream>();
+
+        foreach (var rubvar in Program?.Rubvars ?? Enumerable.Empty<RubvarDto>())
+        {
+            foreach (var fmt in rubvar.Rubfmts ?? Enumerable.Empty<RubfmtDto>())
+            {
+                if (fmt == null)
+                    continue;
+
+                var result = EvaluateRubfmtRow(fmt, rubvar, tier, context);
+                if (result is null)
+                    continue;
+
+                var line = new OutDataLineStream
+                {
+                    LineNumber = fmt.Scdfmt,
+                    SourceFormulaId = fmt.Id,
+                    Itie = tier.Id,
+                    Etyp = SourceType.Actdet,
+                    Scdrub = fmt.Scdrub,
+                    Irub = rubvar.Id,
+                    Result = result,
+                    Ddeb = context.SessionDate,
+                    Dfin = context.SessionDate,
+                    Trust = result.Trust,
+                    EvaluationTime = DateTime.Now
+                };
+
+                actdet.Add(new ActdetDto
+                {
+                    Id = fmt.Id,
+                    //Iact = rubvar.Id,
+                    Irub = rubvar.Id,
+                    Scdrub = fmt.Scdfmt,
+                    Ecmount = result.Value,
+                    Evala = result.Raw
+                });
+
+                outLines.Add(line);
+            }
+        }
+
+        return Task.FromResult((actdet, outLines));
+    }
+
+    private Task<(List<ActsaieDto> Actsaie, List<OutDataLineStream> OutLines)> EvaluateRubvarAsync(
+        TierspDto tier,
+        FormulaEvaluationContext context,
+        List<ActdetDto> actdetInputs)
+    {
+        var actsaie = new List<ActsaieDto>();
+        var outLines = new List<OutDataLineStream>();
+
+        foreach (var rubvar in Program?.Rubvars ?? Enumerable.Empty<RubvarDto>())
+        {
+            var result = EvaluateRubvarRow(rubvar, tier, context, actdetInputs);
+            if (result is null)
+                continue;
+
+            var line = new OutDataLineStream
+            {
+                LineNumber = rubvar.LineNumber,
+                SourceFormulaId = rubvar.Id,
+                Itie = tier.Id,
+                Etyp = SourceType.Actsaie,
+                Scdrub = rubvar.Scdrub,
+                Irub = rubvar.Id,
+                Result = result,
+                Ddeb = context.SessionDate,
+                Dfin = context.SessionDate,
+                Trust = result.Trust,
+                EvaluationTime = DateTime.Now
+            };
+
+            actsaie.Add(new ActsaieDto
+            {
+                Id = rubvar.Id,
+                Irub = rubvar.Id,
+                Scdrub = rubvar.Scdrub,
+                Ecmount = result.Value,
+                Evala = result.Raw
+            });
+
+            outLines.Add(line);
+        }
+
+        return Task.FromResult((actsaie, outLines));
+    }
+
+    private Task<(List<ResdonDto> FinalDon, List<ResbroDto> FinalBro, List<ResdetDto> Resdet, List<OutDataLineStream> OutLines)> EvaluateProgramAsync(
+        TierspDto tier,
+        FormulaEvaluationContext context,
+        List<ActsaieDto> actsaieInputs)
+    {
+        var resdon = new List<ResdonDto>();
+        var resbro = new List<ResbroDto>();
+        var resdet = new List<ResdetDto>();
+        var outLines = new List<OutDataLineStream>();
+
+        foreach (var line in Program?.Lines ?? Enumerable.Empty<FormulaLine>())
+        {
+            if (string.IsNullOrWhiteSpace(line.Formula))
+                continue;
+
+            var result = EvaluateProgramLine(line, tier, context, actsaieInputs);
+            if (result is null)
+                continue;
+
+            if (IsTestMode)
+            {
+                resbro.Add(new ResbroDto
+                {
+                    Id = line.Id,
+                    LineNumber = line.LineNumber,
+                    Scdrub = line.Scdrub,
+                    Result = result.Value,
+                    Raw = result.Raw
+                });
+            }
+            else
+            {
+                resdon.Add(new ResdonDto
+                {
+                    Id = line.Id,
+                    LineNumber = line.LineNumber,
+                    Scdrub = line.Scdrub,
+                    Result = result.Value,
+                    Raw = result.Raw
+                });
+            }
+
+            outLines.Add(new OutDataLineStream
+            {
+                LineNumber = line.LineNumber,
+                SourceFormulaId = line.Id,
+                Itie = tier.Id,
+                Etyp = IsTestMode ? TableType.Resbro : TableType.Resdon,
+                Scdrub = line.Scdrub,
+                Irub = line.Irub,
+                Result = result,
+                Ddeb = context.SessionDate,
+                Dfin = context.SessionDate,
+                Trust = result.Trust,
+                EvaluationTime = DateTime.Now
+            });
+
+            if (line.SaveDetail)
+            {
+                resdet.Add(new ResdetDto
+                {
+                    Id = line.Id,
+                    LineNumber = line.LineNumber,
+                    Scdrub = line.Scdrub,
+                    Raw = result.Raw
+                });
+            }
+        }
+
+        return Task.FromResult((resdon, resbro, resdet, outLines));
+    }
+
+    private FormulaResult? EvaluateRubfmtRow(RubfmtDto row, RubvarDto parent, TierspDto tier, FormulaEvaluationContext context)
+    {
+        if (row.Mode == RubfmtMode.Input)
+        {
+            return new FormulaResult
+            {
+                Value = row.InputValue,
+                Raw = row.InputValue?.ToString(),
+                Type = _myFEngine.ResolveType(row.Atyp ?? 0),
+                Trust = TrustLevel.Valid
+            };
+        }
+
+        if (row.Mode == RubfmtMode.Constant)
+        {
+            return new FormulaResult
+            {
+                Value = row.DefaultValue,
+                Raw = row.DefaultValue?.ToString(),
+                Type = _myFEngine.ResolveType(row.Atyp ?? 0),
+                Trust = TrustLevel.Valid
+            };
+        }
+
+        return _myFEngine.EvaluateFormula(row.Ftsrc, context);
+    }
+
+    private FormulaResult? EvaluateRubvarRow(RubvarDto row, TierspDto tier, FormulaEvaluationContext context, List<ActdetDto> actdetInputs)
+    {
+        if (row.IsInputOnly)
+        {
+            return new FormulaResult
+            {
+                Value = row.InputValue,
+                Raw = row.InputValue?.ToString(),
+                Type = _myFEngine.ResolveType(row.Atyp ?? 0),
+                Trust = TrustLevel.Valid
+            };
+        }
+
+        if (row.IsExternalValue)
+        {
+            return new FormulaResult
+            {
+                Value = row.ExternalValue,
+                Raw = row.ExternalValue?.ToString(),
+                Type = _myFEngine.ResolveType(row.Atyp ?? 0),
+                Trust = TrustLevel.Valid
+            };
+        }
+
+        return _myFEngine.EvaluateFormula(row.Frsrc, context);
+    }
+
+    private FormulaResult? EvaluateProgramLine(FormulaLine line, TierspDto tier, FormulaEvaluationContext context, List<ActsaieDto> actsaieInputs)
+    {
+        return _myFEngine.EvaluateFormula(line.Formula, context);
+    }
+
+    private Task SaveResultsAsync()
+    {
+        message = "Results saved.";
+        return Task.CompletedTask;
+    }
+
+    private void ToggleDetails()
+    {
+        showDetails = !showDetails;
+    }
+} *@

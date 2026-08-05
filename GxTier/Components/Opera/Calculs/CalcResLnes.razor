@@ -3,12 +3,9 @@
 
 @using System.Net.Http.Headers
 @using System.Security.Claims
-@using System.Text.Json
 @using BlazorBootstrap
 @using BlazorDownloadFile
 @using Blazored.LocalStorage
-@using GxFormula.ForaContext
-@using GxFormula.ForaModels
 @using GxShared.Helpers
 @using GxShared.Sess
 @using GxShared.Others
@@ -18,12 +15,15 @@
 @using GxTie.Components.Opera.RtOpe
 @using GxTie.StaticHelpers
 @using Simple.OData.Client
+@using GxFormula.Forasource
+@using GxFormula.ForaBizz
 
 @inject MyAuthStateProvider _authprovider
 @inject ILocalStorageService _localStorage
 @inject IBlazorDownloadFileService DownloadService
 @inject HttpClientService _cliemanager
-@inject FormulaEvaluationService FormulaService
+@inject FormulaEvaluationService _myFService
+@inject FormulaEngine _myFEngine
 @inject IJSRuntime _jsRun
 
 <PageTitle>Saisie Offline</PageTitle>
@@ -46,88 +46,60 @@
 }
 else
 {
-    @if (SessOpen)
-    {
-        @* <div class="input-group">
-            <label>Programme :</label>
-            <div class="text-center">
-                <InputSelect id="pgrId" @bind-Value="ImyProg">
-                    <option value=0>progr?</option>
-                    @foreach (var pgr in LsProgs)
-                    {
-                        <option value=@pgr.Id>@pgr.Liba</option>
-                    }
-                </InputSelect>
-            </div>
-
-            <label for="TypDiv">Service :</label>
-            <div>
-                <InputSelect id="TypDiv" @bind-Value="ImyDiv">
-                    <option value=0>Aucun</option>
-                    @foreach (var divo in _lsDivs)
-                    {
-                        <option value=@divo.Id>@divo.Abg-@divo.Liba</option>
-                    }
-                </InputSelect>
-            </div>
-        </div> *@
-        <div class="input-group mt-1">
-            @if (ProgOpen)
-            {
-                <div class="text-center">
-                    <InputSelect id="optId" @bind-Value="ImyOpti">
-                        <option value=0>aucun</option>
-                        @foreach (var uf in LsFixes.Where(xf => xf.Gvars == 33 && xf.Itb == 7 && xf.Gp1 == 5))
-                        {
-                            <option value=@uf.Elea>par @uf.Liba</option>
-                        }
-                    </InputSelect>
+    <div class="d-flex align-items-center g-2">
+        <InputRadioGroup @bind-Value="CalcDir">
+            <div class="col-2">
+                <div class="form-check">
+                    <InputRadio class="form-check-input border-1 border-dark" Value="1" />
+                    <label class="form-check-label">All</label>
                 </div>
-            }
-        </div>
-    <div class="input-group mt-1">
-        @if (CalcOpen)
-        {
-            <Button class="btn btn-sm btn-secondary btnsz"
-                    @onclick="() => CalcAndSaveAsync()">
-                Calculer
-            </Button>
-            @if (CalcMarked && autoSave)
-            {
-                <Button class="btn btn-sm btn-secondary btnsz"
-                        @onclick="() => SaveResultAsync()">
-                    Enregistrer
-                </Button>
-            }
-            <span>&nbsp;&nbsp;</span>
-            <Button class="btn btn-warning btn-sm" @onclick="() => OuvrirFiche(ImyOpti)">@stopenFich</Button>
-        }
-    </div>
-    }
-    @if (ProgOpen)
-    {
-        @if (ImyOpti == 2)
-        {
-            <div class="input-group">
-            <label>de :</label>
-            <InputSelect @bind-Value="IdebTier">
-                <option value="">tiers?</option>
+            </div>
+            <div class="col-auto">
+                <div class="form-check">
+                    <InputRadio class="form-check-input border-1 border-dark" Value="2" />
+                    <label class="form-check-label">From</label>
+                </div>
+            </div>
+        </InputRadioGroup>
+        <div class="col-auto">
+            <InputSelect @bind-Value="IdebTier"
+                         disabled="@(CalcDir != 2)">
                 @foreach (var tie in PreTiers)
                 {
                     <option value=@tie.Smatri>@tie.Smatri - @tie.Nom - @tie.Pnom</option>
                 }
             </InputSelect>
-                <label>a :</label>
-                <InputSelect @bind-Value="IfinTier">
-                    <option value="">tiers?</option>
-                    @foreach (var tie in PreTiers)
-                    {
-                        <option value=@tie.Smatri>@tie.Smatri - @tie.Nom - @tie.Pnom</option>
-                    }
-                </InputSelect>
-            </div>
-        }
-    }
+        </div>
+        <div class="col-auto">
+            <span>To</span>
+        </div>
+        <div class="col-auto">
+            <InputSelect @bind-Value="IfinTier"
+                         disabled="@(CalcDir != 2)">
+                @foreach (var tie in PreTiers)
+                {
+                    <option value=@tie.Smatri>@tie.Smatri - @tie.Nom - @tie.Pnom</option>
+                }
+            </InputSelect>
+        </div>
+    </div>
+    <div class="d-flex align-items-center g-2">
+            @if (CanCalc)
+            {
+                <Button class="btn btn-sm btn-secondary btnsz me-2"
+                        @onclick="() => CalcDraftAsync()">
+                    Calculer
+                </Button>
+                @if (CalcMarked && autoSave)
+                {
+                    <Button class="btn btn-sm btn-secondary btn me-2"
+                            @onclick="() => SaveResultAsync()">
+                        
+                    </Button>
+                }
+                <Button class="btn btn-warning btn-sm me-2" @onclick="() => OuvrirFiche(CalcDir)">@stopenFich</Button>
+            }
+    </div>
 }
 <!--Actsaie Portrait-->
 @if (!isLoading)
@@ -150,50 +122,42 @@ else
         }
 }
     <div class="d-flex flex-row">
-        <EditForm Context="invform" Model="_usrBag">
-            <DataAnnotationsValidator />
-            <ValidationSummary />
-            <div class="p-1" style="max-height: 400px; overflow-y: auto;">
-                <div class="p-1" style="max-height: 400px; overflow-y: auto;">
-                    <Grid TItem="OutDataLineStream"
-                          Data="@CalcLines"
+       <div class="p-1" style="max-height: 400px; overflow-y: auto;">
+                    <Grid TItem="CalcGridRow"
+                          Data="@CalcGridRows"
                           AllowFiltering="@isFilteringEnabled"
                           AllowPaging="true"
                           Responsive="true">
                         <GridColumns>
-                            <GridColumn TItem="OutDataLineStream" HeaderText="No">
+                        <GridColumn TItem="CalcGridRow" HeaderText="No">
                                 <ChildContent Context="item">@item.Id</ChildContent>
                             </GridColumn>
-                            <GridColumn TItem="OutDataLineStream" HeaderText="Code" IsVisible="@(ImyOpti == 1)">
-                                <ChildContent Context="item">@item.LineNumber</ChildContent>
-                            </GridColumn>
-                            <GridColumn TItem="OutDataLineStream" HeaderText="Designation" IsVisible="@(ImyOpti == 1)">
-                                <ChildContent Context="item">@item.Liba</ChildContent>
-                            </GridColumn>
-                            <GridColumn TItem="OutDataLineStream" HeaderText="Matricule" IsVisible="@(ImyOpti == 2)">
+                        <GridColumn TItem="CalcGridRow" HeaderText="Matricule">
+                                @* IsVisible="@(ImyOpti == 2)"> *@
                                 <ChildContent Context="item">@item.Smatri</ChildContent>
                             </GridColumn>
-                            <GridColumn TItem="OutDataLineStream" HeaderText="Nom" IsVisible="@(ImyOpti == 2)">
+                        <GridColumn TItem="CalcGridRow" HeaderText="Nom">
+                                @* IsVisible="@(ImyOpti == 2)"> *@
                                 <ChildContent Context="item">@item.Nom</ChildContent>
                             </GridColumn>
-                            <GridColumn TItem="OutDataLineStream" HeaderText="PNom" IsVisible="@(ImyOpti == 2)">
+                            <GridColumn TItem="CalcGridRow" HeaderText="PNom">
+                                @* IsVisible="@(ImyOpti == 2)"> *@
                                 <ChildContent Context="item">@item.Pnom</ChildContent>
                             </GridColumn>
-                            <GridColumn TItem="OutDataLineStream" HeaderText="MtCalcule">
+                            <GridColumn TItem="CalcGridRow" HeaderText="Code"> @* IsVisible="@(ImyOpti == 1)"> *@
+                                <ChildContent Context="item">@item.LineNumber</ChildContent>
+                            </GridColumn>
+                            <GridColumn TItem="CalcGridRow" HeaderText="Designation"> @* IsVisible="@(ImyOpti == 1)"> *@
+                                <ChildContent Context="item">@item.Liba</ChildContent>
+                            </GridColumn>
+                            <GridColumn TItem="CalcGridRow" HeaderText="MtCalcule">
                                 <ChildContent Context="item">
                                     @item.Result
-                                </ChildContent>
-                            </GridColumn>
-                            <GridColumn TItem="OutDataLineStream" HeaderText="MtSaisie">
-                                <ChildContent Context="item">
-                                    <InputText @bind-Value="item.Smatri" />
                                 </ChildContent>
                             </GridColumn>
                         </GridColumns>
                     </Grid>
                 </div>
-            </div>
-        </EditForm>
     </div>
 }
 <style>
@@ -203,8 +167,6 @@ else
 </style>
 @code {
     private bool isLoading = true;
-    //private bool notEnable => !allEnable;
-    //private bool enrEnable = false;
     private bool isEditing = false;
     private bool isFicheVisible = false;
     private bool FinPreparer = false;
@@ -219,9 +181,13 @@ else
     [Parameter]
     public ChildVars toChild { get; set; }
     [Parameter]
-    public int ImyDiv  { get; set; }
+    public int ImyDiv { get; set; }
     [Parameter]
     public int ChxGpe { get; set; }
+    [Parameter]
+    public bool SessOpen { get; set; }
+    [Parameter]
+    public List<TierspDto> PreTiers { get; set; }
     //guard
     [Parameter]
     public IPendingChangesGuard _guard { get; set; }
@@ -231,13 +197,6 @@ else
     public int NbChanges { get; set; }
     [Parameter]
     public EventCallback<int> NbChangesChanged { get; set; }  // 🔥 CRITICAL
-    //[Parameter]
-    //public MyMenuVars froMenu { get; set; }
-
-    //[CascadingParameter(Name = "SaieLayout")]
-    //public SaieLayout Mainsaie { get; set; }
-    //[CascadingParameter]
-    //public MyODataContext _gODContext { get; set; }    //Authentication
     private bool isAuthenticated { get; set; }
     private ClaimsPrincipal authUser;
     private IEnumerable<Claim> claims = Enumerable.Empty<Claim>();
@@ -248,6 +207,7 @@ else
     private RtC11Fic myfcalc;
 
     public List<FormulaLine> FormulaLines { get; set; } = new();
+    private List<FormulaLine> _templateLines = new();
     public List<FormulaEvaluationOutcome> Outcomes { get; set; } = new();
     private FormulaEvaluationService _calcService;
 
@@ -259,70 +219,46 @@ else
     private List<ActsaieDto> _tieActs = new();
     private List<ActsaieDto> _lsmActs = new();
 
-    //private Tiersp _curTier = new();
     private List<TierspDto> EnsTiers = new();
-    private List<PlngenDto> EnsProgs = new();
-    private List<RubvarDto> EnsRubrs = new();
     private List<RubhieDto> _lsDivs = new();
 
-    //curData for calculate
-    //List<Actsaie> curDaAct => _curTier.Actsaies.ToList();
-    //List<Resdon> curDaDon => _curTier.Resdons.ToList();
-    //List<Actdet> curActDet => _curTier.Actsaies.SelectMany(a => a.Actdets).ToList();
-    //List<Resdet> curResDet => _curTier.Resdons.SelectMany(r => r.Resdets).ToList();
-
-    //private Actsaie curAct = new Actsaie();
     private PlngenDto curProg = new PlngenDto();
 
-    //private Actsaie _curmAct = new Actsaie();
-    //private Actdet _curmDet = new Actdet();
-    //private List<Actsaie> LsDaActs = new();
-    //private List<Actdet> LsDaDets = new();
     private bool isFilteringEnabled = false;
-    private RubvarDto _curRub = new();
-    //private GsesioDto _curSes = new();
-    private PlngenDto selPgr = new();
-    private RubvarDto selRub = new();
     private RubfmtDto selFmt = new();
     private DateTime _sesDat;
 
     private List<Gpfixe> LsFixes = new List<Gpfixe>();
     private List<Gpvar> LsVars = new();
     private List<Gplan> LsProgs = new();
-    private Gpvar inExo = new Gpvar();
-    private Gpvar inSes = new Gpvar();
+    private Gpvar inExo = new();
+    private Gsedat inSes = new();
 
     private bool success, errors, isSubmitting = false;
     private string[] errorList = [];
     private string rolInv = "", userName = "", isatmsg = "";
 
-    private List<TierspDto> PreTiers = new();
-    // => EnsTiers.Where(t => t.Idhie == ImyDiv)
-    //     .OrderByDescending(um => um.Smatri)
-    //     .ToList();
     private List<TierspDto> CalcTiers = new();
 
-    //private SaieModel saieModel = new SaieModel();
     private ReqgnModel qryModel = new ReqgnModel();
 
-    //private bool isExoSaieOpen => toChild.MainOptsOk; //exo et site
-    //private bool isSesSaieOpen => toChild.MainOptsOk && ImyProg != 0 && ImyOpti != 0;
     //Options Calculation workflow
     private bool CalcMarked = false;
     private bool SaveMarked = false;
     private bool autoSave = false;
-    private bool SessOpen => ChxGpe != 0; //=> inExo.Eta == 1 && inSes.Eta == 1;
-    private bool ProgOpen => SessOpen && ImyProg != 0 && ImyDiv != 0;
-    private bool SiTiers => !String.IsNullOrEmpty(IdebTier) && !String.IsNullOrEmpty(IfinTier);
-    // Meme pour option 1 (tous) IDebTier et IFinTier doivent etre fournis
-    private bool CalcOpen => ProgOpen && SiTiers;
+    private int CalcDir = 1;
     bool ShowProgress = false;
     int ProgressValue = 0;
-    //->can Edit can Prep Calc
-    //private bool CanCalc => CalcOpen && FinPreparer == true;
-    //->can Submit calc
-    //private bool CanSave => CanCalc && CalcMarked;
-    //-->can Submit save
+
+    private bool CanCalc => SessOpen && CalcDir != 0 && (ImyTier != 0 || ImyDiv == -1);
+
+    enum CdirMode
+    {
+        All,
+        Range
+    }
+    private bool SiTiers => !String.IsNullOrEmpty(IdebTier) && !String.IsNullOrEmpty(IfinTier);
+
     //CRUD ROW ADDING
     private Guid? EditingActRowGuid; //pmodal
     private bool IsActAdding(PlngenDto item) => EditingActRowGuid == item.Rowguid;
@@ -344,7 +280,7 @@ else
     private int itTie = 0;
     private int itPgr = 0;
     private int itGpe = 0;
-    private int ImyOpti = 0; // par tiers
+    //private int ImyOpti = 0; //1tous2dea
     //matricules str
     private string IdebTier = "", IfinTier = "";
     //variables PLANS
@@ -355,21 +291,17 @@ else
     bool adingAct = false;
 
     ActdetDto edADet = new();
-    //variables Man
     ActsaieDto? draftAct = null;
     ActsaieDto? editingAct = null;
-    //bool yaEuActModif = false;
-    //private IRubvarResolver _rubvarResolver;
-    //variables Lne
     ActdetDto? draftDet = null;
     ActdetDto? editingDet = null;
-    bool yaEuDetModif = false;
+
     List<FormulaLine> MissionLines = new();
+    List<OutDataLineStream> CalcLines = new();
+    List<CalcGridRow> CalcGridRows = new();
     List<InDataLineStream> DataLines = new();
     List<InDataLineStream> ResultLines = new();
-
-    List<OutDataLineStream> CalcLines = new();
-
+    
     protected override async Task OnInitializedAsync()
     {
         CalcLines = new();
@@ -387,17 +319,11 @@ else
         LsProgs = toChild.LsPlans.Where(pl => pl.Ptyp == 5).ToList();
         //exo-session:saisie-Otyp1saisie
         LsVars = toChild.LsVars;
-        inExo = LsVars.Where(v => v.Gvars == 11 && v.Itb == 1 && v.Otyp == 1 && v.Eta == 1).FirstOrDefault();
-        inSes = LsVars.Where(v => v.Gvars == 12 && v.Itb == 1 && v.Eta == 1).FirstOrDefault();
+        inExo = toChild.inExo;
+        inSes = toChild.inSes;
         Console.WriteLine($"Programmes en cours : {LsProgs.Count}");
-        //LsProgs = toChild.LsProgs;
-        //LsSites = toChild.LsSites
-        //indata
         EnsTiers = curOrga.Tiersps.ToList();
         Console.WriteLine($"ACTSAIE Active {EnsTiers.Count()}");
-        //EnsSess = curOrga.Gsesios.Where(us => us.Styp == 3 && us.Sicur == 1 && us.Sieta == 1).ToList(); //saisies ouversts
-        //_curTier = EnsTiers.FirstOrDefault();
-        EnsProgs = curOrga.Plngens.Where(pl => pl.Ptyp == 5).ToList(); //saisies
         _lgcdu = 3;
         var noslims = LsVars.Where(uv => uv.Idhie == 0 && uv.Gvars == 21 && uv.Itb == 1 && uv.Elea == 1);
         if (noslims.Any()) _lgcdu = noslims.FirstOrDefault().Ivala;
@@ -414,30 +340,26 @@ else
         opnomp = _usrBag.Usprof.Ufulnom;
         isLoading = false;
     }
-    private void GetSelectedProg(Gplan bropln)
+    private async Task OuvrirFiche(int orig)
     {
-        //Console.WriteLine($"ICI PROGRAMMES : {EnsProgs.Count()}");
-        curProg = new();
-        EnsRubrs = new();
-        if (EnsProgs.Any())
+        isFicheVisible = !isFicheVisible;
+        if (isFicheVisible)
         {
-            curProg = EnsProgs.Where(pl => pl.Id == bropln.Id).FirstOrDefault();
-            if (curProg != null)
-            {
-                //Console.WriteLine($"ICI prog Id : {curProg.Idorg}");
-                EnsRubrs = curProg.Rubvars.ToList();
-                var curDivpln = curOrga.Plngens.Where(pl => pl.Id == curProg.Plsdiv).FirstOrDefault();
-                if (curDivpln != null)
-                {
-                    _lsDivs = curDivpln.Rubhies.Where(ud => ud.Sidiv == 1).ToList();
-                }
-                else
-                {
-                    _lsDivs = new();
-                }
-            }
+            stopenFich = "FermerFiche";
         }
-        //Console.WriteLine($"ICI RUBRIQUES : {curProg.Rubvars.Count()}");
+        else
+        {
+            stopenFich = "OuvrirFiche";
+        }
+    }
+    private async Task PreparerCalc()
+    {
+        trierTiers();
+        LoadTemplateLines(curProg.Fpsrc, curProg.Id);
+        foreach (var rub in curProg.Rubvars)
+        {
+            LoadTemplateLines(rub.Frsrc, rub.Id);
+        }
     }
     private void trierTiers()
     {
@@ -455,123 +377,172 @@ else
         }
         Console.WriteLine("TRIE Fini");
     }
-    private async Task OuvrirFiche(int orig)
+   
+    private void LoadTemplateLines(string infpscr, int orig)
     {
-        isFicheVisible = !isFicheVisible;
-        if (isFicheVisible)
+        _templateLines = FormulaLoader.LoadFormulaSet(infpscr, orig);
+    }
+
+    private List<InDataLineStream> BuildInputsForTier(TierspDto tie)
+    {
+        var inputs = new List<InDataLineStream>();
+
+        foreach (var act in tie.Actsaies)
         {
-            stopenFich = "FermerFiche";
+            LineType vtyp = LineType.String;
+
+            inputs.Add(new InDataLineStream
+            {
+                Itie = tie.Id,
+                Etyp = TableType.Actsaie,
+                Scdrub = act.Scdrub,
+                Irub = act.Irub ?? 0,
+                Vtyp = _myFEngine.ResolveType(act.Atyp ?? 0),
+                Result = new FormulaResult
+                {
+                    Value = act.Ecmount,
+                    Raw = act.Ecmount?.ToString(),
+                    Type = _myFEngine.ResolveType(act.Atyp ?? 0),
+                }
+            });
         }
-        else
+
+        foreach (var res in tie.Resdons)
         {
-            stopenFich = "OuvrirFiche";
+            inputs.Add(new InDataLineStream
+            {
+                Itie = tie.Id,
+                Etyp = TableType.Resdon,
+                Scdrub = res.Scdrub,
+                Irub = res.Irub ?? 0,
+                Vtyp = _myFEngine.ResolveType(res.Atyp ?? 0),
+                Result = new FormulaResult
+                {
+                    Value = res.Evala,
+                    Raw = res.Evala?.ToString(),
+                    Type = _myFEngine.ResolveType(res.Atyp ?? 0)
+                }
+            });
         }
+
+        return inputs;
     }
-    private void SelTypGpe(int chx)
+    private FormulaSession CreateSession(TierspDto tie)
     {
-        IdebTier = ""; IfinTier = ""; //chx=0ou2
-        if (chx == 1)
-        { //tous //CalcTiers est trie par matricule desc
-            //le 1er
-            var indtie = PreTiers.FirstOrDefault();
-            if (indtie != null) IdebTier = indtie.Smatri;
-            indtie = PreTiers.LastOrDefault();
-            if (indtie != null) IfinTier = indtie.Smatri;
-        }
+        return new FormulaSession
+        {
+            Itie = tie.Id,
+            SessionDate = DateTime.Today,
+            Inputs = BuildInputsForTier(tie),
+            Lines = new List<FormulaLine>(_templateLines)
+        };
     }
-    
-    private void EvaluateAll()
+    private ResCalcModel BuildResCalcModel()
     {
-        Outcomes = FormulaLines
-            .Select(line => FormulaService.EvaluateWithLog(line))
-            .ToList();
+        return new ResCalcModel
+        {
+            Opetyp = 1,
+            Sireel = curProg.Tovue,
+            Idorg = curOrga.Idorg,
+            Idpln = curProg.Id,
+            Vperi = inSes.Abg,
+            Eperi = inExo.Abg,
+            Datope = DateTime.Now,
+            Gseq = 1,
+            OutLines = CalcLines
+        };
     }
-    private async Task CalcAndSaveAsync()
+
+    private List<CalcGridRow> BuildCalcGridRows(IEnumerable<OutDataLineStream> outputs)
+    {
+        return outputs.Select(x => new CalcGridRow
+        {
+            Id = x.Id,
+            Itie = x.Itie,
+            LineNumber = x.LineNumber,
+            Scdrub = x.Scdrub,
+            Irub = x.Irub,
+
+            Nom = PreTiers.FirstOrDefault(t => t.Id == x.Itie)?.Nom,
+            Pnom = PreTiers.FirstOrDefault(t => t.Id == x.Itie)?.Pnom,
+            Smatri = PreTiers.FirstOrDefault(t => t.Id == x.Itie)?.Smatri,
+
+            Liba = curProg.Rubvars.FirstOrDefault(r => r.Id == x.Irub)?.Liba,
+            Abg = curProg.Rubvars.FirstOrDefault(r => r.Id == x.Irub)?.Abg,
+
+            Result = x.Result?.Raw
+        }).ToList();
+    }
+    private async Task CalcDraftAsync()
     {
         CalcLines.Clear();
+
         var filteredTiers = PreTiers
             .Where(t =>
                 string.Compare(t.Smatri, IdebTier, StringComparison.OrdinalIgnoreCase) >= 0 &&
                 string.Compare(t.Smatri, IfinTier, StringComparison.OrdinalIgnoreCase) <= 0)
             .ToList();
+
         ShowProgress = true;
         ProgressValue = 0;
+
         int total = filteredTiers.Count;
         int index = 0;
         int batchSize = 20;
+
         foreach (var tie in filteredTiers)
         {
             index++;
-            if (index% batchSize == 0 || index == filteredTiers.Count-1)
+
+            if (index % batchSize == 0 || index == total)
             {
-                ProgressValue = (int)((index + 1) / (double)filteredTiers.Count * 100);
+                ProgressValue = (int)((index / (double)total) * 100);
                 StateHasChanged();
             }
-            var session = new PersonEvaluationSession(tie.Id, DateTime.Today);
-            session.HydrateInputs(tie.Actsaies, tie.Resdons);
-            session.LoadFormulaLines(MissionLines);
-            session.Evaluate();
-            CalcLines.AddRange(session.Outputs); // Collect results
-            StateHasChanged(); // Update UI
-            session.Clear();
+
+            var session = CreateSession(tie);
+            var evaluator = new FormulaSessionEvaluator(session);
+            await evaluator.EvaluateAllAsync();
+            CalcLines.AddRange(session.Outputs);
+            CalcGridRows = BuildCalcGridRows(CalcLines);
+            StateHasChanged();
         }
+
         if (autoSave)
         {
-            var request = new ResCalcModel
-                {
-                    Opetyp = 1, // saisie
-                    Sireel = curProg.Tovue,
-                    Idorg = curOrga.Idorg,
-                    Idpln = curProg.Id,
-                    Vperi = inSes.Abg,
-                    Eperi = inExo.Abg,
-                    Datope = DateTime.Now,
-                    Gseq = 1,
-                    OutLines = CalcLines
-                };
-            await _cliemanager.SendRequestAsync(
-                "AuthClient",
-                HttpMethod.Post,
-                "lgauth/savcalcresu",
-            request);
+            var request = BuildResCalcModel();
+            await _cliemanager.SendRequestAsync("AuthClient", HttpMethod.Post, "lgauth/savcalcresu", request);
+
             SaveMarked = true;
             ShowSuccess("Résultats enregistrés avec succès.");
-            StateHasChanged();
-        } else
+        }
+        else
         {
             CalcMarked = true;
         }
     }
+
     private async Task SaveResultAsync()
     {
-        if (CalcMarked)
+        if (!CalcMarked)
+            return;
+
+        try
         {
-            var request = new ResCalcModel
-                {
-                    Opetyp = 1, // saisie
-                    Sireel = curProg.Tovue,
-                    Idorg = curOrga.Idorg,
-                    Idpln = curProg.Id,
-                    Vperi = inSes.Abg,
-                    Eperi = inExo.Abg,
-                    Datope = DateTime.Now,
-                    Gseq = 1,
-                    OutLines = CalcLines
-                };
-            try
-            {
-                await _cliemanager.SendRequestAsync("AuthClient", 
-                    HttpMethod.Post, 
-                    "lgauth/savcalcresu",
-                    request);
-                SaveMarked = true;
-                ShowSuccess("Résultats enregistrés avec succès.");
-                CalcMarked = false;
-            }
-            catch (Exception ex)
-            {
-                ShowError("Échec de l'enregistrement : " + ex.Message);
-            } 
+            var request = BuildResCalcModel();
+            await _cliemanager.SendRequestAsync(
+                "AuthClient",
+                HttpMethod.Post,
+                "lgauth/savcalcresu",
+                request);
+
+            SaveMarked = true;
+            ShowSuccess("Résultats enregistrés avec succès.");
+            CalcMarked = false;
+        }
+        catch (Exception ex)
+        {
+            ShowError("Échec de l'enregistrement : " + ex.Message);
         }
     }
     private void ShowError(string message)
@@ -599,4 +570,463 @@ else
     {
         isFilteringEnabled = !isFilteringEnabled;
     }
+    // private void EvaluateAll()
+    // {
+    //     Outcomes = FormulaLines
+    //         .Select(line => FormulaService.EvaluateWithLog(line))
+    //         .ToList();
+    // }
+    // private async Task CalcAndSaveAsync()
+    // {
+    //     CalcLines.Clear();
+    //     var filteredTiers = PreTiers
+    //         .Where(t =>
+    //             string.Compare(t.Smatri, IdebTier, StringComparison.OrdinalIgnoreCase) >= 0 &&
+    //             string.Compare(t.Smatri, IfinTier, StringComparison.OrdinalIgnoreCase) <= 0)
+    //         .ToList();
+    //     ShowProgress = true;
+    //     ProgressValue = 0;
+    //     int total = filteredTiers.Count;
+    //     int index = 0;
+    //     int batchSize = 20;
+    //     foreach (var tie in filteredTiers)
+    //     {
+    //         index++;
+    //         if (index% batchSize == 0 || index == filteredTiers.Count-1)
+    //         {
+    //             ProgressValue = (int)((index + 1) / (double)filteredTiers.Count * 100);
+    //             StateHasChanged();
+    //         }
+    //         var session = new PersonEvaluationSession(tie.Id, DateTime.Today);
+    //         session.HydrateInputs(tie.Actsaies, tie.Resdons);
+    //         session.LoadFormulaLines(MissionLines);
+    //         session.Evaluate();
+    //         CalcLines.AddRange(session.Outputs); // Collect results
+    //         StateHasChanged(); // Update UI
+    //         session.Clear();
+    //     }
+    //     if (autoSave)
+    //     {
+    //         var request = new ResCalcModel
+    //             {
+    //                 Opetyp = 1, // saisie
+    //                 Sireel = curProg.Tovue,
+    //                 Idorg = curOrga.Idorg,
+    //                 Idpln = curProg.Id,
+    //                 Vperi = inSes.Abg,
+    //                 Eperi = inExo.Abg,
+    //                 Datope = DateTime.Now,
+    //                 Gseq = 1,
+    //                 OutLines = CalcLines
+    //             };
+    //         await _cliemanager.SendRequestAsync(
+    //             "AuthClient",
+    //             HttpMethod.Post,
+    //             "lgauth/savcalcresu",
+    //         request);
+    //         SaveMarked = true;
+    //         ShowSuccess("Résultats enregistrés avec succès.");
+    //         StateHasChanged();
+    //     } else
+    //     {
+    //         CalcMarked = true;
+    //     }
+    // }
+    //=========
+    // private bool isLoading = true;
+    // private bool isEditing = false;
+    // private bool isFicheVisible = false;
+    // private bool FinPreparer = false;
+    // private bool Yames = false;
+    // private string Imessage = "", stopenFich = "OuvrirFiche";
+    // [Parameter]
+    // public RenderFragment ChildContent { get; set; }
+    // [Parameter]
+    // public IODataClient _InODaClient { get; set; }
+    // [Parameter]
+    // public GxorgaDto curOrga { get; set; }
+    // [Parameter]
+    // public ChildVars toChild { get; set; }
+    // [Parameter]
+    // public int ImyDiv  { get; set; }
+    // [Parameter]
+    // public int ChxGpe { get; set; }
+    // [Parameter]
+    // public bool SessOpen { get; set; }
+    // [Parameter]
+    // public List<TierspDto> PreTiers { get; set; }
+    // //guard
+    // [Parameter]
+    // public IPendingChangesGuard _guard { get; set; }
+    // [Parameter]
+    // public EventCallback<PendingState> OnPendingStateChanged { get; set; }
+    // [Parameter]
+    // public int NbChanges { get; set; }
+    // [Parameter]
+    // public EventCallback<int> NbChangesChanged { get; set; }  // 🔥 CRITICAL
+    // private bool isAuthenticated { get; set; }
+    // private ClaimsPrincipal authUser;
+    // private IEnumerable<Claim> claims = Enumerable.Empty<Claim>();
+
+    // [CascadingParameter]
+    // private Task<AuthenticationState>? AuthState { get; set; }
+
+    // private RtC11Fic myfcalc;
+
+    // public List<FormulaLine> FormulaLines { get; set; } = new();
+    // private List<FormulaLine> _templateLines = new();
+    // public List<FormulaEvaluationOutcome> Outcomes { get; set; } = new();
+    // private FormulaEvaluationService _calcService;
+
+    // //private HttpClient _apiClient;
+    // public string _UserId = "";
+    // public int _UorgId = 0, _lgcdu = 0;
+
+    // private Userbag _usrBag = new Userbag();
+    // private List<ActsaieDto> _tieActs = new();
+    // private List<ActsaieDto> _lsmActs = new();
+
+    // private List<TierspDto> EnsTiers = new();
+    // private List<RubhieDto> _lsDivs = new();
+
+    // private PlngenDto curProg = new PlngenDto();
+
+    // private bool isFilteringEnabled = false;
+    // private RubfmtDto selFmt = new();
+    // private DateTime _sesDat;
+
+    // private List<Gpfixe> LsFixes = new List<Gpfixe>();
+    // private List<Gpvar> LsVars = new();
+    // private List<Gplan> LsProgs = new();
+    // private Gpvar inExo = new();
+    // private Gsedat inSes = new();
+
+    // private bool success, errors, isSubmitting = false;
+    // private string[] errorList = [];
+    // private string rolInv = "", userName = "", isatmsg = "";
+
+    // private List<TierspDto> CalcTiers = new();
+
+    // private ReqgnModel qryModel = new ReqgnModel();
+
+    // //Options Calculation workflow
+    // private bool CalcMarked = false;
+    // private bool SaveMarked = false;
+    // private bool autoSave = false;
+    // private int CalcDir = 1;
+    // bool ShowProgress = false;
+    // int ProgressValue = 0;
+
+    // private bool CanCalc => SessOpen && CalcDir != 0 && (ImyTier != 0 || ImyDiv == -1);
+
+    // enum CdirMode
+    // {
+    //     All,
+    //     Range
+    // }
+    // private bool SiTiers => !String.IsNullOrEmpty(IdebTier) && !String.IsNullOrEmpty(IfinTier);
+
+    // //CRUD ROW ADDING
+    // private Guid? EditingActRowGuid; //pmodal
+    // private bool IsActAdding(PlngenDto item) => EditingActRowGuid == item.Rowguid;
+    // private Guid? ConfirmingActDeleteRowGuid;
+    // private Guid? EditingDetRowGuid; //pmodal
+    // private bool IsDetAdding(PlngenDto item) => EditingDetRowGuid == item.Rowguid;
+    // private Guid? ConfirmingDetDeleteRowGuid;
+
+    // private string opseudo = "", opnomp = "";
+    // //private int opfonc = 0, opgrad = 0, opafec = 0;
+    // private int ImyTier = 0, ImyProg = 0, ImyRubr = 0;
+    // private int ImyExo = 0;//ImySes = 0,
+    // private int Jsdtie = 0, Jsftie = 0;
+
+    // private string kmessage = "";
+    // private string _errorMessage = "";
+    // private int itRub = 0;
+    // private int itProg = 0;
+    // private int itTie = 0;
+    // private int itPgr = 0;
+    // private int itGpe = 0;
+    // //private int ImyOpti = 0; //1tous2dea
+    // //matricules str
+    // private string IdebTier = "", IfinTier = "";
+    // //variables PLANS
+    // Modal edAModal;
+    // ActsaieDto actItem = new();
+    // int? edAIndex = null;
+    // ActsaieDto edAct = new();
+    // bool adingAct = false;
+
+    // ActdetDto edADet = new();
+    // ActsaieDto? draftAct = null;
+    // ActsaieDto? editingAct = null;
+    // ActdetDto? draftDet = null;
+    // ActdetDto? editingDet = null;
+
+    // List<FormulaLine> MissionLines = new();
+    // List<OutDataLineStream> CalcLines = new();
+    // List<CalcGridRow> CalcGridRows = new();
+    // List<InDataLineStream> DataLines = new();
+    // List<InDataLineStream> ResultLines = new();
+    //=========
+    // public sealed class FormulaSessionEvaluator
+    // {
+    //     private readonly FormulaSession _session;
+    //     private readonly FormulaEvaluationState _state;
+
+    //     public FormulaSessionEvaluator(FormulaSession session)
+    //     {
+    //         _session = session;
+    //         _state = new FormulaEvaluationState();
+    //     }
+
+    //     public List<FormulaLine> LoadPlngenFormula(string infpscr)
+    //     {
+    //         var lines = new List<FormulaLine>();
+    //         if (string.IsNullOrWhiteSpace(infpscr))
+    //             return lines;
+
+    //         foreach (var rawLine in infpscr.Split(new[] { "\r\n", "\n" }, StringSplitOptions.RemoveEmptyEntries))
+    //         {
+    //             var parsed = FormulaSourceParser.Parse(rawLine);
+    //             if (!parsed.IsValid)
+    //                 continue;
+
+    //             lines.Add(new FormulaLine
+    //             {
+    //                 LineNumber = parsed.LineNumber,
+    //                 Formula = parsed.FormulaBody,
+    //                 Id = parsed.Id,
+    //                 LineNumber = parsed.LineNumber,
+    //                 Formula = parsed.FormulaBody,
+    //                 Scdrub = parsed.Scdrub,
+    //                 Irub = parsed.Irub,
+    //                 Itie = _curTie.Itie,
+    //                 Vtyp = parsed.Vtyp,
+    //                 Ptyp = parsed.Ptyp,
+    //                 Ddeb = parsed.Ddeb,
+    //                 Dfin = parsed.Dfin,
+    //                 Source = 2,
+    //                 //Liba = parsed.Liba,
+    //                 Abg = parsed.Abg,
+    //                 Nom = parsed.Nom,
+    //                 Pnom = parsed.Pnom,
+    //                 Smatri = parsed.Smatri
+    //                 // fill metadata here if available
+    //             });
+    //         }
+
+    //         return lines;
+    //     }
+    // private async Task CalcAndSaveAsync()
+    // {
+    //     CalcLines.Clear();
+
+    //     var filteredTiers = PreTiers
+    //         .Where(t =>
+    //             string.Compare(t.Smatri, IdebTier, StringComparison.OrdinalIgnoreCase) >= 0 &&
+    //             string.Compare(t.Smatri, IfinTier, StringComparison.OrdinalIgnoreCase) <= 0)
+    //         .ToList();
+
+    //     ShowProgress = true;
+    //     ProgressValue = 0;
+
+    //     int total = filteredTiers.Count;
+    //     int index = 0;
+    //     int batchSize = 20;
+
+    //     foreach (var tie in filteredTiers)
+    //     {
+    //         index++;
+
+    //         if (index % batchSize == 0 || index == total)
+    //         {
+    //             ProgressValue = (int)((index / (double)total) * 100);
+    //             StateHasChanged();
+    //         }
+
+    //         var session = new FormulaSession
+    //         {
+    //             Itie = tie.Id,
+    //             SessionDate = DateTime.Today
+    //         };
+
+    //         session.Inputs = BuildInputsForTier(tie);   // map Actsaie/Resdons/etc.
+    //         session.Lines = CloneFormulaLines(_session.Lines);
+
+    //         var evaluator = new FormulaSessionEvaluator(session);
+    //         evaluator.EvaluateAll();
+
+    //         CalcLines.AddRange(session.Outputs);
+
+    //         StateHasChanged();
+    //     }
+
+    //     if (autoSave)
+    //     {
+    //         var request = BuildResCalcModel();
+    //         // var request = new ResCalcModel
+    //         // {
+    //         //     Opetyp = 1,
+    //         //     Sireel = curProg.Tovue,
+    //         //     Idorg = curOrga.Idorg,
+    //         //     Idpln = curProg.Id,
+    //         //     Vperi = inSes.Abg,
+    //         //     Eperi = inExo.Abg,
+    //         //     Datope = DateTime.Now,
+    //         //     Gseq = 1,
+    //         //     OutLines = CalcLines
+    //         // };
+
+    //         await _cliemanager.SendRequestAsync(
+    //             "AuthClient",
+    //             HttpMethod.Post,
+    //             "lgauth/savcalcresu",
+    //             request);
+
+    //         SaveMarked = true;
+    //         ShowSuccess("Résultats enregistrés avec succès.");
+    //         StateHasChanged();
+    //     }
+    //     else
+    //     {
+    //         CalcMarked = true;
+    //     }
+    // }
+    // public List<FormulaLine> LoadPlngenFormula(string infpscr)
+    // {
+    //     var lines = new List<FormulaLine>();
+    //     if (string.IsNullOrWhiteSpace(infpscr))
+    //         return lines;
+
+    //     foreach (var rawLine in infpscr.Split(new[] { "\r\n", "\n" }, StringSplitOptions.RemoveEmptyEntries))
+    //     {
+    //         var parsed = FormulaSourceParser.Parse(rawLine);
+    //         if (!parsed.IsValid)
+    //             continue;
+
+    //         lines.Add(new FormulaLine
+    //         {
+    //             LineNumber = parsed.LineNumber,
+    //             Formula = parsed.FormulaBody,
+    //             // fill metadata here if available
+    //         });
+    //     }
+
+    //     return lines;
+    // }
+    // public List<FormulaLine> LoadRubvarFormula(string frscr)
+    // {
+    //     var lines = new List<FormulaLine>();
+    //     if (string.IsNullOrWhiteSpace(frscr))
+    //         return lines;
+
+    //     foreach (var rawLine in frscr.Split(new[] { "\r\n", "\n" }, StringSplitOptions.RemoveEmptyEntries))
+    //     {
+    //         var parsed = FormulaSourceParser.Parse(rawLine);
+    //         if (!parsed.IsValid)
+    //             continue;
+
+    //         lines.Add(new FormulaLine
+    //         {
+    //             LineNumber = parsed.LineNumber,
+    //             Formula = parsed.FormulaBody
+    //         });
+    //     }
+
+    //     return lines;
+    // }
+
+    // private List<FormulaInput> BuildInputsForTier(TierspDto tie)
+    // {
+    //     var inputs = new List<FormulaInput>();
+    //     // Map Actsaie to inputs
+    //     foreach (var act in tie.Actsaies)
+    //     {
+    //         inputs.Add(new FormulaInput
+    //         {
+    //             Name = act.Nom,
+    //             Value = act.Ecmount, //Valeur,
+    //             Type = "Actsaie"
+    //         });
+    //     }
+    //     // Map Resdons to inputs
+    //     foreach (var res in tie.Resdons)
+    //     {
+    //         inputs.Add(new FormulaInput
+    //         {
+    //             Name = res.Nom,
+    //             //Value = res.Ecmount, //Valeur,
+    //             Value = res.Evala,
+    //             Type = "Resdon"
+    //         });
+    //     }
+    //     // Add other mappings as needed
+    //     return inputs;
+    // }
+
+    // private void EvaluateTier(TierspDto tie, IEnumerable<PlngenDto> plngenLines)
+    // {
+    //     var session = new FormulaSession
+    //     {
+    //         Itie = tie.Id,
+    //         SessionDate = DateTime.Today,
+    //         Inputs = BuildInputsForTier(tie),
+    //         //Lines = plngenLines.ToList()
+    //     };
+    //     var evaluator = new FormulaSessionEvaluator(session);
+    //     evaluator.LoadPlngenFormula(string.Join("\n", plngenLines.Select(l => l.Fpsrc)));
+    // }
+    //     public void LoadPlngenLines(IEnumerable<PlngenDto> sourceRows)
+    //     {
+    //         _session.Lines.Clear();
+    //         _state.Cache.Clear();
+
+    //         foreach (var row in sourceRows)
+    //         {
+    //             var parsed = FormulaSourceParser.Parse(row.Fpsrc);
+    //             if (!parsed.IsValid) continue;
+
+    //             _session.Lines.Add(new FormulaLine
+    //             {
+    //                 Id = row.Id,
+    //                 LineNumber = parsed.LineNumber,
+    //                 Formula = parsed.FormulaBody,
+    //                 Scdrub = parsed.Scdrub,
+    //                 //Irub = parsed.Irub,
+    //                 //Itie = parsed.Itie,
+    //                 Vtyp = parsed.Vtyp,
+    //                 Ptyp = parsed.Ptyp,
+    //                 Ddeb = parsed.Ddeb,
+    //                 Dfin = parsed.Dfin,
+    //                 Source = 2,
+    //                 //Liba = parsed.Liba,
+    //                 //Abg = parsed.Abg,
+    //                 //Nom = parsed.Nom,
+    //                 //Pnom = parsed.Pnom,
+    //                 Smatri = parsed.Smatri
+    //             });
+    //         }
+    //     }
+    // }
+    // public void tempuses()
+    // {
+    //     // Template stage
+    //     var templateLines = LoadPlngenLines(plngenRows);
+    //     // Execution stage
+    //     foreach (var tie in filteredTiers)
+    //     {
+    //         var session = new FormulaSession
+    //         {
+    //             Itie = tie.Id,
+    //             SessionDate = DateTime.Today,
+    //             Lines = CloneFormulaLines(templateLines),
+    //             Inputs = BuildInputsForTier(tie)
+    //         };
+
+    //         var evaluator = new FormulaSessionEvaluator(session);
+    //         evaluator.EvaluateAll();
+    //         CalcLines.AddRange(session.Outputs);
+    //     }
+    // }
 }

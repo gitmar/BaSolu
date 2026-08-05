@@ -1,54 +1,61 @@
 ﻿@inherits LayoutComponentBase
 
-@using System.Security.Claims
 @using System.Text.RegularExpressions
 @using Blazored.LocalStorage
 @using GxStk.Services
-@using GxShared.Helpers;
-@using GxShared.Identity;
+@using GxShared.Identity
+@using GxShared.Helpers
+@using System.Security.Claims
+@using Microsoft.AspNetCore.Components.Authorization
 
+@inject ILocalStorageService _localStorage
 @inject IConfiguration _iconfig
 @inject NavigationManager _navManager
-@inject ILocalStorageService _localStorage
 @inject SessionContextService _sessionContext
-@inject ClieAppState _appState
 @inject MyAuthStateProvider _authProvider
+@inject ClieAppState _appState
 @inject IJSRuntime _JsRun
 
 @if (_layoutReady)
 {
-    <div class="page-wrapper" style="display: flex; height: 100vh;">
+    <div class="page-wrapper @(_sidebarCollapsed ? "sidebar-collapsed" : "")">
 
         <!-- SIDEBAR -->
-        <div class="sidebar"
-             style="width: 250px; background: linear-gradient(180deg, rgb(5, 39, 103) 0%, #3a0647 70%);">
+        <div class="sidebar">
             <NavMenu />
         </div>
 
         <!-- MAIN -->
-        <div class="main-content-wrapper d-flex flex-column" style="flex: 1; min-width: 0;">
+        <div class="main-content-wrapper d-flex flex-column">
 
             <!-- ================= TOP BAR ================= -->
             <div class="bg-light border-bottom">
-
                 <div class="d-flex align-items-center px-3 py-2 flex-nowrap" style="min-width: 0;">
 
+                    <!-- SIDEBAR TOGGLE -->
+                    @* <button class="btn btn-sm btn-outline-secondary me-2 flex-shrink-0"
+                            @onclick="ToggleSidebar"
+                            title="Toggle sidebar">
+                        <span class="bi @(_sidebarCollapsed ? "bi-chevron-right" : "bi-chevron-left")"></span>
+                    </button> *@
+                    <button class="sidebar-toggle btn btn-sm p-1 m-0 border-0 shadow-none"
+                            type="button"
+                            @onclick="ToggleSidebar"
+                            aria-label="Toggle sidebar">
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                    </button>
                     <!-- LEFT GROUP -->
                     <div class="d-flex align-items-center flex-nowrap gap-2" style="min-width: 0;">
-
-                        @* <span class="fw-bold text-muted flex-shrink-0">(Matiere)</span> *@
-
                         <AuthorizeView>
                             <Authorized>
-
+                                <span>&nbsp;&nbsp;&nbsp;</span>
                                 <button class="btn btn-sm fw-bold text-dark m-0 p-0 flex-shrink-0"
                                         @onclick="NavigateToIdentityPage">
                                     PrivateRoom
                                 </button>
-
-                                <!-- ORGANIZATION BLOCK -->
                                 <div class="d-flex align-items-center gap-2 flex-nowrap" style="min-width: 0;">
-
                                     <div class="truncated-text">
                                         @_appState.ogRaison
                                     </div>
@@ -56,17 +63,13 @@
                                     <div class="truncated-text text-muted">
                                         @_appState.usFulnom
                                     </div>
-
                                 </div>
-
                             </Authorized>
                         </AuthorizeView>
-
                     </div>
 
                     <!-- RIGHT SIDE -->
                     <div class="ms-auto d-flex align-items-center gap-3 flex-shrink-0">
-
                         <label class="mb-0">Help ?</label>
 
                         <AuthorizeView>
@@ -83,9 +86,7 @@
                                 </a>
                             </NotAuthorized>
                         </AuthorizeView>
-
                     </div>
-
                 </div>
 
                 <!-- USER MENU BELOW BAR -->
@@ -99,7 +100,6 @@
                         }
                     </Authorized>
                 </AuthorizeView>
-
             </div>
             <!-- ================= END TOP BAR ================= -->
             <!-- ================= MAIN CONTENT ================= -->
@@ -108,7 +108,6 @@
                     @Body
                 </article>
             </main>
-
         </div>
     </div>
 }
@@ -118,47 +117,90 @@ else
         <span>Loading session...</span>
     </div>
 }
+
 <style>
-    /* CRITICAL: flex-safe truncation */
+    .page-wrapper {
+        display: flex;
+        height: 100vh;
+        min-width: 0;
+    }
+
+    .sidebar {
+        width: 250px;
+        background: linear-gradient(180deg, rgb(5, 39, 103) 0%, #3a0647 70%);
+        overflow: hidden;
+        transition: width 0.25s ease, opacity 0.25s ease;
+        flex-shrink: 0;
+    }
+
+    .page-wrapper.sidebar-collapsed .sidebar {
+        width: 0;
+        opacity: 0;
+    }
+
+        .page-wrapper.sidebar-collapsed .sidebar * {
+            pointer-events: none;
+        }
+
+    .main-content-wrapper {
+        flex: 1;
+        min-width: 0;
+    }
+
     .truncated-text {
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
-        max-width: 180px; /* adjust if needed */
-        min-width: 0; /* REQUIRED for flex truncation */
+        max-width: 180px;
+        min-width: 0;
         display: block;
     }
 
-    /* safety for top bar flex */
-    .page-wrapper,
-    .main-content-wrapper {
-        min-width: 0;
-    }
-
-    /* prevent unexpected wrapping in top bar */
     .flex-nowrap {
         flex-wrap: nowrap;
     }
+
+    .sidebar-toggle {
+        width: 34px;
+        height: 28px;
+        display: inline-flex;
+        flex-direction: column;
+        justify-content: center;
+        gap: 4px;
+        background: transparent;
+    }
+
+        .sidebar-toggle span {
+            display: block;
+            width: 18px;
+            height: 2px;
+            background-color: black;
+            border-radius: 3px;
+        }
 </style>
+
 @code {
-    private bool _layoutReady = false, isLoading = false;
-    private bool collapseUserMenu = false, canTierLog = false;
-    //CascadingParameter]
-    //private Task<AuthenticationState>? AuthState { get; set; }
-    private ClaimsPrincipal authUser;
+    private bool _layoutReady = false;
+    private bool isLoading = false;
+
+    private bool collapseUserMenu = false;
+    private bool canAdminLog = false;
+
+    private bool isHelpLogin = false;
+    private ClaimsPrincipal authUser = new ClaimsPrincipal();
     private bool isAuthenticated = false;
-    //[Inject] private MyAuthStateProvider _authProvider { get; set; }
 
-    // private void ToggleUserMenu()
-    // {
-    //     collapseUserMenu = !collapseUserMenu;
-    // }
+    private bool _sidebarCollapsed = true;
 
+    //private AuthenticationStateChangedEventHandler? _authStateChangedHandler;
+    private AuthenticationStateChangedHandler? _authStateChangedHandler;
     protected override async Task OnInitializedAsync()
     {
-        canTierLog = false;
+        canAdminLog = false;
         isLoading = false;
-        //_layoutReady = true;
+
+        _appState.OnChange += StateHasChanged;
+
         var token = await _localStorage.GetItemAsync<string>("blazToken");
         if (string.IsNullOrWhiteSpace(token))
         {
@@ -166,13 +208,13 @@ else
             _layoutReady = true;
             return;
         }
+
         await _sessionContext.InitializeAsync();
 
-        // Wait for AuthenticationStateProvider to reflect the new token
-        //await Task.Delay(100); // Give NotifyUserAuthentication time to propagate
         var authState = await _authProvider.GetAuthenticationStateAsync();
-        isAuthenticated = authState.User.Identity?.IsAuthenticated ?? false;
         authUser = authState.User;
+        isAuthenticated = authUser.Identity?.IsAuthenticated ?? false;
+
         if (!isAuthenticated)
         {
             Console.WriteLine("Authentication in Main Layout ECHEC");
@@ -180,36 +222,66 @@ else
         }
         else
         {
-            //if (authUser.IsInRole("Support") || authUser.IsInRole("Admin")) canTierLog = true;
+            if (authUser.IsInRole("Support") ||
+                authUser.IsInRole("Admin") ||
+                authUser.IsInRole("Developper"))
+            {
+                canAdminLog = true;
+            }
+
             Console.WriteLine("Authentication in Main Layout SUCCESS");
         }
+        _authStateChangedHandler = task =>
+            {
+                _ = HandleAuthStateChangedAsync(task);
+            };
+
+        _authProvider.AuthenticationStateChanged += _authStateChangedHandler;
 
         _layoutReady = true;
-        _authProvider.AuthenticationStateChanged += async task =>
-        {
-            var authState = await task;
-            authUser = authState.User;
-            isAuthenticated = authUser.Identity?.IsAuthenticated ?? false;
-            StateHasChanged();
-        };
-
         isLoading = true;
     }
+
+    private void ToggleSidebar()
+    {
+        _sidebarCollapsed = !_sidebarCollapsed;
+    }
+
     private async Task NavigateToIdentityPage()
     {
-        // Get token from localStorage
         var token = await _localStorage.GetItemAsync<string>("blazToken");
         if (string.IsNullOrWhiteSpace(token))
         {
             Console.WriteLine("No token found — skipping session sync.");
             return;
         }
+
         var backendUrl = _iconfig["backendUrl"];
         var targetUrl = $"{backendUrl}/Identity/Account/JwtLandingPage?access_token={token}";
+
         _navManager.NavigateTo(targetUrl, forceLoad: true);
     }
+
+    // protected override async Task OnInitializedAsync()
+    // {
+
+    // }
+
+    private async Task HandleAuthStateChangedAsync(Task<AuthenticationState> task)
+    {
+        var authState = await task;
+        authUser = authState.User;
+        isAuthenticated = authUser.Identity?.IsAuthenticated ?? false;
+        await InvokeAsync(StateHasChanged);
+    }
+
     public void Dispose()
     {
         _appState.OnChange -= StateHasChanged;
+
+        if (_authStateChangedHandler is not null)
+        {
+            _authProvider.AuthenticationStateChanged -= _authStateChangedHandler;
+        }
     }
 }
