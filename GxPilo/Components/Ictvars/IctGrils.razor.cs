@@ -102,60 +102,60 @@ namespace GxPilo.Components.Ictvars
             }
         }
         // ✅ 6. SELECTIONS
-    private void curPlanPlan(int plnId)
-    {
-        IMyPlan = plnId;
-        if (IMyPlan != 0)
-        {
-            curPlan = orgPlns?.FirstOrDefault(pln => pln.Ptyp == IMyGpln);
-                Console.WriteLine($"Grid no plan : {curPlan.Id}");
-            //LsGties = LsFixes.Where(ut => ut.Gvars == 36 && ut.Itb == gtib && ut.Elea != 0 && ut.Elea != 9).ToList();
-        }
-        else
-        {
-            curPlan = new();
-            //LsGties = new();
-        }
-        Console.WriteLine($"selected Plan Rubvars : {curPlan?.Rubvars.Count}");
-        RubRenderKey = Guid.NewGuid();
-        // Example: check if all selections are valid
-        if (IMyPlan > 0 && IMyDom != 0)
-        {
-            // All three have values → single render
-            InvokeAsync(StateHasChanged);
-        }
-    }
-    private void curPlanRub()
-    {
-        if (IMyRub != 0)
-        {
-                Console.WriteLine($"Entree myPlan, myRub ID  et format : {curPlan.Id} et {IMyRub}");
-                curRubr = curPlan?.Rubvars.FirstOrDefault(rub => rub.Id == IMyRub);
-                Console.WriteLine($"Rubrique fmts : {curRubr?.Rubfmts.Count}");
-                //LsGties = LsFixes.Where(ut => ut.Gvars == 36 && ut.Itb == gtib && ut.Elea != 0 && ut.Elea != 9).ToList();
-        } 
-        else
-        {
-            curRubr = new();
-            //LsGties = new();
-        }
-        Console.WriteLine($"selected Rubs : {curPlan?.Rubvars.Count}");
-        RubRenderKey = Guid.NewGuid();
-        // Example: check if all selections are valid
-        if (IMyPlan > 0 && IMyRub != 0)
-        {
-            // All three have values → single render
-            InvokeAsync(StateHasChanged);
-        }
-    }
-        private void curPlanVue(int xvue)
-        {
+    //private void curPlanPlan(int plnId)
+    //{
+    //    IMyPlan = plnId;
+    //    if (IMyPlan != 0)
+    //    {
+    //        curPlan = orgPlns?.FirstOrDefault(pln => pln.Ptyp == IMyGpln);
+    //            Console.WriteLine($"Grid no plan : {curPlan.Id}");
+    //        //LsGties = LsFixes.Where(ut => ut.Gvars == 36 && ut.Itb == gtib && ut.Elea != 0 && ut.Elea != 9).ToList();
+    //    }
+    //    else
+    //    {
+    //        curPlan = new();
+    //        //LsGties = new();
+    //    }
+    //    Console.WriteLine($"selected Plan Rubvars : {curPlan?.Rubvars.Count}");
+    //    RubRenderKey = Guid.NewGuid();
+    //    // Example: check if all selections are valid
+    //    if (IMyPlan > 0 && IMyDom != 0)
+    //    {
+    //        // All three have values → single render
+    //        InvokeAsync(StateHasChanged);
+    //    }
+    //}
+    //private void curPlanRub()
+    //{
+    //    if (IMyRub != 0)
+    //    {
+    //            Console.WriteLine($"Entree myPlan, myRub ID  et format : {curPlan.Id} et {IMyRub}");
+    //            curRubr = curPlan?.Rubvars.FirstOrDefault(rub => rub.Id == IMyRub);
+    //            Console.WriteLine($"Rubrique fmts : {curRubr?.Rubfmts.Count}");
+    //            //LsGties = LsFixes.Where(ut => ut.Gvars == 36 && ut.Itb == gtib && ut.Elea != 0 && ut.Elea != 9).ToList();
+    //    } 
+    //    else
+    //    {
+    //        curRubr = new();
+    //        //LsGties = new();
+    //    }
+    //    Console.WriteLine($"selected Rubs : {curPlan?.Rubvars.Count}");
+    //    RubRenderKey = Guid.NewGuid();
+    //    // Example: check if all selections are valid
+    //    if (IMyPlan > 0 && IMyRub != 0)
+    //    {
+    //        // All three have values → single render
+    //        InvokeAsync(StateHasChanged);
+    //    }
+    //}
+    //    private void curPlanVue(int xvue)
+    //    {
 
-        }
-        private void curPlanFor(int xvue)
-        {
+    //    }
+    //    private void curPlanFor(int xvue)
+    //    {
 
-        }
+    //    }
         //private void curPlanTier(int xtie)
         //{
         //    if (IMyDom != 0 && IMyAtr != 0 && IMyVue != 0)

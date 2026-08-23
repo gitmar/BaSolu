@@ -62,7 +62,6 @@ else
         <Authorized Context="AuthContext">
             <div class="row">
                 <div class="col-md-12 input-group align-middle">
-                    <span><b>Message :</b></span>
                     &nbsp;&nbsp;
                     @if (!String.IsNullOrEmpty(Imessage))
                     {
@@ -244,6 +243,7 @@ else
                                                             ❌ Cancel
                                                         </Button>
                                                         break;
+                                                    
                                                     case RowState.DeletePending:
                                                         <Button Color="ButtonColor.Danger" Size="ButtonSize.Small"
                                                         @onclick="() => ConfirmDelete(item, EntityLevel.Plan)">
@@ -629,6 +629,7 @@ else
                 Itb = 1,
                 Gtyp = 1,
                 Etyp = 1,
+                Ivala = 0,
                 Eta = 1,
                 Xadd1 = -1, //newly added
                 Xedt1 = 0,
@@ -649,6 +650,7 @@ else
                 Etyp = 1,
                 Totyp = 0,
                 Tstyp = 0,
+                Ivala = 0,
                 Eta = 1,
                 Xadd1 = -1, //newly added
                 Xedt1 = 0,
@@ -701,6 +703,23 @@ else
     }
 
     // ✅ 2.1 CONFIRM OPERATIONS
+    private async Task ConfirmAdd<T>(EntityLevel level, T item) where T : class
+    {
+        await UnifiedEditAction(item, true, level);
+        CopyDraftTblToGridItem(item, level, 3);
+
+        // Replace item in collection to trigger UI update
+        if (item is GsgfixDto fix)
+        {
+            var index = MyDaDocus.FindIndex(r => r.Rowguid == fix.Rowguid);
+            if (index >= 0)
+                MyDaDocus[index] = fix; // replace reference
+        }
+
+        EndRowEdit();
+        FixRenderKey = Guid.NewGuid(); // force grid refresh
+        StateHasChanged();
+    }
     private async Task ConfirmDocuEdit(GsgfixDto item) =>
         await UnifiedEditAction(item, true, EntityLevel.Plan);
 
@@ -720,10 +739,10 @@ else
 
     private async Task ProcessPlan(GsgfixDto pln, bool isConfirm)
     {
-        await ProcessEntity(pln, isConfirm, "Gsgfixes", p => ValidatePln(p));
+        await ProcessEntity(pln, isConfirm, "Gsgfixes", EntityLevel.Plan, p => ValidatePln(p));
     }
 
-    private async Task ProcessEntity<T>(T entity, bool isConfirm, string entitySet, Func<T, bool> validate)
+    private async Task ProcessEntity<T>(T entity, bool isConfirm, string entitySet, EntityLevel level, Func<T, bool> validate)
     where T : class
     {
         Console.WriteLine($"🔄 Process{typeof(T).Name}: {(isConfirm ? "CONFIRM" : "CANCEL")}");
@@ -738,8 +757,8 @@ else
         if (isConfirm)
         {
             // 🔥 1. Copy draft → entity (for validation)
-            CopyDraftToGridItem(entity);
-
+            //CopyDraftToGridItem(entity);
+            CopyDraftTblToGridItem(entity, level, 3);
             // 🔥 2. VALIDATE (now has updated values)
             if (!validate(entity))
             {
@@ -836,18 +855,67 @@ else
     //     Console.WriteLine($"modified liba {((dynamic)item).Liba} et abg {((dynamic)item).Abg}");
     //     Console.WriteLine($"✅ {entitySet} marked Modified");
     // }
-    private void CopyDraftToGridItem<T>(T gridItem) where T : class
+    // private void CopyDraftToGridItem<T>(T gridItem) where T : class
+    // {
+    //     switch (typeof(T).Name)
+    //     { // ONLY editable UI fields - 5-10x faster than reflection!
+    //         case nameof(GsgfixDto):
+    //             if (draftFix == null) return;
+    //             var pln = (GsgfixDto)(object)gridItem;
+    //             pln.Liba = draftFix.Liba; //designation
+    //             pln.Abg = draftFix.Abg; //abrege
+    //             //pln.Fpsrc = draftFix.Fpsrc; //formule-non valider
+    //             pln.Eta = draftFix.Eta; //etat
+    //             break;
+    //     }
+    // }
+    private void CopyDraftTblToGridItem<T>(T gridItem, EntityLevel level, int tent) where T : class
     {
-        switch (typeof(T).Name)
-        { // ONLY editable UI fields - 5-10x faster than reflection!
-            case nameof(GsgfixDto):
-                if (draftFix == null) return;
-                var pln = (GsgfixDto)(object)gridItem;
-                pln.Liba = draftFix.Liba; //designation
-                pln.Abg = draftFix.Abg; //abrege
-                //pln.Fpsrc = draftFix.Fpsrc; //formule-non valider
-                pln.Eta = draftFix.Eta; //etat
+        switch (level)
+        {
+            case EntityLevel.Plan:
+                if (gridItem is GsgfixDto gsg && draftFix is GsgfixDto gf)
+                {
+                    // Copy all relevant fields from draftgsg into the grid item
+                    gsg.Gvars = gf.Gvars;
+                    gsg.Itb = gf.Itb;
+                    gsg.Liba = gf.Liba;
+                    gsg.Abg = gf.Abg;
+                    gsg.Rowguid = gf.Rowguid;
+                    gsg.Idorg = gf.Idorg;
+                    gsg.Gtyp = gf.Gtyp;
+                    gsg.Etyp = gf.Etyp;
+                    gsg.Xdpd = gf.Xdpd;
+                    gsg.Ydpd = gf.Ydpd;
+                    gsg.Ivala = gf.Ivala;
+                    gsg.Eta = gf.Eta;
+                    // add more fields if needed
+                    FixRenderKey = gsg.Rowguid;
+                }
                 break;
+            // case EntityLevel.Rub:
+            //     if (gridItem is GstablDto chl && draftChl is GstablDto dc)
+            //     {
+            //         // Copy all relevant fields from draftFix into the grid item
+            //         chl.Liba = dc.Liba;
+            //         chl.Abg = dc.Abg;
+            //         chl.Rowguid = dc.Rowguid;
+            //         chl.Idorg = dc.Idorg;
+            //         chl.Gtyp = dc.Gtyp;
+            //         chl.Btyp = dc.Btyp;
+            //         chl.Tenr = dc.Tenr;
+            //         chl.Pid = dc.Pid;
+            //         chl.Xdpd = dc.Xdpd;
+            //         chl.Ydpd = dc.Ydpd;
+            //         chl.Jacc = dc.Jacc;
+            //         chl.Jenr = dc.Jenr;
+            //         chl.Eta = dc.Eta;
+            //         // add more fields if needed
+            //         ChldRenderKey = chl.Rowguid;
+            //     }
+            //     break;
+            default:
+                throw new ArgumentOutOfRangeException(nameof(level));
         }
     }
     private void ClearDraft<T>()
@@ -979,11 +1047,11 @@ else
 
     private void SetDeleteFlags(object item) => SetFlags(item, 0, 0, -1);
     // SINGLE method handles ALL confirm operations
-    private async Task ConfirmAdd<T>(EntityLevel level, T item) where T : class
-    {
-        await UnifiedEditAction(item, true, level);
-        EndRowEdit();  // Close single edit mode
-    }
+    // private async Task ConfirmAdd<T>(EntityLevel level, T item) where T : class
+    // {
+    //     await UnifiedEditAction(item, true, level);
+    //     EndRowEdit();  // Close single edit mode
+    // }
 
     // SINGLE method handles ALL confirm operations
     private async Task ConfirmEdit<T>(T item, EntityLevel level) where T : class

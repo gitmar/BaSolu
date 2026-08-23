@@ -3,7 +3,7 @@
 @using GxShared.Helpers
 @using GxShared.Sess
 
-<h3>PTiwGdHelper</h3>
+@* <h3>PTiwGdHelper</h3> *@
 
 @if (Draft != null)
 {
@@ -380,6 +380,7 @@
     [Parameter] public TiewelDto Draft { get; set; }
     [Parameter] public GridMode GMode { get; set; } = GridMode.None;
     [Parameter] public bool isEditing { get; set; } = false;
+    [Parameter] public bool isViewing { get; set; } = false;
     [Parameter] public Dictionary<string, bool> Visibility { get; set; } = new();
 
     [Parameter] public List<Gtabl> EnsTbls { get; set; }
@@ -393,4 +394,11 @@
     //         .Where(t => t.Pid == pxcod)
     //         .ToList();
     // }
+    protected override void OnParametersSet()
+    {
+        if (isViewing == true)
+        {
+            isEditing = false;
+        }
+    }
 }

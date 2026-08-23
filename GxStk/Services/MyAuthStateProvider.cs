@@ -39,6 +39,7 @@ namespace GxStk.Services
             if (string.IsNullOrWhiteSpace(token))
             {
                 Console.WriteLine("Token is missing or empty.");
+                await NotifyUserLogout();
                 var anonymous = new ClaimsPrincipal(new ClaimsIdentity());
                 return new AuthenticationState(anonymous);
             }
@@ -52,6 +53,7 @@ namespace GxStk.Services
                 if (jwt.ValidTo < DateTime.UtcNow)
                 {
                     Console.WriteLine("Token has expired.");
+                    await NotifyUserLogout();
                     await _localStorage.RemoveItemAsync("blazToken");
                     await _localStorage.RemoveItemAsync("blazRoles");
                     await _localStorage.RemoveItemAsync("blazExp");

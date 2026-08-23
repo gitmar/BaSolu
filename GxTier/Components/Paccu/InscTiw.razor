@@ -23,6 +23,7 @@
 @using GxShared.Interfaces
 @using Microsoft.AspNetCore.Components.Forms
 @using GxTie.Components.FrmHelper
+@using GxShared.Helpers.CrudHelpers
 @using Microsoft.AspNetCore.WebUtilities
 @using Newtonsoft.Json
 
@@ -72,60 +73,62 @@
 {
     <AuthorizeView>
         <Authorized Context="authtiwcontext">
-            <div class="d-flex align-items-center gap-2">
-                <Button Color="ButtonColor.Primary"
+            @if (!isTieViewing)
+            {
+                <div class="d-flex align-items-center gap-2">
+                    <Button Color="ButtonColor.Primary"
+                    Size="ButtonSize.Small"
+                    Class="px-2 py-1 small-btn"
+                    Disabled="@(!AllowMultipleEdits && isAddTiw)"
+                    @onclick="StartTiwNew">
+                        ➕ Add
+                    </Button>
+
+                    @if (isAddTiw)
+                    {
+                        <Button Color="ButtonColor.Info"
                         Size="ButtonSize.Small"
                         Class="px-2 py-1 small-btn"
-                        Disabled="@(!AllowMultipleEdits && isAddTiw)"
-                        @onclick="StartTiwNew">
-                    ➕ Add
-                </Button>
+                        @onclick="ShowModal">
+                            piece(s)
+                        </Button>
+                        <Button Color="ButtonColor.Success"
+                        Size="ButtonSize.Small"
+                        Class="px-2 py-1 small-btn"
+                        @onclick="() => ConfirmAdd(EntityLevel.Tiw, draftTiw)">
+                            ✅ Confirm
+                        </Button>
 
-                @if (isAddTiw)
-                {
-                    <Button Color="ButtonColor.Info"
-                            Size="ButtonSize.Small"
-                            Class="px-2 py-1 small-btn"
-                            @onclick="ShowModal">
-                        piece(s)
-                    </Button>
-                    <Button Color="ButtonColor.Success"
-                            Size="ButtonSize.Small"
-                            Class="px-2 py-1 small-btn"
-                            @onclick="() => ConfirmAdd(EntityLevel.Tiw, draftTiw)">
-                        ✅ Confirm
-                    </Button>
+                        <Button Color="ButtonColor.Secondary"
+                        Size="ButtonSize.Small"
+                        Class="px-2 py-1 small-btn"
+                        @onclick="() => CancelAdd(EntityLevel.Tiw, draftTiw)">
+                            ❌ Cancel
+                        </Button>
+                    }
+                    else if (isEdtTiw)
+                    {
+                        <Button Color="ButtonColor.Success"
+                        Size="ButtonSize.Small"
+                        Class="px-2 py-1 small-btn"
+                        @onclick="() => ConfirmEdit(EntityLevel.Tiw, curTiw)">
+                            ✅ Confirm
+                        </Button>
 
-                    <Button Color="ButtonColor.Secondary"
-                            Size="ButtonSize.Small"
-                            Class="px-2 py-1 small-btn"
-                            @onclick="() => CancelAdd(EntityLevel.Tiw, draftTiw)">
-                        ❌ Cancel
-                    </Button>
-                } 
-                else if (isEdtTiw)
-                {
-                    <Button Color="ButtonColor.Success"
-                            Size="ButtonSize.Small"
-                            Class="px-2 py-1 small-btn"
-                            @onclick="() => ConfirmEdit(EntityLevel.Tiw, curTiw)">
-                        ✅ Confirm
-                    </Button>
-
-                    <Button Color="ButtonColor.Secondary"
-                            Size="ButtonSize.Small"
-                            Class="px-2 py-1 small-btn"
-                            @onclick="() => CancelEdit(EntityLevel.Tiw, curTiw)">
-                        ❌ Cancel
-                    </Button>
-                }
-            </div>
-
+                        <Button Color="ButtonColor.Secondary"
+                        Size="ButtonSize.Small"
+                        Class="px-2 py-1 small-btn"
+                        @onclick="() => CancelEdit(EntityLevel.Tiw, curTiw)">
+                            ❌ Cancel
+                        </Button>
+                    }
+                </div>
+            }
             @if (isAddTiw || isEdtTiw)
             {
                 <div class="container">
                     <Tabs>
-                        <Tab Title="Membres">
+                        <Tab Title="Membres" Name="TiwTab" onClick="() => OnTabChanged(1)">
                             <Content>
                                 <!-- ✅ EditForm per tab - no nesting issues -->
                                 <EditForm Model="curTiw">
@@ -138,6 +141,7 @@
                                                           RenderKey="parent-grid"
                                                           GMode="@GtieMode"
                                                           IsEditing="@isTieEditing"
+                                                          IsViewing = "@isTieViewing"
                                                           Visibility="@Visibility"
                                                           EnsTbls="@EnsTbls"
                                                           EdRowguid="@EdTiwRowguid" />
@@ -224,178 +228,187 @@
                                         @RenderCategories(EnsCats.Where(c => c.Pid == null))
                                     </div>
                                 </EditForm>
-                                <div class="d-flex align-items-center gap-2">
-                                    <Button Color="ButtonColor.Primary"
+                                @if (!isTieViewing)
+                                {
+                                    <div class="d-flex align-items-center gap-2">
+                                        <Button Color="ButtonColor.Primary"
+                                        Size="ButtonSize.Small"
+                                        Class="px-2 py-1 small-btn"
+                                        Disabled="@(!AllowMultipleEdits && isAddTiw)"
+                                        @onclick="StartTiwNew">
+                                            ➕ Add
+                                        </Button>
+
+                                        @if (isAddTiw)
+                                        {
+                                            <Button Color="ButtonColor.Info"
                                             Size="ButtonSize.Small"
                                             Class="px-2 py-1 small-btn"
-                                            Disabled="@(!AllowMultipleEdits && isAddTiw)"
-                                            @onclick="StartTiwNew">
-                                        ➕ Add
-                                    </Button>
-
-                                    @if (isAddTiw)
-                                    {
-                                        <Button Color="ButtonColor.Info"
-                                                Size="ButtonSize.Small"
-                                                Class="px-2 py-1 small-btn"
-                                                @onclick="ShowModal">
-                                            piece(s)
-                                        </Button>
-                                        <Button Color="ButtonColor.Success"
-                                                Size="ButtonSize.Small"
-                                                Class="px-2 py-1 small-btn"
-                                                @onclick="() => ConfirmAdd(EntityLevel.Tiw, draftTiw)">
-                                            ✅ Confirm
-                                        </Button>
-
-                                        <Button Color="ButtonColor.Secondary"
-                                                Size="ButtonSize.Small"
-                                                Class="px-2 py-1 small-btn"
-                                                @onclick="() => CancelAdd(EntityLevel.Tiw, draftTiw)">
-                                            ❌ Cancel
-                                        </Button>
-                                    }
-                                    else if (isEdtTiw)
-                                    {
-                                        <Button Color="ButtonColor.Success"
-                                                Size="ButtonSize.Small"
-                                                Class="px-2 py-1 small-btn"
-                                                @onclick="() => ConfirmEdit(EntityLevel.Tiw, curTiw)">
-                                            ✅ Confirm
-                                        </Button>
-
-                                        <Button Color="ButtonColor.Secondary"
-                                                Size="ButtonSize.Small"
-                                                Class="px-2 py-1 small-btn"
-                                                @onclick="() => CancelEdit(EntityLevel.Tiw, curTiw)">
-                                            ❌ Cancel
-                                        </Button>
-                                    }
-                                </div>
-                            </Content>
-                        </Tab>
-                        <Tab title="Affilies">
-                            <Content>
-                                @if (CanEditChildren)
-                                {
-                                    <div class="d-flex align-items-center gap-2 mb-2">
-                                        <label>Group:</label>
-                                        <InputSelect id="gpId" @bind-Value="@IMyGAfl">
-                                            <option value=0>Select group...</option>
-                                            @foreach (var afl in LsGAfls.Where(af => af.Atyp == Ugpe))
-                                            {
-                                                <option value=@afl.Elea>@afl.Liba</option>
-                                            }
-                                        </InputSelect>
-                                        <Button Color="ButtonColor.Primary"
-                                                Size="ButtonSize.Small"
-                                                Disabled="@(IMyGAfl < 1)"
-                                                @onclick="() => StartRubNew(curTiw, IMyGAfl)">
-                                            ➕ Add Child
-                                        </Button>
-                                        @if (curTiw.Tiwafls.Any())
-                                        {
+                                            @onclick="ShowModal">
+                                                piece(s)
+                                            </Button>
                                             <Button Color="ButtonColor.Success"
-                                                    Size="ButtonSize.Small"
-                                                    Class="px-2 py-1 small-btn"
-                                                    @onclick="() => ConfirmEdit(EntityLevel.Rub, curAfil)">
+                                            Size="ButtonSize.Small"
+                                            Class="px-2 py-1 small-btn"
+                                            @onclick="() => ConfirmAdd(EntityLevel.Tiw, draftTiw)">
                                                 ✅ Confirm
                                             </Button>
+
                                             <Button Color="ButtonColor.Secondary"
-                                                    Size="ButtonSize.Small"
-                                                    Disabled="@(IMyGAfl < 1)"
-                                                    @onclick="() => CancelEdit(EntityLevel.Rub, curAfil)">
-                                                ✖ Cancel
+                                            Size="ButtonSize.Small"
+                                            Class="px-2 py-1 small-btn"
+                                            @onclick="() => CancelAdd(EntityLevel.Tiw, draftTiw)">
+                                                ❌ Cancel
                                             </Button>
                                         }
-                                    </div>
-                                    <div>
-                                        @if (draftAfl != null)
+                                        else if (isEdtTiw)
                                         {
-                                            <!-- Cascade stable reference -->
-                                            <CTiwGdHelper SubAfls="@curTiw.Tiwafls.ToList()"
-                                                          RenderKey="child-grid"
-                                                          GMode="@GaflMode"
-                                                          IsEditing="@isAflEditing"
-                                                          AflVisibility="@AflVisibility"
-                                                          EnsTbls="@EnsTbls"
-                                                          EdRowguid="@EdAflRowguid"
-                                                          SelectedGroup="@IMyGAfl"
-                                                          ConfirmEdit="@(p => ConfirmEdit(EntityLevel.Rub, p))"
-                                                          CancelEdit="@(p => CancelEdit(EntityLevel.Rub, p))"
-                                                          ConfirmDelete="@(p => ConfirmDelete(EntityLevel.Rub, p))"
-                                                          CancelDelete="@(p => CancelDelete(EntityLevel.Rub, p))"
-                                                          StartRubEdit="@(p => StartRubEdit(p, p.Rowguid))"
-                                                          StartRowDelete="@(id => StartRowDelete(id, EntityLevel.Rub))" />
-                                            <div class="d-flex align-items-center gap-2 mb-2">
-                                                <Button Color="ButtonColor.Primary"
-                                                        Size="ButtonSize.Small"
-                                                        Disabled="@(IMyGAfl < 1)"
-                                                        @onclick="() => StartRubNew(curTiw, IMyGAfl)">
-                                                    ➕ Add Child
-                                                </Button>
-                                                @if (curTiw.Tiwafls.Any())
-                                                {
-                                                    <Button Color="ButtonColor.Success"
-                                                            Size="ButtonSize.Small"
-                                                            Class="px-2 py-1 small-btn"
-                                                            @onclick="() => ConfirmEdit(EntityLevel.Rub, curAfil)">
-                                                        ✅ Confirm
-                                                    </Button>
-                                                    <Button Color="ButtonColor.Secondary"
-                                                            Size="ButtonSize.Small"
-                                                            Disabled="@(IMyGAfl < 1)"
-                                                            @onclick="() => CancelEdit(EntityLevel.Rub, curAfil)">
-                                                        ✖ Cancel
-                                                    </Button>
-                                                }
-                                            </div>
+                                            <Button Color="ButtonColor.Success"
+                                            Size="ButtonSize.Small"
+                                            Class="px-2 py-1 small-btn"
+                                            @onclick="() => ConfirmEdit(EntityLevel.Tiw, curTiw)">
+                                                ✅ Confirm
+                                            </Button>
+
+                                            <Button Color="ButtonColor.Secondary"
+                                            Size="ButtonSize.Small"
+                                            Class="px-2 py-1 small-btn"
+                                            @onclick="() => CancelEdit(EntityLevel.Tiw, curTiw)">
+                                                ❌ Cancel
+                                            </Button>
                                         }
-                                    </div>
-                                }
-                                else
-                                {
-                                    <div class="alert alert-warning">
-                                        🚫 Save the main record before adding children.
                                     </div>
                                 }
                             </Content>
                         </Tab>
-                        <Tab Title="Verification">
-                            <Content>
-                                @if (canbeVerified)
-                                {
-                                    <div class="container row">
-                                        @* SelectedItemsChanged="OnSelectedItemsChanged" *@
-                                        <Grid TItem="TiewelDto"
-                                              Data="@WaitingTiewels"
-                                              AllowSelection="true"
-                                              SelectionMode="GridSelectionMode.Multiple"
-                                              Responsive="true">
-                                            <GridColumns>
-                                                <GridColumn TItem="TiewelDto" HeaderText="No">
-                                                    <ChildContent Context="item">
-                                                        <span>@(item.Xedt1 == -1 ? item?.Iui : (item?.Iui == 0 ? item?.Iele : item?.Iui))</span>
-                                                    </ChildContent>
-                                                </GridColumn>
-                                                <GridColumn TItem="TiewelDto" HeaderText="Dossier">
-                                                    <ChildContent Context="item">
-                                                        @item.Xmatri
-                                                    </ChildContent>
-                                                </GridColumn>
-                                                <GridColumn TItem="TiewelDto" HeaderText="Nom">
-                                                    <ChildContent Context="item">
-                                                        @item.Nom
-                                                    </ChildContent>
-                                                </GridColumn>
-                                                <GridColumn TItem="TiewelDto" HeaderText="Pnom">
-                                                    <ChildContent Context="item">
-                                                        @item.Pnom
-                                                    </ChildContent>
-                                                </GridColumn>
-                                                <GridColumn TItem="TiewelDto" HeaderText="etat" IsVisible="true">
-                                                    <HeaderContent>
-                                                        @* @if (siyaItem)
+                        @if (Ugpe == 1)
+                        {
+                            <Tab title="Affilies" Name="TiwTab" onClick="() => OnTabChanged(2)">
+                                <Content>
+                                    @if (CanEditChildren)
+                                    {
+                                        <div class="d-flex align-items-center gap-2 mb-2">
+                                            <label>Group:</label>
+                                            <InputSelect id="gpId" @bind-Value="@IMyGAfl">
+                                                <option value=0>Select group...</option>
+                                                @foreach (var afl in LsGAfls.Where(af => af.Atyp == Ugpe))
+                                                {
+                                                    <option value=@afl.Elea>@afl.Liba</option>
+                                                }
+                                            </InputSelect>
+                                            <Button Color="ButtonColor.Primary"
+                                            Size="ButtonSize.Small"
+                                            Disabled="@(IMyGAfl < 1)"
+                                            @onclick="() => StartRubNew(curTiw, IMyGAfl)">
+                                                ➕ Add Child
+                                            </Button>
+                                            @if (curTiw.Tiwafls.Any())
+                                            {
+                                                <Button Color="ButtonColor.Success"
+                                                Size="ButtonSize.Small"
+                                                Class="px-2 py-1 small-btn"
+                                                @onclick="() => ConfirmEdit(EntityLevel.Rub, curAfil)">
+                                                    ✅ Confirm
+                                                </Button>
+                                                <Button Color="ButtonColor.Secondary"
+                                                Size="ButtonSize.Small"
+                                                Disabled="@(IMyGAfl < 1)"
+                                                @onclick="() => CancelEdit(EntityLevel.Rub, curAfil)">
+                                                    ✖ Cancel
+                                                </Button>
+                                            }
+                                        </div>
+                                        <div>
+                                            @if (draftAfl != null)
+                                            {
+                                                <!-- Cascade stable reference -->
+                                                <CTiwGdHelper SubAfls="@curTiw.Tiwafls.ToList()"
+                                                RenderKey="child-grid"
+                                                GMode="@GaflMode"
+                                                IsEditing="@isAflEditing"
+                                                IsViewing="@isAflViewing"
+                                                AflVisibility="@AflVisibility"
+                                                EnsTbls="@EnsTbls"
+                                                EdRowguid="@EdAflRowguid"
+                                                SelectedGroup="@IMyGAfl"
+                                                ConfirmEdit="@(p => ConfirmEdit(EntityLevel.Rub, p))"
+                                                CancelEdit="@(p => CancelEdit(EntityLevel.Rub, p))"
+                                                ConfirmDelete="@(p => ConfirmDelete(EntityLevel.Rub, p))"
+                                                CancelDelete="@(p => CancelDelete(EntityLevel.Rub, p))"
+                                                StartRubEdit="@(p => StartRubEdit(p, p.Rowguid))"
+                                                StartRowDelete="@(id => StartRowDelete(id, EntityLevel.Rub))" />
+                                                <div class="d-flex align-items-center gap-2 mb-2">
+                                                    <Button Color="ButtonColor.Primary"
+                                                    Size="ButtonSize.Small"
+                                                    Disabled="@(IMyGAfl < 1)"
+                                                    @onclick="() => StartRubNew(curTiw, IMyGAfl)">
+                                                        ➕ Add Child
+                                                    </Button>
+                                                    @if (curTiw.Tiwafls.Any())
+                                                    {
+                                                        <Button Color="ButtonColor.Success"
+                                                        Size="ButtonSize.Small"
+                                                        Class="px-2 py-1 small-btn"
+                                                        @onclick="() => ConfirmEdit(EntityLevel.Rub, curAfil)">
+                                                            ✅ Confirm
+                                                        </Button>
+                                                        <Button Color="ButtonColor.Secondary"
+                                                        Size="ButtonSize.Small"
+                                                        Disabled="@(IMyGAfl < 1)"
+                                                        @onclick="() => CancelEdit(EntityLevel.Rub, curAfil)">
+                                                            ✖ Cancel
+                                                        </Button>
+                                                    }
+                                                </div>
+                                            }
+                                        </div>
+                                    }
+                                    else
+                                    {
+                                        <div class="alert alert-warning">
+                                            🚫 Save the main record before adding children.
+                                        </div>
+                                    }
+                                </Content>
+                            </Tab>
+                        }
+                        @if (!isTieViewing)
+                        {
+                            <Tab Title="Verification" Name="TiwTab" onClick="() => OnTabChanged(3)">
+                                <Content>
+                                    @if (canbeVerified)
+                                    {
+                                        <div class="container row">
+                                            @* SelectedItemsChanged="OnSelectedItemsChanged" *@
+                                            <Grid TItem="TiewelDto"
+                                            Data="@WaitingTiewels"
+                                            AllowSelection="true"
+                                            SelectionMode="GridSelectionMode.Multiple"
+                                            Responsive="true">
+                                                <GridColumns>
+                                                    <GridColumn TItem="TiewelDto" HeaderText="No">
+                                                        <ChildContent Context="item">
+                                                            <span>@(item.Xedt1 == -1 ? item?.Iui : (item?.Iui == 0 ? item?.Iele : item?.Iui))</span>
+                                                        </ChildContent>
+                                                    </GridColumn>
+                                                    <GridColumn TItem="TiewelDto" HeaderText="Dossier">
+                                                        <ChildContent Context="item">
+                                                            @item.Xmatri
+                                                        </ChildContent>
+                                                    </GridColumn>
+                                                    <GridColumn TItem="TiewelDto" HeaderText="Nom">
+                                                        <ChildContent Context="item">
+                                                            @item.Nom
+                                                        </ChildContent>
+                                                    </GridColumn>
+                                                    <GridColumn TItem="TiewelDto" HeaderText="Pnom">
+                                                        <ChildContent Context="item">
+                                                            @item.Pnom
+                                                        </ChildContent>
+                                                    </GridColumn>
+                                                    <GridColumn TItem="TiewelDto" HeaderText="etat" IsVisible="true">
+                                                        <HeaderContent>
+                                                            @* @if (siyaItem)
                                                                     {
                                                                         <button class="btn btn-primary btn-sm"
                                                                                 @onclick="() => ValiderSelection()">
@@ -406,212 +419,238 @@
                                                                     {
                                                                         <span>Eta</span>
                                                                     } *@
-                                                    </HeaderContent>
-                                                    <ChildContent Context="item">
-                                                        <InputSelect @bind-Value="item.Eta" disabled="true">
-                                                            <option class="jchx" value=0>?choisir</option>
-                                                            @foreach (var tob in LsFixes.Where(ut => ut.Gvars == 32 && ut.Itb == 1 && ut.Elea != 0))
-                                                            {
-                                                                <option value=@tob.Elea>@tob.Liba</option>
-                                                            }
-                                                        </InputSelect>
-                                                    </ChildContent>
-                                                </GridColumn>
-                                                <GridColumn TItem="TiewelDto" HeaderText="Actions" Filterable="false" Class="xcol2 actions-col">
-                                                    <ChildContent Context="item">
-                                                        <Button Color="ButtonColor.Secondary" Size="ButtonSize.Small"
-                                                                @onclick="() => VueDetails(EntityLevel.Tiw, item)">
-                                                            Details
-                                                        </Button>
-                                                    </ChildContent>
-                                                </GridColumn>
-                                            </GridColumns>
-                                        </Grid>
-                                    </div>
-                                }
-                            </Content>
-                        </Tab>
+                                                        </HeaderContent>
+                                                        <ChildContent Context="item">
+                                                            <InputSelect @bind-Value="item.Eta" disabled="true">
+                                                                <option class="jchx" value=0>?choisir</option>
+                                                                @foreach (var tob in LsFixes.Where(ut => ut.Gvars == 32 && ut.Itb == 1 && ut.Elea != 0))
+                                                                {
+                                                                    <option value=@tob.Elea>@tob.Liba</option>
+                                                                }
+                                                            </InputSelect>
+                                                        </ChildContent>
+                                                    </GridColumn>
+                                                    <GridColumn TItem="TiewelDto" HeaderText="Actions" Filterable="false" Class="xcol2 actions-col">
+                                                        <ChildContent Context="item">
+                                                            <Button Color="ButtonColor.Secondary" Size="ButtonSize.Small"
+                                                            @onclick="() => VueDetails(EntityLevel.Tiw, item)">
+                                                                Details
+                                                            </Button>
+                                                        </ChildContent>
+                                                    </GridColumn>
+                                                </GridColumns>
+                                            </Grid>
+                                        </div>
+                                    }
+                                </Content>
+                            </Tab>
+                        }
                     </Tabs>
                 </div>
             }
             <!--En bas ordinaire-->
             <label>------------          ------------        ------------</label>
-            <div class="container row">
-                <Grid TItem="TiewelDto"
-                      Data="@WaitingTiewels"
-                      @key="TiwRenderKey"
-                      AllowDetailView="true"
-                      AllowPaging="true"
-                      Responsive="true">
-                    <GridColumns>
-                        <GridColumn TItem="TiewelDto" HeaderText="No">
-                            <ChildContent Context="item">
-                                <span>@(item.Xedt1 == -1 ? item?.Iui : (item?.Iui == 0 ? item?.Iele : item?.Iui))</span>
-                            </ChildContent>
-                        </GridColumn>
-                        <GridColumn TItem="TiewelDto" HeaderText="Dossier">
-                            <ChildContent Context="item">
-                                @item.Xmatri
-                            </ChildContent>
-                        </GridColumn>
-                        <GridColumn TItem="TiewelDto" HeaderText="Nom">
-                            <ChildContent Context="item">
-                                @item.Nom
-                            </ChildContent>
-                        </GridColumn>
-                        <GridColumn TItem="TiewelDto" HeaderText="Pnom">
-                            <ChildContent Context="item">
-                                @item.Pnom
-                            </ChildContent>
-                        </GridColumn>
-                        <GridColumn TItem="TiewelDto" HeaderText="etat" IsVisible="true">
-                            <ChildContent Context="item">
-                                <InputSelect @bind-Value="item.Eta" disabled="true">
-                                    <option class="jchx" value=0>?choisir</option>
-                                    @foreach (var tob in LsFixes.Where(ut => ut.Gvars == 32 && ut.Itb == 1 && ut.Elea != 0))
-                                    {
-                                        <option value=@tob.Elea>@tob.Liba</option>
-                                    }
-                                </InputSelect>
-                            </ChildContent>
-                        </GridColumn>
-                        <GridColumn TItem="TiewelDto" HeaderText="Actions" Filterable="false" Class="xcol2 actions-col">
-                            <ChildContent Context="item">
-                                @switch (GetRowState(item.Rowguid))
-                                {
-                                    case RowState.Locked:
-                                        <span class="text-muted">—</span>
-                                        break;
-
-                                    case RowState.DeletePending:
-                                        <Button Color="ButtonColor.Danger" Size="ButtonSize.Small"
-                                                @onclick="() => ConfirmDelete(EntityLevel.Tiw, item)">
-                                            ⚠️ Confirm
-                                        </Button>
-                                        <Button Color="ButtonColor.Secondary" Size="ButtonSize.Small"
-                                                @onclick="() => CancelDelete(EntityLevel.Tiw,item)">
-                                            ❎ Cancel
-                                        </Button>
-                                        break;
-                                    case RowState.EditPending:
-                                        <Button Color="ButtonColor.Success" Size="ButtonSize.Small"
-                                                Disabled="@(item.Xadd1 == -1)"
-                                                @onclick="() => ConfirmEdit(EntityLevel.Tiw, item)">
-                                            ✅ Confirm
-                                        </Button>
-                                        <Button Color="ButtonColor.Secondary" Size="ButtonSize.Small"
-                                                Disabled="@(item.Xadd1 == -1)"
-                                                @onclick="() => CancelEdit(EntityLevel.Tiw, item)">
-                                            ❌ Cancel
-                                        </Button>
-                                        break;
-                                    default:
-                                        <Button Color="ButtonColor.Warning" Size="ButtonSize.Small"
-                                                @onclick="() => StartManTiwEdit(item, 1)">
-                                            ✏️ Edit
-                                        </Button>
-                                        <Button Color="ButtonColor.Secondary" Size="ButtonSize.Small"
-                                                @onclick="() => VueDetails(EntityLevel.Tiw, item)">
-                                            ✏️ Details
-                                        </Button>
-                                        <Button Color="ButtonColor.Danger" Size="ButtonSize.Small"
-                                                @onclick="() => StartRowDelete(item.Rowguid, EntityLevel.Tiw)">
-                                            🗑 Delete
-                                        </Button>
-                                        break;
-                                }
-                            </ChildContent>
-                        </GridColumn>
-                    </GridColumns>
-                    <GridDetailView TItem="TiewelDto" Context="selectedPln">
-                        <Grid TItem="TiwaflDto"
-                              Data="@selectedPln.Tiwafls"
-                              @key="RubRenderKey"
-                              Responsive="true">
-                            <GridColumns>
-                                <GridColumn TItem="TiwaflDto" HeaderText="No">
-                                    <ChildContent Context="item">
-                                        <span>@(item.Xedt1 == -1 ? item?.Iui : (item?.Iui == 0 ? item?.Iele : item?.Iui))</span>
-                                    </ChildContent>
-                                </GridColumn>
-                                <GridColumn TItem="TiwaflDto" HeaderText="Dossier">
-                                    <ChildContent Context="item">
-                                        @item.Xmatri
-                                    </ChildContent>
-                                </GridColumn>
-                                <GridColumn TItem="TiwaflDto" HeaderText="Nom">
-                                    <ChildContent Context="item">
-                                        @item.Nom
-                                    </ChildContent>
-                                </GridColumn>
-                                <GridColumn TItem="TiwaflDto" HeaderText="Pnom">
-                                    <ChildContent Context="item">
-                                        @item.Pnom
-                                    </ChildContent>
-                                </GridColumn>
-                                <GridColumn TItem="TiwaflDto" HeaderText="etat" IsVisible="true">
-                                    <ChildContent Context="item">
-                                        <InputSelect @bind-Value="item.Eta" disabled="true">
-                                            <option class="jchx" value=0>?choisir</option>
-                                            @foreach (var tob in LsFixes.Where(ut => ut.Gvars == 32 && ut.Itb == 1 && ut.Elea != 0))
-                                            {
-                                                <option value=@tob.Elea>@tob.Liba</option>
-                                            }
-                                        </InputSelect>
-                                    </ChildContent>
-                                </GridColumn>
-                                <GridColumn TItem="TiwaflDto" HeaderText="Actions" Filterable="false" Class="xcol2 actions-col">
-                                    <ChildContent Context="item">
-                                        @switch (GetRowState(item.Rowguid))
+            @if (refTab != 3)
+            {
+                <div class="container row">
+                    <Grid TItem="TiewelDto"
+                    Data="@WaitingTiewels"
+                    @key="TiwRenderKey"
+                    AllowDetailView="true"
+                    AllowPaging="true"
+                    Responsive="true">
+                        <GridColumns>
+                            <GridColumn TItem="TiewelDto" HeaderText="No">
+                                <ChildContent Context="item">
+                                    <span>@(item.Xedt1 == -1 ? item?.Iui : (item?.Iui == 0 ? item?.Iele : item?.Iui))</span>
+                                </ChildContent>
+                            </GridColumn>
+                            <GridColumn TItem="TiewelDto" HeaderText="Dossier">
+                                <ChildContent Context="item">
+                                    @item.Xmatri
+                                </ChildContent>
+                            </GridColumn>
+                            <GridColumn TItem="TiewelDto" HeaderText="Nom">
+                                <ChildContent Context="item">
+                                    @item.Nom
+                                </ChildContent>
+                            </GridColumn>
+                            <GridColumn TItem="TiewelDto" HeaderText="Pnom">
+                                <ChildContent Context="item">
+                                    @item.Pnom
+                                </ChildContent>
+                            </GridColumn>
+                            <GridColumn TItem="TiewelDto" HeaderText="etat" IsVisible="true">
+                                <ChildContent Context="item">
+                                    <InputSelect @bind-Value="item.Eta" disabled="true">
+                                        <option class="jchx" value=0>?choisir</option>
+                                        @foreach (var tob in LsFixes.Where(ut => ut.Gvars == 32 && ut.Itb == 1 && ut.Elea != 0))
                                         {
-                                            case RowState.Locked:
-                                                <span class="text-muted">—</span>
-                                                break;
-
-                                            case RowState.DeletePending:
-                                                <Button Color="ButtonColor.Danger" Size="ButtonSize.Small"
-                                                        @onclick="() => ConfirmDelete(EntityLevel.Rub, item)">
-                                                    ⚠️ Confirm
-                                                </Button>
-                                                <Button Color="ButtonColor.Secondary" Size="ButtonSize.Small"
-                                                        @onclick="() => CancelDelete(EntityLevel.Rub, item)">
-                                                    ❎ Cancel
-                                                </Button>
-                                                break;
-                                            case RowState.EditPending:
-                                                <Button Color="ButtonColor.Success" Size="ButtonSize.Small"
-                                                        Disabled="@(item.Xadd1 == -1)"
-                                                        @onclick="() => ConfirmEdit(EntityLevel.Rub, item)">
-                                                    ✅ Confirm
-                                                </Button>
-                                                <Button Color="ButtonColor.Secondary" Size="ButtonSize.Small"
-                                                        Disabled="@(item.Xadd1 == -1)"
-                                                        @onclick="() => CancelEdit(EntityLevel.Rub, item)">
-                                                    ❌ Cancel
-                                                </Button>
-                                                break;
-                                            default:
-                                                <Button Color="ButtonColor.Warning" Size="ButtonSize.Small"
-                                                        @onclick="() => StartRubEdit(item, item.Rowguid)">
-                                                    ✏️ Edit
-                                                </Button>
-                                                <Button Color="ButtonColor.Secondary" Size="ButtonSize.Small"
-                                                        @onclick="() => VueDetails(EntityLevel.Rub, item)">
-                                                    ✏️ Details
-                                                </Button>
-                                                <Button Color="ButtonColor.Danger" Size="ButtonSize.Small"
-                                                        @onclick="() => StartRowDelete(item.Rowguid, EntityLevel.Rub)">
-                                                    🗑 Delete
-                                                </Button>
-                                                break;
+                                            <option value=@tob.Elea>@tob.Liba</option>
                                         }
-                                    </ChildContent>
-                                </GridColumn>
-                            </GridColumns>
-                        </Grid>
-                    </GridDetailView>
-                </Grid>
-            </div>
+                                    </InputSelect>
+                                </ChildContent>
+                            </GridColumn>
+                            <GridColumn TItem="TiewelDto" HeaderText="Actions" Filterable="false" IsVisible="!isTieViewing" Class="xcol2 actions-col">
+                                <ChildContent Context="item">
+                                    @switch (GetRowState(item.Rowguid))
+                                    {
+                                        case RowState.Locked:
+                                            <span class="text-muted">—</span>
+                                            break;
+
+                                        case RowState.DeletePending:
+                                            <Button Color="ButtonColor.Danger" Size="ButtonSize.Small"
+                                            @onclick="() => ConfirmDelete(EntityLevel.Tiw, item)">
+                                                ⚠️ Confirm
+                                            </Button>
+                                            <Button Color="ButtonColor.Secondary" Size="ButtonSize.Small"
+                                            @onclick="() => CancelDelete(EntityLevel.Tiw,item)">
+                                                ❎ Cancel
+                                            </Button>
+                                            break;
+                                        case RowState.EditPending:
+                                            <Button Color="ButtonColor.Success" Size="ButtonSize.Small"
+                                            Disabled="@(item.Xadd1 == -1)"
+                                            @onclick="() => ConfirmEdit(EntityLevel.Tiw, item)">
+                                                ✅ Confirm
+                                            </Button>
+                                            <Button Color="ButtonColor.Secondary" Size="ButtonSize.Small"
+                                            Disabled="@(item.Xadd1 == -1)"
+                                            @onclick="() => CancelEdit(EntityLevel.Tiw, item)">
+                                                ❌ Cancel
+                                            </Button>
+                                            break;
+                                        default:
+                                            <Button Color="ButtonColor.Warning" Size="ButtonSize.Small"
+                                            @onclick="() => StartManTiwEdit(item, 1)">
+                                                ✏️ Edit
+                                            </Button>
+                                            <Button Color="ButtonColor.Secondary" Size="ButtonSize.Small"
+                                            @onclick="() => VueDetails(EntityLevel.Tiw, item)">
+                                                ✏️ Details
+                                            </Button>
+                                            <Button Color="ButtonColor.Danger" Size="ButtonSize.Small"
+                                            @onclick="() => StartRowDelete(item.Rowguid, EntityLevel.Tiw)">
+                                                🗑 Delete
+                                            </Button>
+                                            break;
+                                    }
+                                </ChildContent>
+                            </GridColumn>
+                        </GridColumns>
+                        <GridDetailView TItem="TiewelDto" Context="selectedPln">
+                            <Grid TItem="TiwaflDto"
+                            Data="@selectedPln.Tiwafls"
+                            @key="RubRenderKey"
+                            Responsive="true">
+                                <GridColumns>
+                                    <GridColumn TItem="TiwaflDto" HeaderText="No">
+                                        <ChildContent Context="item">
+                                            <span>@(item.Xedt1 == -1 ? item?.Iui : (item?.Iui == 0 ? item?.Iele : item?.Iui))</span>
+                                        </ChildContent>
+                                    </GridColumn>
+                                    <GridColumn TItem="TiwaflDto" HeaderText="Dossier">
+                                        <ChildContent Context="item">
+                                            @item.Xmatri
+                                        </ChildContent>
+                                    </GridColumn>
+                                    <GridColumn TItem="TiwaflDto" HeaderText="Nom">
+                                        <ChildContent Context="item">
+                                            @item.Nom
+                                        </ChildContent>
+                                    </GridColumn>
+                                    <GridColumn TItem="TiwaflDto" HeaderText="Pnom">
+                                        <ChildContent Context="item">
+                                            @item.Pnom
+                                        </ChildContent>
+                                    </GridColumn>
+                                    <GridColumn TItem="TiwaflDto" HeaderText="etat" IsVisible="true">
+                                        <ChildContent Context="item">
+                                            <InputSelect @bind-Value="item.Eta" disabled="true">
+                                                <option class="jchx" value=0>?choisir</option>
+                                                @foreach (var tob in LsFixes.Where(ut => ut.Gvars == 32 && ut.Itb == 1 && ut.Elea != 0))
+                                                {
+                                                    <option value=@tob.Elea>@tob.Liba</option>
+                                                }
+                                            </InputSelect>
+                                        </ChildContent>
+                                    </GridColumn>
+                                    <GridColumn TItem="TiwaflDto" HeaderText="Actions" Filterable="false" Class="xcol2 actions-col">
+                                        <ChildContent Context="item">
+                                            @switch (GetRowState(item.Rowguid))
+                                            {
+                                                case RowState.Locked:
+                                                    <span class="text-muted">—</span>
+                                                    break;
+
+                                                case RowState.DeletePending:
+                                                    <Button Color="ButtonColor.Danger" Size="ButtonSize.Small"
+                                                    @onclick="() => ConfirmDelete(EntityLevel.Rub, item)">
+                                                        ⚠️ Confirm
+                                                    </Button>
+                                                    <Button Color="ButtonColor.Secondary" Size="ButtonSize.Small"
+                                                    @onclick="() => CancelDelete(EntityLevel.Rub, item)">
+                                                        ❎ Cancel
+                                                    </Button>
+                                                    break;
+                                                case RowState.EditPending:
+                                                    <Button Color="ButtonColor.Success" Size="ButtonSize.Small"
+                                                    Disabled="@(item.Xadd1 == -1)"
+                                                    @onclick="() => ConfirmEdit(EntityLevel.Rub, item)">
+                                                        ✅ Confirm
+                                                    </Button>
+                                                    <Button Color="ButtonColor.Secondary" Size="ButtonSize.Small"
+                                                    Disabled="@(item.Xadd1 == -1)"
+                                                    @onclick="() => CancelEdit(EntityLevel.Rub, item)">
+                                                        ❌ Cancel
+                                                    </Button>
+                                                    break;
+                                                default:
+                                                    <Button Color="ButtonColor.Warning" Size="ButtonSize.Small"
+                                                    @onclick="() => StartRubEdit(item, item.Rowguid)">
+                                                        ✏️ Edit
+                                                    </Button>
+                                                    <Button Color="ButtonColor.Secondary" Size="ButtonSize.Small"
+                                                    @onclick="() => VueDetails(EntityLevel.Rub, item)">
+                                                        ✏️ Details
+                                                    </Button>
+                                                    <Button Color="ButtonColor.Danger" Size="ButtonSize.Small"
+                                                    @onclick="() => StartRowDelete(item.Rowguid, EntityLevel.Rub)">
+                                                        🗑 Delete
+                                                    </Button>
+                                                    break;
+                                            }
+                                        </ChildContent>
+                                    </GridColumn>
+                                </GridColumns>
+                            </Grid>
+                        </GridDetailView>
+                    </Grid>
+                </div>
+            }           
+            <!-- Modal for TIEWEL -->
+            @* <Modal @ref="pForuModal" Size="ModalSize.Large" Title="Details Tiers Accueil" ShowCloseButton="false">
+                <BodyTemplate>
+                    @if (draftPln != null)
+                    {
+                        <div class="mb-3">
+                            <label class="form-label">Formula</label>
+                            <InputTextArea class="form-control"
+                                           @bind-Value="draftPln.Fpsrc"
+                                           rows="8"
+                                           style="resize: vertical;" />
+                        </div>
+                    }
+                    else
+                    {
+                        @curPlan?.Fpsrc
+                    }
+                </BodyTemplate>
+                <FooterTemplate>
+                    <Button Color="ButtonColor.Secondary" @onclick="() => pForuModal.HideAsync()">Fermer</Button>
+                </FooterTemplate>
+            </Modal> *@
         </Authorized>
     </AuthorizeView>
 }
@@ -786,6 +825,9 @@
     private bool isAflEditing => GaflMode == GridMode.AflsAdding
             || GaflMode == GridMode.AflsEditing;
 
+    //viewing
+    private bool isTieViewing = false;
+    private bool isAflViewing = false; 
 
     //Global
     private int _lgcdu = 0;
@@ -795,8 +837,8 @@
     private int IMyGAfl = 0; //1cn2par3enf4pai5flh
     //.private int _previousIMyGAfl = 0;
     private string atrTitle = "";
-
     private string atrDest = "Programmes de Saisie";
+    private int refTab = 1;
 
     private TiewelDto curTiw = new();
     private TiwaflDto curAfl = new();
@@ -824,6 +866,8 @@
 
     //modals
     private bool isModalVisible = false;
+
+
     private List<TiewelDto> WaitingTiewels => MyDaTies.Where(tw => tw.Xadd1 != -1).ToList();
     private bool canbeVerified => WaitingTiewels.Any();
     private HashSet<TiewelDto> selectedTiewels = new();
@@ -956,7 +1000,25 @@
         AflVisibility = System.Text.Json.JsonSerializer.Deserialize<Dictionary<string, bool>>(json) ?? new();
         Console.WriteLine("AflVisibility loaded 2");
     }
-
+    private void OnTabChanged(int tabIndex)
+    {
+      refTab = tabIndex;
+      switch (tabIndex)
+        {
+            case 1:
+                ActiveTab = "Candidat";
+                break;
+            case 2:
+                ActiveTab = "Tiers";
+                break;
+            case 3:
+                ActiveTab = "Verification";
+                break;
+            default:
+                ActiveTab = "Candidat";
+                break;
+        }
+    }
     public async Task StartTiwNew()
     {
         Console.WriteLine("🚨 StartTiwNew");
@@ -1159,7 +1221,22 @@
     }
     private async Task VueDetails(EntityLevel level, object entity)
     {
-
+        var rowguid = MLEntityKeyHelper.GetRowguidAsGuid(entity);
+        switch (level)
+        {
+            case EntityLevel.Tiw :
+                var itpln = (TiewelDto)entity;
+                isTieViewing = true;
+                await StartTiwEdit(itpln, rowguid);
+                break;
+            case EntityLevel.Rub :
+                var itrub = (TiwaflDto)entity;  
+                isAflViewing = true;
+                await StartRubEdit(itrub, rowguid);
+                break;
+            default:
+                throw new InvalidOperationException($"Unknown entity type viewing entity");
+        }
     }
     private async Task TieatSaveAsync()
     {

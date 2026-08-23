@@ -19,13 +19,12 @@
 @using BlazorBootstrap
 @using Blazored.LocalStorage
 @using AutoMapper
-@using Microsoft.AspNetCore.Components.Forms
 
 @inject NavigationManager _navManager
 @inject IJSRuntime _JsRUN
 @inject IMessageService _messageService
 <!-- InscTiewComponent.razor -->
-<PageTitle>Prog.Ventilation</PageTitle>
+<PageTitle>Modele(PROG).Ventilation</PageTitle>
 
 @if (isLoading)
 {
@@ -48,7 +47,6 @@ else
         <Authorized Context="AuthContext">
             <div class="row">
                 <div class="col-md-12 input-group align-middle">
-                    <span><b>Message :</b></span>
                     &nbsp;&nbsp;
                     @if (!String.IsNullOrEmpty(Imessage))
                     {
@@ -58,16 +56,22 @@ else
             </div>
             <div class="form-group">
                 <div class="btn btn-group">
-                    <label class="me-2">Domaine :</label>
-                    <InputSelect @bind-Value="IMyDom" class="me-3" style="width:auto">
+                    <label class="fw-bold me-2">Domaine :</label>
+                    <InputSelect @bind-Value="IMyDom"
+                                 @bind-Value:after="OuvreMGrid"
+                                 class="me-3"
+                                 style="width:auto">
                         <option value=0>?domaine</option>
                         @foreach (var tob in LsDoms)
                         {
                             <option value=@tob.Elea>@tob.Liba</option>
                         }
                     </InputSelect>
-                    <label class="me-2">Attribut :</label>
-                    <InputSelect @bind-Value="IMyAtr" class="me-3" style="width:auto">
+                    <label class="fw-bold me-2">Attribut :</label>
+                    <InputSelect @bind-Value="IMyAtr"
+                                 @bind-Value:after="OuvreMGrid"
+                                 class="me-3"
+                                 style="width:auto">
                         <option value=0>?attribut</option>
                         @foreach (var tob in LsAtrs)
                         {
@@ -75,7 +79,10 @@ else
                         }
                     </InputSelect>
                     <label class="fw-bold">Base :</label>
-                    <InputSelect @bind-Value="IMyVue" class="me-3" style="width:auto">
+                    <InputSelect @bind-Value="IMyVue"
+                                 @bind-Value:after="OuvreMGrid"
+                                 class="me-3"
+                                 style="width:auto">
                         <option value=0>?util</option>
                         @foreach (var tob in LsVues)
                         {
@@ -101,7 +108,7 @@ else
                             }
                         </div>
                         <div class="row">
-                            @if (isPlnVisible)
+                            @if (CanOpenMGrid)
                             {
                                 <Grid TItem="PlngenDto"
                                       Data="@MyDaPlans"
@@ -174,7 +181,7 @@ else
                                         </GridColumn>
                                         <GridColumn TItem="PlngenDto" HeaderText="Eta">
                                             <HeaderContent>
-                                                @if (isPlnVisible)
+                                                @if (CanOpenMGrid)
                                                 {
                                                     <button class="btn btn-primary btn-sm @(IsLevelBusy(EntityLevel.Plan) ? "disabled-action" : "")"
                                                             disabled="@IsLevelBusy(EntityLevel.Plan)"
@@ -989,12 +996,11 @@ else
     //Global
     private int _lgcdu = 0;
     private int IMyGpln = 5; //5Programme
-    private int IMyDom = 0; //3Compta4Cumul
+    private int IMyDom = 6; //1Variables2Durables3Factures4Echeanciers5Calculs6Cumuls7Compta
     private int IMyAtr = 0; //1Tiers2Matiere
     private int IMyVue = 0; //1Base2Virtuel3Geogr
     private int IMyCtprog = 0, IMyCtrub = 0;
 
-    private bool isPlnVisible => IMyDom != 0 && IMyAtr != 0 && IMyVue != 0;
     // private int _myDom = 3; //3Compta4Cumul
     // public int IMyDom
     // {
@@ -1064,6 +1070,7 @@ else
     public List<PlngenDto> MyDaPlans => PlanItems;
     public List<RubvarDto> MyDaRubs => RubItems;
     public List<RubfmtDto> MyDaFmts => FmtItems;
+    private bool CanOpenMGrid = false;
 
     private List<PlngenDto> LsPlsEchs => curOrga.Plngens.Where(pl => pl.Ptyp == 2).ToList();
     private List<PlngenDto> LsPlsGris => curOrga.Plngens.Where(pl => pl.Ptyp == 3).ToList();
@@ -1116,7 +1123,7 @@ else
             }
             LsVars = toChild.LsVars;
             LsFixes = toChild.LsFixes;
-            LsDoms = LsFixes.Where(ut => ut.Gvars == 36 && ut.Itb == 2 && ut.Gp1 == 1 && ut.Elea != 0).ToList();
+            LsDoms = LsFixes.Where(ut => ut.Gvars == 36 && ut.Itb == 2 && ut.Gp1 == 3 && ut.Elea != 0).ToList();
             LsAtrs = LsFixes.Where(ut => ut.Gvars == 36 && ut.Itb == 4 && ut.Gp1 == 3 && ut.Elea != 0).ToList();
             LsVues = LsFixes.Where(ut => ut.Gvars == 36 && ut.Itb == 4 && ut.Gp1 == 6 && ut.Elea != 0).ToList();
             LsGties = LsFixes.Where(ut => ut.Gvars == 36 && ut.Itb == 6 && ut.Elea != 0 && ut.Elea != 9).ToList();
@@ -1159,6 +1166,19 @@ else
         if (firstRender)
         {
             _locationHandler = _navManager.RegisterLocationChangingHandler(OnLocationChangingAsync);
+        }
+    }
+    private async Task OuvreMGrid()
+    {
+        if (IMyDom != 0 && IMyAtr != 0 && IMyVue != 0)
+        {
+            await UpdateMyDaPlans();
+            PlnRenderKey = Guid.NewGuid();
+            CanOpenMGrid = true;
+        }
+        else
+        {
+            CanOpenMGrid = false;
         }
     }
     void OnPlnRowClick(GridRowEventArgs<PlngenDto> args)
@@ -1215,8 +1235,8 @@ else
             Idorg = curOrga.Idorg,
             Iui = lsnb,
             Ptyp = IMyGpln,
-            Todom = IMyDom,
-            Ogtyp = 0,
+            Todom = IMyDom, //6Cumul7Compta
+            //Ogtyp = 0,
             Totyp = IMyGtie,
             Toatr = 0,
             Tovue = IMyVue,
@@ -1231,8 +1251,9 @@ else
             Xedt1 = 0
         };
 
-        PlanItems.Insert(0, newPln);
+        //PlanItems.Insert(0, newPln);
         curOrga.Plngens.Insert(0, newPln);
+        await UpdateMyDaPlans();
 
         SetRowState(EntityLevel.Plan, newPln.Rowguid, RowState.AddPending);
         //SetLightBackground(newPln.Rowguid, true);
@@ -1270,6 +1291,7 @@ else
             Prowguid = mypln.Rowguid,
             Idorg = mypln.Idorg,
             Ipln = mypln.Id,
+            Vgpe = IMyDom, //Ventilation-6cumul7compta
             Scdrub = "",
             Iui = lsnb,
             Torub = 0,
@@ -1295,8 +1317,9 @@ else
             Xedt1 = 0
         };
 
-        RubItems.Insert(0, newRub);
+        //RubItems.Insert(0, newRub);
         curPlan.Rubvars.Insert(0, newRub);
+        await UpdateMyDaRubs();
 
         draftRub = DeepClone(newRub);
         BeginAdd(EntityLevel.Rub, newRub.Rowguid, draftRub);
@@ -1342,8 +1365,9 @@ else
             Xedt1 = 0
         };
 
-        FmtItems.Insert(0, newFmt);
+        //FmtItems.Insert(0, newFmt);
         myrub.Rubfmts.Insert(0, newFmt);
+        await UpdateMyDaFmts();
 
         draftFmt = DeepClone(newFmt);
         BeginAdd(EntityLevel.Fmt, newFmt.Rowguid, draftFmt);
@@ -1412,23 +1436,23 @@ else
 
         StateHasChanged();
     }
-    private void StartCancelAdd(EntityLevel level, object entity)
+    private async Task StartCancelAdd(EntityLevel level, object entity)
     {
         var rowguid = MLEntityKeyHelper.GetRowguidAsGuid(entity);
         switch (level)
         {
             case EntityLevel.Plan:
-                CancelAdd(level, entity);
+                await CancelAdd(level, entity);
                 curOrga.Plngens.RemoveAll(x => x.Rowguid == rowguid);
                 PlnRenderKey = Guid.Empty;
                 break;
             case EntityLevel.Rub:
-                CancelAdd(level, entity);
+                await CancelAdd(level, entity);
                 curPlan.Rubvars.RemoveAll(x => x.Rowguid == rowguid);
                 RubRenderKey = Guid.Empty;
                 break;
             case EntityLevel.Fmt:
-                CancelAdd(level, entity);
+                await CancelAdd(level, entity);
                 curRubr.Rubfmts.RemoveAll(x => x.Rowguid == rowguid);
                 FmtRenderKey = Guid.Empty;
                 break;
@@ -1529,7 +1553,7 @@ else
     {
         PlanItems.Clear();
         PlanItems.AddRange(
-            curOrga.Plngens?.Where(pl => pl.Ptyp == IMyGpln && pl.Todom == IMyDom)
+            curOrga.Plngens?.Where(pl => pl.Ptyp == IMyGpln && pl.Todom == IMyDom && pl.Toatr == IMyAtr && pl.Tovue == IMyVue)
             ?? Enumerable.Empty<PlngenDto>());
     }
     private void InitializeMyDaRubs()
@@ -1546,21 +1570,21 @@ else
             curRubr.Rubfmts.ToList()
         ?? Enumerable.Empty<RubfmtDto>());
     }
-    private void UpdateMyDaPlans()
+    private async Task UpdateMyDaPlans()
     {
         PlanItems.Clear();
         PlanItems.AddRange(
-            curOrga.Plngens?.Where(pl => pl.Ptyp == IMyGpln && pl.Todom == IMyDom)
+            curOrga.Plngens?.Where(pl => pl.Ptyp == IMyGpln && pl.Todom == IMyDom && pl.Toatr == IMyAtr && pl.Tovue == IMyVue)
             ?? Enumerable.Empty<PlngenDto>());
     }
-    private void UpdateMyDaRubs()
+    private async Task UpdateMyDaRubs()
     {
         RubItems.Clear();
         RubItems.AddRange(
             curPlan.Rubvars.ToList()
             ?? Enumerable.Empty<RubvarDto>());
     }
-    private void UpdateMyDaFmts()
+    private async Task UpdateMyDaFmts()
     {
         FmtItems.Clear();
         FmtItems.AddRange(

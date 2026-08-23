@@ -35,7 +35,8 @@ namespace GxPilo.Components.Uifrags
         protected readonly List<ResdonDto> ResItems = new();
         protected readonly List<ResdetDto> RdtItems = new();
         protected readonly List<ResbroDto> BroItems = new();
-
+        //protected readonly List<GstablDto> GtbItems = new();
+        //protected readonly List<GstablDto> GchItems = new();
         protected object? _draftPlan { get; set; }
         protected object? _draftRub { get; set; }
         protected object? _draftFmt { get; set; }
@@ -47,6 +48,7 @@ namespace GxPilo.Components.Uifrags
         protected object? _draftRes { get; set; }
         protected object? _draftRdt { get; set; }
         protected object? _draftBro { get; set; }
+        //protected object? _draftGtb { get; set; }
 
         protected MultiLevelCrudBase(IPendingChangesGuard guard)
         {
@@ -65,6 +67,9 @@ namespace GxPilo.Components.Uifrags
         protected abstract void RollbackPendingState(EntityLevel level, object entity, bool isNew);
         protected abstract void ReplaceInLocalCollection(EntityLevel level, object entity);
         protected abstract void CopyDraftToGridItem(EntityLevel level, object entity);
+        //protected abstract void CopyDraftTblToGridItem(EntityLevel level, object entity, int tent);
+        //protected abstract void CopyDraftTblToGridItem<T>(T gridItem, int tent);
+        //protected abstract void CopyDraftTblToGridItem(EntityLevel level, object entity, int tent);
         protected abstract void RestoreOriginalGridItem(EntityLevel level, object entity);
         protected abstract void FinalizeConfirmedState(EntityLevel level, object entity, string message);
         //protected abstract void EndEdit(EntityLevel level);
@@ -123,7 +128,12 @@ namespace GxPilo.Components.Uifrags
             await UnifiedAddAction(level, draft, isConfirm);
             await InvokeAsync(StateHasChanged);
         }
+        //protected async Task ConfirmTblAdd(EntityLevel level, object? draft, bool isConfirm, int tent)
+        //{           // EndEdit(level);
 
+        //    await UnifiedTblAddAction(level, draft, isConfirm, tent);
+        //    await InvokeAsync(StateHasChanged);
+        //}
         protected async Task ConfirmEdit(EntityLevel level, object? draft, bool isConfirm)
         {
             if (draft is null) return;
@@ -132,7 +142,6 @@ namespace GxPilo.Components.Uifrags
             await InvokeAsync(StateHasChanged);
         }
 
-        
         private async Task UnifiedAddAction(EntityLevel level, object entity, bool isConfirm)
         {
             var rowguid = MLEntityKeyHelper.GetRowguidAsGuid(entity);
@@ -141,10 +150,10 @@ namespace GxPilo.Components.Uifrags
                 RollbackPendingState(level, entity, true);
                 return;
             }
-
+            Console.WriteLine("AVANT VALIDATE");
             if (!Validate(level, entity))
                 return;
-
+            Console.WriteLine("APRES VALIDATE");
             // Copy draft values into the grid item
             CopyDraftToGridItem(level, entity);
 
@@ -162,7 +171,35 @@ namespace GxPilo.Components.Uifrags
 
             FinalizeConfirmedState(level, entity, $"✅ {entity.GetType().Name} tracked (insert)");
         }
+        //private async Task UnifiedTblAddAction(EntityLevel level, object entity, bool isConfirm, int tent)
+        //{
+        //    var rowguid = MLEntityKeyHelper.GetRowguidAsGuid(entity);
+        //    if (!isConfirm) //cancel
+        //    {
+        //        RollbackPendingState(level, entity, true);
+        //        return;
+        //    }
+        //    Console.WriteLine("AVANT VALIDATE");
+        //    if (!Validate(level, entity))
+        //        return;
+        //    Console.WriteLine("APRES VALIDATE");
+        //    // Copy draft values into the grid item
+        //    CopyDraftTblToGridItem(level, entity, tent);
 
+        //    var entitySet = GetEntitySet(level);
+
+        //    // 🔥 Always insert for new rows
+        //    var opId = await Guard.TrackInsert(entitySet, entity);
+
+        //    SetPendingOpType(level, rowguid, PendingOpType.Insert);
+        //    SetOpInfo(level, rowguid, new PendingOpInfo(opId, PendingOpType.Insert));
+
+        //    // Ensure the new entity is in the local collection
+        //    AddToLocalCollection(level, entity);
+        //    OnEntitySaved(level, entity);
+
+        //    FinalizeConfirmedState(level, entity, $"✅ {entity.GetType().Name} tracked (insert)");
+        //}
         private async Task UnifiedEditAction(EntityLevel level, object entity, bool isConfirm)
         {
             var rowguid = MLEntityKeyHelper.GetRowguidAsGuid(entity);
@@ -310,7 +347,8 @@ namespace GxPilo.Components.Uifrags
         protected string GetResRowClass(ResdonDto res) => GetRowCssFor(EntityLevel.Res, res.Rowguid);
         protected string GetRdtRowClass(ResdetDto rdt) => GetRowCssFor(EntityLevel.Rdt, rdt.Rowguid);
         protected string GetBroRowClass(ResbroDto bro) => GetRowCssFor(EntityLevel.Bro, bro.Rowguid);
-
+        protected string GetFixRowClass(GstablDto fix) => GetRowCssFor(EntityLevel.Plan, fix.Rowguid);
+        protected string GetChlRowClass(GstablDto chl) => GetRowCssFor(EntityLevel.Plan, chl.Rowguid);
         protected RowState GetRowState(EntityLevel level, Guid rowguid)
         {
             var state = _rowStates.TryGetValue((level, rowguid), out var value)

@@ -21,7 +21,6 @@
 @using BlazorBootstrap
 @using Blazored.LocalStorage
 @using AutoMapper
-@using Microsoft.AspNetCore.Components.Forms
 
 @inject NavigationManager _navManager
 @inject IJSRuntime _JsRUN
@@ -61,16 +60,22 @@ else
             <div class="form-group">
                 <div class="btn btn-group">
                     <label class="me-2">Modele :</label>
-                    <InputSelect @bind-Value="IMyPlan" @onclick="() => curPlanPlan(IMyPlan)" class="me-3" style="width:auto">
+                    <InputSelect @bind-Value="IMyPlan"
+                                 @bind-Value:after="OuvreMGrid"
+                                 class="me-3"
+                                 style="width:auto">
                         <option value=0>?modele</option>
-                        @foreach (var upl in LsPlans)
+                        @foreach (var upl in LsPlans.Where(pl => pl.Todom == IMyDom).ToList())
                         {
                             <option value=@upl.Id>@upl.Liba</option>
                         }
                     </InputSelect>
                     <label class="fw-bold">@splnDom</label>
                     <label class="me-2">Rubrique :</label>
-                    <InputSelect @bind-Value="IMyRub" @onclick="() => curPlanRub()" class="me-3" style="width:auto">
+                    <InputSelect @bind-Value="IMyRub"
+                                 @bind-Value:after="OuvreMGrid"
+                                 class="me-3"
+                                 style="width:auto">
                         <option value=0>?rubriq</option>
                         @foreach (var upl in curPlan.Rubvars.ToList())
                         {
@@ -101,13 +106,11 @@ else
                                 <div class="mt-2 border-start border-primary border-3 bg-light bg-opacity-25 rounded-end">
                                     <div class="row">
                                         <div class="col-12">
-                                            @if (curRubr != null)
+                                            @if (CanOpenMGrid)
                                             {
-                                                var rubk = 3;
-
                                                 <div class="mt-2 border-start border-primary border-3 bg-light bg-opacity-25 rounded-end">
                                                     <Grid TItem="RubfmtDto"
-                                                          Data="curRubr.Rubfmts.ToList()"
+                                                          Data="@MyDaFmts"
                                                           @key="@FmtRenderKey"
                                                           RowClass="@((rf) => GetFmtRowClass(rf))"
                                                           Responsive="true">
@@ -580,7 +583,7 @@ else
     private int _lgcdu = 0;
     private int IMyGpln = 3; //3Grille
     private int IMyDom = 1; //1Saisie
-    private int ItkDom = 6; //6Tiers7Mat
+    // private int ItkDom = 6; //6Tiers7Mat
     private int IMyVue = 1; //1Reel2Virtuel
     private int IMyPlan = 0; //plan en cours
     private int IMyRub = 0; //rubrique en cours
@@ -600,7 +603,7 @@ else
     private List<Gplan> LsPlans = new();
     private List<Gpfixe> LsFixes = new();
     private List<Gpvar> LsVars = new();
-    private List<Gpfixe> LsDoms = new();
+    //private List<Gpfixe> LsDoms = new();
     private List<Gpfixe> LsAtrs = new();
     private List<Gpfixe> LsVues = new();
     private List<Gpfixe> LsGties = new();
@@ -622,6 +625,7 @@ else
     public List<PlngenDto> MyDaPlans => PlanItems;
     public List<RubvarDto> MyDaRubs => RubItems;
     public List<RubfmtDto> MyDaFmts => FmtItems;
+    private bool CanOpenMGrid = false;
 
     private List<PlngenDto> LsPlsEchs => orgPlns.Where(pl => pl.Ptyp == 2).ToList();
     private List<PlngenDto> LsPlsGris => orgPlns.Where(pl => pl.Ptyp == 3).ToList();
@@ -675,7 +679,7 @@ else
             }
             LsVars = toChild.LsVars;
             LsFixes = toChild.LsFixes;
-            LsDoms = LsFixes.Where(ut => ut.Gvars == 36 && ut.Itb == 4 && ut.Gp1 == 3 && ut.Elea != 0).ToList();
+            //LsDoms = LsFixes.Where(ut => ut.Gvars == 36 && ut.Itb == 4 && ut.Gp1 == 3 && ut.Elea != 0).ToList();
             LsAtrs = LsFixes.Where(ut => ut.Gvars == 36 && ut.Itb == 1 && ut.Gp1 == 3 && ut.Elea != 0).ToList();
             LsVues = LsFixes.Where(ut => ut.Gvars == 36 && ut.Itb == 4 && ut.Gp1 == 4 && ut.Elea != 0).ToList();
             LsGties = LsFixes.Where(ut => ut.Gvars == 36 && ut.Itb == 6 && ut.Elea != 0 && ut.Elea != 9).ToList();
@@ -720,6 +724,376 @@ else
             _locationHandler = _navManager.RegisterLocationChangingHandler(OnLocationChangingAsync);
         }
     }
+    private async Task OuvreMGrid()
+    {
+        Console.WriteLine($"Plan InP : {IMyPlan} et InR : {IMyRub}");
+        curPlan = new();
+        curRubr = new();
+        if (IMyPlan != 0)
+        {
+            //await UpdateMyDaPlans();
+            curPlan = orgPlns?.FirstOrDefault(pln => pln.Ptyp == IMyGpln);
+            Console.WriteLine($"Grid no plan : {curPlan.Id} et no rub : {IMyRub} ");
+        }
+        if (IMyDom != 0 && IMyPlan != 0 && IMyRub != 0)
+        {
+            curRubr = curPlan?.Rubvars.FirstOrDefault(rub => rub.Id == IMyRub);
+            await UpdateMyDaFmts();
+            Console.WriteLine($"Grid no rub : {curRubr.Id}");
+            RubRenderKey = Guid.NewGuid();
+            //PlnRenderKey = Guid.NewGuid();
+            CanOpenMGrid = true;
+        }
+        else
+        {
+            curRubr = new();
+            CanOpenMGrid = false;
+        }
+    }
+    public async Task StartFmtNew(RubvarDto myrub)
+    {
+        if (myrub.Id <= 0)
+        {
+            Imessage = "🚫 Cannot add Format: Rubrique must be saved first.";
+            await InvokeAsync(StateHasChanged);
+            return;
+        }
+
+        if (IsAnyRowEditing)
+        {
+            Imessage = "fmt cannot be added when any row is editing";
+            await InvokeAsync(StateHasChanged);
+            return;
+        }
+
+        var lsnb = NextSeq(MyDaFmts, p => p.Iui);
+        var newFmt = new RubfmtDto
+        {
+            Rowguid = Guid.NewGuid(),
+            Prowguid = myrub.Rowguid,
+            Irub = myrub.Id,
+            Vgpe = 3, //Grille
+            Iui = lsnb,
+            Idzon = lsnb,
+            Zcdrub = lsnb.ToString(),
+            Ftsrc = "",
+            Liba = "plage " + lsnb.ToString(),
+            Abg = "",
+            Tperi = 1,
+            Col = 1,
+            Lne = 1,
+            Ztyp = 4,
+            Eint = 0,
+            Eta = 1,
+            Xadd1 = -1,
+            Xedt1 = 0
+        };
+
+        //FmtItems.Insert(0, newFmt);
+        myrub.Rubfmts.Insert(0, newFmt);
+        await UpdateMyDaFmts();
+
+        //SetRowState(EntityLevel.Fmt, newFmt.Rowguid, RowState.AddPending);
+
+        draftFmt = DeepClone(newFmt);
+        BeginAdd(EntityLevel.Fmt, newFmt.Rowguid, draftFmt);
+
+        FmtRenderKey = newFmt.Rowguid;
+        await InvokeAsync(StateHasChanged);
+    }
+    public async Task StartPlnEdit(PlngenDto item)
+    {
+        var rowguid = item.Rowguid;
+        if (item.Id == default) return;
+        if (rowguid == Guid.Empty) return;
+        if (IsAnyRowEditing && !IsRowEditing(rowguid)) return;
+
+        _edPlnOriginals[rowguid] = DeepClone(item);
+        draftPln = DeepClone(item);
+
+        BeginEdit(EntityLevel.Plan, rowguid, draftPln);
+        _rowPendingOpTypeByRow[rowguid] = PendingOpType.Update;
+
+        StateHasChanged();
+    }
+    public async Task StartRubEdit(RubvarDto item)
+    {
+        var rowguid = item.Rowguid;
+        if (item.Id == default)
+        {
+            Imessage = "🚫 Cannot edit new Rubrique: Please save it first.";
+            return;
+        }
+
+        if (rowguid == Guid.Empty) return;
+        if (IsAnyRowEditing && !IsRowEditing(rowguid)) return;
+
+        item.Xedt1 = -1;
+        if (item.Iele != 0) item.Iui = (int)item.Iele;
+
+        _edRubOriginals[rowguid] = DeepClone(item);
+        draftRub = DeepClone(item);
+
+        RubRenderKey = rowguid;
+        BeginEdit(EntityLevel.Rub, rowguid, draftRub);
+
+        StateHasChanged();
+    }
+    public async Task StartFmtEdit(RubfmtDto item)
+    {
+        var rowguid = item.Rowguid;
+        if (item.Id == default)
+        {
+            Imessage = "🚫 Cannot edit new Fmt: Please save it first.";
+            return;
+        }
+
+        if (rowguid == Guid.Empty) return;
+        if (IsAnyRowEditing && !IsRowEditing(rowguid)) return;
+
+        item.Xedt1 = -1;
+        if (item.Iele != 0) item.Iui = (int)item.Iele;
+
+        _edFmtOriginals[rowguid] = DeepClone(item);
+        draftFmt = DeepClone(item);
+
+        FmtRenderKey = rowguid;
+        BeginEdit(EntityLevel.Fmt, rowguid, draftFmt);
+
+        StateHasChanged();
+    }
+    private async Task StartCancelAdd(EntityLevel level, object entity)
+    {
+        var rowguid = MLEntityKeyHelper.GetRowguidAsGuid(entity);
+        switch(level)
+        {
+            case EntityLevel.Plan :
+                await CancelAdd(level, entity);
+                orgPlns.RemoveAll(x => x.Rowguid == rowguid);
+                PlnRenderKey = Guid.Empty;
+                break;
+            case EntityLevel.Rub:
+                await CancelAdd(level, entity);
+                curPlan.Rubvars.RemoveAll(x => x.Rowguid == rowguid);
+                RubRenderKey = Guid.Empty;
+                break;
+            case EntityLevel.Fmt:
+                await CancelAdd(level, entity);
+                curRubr.Rubfmts.RemoveAll(x => x.Rowguid == rowguid);
+                FmtRenderKey = Guid.Empty;
+                break;
+        }
+    }
+    
+    //FILTRES
+    private Grid<PlngenDto> grid = default!;
+    private async void TogglePlnFiltering()
+    {
+        isPlnFilteringEnabled = !isPlnFilteringEnabled;
+        await grid.RefreshDataAsync(); // Refresh the grid to apply the change
+    }
+    private void ToggleRubFiltering()
+    {
+        isRubFilteringEnabled = !isRubFilteringEnabled;
+    }
+    // Update method -call this when source data changes
+    private void InitializeMyDaPlans()
+    {
+        PlanItems.Clear();
+        if (IMyGpln != 0 && IMyDom != 0)
+        {
+            PlanItems.AddRange(
+                orgPlns?.Where(pl => pl.Ptyp == IMyGpln && pl.Todom == IMyDom)
+                    ?? Enumerable.Empty<PlngenDto>());
+        }
+    }
+    private void InitializeMyDaRubs()
+    {
+        RubItems.Clear();
+        RubItems.AddRange(
+            curPlan?.Rubvars.ToList()
+            ?? Enumerable.Empty<RubvarDto>());
+    }
+    private void InitializeMyDaFmts()
+    {
+        FmtItems.Clear();
+        FmtItems.AddRange(
+            curRubr?.Rubfmts.ToList()
+        ?? Enumerable.Empty<RubfmtDto>());
+    }
+    private async Task UpdateMyDaPlans()
+    {
+        PlanItems.Clear();
+        if (IMyGpln != 0 && IMyDom != 0)
+        {
+            PlanItems.AddRange(
+                orgPlns?.Where(pl => pl.Ptyp == IMyGpln && pl.Todom == IMyDom)
+                ?? Enumerable.Empty<PlngenDto>());
+        }
+    }
+    private async Task UpdateMyDaRubs()
+    {
+        RubItems.Clear();
+        RubItems.AddRange(
+            curPlan?.Rubvars.ToList()
+            ?? Enumerable.Empty<RubvarDto>());
+    }
+    private async Task UpdateMyDaFmts()
+    {
+        FmtItems.Clear();
+        FmtItems.AddRange(
+            curRubr?.Rubfmts.ToList()
+            ?? Enumerable.Empty<RubfmtDto>());
+    }
+
+    //PLAN Formule modals
+    void showFrPlnModal(PlngenDto mypln, int orig)
+    {
+        pstrFormu = "";
+        if (!string.IsNullOrEmpty(mypln.Fpsrc))
+        {
+            pstrFormu = mypln.Liba.Substring(0, 8);
+        }
+
+        curPlan = mypln;
+
+        if (pForuModal != null)
+        {
+            pForuModal.BodyCssClass = (orig == 1) ? "editable" : "readonly";
+            pForuModal.ShowAsync();
+        }
+    }
+    //RUBR Formule modals
+    void showFrRubModal(RubvarDto myrub, int orig)
+    {
+        rstrFormu = "";
+        if (!string.IsNullOrEmpty(myrub.Frsrc))
+        {
+            rstrFormu = myrub.Liba.Substring(0, 8);
+        }
+
+        curRubr = myrub;
+
+        if (rForuModal != null)
+        {
+            rForuModal.BodyCssClass = (orig == 1) ? "editable" : "readonly";
+            rForuModal.ShowAsync();
+        }
+    }
+    //FMT Formule modals
+    void showFrFmtModal(RubfmtDto myfmt, int orig)
+    {
+        fstrFormu = "";
+        if (!string.IsNullOrEmpty(myfmt.Ftsrc))
+        {
+            fstrFormu = myfmt.Liba.Substring(0, 8);
+        }
+
+        curFmat = myfmt;
+
+        if (gForuModal != null)
+        {
+            gForuModal.BodyCssClass = (orig == 1) ? "editable" : "readonly";
+            gForuModal.ShowAsync();
+        }
+    }
+    private void showPgLink()
+    {
+        yaPgLink = !yaPgLink;
+    }
+
+    private void OnChlBlurHandler(PlngenDto mypl, RubvarDto myvar)
+    {
+        Console.WriteLine("ATTENTION : En Blur....");
+        isRubCodeValid = HandleChlInput(mypl, myvar);
+        //Imessage = $"OnBlur active : {isRubCodeValid}";
+        // Optionally trigger UI refresh or logging
+    }
+    private void OnChlFocusHandler(PlngenDto mypl, RubvarDto myvar)
+    {
+
+    }
+    private bool HandleChlInput(PlngenDto mypl, RubvarDto myvar)
+    {
+        var input = myvar.Scdrub?.Trim();
+        Jmessage = "";
+        Console.WriteLine($"code entre traiter {input}");
+        // Basic null/empty check
+        if (string.IsNullOrEmpty(input))
+        {
+            Jmessage = "Le code est requis.";
+            return false;
+        }
+        // Explicit length check
+        if (input.Length != _lgcdu)
+        {
+            Jmessage = $"Le code doit contenir exactement {_lgcdu} chiffres.";
+            return false;
+        }
+        // Digit-only check/No de poste peut ne pas etre numerique
+        if (!Regex.IsMatch(input, @"^[0-9]+$")) // @"^[a-zA-Z0-9_\-\/\\|{}]+$"))
+        {
+            //(!Regex.IsMatch(input, @"^\d+$")) /numeric
+            //(Regex.IsMatch(input, @"^[a-zA-Z0-9]+$")) /alphanumeric strict
+            //(Regex.IsMatch(input, @"^[a-zA-Z0-9_\-\/\\|{}]+$") /add some others characters
+            //(Regex.IsMatch(input, @"^[a-zA-Z0-9_\-\/\\|{}]{6}$")) //limit number to 6
+            //(Regex.IsMatch(input, @"^[a-zA-Z0-9_\-\/\\|{}]{4,10}$")) //limit a range 4-10
+            Jmessage = "Le code ne doit contenir que des chiffres.";
+            return false;
+        }
+        // Uniqueness check
+        var exists = mypl.Rubvars?.Any(uva => uva.Scdrub == input) ?? false;
+        if (exists)
+        {
+            Jmessage = "Ce code rubrique existe déjà.";
+            return false;
+        }
+        return true;
+    }
+    private async ValueTask OnLocationChangingAsync(LocationChangingContext context)
+    {
+        Console.WriteLine($"🌐 Intercepted: {context.TargetLocation}");
+
+        if (!_guard.HasPendingChanges())
+        {
+            Console.WriteLine("✅ Clean - allowing navigation");
+            return;
+        }
+
+        context.PreventNavigation();  // BLOCK navigation
+        Console.WriteLine($"🚫 Showing confirm dialog {context.TargetLocation}");
+
+        try
+        {
+            var save = await _JsRUN.InvokeAsync<bool>("confirm", "Save changes before leaving?");
+
+            if (save)
+            {
+                // 🔥 YES: SaveAllChanges() → Navigate away
+                await SaveAllChanges();
+                Console.WriteLine("💾 Saved - navigating away");
+                _messageService.Show("✅ Saved successfully", ToastType.Success);
+                _navManager.NavigateTo(context.TargetLocation, forceLoad: false);
+            }
+            else
+            {
+                // 🔥 NO: STAY on page - NO CancelAllChanges()
+                Console.WriteLine("❌ User chose NO - staying on page");
+                // User stays - sees SaveAllChanges() / CancelAllChanges() buttons ENABLED
+                // They can now manually: SaveAllChanges() OR CancelAllChanges()
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"❌ Error: {ex.Message}");
+            // Safety: stay on page
+        }
+    }
+    public void Dispose()  // â† ADD THIS
+    {
+        Console.WriteLine("ðŸ§¹ Child Prubsaie cleaning up");
+    }
+
     // public async Task StartPlnNew()
     // {
     //     if (IsAnyRowEditing)
@@ -824,340 +1198,4 @@ else
     //     RubRenderKey = newRub.Rowguid;
     //     await InvokeAsync(StateHasChanged);
     // }
-    public async Task StartFmtNew(RubvarDto myrub)
-    {
-        if (myrub.Id <= 0)
-        {
-            Imessage = "🚫 Cannot add Format: Rubrique must be saved first.";
-            await InvokeAsync(StateHasChanged);
-            return;
-        }
-
-        if (IsAnyRowEditing)
-        {
-            Imessage = "fmt cannot be added when any row is editing";
-            await InvokeAsync(StateHasChanged);
-            return;
-        }
-
-        var lsnb = NextSeq(MyDaFmts, p => p.Iui);
-        var newFmt = new RubfmtDto
-        {
-            Rowguid = Guid.NewGuid(),
-            Prowguid = myrub.Rowguid,
-            Irub = myrub.Id,
-            Vgpe = 3, //Grille
-            Iui = lsnb,
-            Idzon = lsnb,
-            Zcdrub = lsnb.ToString(),
-            Ftsrc = "",
-            Liba = "plage " + lsnb.ToString(),
-            Abg = "",
-            Tperi = 1,
-            Col = 1,
-            Lne = 1,
-            Ztyp = 4,
-            Eint = 0,
-            Eta = 1,
-            Xadd1 = -1,
-            Xedt1 = 0
-        };
-
-        FmtItems.Insert(0, newFmt);
-        myrub.Rubfmts.Insert(0, newFmt);
-
-        //SetRowState(EntityLevel.Fmt, newFmt.Rowguid, RowState.AddPending);
-
-        draftFmt = DeepClone(newFmt);
-        BeginAdd(EntityLevel.Fmt, newFmt.Rowguid, draftFmt);
-
-        FmtRenderKey = newFmt.Rowguid;
-        await InvokeAsync(StateHasChanged);
-    }
-    public async Task StartPlnEdit(PlngenDto item)
-    {
-        var rowguid = item.Rowguid;
-        if (item.Id == default) return;
-        if (rowguid == Guid.Empty) return;
-        if (IsAnyRowEditing && !IsRowEditing(rowguid)) return;
-
-        _edPlnOriginals[rowguid] = DeepClone(item);
-        draftPln = DeepClone(item);
-
-        BeginEdit(EntityLevel.Plan, rowguid, draftPln);
-        _rowPendingOpTypeByRow[rowguid] = PendingOpType.Update;
-
-        StateHasChanged();
-    }
-    public async Task StartRubEdit(RubvarDto item)
-    {
-        var rowguid = item.Rowguid;
-        if (item.Id == default)
-        {
-            Imessage = "🚫 Cannot edit new Rubrique: Please save it first.";
-            return;
-        }
-
-        if (rowguid == Guid.Empty) return;
-        if (IsAnyRowEditing && !IsRowEditing(rowguid)) return;
-
-        item.Xedt1 = -1;
-        if (item.Iele != 0) item.Iui = (int)item.Iele;
-
-        _edRubOriginals[rowguid] = DeepClone(item);
-        draftRub = DeepClone(item);
-
-        RubRenderKey = rowguid;
-        BeginEdit(EntityLevel.Rub, rowguid, draftRub);
-
-        StateHasChanged();
-    }
-    public async Task StartFmtEdit(RubfmtDto item)
-    {
-        var rowguid = item.Rowguid;
-        if (item.Id == default)
-        {
-            Imessage = "🚫 Cannot edit new Fmt: Please save it first.";
-            return;
-        }
-
-        if (rowguid == Guid.Empty) return;
-        if (IsAnyRowEditing && !IsRowEditing(rowguid)) return;
-
-        item.Xedt1 = -1;
-        if (item.Iele != 0) item.Iui = (int)item.Iele;
-
-        _edFmtOriginals[rowguid] = DeepClone(item);
-        draftFmt = DeepClone(item);
-
-        FmtRenderKey = rowguid;
-        BeginEdit(EntityLevel.Fmt, rowguid, draftFmt);
-
-        StateHasChanged();
-    }
-    private void StartCancelAdd(EntityLevel level, object entity)
-    {
-        var rowguid = MLEntityKeyHelper.GetRowguidAsGuid(entity);
-        switch(level)
-        {
-            case EntityLevel.Plan :
-                CancelAdd(level, entity);
-                orgPlns.RemoveAll(x => x.Rowguid == rowguid);
-                PlnRenderKey = Guid.Empty;
-                break;
-            case EntityLevel.Rub:
-                CancelAdd(level, entity);
-                curPlan.Rubvars.RemoveAll(x => x.Rowguid == rowguid);
-                RubRenderKey = Guid.Empty;
-                break;
-            case EntityLevel.Fmt:
-                CancelAdd(level, entity);
-                curRubr.Rubfmts.RemoveAll(x => x.Rowguid == rowguid);
-                FmtRenderKey = Guid.Empty;
-                break;
-        }
-    }
-    
-    //FILTRES
-    private Grid<PlngenDto> grid = default!;
-    private async void TogglePlnFiltering()
-    {
-        isPlnFilteringEnabled = !isPlnFilteringEnabled;
-        await grid.RefreshDataAsync(); // Refresh the grid to apply the change
-    }
-    private void ToggleRubFiltering()
-    {
-        isRubFilteringEnabled = !isRubFilteringEnabled;
-    }
-    // Update method -call this when source data changes
-    private void InitializeMyDaPlans()
-    {
-        PlanItems.Clear();
-        PlanItems.AddRange(
-            orgPlns?.Where(pl => pl.Ptyp == IMyGpln && pl.Todom == IMyDom)
-            ?? Enumerable.Empty<PlngenDto>());
-    }
-    private void InitializeMyDaRubs()
-    {
-        RubItems.Clear();
-        RubItems.AddRange(
-            curPlan?.Rubvars.ToList()
-            ?? Enumerable.Empty<RubvarDto>());
-    }
-    private void InitializeMyDaFmts()
-    {
-        FmtItems.Clear();
-        FmtItems.AddRange(
-            curRubr?.Rubfmts.ToList()
-        ?? Enumerable.Empty<RubfmtDto>());
-    }
-    private void UpdateMyDaPlans()
-    {
-        RubItems.Clear();
-        PlanItems.AddRange(
-            orgPlns?.Where(pl => pl.Ptyp == IMyGpln && pl.Todom == IMyDom)
-            ?? Enumerable.Empty<PlngenDto>());
-    }
-    private void UpdateMyDaRubs()
-    {
-        RubItems.Clear();
-        RubItems.AddRange(
-            curPlan?.Rubvars.ToList()
-            ?? Enumerable.Empty<RubvarDto>());
-    }
-    private void UpdateMyDaFmts()
-    {
-        FmtItems.Clear();
-        FmtItems.AddRange(
-            curRubr?.Rubfmts.ToList()
-            ?? Enumerable.Empty<RubfmtDto>());
-    }
-
-    //PLAN Formule modals
-    void showFrPlnModal(PlngenDto mypln, int orig)
-    {
-        pstrFormu = "";
-        if (!string.IsNullOrEmpty(mypln.Fpsrc))
-        {
-            pstrFormu = mypln.Liba.Substring(0, 8);
-        }
-
-        curPlan = mypln;
-
-        if (pForuModal != null)
-        {
-            pForuModal.BodyCssClass = (orig == 1) ? "editable" : "readonly";
-            pForuModal.ShowAsync();
-        }
-    }
-    //RUBR Formule modals
-    void showFrRubModal(RubvarDto myrub, int orig)
-    {
-        rstrFormu = "";
-        if (!string.IsNullOrEmpty(myrub.Frsrc))
-        {
-            rstrFormu = myrub.Liba.Substring(0, 8);
-        }
-
-        curRubr = myrub;
-
-        if (rForuModal != null)
-        {
-            rForuModal.BodyCssClass = (orig == 1) ? "editable" : "readonly";
-            rForuModal.ShowAsync();
-        }
-    }
-    //FMT Formule modals
-    void showFrFmtModal(RubfmtDto myfmt, int orig)
-    {
-        fstrFormu = "";
-        if (!string.IsNullOrEmpty(myfmt.Ftsrc))
-        {
-            fstrFormu = myfmt.Liba.Substring(0, 8);
-        }
-
-        curFmat = myfmt;
-
-        if (gForuModal != null)
-        {
-            gForuModal.BodyCssClass = (orig == 1) ? "editable" : "readonly";
-            gForuModal.ShowAsync();
-        }
-    }
-    private void showPgLink()
-    {
-        yaPgLink = !yaPgLink;
-    }
-
-    private void OnChlBlurHandler(PlngenDto mypl, RubvarDto myvar)
-    {
-        Console.WriteLine("ATTENTION : En Blur....");
-        isRubCodeValid = HandleChlInput(mypl, myvar);
-        Imessage = $"OnBlur active : {isRubCodeValid}";
-        // Optionally trigger UI refresh or logging
-    }
-    private void OnChlFocusHandler(PlngenDto mypl, RubvarDto myvar)
-    {
-
-    }
-    private bool HandleChlInput(PlngenDto mypl, RubvarDto myvar)
-    {
-        var input = myvar.Scdrub?.Trim();
-        Jmessage = "";
-        Console.WriteLine($"code entre traiter {input}");
-        // Basic null/empty check
-        if (string.IsNullOrEmpty(input))
-        {
-            Jmessage = "Le code est requis.";
-            return false;
-        }
-        // Explicit length check
-        if (input.Length != _lgcdu)
-        {
-            Jmessage = $"Le code doit contenir exactement {_lgcdu} chiffres.";
-            return false;
-        }
-        // Digit-only check/No de poste peut ne pas etre numerique
-        if (!Regex.IsMatch(input, @"^[0-9]+$")) // @"^[a-zA-Z0-9_\-\/\\|{}]+$"))
-        {
-            //(!Regex.IsMatch(input, @"^\d+$")) /numeric
-            //(Regex.IsMatch(input, @"^[a-zA-Z0-9]+$")) /alphanumeric strict
-            //(Regex.IsMatch(input, @"^[a-zA-Z0-9_\-\/\\|{}]+$") /add some others characters
-            //(Regex.IsMatch(input, @"^[a-zA-Z0-9_\-\/\\|{}]{6}$")) //limit number to 6
-            //(Regex.IsMatch(input, @"^[a-zA-Z0-9_\-\/\\|{}]{4,10}$")) //limit a range 4-10
-            Jmessage = "Le code ne doit contenir que des chiffres.";
-            return false;
-        }
-        // Uniqueness check
-        var exists = mypl.Rubvars?.Any(uva => uva.Scdrub == input) ?? false;
-        if (exists)
-        {
-            Jmessage = "Ce code rubrique existe déjà.";
-            return false;
-        }
-        return true;
-    }
-    private async ValueTask OnLocationChangingAsync(LocationChangingContext context)
-    {
-        Console.WriteLine($"🌐 Intercepted: {context.TargetLocation}");
-
-        if (!_guard.HasPendingChanges())
-        {
-            Console.WriteLine("✅ Clean - allowing navigation");
-            return;
-        }
-
-        context.PreventNavigation();  // BLOCK navigation
-        Console.WriteLine($"🚫 Showing confirm dialog {context.TargetLocation}");
-
-        try
-        {
-            var save = await _JsRUN.InvokeAsync<bool>("confirm", "Save changes before leaving?");
-
-            if (save)
-            {
-                // 🔥 YES: SaveAllChanges() → Navigate away
-                await SaveAllChanges();
-                Console.WriteLine("💾 Saved - navigating away");
-                _messageService.Show("✅ Saved successfully", ToastType.Success);
-                _navManager.NavigateTo(context.TargetLocation, forceLoad: false);
-            }
-            else
-            {
-                // 🔥 NO: STAY on page - NO CancelAllChanges()
-                Console.WriteLine("❌ User chose NO - staying on page");
-                // User stays - sees SaveAllChanges() / CancelAllChanges() buttons ENABLED
-                // They can now manually: SaveAllChanges() OR CancelAllChanges()
-            }
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"❌ Error: {ex.Message}");
-            // Safety: stay on page
-        }
-    }
-    public void Dispose()  // â† ADD THIS
-    {
-        Console.WriteLine("ðŸ§¹ Child Prubsaie cleaning up");
-    }
 }

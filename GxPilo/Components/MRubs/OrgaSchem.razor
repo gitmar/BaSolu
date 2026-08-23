@@ -15,16 +15,35 @@
 </div>
 <div class="form-group">
     <label class="me-2">Organigramme :</label>
+    <InputSelect @bind-Value="IMyOgn"
+                 @bind-Value:after="ognPlanDom"
+                 class="me-3"
+                 style="width:auto">
+        <option value="0">?organ</option>
+        @foreach (var pln in LsOrgns)
+        {
+            <option value="@pln.Id">@pln.Liba</option>
+        }
+    </InputSelect>
+
+    @* <InputSelect Value="IMyOgn"
+             ValueChanged="OnOrganigramChanged"
+             ValueExpression="() => IMyOgn">
     <InputSelect @bind-Value="IMyOgn" @onchange="() => ognPlanDom()" class="me-3" style="width:auto">
+        <option value=0>?organ</option>
         @foreach (var pln in LsOrgns)
         {
             <option value=@pln.Id>@pln.Liba</option>
         }
-    </InputSelect>
+    </InputSelect> *@
 </div>
-
-@RenderOrganigram(_lsRuborgs.Where(r => r.Ydpd == null))
-
+@if (_lsRuborgs?.Any() == true)
+{
+    @RenderOrganigram(_lsRuborgs.Where(r => r.Ydpd == null))
+} else
+{
+    _lsRuborgs?.Clear();      // or _lsRuborgs = new();
+}
 <style>
     .org-chart {
         display: flex;
@@ -83,13 +102,15 @@
 @code {
     [Parameter]
     public GxorgaDto curOrga { get; set; }
-    [Parameter]
-    public List<PlngenDto> LsOrgns { get; set; }
+    //[Parameter]
+    //public List<PlngenDto> LsOrgns { get; set; }
 
+    private List<PlngenDto> LsOrgns = [];
     private int IMyOgn = 0;
     private string Imessage = "";
     private PlngenDto curOgn = new();
     public List<OrgnDto> _lsRuborgs = new();
+    //private bool CanOuvreOrgn = false;
 
     protected override void OnInitialized()
     {
@@ -101,9 +122,17 @@
             ognPlanDom();
         }
     }
+    private Task OnOrganigramChanged(int value)
+    {
+        IMyOgn = value;
+        ognPlanDom();
+        return Task.CompletedTask;
+    }
     private void ognPlanDom()
     {
         Imessage = "";
+        _lsRuborgs.Clear();
+        //CanOuvreOrgn = false;
         curOgn = LsOrgns.FirstOrDefault(pl => pl.Id == IMyOgn);
         if (curOgn != null)
         {
@@ -111,11 +140,11 @@
             if (inRubhies.Any())
             {
                 _lsRuborgs = inRubhies.Select(ru => new OrgnDto
-            {
-                Id = ru.Id,
-                Liba = ru.Liba,
-                Ydpd = ru.Ydpd
-            }).ToList();
+                {
+                    Id = ru.Id,
+                    Liba = ru.Liba,
+                    Ydpd = ru.Ydpd
+                }).ToList();
                 BuildRubhieHierarchy();
 
                 // Debug log
@@ -127,9 +156,11 @@
                         Console.WriteLine($"  Child {child.Liba} has {child.Children.Count} children");
                     }
                 }
+                //CanOuvreOrgn = true;
             }
             else
             {
+                _lsRuborgs = new();
                 Imessage = "pas de fils";
             }
         }
@@ -152,7 +183,7 @@
         }
     }
 
-    private RenderFragment RenderOrganigram(IEnumerable<OrgnDto> nodes, int level = 0) => builder =>
+    private RenderFragment RenderOrganigram(IEnumerable<OrgnDto> nodes, int level = 0) => async builder =>
 {
     var seq = 0;
     builder.OpenElement(seq++, "div");

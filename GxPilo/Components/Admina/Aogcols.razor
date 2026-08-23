@@ -62,56 +62,56 @@
                 </GridColumn>
             </GridColumns>
         </Grid>
-        @* @if(IMyGpe == 1)
-        { *@
-        <div>
-            <div class="card-header">
-                @if (!string.IsNullOrEmpty(Jmessage))
-                {
-                    <span class="bg-info bg-opacity-10" style="font-style:italic;color:red">&nbsp;--> @Imessage</span>
-                }
+        @if (IMyGpe == 1)
+        {
+            <div>
+                <div class="card-header">
+                    @if (!string.IsNullOrEmpty(Jmessage))
+                    {
+                        <span class="bg-info bg-opacity-10" style="font-style:italic;color:red">&nbsp;--> @Imessage</span>
+                    }
+                </div>
+                <label class="fw-bold">Affilié :</label>
+                <InputSelect @bind-Value="IMyAfl" @bind-Value:after="ChargeAflCols">
+                    <option value=0>chx?</option>
+                    @foreach (var tob in LsAfils.Where(af => af.Atyp == 1 && af.Ityp == 1).ToList())
+                    {
+                        <option value=@tob.Elea>@tob.Liba</option>
+                    }
+                </InputSelect>
+                <Grid TItem="LSelCol"
+                Data="@AflColumns.ToList()"
+                AllowPaging="true"
+                Responsive="true">
+                    <GridColumns>
+                        <GridColumn TItem="LSelCol" HeaderText="No">
+                            <ChildContent Context="item">@item.ColNo</ChildContent>
+                        </GridColumn>
+                        <GridColumn TItem="LSelCol" HeaderText="Nom interne">
+                            <ChildContent Context="item">@item.ColName</ChildContent>
+                        </GridColumn>
+                        <GridColumn TItem="LSelCol" HeaderText="Visible?">
+                            <ChildContent Context="item">
+                                <InputCheckbox @bind-Value="item.IsVisible" />
+                            </ChildContent>
+                        </GridColumn>
+                        <GridColumn TItem="LSelCol" HeaderText="Original">
+                            <ChildContent Context="item">@item.Olabel</ChildContent>
+                        </GridColumn>
+                        <GridColumn TItem="LSelCol" HeaderText="Adaptee">
+                            <HeaderContent>
+                                <span>Adaptee</span> &nbsp;
+                                <button class="btn btn-primary mt-2" style="@(!isSaving ? "" : "disabled-action")"
+                                @onclick="SavePrefAfil">
+                                    Save
+                                </button>
+                            </HeaderContent>
+                            <ChildContent Context="item">@item.Ulabel</ChildContent>
+                        </GridColumn>
+                    </GridColumns>
+                </Grid>
             </div>
-            <label class="fw-bold">Affilié :</label>
-            <InputSelect @bind-Value="IMyAfl" @bind-Value:after="ChargeAflCols">
-                <option value=0>chx?</option>
-                @foreach (var tob in LsAfils.Where(af => af.Atyp == 1 && af.Ityp == 1).ToList())
-                {
-                    <option value=@tob.Elea>@tob.Liba</option>
-                }
-            </InputSelect>
-            <Grid TItem="LSelCol"
-                  Data="@AflColumns.ToList()"
-                  AllowPaging="true"
-                  Responsive="true">
-                <GridColumns>
-                    <GridColumn TItem="LSelCol" HeaderText="No">
-                        <ChildContent Context="item">@item.ColNo</ChildContent>
-                    </GridColumn>
-                    <GridColumn TItem="LSelCol" HeaderText="Nom interne">
-                        <ChildContent Context="item">@item.ColName</ChildContent>
-                    </GridColumn>
-                    <GridColumn TItem="LSelCol" HeaderText="Visible?">
-                        <ChildContent Context="item">
-                            <InputCheckbox @bind-Value="item.IsVisible" />
-                        </ChildContent>
-                    </GridColumn>
-                    <GridColumn TItem="LSelCol" HeaderText="Original">
-                        <ChildContent Context="item">@item.Olabel</ChildContent>
-                    </GridColumn>
-                    <GridColumn TItem="LSelCol" HeaderText="Adaptee">
-                        <HeaderContent>
-                            <span>Adaptee</span> &nbsp;
-                            <button class="btn btn-primary mt-2" style="@(!isSaving ? "" : "disabled-action")"
-                                    @onclick="SavePrefAfil">
-                                Save
-                            </button>
-                        </HeaderContent>
-                        <ChildContent Context="item">@item.Ulabel</ChildContent>
-                    </GridColumn>
-                </GridColumns>
-            </Grid>
-        </div>
-        @* } *@
+        }
     </div>
 </div>
 <style>

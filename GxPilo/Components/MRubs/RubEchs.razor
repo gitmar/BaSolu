@@ -28,7 +28,7 @@
     <p>Loading...</p>
     <div class="text-center">
         <Spinner Color="SpinnerColor.Primary" Size="SpinnerSize.Medium" />
-        <p>Plan.Echeancier Loading...</p>
+        <p>Modele(ASTR).Echeancier Loading...</p>
     </div>
 }
 else
@@ -45,7 +45,6 @@ else
         <Authorized Context="AuthContext">
             <div class="row">
                 <div class="col-md-12 input-group align-middle">
-                    <span><b>Message :</b></span>
                     &nbsp;&nbsp;
                     @if (!String.IsNullOrEmpty(Imessage))
                     {
@@ -64,7 +63,10 @@ else
                 </InputSelect> *@
 
                 <label class="fw-bold">G.Tiers :</label>
-                <InputSelect @bind-Value="IMyGtie" @onchange="() => curPlanTier(IMyGtie)" class="me-3" style="width:auto">
+                <InputSelect @bind-Value="IMyGtie"
+                             @bind-Value:after="OuvreMGrid"
+                             class="me-3"
+                             style="width:auto">
                     <option value=0>?gtiers</option>
                     @foreach (var tob in LsGties)
                     {
@@ -98,11 +100,13 @@ else
                             }
                         </div>
                         <div class="row">
-                            @if (IMyGtie != 0 && IMyAtr != 0)
+                            @if (CanOpenMGrid)
                             {
                                 <Grid TItem="PlngenDto"
                                       Data="@MyDaPlans"
                                       @key="PlnRenderKey"
+                                      AllowRowClick="true"
+                                      OnRowClick="OnPlnRowClick"
                                       AllowDetailView="true"
                                       RowClass="@((item) => GetPlanRowClass(item))"
                                       Responsive="true">
@@ -147,7 +151,7 @@ else
                                         </GridColumn>
                                         <GridColumn TItem="PlngenDto" HeaderText="Eta" Class="xcol1">
                                             <HeaderContent>
-                                                @if (IMyDom != 0 && IMyGtie != 0 && IMyVue != 0)
+                                                @if (CanOpenMGrid)
                                                 {
                                                     <button class="btn btn-primary btn-sm @(IsLevelBusy(EntityLevel.Plan) ? "disabled-action" : "")"
                                                             disabled="@IsLevelBusy(EntityLevel.Plan)"
@@ -748,7 +752,7 @@ else
     private int IMyVue = 1; //1Reel2Virtuel
     private int IMyAtr = 1; ////1Adm2Geo
     //private int ItkDom = 0; //6Tiers7Mat
-    private int IMyGtie = 1; //1Cible/2Operat...
+    private int IMyGtie = 0; //1Cible/2Operat...
 
     //author
     private ClaimsPrincipal authUser;
@@ -787,6 +791,7 @@ else
     public List<PlngenDto> MyDaPlans => PlanItems;
     public List<RubvarDto> MyDaRubs => RubItems;
     public List<RubfmtDto> MyDaFmts => FmtItems;
+    private bool CanOpenMGrid = false;
 
     private List<PlngenDto> LsPlsEchs => curOrga.Plngens.Where(pl => pl.Ptyp == 2).ToList();
     private List<PlngenDto> LsPlsGris => curOrga.Plngens.Where(pl => pl.Ptyp == 3).ToList();
@@ -883,6 +888,37 @@ else
             _locationHandler = _navManager.RegisterLocationChangingHandler(OnLocationChangingAsync);
         }
     }
+    private async Task OuvreMGrid()
+    {
+        if (IMyDom != 0 && IMyGtie != 0 && IMyVue != 0)
+        {
+            int gtib = 7;
+            if (IMyDom == 1) gtib = 6;
+            LsGties = LsFixes.Where(ut => ut.Gvars == 36 && ut.Itb == gtib && ut.Elea != 0 && ut.Elea != 9).ToList();
+            await UpdateMyDaPlans();
+            PlnRenderKey = Guid.NewGuid();
+            CanOpenMGrid = true;
+            //await InvokeAsync(StateHasChanged);
+        }
+        else
+        {
+            LsGties = new();
+            CanOpenMGrid = false;
+        }
+    }
+    void OnPlnRowClick(GridRowEventArgs<PlngenDto> args)
+    {
+        Console.WriteLine($"OnPlnRowClick Triggered : {args.Item.Id}");
+        curPlan = args.Item; //get gRubsMap
+        if (curPlan == null || curPlan.Id == 0)
+        {
+            return;
+        }
+        InitializeMyDaRubs();
+        RubRenderKey = Guid.NewGuid();
+        Console.WriteLine($"Id {curPlan.Id} nb rubs : {curPlan.Rubvars}");
+        StateHasChanged();
+    }
     public async Task StartPlnNew()
     {
         if (IsAnyRowEditing)
@@ -898,7 +934,8 @@ else
             Iui = lsnb,
             Ptyp = IMyGpln,
             Todom = IMyDom,
-            Ogtyp = 0,
+            //Ogtyp = 0,
+            Totie = IMyGtie,
             Totyp = IMyGtie,
             Toatr = 0,
             Tovue = IMyVue,
@@ -1253,7 +1290,7 @@ else
     {
         PlanItems.Clear();
         PlanItems.AddRange(
-            curOrga.Plngens?.Where(pl => pl.Ptyp == IMyGpln && pl.Todom == IMyDom)
+            curOrga.Plngens?.Where(pl => pl.Ptyp == IMyGpln && pl.Totyp == IMyGtie && pl.Todom == IMyDom)
             ?? Enumerable.Empty<PlngenDto>());
     }
     private void InitializeMyDaRubs()
@@ -1270,21 +1307,21 @@ else
             curRubr.Rubfmts.ToList()
         ?? Enumerable.Empty<RubfmtDto>());
     }
-    private void UpdateMyDaPlans()
+    private async Task UpdateMyDaPlans()
     {
-        RubItems.Clear();
+        PlanItems.Clear();
         PlanItems.AddRange(
-            curOrga.Plngens?.Where(pl => pl.Ptyp == IMyGpln && pl.Todom == IMyDom)
+            curOrga.Plngens?.Where(pl => pl.Ptyp == IMyGpln && pl.Totyp == IMyGtie && pl.Todom == IMyDom)
             ?? Enumerable.Empty<PlngenDto>());
     }
-    private void UpdateMyDaRubs()
+    private async Task UpdateMyDaRubs()
     {
         RubItems.Clear();
         RubItems.AddRange(
             curPlan.Rubvars.ToList()
             ?? Enumerable.Empty<RubvarDto>());
     }
-    private void UpdateMyDaFmts()
+    private async Task UpdateMyDaFmts()
     {
         FmtItems.Clear();
         FmtItems.AddRange(

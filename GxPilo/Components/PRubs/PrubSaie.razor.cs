@@ -117,7 +117,7 @@ namespace GxPilo.Components.PRubs
         }
         private void curPlanTier(int xtie)
         {
-            if (IMyDom != 0 && IMyAtr != 0 && IMyVue != 0)
+            if (IMyDom != 0 && IMyVue != 0)
                 InvokeAsync(StateHasChanged);
         }
     }

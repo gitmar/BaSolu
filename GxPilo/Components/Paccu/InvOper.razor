@@ -82,29 +82,19 @@ else
                             <Tab Title="Invitation" Name="IndTab" onClick="() => OnTabChanged(1)">
                                 <Content>
                                     <!-- Sender Email -->
-                                    <label class="fw-bold">Sender Email: @_invModel.SendEmail Phone: @_invModel.PhoneNumber</label>
+                                    <label class="fw-bold">
+                                        Sender Email: @_invModel.SendEmail &nbsp; Phone: @_invModel.PhoneNumber
+                                    </label>
+
                                     <div class="row g-3">
                                         <!-- Rappel -->
-                                        <div class="col-md-4">
+                                        <div class="col-md-6">
                                             <label>Ref.appel:</label>
                                             <InputText @bind-Value="_invModel.Refapl" class="form-control" />
                                         </div>
 
-                                        <!-- Groupe -->
-                                        @* <div class="col-md-4">
-                                        <label>Groupe:</label>
-                                        <InputSelect @bind-Value="_invModel.Utyp" class="form-select">
-                                            <option value=0>Sélectionner...</option>
-                                            @foreach (var ut in _invUtyps.Where(g => g.Gp1 == 1))
-                                            {
-                                                <option value=@ut.Elea @onclick="() => SelUtyp(ut)">@ut.Liba</option>
-                                            }
-                                        </InputSelect>
-                                    </div> *@
-
-
                                         <!-- Role -->
-                                        <div class="col-md-4">
+                                        <div class="col-md-6">
                                             <label>Role:</label>
                                             <InputSelect @bind-Value="_invModel.Ivrole" class="form-select">
                                                 <option value=0>Sélectionner...</option>
@@ -114,43 +104,47 @@ else
                                                 }
                                             </InputSelect>
                                         </div>
-                                        <div class="col-md-4"></div>
-                                        <!-- Raison (si tiers : client/fournis/patern) -->
-                                        @* @if (_invModel.Utyp == 6 || _invModel.Utyp == 7 || _invModel.Utyp == 8)
-                                    {
-                                        <div class="col-md-4">
-                                            <label>Raison:</label>
-                                            <InputText @bind-Value="_invModel.TRaison" class="form-control" />
-                                        </div>
-                                    }
-                                    else
-                                    {
-                                        <div class="col-md-4"></div>
-                                    }
-                                    <div class="col-md-4"></div> *@
+                                    </div>
+
+                                    <div class="row g-3">
                                         <!-- Nom -->
-                                        <div class="col-md-4">
+                                        <div class="col-md-6">
                                             <label>Nom:</label>
                                             <InputText @bind-Value="_invModel.FirstName" class="form-control" />
                                         </div>
-                                        <!-- Pnom -->
-                                        <div class="col-md-4">
+
+                                        <!-- Prenom -->
+                                        <div class="col-md-6">
                                             <label>Prenom(s):</label>
                                             <InputText @bind-Value="_invModel.LastName" class="form-control" />
                                         </div>
-                                        <div class="col-md-4"></div>
+                                    </div>
+
+                                    <div class="row g-3">
                                         <!-- Email -->
-                                        <div class="col-md-4">
+                                        <div class="col-md-6">
                                             <label>Email:</label>
                                             <InputText type="email" @bind-Value="_invModel.Email" class="form-control" />
                                         </div>
-                                        <div class="col-md-4">
+
+                                        <!-- Téléphone -->
+                                        <div class="col-md-6">
                                             <label>Téléphone:</label>
                                             <InputText @bind-Value="_invModel.PhoneNumber" class="form-control" />
                                         </div>
-                                        <div class="col-md-4"></div>
+                                    </div>
+
+                                    <div class="row g-3">
+                                        <!-- Envoi par phone -->
+                                        <div class="col-md-6">
+                                            <label>Invite par phone?:</label>
+                                            <InputCheckbox @bind-Value="_invModel.SiPhone" class="form-check-input checkbox-bordered" />
+                                        </div>
+                                    </div>
+
+                                    <div class="row g-3">
                                         <!-- Groupes tiers -->
-                                        <div class="col-md-4">
+                                        <div class="col-md-6">
                                             <label>G.Origine:</label>
                                             <InputSelect @bind-Value="_invModel.Itgpe" @onclick="() => SelDomITies()" class="form-select">
                                                 <option value=0></option>
@@ -160,10 +154,11 @@ else
                                                 }
                                             </InputSelect>
                                         </div>
-                                        <!-- Gpes ID tiers -->
-                                        @if (_invModel.Itgpe > 4) //5client-6fournis-7patern
+
+                                        <!-- Tiers -->
+                                        @if (_invModel.Itgpe > 4)
                                         {
-                                            <div class="col-md-4">
+                                            <div class="col-md-6">
                                                 <label>Tiers:</label>
                                                 <InputSelect @bind-Value="_invModel.Itgid" class="form-select">
                                                     <option value=0>Chx?Tiers</option>
@@ -174,13 +169,11 @@ else
                                                 </InputSelect>
                                             </div>
                                         }
-                                        else
-                                        {
-                                            <div class="col-md-4"></div>
-                                        }
-                                        <div class="col-md-4"></div>
+                                    </div>
+
+                                    <div class="row g-3">
                                         <!-- Services -->
-                                        <div class="col-md-4">
+                                        <div class="col-md-6">
                                             <label>Services:</label>
                                             <InputSelect @bind-Value="_invModel.Ihie" class="form-select">
                                                 <option value=0>Aucun</option>
@@ -190,8 +183,9 @@ else
                                                 }
                                             </InputSelect>
                                         </div>
+
                                         <!-- Poste -->
-                                        <div class="col-md-4">
+                                        <div class="col-md-6">
                                             <label>Poste:</label>
                                             <InputSelect @bind-Value="_invModel.Ipst" class="form-select">
                                                 <option value=0>Aucun</option>
@@ -201,38 +195,24 @@ else
                                                 }
                                             </InputSelect>
                                         </div>
-                                        <div class="col-md-4"></div>
                                     </div>
-                                    <!--Canal option-->
+                                    <!-- Message -->
                                     <div class="row g-3 mt-2">
-                                        <div class="col-md-2"></div>
-                                        <div class="col-md-2">
-                                            <label class="text-right">Canal:</label>
-                                            <InputSelect @bind-Value="Icanal" @onclick="() => SelDomUser()" class="form-select">
-                                                <option value="1">Email</option>
-                                                <option value="2">Telephone</option>
-                                            </InputSelect>
-                                        </div>
-                                        <div class="col-md-8"></div>
-                                    </div>
-                                    <div class="row g-3 mt-2">
-                                        <div class="col-md-2"></div>
-                                        <div class="col-md-8">
+                                        <div class="col-md-12">
                                             @if (!string.IsNullOrEmpty(Imessage))
                                             {
-                                                <div>
-                                                    <p style="color:red;">@Imessage</p>
-                                                </div>
+                                                <p class="text-danger">@Imessage</p>
                                             }
                                         </div>
-                                        <div class="col-md-2"></div>
-                                        <div class="col-md-2"></div>
-                                        <div class="col-md-8">
+                                    </div>
+
+                                    <!-- Button -->
+                                    <div class="row g-3 mt-2">
+                                        <div class="col-md-12 text-center">
                                             <Button color="ButtonColor.Primary" @onclick="() => SendIndividualInvite()">
                                                 Envoyer Invitation
                                             </Button>
                                         </div>
-                                        <div class="col-md-2"></div>
                                     </div>
                                 </Content>
                             </Tab>
@@ -464,7 +444,7 @@ else
                                     </Content>
                                 </Tab>
                             }
-                            <Tab Title="Re-Email" Name="RenvTab">
+                            <Tab Title="Re-EmailConfirm" Name="RenvTab">
                             <Content>
                                 <!-- Email -->
                                 <div class="col-md-8">
@@ -531,6 +511,13 @@ else
     .my-container {
     background-color: yellow;
     }
+
+    .checkbox-bordered {
+        border: 1px solid #000; /* black border */
+        width: 1.2em;
+        height: 1.2em;
+        border-radius: 0.25em; /* keep it square-ish */
+    }
 </style>
 
 @code {
@@ -574,7 +561,6 @@ else
     private List<Gxuser> _allUsers = new();
     private Gxuser _curUser = new();
     private string IMyUser = "";
-    private int Icanal = 1; //1Email2Phone
     private List<string> invalidLines = new();    
     private List<SimpleRecipient> ValidGroupEmails => ParseGroupEmails();
     private bool CanSendGroupInvite() => ValidGroupEmails.Any();
@@ -766,12 +752,12 @@ else
         operecipientsSaved = true;
         StateHasChanged();
     }
-    
+
     private void OnTabChanged(int tabIndex)
     {
         // Optionally check if current recipients were saved before clearing
         // args.Tab gives you the tab being shown
-     
+
         // if (operecipients.Any() && !operecipientsSaved)
         // {
         //     Imessage = $"Recipients not yet sent. Please send before leaving current tab.";
@@ -786,7 +772,7 @@ else
         //     operecipientsSaved = false;
         // }
 
-        
+
         // if (!operecipientsSaved && operecipients.Any())
         // {
         //     Imessage = "Please save or send current recipients before leaving.";
@@ -804,25 +790,25 @@ else
     }
 
     private void AddOpeRecipient()
-{
-    if (IsValidEmail(newRecipient.Email) && IsValidPhone(newRecipient.PhoneNumber))
     {
-        operecipients.Add(new OpeRecipient
+        if (JwtHelper.IsValidEmail(newRecipient.Email) && JwtHelper.IsValidPhone(newRecipient.PhoneNumber))
+        {
+            operecipients.Add(new OpeRecipient
         {
             Email = newRecipient.Email,
             PhoneNumber = newRecipient.PhoneNumber,
             FirstName = newRecipient.FirstName,
             LastName = newRecipient.LastName
         });
-        newRecipient = new OpeRecipient(); // reset form
-    }
-    else
-    {
-        invalidEntries.Add($"{newRecipient.Email} - {newRecipient.PhoneNumber} - {newRecipient.FirstName} {newRecipient.LastName}");
-    }
+            newRecipient = new OpeRecipient(); // reset form
+        }
+        else
+        {
+            invalidEntries.Add($"{newRecipient.Email} - {newRecipient.PhoneNumber} - {newRecipient.FirstName} {newRecipient.LastName}");
+        }
 
-    StateHasChanged(); // force UI refresh
-}
+        StateHasChanged(); // force UI refresh
+    }
     private List<SimpleRecipient> ParseGroupEmails()
     {
         var emails = new List<SimpleRecipient>();
@@ -844,7 +830,7 @@ else
             var email = parts[0].Trim().ToLowerInvariant();
             var name = parts.Length > 1 ? parts[1].Trim() : "";
 
-            if (IsValidEmail(email))
+            if (JwtHelper.IsValidEmail(email))
                 emails.Add(new SimpleRecipient { Email = email, Name = name });
             else
                 invalidEmails.Add($"{line} (invalid format)");
@@ -853,12 +839,13 @@ else
     }
     private async Task<bool> ReConfirmEmail()
     {
-        OrgaCreateDto dto = new();
-        dto.Idorg = curOrga.Idorg;
-        dto.Email = _invModel.Email;
-
-        dto.Ivrole = 2; //owner
-        dto.Srole = "Owner";
+        //OrgaCreateDto dto = new();
+        //dto.Idorg = curOrga.Idorg;
+        //dto.Email = _invModel.Email;
+        //dto.SiPhone = _invModel.SiPhone;
+     
+        //dto.Ivrole = 2; //owner
+        //dto.Srole = "Owner";
         // Dynamic client per-customer
         var clieUrl = _invModel.Weburl;
         await _clieManager.SetAuthorizationHeaderAsync("AuthClient");
@@ -888,9 +875,10 @@ else
     }
     private async Task<bool> ReVoquerUser()
     {
-        OrgaCreateDto dto = new();
-        dto.Idorg = curOrga.Idorg;
-        dto.Email = _invModel.Email;
+        //OrgaCreateDto dto = new();
+        //dto.Idorg = curOrga.Idorg;
+        //dto.Email = _invModel.Email;
+        //dto.SiPhone = _invModel.SiPhone;
         // Dynamic client per-customer
         var clieUrl = _invModel.Weburl;
         await _clieManager.SetAuthorizationHeaderAsync("AuthClient");
@@ -918,32 +906,32 @@ else
         StateHasChanged();
         return true;
     }
-    private bool IsValidEmail(string email)  // ✅ Instance method
-    {
-        if (string.IsNullOrWhiteSpace(email)) return false;
-        return System.Text.RegularExpressions.Regex.IsMatch(email, @"^[^@\s]+@[^@\s]+\.[^@\s]+$");
-    }
-    private bool IsValidPhone(string phone)
-    {
-        if (string.IsNullOrWhiteSpace(phone))
-            return false;
+    // private bool IsValidEmail(string email)  // ✅ Instance method
+    // {
+    //     if (string.IsNullOrWhiteSpace(email)) return false;
+    //     return System.Text.RegularExpressions.Regex.IsMatch(email, @"^[^@\s]+@[^@\s]+\.[^@\s]+$");
+    // }
+    // private bool IsValidPhone(string phone)
+    // {
+    //     if (string.IsNullOrWhiteSpace(phone))
+    //         return false;
 
-        // Normalize: remove spaces, dashes, parentheses
-        var digitsOnly = new string(phone.Where(char.IsDigit).ToArray());
+    //     // Normalize: remove spaces, dashes, parentheses
+    //     var digitsOnly = new string(phone.Where(char.IsDigit).ToArray());
 
-        // Basic length check
-        if (digitsOnly.Length < 7 || digitsOnly.Length > 15)
-            return false;
+    //     // Basic length check
+    //     if (digitsOnly.Length < 7 || digitsOnly.Length > 15)
+    //         return false;
 
-        // Optional: allow leading '+' for international format
-        if (phone.StartsWith("+"))
-        {
-            // Ensure rest are digits
-            return digitsOnly.Length >= 7 && digitsOnly.Length <= 15;
-        }
+    //     // Optional: allow leading '+' for international format
+    //     if (phone.StartsWith("+"))
+    //     {
+    //         // Ensure rest are digits
+    //         return digitsOnly.Length >= 7 && digitsOnly.Length <= 15;
+    //     }
 
-        return true;
-    }
+    //     return true;
+    // }
     private async Task<bool> VerifInputs(int gpe)
     {
         ErrorsList = new();
@@ -966,7 +954,7 @@ else
             {
                 ErrorsList.Add("Echec, Prenom(s) obligatoire.");
             }   
-            if (!IsValidEmail(_invModel.Email))
+            if (!JwtHelper.IsValidEmail(_invModel.Email))
             {
                 ErrorsList.Add("Echec, Email obligatoire.");
             }

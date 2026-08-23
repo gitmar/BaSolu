@@ -4,7 +4,7 @@
 @using GxShared.Sess
 
 
-<h3>CTiwGdHelper</h3>
+@* <h3>CTiwGdHelper</h3> *@
 
 <div class="card">
     <div class="card-body p-3">
@@ -366,6 +366,7 @@
     [Parameter] public List<TiwaflDto> SubAfls { get; set; }
     [Parameter] public GridMode GMode { get; set; } = GridMode.None;
     [Parameter] public bool isEditing { get; set; } = false;
+    [Parameter] public bool isViewing { get; set; } = false;
     [Parameter] public Dictionary<string, bool> AflVisibility { get; set; } = new();
 
     [Parameter] public List<Gtabl> EnsTbls { get; set; }
@@ -389,4 +390,11 @@
     //         .Where(t => t.Pid == pxcod)
     //         .ToList();
     // }
+    protected override void OnParametersSet()
+    {
+        if (isViewing == true)
+        {
+            isEditing = false;
+        }
+    }
 }

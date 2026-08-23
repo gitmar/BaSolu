@@ -28,7 +28,7 @@
     <p>Loading...</p>
     <div class="text-center">
         <Spinner Color="SpinnerColor.Primary" Size="SpinnerSize.Medium" />
-        <p>Plan.Echeancier Loading...</p>
+        <p>Modele(PROG).Calcul Loading...</p>
     </div>
 }
 else
@@ -45,7 +45,6 @@ else
         <Authorized Context="AuthContext">
             <div class="row">
                 <div class="col-md-12 input-group align-middle">
-                    <span><b>Message :</b></span>
                     &nbsp;&nbsp;
                     @if (!String.IsNullOrEmpty(Imessage))
                     {
@@ -55,14 +54,16 @@ else
             </div>
             <div class="form-group">
                 <label class="fw-bold">Base :</label>
-                <InputSelect @bind-Value="IMyVue" class="me-3" style="width:auto">
+                <InputSelect @bind-Value="IMyVue"
+                             @bind-Value:after="OuvreMGrid"
+                             class="me-3"
+                             style="width:auto">
                     <option value=0>?util</option>
                     @foreach (var tob in LsVues)
                     {
                         <option value=@tob.Elea>@tob.Liba</option>
                     }
                 </InputSelect>
-
                 @* <div class="btn btn-group">
                         <label class="me-2">Domaine :</label>
                     <InputSelect @bind-Value="IMyDom" class="me-3" style="width:auto">
@@ -98,7 +99,7 @@ else
                             }
                         </div>
                         <div class="row">
-                            @if (IMyDom != 0 && IMyVue != 0)
+                            @if (CanOpenMGrid)
                             {
                                 <Grid TItem="PlngenDto"
                                        Data="@MyDaPlans"
@@ -1125,18 +1126,19 @@ else
     //Global
     private int _lgcdu = 0;
     private int IMyGpln = 5; //5Programme
-    private int IMyDom = 2; //2Calcul
-    //private int IMyVue = 1; //1Reel2Virtuel
-    private int _myVue = 1;  //1Reel2Virtuel
-    public int IMyVue
-    {
-        get => _myVue;
-        set
-        {
-            _myVue = value;
-            curPlanVue(value);
-        }
-    }
+    private int IMyDom = 5; //1Variables2Durables3Factures4Echeanciers5Calculs6Cumul7Compta
+    private int IMyAtr = 0; //
+    private int IMyVue = 0; //1Reel2Virtuel
+    // private int _myVue = 1;  //1Reel2Virtuel
+    // public int IMyVue
+    // 
+    //     get => _myVue;
+    //     set
+    //     {
+    //         _myVue = value;
+    //         curPlanVue(value);
+    //     }
+    // }
 
     //author
     private ClaimsPrincipal authUser;
@@ -1175,6 +1177,7 @@ else
     public List<PlngenDto> MyDaPlans => PlanItems;
     public List<RubvarDto> MyDaRubs => RubItems;
     public List<RubfmtDto> MyDaFmts => FmtItems;
+    private bool CanOpenMGrid = false;
 
     private List<PlngenDto> LsPlsActs => curOrga.Plngens.Where(pl => pl.Ptyp == 1).ToList();
     private List<PlngenDto> LsPlsEchs => curOrga.Plngens.Where(pl => pl.Ptyp == 2).ToList();
@@ -1227,7 +1230,7 @@ else
             }
             LsVars = toChild.LsVars;
             LsFixes = toChild.LsFixes;
-            LsDoms = LsFixes.Where(ut => ut.Gvars == 36 && ut.Itb == 4 && ut.Gp1 == 3 && ut.Elea != 0).ToList();
+            LsDoms = LsFixes.Where(ut => ut.Gvars == 36 && ut.Itb == 2 && ut.Gp1 == 2 && ut.Elea != 0).ToList();
             LsAtrs = LsFixes.Where(ut => ut.Gvars == 36 && ut.Itb == 1 && ut.Gp1 == 3 && ut.Elea != 0).ToList();
             LsVues = LsFixes.Where(ut => ut.Gvars == 36 && ut.Itb == 4 && ut.Gp1 == 4 && ut.Elea != 0).ToList();
             LsGties = LsFixes.Where(ut => ut.Gvars == 36 && ut.Itb == 6 && ut.Elea != 0 && ut.Elea != 9).ToList();
@@ -1270,6 +1273,19 @@ else
         if (firstRender)
         {
             _locationHandler = _navManager.RegisterLocationChangingHandler(OnLocationChangingAsync);
+        }
+    }
+    private async Task OuvreMGrid()
+    {
+        if (IMyDom != 0 && IMyVue != 0)
+        {
+            await UpdateMyDaPlans();
+            PlnRenderKey = Guid.NewGuid();
+            CanOpenMGrid = true;
+        }
+        else
+        {
+            CanOpenMGrid = false;
         }
     }
     void OnPlnRowClick(GridRowEventArgs<PlngenDto> args)
@@ -1326,8 +1342,8 @@ else
             Idorg = curOrga.Idorg,
             Iui = lsnb,
             Ptyp = IMyGpln,
-            Todom = IMyDom,
-            Ogtyp = 0,
+            Todom = IMyDom, //5Calculs
+            //Ogtyp = 0,
             Totyp = IMyGtie,
             Toatr = 0,
             Tovue = IMyVue,
@@ -1342,8 +1358,9 @@ else
             Xedt1 = 0
         };
 
-        PlanItems.Insert(0, newPln);
+        //PlanItems.Insert(0, newPln);
         curOrga.Plngens.Insert(0, newPln);
+        await UpdateMyDaPlans();
 
         SetRowState(EntityLevel.Plan, newPln.Rowguid, RowState.AddPending);
         //SetLightBackground(newPln.Rowguid, true);
@@ -1381,7 +1398,7 @@ else
             Prowguid = mypln.Rowguid,
             Idorg = mypln.Idorg,
             Ipln = mypln.Id,
-            Vgpe = 5, //dff
+            Vgpe = 5, //IMyDom
             Scdrub = "",
             Iui = lsnb,
             Torub = 0,
@@ -1407,8 +1424,9 @@ else
             Xedt1 = 0
         };
 
-        RubItems.Insert(0, newRub);
+        //RubItems.Insert(0, newRub);
         curPlan.Rubvars.Insert(0, newRub);
+        await UpdateMyDaRubs();
 
         draftRub = DeepClone(newRub);
         BeginAdd(EntityLevel.Rub, newRub.Rowguid, draftRub);
@@ -1455,8 +1473,9 @@ else
             Xedt1 = 0
         };
 
-        FmtItems.Insert(0, newFmt);
+        //FmtItems.Insert(0, newFmt);
         myrub.Rubfmts.Insert(0, newFmt);
+        await UpdateMyDaFmts();
 
         draftFmt = DeepClone(newFmt);
         BeginAdd(EntityLevel.Fmt, newFmt.Rowguid, draftFmt);
@@ -1526,23 +1545,23 @@ else
 
         StateHasChanged();
     }
-    private void StartCancelAdd(EntityLevel level, object entity)
+    private async Task StartCancelAdd(EntityLevel level, object entity)
     {
         var rowguid = MLEntityKeyHelper.GetRowguidAsGuid(entity);
         switch (level)
         {
             case EntityLevel.Plan:
-                CancelAdd(level, entity);
+                await CancelAdd(level, entity);
                 curOrga.Plngens.RemoveAll(x => x.Rowguid == rowguid);
                 PlnRenderKey = Guid.Empty;
                 break;
             case EntityLevel.Rub:
-                CancelAdd(level, entity);
+                await CancelAdd(level, entity);
                 curPlan.Rubvars.RemoveAll(x => x.Rowguid == rowguid);
                 RubRenderKey = Guid.Empty;
                 break;
             case EntityLevel.Fmt:
-                CancelAdd(level, entity);
+                await CancelAdd(level, entity);
                 curRubr.Rubfmts.RemoveAll(x => x.Rowguid == rowguid);
                 FmtRenderKey = Guid.Empty;
                 break;
@@ -1640,7 +1659,7 @@ else
     {
         PlanItems.Clear();
         PlanItems.AddRange(
-            curOrga.Plngens?.Where(pl => pl.Ptyp == IMyGpln && pl.Todom == IMyDom)
+            curOrga.Plngens?.Where(pl => pl.Ptyp == IMyGpln && pl.Todom == IMyDom && pl.Toatr == IMyAtr && pl.Tovue == IMyVue)
             ?? Enumerable.Empty<PlngenDto>());
     }
     private void InitializeMyDaRubs()
@@ -1664,21 +1683,21 @@ else
             curRubr.Rubfmts?.ToList()
         ?? Enumerable.Empty<RubfmtDto>());
     }
-    private void UpdateMyDaPlans()
+    private async Task UpdateMyDaPlans()
     {
         PlanItems.Clear();
         PlanItems.AddRange(
-            curOrga.Plngens?.Where(pl => pl.Ptyp == IMyGpln && pl.Todom == IMyDom)
+            curOrga.Plngens?.Where(pl => pl.Ptyp == IMyGpln && pl.Todom == IMyDom && pl.Toatr == IMyAtr && pl.Tovue == IMyVue)
             ?? Enumerable.Empty<PlngenDto>());
     }
-    private void UpdateMyDaRubs()
+    private async Task UpdateMyDaRubs()
     {
         RubItems.Clear();
         RubItems.AddRange(
             curPlan.Rubvars.ToList()
             ?? Enumerable.Empty<RubvarDto>());
     }
-    private void UpdateMyDaFmts()
+    private async Task   UpdateMyDaFmts()
     {
         FmtItems.Clear();
         FmtItems.AddRange(

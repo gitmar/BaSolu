@@ -55,14 +55,17 @@ else
             </div>
             <div class="form-group">
                 <label class="fw-bold">Base :</label>
-                <InputSelect @bind-Value="IMyVue" class="me-3" style="width:auto">
+                <InputSelect @bind-Value="IMyVue"
+                             @bind-Value:after="OuvreMGrid"
+                             class="me-3"
+                             style="width:auto">
                     <option value=0>?util</option>
                     @foreach (var tob in LsVues)
                     {
                         <option value=@tob.Elea>@tob.Liba</option>
                     }
                 </InputSelect>
-
+      
                 @* <div class="btn btn-group">
                         <label class="me-2">Domaine :</label>
                     <InputSelect @bind-Value="IMyDom" class="me-3" style="width:auto">
@@ -1311,6 +1314,19 @@ else
             _locationHandler = _navManager.RegisterLocationChangingHandler(OnLocationChangingAsync);
         }
     }
+    private async Task OuvreMGrid()
+    {
+        // if (IMyDom != 0 && IMyVue != 0)
+        // {
+        //     await UpdateMyDaPlans();
+        //     PlnRenderKey = Guid.NewGuid();
+        //     CanOpenMGrid = true;
+        // }
+        // else
+        // {
+        //     CanOpenMGrid = false;
+        // }
+    }
     public async Task StartPlnNew()
     {
         if (IsAnyRowEditing)
@@ -1327,7 +1343,7 @@ else
             Iui = lsnb,
             Ptyp = IMyGpln,
             Todom = IMyDom,
-            Ogtyp = 0,
+            //Ogtyp = 0,
             Totyp = IMyGtie,
             Toatr = 0,
             Tovue = IMyVue,
@@ -1662,7 +1678,7 @@ else
     }
     private void UpdateMyDaPlans()
     {
-        RubItems.Clear();
+        PlanItems.Clear();
         PlanItems.AddRange(
             curOrga.Plngens?.Where(pl => pl.Ptyp == IMyGpln && pl.Todom == IMyDom)
             ?? Enumerable.Empty<PlngenDto>());

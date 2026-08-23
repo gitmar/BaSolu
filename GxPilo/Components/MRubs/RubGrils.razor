@@ -4,7 +4,6 @@
 
 @layout PrubMenu
 
-
 @using System
 @using GxShared.Helpers
 @using GxShared.Sess
@@ -20,19 +19,18 @@
 @using BlazorBootstrap
 @using Blazored.LocalStorage
 @using AutoMapper
-@using Microsoft.AspNetCore.Components.Forms
 
 @inject NavigationManager _navManager
 @inject IJSRuntime _JsRUN
 @inject IMessageService _messageService
 <!-- InscTiewComponent.razor -->
-<PageTitle>Plan.Grilles</PageTitle>
+<PageTitle>Modele.Grilles</PageTitle>
 
 @if (isLoading)
 {
     <div class="text-center">
         <Spinner Color="SpinnerColor.Primary" Size="SpinnerSize.Medium" />
-        <p>Plan.Postes Loading...</p>
+        <p>Modele(ASTR).Grilles Loading...</p>
     </div>
 }
 else
@@ -49,7 +47,6 @@ else
         <Authorized Context="AuthContext">
             <div class="row">
                 <div class="col-md-12 input-group align-middle">
-                    <span><b>Message :</b></span>
                     &nbsp;&nbsp;
                     @if (!String.IsNullOrEmpty(Imessage))
                     {
@@ -59,7 +56,10 @@ else
             </div>
             <div class="form-group">
                 <label class="fw-bold">G.Tiers :</label>
-                <InputSelect @bind-Value="IMyGtie" class="me-3" style="width:auto">
+                <InputSelect @bind-Value="IMyGtie"
+                             @bind-Value:after="OuvreMGrid"
+                             class="me-3"
+                             style="width:auto">
                     <option value=0>?gtiers</option>
                     @foreach (var tob in LsGties)
                     {
@@ -84,11 +84,13 @@ else
                             }
                         </div>
                         <div class="row">
-                            @if (IMyGtie != 0 && IMyAtr != 0)
+                            @if (CanOpenMGrid)
                             {
                                 <Grid TItem="PlngenDto"
                                       Data="@MyDaPlans"
                                       @key="PlnRenderKey"
+                                      AllowRowClick="true"
+                                      OnRowClick="OnPlnRowClick"
                                       AllowDetailView="true"
                                       RowClass="@((item) => GetPlanRowClass(item))"
                                       Responsive="true">
@@ -133,7 +135,7 @@ else
                                         </GridColumn>
                                         <GridColumn TItem="PlngenDto" HeaderText="Eta" Class="xcol1">
                                             <HeaderContent>
-                                                @if (IMyDom != 0 && IMyAtr != 0 && IMyGtie != 0 && IMyVue != 0)
+                                                @if (CanOpenMGrid)
                                                 {
                                                     <button class="btn btn-primary btn-sm @(IsLevelBusy(EntityLevel.Plan) ? "disabled-action" : "")"
                                                             disabled="@IsLevelBusy(EntityLevel.Plan)"
@@ -657,7 +659,7 @@ else
     //private int IMyVue = 1; //1Reel2Virtuel
     //private int IMyAtr = 1; ////1Adm2Geo
     //private int ItkDom = 0; //6Tiers7Mat
-    private int IMyGtie = 1; //1Cible/2Operat...
+    private int IMyGtie = 0; //1Cible/2Operat...
 
     //Global
     private int _lgcdu = 0;
@@ -704,6 +706,7 @@ else
     public List<PlngenDto> MyDaPlans => PlanItems;
     public List<RubvarDto> MyDaRubs => RubItems;
     public List<RubfmtDto> MyDaFmts => FmtItems;
+    private bool CanOpenMGrid = false;
 
     private List<PlngenDto> LsPlsEchs => curOrga.Plngens.Where(pl => pl.Ptyp == 2).ToList();
     private List<PlngenDto> LsPlsGris => curOrga.Plngens.Where(pl => pl.Ptyp == 3).ToList();
@@ -755,7 +758,7 @@ else
             }
             LsVars = toChild.LsVars;
             LsFixes = toChild.LsFixes;
-            LsDoms = LsFixes.Where(ut => ut.Gvars == 36 && ut.Itb == 4 && ut.Gp1 == 3 && ut.Elea != 0).ToList();
+            LsDoms = LsFixes.Where(ut => ut.Gvars == 36 && ut.Itb == 4 && ut.Gp1 == 4 && ut.Elea != 0).ToList();
             LsAtrs = LsFixes.Where(ut => ut.Gvars == 36 && ut.Itb == 1 && ut.Gp1 == 3 && ut.Elea != 0).ToList();
             LsVues = LsFixes.Where(ut => ut.Gvars == 36 && ut.Itb == 4 && ut.Gp1 == 4 && ut.Elea != 0).ToList();
             LsGties = LsFixes.Where(ut => ut.Gvars == 36 && ut.Itb == 6 && ut.Elea != 0 && ut.Elea != 9).ToList();
@@ -800,16 +803,31 @@ else
             _locationHandler = _navManager.RegisterLocationChangingHandler(OnLocationChangingAsync);
         }
     }
+    private async Task OuvreMGrid()
+    {
+        if (IMyDom != 0 && IMyAtr != 0 && IMyGtie != 0)
+        {
+            //await UpdateMyDaPlans();
+            InitializeMyDaPlans();
+            PlnRenderKey = Guid.NewGuid();
+            CanOpenMGrid = true;
+        }
+        else
+        {
+            CanOpenMGrid = false;
+        }
+    }
     void OnPlnRowClick(GridRowEventArgs<PlngenDto> args)
     {
         Console.WriteLine($"OnPlnRowClick Triggered : {args.Item.Id}");
         curPlan = args.Item; //get gRubsMap
-        Console.WriteLine($"Id {curPlan.Id}");
         if (curPlan == null || curPlan.Id == 0)
         {
             return;
         }
-        //MyDaRubs = new ObservableCollection<RubvarDto>(curPlan.Rubvars);
+        InitializeMyDaRubs();
+        RubRenderKey = Guid.NewGuid();
+        Console.WriteLine($"Id {curPlan.Id} nb rubs : {curPlan.Rubvars}");
         StateHasChanged();
     }
     void OnRubRowClick(GridRowEventArgs<RubvarDto> args)
@@ -840,7 +858,7 @@ else
             Iui = lsnb,
             Ptyp = IMyGpln,
             Todom = IMyDom,
-            Ogtyp = 0,
+            //Ogtyp = 0,
             Totyp = IMyGtie,
             Toatr = 0,
             Tovue = IMyVue,
@@ -855,8 +873,9 @@ else
             Xedt1 = 0
         };
 
-        PlanItems.Insert(0, newPln);
+        //PlanItems.Insert(0, newPln);
         curOrga.Plngens.Insert(0, newPln);
+        await UpdateMyDaPlans();
 
         SetRowState(EntityLevel.Plan, newPln.Rowguid, RowState.AddPending);
         //SetLightBackground(newPln.Rowguid, true);
@@ -921,8 +940,9 @@ else
         };
 
         curPlan = mypln;
-        RubItems.Insert(0, newRub);
+        //RubItems.Insert(0, newRub);
         mypln.Rubvars.Insert(0, newRub);
+        await UpdateMyDaRubs();
 
         draftRub = DeepClone(newRub);
         BeginAdd(EntityLevel.Rub, newRub.Rowguid, draftRub);
@@ -969,8 +989,9 @@ else
             Xedt1 = 0
         };
 
-        FmtItems.Insert(0, newFmt);
+        //FmtItems.Insert(0, newFmt);
         myrub.Rubfmts.Insert(0, newFmt);
+        await UpdateMyDaFmts();
 
         draftFmt = DeepClone(newFmt);
         BeginAdd(EntityLevel.Fmt, newFmt.Rowguid, draftFmt);
@@ -1156,7 +1177,7 @@ else
     {
         PlanItems.Clear();
         PlanItems.AddRange(
-            curOrga.Plngens.Where(pl => pl.Ptyp == IMyGpln && pl.Todom == IMyDom)
+            curOrga.Plngens.Where(pl => pl.Ptyp == IMyGpln && pl.Todom == IMyDom && pl.Totyp == IMyGtie)
             ?? Enumerable.Empty<PlngenDto>());
     }
     private void InitializeMyDaRubs()
@@ -1173,21 +1194,21 @@ else
             curRubr?.Rubfmts.ToList()
         ?? Enumerable.Empty<RubfmtDto>());
     }
-    private void UpdateMyDaPlans()
+    private async Task UpdateMyDaPlans()
     {
-        RubItems.Clear();
+        PlanItems.Clear();
         PlanItems.AddRange(
-            curOrga.Plngens?.Where(pl => pl.Ptyp == IMyGpln && pl.Todom == IMyDom)
+            curOrga.Plngens?.Where(pl => pl.Ptyp == IMyGpln && pl.Todom == IMyDom && pl.Totyp == IMyGtie)
             ?? Enumerable.Empty<PlngenDto>());
     }
-    private void UpdateMyDaRubs()
+    private async Task UpdateMyDaRubs()
     {
         RubItems.Clear();
         RubItems.AddRange(
             curPlan.Rubvars.ToList()
             ?? Enumerable.Empty<RubvarDto>());
     }
-    private void UpdateMyDaFmts()
+    private async Task UpdateMyDaFmts()
     {
         FmtItems.Clear();
         FmtItems.AddRange(

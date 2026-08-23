@@ -94,7 +94,7 @@ else
                                 toChild="@toChild"
                                 _InODaClient="@_MyODaClient">
                                 <ChildContent>
-                                    <h2 class="child-box">Hello GRILLES</h2>
+                                    @* <h2 class="child-box">Hello GRILLES</h2> *@
                                 </ChildContent>
                             </RubEchs>
                         }
@@ -179,8 +179,8 @@ else
         new GxMenuItem { Id = 1, Text = "GRILLE", Icon = "bi bi-box-arrow-in-down" },
         new GxMenuItem { Id = 2, Text = "ORGANIGRAMME", Icon = "bi bi-house-door" },
         new GxMenuItem { Id = 3, Text = "ECHEANCIER", Icon = "bi bi-house-door" },
-        new GxMenuItem { Id = 4, Text = "FACTURE", Icon = "bi bi-house-door" },
-        new GxMenuItem { Id = 5, Text = "Saisies", Icon = "bi bi-house-door" },
+        //new GxMenuItem { Id = 4, Text = "FACTURE", Icon = "bi bi-house-door" },
+        new GxMenuItem { Id = 4, Text = "Saisies", Icon = "bi bi-house-door" },
         //new MenuItem { Id = 4, Text = "Mutation", Icon = "bi bi-arrow-repeat" },
     };
     public List<GxGroupe> Groupes = new();
@@ -304,8 +304,8 @@ else
         if (_chxMenu == 1) strComp = $"GRILLE";
         if (_chxMenu == 2) strComp = $"ORGANIGRAMME";
         if (_chxMenu == 3) strComp = $"ECHEANCIER";
-        if (_chxMenu == 4) strComp = $"FACTURE";
-        if (_chxMenu == 5)
+        //if (_chxMenu == 4) strComp = $"FACTURE";
+        if (_chxMenu == 4)
         {
             _navManager.NavigateTo("/ictamenu", replace: true);
             strComp = $"Saisies";

@@ -652,89 +652,81 @@ else if (edOrgContext != null && curOrga != null)
                                         <div class="row mt-2">
                                             <span style="font-weight:bold"> Filiation -> Base</span>
                                         </div>
-                                        <Grid Data="@MyDaApts"
-                                                TItem="GsgfixDto"
-                                                AllowDetailView="true"
-                                                Responsive="true">
-                                            <GridColumns>
-                                                <GridColumn TItem="GsgfixDto" HeaderText="No" Class="xcol1">
-                                                    <ChildContent Context="item">@item.Elea</ChildContent>
-                                                </GridColumn>
-                                                <GridColumn TItem="GsgfixDto" HeaderText="Avec">
-                                                    <ChildContent Context="item">
-                                                        @item.Liba
-                                                    </ChildContent>
-                                                </GridColumn>
-                                                <GridColumn TItem="GsgfixDto" HeaderText="Libelle" Class="xcol2">
-                                                    <ChildContent Context="item">
-                                                        @if (item.Rowguid == EdAptRowguid)
-                                                        {
-                                                            <InputText @bind-Value="@draftApt.Sliba" style="width:100%" />
-                                                        }
-                                                        else
-                                                        {
-                                                            <span style="width:100%">@item.Sliba</span>
-                                                        }
-                                                    </ChildContent>
-                                                </GridColumn>
-                                                <GridColumn TItem="GsgfixDto" HeaderText="Opt." Class="xcol1">
-                                                    <ChildContent Context="item">
-                                                        @if (item.Rowguid == EdAptRowguid)
-                                                        {
+                                    <Grid Data="@MyDaApts"
+                                          TItem="GsgfixDto"
+                                          AllowRowClick="true"
+                                          OnRowClick="OnAflRowClick"
+                                          AllowDetailView="true"
+                                          Responsive="true">
+                                        <GridColumns>
+                                            <GridColumn TItem="GsgfixDto" HeaderText="No" Class="xcol1">
+                                                <ChildContent Context="item">@item.Elea</ChildContent>
+                                            </GridColumn>
+                                            <GridColumn TItem="GsgfixDto" HeaderText="Avec">
+                                                <ChildContent Context="item">
+                                                    @item.Liba
+                                                </ChildContent>
+                                            </GridColumn>
+                                            <GridColumn TItem="GsgfixDto" HeaderText="Libelle" Class="xcol2">
+                                                <ChildContent Context="item">
+                                                    @if (item.Rowguid == EdAptRowguid)
+                                                    {
+                                                        <InputText @bind-Value="@draftApt.Sliba" style="width:100%" />
+                                                    }
+                                                    else
+                                                    {
+                                                        <span style="width:100%">@item.Sliba</span>
+                                                    }
+                                                </ChildContent>
+                                            </GridColumn>
+                                            <GridColumn TItem="GsgfixDto" HeaderText="Opt." Class="xcol1">
+                                                <ChildContent Context="item">
+                                                    @if (item.Rowguid == EdAptRowguid)
+                                                    {
                                                         <InputSelect @bind-Value="draftApt.Ityp">
-                                                                @foreach (var tob in LsFixes.Where(ut => ut.Gvars == 31 && ut.Itb == 2 && ut.Gp1 == 1))
-                                                                {
-                                                                    <option value=@tob.Elea>@tob.Liba</option>
-                                                                }
-                                                            </InputSelect>
-                                                        }
-                                                        else
-                                                        {
-                                                            <InputSelect @bind-Value="item.Ityp" disabled>
-                                                                @foreach (var tob in LsFixes.Where(ut => ut.Gvars == 31 && ut.Itb == 2 && ut.Gp1 == 1))
-                                                                {
-                                                                    <option value=@tob.Elea>@tob.Liba</option>
-                                                                }
-                                                            </InputSelect>
-                                                        }
-                                                    </ChildContent>
-                                                </GridColumn>
-                                                @* <GridColumn TItem="GsgfixDto" HeaderText="Genr." Class="xcol1">
-                                                    <ChildContent Context="item">
-                                                        <InputSelect @bind-Value="item.Ktyp" disabledd="@(!isEdApt)">
                                                             @foreach (var tob in LsFixes.Where(ut => ut.Gvars == 31 && ut.Itb == 2 && ut.Gp1 == 1))
                                                             {
                                                                 <option value=@tob.Elea>@tob.Liba</option>
                                                             }
                                                         </InputSelect>
-                                                    </ChildContent>
-                                                </GridColumn> *@
-                                                <GridColumn TItem="GsgfixDto" HeaderText="Avis" Class="xcol1">
-                                                    <ChildContent Context="item">
-                                                        <div class="col-1">
-                                                            @if (item.Rowguid == EdAptRowguid)
+                                                    }
+                                                    else
+                                                    {
+                                                        <InputSelect @bind-Value="item.Ityp" disabled>
+                                                            @foreach (var tob in LsFixes.Where(ut => ut.Gvars == 31 && ut.Itb == 2 && ut.Gp1 == 1))
                                                             {
+                                                                <option value=@tob.Elea>@tob.Liba</option>
+                                                            }
+                                                        </InputSelect>
+                                                    }
+                                                </ChildContent>
+                                            </GridColumn>
+                                            <GridColumn TItem="GsgfixDto" HeaderText="Avis" Class="xcol1">
+                                                <ChildContent Context="item">
+                                                    <div class="col-1">
+                                                        @if (item.Rowguid == EdAptRowguid)
+                                                        {
                                                             <InputSelect @bind-Value="draftApt.Jtyp">
-                                                                    @foreach (var tob in LsFixes.Where(ut => ut.Gvars == 31 && ut.Itb == 6 && ut.Gp1 == 1))
-                                                                    {
-                                                                        <option value=@tob.Elea>@tob.Liba</option>
-                                                                    }
-                                                                </InputSelect>
-                                                            }
-                                                            else
-                                                            {
-                                                                <InputSelect @bind-Value="item.Jtyp" disabled>
-                                                                    @foreach (var tob in LsFixes.Where(ut => ut.Gvars == 31 && ut.Itb == 6 && ut.Gp1 == 1))
-                                                                    {
-                                                                        <option value=@tob.Elea>@tob.Liba</option>
-                                                                    }
-                                                                </InputSelect>
-                                                            }
-                                                        </div>
-                                                    </ChildContent>
-                                                </GridColumn>
-                                                <GridColumn TItem="GsgfixDto" HeaderText="max." Class="xcol1">
-                                                    <ChildContent Context="item">
+                                                                @foreach (var tob in LsFixes.Where(ut => ut.Gvars == 31 && ut.Itb == 6 && ut.Gp1 == 1))
+                                                                {
+                                                                    <option value=@tob.Elea>@tob.Liba</option>
+                                                                }
+                                                            </InputSelect>
+                                                        }
+                                                        else
+                                                        {
+                                                            <InputSelect @bind-Value="item.Jtyp" disabled>
+                                                                @foreach (var tob in LsFixes.Where(ut => ut.Gvars == 31 && ut.Itb == 6 && ut.Gp1 == 1))
+                                                                {
+                                                                    <option value=@tob.Elea>@tob.Liba</option>
+                                                                }
+                                                            </InputSelect>
+                                                        }
+                                                    </div>
+                                                </ChildContent>
+                                            </GridColumn>
+                                            <GridColumn TItem="GsgfixDto" HeaderText="max." Class="xcol1">
+                                                <ChildContent Context="item">
                                                     @if (item.Rowguid == EdAptRowguid)
                                                     {
                                                         <InputNumber class="my-input" @bind-Value="draftApt.Mtyp"
@@ -744,89 +736,89 @@ else if (edOrgContext != null && curOrga != null)
                                                     {
                                                         <span style="font-weight:bold;width:80px">@item.Mtyp</span>
                                                     }
-                                                    </ChildContent>
-                                                </GridColumn>
-                                                <GridColumn TItem="GsgfixDto" HeaderText="notif." Class="xcol1">
-                                                    <ChildContent Context="item">
-                                                            @if (item.Rowguid == EdAptRowguid)
+                                                </ChildContent>
+                                            </GridColumn>
+                                            <GridColumn TItem="GsgfixDto" HeaderText="notif." Class="xcol1">
+                                                <ChildContent Context="item">
+                                                    @if (item.Rowguid == EdAptRowguid)
+                                                    {
+                                                        <InputSelect @bind-Value="draftApt.Ntyp">
+                                                            @foreach (var tob in LsFixes.Where(ut => ut.Gvars == 31 && ut.Itb == 4 && ut.Gp1 == 1))
                                                             {
-                                                                <InputSelect @bind-Value="draftApt.Ntyp">
-                                                                    @foreach (var tob in LsFixes.Where(ut => ut.Gvars == 31 && ut.Itb == 4 && ut.Gp1 == 1))
-                                                                    {
-                                                                        <option value=@tob.Elea>@tob.Liba</option>
-                                                                    }
-                                                                </InputSelect>
+                                                                <option value=@tob.Elea>@tob.Liba</option>
                                                             }
-                                                            else
+                                                        </InputSelect>
+                                                    }
+                                                    else
+                                                    {
+                                                        <InputSelect @bind-Value="item.Ntyp" disabled>
+                                                            @foreach (var tob in LsFixes.Where(ut => ut.Gvars == 31 && ut.Itb == 4 && ut.Gp1 == 1))
                                                             {
-                                                            <InputSelect @bind-Value="item.Ntyp" disabled>
-                                                                @foreach (var tob in LsFixes.Where(ut => ut.Gvars == 31 && ut.Itb == 4 && ut.Gp1 == 1))
-                                                                {
-                                                                    <option value=@tob.Elea>@tob.Liba</option>
-                                                                }
-                                                            </InputSelect>
+                                                                <option value=@tob.Elea>@tob.Liba</option>
                                                             }
-                                                    </ChildContent>
-                                                </GridColumn>
-                                                <GridColumn TItem="GsgfixDto" HeaderText="Actions" Class="xcol2">
-                                                    <ChildContent Context="item">
-                                                        <div class="col-md-2 d-flex gap-2">
-                                                            @if (EdAptRowguid  != item.Rowguid)
-                                                            {
-                                                                <button class="btn btn-warning btn-sm @(!isEdingApt && EdAptRowguid != item.Rowguid ? "" : "disabled-action")" @onclick="() => StartAptEdit(item)">Edit</button>
-                                                            }
-                                                            else
-                                                            {
-                                                                <button class="btn btn-warning btn-sm @(EdAptRowguid  == item.Rowguid ? "" : "disabled-action")" @onclick="() => ConfGapt(draftApt)">Confirm</button>
-                                                                <button class="btn btn-danger btn-sm @(EdAptRowguid  == item.Rowguid ? "" : "disabled-action")" @onclick="() => CancGapt(item)">Annul</button>
-                                                            }
-                                                        </div>
-                                                    </ChildContent>
-                                                </GridColumn>
-                                                <GridDetailView TItem="GsgfixDto" Context="item">
-                                                    <div class="row">
-                                                        <div class="col-md-2"></div>
-                                                        <div class="col-md-3">Adm</div>
-                                                        <div class="col-md-3">Geo</div>
+                                                        </InputSelect>
+                                                    }
+                                                </ChildContent>
+                                            </GridColumn>
+                                            <GridColumn TItem="GsgfixDto" HeaderText="Actions" Class="xcol2">
+                                                <ChildContent Context="item">
+                                                    <div class="col-md-2 d-flex gap-2">
+                                                        @if (EdAptRowguid != item.Rowguid)
+                                                        {
+                                                            <button class="btn btn-warning btn-sm @(!isEdingApt && EdAptRowguid != item.Rowguid ? "" : "disabled-action")" @onclick="() => StartAptEdit(item)">Edit</button>
+                                                        }
+                                                        else
+                                                        {
+                                                            <button class="btn btn-warning btn-sm @(EdAptRowguid == item.Rowguid ? "" : "disabled-action")" @onclick="() => ConfGapt(draftApt)">Confirm</button>
+                                                            <button class="btn btn-danger btn-sm @(EdAptRowguid == item.Rowguid ? "" : "disabled-action")" @onclick="() => CancGapt(item)">Annul</button>
+                                                        }
                                                     </div>
-                                                    <div class="row">
-                                                        <div class="col-md-2"></div>
-                                                        <div class="col-md-3">
-                                                        @if (item.Rowguid == EdAptRowguid)
+                                                </ChildContent>
+                                            </GridColumn>
+                                            <GridDetailView TItem="GsgfixDto" Context="selectedGfix">
+                                                <div class="row">
+                                                    <div class="col-md-2"></div>
+                                                    <div class="col-md-3">Adm</div>
+                                                    <div class="col-md-3">Geo</div>
+                                                </div>
+                                                <div class="row">
+                                                    <div class="col-md-2"></div>
+                                                    <div class="col-md-3">
+                                                        @if (selectedGfix.Rowguid == EdAptRowguid)
                                                         {
                                                             <InputSelect @bind-Value="draftApt.Jdiv">
-                                                            <option value=0>choisir</option>
-                                                            @foreach (var udp in LsDivs.Where(dv => dv.Rpdom == 1 && dv.Tyhie == 1))
-                                                            {
-                                                                <option value=@udp.Ihie>@udp.Liba</option>
-                                                            }
+                                                                <option value=0>choisir</option>
+                                                                @foreach (var udp in LsDivs.Where(dv => dv.Rpdom == 1 && dv.Tyhie == 1))
+                                                                {
+                                                                    <option value=@udp.Ihie>@udp.Liba</option>
+                                                                }
                                                             </InputSelect>
-                                                            }
-                                                            else
-                                                            {
-                                                            <InputSelect @bind-Value="item.Jdiv" disabled>
-                                                            <option value=0>choisir</option>
-                                                            @foreach (var udp in LsDivs.Where(dv => dv.Rpdom == 1 && dv.Tyhie == 1))
-                                                            {
-                                                                <option value=@udp.Ihie>@udp.Liba</option>
-                                                            }
-                                                            </InputSelect>
-                                                            }
-                                                        </div>
-                                                        <div class="col-md-3">
-                                                            @if (item.Rowguid == EdAptRowguid)
-                                                            {
-                                                            <InputSelect @bind-Value="draftApt.Kdiv">
-                                                            <option value=0>choisir</option>
-                                                            @foreach (var udp in LsDivs.Where(dv => dv.Rpdom == 3 && dv.Tyhie == 3))
-                                                            {
-                                                                <option value=@udp.Ihie>@udp.Liba</option>
-                                                            }
-                                                            </InputSelect>
-                                                            }
-                                                            else
+                                                        }
+                                                        else
                                                         {
-                                                            <InputSelect @bind-Value="item.Kdiv" disabled>
+                                                            <InputSelect @bind-Value="selectedGfix.Jdiv" disabled>
+                                                                <option value=0>choisir</option>
+                                                                @foreach (var udp in LsDivs.Where(dv => dv.Rpdom == 1 && dv.Tyhie == 1))
+                                                                {
+                                                                    <option value=@udp.Ihie>@udp.Liba</option>
+                                                                }
+                                                            </InputSelect>
+                                                        }
+                                                    </div>
+                                                    <div class="col-md-3">
+                                                        @if (selectedGfix.Rowguid == EdAptRowguid)
+                                                        {
+                                                            <InputSelect @bind-Value="draftApt.Kdiv">
+                                                                <option value=0>choisir</option>
+                                                                @foreach (var udp in LsDivs.Where(dv => dv.Rpdom == 3 && dv.Tyhie == 3))
+                                                                {
+                                                                    <option value=@udp.Ihie>@udp.Liba</option>
+                                                                }
+                                                            </InputSelect>
+                                                        }
+                                                        else
+                                                        {
+                                                            <InputSelect @bind-Value="selectedGfix.Kdiv" disabled>
                                                                 <option value=0>choisir</option>
                                                                 @foreach (var udp in LsDivs.Where(dv => dv.Rpdom == 3 && dv.Tyhie == 3))
                                                                 {
@@ -835,147 +827,146 @@ else if (edOrgContext != null && curOrga != null)
                                                             </InputSelect>
                                                         }
                                                     </div>
+                                                </div>
+                                                <!-- Filiation affilies -->
+                                                @if (selectedGfix.Totyp == 1) //only
+                                                {
+                                                    <div class="row mt-2">
+                                                        <div class="col-md-1"></div>
+                                                        <span style="font-weight:bold"> Filiation -> Affilies Cible</span>
                                                     </div>
-                                                </GridDetailView>
-                                            </GridColumns>
-                                        </Grid>
-                                        <!-- Filiation affilies -->
-                                        <div class="row mt-3">
-                                            <span style="font-weight:bold"> Filiation -> Affilies Cible</span>
-                                        </div>
-                                        <Grid Data="@orgFixes.Where(uf => uf.Gvars == 3 && uf.Itb == 6 && uf.Atyp == 1 && uf.Elea != 0).OrderBy(uo => uo.Elea)"
-                                                TItem="GsgfixDto"
-                                                Responsive="true">
-                                            <GridColumns>
-                                                <GridColumn TItem="GsgfixDto" HeaderText="No" Class="xcol1">
-                                                    <ChildContent Context="ita">@ita.Elea</ChildContent>
-                                                </GridColumn>
-                                                <GridColumn TItem="GsgfixDto" HeaderText="Avec">
-                                                    <ChildContent Context="ita">
-                                                        @ita.Liba
-                                                    </ChildContent>
-                                                </GridColumn>
-                                                <GridColumn TItem="GsgfixDto" HeaderText="Libelle" Class="xcol2">
-                                                    <ChildContent Context="ita">
-                                                        @if (ita.Rowguid == EdAflRowguid)
-                                                            {
-                                                            <InputText @bind-Value="@draftAfl.Sliba" style="width:100%" />
-                                                            }
-                                                            else
-                                                    {
-                                                        <span style="width:100%">@ita.Sliba</span>
-                                                    }
-                                                </ChildContent>
-                                                </GridColumn>
-                                                <GridColumn TItem="GsgfixDto" HeaderText="Opt." Class="xcol1">
-                                                    <ChildContent Context="ita">
-                                                        @if (ita.Rowguid == EdAflRowguid)
-                                                        {
-                                                            <InputSelect @bind-Value="draftAfl.Ityp">
-                                                                @foreach (var tob in LsFixes.Where(ut => ut.Gvars == 31 && ut.Itb == 2 && ut.Gp1 == 1))
-                                                                {
-                                                                    <option value=@tob.Elea>@tob.Liba</option>
-                                                                }
-                                                            </InputSelect>
-                                                        }
-                                                        else
-                                                        {
-                                                            <InputSelect @bind-Value="ita.Ityp" disabled>
-                                                                @foreach (var tob in LsFixes.Where(ut => ut.Gvars == 31 && ut.Itb == 2 && ut.Gp1 == 1))
-                                                                {
-                                                                    <option value=@tob.Elea>@tob.Liba</option>
-                                                                }
-                                                            </InputSelect>
-                                                        }
-                                                    </ChildContent>
-                                                </GridColumn>
-                                                @* <GridColumn TItem="GsgfixDto" HeaderText="Genr." Class="xcol1">
-                                                    <ChildContent Context="ita">
-                                                        <InputSelect @bind-Value="ita.Ktyp" disabled="@(!isEdAfl)">
-                                                            @foreach (var tob in LsFixes.Where(ut => ut.Gvars == 31 && ut.Itb == 2 && ut.Gp1 == 1))
-                                                            {
-                                                                <option value=@tob.Elea>@tob.Liba</option>
-                                                            }
-                                                        </InputSelect>
-                                                    </ChildContent>
-                                                </GridColumn> *@
-                                                <GridColumn TItem="GsgfixDto" HeaderText="Avis" Class="xcol1">
-                                                    <ChildContent Context="ita">
-                                                        <div class="col-1">
-                                                            @if (ita.Rowguid == EdAflRowguid)
-                                                            {
-                                                            <InputSelect @bind-Value="draftAfl.Jtyp">
-                                                                @foreach (var tob in LsFixes.Where(ut => ut.Gvars == 31 && ut.Itb == 6 && ut.Gp1 == 1))
-                                                                {
-                                                                    <option value=@tob.Elea>@tob.Liba</option>
-                                                                }
-                                                            </InputSelect>
-                                                            }
-                                                            else
-                                                            {
-                                                            <InputSelect @bind-Value="ita.Jtyp" disabled>
-                                                                @foreach (var tob in LsFixes.Where(ut => ut.Gvars == 31 && ut.Itb == 6 && ut.Gp1 == 1))
-                                                                {
-                                                                    <option value=@tob.Elea>@tob.Liba</option>
-                                                                }
-                                                            </InputSelect>
-                                                            }
+                                                    <div class="row mt-2">
+                                                        <div class="col-md-1"></div>
+                                                        <div class="col-md-11">
+                                                            <Grid Data="@orgFixes.Where(uf => uf.Gvars == 3 && uf.Itb == 6 && uf.Atyp == selectedGfix.Totyp && uf.Elea != 0).OrderBy(uo => uo.Elea)"
+                                                            TItem="GsgfixDto"
+                                                            @key="AflRenderKey"
+                                                            Responsive="true">
+                                                                <GridColumns>
+                                                                    <GridColumn TItem="GsgfixDto" HeaderText="No" Class="xcol1">
+                                                                        <ChildContent Context="ita">@ita.Elea</ChildContent>
+                                                                    </GridColumn>
+                                                                    <GridColumn TItem="GsgfixDto" HeaderText="Avec">
+                                                                        <ChildContent Context="ita">
+                                                                            @ita.Liba
+                                                                        </ChildContent>
+                                                                    </GridColumn>
+                                                                    <GridColumn TItem="GsgfixDto" HeaderText="Libelle" Class="xcol2">
+                                                                        <ChildContent Context="ita">
+                                                                            @if (ita.Rowguid == EdAflRowguid)
+                                                                            {
+                                                                                <InputText @bind-Value="@draftAfl.Sliba" style="width:100%" />
+                                                                            }
+                                                                            else
+                                                                            {
+                                                                                <span style="width:100%">@ita.Sliba</span>
+                                                                            }
+                                                                        </ChildContent>
+                                                                    </GridColumn>
+                                                                    <GridColumn TItem="GsgfixDto" HeaderText="Opt." Class="xcol1">
+                                                                        <ChildContent Context="ita">
+                                                                            @if (ita.Rowguid == EdAflRowguid)
+                                                                            {
+                                                                                <InputSelect @bind-Value="draftAfl.Ityp">
+                                                                                    @foreach (var tob in LsFixes.Where(ut => ut.Gvars == 31 && ut.Itb == 2 && ut.Gp1 == 1))
+                                                                                    {
+                                                                                        <option value=@tob.Elea>@tob.Liba</option>
+                                                                                    }
+                                                                                </InputSelect>
+                                                                            }
+                                                                            else
+                                                                            {
+                                                                                <InputSelect @bind-Value="ita.Ityp" disabled>
+                                                                                    @foreach (var tob in LsFixes.Where(ut => ut.Gvars == 31 && ut.Itb == 2 && ut.Gp1 == 1))
+                                                                                    {
+                                                                                        <option value=@tob.Elea>@tob.Liba</option>
+                                                                                    }
+                                                                                </InputSelect>
+                                                                            }
+                                                                        </ChildContent>
+                                                                    </GridColumn>
+                                                                    <GridColumn TItem="GsgfixDto" HeaderText="Avis" Class="xcol1">
+                                                                        <ChildContent Context="ita">
+                                                                            <div class="col-1">
+                                                                                @if (ita.Rowguid == EdAflRowguid)
+                                                                                {
+                                                                                    <InputSelect @bind-Value="draftAfl.Jtyp">
+                                                                                        @foreach (var tob in LsFixes.Where(ut => ut.Gvars == 31 && ut.Itb == 6 && ut.Gp1 == 1))
+                                                                                        {
+                                                                                            <option value=@tob.Elea>@tob.Liba</option>
+                                                                                        }
+                                                                                    </InputSelect>
+                                                                                }
+                                                                                else
+                                                                                {
+                                                                                    <InputSelect @bind-Value="ita.Jtyp" disabled>
+                                                                                        @foreach (var tob in LsFixes.Where(ut => ut.Gvars == 31 && ut.Itb == 6 && ut.Gp1 == 1))
+                                                                                        {
+                                                                                            <option value=@tob.Elea>@tob.Liba</option>
+                                                                                        }
+                                                                                    </InputSelect>
+                                                                                }
+                                                                            </div>
+                                                                        </ChildContent>
+                                                                    </GridColumn>
+                                                                    <GridColumn TItem="GsgfixDto" HeaderText="max." Class="xcol1">
+                                                                        <ChildContent Context="ita">
+                                                                            @if (ita.Rowguid == EdAflRowguid)
+                                                                            {
+                                                                                <InputNumber class="my-input" @bind-Value="draftAfl.Mtyp"
+                                                                                style="font-weight:bold;width:80px" />
+                                                                            }
+                                                                            else
+                                                                            {
+                                                                                <span style="font-weight:bold;width:80px">@ita.Mtyp</span>
+                                                                            }
+                                                                        </ChildContent>
+                                                                    </GridColumn>
+                                                                    <GridColumn TItem="GsgfixDto" HeaderText="notif." Class="xcol1">
+                                                                        <ChildContent Context="ita">
+                                                                            @if (ita.Rowguid == EdAflRowguid)
+                                                                            {
+                                                                                <InputSelect @bind-Value="draftAfl.Ntyp" style="width:100%">
+                                                                                    @foreach (var tob in LsFixes.Where(ut => ut.Gvars == 31 && ut.Itb == 4 && ut.Gp1 == 1))
+                                                                                    {
+                                                                                        <option value=@tob.Elea>@tob.Liba</option>
+                                                                                    }
+                                                                                </InputSelect>
+                                                                            }
+                                                                            else
+                                                                            {
+                                                                                <InputSelect @bind-Value="ita.Ntyp" style="width:100%" disabled>
+                                                                                    @foreach (var tob in LsFixes.Where(ut => ut.Gvars == 31 && ut.Itb == 4 && ut.Gp1 == 1))
+                                                                                    {
+                                                                                        <option value=@tob.Elea>@tob.Liba</option>
+                                                                                    }
+                                                                                </InputSelect>
+                                                                            }
+                                                                        </ChildContent>
+                                                                    </GridColumn>
+                                                                    <GridColumn TItem="GsgfixDto" HeaderText="Actions" Class="xcol2">
+                                                                        <ChildContent Context="ita">
+                                                                            <div class="col-md-2 d-flex gap-2">
+                                                                                @if (EdAflRowguid != ita.Rowguid)
+                                                                                {
+                                                                                    <button class="btn btn-warning btn-sm @(!isEdingAfl && EdAflRowguid != ita.Rowguid ? "" : "disabled-action")" @onclick="() => StartAflEdit(ita)">Edit</button>
+                                                                                }
+                                                                                else
+                                                                                {
+                                                                                    <button class="btn btn-warning btn-sm @(EdAflRowguid == ita.Rowguid ? "" : "disabled-action")" @onclick="() => ConfGafl(draftAfl)">Confirm</button>
+                                                                                    <button class="btn btn-danger btn-sm @(EdAflRowguid == ita.Rowguid ? "" : "disabled-action")" @onclick="() => CancGafl(ita)">Annul</button>
+                                                                                }
+                                                                            </div>
+                                                                        </ChildContent>
+                                                                    </GridColumn>
+                                                                </GridColumns>
+                                                            </Grid>
                                                         </div>
-                                                    </ChildContent>
-                                                </GridColumn>
-                                                <GridColumn TItem="GsgfixDto" HeaderText="max." Class="xcol1">
-                                                    <ChildContent Context="ita">
-                                                        @if (ita.Rowguid == EdAflRowguid)
-                                                            {
-                                                                <InputNumber class="my-input" @bind-Value="draftAfl.Mtyp"
-                                                                     style="font-weight:bold;width:80px" />
-                                                            }
-                                                            else
-                                                            {
-                                                                <span style="font-weight:bold;width:80px">@ita.Mtyp</span>
-                                                            }
-                                                     </ChildContent>
-                                                </GridColumn>
-                                                <GridColumn TItem="GsgfixDto" HeaderText="notif." Class="xcol1">
-                                                    <ChildContent Context="ita">
-                                                        @if (ita.Rowguid == EdAflRowguid)
-                                                            {
-                                                            <InputSelect @bind-Value="draftAfl.Ntyp" style="width:100%">
-                                                                @foreach (var tob in LsFixes.Where(ut => ut.Gvars == 31 && ut.Itb == 4 && ut.Gp1 == 1))
-                                                                {
-                                                                    <option value=@tob.Elea>@tob.Liba</option>
-                                                                }
-                                                            </InputSelect>
-                                                            }
-                                                            else
-                                                        {
-                                                        <InputSelect @bind-Value="ita.Ntyp" style="width:100%" disabled>
-                                                                @foreach (var tob in LsFixes.Where(ut => ut.Gvars == 31 && ut.Itb == 4 && ut.Gp1 == 1))
-                                                                {
-                                                                    <option value=@tob.Elea>@tob.Liba</option>
-                                                                }
-                                                            </InputSelect>  
-                                                    }
-                                                </ChildContent>
-                                                </GridColumn>
-                                                <GridColumn TItem="GsgfixDto" HeaderText="Actions" Class="xcol2">
-                                                    <ChildContent Context="ita">
-                                                        <div class="col-md-2 d-flex gap-2">
-                                                            @if (EdAflRowguid  != ita.Rowguid)
-                                                            {
-                                                                <button class="btn btn-warning btn-sm @(!isEdingAfl && EdAflRowguid != ita.Rowguid ? "" : "disabled-action")" @onclick="() => StartAflEdit(ita)">Edit</button>
-                                                            }
-                                                            else
-                                                            {
-                                                                <button class="btn btn-warning btn-sm @(EdAflRowguid  == ita.Rowguid ? "" : "disabled-action")" @onclick="() => ConfGafl(draftAfl)">Confirm</button>
-                                                                <button class="btn btn-danger btn-sm @(EdAflRowguid  == ita.Rowguid ? "" : "disabled-action")" @onclick="() => CancGafl(ita)">Annul</button>
-                                                            }
-                                                        </div>
-                                                    </ChildContent>
-                                                </GridColumn>
-                                            </GridColumns>
-                                            </Grid>
-                                        @* </div> *@
+                                                    </div>
+                                                }
+                                            </GridDetailView>
+                                        </GridColumns>
+                                    </Grid>
                                     </EditForm>
                                 </Content>
                             </Tab>
@@ -1432,6 +1423,19 @@ else if (edOrgContext != null && curOrga != null)
             Console.WriteLine($"Load error: {ex.Message}");
         }
         Console.WriteLine($"raison : {curOrga?.Raison}");
+    }
+    void OnAflRowClick(GridRowEventArgs<GsgfixDto> args)
+    {
+        Console.WriteLine($"OnAflRowClick Triggered : {args.Item.Xseq}");
+        curFix = args.Item; //get gRubsMap
+        if (curFix == null || curFix.Xseq == 0)
+        {
+            return;
+        }
+        //InitializeMyDaRubs();
+        AflRenderKey = Guid.NewGuid();
+        //Console.WriteLine($"Id {curAfl.Id} nb rubs : {curAfl.Rubvars}");
+        StateHasChanged();
     }
     private async Task CancelAllChanges()
     {

@@ -96,18 +96,12 @@ else
                 <i class="bi bi-exclamation-triangle-fill me-2" aria-hidden="true">Offline</i> server indisponible
             </div>
         }
-        @if (!_yacors)
+        @* @if (!_yacors)
         {    
             <div class="nav-link text-danger">
                 <i class="bi bi-exclamation-triangle-fill me-2" aria-hidden="true">CORS Error</i> Verifier la configuration CORS du serveur
             </div>
-        }
-        else
-        {
-            <div class="nav-link text-success">
-                @* <i class="bi bi-exclamation-triangle-fill me-2" aria-hidden="true">CORS Success</i> *@
-            </div>
-        }
+        } *@
     </EditForm>
 }
 @code {
@@ -309,6 +303,8 @@ else
             {
                 Error = "Login failed. Check credentials.";
                 Jmessage = "Réponse de login invalide.";
+                //Console.WriteLine($"Invalid Atoken : {_logresult?.Atoken}");
+                //Console.WriteLine("Invalid login response: " + responseContent);
                 isBusy = false;
                 isLoading = false;
                 return;

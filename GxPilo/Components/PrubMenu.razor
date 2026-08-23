@@ -98,7 +98,7 @@ else
                         }
                         else if (_chxMenu == 4)
                         { //FACTURES
-                            <RubFact @ref="mygfac"
+                            @* <RubFact @ref="mygfac"
                                      toMenu="@_chxMenu"
                                      @bind-NbChanges="_nbChanges"
                                      _guard="_guard"
@@ -106,9 +106,9 @@ else
                                      toChild="@toChild"
                                      _InODaClient="@_MyODaClient">
                                 <ChildContent>
-                                    @* <h2 class="child-box">Hello GRILLES</h2> *@
+                                    <h2 class="child-box">Hello GRILLES</h2>
                                 </ChildContent>
-                            </RubFact>
+                            </RubFact> *@
                              
                         }
                     }
@@ -177,7 +177,7 @@ else
         new GxMenuItem { Id = 1, Text = "VARIABLES", Icon = "bi bi-box-arrow-in-down" },
         new GxMenuItem { Id = 2, Text = "CALCULS", Icon = "bi bi-house-door" },
         new GxMenuItem { Id = 3, Text = "VENTILATION", Icon = "bi bi-house-door" },
-        new GxMenuItem { Id = 4, Text = "FACTURES", Icon = "bi bi-house-door" },
+        //new GxMenuItem { Id = 4, Text = "FACTURES", Icon = "bi bi-house-door" },
         // new GxMenuItem { Id = 1, Text = "Prog.SAISIE", Icon = "bi bi-box-arrow-in-down" },
         // new GxMenuItem { Id = 2, Text = "Prog.CALCUL", Icon = "bi bi-house-door" },
         // new GxMenuItem { Id = 3, Text = "VENTILATION", Icon = "bi bi-house-door" },
@@ -310,7 +310,7 @@ else
         if (_chxMenu == 1) strComp = "VARIABLES";
         if (_chxMenu == 2) strComp = "CALCULS";
         if (_chxMenu == 3) strComp = "VENTILATION";
-        if (_chxMenu == 4) strComp = "FACTURES";
+        //if (_chxMenu == 4) strComp = "FACTURES";
 
         //if (_chxMenu == 6) strComp = $"TEST ECHEANCIER";
         //if (_chxMenu == 5) strComp = "Colonnes";

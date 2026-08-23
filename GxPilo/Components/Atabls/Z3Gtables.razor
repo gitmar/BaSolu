@@ -1,5 +1,6 @@
-﻿@page "/gtables"
+﻿@page "/g3tables"
 @layout AtblMenu
+@inherits CompUICrudBase
 
 @using System
 @using System.Collections.ObjectModel
@@ -20,6 +21,7 @@
 @using Simple.OData.Client
 @using GxShared.GxDtos
 @using GxShared.Interfaces
+@using GxPilo.Components.Uifrags
 @using Microsoft.AspNetCore.Components.Forms
 @using Microsoft.AspNetCore.WebUtilities
 @using Newtonsoft.Json
@@ -60,6 +62,7 @@ else
         <Authorized Context="AuthContext">
             <div class="row">
                 <div class="col-md-12 input-group align-middle">
+                    <span><b>Message :</b></span>
                     &nbsp;&nbsp;
                     @if (!String.IsNullOrEmpty(Imessage))
                     {
@@ -109,7 +112,7 @@ else
                                 //Gvars = 4, Itb = 4, Gtyp = IMyGtbl, //2optionnel1integre
                                 <!--Contenu des tables-->
                                 <Grid TItem="GstablDto"
-                                      Data="@MyDaRubrs.Where(ti => ti.Gtyp == IMyGtbl && ti.Btyp == IMyBas)"
+                                      Data="@MyDaTabls.Where(ti => ti.Gtyp == IMyGtbl && ti.Btyp == IMyBas)"
                                       @key="FixRenderKey"
                                       AllowDetailView="true"
                                       AllowPaging="true"
@@ -154,37 +157,13 @@ else
                                                 }
                                             </ChildContent>
                                         </GridColumn>
-                                        <GridColumn TItem="GstablDto" HeaderText="Atyp" Class="xcol1">
-                                            <ChildContent Context="item">
-                                                @if (EdFixRowguid == item.Rowguid)
-                                                    {
-                                                        <InputSelect @bind-Value="draftFix.Atyp" class="me-3" style="width:auto">
-                                                            <option value=0>?choisir</option>
-                                                            @foreach (var fx in LsFixes.Where(u => u.Gvars == 32 && u.Itb == 2 && u.Gp1 == 1 && u.Elea != 0))
-                                                            {
-                                                                <option value=@fx.Elea>@fx.Liba</option>
-                                                            }
-                                                        </InputSelect>
-                                                    }
-                                                    else
-                                                    {
-                                                        <InputSelect @bind-Value="item.Atyp" class="me-3" style="width:auto" disabled>
-                                                            <option value=0>aucun</option>
-                                                            @foreach (var fx in LsFixes.Where(u => u.Gvars == 32 && u.Itb == 2 && u.Gp1 ==1 && u.Elea != 0))
-                                                            {
-                                                                <option value=@fx.Elea>@fx.Liba</option>
-                                                            }
-                                                        </InputSelect>
-                                                    }
-                                            </ChildContent>
-                                        </GridColumn>
                                         <GridColumn TItem="GstablDto" HeaderText="Dpdce" Class="xcol2">
                                             <ChildContent Context="item">
                                                 @if (EdFixRowguid == item.Rowguid)
                                                 {
                                                     <InputSelect @bind-Value="draftFix.Ydpd">
                                                         <option class="jchx" value=0>?choisir</option>
-                                                        @foreach (var utb in MyDaRubrs.Where(uv => uv.Id != item.Id))
+                                                        @foreach (var utb in MyDaTabls.Where(uv => uv.Id != item.Id))
                                                         {
                                                             <option value=@utb.Id>@utb.Liba</option>
                                                         }
@@ -194,7 +173,7 @@ else
                                                 {
                                                     <InputSelect @bind-Value="item.Ydpd" disabled="true">
                                                         <option class="jchx" value=0>aucun</option>
-                                                        @foreach (var utb in MyDaRubrs.Where(uv => uv.Id != item.Id))
+                                                        @foreach (var utb in MyDaTabls.Where(uv => uv.Id != item.Id))
                                                         {
                                                             <option value=@utb.Id>@utb.Liba</option>
                                                         }
@@ -244,7 +223,7 @@ else
                                         </GridColumn>
                                         <GridColumn TItem="GstablDto" HeaderText="Actions" Filterable="false" Class="xcol2 actions-col">
                                             <ChildContent Context="item">
-                                                @switch (GetRowState(item.Rowguid))
+                                                @switch (GetRowState(EntityLevel.Plan, item.Rowguid))
                                                 {
                                                     case RowState.Locked:
                                                         <span class="text-muted">—</span>
@@ -252,7 +231,7 @@ else
                                                     
                                                     case RowState.AddPending:
                                                         <Button Color="ButtonColor.Success" Size="ButtonSize.Small"
-                                                                @onclick="() => ConfirmAdd(EntityLevel.Plan, draftFix)">
+                                                                @onclick="() => ConfirmTblAdd(EntityLevel.Plan, draftFix, true, 1)">
                                                             ✅ Confirm
                                                         </Button>
                                                         <Button Color="ButtonColor.Success" Size="ButtonSize.Small"
@@ -263,11 +242,11 @@ else
 
                                                     case RowState.DeletePending:
                                                         <Button Color="ButtonColor.Danger" Size="ButtonSize.Small"
-                                                                @onclick="() => ConfirmDelete(item, EntityLevel.Plan)">
+                                                                @onclick="() => ConfirmDelete(EntityLevel.Plan, item, true)">
                                                             ⚠️ Confirm
                                                         </Button>
                                                         <Button Color="ButtonColor.Secondary" Size="ButtonSize.Small"
-                                                                @onclick="() => CancelDelete(item, EntityLevel.Plan)">
+                                                                @onclick="() => CancelDelete(EntityLevel.Plan, item)">
                                                             ❎ Cancel
                                                         </Button>
                                                         break;
@@ -275,11 +254,11 @@ else
                                                         @if (draftFix != null)
                                                         {
                                                             <Button Color="ButtonColor.Success" Size="ButtonSize.Small"
-                                                            @onclick="() => ConfirmEdit(draftFix, EntityLevel.Plan)">
+                                                            @onclick="() => ConfirmEdit(EntityLevel.Plan, draftFix, true)">
                                                                 ✅ Confirm
                                                             </Button>
                                                             <Button Color="ButtonColor.Secondary" Size="ButtonSize.Small"
-                                                            @onclick="() => CancelEdit(draftFix, EntityLevel.Plan)">
+                                                            @onclick="() => CancelEdit(EntityLevel.Plan, draftFix)">
                                                                 ❌ Cancel
                                                             </Button>
                                                         }
@@ -292,7 +271,7 @@ else
                                                         @if (item.Eaut != 9)
                                                         {
                                                             <Button Color="ButtonColor.Danger" Size="ButtonSize.Small"
-                                                                    @onclick="() => StartRowDelete(item.Rowguid, EntityLevel.Plan)">
+                                                                    @onclick="() => StartRowDelete(EntityLevel.Plan, item.Rowguid)">
                                                                 🗑 Delete
                                                             </Button>
                                                         }
@@ -301,9 +280,10 @@ else
                                             </ChildContent>
                                         </GridColumn>
                                     </GridColumns>
+                                    @* .Where(el => el.Pid == selectedFix.Id).ToList()" *@
                                     <GridDetailView TItem="GstablDto" Context="selectedFix">
                                         <Grid TItem="GstablDto"
-                                              Data="@MyDaChlds.Where(el => el.Pid == selectedFix.Id).ToList()"
+                                              Data="@MyDaTrubs" 
                                               AllowPaging="true"
                                               Responsive="true">
                                             <GridColumns>
@@ -321,31 +301,7 @@ else
                                                         }
                                                     </ChildContent>
                                                 </GridColumn>
-                                                @* <GridColumn TItem="GstablDto" HeaderText="Atyp" Class="xcol1">
-                                                    <ChildContent Context="item">
-                                                        @if (EdChlRowguid == item.Rowguid)
-                                                        {
-                                                            <InputText @bind-Value="draftChl.Satyp" />
-                                                        }
-                                                        else
-                                                        {
-                                                            @item.Satyp
-                                                        }
-                                                    </ChildContent>
-                                                </GridColumn> *@
-                                                <GridColumn TItem="GstablDto" HeaderText="Valeur" Class="xcol2">
-                                                    <ChildContent Context="item">
-                                                        @if (EdChlRowguid == item.Rowguid)
-                                                        {
-                                                            <InputText @bind-Value="draftChl.Aval" />
-                                                        }
-                                                        else
-                                                        {
-                                                            @item.Aval
-                                                        }
-                                                    </ChildContent>
-                                                </GridColumn>
-                                                <GridColumn TItem="GstablDto" HeaderText="Designation" Class="xcol2">
+                                                <GridColumn TItem="GstablDto" HeaderText="Designation" Class="xcol3">
                                                     <ChildContent Context="item">
                                                         @if (EdChlRowguid == item.Rowguid)
                                                         {
@@ -357,7 +313,7 @@ else
                                                         }
                                                     </ChildContent>
                                                 </GridColumn>
-                                                <GridColumn TItem="GstablDto" HeaderText="Abrege" Class="xcol1">
+                                                <GridColumn TItem="GstablDto" HeaderText="Abrege" Class="xcol2">
                                                     <ChildContent Context="item">
                                                         @if (EdChlRowguid == item.Rowguid)
                                                         {
@@ -413,19 +369,28 @@ else
                                                         }
                                                     </HeaderContent>
                                                     <ChildContent Context="item">
-                                                        @switch (GetRowState(item.Rowguid))
+                                                        @switch (GetRowState(EntityLevel.Rub, item.Rowguid))
                                                         {
                                                             case RowState.Locked:
                                                                 <span class="text-muted">—</span>
                                                                 break;
-
+                                                            case RowState.AddPending:
+                                                                <Button Color="ButtonColor.Success" Size="ButtonSize.Small"
+                                                                        @onclick="() => ConfirmTblAdd(EntityLevel.Rub, draftChl, true, 2)">
+                                                                    ✅ Confirm
+                                                                </Button>
+                                                                <Button Color="ButtonColor.Success" Size="ButtonSize.Small"
+                                                                        @onclick="() => StartCancelAdd(EntityLevel.Rub, draftChl)">
+                                                                    ❌ Cancel
+                                                                </Button>
+                                                                break;
                                                             case RowState.DeletePending:
                                                                 <Button Color="ButtonColor.Danger" Size="ButtonSize.Small"
-                                                                        @onclick="() => ConfirmDelete(item, EntityLevel.Rub)">
+                                                                        @onclick="() => ConfirmDelete(EntityLevel.Rub, item, true)">
                                                                     ⚠️ Confirm
                                                                 </Button>
                                                                 <Button Color="ButtonColor.Secondary" Size="ButtonSize.Small"
-                                                                        @onclick="() => CancelDelete(item, EntityLevel.Rub)">
+                                                                        @onclick="() => CancelDelete(EntityLevel.Rub, item)">
                                                                     ❎ Cancel
                                                                 </Button>
                                                                 break;
@@ -433,11 +398,11 @@ else
                                                                 @if (draftChl != null)
                                                                 {
                                                                     <Button Color="ButtonColor.Success" Size="ButtonSize.Small"
-                                                                    @onclick="() => ConfirmEdit(draftChl, EntityLevel.Rub)">
+                                                                    @onclick="() => ConfirmEdit(EntityLevel.Rub, draftChl, true)">
                                                                         ✅ Confirm
                                                                     </Button>
                                                                     <Button Color="ButtonColor.Secondary" Size="ButtonSize.Small"
-                                                                    @onclick="() => CancelEdit(draftChl, EntityLevel.Rub)">
+                                                                    @onclick="() => CancelEdit(EntityLevel.Rub, draftChl)">
                                                                         ❌ Cancel
                                                                     </Button>
                                                                 }
@@ -448,7 +413,7 @@ else
                                                                     ✏️ Edit
                                                                 </Button>
                                                                 <Button Color="ButtonColor.Danger" Size="ButtonSize.Small"
-                                                                        @onclick="() => StartRowDelete(item.Rowguid, EntityLevel.Rub)">
+                                                                        @onclick="() => StartRowDelete(EntityLevel.Rub, item.Rowguid)">
                                                                     🗑 Delete
                                                                 </Button>
                                                                 break;
@@ -657,15 +622,15 @@ else
     private bool IsRowEditing(Guid rowguid) => _activeEditRowguid == rowguid;
     private bool IsAnyRowEditing => _activeEditRowguid != null;
 
-    public enum RowState
-    {
-        Normal,
-        EditPending,
-        DeletePending,
-        AddPending,  // 🔥 NEW for Add
-        Locked
-    }
-    public enum EntityLevel { Plan, Rub, Fmt }
+    // public enum RowState
+    // {
+    //     Normal,
+    //     EditPending,
+    //     DeletePending,
+    //     AddPending,  // 🔥 NEW for Add
+    //     Locked
+    // }
+    //public enum EntityLevel { Plan, Rub, Fmt }
 
     //private List<Gplan> LsPlans = new();
     private List<Gpfixe> LsFixes = new();
@@ -708,18 +673,21 @@ else
     private string atrTitle = "";
 
     //data
-    private List<GstablDto> MyDaRubrs { get; set; } = new();
-    private List<GstablDto> MyDaChlds { get; set; } = new();
+    public List<GstablDto> MyDaTabls => GtbItems;
+    public List<GstablDto> MyDaTrubs => GchItems;
+
+    //private List<GstablDto> MyDaTabls { get; set; } = new();
+    //private List<GstablDto> MyDaChlds { get; set; } = new();
     //add/edit options
     private bool AllowMultipleEdits { get; set; } = false;
     private bool isFiltre { get; set; } = false;
     //FIX
-    private Guid? FixRenderKey = null;
+    public Guid? FixRenderKey = null;
+    public Dictionary<Guid, GstablDto> _edFixOriginals = new();
+    public GstablDto? draftFix = null;
     private Guid? ChldRenderKey = null;
 
     //fixes
-    private Dictionary<Guid, GstablDto> _edFixOriginals = new();
-    private GstablDto? draftFix = null;
     private bool isAddFix = false;
     private bool isEdtFix = false;
     private Guid? AdFixRowguid = null;
@@ -773,38 +741,41 @@ else
             //ChargeParentData;
             Console.WriteLine($"Child init: Gstabls={curOrga.Gstabls?.Count ?? 0}");
 
+
             // 🔥 SAFE - Only initialize if Gstabls EXISTS
-            if (curOrga.Gstabls != null && curOrga.Gstabls.Any())
-            {
-                // Parent collection: Rubrics - otyp1tables - tenr1base
-                MyDaRubrs = curOrga.Gstabls
-                        .Where(uv => (uv.Otyp == 1 || uv.Otyp == 2) && uv.Tenr == 1)
-                        .ToList();
-                // Console.WriteLine($"Gstabls loaded: {curOrga.Gstabls.Count}");
-                var testa = MyDaRubrs?.FirstOrDefault();
-                Console.WriteLine($"Rubrics loaded: {MyDaRubrs?.Count} / etG {testa?.Gtyp} etB {testa?.Btyp}");
+            // if (curOrga.Gstabls != null && curOrga.Gstabls.Any())
+            // {
+            //     // Parent collection: Rubrics - otyp1tables - tenr1base
+            //     MyDaTabls = curOrga.Gstabls
+            //             .Where(uv => (uv.Otyp == 1 || uv.Otyp == 2) && uv.Tenr == 1)
+            //             .ToList();
+            //     // Console.WriteLine($"Gstabls loaded: {curOrga.Gstabls.Count}");
+            //     var testa = MyDaTabls?.FirstOrDefault();
+            //     Console.WriteLine($"Tabls loaded: {MyDaTabls?.Count} / etG {testa?.Gtyp} etB {testa?.Btyp}");
 
-                // Child collection: linked to Rubrics - otyp1tables - tenr2base
-                MyDaChlds = new();
-                foreach (var iru in MyDaRubrs)
-                {
-                    var children = curOrga.Gstabls
-                        .Where(ln => (ln.Otyp == 1 || ln.Otyp == 2) && ln.Tenr == 2 && ln.Pid == iru.Id)
-                        .ToList();
+            //     // Child collection: linked to Rubrics - otyp1tables - tenr2base
+            //     MyDaTrubs = new();
+            //     foreach (var iru in MyDaTabls)
+            //     {
+            //         var children = curOrga.Gstabls
+            //             .Where(ln => (ln.Otyp == 1 || ln.Otyp == 2) && ln.Tenr == 2 && ln.Pid == iru.Id)
+            //             .ToList();
 
-                    foreach (var child in children)
-                    {
-                        MyDaChlds.Add(child);
-                    }
-                }
-                Console.WriteLine($"Children loaded: {MyDaChlds.Count}");
-            }
-            else
-            {
-                Console.WriteLine("Gstabls null/empty - initializing empty collections");
-                MyDaRubrs = new();
-                MyDaChlds = new();
-            }
+            //         foreach (var child in children)
+            //         {
+            //             MyDaTrubs.Add(child);
+            //         }
+            //     }
+            //     Console.WriteLine($"Children loaded: {MyDaTrubs.Count}");
+            // }
+            // else
+            // {
+            //     Console.WriteLine("Gstabls null/empty - initializing empty collections");
+            //     MyDaTabls = new();
+            //     MyDaTrubs = new();
+            // }
+            InitializeMyDaTabls();
+            InitializeMyDaTrubs();
             //Console.WriteLine($"elements tables{MyDaChlds.Count()}");
             atrTitle = "Saisie";
         }
@@ -827,19 +798,19 @@ else
         SubscribeToGuard();
     }
     // set up subscription locally
-    private void SubscribeToGuard()
-    {
-        _guard.OnChanges += async () =>
-        {
-            NbChanges = _guard.GetPendingChangesCount();
-            await NbChangesChanged.InvokeAsync(NbChanges);
-            StateHasChanged();
-        };
-    }
+    // private void SubscribeToGuard()
+    // {
+    //     _guard.OnChanges += async () =>
+    //     {
+    //         NbChanges = _guard.GetPendingChangesCount();
+    //         await NbChangesChanged.InvokeAsync(NbChanges);
+    //         StateHasChanged();
+    //     };
+    // }
     private async Task StartFixNew()
     {
         Console.WriteLine("🚨 StartFixNew");
-        var lsnb = NextSeq(MyDaRubrs, p => p.Iui);
+        var lsnb = NextSeq(MyDaTabls, p => p.Iui);
         var newFix = new GstablDto
         {
             Rowguid = Guid.NewGuid(),
@@ -861,39 +832,75 @@ else
             Xedt1 = 0,
             Xdel1 = 0
         }; //session pas creation
-        SetRowState(newFix.Rowguid, RowState.AddPending);
-        SetLightBackground(newFix.Rowguid, true);
-        MyDaRubrs.Insert(0, newFix);
-        draftFix = (GstablDto)DeepClone(newFix);
-        EdFixRowguid = draftFix.Rowguid;
-        isAddFix = true;
-        isEdtFix = true;
-        //SetRowState(draftFix.Rowguid, RowState.EditPending);  // Shows Confirm/Cancel ✓
-        FixRenderKey = draftFix.Rowguid;
-        //Console.WriteLine($"✅ New row added to curOrga.Gstabls - Count: {curOrga.Gstabls.Count}");
-        StartRowEdit(draftFix.Rowguid, EntityLevel.Plan);
-        StateHasChanged();
+        //PlanItems.Insert(0, newPln);
+        curOrga.Gstabls.Insert(0, newFix);
+        await UpdateMyDaTabls();
+
+        SetRowState(EntityLevel.Plan, newFix.Rowguid, RowState.AddPending);
+        //SetLightBackground(newPln.Rowguid, true);
+
+        draftFix = DeepClone(newFix);
+        Console.WriteLine($"NEWFIX : {newFix.Rowguid}");
+        Console.WriteLine($"DRAFTFIX : {newFix.Rowguid}");
+        BeginAdd(EntityLevel.Plan, newFix.Rowguid, draftFix);
+        //AddRowguid == item.Rowguid
+        //Console.WriteLine($"{newFix.Ptyp} et {newFix.Totyp} et {newFix.Todom} et {newFix.Tovue}");
+        FixRenderKey = newFix.Rowguid;
+
+        //SetRowState(EntityLevel.Plan, draftPln.Rowguid, RowState.AddPending);
+        await InvokeAsync(StateHasChanged);
+
+        // SetRowState(newFix.Rowguid, RowState.AddPending);
+        // SetLightBackground(newFix.Rowguid, true);
+        // MyDaTabls.Insert(0, newFix);
+        // draftFix = (GstablDto)DeepClone(newFix);
+        // EdFixRowguid = draftFix.Rowguid;
+        // isAddFix = true;
+        // isEdtFix = true;
+        // //SetRowState(draftFix.Rowguid, RowState.EditPending);  // Shows Confirm/Cancel ✓
+        // FixRenderKey = draftFix.Rowguid;
+        // //Console.WriteLine($"✅ New row added to curOrga.Gstabls - Count: {curOrga.Gstabls.Count}");
+        // StartRowEdit(draftFix.Rowguid, EntityLevel.Plan);
+        // StateHasChanged();
     }
     private async Task StartDocuEdit(GstablDto item, Guid rowguid)
     {
-        //var client = (ODataClient)_InODaClient;
-        //bool isNew = await client.IsNewAsync<GstablDto>("Gstabls", item.Id);
         bool isNew = item.Id == default; // for int, default == 0
         if (isNew)
         { //not saved yet
             Imessage = "🚫 Cannot edit new Plan: Please save it first.";
             return;
         }
+        if (item.Id == default) return;
         if (rowguid == Guid.Empty) return;
-        item.Xedt1 = -1;
-        if (item.Iele != 0) item.Iui = (int)item.Iele;
-        SetRowState(rowguid, RowState.EditPending);  // Shows Confirm/Cancel buttons
-        _edFixOriginals[rowguid] = (GstablDto)DeepClone(item);
-        EdFixRowguid = AllowMultipleEdits ? null : rowguid;
-        draftFix = (GstablDto)DeepClone(item);
-        isEdtFix = true;
-        StartRowEdit(rowguid, EntityLevel.Plan);
+        if (IsAnyRowEditing && !IsRowEditing(rowguid)) return;
+
+        _edFixOriginals[rowguid] = DeepClone(item);
+        draftFix = DeepClone(item);
+
+        BeginEdit(EntityLevel.Plan, rowguid, draftFix);
+        _rowPendingOpTypeByRow[rowguid] = PendingOpType.Update;
+
         StateHasChanged();
+
+        //var client = (ODataClient)_InODaClient;
+        //bool isNew = await client.IsNewAsync<GstablDto>("Gstabls", item.Id);
+        // bool isNew = item.Id == default; // for int, default == 0
+        // if (isNew)
+        // { //not saved yet
+        //     Imessage = "🚫 Cannot edit new Plan: Please save it first.";
+        //     return;
+        // }
+        // if (rowguid == Guid.Empty) return;
+        // item.Xedt1 = -1;
+        // if (item.Iele != 0) item.Iui = (int)item.Iele;
+        // SetRowState(rowguid, RowState.EditPending);  // Shows Confirm/Cancel buttons
+        // _edFixOriginals[rowguid] = (GstablDto)DeepClone(item);
+        // EdFixRowguid = AllowMultipleEdits ? null : rowguid;
+        // draftFix = (GstablDto)DeepClone(item);
+        // isEdtFix = true;
+        // StartRowEdit(rowguid, EntityLevel.Plan);
+        // StateHasChanged();
     }
     private async Task StartChlNew(GstablDto mytabl)
     {
@@ -903,7 +910,7 @@ else
             return;
         }
         Console.WriteLine("🚨 StartChlNew");
-        var lsnb = NextSeq(MyDaChlds.Where(uv => uv.Pref == mytabl.Tref), p => p.Iui);
+        var lsnb = NextSeq(MyDaTrubs.Where(uv => uv.Pref == mytabl.Tref), p => p.Iui);
         var newRub = new GstablDto
         { /* init */
             Rowguid = Guid.NewGuid(),
@@ -925,247 +932,197 @@ else
             Xedt1 = 0,
             Xdel1 = 0
         };
-        SetRowState(newRub.Rowguid, RowState.AddPending);
-        SetLightBackground(newRub.Rowguid, true);
-        if (MyDaChlds == null)
-        {
-            MyDaChlds = new();  // ✅ Correct type
-        }
-        MyDaChlds.Insert(0, newRub);
-        draftChl = (GstablDto)DeepClone(newRub);
-        EdChlRowguid = draftChl.Rowguid;
-        isAddChl = true;
-        isEdtChl = true;
-        SetRowState(draftChl.Rowguid, RowState.EditPending);  // 🔥 ADD
-        ChldRenderKey = draftChl.Rowguid;  // Force grid refresh
-        Console.WriteLine($"✅ New row added to draftchild - Count: {MyDaChlds.Count}");
-        StartRowEdit(draftChl.Rowguid, EntityLevel.Rub);
-        StateHasChanged();
+        //curPlan = mypln;
+        //Console.WriteLine($"curPlan : {curPlan?.Liba}");
+
+        //RubItems.Insert(0, newRub);
+        curOrga.Gstabls.Insert(0, newRub);
+        await UpdateMyDaTRubs();
+
+        //SetLightBackground(newPln.Rowguid, true);
+
+        draftChl = DeepClone(newRub);
+        Console.WriteLine($"rubrique copiee : {draftChl?.Idorg}");
+        //SetEditState(EntityLevel.Rub, true, false, newRub.Rowguid);
+        BeginAdd(EntityLevel.Rub, newRub.Rowguid, draftChl);
+
+        ChldRenderKey = newRub.Rowguid;
+        await InvokeAsync(StateHasChanged);
+
+        // SetRowState(newRub.Rowguid, RowState.AddPending);
+        // SetLightBackground(newRub.Rowguid, true);
+        // if (MyDaTrubs == null)
+        // {
+        //     MyDaTrubs = new();  // ✅ Correct type
+        // }
+        // MyDaTrubs.Insert(0, newRub);
+        // draftChl = (GstablDto)DeepClone(newRub);
+        // EdChlRowguid = draftChl.Rowguid;
+        // isAddChl = true;
+        // isEdtChl = true;
+        // SetRowState(draftChl.Rowguid, RowState.EditPending);  // 🔥 ADD
+        // ChldRenderKey = draftChl.Rowguid;  // Force grid refresh
+        // Console.WriteLine($"✅ New row added to draftchild - Count: {MyDaTrubs.Count}");
+        // StartRowEdit(draftChl.Rowguid, EntityLevel.Rub);
+        // StateHasChanged();
     }
     private async Task StartChlEdit(GstablDto item, Guid rowguid)
     {
-        //var client = (ODataClient)_InODaClient;
-        //bool isNew = await client.IsNewAsync<GstablDto>("Gstabls", item.Id);
-        bool isNew = item.Id == default; // for int, default == 0
-        if (isNew)
-        { //not saved yet
+        if (item.Id == default)
+        {
             Imessage = "🚫 Cannot edit new Rubrique: Please save it first.";
             return;
         }
+
         if (rowguid == Guid.Empty) return;
+        if (IsAnyRowEditing && !IsRowEditing(rowguid)) return;
 
         item.Xedt1 = -1;
         if (item.Iele != 0) item.Iui = (int)item.Iele;
-        SetRowState(rowguid, RowState.EditPending);  // Shows Confirm/Cancel buttons
-        _edChlOriginals[rowguid] = (GstablDto)DeepClone(item);
-        EdChlRowguid = AllowMultipleEdits ? null : rowguid;
-        draftChl = (GstablDto)DeepClone(item);
-        isEdtChl = true;
-        StartRowEdit(rowguid, EntityLevel.Rub);
+
+        _edChlOriginals[rowguid] = DeepClone(item);
+        draftChl = DeepClone(item);
+
+        ChldRenderKey = rowguid;
+        BeginEdit(EntityLevel.Rub, rowguid, draftChl);
+
         StateHasChanged();
+
+        // //var client = (ODataClient)_InODaClient;
+        // //bool isNew = await client.IsNewAsync<GstablDto>("Gstabls", item.Id);
+        // bool isNew = item.Id == default; // for int, default == 0
+        // if (isNew)
+        // { //not saved yet
+        //     Imessage = "🚫 Cannot edit new Rubrique: Please save it first.";
+        //     return;
+        // }
+        // if (rowguid == Guid.Empty) return;
+
+        // item.Xedt1 = -1;
+        // if (item.Iele != 0) item.Iui = (int)item.Iele;
+        // SetRowState(rowguid, RowState.EditPending);  // Shows Confirm/Cancel buttons
+        // _edChlOriginals[rowguid] = (GstablDto)DeepClone(item);
+        // EdChlRowguid = AllowMultipleEdits ? null : rowguid;
+        // draftChl = (GstablDto)DeepClone(item);
+        // isEdtChl = true;
+        // StartRowEdit(rowguid, EntityLevel.Rub);
+        // StateHasChanged();
     }
     // ✅ 2.1 CONFIRM OPERATIONS
-    private async Task ConfirmAdd<T>(EntityLevel level, T item) where T : class
-    {
-        await UnifiedEditAction(item, true, level);
-        CopyDraftTblToGridItem(item, level, 1);
+    // private async Task ConfirmAdd<T>(EntityLevel level, T item) where T : class
+    // {
+    //     await UnifiedEditAction(item, true, level);
+    //     EndRowEdit();  // Close single edit mode
+    // }
+    // private async Task ConfirmDocuEdit(GstablDto item) =>
+    //     await UnifiedEditAction(item, true, EntityLevel.Gtb);
+    // private async Task ConfirmChlEdit(GstablDto item) =>
+    //     await UnifiedEditAction(item, true, EntityLevel.Gtb);
+    // // ✅ 2.2 CANCEL OPERATIONS
+    // private async Task CancelDocuEdit(GstablDto item) =>
+    //     await UnifiedEditAction(item, true, EntityLevel.Gtb);
+    // private async Task CancelChlEdit(GstablDto item) =>
+    //     await UnifiedEditAction(item, true, EntityLevel.Gtb);
 
-        // Replace item in collection to trigger UI update
-        if (item is GstablDto fix)
-        {
-            var index = MyDaRubrs.FindIndex(r => r.Rowguid == fix.Rowguid);
-            if (index >= 0)
-                MyDaRubrs[index] = fix; // replace reference
-        }
+    // private async Task UnifiedEditAction(object item, bool isConfirm, EntityLevel level)
+    // {
+    //     switch (level)
+    //     {
+    //         case EntityLevel.Plan:
+    //             await ProcessPlan((GstablDto)item, isConfirm);
+    //             break;
+    //         case EntityLevel.Rub:
+    //             await ProcessRub((GstablDto)item, isConfirm);
+    //             break;
+    //     }
+    // }
 
-        EndRowEdit();
-        FixRenderKey = Guid.NewGuid(); // force grid refresh
-        StateHasChanged();
-    }
-    private async Task CancelAdd<T>(EntityLevel level, T item) where T : class
-    {
-        if (item is GstablDto fix)
-        {
-            if (fix.Xadd1 == -1)
-            {
-                MyDaRubrs.Remove(fix); // remove new row
-            }
-            else if (_edFixOriginals.TryGetValue(fix.Rowguid, out var original))
-            {
-                var index = MyDaRubrs.FindIndex(r => r.Rowguid == fix.Rowguid);
-                if (index >= 0)
-                    MyDaRubrs[index] = original; // restore original
-            }
-        }
+    // private async Task ProcessPlan(GstablDto pln, bool isConfirm)
+    // {
+    //     await ProcessEntity(pln, 1, isConfirm, "Gstabls", p => ValidatePln(p));
+    // }
+    // private async Task ProcessRub(GstablDto rub, bool isConfirm)
+    // {
+    //     await ProcessEntity(rub, 2, isConfirm, "Gstabls", p => ValidateRub(p));
+    // }
+    // //private async Task ProcessEntity<T>(T entity, int tent, bool isConfirm, string entitySet, Func<T, bool> validate)
+    // //where T : class
+    // private async Task ProcessEntity<TDto>(
+    //     TDto entity,
+    //     int tent,
+    //     bool isConfirm,
+    //     string entitySet,
+    //     Func<TDto, bool> validate)
+    //     where TDto : class
+    // {
+    //     Console.WriteLine($"🔄 Process{typeof(TDto).Name}: {(isConfirm ? "CONFIRM" : "CANCEL")}");
 
-        EndRowEdit();
-        FixRenderKey = Guid.NewGuid();
-        StateHasChanged();
-    }
+    //     if (entity == null)
+    //     {
+    //         Imessage = "entity nulle";
+    //         StateHasChanged();
+    //         return;
+    //     }
 
-    private async Task ConfirmDocuEdit(GstablDto item) =>
-        await UnifiedEditAction(item, true, EntityLevel.Plan);
-    private async Task ConfirmChlEdit(GstablDto item) =>
-        await UnifiedEditAction(item, true, EntityLevel.Rub);
-    // ✅ 2.2 CANCEL OPERATIONS
-    private async Task CancelDocuEdit(GstablDto item) =>
-        await UnifiedEditAction(item, true, EntityLevel.Plan);
-    private async Task CancelChlEdit(GstablDto item) =>
-        await UnifiedEditAction(item, true, EntityLevel.Rub);
+    //     if (isConfirm)
+    //     {
+    //         // 🔥 1. Copy draft → entity (for validation)
+    //         if (tent == 1) CopyDraftTblToGridItem(entity, level, tent);
+    //         if (tent == 2) CopyDraftTblToGridItem(entity, level, tent);
+    //         // 🔥 2. VALIDATE (now has updated values)
+    //         if (!validate(entity))
+    //         {
+    //             Console.WriteLine($"❌ Validation failed: {Imessage}");
+    //             StateHasChanged();
+    //             return;
+    //         }
 
-    private async Task UnifiedEditAction(object item, bool isConfirm, EntityLevel level)
-    {
-        switch (level)
-        {
-            case EntityLevel.Plan:
-                await ProcessPlan((GstablDto)item, isConfirm);
-                break;
-            case EntityLevel.Rub:
-                await ProcessRub((GstablDto)item, isConfirm);
-                break;
-        }
-    }
+    //         // 🔥 3. NEW vs EXISTING (SINGLE operation)
+    //         bool isNew = GetXadd1(entity) == -1;  // Assumes GetXadd1<T>
+    //         if (isNew)
+    //         {
+    //             await _guard.TrackInsert(entitySet, entity);
+    //             Console.WriteLine($"➕ NEW {typeof(TDto).Name} → TrackInsert");
+    //         }
+    //         else
+    //         {
+    //             var key = GetEntityKey(entity); // helper to extract PK
+    //             await _guard.TrackUpdate(entitySet, key, entity);
+    //             Console.WriteLine($"✏️ EXISTING {typeof(TDto).Name} → TrackUpdate");
+    //         }
 
-    private async Task ProcessPlan(GstablDto pln, bool isConfirm)
-    {
-        await ProcessEntity(pln, 1, isConfirm, "Gstabls", EntityLevel.Plan, p => ValidatePln(p));
-    }
-    private async Task ProcessRub(GstablDto rub, bool isConfirm)
-    {
-        await ProcessEntity(rub, 2, isConfirm, "Gstabls", EntityLevel.Rub, p => ValidateRub(p));
-    }
-    //private async Task ProcessEntity<T>(T entity, int tent, bool isConfirm, string entitySet, Func<T, bool> validate)
-    //where T : class
-    private async Task ProcessEntity<TDto>(
-        TDto entity,
-        int tent,
-        bool isConfirm,
-        string entitySet,
-        EntityLevel level,
-        Func<TDto, bool> validate)
-        where TDto : class
-    {
-        Console.WriteLine($"🔄 Process{typeof(TDto).Name}: {(isConfirm ? "CONFIRM" : "CANCEL")}");
+    //         // 🔥 4. Confirm flags ONCE
+    //         SetFlags(entity, 0, -1, 0);  // Xadd1=0 confirmed
 
-        if (entity == null)
-        {
-            Imessage = "entity nulle";
-            StateHasChanged();
-            return;
-        }
+    //         // 🔥 6. UI + notify
+    //         var rowguid = GetRowguid(entity);  // Generic helper
+    //         ResetRowState(rowguid);
+    //         SetLightBackground(rowguid, false);
+    //         ResetEntityUIState<TDto>(tent);
+    //         Imessage = $"✅ {typeof(TDto).Name} confirmed";
+    //     }
+    //     else  // CANCEL (unchanged - perfect)
+    //     {
+    //         if (GetXadd1(entity) == -1) // New only
+    //         {
+    //             RemoveFromParentCollection(entity);
+    //             Console.WriteLine($"🗑️ Removed new {typeof(TDto).Name}");
+    //         }
+    //         else
+    //         {
+    //             ClearDraft<TDto>(tent);
+    //         }
 
-        if (isConfirm)
-        {
-            // 🔥 1. Copy draft → entity (for validation)
-            if (tent == 1) CopyDraftTblToGridItem(entity, level, 1);//CopyDraftToGridItem(entity, 1);
-            if (tent == 2) CopyDraftTblToGridItem(entity, level, 2);//CopyDraftToGridItem(entity, 2);
-            // 🔥 2. VALIDATE (now has updated values)
-            if (!validate(entity))
-            {
-                Console.WriteLine($"❌ Validation failed: {Imessage}");
-                StateHasChanged();
-                return;
-            }
-
-            // 🔥 3. NEW vs EXISTING (SINGLE operation)
-            bool isNew = GetXadd1(entity) == -1;  // Assumes GetXadd1<T>
-            if (isNew)
-            {
-                await _guard.TrackInsert(entitySet, entity);
-                Console.WriteLine($"➕ NEW {typeof(TDto).Name} → TrackInsert");
-            }
-            else
-            {
-                var key = GetEntityKey(entity); // helper to extract PK
-                await _guard.TrackUpdate(entitySet, key, entity);
-                Console.WriteLine($"✏️ EXISTING {typeof(TDto).Name} → TrackUpdate");
-            }
-
-            // 🔥 4. Confirm flags ONCE
-            SetFlags(entity, 0, -1, 0);  // Xadd1=0 confirmed
-
-            // 🔥 6. UI + notify
-            var rowguid = GetRowguid(entity);  // Generic helper
-            ResetRowState(rowguid);
-            SetLightBackground(rowguid, false);
-            ResetEntityUIState<TDto>(tent);
-            Imessage = $"✅ {typeof(TDto).Name} confirmed";
-        }
-        else  // CANCEL (unchanged - perfect)
-        {
-            if (GetXadd1(entity) == -1) // New only
-            {
-                RemoveFromParentCollection(entity);
-                Console.WriteLine($"🗑️ Removed new {typeof(TDto).Name}");
-            }
-            else
-            {
-                ClearDraft<TDto>(tent);
-            }
-
-            var rowguid = GetRowguid(entity);
-            ResetRowState(rowguid);
-            ResetEntityUIState<TDto>(tent);
-            Imessage = "";
-        }
-        StateHasChanged();
-    }
+    //         var rowguid = GetRowguid(entity);
+    //         ResetRowState(rowguid);
+    //         ResetEntityUIState<TDto>(tent);
+    //         Imessage = "";
+    //     }
+    //     StateHasChanged();
+    // }
     // 🔥 Generic Rowguid (no reflection)
     private static Guid GetRowguid<T>(T entity) where T : class
         => ((dynamic)entity).Rowguid;  // Or property expression
-
-    //private async Task CopyDraftTblToGridItem(EntityLevel level, object entity, int tent)
-    //{
-    private void CopyDraftTblToGridItem<T>(T gridItem, EntityLevel level, int tent) where T : class
-    {
-        switch (level)
-        {
-            case EntityLevel.Plan:
-                if (gridItem is GstablDto fix && draftFix is GstablDto df)
-                {
-                    // Copy all relevant fields from draftFix into the grid item
-                    fix.Liba = df.Liba;
-                    fix.Abg = df.Abg;
-                    fix.Rowguid = df.Rowguid;
-                    fix.Idorg = df.Idorg;
-                    fix.Gtyp = df.Gtyp;
-                    fix.Btyp = df.Btyp;
-                    fix.Tenr = df.Tenr;
-                    fix.Pid = df.Pid;
-                    fix.Xdpd = df.Xdpd;
-                    fix.Ydpd = df.Ydpd;
-                    fix.Jacc = df.Jacc;
-                    fix.Jenr = df.Jenr;
-                    fix.Eta = df.Eta;
-                    // add more fields if needed
-                    FixRenderKey = fix.Rowguid;
-                }
-                break;
-            case EntityLevel.Rub:
-                if (gridItem is GstablDto chl && draftFix is GstablDto dc)
-                {
-                    // Copy all relevant fields from draftFix into the grid item
-                    chl.Liba = dc.Liba;
-                    chl.Abg = dc.Abg;
-                    chl.Rowguid = dc.Rowguid;
-                    chl.Idorg = dc.Idorg;
-                    chl.Gtyp = dc.Gtyp;
-                    chl.Btyp = dc.Btyp;
-                    chl.Tenr = dc.Tenr;
-                    chl.Pid = dc.Pid;
-                    chl.Xdpd = dc.Xdpd;
-                    chl.Ydpd = dc.Ydpd;
-                    chl.Jacc = dc.Jacc;
-                    chl.Jenr = dc.Jenr;
-                    chl.Eta = dc.Eta;
-                    // add more fields if needed
-                    ChldRenderKey = chl.Rowguid;
-                }
-                break;
-            default:
-                throw new ArgumentOutOfRangeException(nameof(level));
-        }
-    }
 
     // private async Task ProcessEntity<T>(T entity, bool isConfirm, string entitySet, Func<T, bool> validate)
     // where T : class
@@ -1179,7 +1136,7 @@ else
     //     }
     //     if (isConfirm)
     //     {
-    //         CopyDraftToGridItem<T>(entity);
+    //         CopyDraftTablToGridItem(entity, 1);
     //         // 🔥 1. VALIDATE FIRST - uses your ValidateXXX() helpers
     //         if (!validate(entity))
     //         {
@@ -1264,24 +1221,24 @@ else
         return (int)typeof(T).GetProperty("Xadd1")?.GetValue(entity)!;
     }
     // Remove from parent collection
-    private void RemoveFromParentCollection<T>(T entity)
-    {
-        // Plngen: top-level
-        if (entity is GstablDto pln && MyDaRubrs.Any(p => p.Rowguid == pln.Rowguid))
-            MyDaRubrs.Remove(pln);
-        // Rubvar: parent Plngen.Rubvars
-        else if (entity is GstablDto rub)
-        {
-            var parent = MyDaRubrs.FirstOrDefault(p => p.Id == rub.Id);
-            MyDaChlds?.Remove(rub);
-        }
-        // Rubfmt: parent Rubvar.Rubfmts
-        // else if (entity is RubfmtDto fmt)
-        // {
-        //     var parentRub = MyDaPlans.SelectMany(p => p.Rubvars).FirstOrDefault(r => r.Id == fmt.Irub);
-        //     parentRub?.Rubfmts?.Remove(fmt);
-        // }
-    }
+    // private void RemoveFromParentCollection<T>(T entity)
+    // {
+    //     // Plngen: top-level
+    //     if (entity is GstablDto pln && MyDaRubrs.Any(p => p.Rowguid == pln.Rowguid))
+    //         MyDaRubrs.Remove(pln);
+    //     // Rubvar: parent Plngen.Rubvars
+    //     else if (entity is GstablDto rub)
+    //     {
+    //         var parent = MyDaRubrs.FirstOrDefault(p => p.Id == rub.Id);
+    //         MyDaChlds?.Remove(rub);
+    //     }
+    //     // Rubfmt: parent Rubvar.Rubfmts
+    //     // else if (entity is RubfmtDto fmt)
+    //     // {
+    //     //     var parentRub = MyDaPlans.SelectMany(p => p.Rubvars).FirstOrDefault(r => r.Id == fmt.Irub);
+    //     //     parentRub?.Rubfmts?.Remove(fmt);
+    //     // }
+    // }
 
 
     private void ClearDraft<T>(int ent)
@@ -1305,97 +1262,97 @@ else
         }
     }
     // ROWS MANAGEMENT
-    private void StartRowEdit(Guid rowguid, EntityLevel level)
-    {
-        _activeEditRowguid = rowguid;
-        _activeEditLevel = level;
-        StateHasChanged();
-    }
-    private void EndRowEdit()
-    {
-        _activeEditRowguid = null;
-        _activeEditLevel = null;
-        StateHasChanged();
-    }
-    private string GetFixRowClass(GstablDto pln)
-    {
-        var state = GetRowState(pln.Rowguid);
-        var isLight = IsLightBackground(pln.Rowguid);  // 🔥 Uses your existing
+    // private void StartRowEdit(Guid rowguid, EntityLevel level)
+    // {
+    //     _activeEditRowguid = rowguid;
+    //     _activeEditLevel = level;
+    //     StateHasChanged();
+    // }
+    // private void EndRowEdit()
+    // {
+    //     _activeEditRowguid = null;
+    //     _activeEditLevel = null;
+    //     StateHasChanged();
+    // }
+    // private string GetFixRowClass(GstablDto pln)
+    // {
+    //     var state = GetRowState(pln.Rowguid);
+    //     var isLight = IsLightBackground(pln.Rowguid);  // 🔥 Uses your existing
 
-        // 🔥 NEW: Single Active Row Editing
-        var isActiveEdit = _activeEditRowguid == pln.Rowguid;
-        var isOtherRowEditing = _activeEditRowguid != null && !isActiveEdit;
+    //     // 🔥 NEW: Single Active Row Editing
+    //     var isActiveEdit = _activeEditRowguid == pln.Rowguid;
+    //     var isOtherRowEditing = _activeEditRowguid != null && !isActiveEdit;
 
-        return GetRowCss(state, isLight, pln.Rowguid, isActiveEdit, isOtherRowEditing);
-    }
-    private RowState GetRowState(Guid rowguid, object? parent = null)
-    {
-        if (_rowStates.TryGetValue(rowguid, out var state)) return state;
+    //     return GetRowCss(state, isLight, pln.Rowguid, isActiveEdit, isOtherRowEditing);
+    // }
+    // private RowState GetRowState(Guid rowguid, object? parent = null)
+    // {
+    //     if (_rowStates.TryGetValue(rowguid, out var state)) return state;
 
-        // Context-aware lookup
-        // if (parent is Gsgfix mypln)
-        // {
-        //     if (mypln.Rowguid == rowguid && IsFixRowLocked(rowguid)) return RowState.Locked;
-        //     var rub = mypln.Rubvars?.FirstOrDefault(r => r.Rowguid == rowguid);
-        //     if (rub != null && IsRubRowLocked(rowguid)) return RowState.Locked;
-        // }
-        // 🔥 MISSING: Final return for normal state
-        return _rowStates.TryGetValue(rowguid, out var cachedState) ? cachedState : RowState.Normal;
-    }
-    private void SetRowState(Guid rowguid, RowState state)  // Remove <T>
-    {
-        _rowStates[rowguid] = state;
-    }
-    private void ResetRowState(Guid rowguid)  // Reset specific row
-    {
-        _rowStates.Remove(rowguid);  // Back to Normal
-    }
-    private bool IsLightBackground(Guid rowguid)
-    {
-        return _isLightBg.ContainsKey(rowguid) && _isLightBg[rowguid];
-    }
+    //     // Context-aware lookup
+    //     // if (parent is Gsgfix mypln)
+    //     // {
+    //     //     if (mypln.Rowguid == rowguid && IsFixRowLocked(rowguid)) return RowState.Locked;
+    //     //     var rub = mypln.Rubvars?.FirstOrDefault(r => r.Rowguid == rowguid);
+    //     //     if (rub != null && IsRubRowLocked(rowguid)) return RowState.Locked;
+    //     // }
+    //     // 🔥 MISSING: Final return for normal state
+    //     return _rowStates.TryGetValue(rowguid, out var cachedState) ? cachedState : RowState.Normal;
+    // }
+    // private void SetRowState(Guid rowguid, RowState state)  // Remove <T>
+    // {
+    //     _rowStates[rowguid] = state;
+    // }
+    // private void ResetRowState(Guid rowguid)  // Reset specific row
+    // {
+    //     _rowStates.Remove(rowguid);  // Back to Normal
+    // }
+    // private bool IsLightBackground(Guid rowguid)
+    // {
+    //     return _isLightBg.ContainsKey(rowguid) && _isLightBg[rowguid];
+    // }
 
 
-    private void ResetEntityUIState<T>(int ent)
-    {
-        switch (typeof(T).Name)
-        {
-            case nameof(GstablDto): 
-                if (ent == 1) ResetPlnUI();
-                if (ent == 2) ResetRubUI();
-                break;
-        }
-    }
-    private void ResetPlnUI()
-    {
-        Console.WriteLine("🔄 ResetPlnUI");
+    // private void ResetEntityUIState<T>(int ent)
+    // {
+    //     switch (typeof(T).Name)
+    //     {
+    //         case nameof(GstablDto): 
+    //             if (ent == 1) ResetPlnUI();
+    //             if (ent == 2) ResetRubUI();
+    //             break;
+    //     }
+    // }
+    // private void ResetPlnUI()
+    // {
+    //     Console.WriteLine("🔄 ResetPlnUI");
 
-        // 🔥 CLEAR ALL MODES
-        isEdtFix = false;
-        isAddFix = false;  // ← CRITICAL - Exits add mode
+    //     // 🔥 CLEAR ALL MODES
+    //     isEdtFix = false;
+    //     isAddFix = false;  // ← CRITICAL - Exits add mode
 
-        draftFix = null;
-        EdFixRowguid = null;
-        DlFixRowguid = null;
+    //     draftFix = null;
+    //     EdFixRowguid = null;
+    //     DlFixRowguid = null;
 
-        FixRenderKey = Guid.NewGuid();  // Force grid refresh
-        StateHasChanged();
-    }
-    private void ResetRubUI()
-    {
-        Console.WriteLine("🔄 ResetRubUI");
+    //     FixRenderKey = Guid.NewGuid();  // Force grid refresh
+    //     StateHasChanged();
+    // }
+    // private void ResetRubUI()
+    // {
+    //     Console.WriteLine("🔄 ResetRubUI");
 
-        // 🔥 CLEAR ALL MODES
-        isEdtChl = false;
-        isAddChl = false;  // ← CRITICAL - Exits add mode
+    //     // 🔥 CLEAR ALL MODES
+    //     isEdtChl = false;
+    //     isAddChl = false;  // ← CRITICAL - Exits add mode
 
-        draftChl = null;
-        EdChlRowguid = null;
-        DlChlRowguid = null;
+    //     draftChl = null;
+    //     EdChlRowguid = null;
+    //     DlChlRowguid = null;
 
-        ChldRenderKey = Guid.NewGuid();  // Force grid refresh
-        StateHasChanged();
-    }
+    //     ChldRenderKey = Guid.NewGuid();  // Force grid refresh
+    //     StateHasChanged();
+    // }
     // ✅ 3. NOTIFICATIONS
     // private async Task NotifyPendingChanges()
     // {
@@ -1409,106 +1366,126 @@ else
     //     StateHasChanged();
     // }
 
-    private void StartDelete<T>(T item, string entitySet) where T : class
-    {
-        var rowguid = ((dynamic)item).Rowguid;
-        SetDeleteFlags(item); // e.g. Xdel1 = -1
-        SetRowState(rowguid, RowState.DeletePending);  // Triggers
-        Console.WriteLine($"🗑 {typeof(T).Name} {rowguid} marked as pending delete");
-        StateHasChanged();
-    }
-    private void StartRowDelete(Guid rowguid, EntityLevel level)
-    {
-        // 🔥 1. Set DeletePending → triggers your @switch
-        SetRowState(rowguid, RowState.DeletePending);
+    // private void StartDelete<T>(T item, string entitySet) where T : class
+    // {
+    //     var rowguid = ((dynamic)item).Rowguid;
+    //     SetDeleteFlags(item); // e.g. Xdel1 = -1
+    //     SetRowState(rowguid, RowState.DeletePending);  // Triggers
+    //     Console.WriteLine($"🗑 {typeof(T).Name} {rowguid} marked as pending delete");
+    //     StateHasChanged();
+    // }
+    // private void StartRowDelete(Guid rowguid, EntityLevel level)
+    // {
+    //     // 🔥 1. Set DeletePending → triggers your @switch
+    //     SetRowState(rowguid, RowState.DeletePending);
 
-        // 🔥 2. Enable single-row editing (CSS)
-        StartRowEdit(rowguid, level);
+    //     // 🔥 2. Enable single-row editing (CSS)
+    //     StartRowEdit(rowguid, level);
 
-        StateHasChanged();
-    }
-    private async Task ConfirmDelete<T>(T item, EntityLevel level) where T : class
-    {
-        await UnifiedDeleteAction(item, true, level);
-        EndRowEdit();  // Close single delete mode
-    }
-    // SINGLE method - ALL delete cancels
-    private async Task CancelDelete<T>(T item, EntityLevel level) where T : class
-    {
-        await UnifiedDeleteAction(item, false, level);
-        EndRowEdit();  // Close single delete mode
-    }
+    //     StateHasChanged();
+    // }
+    // private async Task ConfirmDelete<T>(T item, EntityLevel level) where T : class
+    // {
+    //     await UnifiedDeleteAction(item, true, level);
+    //     EndRowEdit();  // Close single delete mode
+    // }
+    // // SINGLE method - ALL delete cancels
+    // private async Task CancelDelete<T>(T item, EntityLevel level) where T : class
+    // {
+    //     await UnifiedDeleteAction(item, false, level);
+    //     EndRowEdit();  // Close single delete mode
+    // }
 
-    private void SetDeleteFlags(object item) => SetFlags(item, 0, 0, -1);
+    // private void SetDeleteFlags(object item) => SetFlags(item, 0, 0, -1);
 
-    // SINGLE method handles ALL confirm operations
-    private async Task ConfirmEdit<T>(T item, EntityLevel level) where T : class
-    {
-        await UnifiedEditAction(item, true, level);
-        EndRowEdit();  // Close single edit mode
-    }
+    // // SINGLE method handles ALL confirm operations
+    // private async Task ConfirmEdit<T>(T item, EntityLevel level) where T : class
+    // {
+    //     await UnifiedEditAction(item, true, level);
+    //     EndRowEdit();  // Close single edit mode
+    // }
     // SINGLE method handles ALL cancel operations
-    private async Task StartCancelAdd<T>(EntityLevel level, T item) where T : class
+    private async Task StartCancelAdd(EntityLevel level, object entity)
+    //private async Task StartCancelAdd<T>(EntityLevel level, T item) where T : class
     {
-        //Console.WriteLine("CancelAdding");
-        var rowguid = MLEntityKeyHelper.GetRowguidAsGuid(item);
-        try
-        {
-
-            MyDaRubrs.RemoveAll(x => x.Rowguid == rowguid);
-            curOrga.Gstabls.RemoveAll(x => x.Rowguid == rowguid);
-            EndRowEdit();
-            FixRenderKey = null;
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"erreur message {ex.Message}");
-        }
-        await InvokeAsync(StateHasChanged);
-        // if (_origOrgGuid.TryGetValue(rowguid, out var original))
-        // {
-        //     Imessage = "Annulation effectuee";
-        //     curGfixe = original;
-        // }
-    }
-    private async Task CancelEdit<T>(T item, EntityLevel level) where T : class
-    {
-        await UnifiedEditAction(item, false, level);
-        EndRowEdit();  // Close single edit mode
-    }
-    private async Task UnifiedDeleteAction<T>(T item, bool isConfirm, EntityLevel level) where T : class
-    {
+        var rowguid = MLEntityKeyHelper.GetRowguidAsGuid(entity);
         switch (level)
         {
-            case EntityLevel.Plan: await ProcessDelete<GstablDto>(item as GstablDto, isConfirm); break;
-            case EntityLevel.Rub: await ProcessDelete<GstablDto>(item as GstablDto, isConfirm); break;
+            case EntityLevel.Plan:
+                await CancelAdd(level, entity);
+                curOrga.Gstabls.RemoveAll(x => x.Rowguid == rowguid);
+                FixRenderKey = Guid.Empty;
+                break;
+            case EntityLevel.Rub:
+                await CancelAdd(level, entity);
+                curOrga.Gstabls.RemoveAll(x => x.Rowguid == rowguid);
+                ChldRenderKey = Guid.Empty;
+                break;
+            // case EntityLevel.Fmt:
+            //     await CancelAdd(level, entity);
+            //     curRubr.Rubfmts.RemoveAll(x => x.Rowguid == rowguid);
+            //     FmtRenderKey = Guid.Empty;
+            //     break;
         }
+        // //Console.WriteLine("CancelAdding");
+        // var rowguid = MLEntityKeyHelper.GetRowguidAsGuid(item);
+        // try
+        // {
+
+        //     MyDaRubrs.RemoveAll(x => x.Rowguid == rowguid);
+        //     curOrga.Gstabls.RemoveAll(x => x.Rowguid == rowguid);
+        //     EndRowEdit();
+        //     FixRenderKey = null;
+        // }
+        // catch (Exception ex)
+        // {
+        //     Console.WriteLine($"erreur message {ex.Message}");
+        // }
+        // await InvokeAsync(StateHasChanged);
+        // // if (_origOrgGuid.TryGetValue(rowguid, out var original))
+        // // {
+        // //     Imessage = "Annulation effectuee";
+        // //     curGfixe = original;
+        // // }
     }
-    private async Task ProcessDelete<T>(T item, bool isConfirm) where T : class
-    {
-        if (item == null) return;
+    // private async Task CancelEdit<T>(T item, EntityLevel level) where T : class
+    // {
+    //     await UnifiedEditAction(item, false, level);
+    //     EndRowEdit();  // Close single edit mode
+    // }
+    // private async Task UnifiedDeleteAction<T>(T item, bool isConfirm, EntityLevel level) where T : class
+    // {
+    //     switch (level)
+    //     {
+    //         case EntityLevel.Plan: await ProcessDelete<GstablDto>(item as GstablDto, isConfirm); break;
+    //         case EntityLevel.Rub: await ProcessDelete<GstablDto>(item as GstablDto, isConfirm); break;
+    //     }
+    // }
+    // private async Task ProcessDelete<T>(T item, bool isConfirm) where T : class
+    // {
+    //     if (item == null) return;
 
-        var rowguid = (Guid)typeof(T).GetProperty("Rowguid")!.GetValue(item)!;
+    //     var rowguid = (Guid)typeof(T).GetProperty("Rowguid")!.GetValue(item)!;
 
-        if (isConfirm)
-        {
-            // 🔥 Generic delete logic
-            RemoveFromParentCollection(item);
-            //await _guard.TrackDelete<T>(GetEntitySet(item), GetEntityKey(item));
-            var key = GetEntityKey(item); // helper to extract PK
-            await _guard.TrackDelete(GetEntitySetName<T>(), key, rowguid);
+    //     if (isConfirm)
+    //     {
+    //         // 🔥 Generic delete logic
+    //         RemoveFromParentCollection(item);
+    //         //await _guard.TrackDelete<T>(GetEntitySet(item), GetEntityKey(item));
+    //         var key = GetEntityKey(item); // helper to extract PK
+    //         await _guard.TrackDelete(GetEntitySetName<T>(), key, rowguid);
             
-            SetDeleteFlags(item);
-            SetRowState(rowguid, RowState.Normal);
-            //await NotifyPendingChanges();
-        }
-        else
-        {
-            SetRowState(rowguid, RowState.Normal);
-        }
+    //         SetDeleteFlags(item);
+    //         SetRowState(rowguid, RowState.Normal);
+    //         //await NotifyPendingChanges();
+    //     }
+    //     else
+    //     {
+    //         SetRowState(rowguid, RowState.Normal);
+    //     }
 
-        StateHasChanged();
-    }
+    //     StateHasChanged();
+    // }
     private string GetEntitySetName<T>() where T : class
     {
         return typeof(T) switch
@@ -1565,27 +1542,20 @@ else
     }
     private bool ValidateRub(GstablDto myrub)
     {
-        //Satyp
-        if (myrub.Atyp == 0)
+        //liba
+        if (string.IsNullOrEmpty(myrub.Liba)
+            || myrub.Liba.Length < 5)
         {
-            Imessage = "Atyp obligatoire";
+            Imessage = "designation obligatoire/longueur";
             return false;
         }
-        //Aval
-        if (string.IsNullOrEmpty(myrub.Aval)
-            || myrub.Aval.Length < 1)
-        {
-            Imessage = "valeur obligatoire/long < 1";
-            return false;
-        }
-        myrub.Satyp = SatypHelp.GetTblSatyp(myrub.Atyp);
         //abrege
-        // if (string.IsNullOrEmpty(myrub.)
-        //     || myrub.Abg.Length < 3)
-        // {
-        //     Imessage = "abrege obligatoire/longueur";
-        //     return false;
-        // }
+        if (string.IsNullOrEmpty(myrub.Abg)
+            || myrub.Abg.Length < 3)
+        {
+            Imessage = "abrege obligatoire/longueur";
+            return false;
+        }
         //scdrub
         // if (string.IsNullOrEmpty(myrub.Scdrub)
         //     || myrub.Scdrub.Length != _lgcdu)
@@ -1602,52 +1572,52 @@ else
         return true;
     }
     // ✅ 6. ROW Management
-    private string GetRowCss(RowState state, bool isLight, Guid rowguid,
-        bool isActiveEdit, bool isOtherRowEditing)
-    {
-        var css = new List<string>();
+    // private string GetRowCss(RowState state, bool isLight, Guid rowguid,
+    //     bool isActiveEdit, bool isOtherRowEditing)
+    // {
+    //     var css = new List<string>();
 
-        if (isLight) css.Add("bg-light");
+    //     if (isLight) css.Add("bg-light");
 
-        // 🔥 YOUR EXISTING: NEW ADD detection (Xadd1 == -1)
-        var isNewAdd = ((dynamic)MyDaRubrs.FirstOrDefault(p => p.Rowguid == rowguid))?.Xadd1 == -1;
+    //     // 🔥 YOUR EXISTING: NEW ADD detection (Xadd1 == -1)
+    //     var isNewAdd = ((dynamic)MyDaRubrs.FirstOrDefault(p => p.Rowguid == rowguid))?.Xadd1 == -1;
 
-        // 🔥 HIGHEST PRIORITY: Single Row Editing
-        if (isActiveEdit)
-        {
-            css.Add("row-active-edit");  // Thick yellow border + highlight
-            return string.Join(" ", css);  // EARLY RETURN - editing overrides all
-        }
+    //     // 🔥 HIGHEST PRIORITY: Single Row Editing
+    //     if (isActiveEdit)
+    //     {
+    //         css.Add("row-active-edit");  // Thick yellow border + highlight
+    //         return string.Join(" ", css);  // EARLY RETURN - editing overrides all
+    //     }
 
-        // 🔥 NEXT: Other rows when editing active → READONLY
-        if (isOtherRowEditing)
-        {
-            css.Add("row-readonly");
-            css.Add("opacity-65");
-            css.Add("cursor-not-allowed");
-        }
+    //     // 🔥 NEXT: Other rows when editing active → READONLY
+    //     if (isOtherRowEditing)
+    //     {
+    //         css.Add("row-readonly");
+    //         css.Add("opacity-65");
+    //         css.Add("cursor-not-allowed");
+    //     }
 
-        // 🔥 YOUR EXISTING RowState logic
-        switch (state)
-        {
-            case RowState.AddPending:
-            case RowState.EditPending when isNewAdd:
-                css.Add("border-start border-warning border-3");
-                //css.Add("new-add-indicator");
-                break;
-            case RowState.EditPending:
-                css.Add("border-start border-info border-3");
-                break;
-            case RowState.DeletePending:
-                css.Add("bg-danger-subtle");
-                break;
-            case RowState.Locked:
-                css.Add("bg-secondary-subtle opacity-75");
-                break;
-        }
+    //     // 🔥 YOUR EXISTING RowState logic
+    //     switch (state)
+    //     {
+    //         case RowState.AddPending:
+    //         case RowState.EditPending when isNewAdd:
+    //             css.Add("border-start border-warning border-3");
+    //             //css.Add("new-add-indicator");
+    //             break;
+    //         case RowState.EditPending:
+    //             css.Add("border-start border-info border-3");
+    //             break;
+    //         case RowState.DeletePending:
+    //             css.Add("bg-danger-subtle");
+    //             break;
+    //         case RowState.Locked:
+    //             css.Add("bg-secondary-subtle opacity-75");
+    //             break;
+    //     }
 
-        return string.Join(" ", css);
-    }
+    //     return string.Join(" ", css);
+    // }
     // ✅ 6. SELECTIONS
     // private void SelPlanAtr(int xatr)
     // {
@@ -1726,77 +1696,16 @@ else
         Console.WriteLine($"✅ {entitySet} marked Modified (queued for update)");
     }
 
-    private void CopyDraftToGridItem<T>(T gridItem, int tent) where T : class
-    {
-        switch (typeof(T).Name)
-        { // ONLY editable UI fields - 5-10x faster than reflection!
-            case nameof(GstablDto):
-                if (tent == 1)
-                {
-                    if (draftFix == null) return;
-                    var pln = (GstablDto)(object)gridItem;
-                    pln.Liba = draftFix.Liba; //designation
-                    pln.Abg = draftFix.Abg; //abrege
-                    pln.Rowguid = draftFix.Rowguid;
-                    pln.Idorg = draftFix.Idorg; //pere Id
-                    pln.Gtyp = draftFix.Gtyp; //2optionnel1integre
-                    pln.Btyp = draftFix.Btyp; //1tiers2matiere
-                    pln.Tenr = draftFix.Tenr; //1base2elemt
-                    pln.Pid = draftFix.Pid;
-                    pln.Xdpd = draftFix.Xdpd;
-                    pln.Ydpd = draftFix.Ydpd;
-                    pln.Jacc = draftFix.Jacc;
-                    pln.Jenr = draftFix.Jenr;
-                    //pln.Fpsrc = draftFix.Fpsrc; //formule-non valider
-                    pln.Eta = draftFix.Eta; //etat
-                }
-                if (tent == 2)
-                {
-                    if (draftChl == null) return;
-                    var rub = (GstablDto)(object)gridItem;
-                    rub.Liba = draftChl.Liba; //designation
-                    rub.Abg = draftChl.Abg; //abrege
-                    rub.Rowguid = draftChl.Rowguid;
-                    rub.Idorg = draftChl.Idorg; //pere Id
-                    rub.Gtyp = draftChl.Gtyp; //2optionnel1integre
-                    rub.Btyp = draftChl.Btyp; //1tiers2matiere
-                    rub.Tenr = draftChl.Tenr; //1base2elemt
-                    rub.Pid = draftChl.Pid;
-                    rub.Xdpd = draftChl.Xdpd;
-                    rub.Ydpd = draftChl.Ydpd;
-                    rub.Jacc = draftChl.Jacc;
-                    rub.Jenr = draftChl.Jenr;
-                    //rub.Fpsrc = draftChl.Fpsrc; //formule-non valider
-                    rub.Eta = draftChl.Eta; //etat
-                }
-                break;
-            // case nameof(RubfmtDto):
-            //     if (draftFmt == null) return;
-            //     var fmt = (RubfmtDto)(object)gridItem;
-            //     fmt.Liba = draftFmt.Liba; //designation
-            //     fmt.Abg = draftFmt.Abg; //abrege
-            //     fmt.Zcdrub = draftFmt.Zcdrub; //code
-            //     fmt.Zcod = draftFmt.Zcod; //refer
-            //     fmt.Ztyp = draftFmt.Ztyp; //ztyp
+    // private object DeepClone(object entity)
+    // {
+    //     var settings = new JsonSerializerSettings
+    //     {
+    //         ReferenceLoopHandling = ReferenceLoopHandling.Ignore
+    //     };
 
-            //     fmt.Ftsrc = draftFmt.Ftsrc; //formule
-            //     fmt.Col = draftFmt.Col; //col
-            //     fmt.Lne = draftFmt.Lne; //lne
-            //     fmt.Lgtf = draftFmt.Lgtf; //lgtf
-            //     fmt.Eta = draftFmt.Eta; //etat
-            //     break;
-        }
-    }
-    private object DeepClone(object entity)
-    {
-        var settings = new JsonSerializerSettings
-        {
-            ReferenceLoopHandling = ReferenceLoopHandling.Ignore
-        };
-
-        var json = JsonConvert.SerializeObject(entity, settings);
-        return JsonConvert.DeserializeObject(json, entity.GetType(), settings)!;
-    }
+    //     var json = JsonConvert.SerializeObject(entity, settings);
+    //     return JsonConvert.DeserializeObject(json, entity.GetType(), settings)!;
+    // }
     private object GetEntityKey<TDto>(TDto entity)
     {
         switch (entity)
@@ -1846,4 +1755,69 @@ else
     {
         _navManager.NavigateTo("/login");
     }
+    // Update method -call this when source data changes
+    private void InitializeMyDaTabls()
+    {
+        GtbItems.Clear();
+        GtbItems.AddRange(
+            curOrga.Gstabls
+                        .Where(uv => (uv.Otyp == 1 || uv.Otyp == 2) && uv.Tenr == 1)
+                        ?? Enumerable.Empty<GstablDto>());
+
+        // foreach (var iru in MyDaTabls)
+        // {
+        //     var children = curOrga.Gstabls
+        //         .Where(ln => (ln.Otyp == 1 || ln.Otyp == 2) && ln.Tenr == 2 && ln.Pid == iru.Id)
+        //         .ToList();
+
+        //     foreach (var child in children)
+        //     {
+        //         MyDaTrubs.Add(child);
+        //     }
+        // }
+    }
+    private void InitializeMyDaTrubs()
+    {
+        GchItems.Clear();
+        foreach (var iru in MyDaTabls)
+        {
+            var children = curOrga.Gstabls
+                .Where(ln => (ln.Otyp == 1 || ln.Otyp == 2) && ln.Tenr == 2 && ln.Pid == iru.Id)
+                .ToList();
+            GchItems.AddRange(children);
+        }
+    }
+    // private void InitializeMyDaFmts()
+    // {
+    //     FmtItems.Clear();
+    //     FmtItems.AddRange(
+    //         curRubr.Rubfmts.ToList()
+    //     ?? Enumerable.Empty<RubfmtDto>());
+    // }
+    private async Task UpdateMyDaTabls()
+    {
+        GtbItems.Clear();
+        GtbItems.AddRange(
+            curOrga.Gstabls?.Where(uv => (uv.Otyp == 1 || uv.Otyp == 2) && uv.Tenr == 1)
+            ?? Enumerable.Empty<GstablDto>());
+    }
+    private async Task UpdateMyDaTRubs()
+    {
+        GchItems.Clear();
+        foreach (var iru in MyDaTabls)
+        {
+            var children = curOrga.Gstabls
+                .Where(ln => (ln.Otyp == 1 || ln.Otyp == 2) && ln.Tenr == 2 && ln.Pid == iru.Id)
+                .ToList();
+            GchItems.AddRange(children);
+        }
+    }
+    // private async Task UpdateMyDaFmts()
+    // {
+    //     FmtItems.Clear();
+    //     FmtItems.AddRange(
+    //         curRubr.Rubfmts.ToList()
+    //         ?? Enumerable.Empty<RubfmtDto>());
+    // }
 }
+

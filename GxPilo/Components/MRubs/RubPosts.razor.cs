@@ -115,44 +115,44 @@ namespace GxPilo.Components.MRubs
                     break;
             }
         }
-        private void curPlanDom(int domId)
-        {
-            //IMyDom = domId;
-            if (IMyDom != 0)
-            {
-                int gtib = 7;
-                if (IMyDom == 1) gtib = 6;
-                LsGties = LsFixes.Where(ut => ut.Gvars == 36 && ut.Itb == gtib && ut.Elea != 0 && ut.Elea != 9).ToList();
-            }
-            else
-            {
-                LsGties = new();
-            }
-            // Example: check if all selections are valid
-            if (IMyDom != 0 && IMyVue != 0)
-            {
-                // All three have values → single render
-                InvokeAsync(StateHasChanged);
-            }
-        }
-        private void curPlanAtr(int atrId)
-        {
-            //IMyAtr = atrId;
+        //private void curPlanDom(int domId)
+        //{
+        //    //IMyDom = domId;
+        //    if (IMyDom != 0)
+        //    {
+        //        int gtib = 7;
+        //        if (IMyDom == 1) gtib = 6;
+        //        LsGties = LsFixes.Where(ut => ut.Gvars == 36 && ut.Itb == gtib && ut.Elea != 0 && ut.Elea != 9).ToList();
+        //    }
+        //    else
+        //    {
+        //        LsGties = new();
+        //    }
+        //    // Example: check if all selections are valid
+        //    if (IMyDom != 0 && IMyVue != 0)
+        //    {
+        //        // All three have values → single render
+        //        InvokeAsync(StateHasChanged);
+        //    }
+        //}
+        //private void curPlanAtr(int atrId)
+        //{
+        //    //IMyAtr = atrId;
 
-            if (IMyDom != 0 && IMyVue != 0)
-            {
-                InvokeAsync(StateHasChanged);
-            }
-        }
-        private void curPlanVue(int vueId)
-        {
-            //IMyVue = vueId;
+        //    if (IMyDom != 0 && IMyVue != 0)
+        //    {
+        //        InvokeAsync(StateHasChanged);
+        //    }
+        //}
+        //private void curPlanVue(int vueId)
+        //{
+        //    //IMyVue = vueId;
 
-            if (IMyDom != 0 && IMyVue != 0)
-            {
-                InvokeAsync(StateHasChanged);
-            }
-        }
+        //    if (IMyDom != 0 && IMyVue != 0)
+        //    {
+        //        InvokeAsync(StateHasChanged);
+        //    }
+        //}
         private void UpdateAllDom(int domId, int vueId)
         {
             IMyDom = domId;

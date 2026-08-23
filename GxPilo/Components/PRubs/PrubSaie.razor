@@ -19,7 +19,6 @@
 @using BlazorBootstrap
 @using Blazored.LocalStorage
 @using AutoMapper
-@using Microsoft.AspNetCore.Components.Forms
 @using Newtonsoft.Json
 
 @inject NavigationManager _navManager
@@ -27,7 +26,7 @@
 @inject IMessageService _messageService
 
 <!-- InscTiew Component.razor -->
-<PageTitle>Prog.Saisie</PageTitle>
+<PageTitle>Modele(PROG).Saisie</PageTitle>
 
 @if(!isAuthenticated)
 {
@@ -57,7 +56,6 @@ else
         <Authorized Context="AuthContext">
             <div class="row">
                 <div class="col-md-12 input-group align-middle">
-                    <span><b>Message :</b></span>
                     &nbsp;&nbsp;
                     @if (!String.IsNullOrEmpty(Imessage))
                     {
@@ -66,19 +64,43 @@ else
                 </div>
             </div>
             <div class="form-group">
-                <label class="fw-bold">Gpe Progr.:</label>
-                    <InputSelect @bind-Value="IMyAtr" class="me-3" style="width:auto">
-                        <option value=1>Session</option>
-                        <option value=2>Ouvert</option>
-                    </InputSelect>
+                <label class="fw-bold">Domaine :</label>
+                <InputSelect @bind-Value="IMyDom"
+                             @bind-Value:after="OuvreMGrid"
+                             class="me-3"
+                             style="width:auto">
+                    <option value="0">?dom</option>
+                    @foreach (var tob in LsDoms)
+                    {
+                        <option value="@tob.Elea">@tob.Liba</option>
+                    }
+                </InputSelect>
                 <label class="fw-bold">Base :</label>
-                <InputSelect @bind-Value="IMyVue" class="me-3" style="width:auto">
+                <InputSelect @bind-Value="IMyVue"
+                             @bind-Value:after="OuvreMGrid"
+                             class="me-3"
+                             style="width:auto">
                     <option value=0>?util</option>
                     @foreach (var tob in LsVues)
                     {
                         <option value=@tob.Elea>@tob.Liba</option>
                     }
-                </InputSelect>
+                 </InputSelect>
+                @* <InputSelect @bind-Value="IMyDom" @onclick="()=> OuvreMGrid()" class="me-3" style="width:auto">
+                    <option value=0>?dom</option>
+                    @foreach (var tob in LsDoms)
+                    {
+                        <option value=@tob.Elea>@tob.Liba</option>
+                    }
+                </InputSelect> *@
+                
+                @* <InputSelect @bind-Value="IMyVue" @onclick="()=> OuvreMGrid()" class="me-3" style="width:auto">
+                    <option value=0>?util</option>
+                    @foreach (var tob in LsVues)
+                    {
+                        <option value=@tob.Elea>@tob.Liba</option>
+                    }
+                </InputSelect> *@
             </div>
             <div class="container-fluid-fixed-top">
                 @if (curOrga == null)
@@ -97,7 +119,7 @@ else
                             }
                         </div>
                         <div class="row">
-                            @if (IMyDom != 0 && IMyVue != 0 && IMyAtr != 0)
+                            @if (CanOpenMGrid)
                             {
                                 <Grid TItem="PlngenDto"
                                       Data="@MyDaPlans"
@@ -168,8 +190,8 @@ else
                                         </GridColumn> *@
                                         <GridColumn TItem="PlngenDto" HeaderText="Eta" Class="xcol1">
                                             <HeaderContent>
-                                                @if (IMyDom != 0 && IMyVue != 0)
-                                                {
+                                                @* @if (PeutOuvrirPlan)
+                                                { *@
                                                     <button class="btn btn-primary btn-sm @(IsLevelBusy(EntityLevel.Plan) ? "disabled-action" : "")"
                                                             disabled="@IsLevelBusy(EntityLevel.Plan)"
                                                             @onclick="StartPlnNew">
@@ -178,7 +200,7 @@ else
                                                             <span>Add</span>
                                                         </span>
                                                     </button>
-                                                }
+                                                @* } *@
                                             </HeaderContent>
                                             <ChildContent Context="item">
                                                 @if (IsPlanEditing(item) && draftPln is not null)
@@ -1060,6 +1082,10 @@ else
     public EventCallback<int> NbChangesChanged { get; set; }  // 🔥 CRITICAL
 
     private IDisposable? _locationHandler;
+
+    //author
+    private ClaimsPrincipal authUser;
+    private bool isAuthenticated = true;
     //Global
     //private int _lgcdu = 0;
     //private int IMyGpln = 2; //2Echeancier
@@ -1072,9 +1098,9 @@ else
     //Global
     private int _lgcdu = 0;
     private int IMyGpln = 5; //1Programmes
-    private int IMyDom = 1; //1Saisie
+    private int IMyDom = 1; //1Variables2Durables3Factures4Echeanciers5Calculs6Cumuls7Compta
     private int IMyVue = 0; //1Reel2Virtuel
-    private int IMyAtr = 0; ////1Adm2Geo
+    private int IMyAtr = 0;
 
     //private int IMyVue = 1; //1Reel2Virtuel
     ////private int _myAtr = 1; //1Complet2Partiel
@@ -1098,9 +1124,6 @@ else
     // //     }
     // // }
 
-    //author
-    private ClaimsPrincipal authUser;
-    private bool isAuthenticated = true;
     //usrbag
     private Userbag _usrBag = new Userbag();
     private string _UserId = "";
@@ -1135,6 +1158,7 @@ else
     public List<PlngenDto> MyDaPlans => PlanItems;
     public List<RubvarDto> MyDaRubs => RubItems;
     public List<RubfmtDto> MyDaFmts => FmtItems;
+    private bool CanOpenMGrid = false;
 
     private List<PlngenDto> LsPlsEchs => curOrga.Plngens.Where(pl => pl.Ptyp == 2).ToList();
     private List<PlngenDto> LsPlsGris => curOrga.Plngens.Where(pl => pl.Ptyp == 3).ToList();
@@ -1172,21 +1196,21 @@ else
         isLoading = true;
         try
         {
-            if (toChild == null || curOrga == null)
-            {
-                Console.WriteLine("Missing parent data");
-                return;
-            }
-            isAuthenticated = toChild.isAuthenticated;
-            authUser = toChild.authUser;
+            authUser = AuthState?.Result?.User ?? null;
+            isAuthenticated = authUser?.Identity?.IsAuthenticated ?? false;
             if (!isAuthenticated)
             {
                 Imessage = "CONNEXION, Utilisateur non authentifie";
                 return;
             }
+            if (toChild == null || curOrga == null)
+            {
+                Console.WriteLine("Missing parent data");
+                return;
+            }
             LsVars = toChild.LsVars;
             LsFixes = toChild.LsFixes;
-            LsDoms = LsFixes.Where(ut => ut.Gvars == 36 && ut.Itb == 4 && ut.Gp1 == 3 && ut.Elea != 0).ToList();
+            LsDoms = LsFixes.Where(ut => ut.Gvars == 36 && ut.Itb == 2 && ut.Gp1 == 1 && ut.Elea != 0).ToList();
             LsAtrs = LsFixes.Where(ut => ut.Gvars == 36 && ut.Itb == 1 && ut.Gp1 == 3 && ut.Elea != 0).ToList();
             LsVues = LsFixes.Where(ut => ut.Gvars == 36 && ut.Itb == 4 && ut.Gp1 == 4 && ut.Elea != 0).ToList();
             LsGties = LsFixes.Where(ut => ut.Gvars == 36 && ut.Itb == 6 && ut.Elea != 0 && ut.Elea != 9).ToList();
@@ -1229,6 +1253,20 @@ else
         if (firstRender)
         {
             _locationHandler = _navManager.RegisterLocationChangingHandler(OnLocationChangingAsync);
+        }
+    }
+    private async Task OuvreMGrid()
+    {
+        if (IMyDom != 0 && IMyVue != 0)
+        {
+            await UpdateMyDaPlans();
+            PlnRenderKey = Guid.NewGuid();
+            CanOpenMGrid = true;
+            //await InvokeAsync(StateHasChanged);
+        } 
+        else
+        {
+            CanOpenMGrid = false;
         }
     }
     void OnPlnRowClick(GridRowEventArgs<PlngenDto> args)
@@ -1285,8 +1323,8 @@ else
             Idorg = curOrga.Idorg,
             Iui = lsnb,
             Ptyp = IMyGpln,
-            Todom = IMyDom,
-            Ogtyp = 0,
+            Todom = IMyDom, ////1Variables2Durables3Factures
+            //Ogtyp = 0,
             Totyp = IMyGtie,
             Toatr = 0,
             Tovue = IMyVue,
@@ -1301,8 +1339,9 @@ else
             Xedt1 = 0
         };
 
-        PlanItems.Insert(0, newPln);
+        //PlanItems.Insert(0, newPln);
         curOrga.Plngens.Insert(0, newPln);
+        await UpdateMyDaPlans();
 
         SetRowState(EntityLevel.Plan, newPln.Rowguid, RowState.AddPending);
         //SetLightBackground(newPln.Rowguid, true);
@@ -1334,12 +1373,15 @@ else
             return;
         }
         int kgpe = 0;
-        if (IMyAtr == 1)
-        { //session
-            kgpe = 11;
-        } else
+        if (IMyDom == 3)
+        { //facture
+            kgpe = 13;
+        } else if (IMyDom == 2)
         { //durable
             kgpe = 12;
+        } else
+        { //session
+            kgpe = 11;
         }
         var lsnb = NextSeq(MyDaRubs, p => p.Iui);
         var newRub = new RubvarDto
@@ -1348,7 +1390,7 @@ else
             Prowguid = mypln.Rowguid,
             Idorg = mypln.Idorg,
             Ipln = mypln.Id,
-            Vgpe = kgpe, //Activites-11session12ouverts
+            Vgpe = kgpe, //Activites-11session12ouvert13facture
             Scdrub = "",
             Iui = lsnb,
             Torub = 0,
@@ -1376,8 +1418,9 @@ else
         curPlan = mypln;
         Console.WriteLine($"curPlan : {curPlan?.Liba}");
 
-        RubItems.Insert(0, newRub);
+        //RubItems.Insert(0, newRub);
         mypln.Rubvars.Insert(0, newRub);
+        await UpdateMyDaRubs();
 
         //SetLightBackground(newPln.Rowguid, true);
 
@@ -1428,8 +1471,9 @@ else
             Xedt1 = 0
         };
 
-        FmtItems.Insert(0, newFmt);
+        //FmtItems.Insert(0, newFmt);
         myrub.Rubfmts.Insert(0, newFmt);
+        await UpdateMyDaFmts();
 
         SetRowState(EntityLevel.Fmt, newFmt.Rowguid, RowState.AddPending);
 
@@ -1500,23 +1544,23 @@ else
 
         StateHasChanged();
     }
-    private void StartCancelAdd(EntityLevel level, object entity)
+    private async Task StartCancelAdd(EntityLevel level, object entity)
     {
         var rowguid = MLEntityKeyHelper.GetRowguidAsGuid(entity);
         switch (level)
         {
             case EntityLevel.Plan:
-                CancelAdd(level, entity);
+                await CancelAdd(level, entity);
                 curOrga.Plngens.RemoveAll(x => x.Rowguid == rowguid);
                 PlnRenderKey = Guid.Empty;
                 break;
             case EntityLevel.Rub:
-                CancelAdd(level, entity);
+               await CancelAdd(level, entity);
                 curPlan.Rubvars.RemoveAll(x => x.Rowguid == rowguid);
                 RubRenderKey = Guid.Empty;
                 break;
             case EntityLevel.Fmt:
-                CancelAdd(level, entity);
+                await CancelAdd(level, entity);
                 curRubr.Rubfmts.RemoveAll(x => x.Rowguid == rowguid);
                 FmtRenderKey = Guid.Empty;
                 break;
@@ -1616,8 +1660,9 @@ else
     private void InitializeMyDaPlans()
     {
         PlanItems.Clear();
+        //Imessage = $"dom : {IMyDom} vue : {IMyVue}";
         PlanItems.AddRange(
-            curOrga.Plngens?.Where(pl => pl.Ptyp == IMyGpln && pl.Todom == IMyDom)
+            curOrga.Plngens?.Where(pl => pl.Ptyp == IMyGpln && pl.Todom == IMyDom && pl.Toatr == 0 && pl.Tovue == IMyVue)
             ?? Enumerable.Empty<PlngenDto>());
     }
     private void InitializeMyDaRubs()
@@ -1634,21 +1679,21 @@ else
             curRubr.Rubfmts.ToList()
         ?? Enumerable.Empty<RubfmtDto>());
     }
-    private void UpdateMyDaPlans()
+    private async Task UpdateMyDaPlans()
     {
         PlanItems.Clear();
         PlanItems.AddRange(
-            curOrga.Plngens?.Where(pl => pl.Ptyp == IMyGpln && pl.Todom == IMyDom)
+            curOrga.Plngens?.Where(pl => pl.Ptyp == IMyGpln && pl.Todom == IMyDom && pl.Toatr == 0 && pl.Tovue == IMyVue)
             ?? Enumerable.Empty<PlngenDto>());
     }
-    private void UpdateMyDaRubs()
+    private async Task UpdateMyDaRubs()
     {
         RubItems.Clear();
         RubItems.AddRange(
             curPlan.Rubvars.ToList()
             ?? Enumerable.Empty<RubvarDto>());
     }
-    private void UpdateMyDaFmts()
+    private async Task UpdateMyDaFmts()
     {
         FmtItems.Clear();
         FmtItems.AddRange(

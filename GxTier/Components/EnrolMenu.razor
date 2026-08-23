@@ -99,7 +99,7 @@ else
                                      toChild="@toChild"
                                      _InODaClient="@_MyODaClient">
                                 <ChildContent>
-                                    <h2 class="child-box">Hello INTEGRATION</h2>
+                                    @* <h2 class="child-box">Hello INTEGRATION</h2> *@
                                 </ChildContent>
                             </ValdTie>
                         }
@@ -223,7 +223,7 @@ else
     private List<Gpcat> EnsCats = new();
     //Navigation
     private int _gIdTie = 0, _chxGpe = 0, _chxMenu = 1;
-    private string strComp = $"Integration";
+    private string strComp = $"Accueil/Site";
     string gpeLiba = "";
     public int Ugpe = 0, Tgpe = 0; //gpe ref1..6/tiers type6..7
     //modal management
@@ -231,38 +231,6 @@ else
     private bool IsOpen = true;
     private bool FirstLoadCompleted = false;
     private bool ContentLoaded = false;
-
-    // private async Task SaveAllAsync()
-    // {
-    //     await _guard.FlushAsync();
-    //     StateHasChanged();
-    // }
-    // private async Task CancelAllChanges()
-    // {
-    //     Console.WriteLine("🗑️ CancelAllChanges START");
-    //     await _guard.CancelChangesAsync();  // 🔥 AWAIT - blocks until done
-    //     _messageService.Show("✅ CancelAllChanges successfully", ToastType.Success);
-    //     StateHasChanged();
-    //     Console.WriteLine($"✅ CancelAllChanges END - Pending: {_guard.GetPendingChangesCount()}");
-    // }
-    // private async Task SaveAllChanges()
-    // {
-    //     //_guard.DiscardUnconfirmedAdds<Plngen>();
-    //     //_guard.DiscardUnconfirmedAdds<Rubvar>();
-    //     _guard.DiscardUnconfirmedAdds<Tiewel>();
-    //     _guard.DiscardUnconfirmedAdds<Tiwatr>();
-    //     _guard.DiscardUnconfirmedAdds<Tiwafl>();
-    //     if (_guard.HasPendingChanges())
-    //     {
-    //         await curODContext.Context.SaveChangesAsync();
-    //     }
-    //     _guard.NotifyChanges();
-    //     _messageService.Show("✅ Saved successfully", ToastType.Success);
-    //     StateHasChanged();
-    // }
-    //Guard
-    //private int _nbChanges = 0;
-    //private IDisposable? _locationHandler;
 
     protected override async Task OnInitializedAsync()
     {
@@ -325,7 +293,7 @@ else
         // Build hierarchy once
         BuildHierarchy();
         //option initiale
-        strComp = $"Integration {gpeLiba}";
+        strComp = $"Accueil/Site {gpeLiba}";
         //isLoading = false;
         //ParentOK = false;
         //await _loadingService.Hide();
@@ -344,28 +312,6 @@ else
                 .For<GxorgaDto>("Gxorgas")
                 .Key(key)
                 .FindEntryAsync();
-            // Second query: load tiewels only
-    //         var msgsiw = await _MyODaClient
-    // .For<TiewelDto>("Tiewels")
-    // .Filter(f => f.Idorg == key)
-    // //.Filter(f => f.Itiw != 0)   // filter at root
-    // .Expand(o => o.Tiwafls)     // nav property only
-    // .Expand(o => o.Tiejatrs)    // nav property only
-    // .Expand(o => o.Tiegcats)    // nav property only
-    // .FindEntriesAsync();
-
-    //         orgTwels = msgsiw.ToList();
-
-    //         // Third query : load Tiersp only
-    //         var msgsie = await _MyODaClient
-    // .For<TierspDto>("Tiersps")
-    // .Filter(f => f.Idorg == key)
-    // //.Filter(f => f.Itie != 0)
-    // .Expand(o => o.Tieafls)
-    // .Expand(o => o.Tiejatrs)
-    // .Expand(o => o.Tiegcats)
-    // .FindEntriesAsync();
-
             var msgsiw = await _MyODaClient
             .For<TiewelDto>("Tiewels")
             .Filter(f => f.Idorg == key)
@@ -392,60 +338,6 @@ else
         catch (Exception ex)
         {
             Console.WriteLine($"Load error: {ex.Message} et trace : {ex.StackTrace}");
-        }
-
-        try
-        {
-            // string expandTiewels = ODataQueryHelper.Expand<Gxorga, IEnumerable<Tiewel>>(o => o.Tiewels)
-            //     + "($expand=Tiwafls,Tiwatrs)";
-            // string expandTiersps = ODataQueryHelper.Expand<Gxorga, IEnumerable<TierspDto>>(o => o.Tiersps)
-            //     + "($expand=Tieafls,Tieatrs)";
-            // string expandStkita = ODataQueryHelper.Expand<Gxorga, IEnumerable<Stkitu>>(o => o.Stkitus);
-            // string expandGsesios = ODataQueryHelper.Expand<Gxorga, IEnumerable<Gsesio>>(o => o.Gsesios);
-
-            // // Combine them
-            // string expand = string.Join(",", expandTiewels, expandTiersps,
-            //         expandGsesios, expandStkita);
-            // curOrga = await curODContext.GetByKeyAsync<Gxorga>(
-            //     key,
-            //     "Gxorgas",
-            //     expand
-            // );
-
-            // curOrga = await _clieManager
-            //     .GetDtoWithExpandAsync<GxorgaDto>(
-            //         "Gxorgas",
-            //         key,
-            //         "Tiewels($expand=Tiwafls), Tiersps($expand=(Tieafls, Tieatrs))"
-            // );
-            // if (curOrga == null)
-            // {
-            //     //Console.WriteLine($"No organization found for the current user. {expand}");
-            //     return;
-            // }
-
-            Console.WriteLine($"Expanded results : {curOrga.Tiersps.Count} and {curOrga.Stkitus?.Count ?? 0}");
-            ////attributs//Lvars deja charge
-            // foreach (var tie in curOrga.Tiersps)
-            // {
-            //     foreach (var tat in tie.Tieatrs)
-            //     {
-            //         var curat = LsVars.FirstOrDefault(at => at.Xseq == tat.Igsg);
-            //         if (curat != null) tat.LoadFromGsgfix(curat);
-            //     }
-            // }
-            // foreach (var tiw in curOrga.Tiewels)
-            // {
-            //     foreach (var tat in tiw.Tiwatrs)
-            //     {
-            //         var curat = LsVars.FirstOrDefault(at => at.Xseq == tat.Igsg);
-            //         if (curat != null) tat.LoadFromGsgfix(curat);
-            //     }
-            // }
-        }
-        catch(Exception ex)
-        {
-            Console.WriteLine($"Erreur Get Data : {ex.Message}");
         }
         Ugpe = 1; //cible
         Tgpe = 6; //tiers 7matiere
@@ -567,4 +459,104 @@ else
         "document.documentElement.style.setProperty('--blazor-load-percentage', '100');" +
         "document.documentElement.style.setProperty('--blazor-load-percentage-text', '\"Loading data...\"');");
     }
+    // string expandTiewels = ODataQueryHelper.Expand<Gxorga, IEnumerable<Tiewel>>(o => o.Tiewels)
+    //     + "($expand=Tiwafls,Tiwatrs)";
+    // string expandTiersps = ODataQueryHelper.Expand<Gxorga, IEnumerable<TierspDto>>(o => o.Tiersps)
+    //     + "($expand=Tieafls,Tieatrs)";
+    // string expandStkita = ODataQueryHelper.Expand<Gxorga, IEnumerable<Stkitu>>(o => o.Stkitus);
+    // string expandGsesios = ODataQueryHelper.Expand<Gxorga, IEnumerable<Gsesio>>(o => o.Gsesios);
+
+    // // Combine them
+    // string expand = string.Join(",", expandTiewels, expandTiersps,
+    //         expandGsesios, expandStkita);
+    // curOrga = await curODContext.GetByKeyAsync<Gxorga>(
+    //     key,
+    //     "Gxorgas",
+    //     expand
+    // );
+
+    // curOrga = await _clieManager
+    //     .GetDtoWithExpandAsync<GxorgaDto>(
+    //         "Gxorgas",
+    //         key,
+    //         "Tiewels($expand=Tiwafls), Tiersps($expand=(Tieafls, Tieatrs))"
+    // );
+    // if (curOrga == null)
+    // {
+    //     //Console.WriteLine($"No organization found for the current user. {expand}");
+    //     return;
+    // }
+
+    //Console.WriteLine($"Expanded results : {curOrga.Tiersps.Count} and {curOrga.Stkitus?.Count ?? 0}");
+            ////attributs//Lvars deja charge
+            // foreach (var tie in curOrga.Tiersps)
+            // {
+            //     foreach (var tat in tie.Tieatrs)
+            //     {
+            //         var curat = LsVars.FirstOrDefault(at => at.Xseq == tat.Igsg);
+            //         if (curat != null) tat.LoadFromGsgfix(curat);
+            //     }
+            // }
+            // foreach (var tiw in curOrga.Tiewels)
+            // {
+            //     foreach (var tat in tiw.Tiwatrs)
+            //     {
+            //         var curat = LsVars.FirstOrDefault(at => at.Xseq == tat.Igsg);
+            //         if (curat != null) tat.LoadFromGsgfix(curat);
+            //     }
+            // }
+
+            // Second query: load tiewels only
+            //         var msgsiw = await _MyODaClient
+            // .For<TiewelDto>("Tiewels")
+            // .Filter(f => f.Idorg == key)
+            // //.Filter(f => f.Itiw != 0)   // filter at root
+            // .Expand(o => o.Tiwafls)     // nav property only
+            // .Expand(o => o.Tiejatrs)    // nav property only
+            // .Expand(o => o.Tiegcats)    // nav property only
+            // .FindEntriesAsync();
+
+            //         orgTwels = msgsiw.ToList();
+
+            //         // Third query : load Tiersp only
+            //         var msgsie = await _MyODaClient
+            // .For<TierspDto>("Tiersps")
+            // .Filter(f => f.Idorg == key)
+            // //.Filter(f => f.Itie != 0)
+            // .Expand(o => o.Tieafls)
+            // .Expand(o => o.Tiejatrs)
+            // .Expand(o => o.Tiegcats)
+            // .FindEntriesAsync();
+            // private async Task SaveAllAsync()
+            // {
+            //     await _guard.FlushAsync();
+            //     StateHasChanged();
+            // }
+            // private async Task CancelAllChanges()
+            // {
+            //     Console.WriteLine("🗑️ CancelAllChanges START");
+            //     await _guard.CancelChangesAsync();  // 🔥 AWAIT - blocks until done
+            //     _messageService.Show("✅ CancelAllChanges successfully", ToastType.Success);
+            //     StateHasChanged();
+            //     Console.WriteLine($"✅ CancelAllChanges END - Pending: {_guard.GetPendingChangesCount()}");
+            // }
+            // private async Task SaveAllChanges()
+            // {
+            //     //_guard.DiscardUnconfirmedAdds<Plngen>();
+            //     //_guard.DiscardUnconfirmedAdds<Rubvar>();
+            //     _guard.DiscardUnconfirmedAdds<Tiewel>();
+            //     _guard.DiscardUnconfirmedAdds<Tiwatr>();
+            //     _guard.DiscardUnconfirmedAdds<Tiwafl>();
+            //     if (_guard.HasPendingChanges())
+            //     {
+            //         await curODContext.Context.SaveChangesAsync();
+            //     }
+            //     _guard.NotifyChanges();
+            //     _messageService.Show("✅ Saved successfully", ToastType.Success);
+            //     StateHasChanged();
+            // }
+            //Guard
+            //private int _nbChanges = 0;
+            //private IDisposable? _locationHandler;
+
 }

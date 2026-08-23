@@ -99,7 +99,7 @@ namespace GxPilo.Components.Uifrags
                 return;
             }
 
-            CopyDraftToGridItem(entity);
+            CopyDraftTablToGridItem(entity, 1); // Assuming 1 is the tent for the main entity
 
             Guid opId;
             if (isNew)
@@ -138,7 +138,7 @@ namespace GxPilo.Components.Uifrags
             if (!Validate(entity))
                 return;
 
-            CopyDraftToGridItem(entity);
+            CopyDraftTablToGridItem(entity, 2); // Assuming 2 is the tent for the child entity
 
             var key = EntityKeyHelper.GetKey(entity);
             var opId = await Guard.TrackUpdate(EntitySet, key, entity);
@@ -195,7 +195,7 @@ namespace GxPilo.Components.Uifrags
         protected TDto CloneDraft(TDto entity) => JsonCloner.Clone(entity)!;
 
         // Copy draft back to grid item (can be generic if you always use same pattern)
-        protected abstract void CopyDraftToGridItem(TDto entity);
+        protected abstract void CopyDraftTablToGridItem(TDto entity, int tent);
 
         protected abstract void RollbackPendingState(TDto entity, bool isNew);
         protected abstract void FinalizeConfirmedState(TDto entity, string message);

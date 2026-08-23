@@ -3,7 +3,7 @@ using System.Security.Cryptography;
 
 using BlazorBootstrap;
 
-using GxPilo.Components.Plans;
+//using GxPilo.Components.Plans;
 
 using GxShared.GxDtos;
 using GxShared.Helpers;
@@ -138,7 +138,7 @@ namespace GxPilo.Components.Uifrags
             target.Iui = source.Iui;
             target.Ptyp = source.Ptyp;
             target.Todom = source.Todom;
-            target.Ogtyp = source.Ogtyp;
+            //target.Ogtyp = source.Ogtyp;
             target.Totyp = source.Totyp;
             target.Toatr = source.Toatr;
             target.Tovue = source.Tovue;
@@ -159,6 +159,7 @@ namespace GxPilo.Components.Uifrags
             target.Ipln = source.Ipln;
             target.Iui = source.Iui;
             target.Atyp = source.Atyp;
+            target.Vgpe = source.Vgpe;
             target.Scdrub = source.Scdrub;
             target.Frsrc = source.Frsrc;
             //target.Rtyp = source.Rtyp;
@@ -221,6 +222,22 @@ namespace GxPilo.Components.Uifrags
             //target.Rtyp = source.Rtyp;
             //target.Toatr = source.Toatr;
             //target.Tovue = source.Tovue;
+            target.Liba = source.Liba;
+            target.Abg = source.Abg;
+
+            target.Eta = source.Eta;
+            target.Xadd1 = source.Xadd1;
+            target.Xedt1 = source.Xedt1;
+        }
+
+        protected void CommitGtbDraft(GstablDto target, GstablDto source)
+        {
+            target.Idorg = source.Idorg;
+            target.Rowguid = source.Rowguid;
+            target.Iui = source.Iui;
+            target.Scdrub = source.Scdrub;
+            //target.Rtyp = source.Rtyp;
+            //target.Toatr = source.Toatr;
             target.Liba = source.Liba;
             target.Abg = source.Abg;
 
@@ -339,6 +356,12 @@ namespace GxPilo.Components.Uifrags
                     break;
                 case EntityLevel.Fmt:
                     if (entity is RubfmtDto fmt) FmtItems.Add(fmt);
+                    break;
+                case EntityLevel.Hie:
+                    if (entity is RubhieDto hie) HieItems.Add(hie);
+                    break;
+                case EntityLevel.Pst:
+                    if (entity is RubpstDto pst) PstItems.Add(pst);
                     break;
                 case EntityLevel.Tie:
                     if (entity is TierspDto tie) TieItems.Add(tie);
@@ -462,6 +485,84 @@ namespace GxPilo.Components.Uifrags
                     throw new ArgumentOutOfRangeException(nameof(level));
             }
         }
+
+        //protected override void CopyDraftTblToGridItem(EntityLevel level, object entity, int tent)
+        //{
+        //    //private override void CopyDraftTblToGridItem<T>(T gridItem, int tent) where T : class
+        //    //{
+        //    switch (level)
+        //    {
+        //        case EntityLevel.Gtb:
+        //            if (entity is GstablDto tbl && _draftGtb is GstablDto draftTbl)
+        //            {
+        //                if (draftTbl == null) return;
+        //                tbl.Idorg = draftTbl.Idorg; //or
+        //                tbl.Liba = draftTbl.Liba; //designation
+        //                tbl.Abg = draftTbl.Abg; //abrege
+        //                tbl.Rowguid = draftTbl.Rowguid;
+        //                tbl.Idorg = draftTbl.Idorg; //pere Id
+        //                tbl.Gtyp = draftTbl.Gtyp; //2optionnel1integre
+        //                tbl.Btyp = draftTbl.Btyp; //1tiers2matiere
+        //                tbl.Tenr = draftTbl.Tenr; //1base2elemt
+        //                tbl.Pid = draftTbl.Pid;
+        //                tbl.Xdpd = draftTbl.Xdpd;
+        //                tbl.Ydpd = draftTbl.Ydpd;
+        //                tbl.Jacc = draftTbl.Jacc;
+        //                tbl.Jenr = draftTbl.Jenr;
+        //                //tbl.Fpsrc = draftTbl.Fpsrc; //formule-non valider
+        //                tbl.Eta = draftTbl.Eta; //etat
+        //            }
+        //            break;
+        //        default:
+        //            throw new ArgumentOutOfRangeException(nameof(level));
+        //    }
+
+            //        switch (typeof(T).Name)
+            //{ // ONLY editable UI fields - 5-10x faster than reflection!
+            //    case nameof(GstablDto):
+            //        if (tent == 1)
+            //        {
+            //            if (draftFix == null) return;
+            //            var pln = (GstablDto)(object)gridItem;
+                        
+            //        }
+            //        if (tent == 2)
+            //        {
+            //            if (draftChl == null) return;
+            //            var rub = (GstablDto)(object)gridItem;
+            //            rub.Liba = draftChl.Liba; //designation
+            //            rub.Abg = draftChl.Abg; //abrege
+            //            rub.Rowguid = draftChl.Rowguid;
+            //            rub.Idorg = draftChl.Idorg; //pere Id
+            //            rub.Gtyp = draftChl.Gtyp; //2optionnel1integre
+            //            rub.Btyp = draftChl.Btyp; //1tiers2matiere
+            //            rub.Tenr = draftChl.Tenr; //1base2elemt
+            //            rub.Pid = draftChl.Pid;
+            //            rub.Xdpd = draftChl.Xdpd;
+            //            rub.Ydpd = draftChl.Ydpd;
+            //            rub.Jacc = draftChl.Jacc;
+            //            rub.Jenr = draftChl.Jenr;
+            //            //rub.Fpsrc = draftChl.Fpsrc; //formule-non valider
+            //            rub.Eta = draftChl.Eta; //etat
+            //        }
+            //        break;
+            //        // case nameof(RubfmtDto):
+            //        //     if (draftFmt == null) return;
+            //        //     var fmt = (RubfmtDto)(object)gridItem;
+            //        //     fmt.Liba = draftFmt.Liba; //designation
+            //        //     fmt.Abg = draftFmt.Abg; //abrege
+            //        //     fmt.Zcdrub = draftFmt.Zcdrub; //code
+            //        //     fmt.Zcod = draftFmt.Zcod; //refer
+            //        //     fmt.Ztyp = draftFmt.Ztyp; //ztyp
+
+            //        //     fmt.Ftsrc = draftFmt.Ftsrc; //formule
+            //        //     fmt.Col = draftFmt.Col; //col
+            //        //     fmt.Lne = draftFmt.Lne; //lne
+            //        //     fmt.Lgtf = draftFmt.Lgtf; //lgtf
+            //        //     fmt.Eta = draftFmt.Eta; //etat
+            //        //     break;
+            //}
+        //}
         protected override void CopyDraftToGridItem(EntityLevel level, object entity)
         {
             switch (level)
@@ -539,7 +640,8 @@ namespace GxPilo.Components.Uifrags
                         if (draftHie == null) return;
                         hie.Idorg = draftHie.Idorg; //orga
                         hie.Ipln = draftHie.Ipln; //parent
-                        hie.Liba = draftHie.Liba; //designation
+                        hie.Raison = draftHie.Raison; //designation
+                        hie.Liba = draftHie.Liba;
                         //hieHIE
                         if (string.IsNullOrEmpty(draftHie.Raison))
                         {
@@ -559,6 +661,7 @@ namespace GxPilo.Components.Uifrags
                         if (draftPst == null) return;
                         pst.Idorg = draftPst.Idorg; //orga
                         pst.Ihie = draftPst.Ihie; //parent
+                        pst.Padres = draftPst.Padres; //adresse
                         pst.Liba = draftPst.Liba; //designation
                         pst.Abg = draftPst.Abg; //abrege
                         pst.Zcdrub = draftPst.Zcdrub; //code

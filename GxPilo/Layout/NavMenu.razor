@@ -286,9 +286,17 @@
     private bool isSubParaVisible = false;
     private bool isSubProgVisible = false;
     private bool isSubSuppVisible = false;
+
+    private bool isAuthenticated => authUser?.Identity?.IsAuthenticated ?? false;
     //private void ToggleNavMenu() => collapseNavMenu = !collapseNavMenu;
     protected override async Task OnInitializedAsync()
     {
+        if (AuthState is null)
+        {
+            // Authentication state isn't available.
+            return;
+        }
+
         var authState = await AuthState;
         authUser = authState.User;
     }
@@ -297,11 +305,6 @@
     {
         //_appState.OnChange -= StateHasChanged;
     }
-    // private void ToggleNavMenu()
-    // {
-    //     collapseNavMenu = !collapseNavMenu;
-    // }
-
     private void ToggleSubOrga()
     {
         isSubOrgaVisible = !isSubOrgaVisible;
@@ -335,9 +338,4 @@
         isSubSuppVisible = !isSubSuppVisible;
     }
     private bool Entest = false;
-
-    // protected override async Task OnAfterRenderAsync(bool firstRender)
-    // {
-    //     Entest = false;
-    // }
  }

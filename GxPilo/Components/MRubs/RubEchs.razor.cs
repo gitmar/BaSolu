@@ -101,11 +101,11 @@ namespace GxPilo.Components.MRubs
                     break;
             }
         }
-        private void curPlanTier(int xtie)
-        {
-            if (IMyDom != 0 && IMyAtr != 0 && IMyVue != 0)
-                InvokeAsync(StateHasChanged);
-        }
+        //private void curPlanTier(int xtie)
+        //{
+        //    if (IMyDom != 0 && IMyAtr != 0 && IMyVue != 0)
+        //        InvokeAsync(StateHasChanged);
+        //}
     }
 }
 
