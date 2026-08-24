@@ -259,12 +259,22 @@ else if (edOrgContext != null && curOrga != null)
                                                     <td class="text-right">
                                                         @if (isEdingOrg)
                                                         {
-                                                            <InputNumber class="my-input" @bind-Value="draftOrg.Icity"
-                                                                   style="font-weight:bold" placeholder="Enter CITY" />
-                                                        } 
-                                                        else
+                                                            <InputSelect @bind-Value="draftOrg.Scity" style="font-weight:bold">
+                                                                <option value="">-- Select a ville --</option>
+                                                                @foreach (var tob in EnsTbls.FirstOrDefault(t => t.Tref == 35)?.TbItems ?? new List<Gtvar>())
+                                                                {
+                                                                    <option value=@tob.Aval>@tob.Liba</option>
+                                                                }
+                                                            </InputSelect>
+                                                        } else 
                                                         {
-                                                            <span style="font-weight:bold">@curOrga.Icity</span>
+                                                            <InputSelect @bind-Value="curOrga.Scity" style="font-weight:bold" disabled>
+                                                                <option value="">-- Select a ville --</option>
+                                                                @foreach (var tob in EnsTbls.FirstOrDefault(t => t.Tref == 35)?.TbItems ?? new List<Gtvar>())
+                                                                {
+                                                                    <option value=@tob.Aval>@tob.Liba</option>
+                                                                }
+                                                            </InputSelect>
                                                         }
                                                     </td>
                                                 </tr>
@@ -273,12 +283,22 @@ else if (edOrgContext != null && curOrga != null)
                                                     <td class="text-right">
                                                         @if (isEdingOrg)
                                                         {
-                                                            <InputNumber class="my-input" @bind-Value="draftOrg.Iprovi"
-                                                                   style="font-weight:bold" placeholder="Enter PROVI" />
-                                                        }
-                                                        else
+                                                            <InputSelect @bind-Value="draftOrg.Sprovi" style="font-weight:bold">
+                                                                <option value="">-- Select a province --</option>
+                                                                @foreach (var tob in EnsTbls.FirstOrDefault(t => t.Tref == 33)?.TbItems ?? new List<Gtvar>())
+                                                                {
+                                                                    <option value=@tob.Aval>@tob.Liba</option>
+                                                                }
+                                                            </InputSelect>
+                                                        } else 
                                                         {
-                                                            <span style="font-weight:bold">@curOrga.Iprovi</span>
+                                                            <InputSelect @bind-Value="curOrga.Sprovi" style="font-weight:bold" disabled>
+                                                                <option value="">-- Select a province --</option>
+                                                                @foreach (var tob in EnsTbls.FirstOrDefault(t => t.Tref == 33)?.TbItems ?? new List<Gtvar>())
+                                                                {
+                                                                    <option value=@tob.Aval>@tob.Liba</option>
+                                                                }
+                                                            </InputSelect>
                                                         }
                                                     </td>
                                                 </tr>
@@ -287,12 +307,22 @@ else if (edOrgContext != null && curOrga != null)
                                                     <td class="text-right">
                                                         @if (isEdingOrg)
                                                         {
-                                                            <InputNumber class="my-input" @bind-Value="draftOrg.Iregio"
-                                                                   style="font-weight:bold" placeholder="Enter REGION" />
-                                                        }
-                                                        else
+                                                            <InputSelect @bind-Value="draftOrg.Sregio" style="font-weight:bold">
+                                                                <option value="">-- Select a region --</option>
+                                                                @foreach (var tob in EnsTbls.FirstOrDefault(t => t.Tref == 32)?.TbItems ?? new List<Gtvar>())
+                                                                {
+                                                                    <option value=@tob.Aval>@tob.Liba</option>
+                                                                }
+                                                            </InputSelect>
+                                                        } else 
                                                         {
-                                                            <span style="font-weight:bold">@curOrga.Iregio</span>
+                                                            <InputSelect @bind-Value="curOrga.Sregio" style="font-weight:bold" disabled>
+                                                                <option value="">-- Select a region --</option>
+                                                                @foreach (var tob in EnsTbls.FirstOrDefault(t => t.Tref == 32)?.TbItems ?? new List<Gtvar>())
+                                                                {
+                                                                    <option value=@tob.Aval>@tob.Liba</option>
+                                                                }
+                                                            </InputSelect>
                                                         }
                                                     </td>
                                                 </tr>
@@ -305,7 +335,7 @@ else if (edOrgContext != null && curOrga != null)
                                                                 <option value="">-- Select a country --</option>
                                                                 @foreach (var tob in EnsTbls.FirstOrDefault(t => t.Tref == 31)?.TbItems ?? new List<Gtvar>())
                                                                 {
-                                                                    <option value=@tob.Abg>@tob.Liba</option>
+                                                                    <option value=@tob.Aval>@tob.Liba</option>
                                                                 }
                                                             </InputSelect>
                                                         } else 
@@ -314,7 +344,7 @@ else if (edOrgContext != null && curOrga != null)
                                                                 <option value="">-- Select a country --</option>
                                                                 @foreach (var tob in EnsTbls.FirstOrDefault(t => t.Tref == 31)?.TbItems ?? new List<Gtvar>())
                                                                 {
-                                                                    <option value=@tob.Abg>@tob.Liba</option>
+                                                                    <option value=@tob.Aval>@tob.Liba</option>
                                                                 }
                                                             </InputSelect>
                                                         }
@@ -1749,9 +1779,9 @@ else if (edOrgContext != null && curOrga != null)
         target.Rifu = source.Rifu;
         target.Adr = source.Adr;
         target.Adr2 = source.Adr2;
-        target.Icity = source.Icity;
-        target.Iprovi = source.Iprovi;
-        target.Iregio = source.Iregio;
+        target.Scity = source.Scity;
+        target.Sprovi = source.Sprovi;
+        target.Sregio = source.Sregio;
         target.Npays = source.Npays;
         target.Phone = source.Phone;
         target.Whatsapp = source.Whatsapp;

@@ -23,8 +23,159 @@
     </button> *@
 
 </div>
-
 <div class="@NavMenuCssClass vh-100" style="overflow-y: auto;">
+    <nav class="nav flex-column">
+        <div class="text-md-center text-warning fw-bold">(PILOTAGE)</div>
+
+        <!-- HOME -->
+        <NavLink class="nav-link nav-main text-light text-small d-flex align-items-center gap-2" href="" Match="NavLinkMatch.All">
+            <i class="bi bi-house-door-fill nav-icon"></i>
+            <span class="nav-text" title="Home">Home</span>
+        </NavLink>
+
+        <AuthorizeView>
+            <Authorized>
+                <!-- ORGANISATION -->
+                <NavLink class="nav-link nav-main text-light small d-flex align-items-center gap-2"
+                         @onclick="ToggleSubOrga">
+                    <i class="bi bi-building nav-icon"></i>
+                    <span class="nav-text">Organisation</span>
+                    <i class="bi @(isSubOrgaVisible ? "bi-chevron-up" : "bi-chevron-down") nav-chevron"></i>
+                </NavLink>
+                <div class="submenu @(isSubOrgaVisible ? "open" : "")">
+                    <nav class="nav flex-column">
+                        <NavLink class="nav-link nav-sub text-light text-small d-flex align-items-center gap-2" href="aorgas">
+                            <i class="bi bi-bank nav-icon"></i>
+                            <span class="nav-text">Institution</span>
+                        </NavLink>
+                        <NavLink class="nav-link nav-sub text-light text-small d-flex align-items-center gap-2" href="invoper">
+                            <i class="bi bi-people-fill nav-icon"></i>
+                            <span class="nav-text">Opérateurs</span>
+                        </NavLink>
+                    </nav>
+                </div>
+
+                <!-- INVARIANTS -->
+                <NavLink class="nav-link nav-main text-light small d-flex align-items-center gap-2"
+                         @onclick="ToggleSubPara">
+                    <i class="bi bi-sliders nav-icon"></i>
+                    <span class="nav-text">Invariants</span>
+                    <i class="bi @(isSubParaVisible ? "bi-chevron-up" : "bi-chevron-down") nav-chevron"></i>
+                </NavLink>
+                <div class="submenu @(isSubParaVisible ? "open" : "")">
+                    <nav class="nav flex-column">
+                        <NavLink class="nav-link nav-sub text-light text-small d-flex align-items-center gap-2" href="atblmenu">
+                            <i class="bi bi-table nav-icon"></i>
+                            <span class="nav-text">Constantes</span>
+                        </NavLink>
+                        <NavLink class="nav-link nav-sub text-light text-small d-flex align-items-center gap-2" href="ictamenu">
+                            <i class="bi bi-calendar-event nav-icon"></i>
+                            <span class="nav-text">Astreintes</span>
+                        </NavLink>
+                        <NavLink class="nav-link nav-sub text-light text-small d-flex align-items-center gap-2" href="atribmenu">
+                            <i class="bi bi-tags nav-icon"></i>
+                            <span class="nav-text">Attributs++</span>
+                        </NavLink>
+                    </nav>
+                </div>
+
+                <!-- MODELES -->
+                <NavLink class="nav-link nav-main text-light text-small d-flex gap-2"
+                         @onclick="ToggleSubProg">
+                    <i class="bi bi-journal-code nav-icon"></i>
+                    <span class="nav-text">Modèles</span>
+                    <i class="bi @(isSubProgVisible ? "bi-chevron-up" : "bi-chevron-down") nav-chevron"></i>
+                </NavLink>
+                <div class="submenu @(isSubProgVisible ? "open" : "")">
+                    <nav class="nav flex-column">
+                        <!-- Traitements -->
+                        <NavLink class="nav-link nav-sub text-light small d-flex align-items-center gap-2" href="prubmenu">
+                            <i class="bi bi-diagram-3 nav-icon"></i>
+                            <span class="nav-text">Traitements</span>
+                            <!-- Variables - Calculs -->
+                        </NavLink>
+
+                        <!-- Échéanciers -->
+                        <NavLink class="nav-link nav-sub text-light small d-flex align-items-center gap-2" href="prubmenu">
+                            <i class="bi bi-calendar-range nav-icon"></i>
+                            <span class="nav-text">Échéanciers</span>
+                            <!-- Échéancier - Factures -->
+                        </NavLink>
+
+                        <!-- Éditions -->
+                        <NavLink class="nav-link nav-sub text-light small d-flex align-items-center gap-2" href="edtmenu">
+                            <i class="bi bi-file-earmark-text nav-icon"></i>
+                            <span class="nav-text">Éditions</span>
+                            <!-- Factures - Bulletins - Releves -->
+                        </NavLink>
+                    </nav>
+                </div>
+
+                <!-- SÉCURITÉS -->
+                <NavLink class="nav-link nav-main text-light small d-flex align-items-center gap-2"
+                         @onclick="ToggleSubSecu">
+                    <i class="bi bi-shield-lock nav-icon"></i>
+                    <span class="nav-text">Sécurités</span>
+                    <i class="bi @(isSubSecuVisible ? "bi-chevron-up" : "bi-chevron-down") nav-chevron"></i>
+                </NavLink>
+                <div class="submenu @(isSubSecuVisible ? "open" : "")">
+                    <nav class="nav flex-column">
+                        <NavLink class="nav-link nav-sub text-light small d-flex align-items-center gap-2" href="secumenu">
+                            <i class="bi bi-key nav-icon"></i>
+                            <span class="nav-text">Autorisations</span>
+                        </NavLink>
+                        <NavLink class="nav-link nav-sub text-light small d-flex align-items-center gap-2" href="donamenu">
+                            <i class="bi bi-database nav-icon"></i>
+                            <span class="nav-text">Données</span>
+                        </NavLink>
+                        <NavLink class="nav-link nav-sub text-light small d-flex align-items-center gap-2" href="subitem2">
+                            <i class="bi bi-tools nav-icon"></i>
+                            <span class="nav-text">Outils</span>
+                        </NavLink>
+                        <NavLink class="nav-link nav-sub text-light small d-flex align-items-center gap-2" href="ownerpage">
+                            <i class="bi bi-person-badge nav-icon"></i>
+                            <span class="nav-text">Owner Page</span>
+                        </NavLink>
+                    </nav>
+                </div>
+
+                <!-- SUPPORT DOMAINE -->
+                @if (authUser.IsInRole("Support") || authUser.IsInRole("Owner") || authUser.IsInRole("Admin"))
+                {
+                    <NavLink class="nav-link nav-main text-light small d-flex align-items-center gap-2"
+                             @onclick="ToggleSubSupp">
+                        <i class="bi bi-life-preserver nav-icon"></i>
+                        <span class="nav-text">Support</span>
+                        <i class="bi @(isSubSuppVisible ? "bi-chevron-up" : "bi-chevron-down") nav-chevron"></i>
+                    </NavLink>
+                    <div class="submenu @(isSubSuppVisible ? "open" : "")">
+                        <nav class="nav flex-column">
+                            @if (authUser.IsInRole("Support"))
+                            {
+                                <NavLink class="nav-link nav-sub text-light small d-flex align-items-center gap-2" href="support">
+                                    <i class="bi bi-question-circle nav-icon"></i>
+                                    <span class="nav-text">Aide?</span>
+                                </NavLink>
+                            }
+                            <NavLink class="nav-link nav-sub text-light small d-flex align-items-center gap-2" href="resendconfmail">
+                                <i class="bi bi-envelope-check nav-icon"></i>
+                                <span class="nav-text">Re-Confirm Email</span>
+                            </NavLink>
+                        </nav>
+                    </div>
+                }
+            </Authorized>
+        </AuthorizeView>
+
+        <!-- ABOUT -->
+        <NavLink class="nav-link nav-main text-light small d-flex align-items-center gap-2" href="about">
+            <i class="bi bi-info-circle nav-icon"></i>
+            <span class="nav-text">About</span>
+        </NavLink>
+    </nav>
+</div>
+
+@* <div class="@NavMenuCssClass vh-100" style="overflow-y: auto;">
     <nav class="nav flex-column">
         <div class="text-md-center text-warning fw-bold">(PILOTAGE)</div>
         <!-- HOME -->
@@ -35,12 +186,6 @@
 
         <AuthorizeView>
             <Authorized>
-                <!-- TEST -->
-                @* <NavLink class="nav-link nav-main text-light small d-flex align-items-center gap-2" href="pages/register">
-                    <i class="bi bi-building nav-icon d-inline-flex align-items-center"></i>
-                    <span class="nav-text" title="Test">Test</span>
-                </NavLink> *@
-
                 <!-- INSTITUTION -->
                 <NavLink class="nav-link nav-main text-light small d-flex align-items-center gap-2"
                          @onclick="ToggleSubOrga">
@@ -61,17 +206,11 @@
                     </nav>
                 </div>
 
-                <!-- INSTITUTION -->
-                @* <NavLink class="nav-link nav-main text-light small d-flex align-items-center gap-2" href="aorgas">
-                    <i class="bi bi-building nav-icon d-inline-flex align-items-center"></i>
-                    <span class="nav-text" title="Institution">Institution</span>
-                </NavLink> *@
-
-                <!-- PARAMÉTRAGE -->
+                <!-- INVARIANTS -->
                 <NavLink class="nav-link nav-main text-light small d-flex align-items-center gap-2"
                          @onclick="ToggleSubPara">
                     <i class="bi bi-sliders nav-icon d-inline-flex align-items-center"></i>
-                    <span class="nav-text">Paramétrage</span>
+                    <span class="nav-text">Invariants</span>
                     <i class="bi @(isSubParaVisible ? "bi-chevron-up" : "bi-chevron-down") nav-chevron"></i>
                 </NavLink>
                 <div class="submenu @(isSubParaVisible ? "open" : "")">
@@ -84,41 +223,36 @@
                             <i class="bi bi-calendar-check nav-icon"></i>
                             <span class="nav-text">Astreintes</span>
                         </NavLink>
-                        @* <NavLink class="nav-link nav-sub text-light text-small d-flex align-items-center gap-2" href="mrubmenu">
-                            <i class="bi bi-calendar-check nav-icon"></i>
-                            <span class="nav-text">Test Modeles</span>
-                        </NavLink>
-                        <NavLink class="nav-link nav-sub text-light text-small d-flex align-items-center gap-2" href="orgacrudpage">
-                            <i class="bi bi-calendar-check nav-icon"></i>
-                            <span class="nav-text">Test Pages</span>
-                        </NavLink> *@
                         <NavLink class="nav-link nav-sub text-light text-small d-flex align-items-center gap-2" href="atribmenu">
                             <i class="bi bi-tags nav-icon"></i>
                             <span class="nav-text">Attributs++</span>
                         </NavLink>
-                        @* <NavLink class="nav-link nav-sub text-light text-small d-flex align-items-center gap-2" href="invoper">
-                            <i class="bi bi-people nav-icon"></i>
-                            <span class="nav-text">Opérateurs</span>
-                        </NavLink> *@
                     </nav>
                 </div>
 
-                <!-- ACTIVITES -->
+                <!-- MODELES -->
                 <NavLink class="nav-link nav-main text-light text-small d-flex gap-2"
                          @onclick="ToggleSubProg">
                     <i class="bi bi-journal-code nav-icon d-inline-flex align-items-center"></i>
-                    <span class="nav-text">Activités</span>
+                    <span class="nav-text">Modeles</span>
                     <i class="bi @(isSubProgVisible ? "bi-chevron-up" : "bi-chevron-down") nav-chevron"></i>
                 </NavLink>
                 <div class="submenu @(isSubProgVisible ? "open" : "")">
                     <nav class="nav flex-column">
                         <NavLink class="nav-link nav-sub text-light small d-flex align-items-center gap-2" href="prubmenu">
                             <i class="bi bi-diagram-3 nav-icon"></i>
-                            <span class="nav-text">Modèles</span>
+                            <span class="nav-text">Traitements</span>
+                            <!-- Variables - Calculs -->
+                        </NavLink>
+                        <NavLink class="nav-link nav-sub text-light small d-flex align-items-center gap-2" href="prubmenu">
+                            <i class="bi bi-diagram-3 nav-icon"></i>
+                            <span class="nav-text">Echeanciers</span>
+                            <!-- Echeancier - Factures -->
                         </NavLink>
                         <NavLink class="nav-link nav-sub text-light small d-flex align-items-center gap-2" href="edtmenu">
                             <i class="bi bi-pencil-square nav-icon"></i>
                             <span class="nav-text">Éditions</span>
+                            <!-- Factures - Bulletins - Releves -->
                         </NavLink>
                     </nav>
                 </div>
@@ -150,12 +284,6 @@
                         </NavLink>
                     </nav>
                 </div>
-
-                <!-- AGENDA -->
-                @* <NavLink class="nav-link nav-main text-light small d-flex align-items-center gap-2" href="agenda">
-                    <i class="bi bi-calendar3 nav-icon d-inline-flex align-items-center"></i>
-                    <span class="nav-text">Agenda</span>
-                </NavLink> *@
 
                 <!-- SUPPORT DOMAINE -->
                 @if (authUser.IsInRole("Support") || authUser.IsInRole("Owner") || authUser.IsInRole("Admin"))
@@ -190,8 +318,27 @@
             <span class="nav-text">About</span>
         </NavLink>
     </nav>
-</div>
+</div> *@
 
+<!-- TEST -->
+@* <NavLink class="nav-link nav-main text-light small d-flex align-items-center gap-2" href="pages/register">
+                    <i class="bi bi-building nav-icon d-inline-flex align-items-center"></i>
+                    <span class="nav-text" title="Test">Test</span>
+                </NavLink> *@
+@* <NavLink class="nav-link nav-sub text-light text-small d-flex align-items-center gap-2" href="mrubmenu">
+                            <i class="bi bi-calendar-check nav-icon"></i>
+                            <span class="nav-text">Test Modeles</span>
+                        </NavLink>
+                        <NavLink class="nav-link nav-sub text-light text-small d-flex align-items-center gap-2" href="orgacrudpage">
+                            <i class="bi bi-calendar-check nav-icon"></i>
+                            <span class="nav-text">Test Pages</span>
+                        </NavLink> *@
+                        
+<!-- AGENDA -->
+@* <NavLink class="nav-link nav-main text-light small d-flex align-items-center gap-2" href="agenda">
+                    <i class="bi bi-calendar3 nav-icon d-inline-flex align-items-center"></i>
+                    <span class="nav-text">Agenda</span>
+                </NavLink> *@
 <style>
 
     /* ICON COLUMN */

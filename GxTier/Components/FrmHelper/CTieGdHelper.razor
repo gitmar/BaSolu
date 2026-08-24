@@ -43,7 +43,7 @@
                 }
             </FormField>
             <!-- FIELD 6: Statut (int) -->
-            <FormField Label="Statut" IsVisible="@AflVisibility.GetValueOrDefault("Statut", true)">
+            @* <FormField Label="Statut" IsVisible="@AflVisibility.GetValueOrDefault("Statut", true)">
                 <InputSelect @bind-Value="Adraft!.Statut"
                              class="form-select">
                     <option value=0>Choisir...</option>
@@ -53,9 +53,9 @@
                             t.Tref == 11)?.TbItems
                         ?? new List<Gtvar>())
                     {
-                        <option value="@tob.Tref">@tob.Liba</option>
+                        <option value="@tob.Aval">@tob.Liba</option>
                     }
-                </InputSelect>
+                </InputSelect> *@
                 @* <InputSelect @bind-Value="Adraft!.Statut"
                              class="form-select"
                              disabled="@(!isEditing)">
@@ -65,7 +65,7 @@
                         <option value=@opt.Elea>@opt.Liba</option>
                     }
                 </InputSelect> *@
-            </FormField>
+            @* </FormField> *@
             
             <!-- FIELD 7: Relat (int) -->
             <FormField Label="Relation" IsVisible="@AflVisibility.GetValueOrDefault("Relat", true)">
@@ -78,7 +78,7 @@
                             t.Tref == 18)?.TbItems
                         ?? new List<Gtvar>())
                     {
-                        <option value="@tob.Tref">@tob.Liba</option>
+                        <option value="@tob.Aval">@tob.Liba</option>
                     }
                 </InputSelect>
                 @* <InputSelect @bind-Value="Adraft!.Relat"
@@ -102,7 +102,7 @@
                             t.Tref == 12)?.TbItems
                         ?? new List<Gtvar>())
                     {
-                        <option value="@tob.Tref">@tob.Liba</option>
+                        <option value="@tob.Aval">@tob.Liba</option>
                     }
                 </InputSelect>
                 @* <InputSelect @bind-Value="Adraft!.Sexe"
@@ -118,7 +118,7 @@
 
             <!-- FIELD 9: Sitmat (int) -->
             
-            <FormField Label="Sit.Mat." IsVisible="@AflVisibility.GetValueOrDefault("Sitmat", true)">
+            @* <FormField Label="Sit.Mat." IsVisible="@AflVisibility.GetValueOrDefault("Sitmat", true)">
                 <InputSelect @bind-Value="Adraft!.Sitmat"
                              class="form-select">
                     <option value=0>Choisir...</option>
@@ -128,9 +128,9 @@
                             t.Tref == 13)?.TbItems
                         ?? new List<Gtvar>())
                     {
-                        <option value="@tob.Tref">@tob.Liba</option>
+                        <option value="@tob.Aval">@tob.Liba</option>
                     }
-                </InputSelect>
+                </InputSelect> *@
                 @* <InputSelect @bind-Value="Adraft!.Sitmat"
                              class="form-select"
                              disabled="@(!isEditing)">
@@ -140,10 +140,10 @@
                         <option value=@opt.Elea>@opt.Liba</option>
                     }
                 </InputSelect> *@
-            </FormField>
+            @* </FormField> *@
 
             <!-- FIELD 10: Fonction -->
-            <FormField Label="Fonct." IsVisible="@AflVisibility.GetValueOrDefault("Ifonc", true)">
+            @* <FormField Label="Fonct." IsVisible="@AflVisibility.GetValueOrDefault("Ifonc", true)">
                 <InputSelect @bind-Value="Adraft!.Ifonc"
                              class="form-select">
                     <option value=0>Choisir...</option>
@@ -153,10 +153,10 @@
                             t.Tref == 14)?.TbItems
                         ?? new List<Gtvar>())
                     {
-                        <option value="@tob.Tref">@tob.Liba</option>
+                        <option value="@tob.Aval">@tob.Liba</option>
                     }
                 </InputSelect>
-                @* <InputSelect @bind-Value="Adraft!.Ifonc"
+                <InputSelect @bind-Value="Adraft!.Ifonc"
                              class="form-select"
                              disabled="@(!isEditing)">
                     <option value=0>?choisir</option>
@@ -164,34 +164,35 @@
                     {
                         <option value=@opt.Elea>@opt.Liba</option>
                     }
-                </InputSelect> *@
-            </FormField>
+                </InputSelect>
+            </FormField> *@
 
             <!-- FIELD 11: Grade -->
-            <FormField Label="Grade" IsVisible="@AflVisibility.GetValueOrDefault("Igrad", true)">
-                <InputSelect @bind-Value="Adraft!.Igrad"
+            <!--
+            <FormField Label="Grade" IsVisible="AflVisibility.GetValueOrDefault("Igrad", true)">
+                <InputSelect bind-Value="Adraft!.Sgrad"
                              class="form-select">
                     <option value=0>Choisir...</option>
-                    @foreach (var tob in
+                    foreach (var tob in
                         EnsTbls.FirstOrDefault(t =>
                             t.Tenr == 1 &&
                             t.Tref == 15)?.TbItems
                         ?? new List<Gtvar>())
                     {
-                        <option value="@tob.Tref">@tob.Liba</option>
+                        <option value="tob.Aval">tob.Liba</option>
                     }
                 </InputSelect>
-                @* <InputSelect @bind-Value="Adraft!.Igrad"
+                <InputSelect bind-Value="Adraft!.Igrad"
                              class="form-select"
-                             disabled="@(!isEditing)">
+                             disabled="(!isEditing)">
                     <option value=0>?choisir</option>
-                    @foreach (var opt in GetOptions(15))
+                    Foreach (var opt in GetOptions(15))
                     {
-                        <option value=@opt.Elea>@opt.Liba</option>
+                        <option value=opt.Elea>opt.Liba</option>
                     }
-                </InputSelect> *@
+                </InputSelect>
             </FormField>
-   
+            -->
             <!-- FIELD 12: Email -->
             <FormField Label="Email" IsVisible="@AflVisibility.GetValueOrDefault("Email", true)">
                 @if (isEditing)
@@ -254,8 +255,8 @@
             </FormField>
 
             <!-- FIELD 17: Responsabilité -->
-            <FormField Label="Responsable" IsVisible="@AflVisibility.GetValueOrDefault("Respon", true)">
-                <InputSelect @bind-Value="Adraft!.Respon"
+            @* <FormField Label="Responsable" IsVisible="@AflVisibility.GetValueOrDefault("Respon", true)">
+                <InputSelect @bind-Value="Adraft!.Srespon"
                              class="form-select">
                     <option value=0>Choisir...</option>
                     @foreach (var tob in
@@ -264,10 +265,10 @@
                             t.Tref == 17)?.TbItems
                         ?? new List<Gtvar>())
                     {
-                        <option value="@tob.Tref">@tob.Liba</option>
+                        <option value="@tob.Aval">@tob.Liba</option>
                     }
                 </InputSelect>
-                @* <InputSelect @bind-Value="Adraft!.Respon"
+                <InputSelect @bind-Value="Adraft!.Respon"
                              class="form-select"
                              disabled="@(!isEditing)">
                     <option value=0>?choisir</option>
@@ -275,8 +276,8 @@
                     {
                         <option value=@opt.Elea>@opt.Liba</option>
                     }
-                </InputSelect> *@
-            </FormField>
+                </InputSelect>
+            </FormField> *@
 
             <!-- FIELD 18: Pays de résidence -->
             <FormField Label="Residence" IsVisible="@AflVisibility.GetValueOrDefault("Rpays", true)">
@@ -289,7 +290,7 @@
                             t.Tref == 31)?.TbItems
                         ?? new List<Gtvar>())
                     {
-                        <option value="@tob.Tref">@tob.Liba</option>
+                        <option value="@tob.Aval">@tob.Liba</option>
                     }
                 </InputSelect>
                 @* <InputSelect @bind-Value="Adraft!.Rpays"
@@ -314,7 +315,7 @@
                             t.Tref == 31)?.TbItems
                         ?? new List<Gtvar>())
                     {
-                        <option value="@tob.Tref">@tob.Liba</option>
+                        <option value="@tob.Aval">@tob.Liba</option>
                     }
                 </InputSelect>
                 @* <InputSelect @bind-Value="Adraft!.Natio"
@@ -329,8 +330,8 @@
             </FormField>
   
             <!-- FIELD 20: Méthode de paiement -->
-            <FormField Label="P.Meth" IsVisible="@AflVisibility.GetValueOrDefault("Ipaid", true)">
-                <InputSelect @bind-Value="Adraft!.Ipaid"
+            @* <FormField Label="P.Meth" IsVisible="@AflVisibility.GetValueOrDefault("Ipaid", true)">
+                <InputSelect @bind-Value="Adraft!.Spaid"
                              class="form-select">
                     <option value=0>Choisir...</option>
                     @foreach (var tob in
@@ -339,10 +340,10 @@
                             t.Tref == 24)?.TbItems
                         ?? new List<Gtvar>())
                     {
-                        <option value="@tob.Tref">@tob.Liba</option>
+                        <option value="@tob.Aval">@tob.Liba</option>
                     }
                 </InputSelect>
-                @* <InputSelect @bind-Value="Adraft!.Ipaid"
+                <InputSelect @bind-Value="Adraft!.Ipaid"
                              class="form-select"
                              disabled="@(!isEditing)">
                     <option value=0>?choisir</option>
@@ -350,8 +351,8 @@
                     {
                         <option value=@opt.Elea>@opt.Liba</option>
                     }
-                </InputSelect> *@
-            </FormField>
+                </InputSelect> 
+            </FormField>*@
         }
     </div>
 </div>
