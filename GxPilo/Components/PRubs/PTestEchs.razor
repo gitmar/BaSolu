@@ -102,7 +102,7 @@ else
                             {
                                 <Grid TItem="PlngenDto"
                                       Data="@MyDaPlans"
-                                      @key="PlnRenderKey"
+                                      @key="GetRenderKey(EntityLevel.Plan)"
                                       AllowDetailView="true"
                                       RowClass="@((item) => GetPlanRowClass(item))"
                                       Responsive="true">
@@ -252,7 +252,7 @@ else
                                                     <div class="col-12">
                                                         <Grid TItem="RubvarDto"
                                                               Data="@MyDaRubs"
-                                                              @key="RubRenderKey"
+                                                              @key="GetRenderKey(EntityLevel.Rub)"
                                                               AllowDetailView="true"
                                                               RowClass="@((item) => GetRubRowClass(item))"
                                                               Responsive="true">
@@ -758,8 +758,8 @@ else
     private int _UorgId = 0;
 
     private Dictionary<Guid, bool> _isLightBg = new();  // Track light background
-    private bool IsRowEditing(Guid rowguid) => _activeEditRowguid == rowguid;
-    private bool IsAnyRowEditing => _activeEditRowguid != null;
+    //private bool IsRowEditing(Guid rowguid) => _activeEditRowguid == rowguid;
+    //private bool IsAnyRowEditing => _activeEditRowguid != null;
 
     private List<Gplan> LsPlans = new();
     private List<Gpfixe> LsFixes = new();
@@ -912,21 +912,14 @@ else
             Xedt1 = 0
         };
 
-        PlanItems.Insert(0, newPln);
-        curOrga.Plngens.Insert(0, newPln);
-
-        SetRowState(EntityLevel.Plan, newPln.Rowguid, RowState.AddPending);
-        //SetLightBackground(newPln.Rowguid, true);
-
+        //prise order
+        curOrga.Plngens?.Add(newPln);
         draftPln = DeepClone(newPln);
-        //Console.WriteLine($"NEWPLN : {newPln.Rowguid}");
-        //Console.WriteLine($"DRAFTPLN : {newPln.Rowguid}");
+        SetRowState(EntityLevel.Plan, newPln.Rowguid, RowState.AddPending);
         BeginAdd(EntityLevel.Plan, newPln.Rowguid, draftPln);
-        //AddRowguid == item.Rowguid
-        //Console.WriteLine($"{newPln.Ptyp} et {newPln.Totyp} et {newPln.Todom} et {newPln.Tovue}");
-        PlnRenderKey = newPln.Rowguid;
 
-        //SetRowState(EntityLevel.Plan, draftPln.Rowguid, RowState.AddPending);
+        await UpdateMyDaPlans();     // now state is already correct when this renders
+        //PlnRenderKey = newPln.Rowguid;
         await InvokeAsync(StateHasChanged);
     }
     public async Task StartRubNew(PlngenDto mypln)
@@ -974,14 +967,14 @@ else
             Xadd1 = -1,
             Xedt1 = 0
         };
-
-        RubItems.Insert(0, newRub);
-        curPlan.Rubvars.Insert(0, newRub);
-
+        curPlan = mypln;
+        Console.WriteLine($"curPlan : {curPlan?.Liba}");
+        mypln.Rubvars.Add(newRub);
         draftRub = DeepClone(newRub);
-        BeginAdd(EntityLevel.Rub, newRub.Rowguid, draftRub);
 
-        RubRenderKey = newRub.Rowguid;
+        SetRowState(EntityLevel.Rub, newRub.Rowguid, RowState.AddPending);
+        BeginAdd(EntityLevel.Rub, newRub.Rowguid, draftRub);
+        await UpdateMyDaRubs();
         await InvokeAsync(StateHasChanged);
     }
     public async Task StartFmtNew(RubvarDto myrub)
@@ -1020,13 +1013,14 @@ else
             Xedt1 = 0
         };
 
-        FmtItems.Insert(0, newFmt);
-        myrub.Rubfmts.Insert(0, newFmt);
-
+        curRubr = myrub;
+        Console.WriteLine($"curRubr : {curRubr?.Liba}");
+        myrub.Rubfmts.Add(newFmt);
         draftFmt = DeepClone(newFmt);
-        BeginAdd(EntityLevel.Fmt, newFmt.Rowguid, draftFmt);
 
-        FmtRenderKey = newFmt.Rowguid;
+        SetRowState(EntityLevel.Fmt, newFmt.Rowguid, RowState.AddPending);
+        BeginAdd(EntityLevel.Fmt, newFmt.Rowguid, draftFmt);
+        await UpdateMyDaFmts();
         await InvokeAsync(StateHasChanged);
     }
     public async Task StartPlnEdit(PlngenDto item)
@@ -1205,45 +1199,35 @@ else
     // Update method -call this when source data changes
     private void InitializeMyDaPlans()
     {
-        PlanItems.Clear();
-        PlanItems.AddRange(
-            curOrga.Plngens?.Where(pl => pl.Ptyp == IMyGpln && pl.Todom == IMyDom)
-            ?? Enumerable.Empty<PlngenDto>());
+        //PlanItems = orgPlns?.Where(pl => pl.Ptyp == IMyGpln && pl.Todom == IMyDom && pl.Toatr == 0 && pl.Tovue == IMyVue).ToList()
+        //    ?? new List<PlngenDto>();
     }
     private void InitializeMyDaRubs()
     {
-        RubItems.Clear();
-        RubItems.AddRange(
-            curPlan.Rubvars.ToList()
-            ?? Enumerable.Empty<RubvarDto>());
+        RubItems = curPlan.Rubvars.ToList()
+            ?? new List<RubvarDto>();
     }
     private void InitializeMyDaFmts()
     {
-        FmtItems.Clear();
-        FmtItems.AddRange(
-            curRubr.Rubfmts.ToList()
-        ?? Enumerable.Empty<RubfmtDto>());
+        FmtItems = curRubr.Rubfmts.ToList()
+            ?? new List<RubfmtDto>();
     }
-    private void UpdateMyDaPlans()
+    private Task UpdateMyDaPlans()
     {
-        RubItems.Clear();
-        PlanItems.AddRange(
-            curOrga.Plngens?.Where(pl => pl.Ptyp == IMyGpln && pl.Todom == IMyDom)
-            ?? Enumerable.Empty<PlngenDto>());
+        //PlanItems = orgPlns?
+        //    .Where(pl => pl.Ptyp == IMyGpln && pl.Todom == IMyDom && pl.Toatr == 0 && pl.Tovue == IMyVue)
+        //    .ToList() ?? new List<PlngenDto>();
+        return Task.CompletedTask;
     }
-    private void UpdateMyDaRubs()
+    private Task UpdateMyDaRubs()
     {
-        RubItems.Clear();
-        RubItems.AddRange(
-            curPlan.Rubvars.ToList()
-            ?? Enumerable.Empty<RubvarDto>());
+        RubItems = curPlan?.Rubvars?.ToList() ?? new List<RubvarDto>();
+        return Task.CompletedTask;
     }
-    private void UpdateMyDaFmts()
+    private Task UpdateMyDaFmts()
     {
-        FmtItems.Clear();
-        FmtItems.AddRange(
-            curRubr.Rubfmts.ToList()
-            ?? Enumerable.Empty<RubfmtDto>());
+        FmtItems = curRubr?.Rubfmts?.ToList() ?? new List<RubfmtDto>();
+        return Task.CompletedTask;
     }
 
     //PLAN Formule modals
@@ -1387,6 +1371,37 @@ else
         {
             Console.WriteLine($"❌ Error: {ex.Message}");
             // Safety: stay on page
+        }
+    }
+    protected override void OnLocalCollectionMutated(EntityLevel level, CollectionMutation mutation, object entity)
+    {
+        switch (level)
+        {
+            case EntityLevel.Plan when entity is PlngenDto plan:
+                //SyncList(orgPlns, plan, mutation);
+                break;
+            case EntityLevel.Rub when entity is RubvarDto rub && curPlan is not null:
+                SyncList(curPlan.Rubvars, rub, mutation);
+                break;
+            case EntityLevel.Fmt when entity is RubfmtDto fmt && curRubr is not null:
+                SyncList(curRubr.Rubfmts, fmt, mutation);
+                break;
+        }
+    }
+
+    private static void SyncList<T>(List<T> list, T entity, CollectionMutation mutation) where T : class
+    {
+        var rowguid = MLEntityKeyHelper.GetRowguidAsGuid(entity);
+        switch (mutation)
+        {
+            case CollectionMutation.Added:
+            case CollectionMutation.Replaced:
+                var idx = list.FindIndex(x => MLEntityKeyHelper.GetRowguidAsGuid(x) == rowguid);
+                if (idx >= 0) list[idx] = entity; else list.Add(entity);
+                break;
+            case CollectionMutation.Removed:
+                list.RemoveAll(x => MLEntityKeyHelper.GetRowguidAsGuid(x) == rowguid);
+                break;
         }
     }
     public void Dispose()  // â† ADD THIS

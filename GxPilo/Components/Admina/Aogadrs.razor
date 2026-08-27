@@ -1,0 +1,136 @@
+﻿<h3>Aogadrs</h3>
+
+@using GxPilo.Components.Admina
+@using GxShared.GxDtos
+@using GxShared.Sess
+@using GxShared.Interfaces
+@using Simple.OData.Client
+
+@inherits ComponentBase
+
+<div class="address-form">
+    <EditForm Model="@Address" OnValidSubmit="@OnAdrSaved">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+        <div class="form-group">
+            <div class="btn-toolbar" role="toolbar">
+                <label class="me-2">Adrtype :</label>
+                <InputSelect @bind-Value="ITypAdr"
+                             @bind-Value:after="OuvreMGrid"
+                             class="me-3"
+                             style="width:auto">
+                    <option value="0">?Tyadr</option>
+                    @foreach (var tob in LsFixes)
+                    {
+                        <option value=@tob.Elea>@tob.Liba</option>
+                    }
+                </InputSelect>
+                <label class="me-2">Adrtype :</label>
+                <InputSelect @bind-Value="IMyAdr"
+                             @bind-Value:after="OuvreMGrid"
+                             class="me-3"
+                             style="width:auto">
+                    <option value="0">?adr</option>
+                    @foreach (var tob in LsAdrs)
+                    {
+                        <option value=@tob.Id>@tob.Adr</option>
+                    }
+                </InputSelect>
+            </div>
+        </div>
+        @if (CanOpenMGrid)
+        {
+            <div class="form-group">
+                <label>Street</label>
+                <InputText @bind-Value="Address.Npays" class="form-control" />
+            </div>
+
+            <div class="form-group">
+                <label>City</label>
+                <InputText @bind-Value="Address.Scity" class="form-control" />
+            </div>
+
+            <div class="form-group">
+                <label>Postal Code</label>
+                <InputText @bind-Value="Address.Adr" class="form-control" />
+            </div>
+            <div class="form-group">
+                <label>Country</label>
+                <InputText @bind-Value="Address.Natio" class="form-control" />
+            </div>
+
+            <button type="submit" class="btn btn-primary">Save</button>
+            <button type="button" class="btn btn-secondary" @onclick="OnCancel">Cancel</button>
+            @if (CanDelete)
+            {
+                <button type="button" class="btn btn-danger" @onclick="OnDelete">Delete</button>
+            }
+        }
+    </EditForm>
+</div>
+
+@code {
+    [Parameter]
+    public RenderFragment ChildContent { get; set; }
+    [Parameter]
+    public IODataClient _InODaClient { get; set; }
+    [Parameter]
+    public GxorgaDto curOrga { get; set; } = new();
+    //guard
+    [Parameter]
+    public IPendingChangesGuard _guard { get; set; }
+    [Parameter] public EventCallback OnAdrSaved { get; set; }
+    [Parameter] public EventCallback OnAdrAbandon { get; set; }
+    // Actions passed in from parent
+    //[Parameter] public EventCallback<GsadrDto> ConfAdrEdit { get; set; }
+    //[Parameter] public EventCallback<GsadrDto> CancAdrEdit { get; set; }
+    //[Parameter] public EventCallback<GsadrDto> ConfAdrDelete { get; set; }
+    //[Parameter] public EventCallback<GsadrDto> CancAdrDelete { get; set; }
+
+    [Parameter] public int vientde { get; set; }
+    [Parameter] public int isfor { get; set; }
+    [Parameter] public TierspDto tiersp { get; set; }
+    [Parameter] public TiewelDto tiewel { get; set; }
+    [Parameter] public TieaflDto tieafl { get; set; }
+    [Parameter] public TiwaflDto tiwafl { get; set; }
+
+    public GsadrDto Address { get; set; } = new();
+    private int ITypAdr { get; set; } = 0;
+    private int IMyAdr { get; set; } = 0;
+    private List<GsadrDto> LsAdrs { get; set; } = new();
+    private List<Gpfixe> LsFixes = new();
+
+    private bool CanDelete => Address != null && Address.Id != 0;
+    private bool CanOpenMGrid = false;
+
+    private async Task OuvreMGrid()
+    {
+        if (IMyAdr != 0 && ITypAdr != 0)
+        {
+            //await UpdateMyDaPlans();
+            CanOpenMGrid = true;
+        }
+        else
+        {
+            CanOpenMGrid = false;
+        }
+    }
+    //private async Task OnAdrSaved()
+    //{
+    //    await OnAdrSaved.InvokeAsync(Address);
+    //}
+    //private async Task OnAdrAbandon()
+    //{
+    //    await OnAdrAbandon.InvokeAsync(Address);
+    //}
+
+    private async Task OnDelete()
+    {
+        //await OnDeleted.InvokeAsync(Address);
+    }
+
+    private async Task OnCancel()
+    {
+        //await OnCanceled.InvokeAsync();
+    }
+}

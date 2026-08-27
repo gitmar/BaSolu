@@ -53,35 +53,19 @@ else
                 </div>
             </div>
             <div class="form-group">
-                @* <label class="fw-bold">Domaine :</label>
-                <InputSelect @bind-Value="ItkDom" class="me-3" style="width:auto">
-                    <option value=0>?domaine</option>
-                    @foreach (var tob in LsDoms)
-                    {
-                        <option value=@tob.Gp2>@tob.Liba</option>
-                    }
-                </InputSelect> *@
-
-                <label class="fw-bold">G.Tiers :</label>
-                <InputSelect @bind-Value="IMyGtie"
-                             @bind-Value:after="OuvreMGrid"
-                             class="me-3"
-                             style="width:auto">
-                    <option value=0>?gtiers</option>
-                    @foreach (var tob in LsGties)
-                    {
-                        <option value=@tob.Elea>@tob.Liba</option>
-                    }
-                </InputSelect>
-
-                @* <label class="fw-bold">Base :</label>
-                <InputSelect @bind-Value="IMyVue" class="me-3" style="width:auto">
-                    <option value=0>?util</option>
-                    @foreach (var tob in LsVues)
-                    {
-                        <option value=@tob.Gp2>@tob.Liba</option>
-                    }
-                </InputSelect> *@
+                <div class="btn-toolbar" role="toolbar">
+                    <label class="me-2">G.Tiers :</label>
+                    <InputSelect @bind-Value="IMyGtie"
+                                 @bind-Value:after="OuvreMGrid"
+                                 class="me-3"
+                                 style="width:auto">
+                        <option value="0">?gtiers</option>
+                        @foreach (var tob in LsGties)
+                        {
+                            <option value=@tob.Elea>@tob.Liba</option>
+                        }
+                    </InputSelect>
+                </div>
             </div>
             <div class="container-fluid-fixed-top">
                 @if (curOrga == null)
@@ -104,7 +88,7 @@ else
                             {
                                 <Grid TItem="PlngenDto"
                                       Data="@MyDaPlans"
-                                      @key="PlnRenderKey"
+                                      @key="GetRenderKey(EntityLevel.Plan)"
                                       AllowRowClick="true"
                                       OnRowClick="OnPlnRowClick"
                                       AllowDetailView="true"
@@ -256,7 +240,7 @@ else
                                                     <div class="col-12">
                                                         <Grid TItem="RubvarDto"
                                                               Data="@MyDaRubs"
-                                                              @key="RubRenderKey"
+                                                              @key="GetRenderKey(EntityLevel.Rub)"
                                                               AllowDetailView="true"
                                                               RowClass="@((item) => GetRubRowClass(item))"
                                                               Responsive="true">
@@ -729,6 +713,8 @@ else
     [Parameter]
     public GxorgaDto curOrga { get; set; } = new();
     [Parameter]
+    public List<PlngenDto> orgPlns { get; set; } = new();
+    [Parameter]
     public IODataClient _InODaClient { get; set; }
     [Parameter]
     public ChildVars toChild { get; set; }
@@ -763,8 +749,8 @@ else
     private int _UorgId = 0;
 
     private Dictionary<Guid, bool> _isLightBg = new();  // Track light background
-    private bool IsRowEditing(Guid rowguid) => _activeEditRowguid == rowguid;
-    private bool IsAnyRowEditing => _activeEditRowguid != null;
+    //private bool IsRowEditing(Guid rowguid) => _activeEditRowguid == rowguid;
+    //private bool IsAnyRowEditing => _activeEditRowguid != null;
 
     private List<Gplan> LsPlans = new();
     private List<Gpfixe> LsFixes = new();
@@ -793,9 +779,9 @@ else
     public List<RubfmtDto> MyDaFmts => FmtItems;
     private bool CanOpenMGrid = false;
 
-    private List<PlngenDto> LsPlsEchs => curOrga.Plngens.Where(pl => pl.Ptyp == 2).ToList();
-    private List<PlngenDto> LsPlsGris => curOrga.Plngens.Where(pl => pl.Ptyp == 3).ToList();
-    private List<PlngenDto> LsPlsDivs => curOrga.Plngens.Where(pl => pl.Ptyp == 4).ToList();
+    private List<PlngenDto> LsPlsEchs => orgPlns?.Where(pl => pl.Ptyp == 2).ToList();
+    private List<PlngenDto> LsPlsGris => orgPlns?.Where(pl => pl.Ptyp == 3).ToList();
+    private List<PlngenDto> LsPlsDivs => orgPlns?.Where(pl => pl.Ptyp == 4).ToList();
     //add/edit options
     private bool AllowMultipleEdits { get; set; } = false;
     private bool isFiltre { get; set; } = false;
@@ -890,7 +876,7 @@ else
     }
     private async Task OuvreMGrid()
     {
-        if (IMyDom != 0 && IMyGtie != 0 && IMyVue != 0)
+        if (IMyDom != 0 && IMyVue != 0)
         {
             int gtib = 7;
             if (IMyDom == 1) gtib = 6;
@@ -898,27 +884,82 @@ else
             await UpdateMyDaPlans();
             PlnRenderKey = Guid.NewGuid();
             CanOpenMGrid = true;
-            //await InvokeAsync(StateHasChanged);
         }
         else
         {
-            LsGties = new();
             CanOpenMGrid = false;
         }
     }
-    void OnPlnRowClick(GridRowEventArgs<PlngenDto> args)
+
+    private async Task OnPlnRowClick(GridRowEventArgs<PlngenDto> args)
     {
         Console.WriteLine($"OnPlnRowClick Triggered : {args.Item.Id}");
-        curPlan = args.Item; //get gRubsMap
+        curPlan = args.Item;
+
         if (curPlan == null || curPlan.Id == 0)
         {
             return;
         }
-        InitializeMyDaRubs();
+
+        await UpdateMyDaRubs();   // now properly awaited
         RubRenderKey = Guid.NewGuid();
+
         Console.WriteLine($"Id {curPlan.Id} nb rubs : {curPlan.Rubvars}");
         StateHasChanged();
     }
+
+    private async Task OnRubRowClick(GridRowEventArgs<RubvarDto> args)
+    {
+        Console.WriteLine($"OnRubRowClick Triggered : {args.Item.Id}");
+        curRubr = args.Item;
+
+        if (curRubr == null || curRubr.Id == 0)
+        {
+            Console.WriteLine("OnRubRowClick: invalid selection");
+            return;
+        }
+
+        Console.WriteLine($"Id {curRubr.Id}");
+
+        // If this needs to load further data (e.g. InitializeMyDaPsts),
+        // await it here BEFORE StateHasChanged, same pattern as above:
+        // await InitializeMyDaPsts();
+        // PstRenderKey = Guid.NewGuid();
+
+        StateHasChanged();
+    }
+
+    // private async Task OuvreMGrid()
+    // {
+    //     if (IMyDom != 0 && IMyGtie != 0 && IMyVue != 0)
+    //     {
+    //         int gtib = 7;
+    //         if (IMyDom == 1) gtib = 6;
+    //         LsGties = LsFixes.Where(ut => ut.Gvars == 36 && ut.Itb == gtib && ut.Elea != 0 && ut.Elea != 9).ToList();
+    //         await UpdateMyDaPlans();
+    //         PlnRenderKey = Guid.NewGuid();
+    //         CanOpenMGrid = true;
+    //         //await InvokeAsync(StateHasChanged);
+    //     }
+    //     else
+    //     {
+    //         LsGties = new();
+    //         CanOpenMGrid = false;
+    //     }
+    // }
+    // void OnPlnRowClick(GridRowEventArgs<PlngenDto> args)
+    // {
+    //     Console.WriteLine($"OnPlnRowClick Triggered : {args.Item.Id}");
+    //     curPlan = args.Item; //get gRubsMap
+    //     if (curPlan == null || curPlan.Id == 0)
+    //     {
+    //         return;
+    //     }
+    //     InitializeMyDaRubs();
+    //     RubRenderKey = Guid.NewGuid();
+    //     Console.WriteLine($"Id {curPlan.Id} nb rubs : {curPlan.Rubvars}");
+    //     StateHasChanged();
+    // }
     public async Task StartPlnNew()
     {
         if (IsAnyRowEditing)
@@ -950,21 +991,14 @@ else
             Xedt1 = 0
         };
 
-        PlanItems.Insert(0, newPln);
-        curOrga.Plngens.Insert(0, newPln);
-
-        SetRowState(EntityLevel.Plan, newPln.Rowguid, RowState.AddPending);
-        //SetLightBackground(newPln.Rowguid, true);
-
+        //prise order
+        orgPlns?.Add(newPln);
         draftPln = DeepClone(newPln);
-        //Console.WriteLine($"NEWPLN : {newPln.Rowguid}");
-        //Console.WriteLine($"DRAFTPLN : {newPln.Rowguid}");
+        SetRowState(EntityLevel.Plan, newPln.Rowguid, RowState.AddPending);
         BeginAdd(EntityLevel.Plan, newPln.Rowguid, draftPln);
-        //AddRowguid == item.Rowguid
-        //Console.WriteLine($"{newPln.Ptyp} et {newPln.Totyp} et {newPln.Todom} et {newPln.Tovue}");
-        PlnRenderKey = newPln.Rowguid;
 
-        //SetRowState(EntityLevel.Plan, draftPln.Rowguid, RowState.AddPending);
+        await UpdateMyDaPlans();     // now state is already correct when this renders
+        //PlnRenderKey = newPln.Rowguid;
         await InvokeAsync(StateHasChanged);
     }
     public async Task StartRubNew(PlngenDto mypln)
@@ -1014,17 +1048,14 @@ else
             Xadd1 = -1,
             Xedt1 = 0
         };
-        Console.WriteLine($"curPlan : {curPlan?.Liba}");
         curPlan = mypln;
-        RubItems.Insert(0, newRub);
-        mypln.Rubvars.Insert(0, newRub);
+        Console.WriteLine($"curPlan : {curPlan?.Liba}");
+        mypln.Rubvars.Add(newRub);
+        draftRub = DeepClone(newRub);
 
         SetRowState(EntityLevel.Rub, newRub.Rowguid, RowState.AddPending);
-
-        draftRub = DeepClone(newRub);
         BeginAdd(EntityLevel.Rub, newRub.Rowguid, draftRub);
-
-        RubRenderKey = newRub.Rowguid;
+        await UpdateMyDaRubs();
         await InvokeAsync(StateHasChanged);
     }
     public async Task StartFmtNew(RubvarDto myrub)
@@ -1066,15 +1097,14 @@ else
             Xedt1 = 0
         };
 
-        FmtItems.Insert(0, newFmt);
-        myrub.Rubfmts.Insert(0, newFmt);
+        curRubr = myrub;
+        Console.WriteLine($"curRubr : {curRubr?.Liba}");
+        myrub.Rubfmts.Add(newFmt);
+        draftFmt = DeepClone(newFmt);
 
         SetRowState(EntityLevel.Fmt, newFmt.Rowguid, RowState.AddPending);
-        //SetLightBackground(newPln.Rowguid, true);
-        draftFmt = DeepClone(newFmt);
         BeginAdd(EntityLevel.Fmt, newFmt.Rowguid, draftFmt);
-
-        FmtRenderKey = newFmt.Rowguid;
+        await UpdateMyDaFmts();
         await InvokeAsync(StateHasChanged);
     }
     public async Task StartPlnEdit(PlngenDto item)
@@ -1145,7 +1175,7 @@ else
         {
             case EntityLevel.Plan:
                 CancelAdd(level, entity);
-                curOrga.Plngens.RemoveAll(x => x.Rowguid == rowguid);
+                orgPlns?.RemoveAll(x => x.Rowguid == rowguid);
                 PlnRenderKey = Guid.Empty;
                 break;
             case EntityLevel.Rub:
@@ -1195,85 +1225,6 @@ else
         }
         StartRowDelete(level, rowguid);
     }
-    // private void CommitPlnDraft(PlngenDto target, PlngenDto source)
-    // {
-    //     target.Idorg = source.Idorg;
-    //     target.Iui = source.Iui;
-    //     target.Ptyp = source.Ptyp;
-    //     target.Todom = source.Todom;
-    //     target.Ogtyp = source.Ogtyp;
-    //     target.Totyp = source.Totyp;
-    //     target.Toatr = source.Toatr;
-    //     target.Tovue = source.Tovue;
-    //     target.Liba = source.Liba;
-    //     target.Abg = source.Abg;
-    //     target.Fpsrc = source.Fpsrc;
-    //     target.Fpexe = source.Fpexe;
-    //     target.Fpisrc = source.Fpisrc;
-    //     target.Styp = source.Styp;
-    //     target.Eta = source.Eta;
-    //     target.Xadd1 = source.Xadd1;
-    //     target.Xedt1 = source.Xedt1;
-    // }
-    // private void CommitRubDraft(RubvarDto target, RubvarDto source)
-    // {
-    //     target.Idorg = source.Idorg;
-    //     target.Iui = source.Iui;
-    //     target.Atyp = source.Atyp;
-    //     target.Scdrub = source.Scdrub;
-    //     target.Frsrc = source.Frsrc;
-    //     //target.Rtyp = source.Rtyp;
-    //     //target.Toatr = source.Toatr;
-    //     target.Tovue = source.Tovue;
-    //     target.Liba = source.Liba;
-    //     target.Abg = source.Abg;
-
-    //     target.Eta = source.Eta;
-    //     target.Xadd1 = source.Xadd1;
-    //     target.Xedt1 = source.Xedt1;
-    // }
-    // private void CommitFmtDraft(RubfmtDto target, RubfmtDto source)
-    // {
-    //     target.Idorg = source.Idorg;
-    //     target.Iui = source.Iui;
-    //     target.Ztyp = source.Ztyp;
-    //     target.Zcdrub = source.Zcdrub;
-    //     target.Ftsrc = source.Ftsrc;
-    //     //target.Rtyp = source.Rtyp;
-    //     //target.Toatr = source.Toatr;
-    //     //target.Tovue = source.Tovue;
-    //     target.Liba = source.Liba;
-    //     target.Abg = source.Abg;
-
-    //     target.Eta = source.Eta;
-    //     target.Xadd1 = source.Xadd1;
-    //     target.Xedt1 = source.Xedt1;
-    // }
-    // private bool IsPlanEditing(PlngenDto item)
-    // {
-    //     var es = GetEditState(EntityLevel.Plan);
-    //     return (es.IsAdd || es.IsEdit) &&
-    //            ((es.IsAdd && es.AddRowguid == item.Rowguid) ||
-    //             (es.IsEdit && es.EditRowguid == item.Rowguid));
-    // }
-
-    
-    // private bool IsRubEditing(RubvarDto item)
-    // {
-    //     var es = GetEditState(EntityLevel.Rub);
-    //     return (es.IsAdd || es.IsEdit) &&
-    //            ((es.IsAdd && es.AddRowguid == item.Rowguid) ||
-    //             (es.IsEdit && es.EditRowguid == item.Rowguid));
-    // }
-
-    // private bool IsFmtEditing(RubfmtDto item)
-    // {
-    //     var es = GetEditState(EntityLevel.Fmt);
-    //     return (es.IsAdd || es.IsEdit) &&
-    //            ((es.IsAdd && es.AddRowguid == item.Rowguid) ||
-    //             (es.IsEdit && es.EditRowguid == item.Rowguid));
-    // }
-
     //FILTRES
     private Grid<PlngenDto> grid = default!;
     private async void TogglePlnFiltering()
@@ -1288,45 +1239,35 @@ else
     // Update method -call this when source data changes
     private void InitializeMyDaPlans()
     {
-        PlanItems.Clear();
-        PlanItems.AddRange(
-            curOrga.Plngens?.Where(pl => pl.Ptyp == IMyGpln && pl.Totyp == IMyGtie && pl.Todom == IMyDom)
-            ?? Enumerable.Empty<PlngenDto>());
+        PlanItems = orgPlns?.Where(pl => pl.Ptyp == IMyGpln && pl.Todom == IMyDom && pl.Toatr == 0 && pl.Tovue == IMyVue).ToList()
+            ?? new List<PlngenDto>();
     }
     private void InitializeMyDaRubs()
     {
-        RubItems.Clear();
-        RubItems.AddRange(
-            curPlan.Rubvars.ToList()
-            ?? Enumerable.Empty<RubvarDto>());
+        RubItems = curPlan.Rubvars.ToList()
+            ?? new List<RubvarDto>();
     }
     private void InitializeMyDaFmts()
     {
-        FmtItems.Clear();
-        FmtItems.AddRange(
-            curRubr.Rubfmts.ToList()
-        ?? Enumerable.Empty<RubfmtDto>());
+        FmtItems = curRubr.Rubfmts.ToList()
+            ?? new List<RubfmtDto>();
     }
-    private async Task UpdateMyDaPlans()
+    private Task UpdateMyDaPlans()
     {
-        PlanItems.Clear();
-        PlanItems.AddRange(
-            curOrga.Plngens?.Where(pl => pl.Ptyp == IMyGpln && pl.Totyp == IMyGtie && pl.Todom == IMyDom)
-            ?? Enumerable.Empty<PlngenDto>());
+        PlanItems = orgPlns?
+            .Where(pl => pl.Ptyp == IMyGpln && pl.Todom == IMyDom && pl.Toatr == 0 && pl.Tovue == IMyVue)
+            .ToList() ?? new List<PlngenDto>();
+        return Task.CompletedTask;
     }
-    private async Task UpdateMyDaRubs()
+    private Task UpdateMyDaRubs()
     {
-        RubItems.Clear();
-        RubItems.AddRange(
-            curPlan.Rubvars.ToList()
-            ?? Enumerable.Empty<RubvarDto>());
+        RubItems = curPlan?.Rubvars?.ToList() ?? new List<RubvarDto>();
+        return Task.CompletedTask;
     }
-    private async Task UpdateMyDaFmts()
+    private Task UpdateMyDaFmts()
     {
-        FmtItems.Clear();
-        FmtItems.AddRange(
-            curRubr.Rubfmts.ToList()
-            ?? Enumerable.Empty<RubfmtDto>());
+        FmtItems = curRubr?.Rubfmts?.ToList() ?? new List<RubfmtDto>();
+        return Task.CompletedTask;
     }
 
     //PLAN Formule modals
@@ -1470,6 +1411,37 @@ else
         {
             Console.WriteLine($"❌ Error: {ex.Message}");
             // Safety: stay on page
+        }
+    }
+    protected override void OnLocalCollectionMutated(EntityLevel level, CollectionMutation mutation, object entity)
+    {
+        switch (level)
+        {
+            case EntityLevel.Plan when entity is PlngenDto plan:
+                SyncList(orgPlns, plan, mutation);
+                break;
+            case EntityLevel.Rub when entity is RubvarDto rub && curPlan is not null:
+                SyncList(curPlan.Rubvars, rub, mutation);
+                break;
+            case EntityLevel.Fmt when entity is RubfmtDto fmt && curRubr is not null:
+                SyncList(curRubr.Rubfmts, fmt, mutation);
+                break;
+        }
+    }
+
+    private static void SyncList<T>(List<T> list, T entity, CollectionMutation mutation) where T : class
+    {
+        var rowguid = MLEntityKeyHelper.GetRowguidAsGuid(entity);
+        switch (mutation)
+        {
+            case CollectionMutation.Added:
+            case CollectionMutation.Replaced:
+                var idx = list.FindIndex(x => MLEntityKeyHelper.GetRowguidAsGuid(x) == rowguid);
+                if (idx >= 0) list[idx] = entity; else list.Add(entity);
+                break;
+            case CollectionMutation.Removed:
+                list.RemoveAll(x => MLEntityKeyHelper.GetRowguidAsGuid(x) == rowguid);
+                break;
         }
     }
     public void Dispose()  // â† ADD THIS

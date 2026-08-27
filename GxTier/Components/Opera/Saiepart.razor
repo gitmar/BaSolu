@@ -131,7 +131,7 @@ else
             <GridColumn TItem="RubVarRow" HeaderText="Label">
                 <ChildContent Context="r">@r.Liba</ChildContent>
             </GridColumn>
-            <GridColumn TItem="RubVarRow" HeaderText="InpValue">
+            @* <GridColumn TItem="RubVarRow" HeaderText="InpValue">
                 <ChildContent Context="r">
                     <ValidateInput Atyp="@r.Atyp"
                                    @bind-Value="r.InputValue"
@@ -141,6 +141,37 @@ else
             </GridColumn>
             <GridColumn TItem="RubVarRow" HeaderText="Aval">
                 <ChildContent Context="r">@r.Aval</ChildContent>
+            </GridColumn> *@
+            <GridColumn TItem="RubVarRow" HeaderText="InpValue">
+                <ChildContent Context="r">
+                    @if (r.Atyp != 1)
+                    {
+                        <ValidateInput Atyp="@r.Atyp"
+                                       @bind-Value="r.InputValue"
+                                       ErrorMessage="Invalid value"
+                                       OnValidInput="val => HandleVarInput(r, val?.ToString() ?? string.Empty)" />
+                    }
+                    else
+                    {
+                        @r.InputValue
+                        // read‑only or hidden
+                    }
+                </ChildContent>
+            </GridColumn>
+            <GridColumn TItem="RubVarRow" HeaderText="Aval">
+                <ChildContent Context="r">
+                    @if (r.Atyp == 1)
+                    {
+                        <ValidateInput Atyp="@r.Atyp"
+                                       @bind-Value="r.Aval"
+                                       ErrorMessage="Invalid value"
+                                       OnValidInput="val => HandleVarInput(r, val?.ToString() ?? string.Empty)" />
+                    }
+                    else
+                    {
+                        @r.Aval
+                    }
+                </ChildContent>
             </GridColumn>
             <GridColumn TItem="RubVarRow" HeaderText="">
                 <HeaderContent>
@@ -168,7 +199,40 @@ else
                     <GridColumn TItem="RubFmtRow" HeaderText="Label">
                         <ChildContent Context="d">@d.Liba</ChildContent>
                     </GridColumn>
+
                     <GridColumn TItem="RubFmtRow" HeaderText="InpValue">
+                        <ChildContent Context="d">
+                            @if (d.Atyp != 1)
+                            {
+                                <ValidateInput Atyp="@d.Atyp"
+                                               @bind-Value="d.InputValue"
+                                               ErrorMessage="Invalid value"
+                                               OnValidInput="val => HandleFmtInput(context, d, val?.ToString() ?? string.Empty)" />
+                            }
+                            else
+                            {
+                                @d.InputValue
+                                // read‑only or hidden
+                            }
+                        </ChildContent>
+                    </GridColumn>
+                    <GridColumn TItem="RubFmtRow" HeaderText="Aval">
+                        <ChildContent Context="d">
+                            @if (d.Atyp == 1)
+                            {
+                                <ValidateInput Atyp="@d.Atyp"
+                                               @bind-Value="d.Aval"
+                                               ErrorMessage="Invalid value"
+                                               OnValidInput="val => HandleFmtInput(context, d, val?.ToString() ?? string.Empty)" />
+                            }
+                            else
+                            {
+                                @d.Aval
+                            }
+                        </ChildContent>
+                    </GridColumn>
+
+                    @* <GridColumn TItem="RubFmtRow" HeaderText="InpValue">
                         <ChildContent Context="d">
                             <ValidateInput Atyp = "@d.Atyp"
                                            @bind-Value="d.InputValue"
@@ -178,7 +242,8 @@ else
                     </GridColumn>
                     <GridColumn TItem="RubFmtRow" HeaderText="Aval">
                         <ChildContent Context="d">@d.Aval</ChildContent>
-                    </GridColumn>
+                    </GridColumn> *@
+
                 </GridColumns>
             </Grid>
         </GridDetailView>

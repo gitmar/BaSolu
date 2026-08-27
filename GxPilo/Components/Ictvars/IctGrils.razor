@@ -58,28 +58,32 @@ else
                 </div>
             </div>
             <div class="form-group">
-                <div class="btn btn-group">
+                <div class="btn-toolbar" role="toolbar">
                     <label class="me-2">Modele :</label>
                     <InputSelect @bind-Value="IMyPlan"
                                  @bind-Value:after="OuvreMGrid"
                                  class="me-3"
                                  style="width:auto">
-                        <option value=0>?modele</option>
+                        <option value="0">?modele</option>
                         @foreach (var upl in LsPlans.Where(pl => pl.Todom == IMyDom).ToList())
                         {
-                            <option value=@upl.Id>@upl.Liba</option>
+                            <option value="@upl.Id">@upl.Liba</option>
                         }
                     </InputSelect>
                     <label class="fw-bold">@splnDom</label>
                     <label class="me-2">Rubrique :</label>
                     <InputSelect @bind-Value="IMyRub"
                                  @bind-Value:after="OuvreMGrid"
+                                 @key="RubRenderKey"
                                  class="me-3"
                                  style="width:auto">
-                        <option value=0>?rubriq</option>
-                        @foreach (var upl in curPlan.Rubvars.ToList())
+                        <option value="0">?rubriq</option>
+                        @if (curPlan != null)
                         {
-                            <option value=@upl.Id>@upl.Liba</option>
+                            @foreach (var upl in curPlan.Rubvars.ToList())
+                            {
+                                <option value="@upl.Id">@upl.Liba</option>
+                            }
                         }
                     </InputSelect>
                 </div>
@@ -109,23 +113,22 @@ else
                                             @if (CanOpenMGrid)
                                             {
                                                 <div class="mt-2 border-start border-primary border-3 bg-light bg-opacity-25 rounded-end">
+                                                    <CascadingValue Value="curRubr">
                                                     <Grid TItem="RubfmtDto"
                                                           Data="@MyDaFmts"
-                                                          @key="@FmtRenderKey"
+                                                              @key="GetRenderKey(EntityLevel.Fmt)"
                                                           RowClass="@((rf) => GetFmtRowClass(rf))"
                                                           Responsive="true">
                                                         <GridColumns>
                                                             <GridColumn TItem="RubfmtDto" HeaderText="Code" Class="xcol1">
                                                                 <ChildContent Context="rf">
-                                                                    @if (rf.Xadd1 == -1)
+                                                                    @if (GetRowState(EntityLevel.Fmt, rf.Rowguid) is RowState.AddPending or RowState.EditPending)
                                                                     {
                                                                         <span>?@rf?.Iui</span>
                                                                     }
                                                                     else
                                                                     {
-                                                                        <span>
-                                                                            @(rf.Xedt1 == -1 ? rf?.Iui : (rf?.Iui == 0 ? rf?.Iele : rf?.Iui))
-                                                                        </span>
+                                                                        <span>@(rf?.Iui == 0 ? rf?.Iele : rf?.Iui)</span>
                                                                     }
                                                                 </ChildContent>
                                                             </GridColumn>
@@ -153,62 +156,6 @@ else
                                                                     }
                                                                 </ChildContent>
                                                             </GridColumn>
-                                                            @* <GridColumn TItem="RubfmtDto" HeaderText="Libelle" Class="xcol3">
-                                                                        <ChildContent Context="rf">
-                                                                            @if (EdFmtRowguid == rf.Rowguid)
-                                                                            { // show draftPln inputs
-                                                                              <InputText @bind-Value="draftFmt.Liba" />
-                                                                            }
-                                                                            else
-                                                                            { // show item as read-only
-                                                                              @rf.Liba
-                                                                            }
-                                                                        </ChildContent>
-                                                                    </GridColumn>
-                                                                    <GridColumn TItem="RubfmtDto" HeaderText="Ztyp">
-                                                                        <ChildContent Context="rf">
-                                                                            @if (EdFmtRowguid == rf.Rowguid)
-                                                                            { // show draftPln inputs
-                                                                                <InputSelect @bind-Value="draftFmt.Ztyp" class="col-md-1" style="width:auto">
-                                                                                    <option class="jchx" value=0>?ztyp</option>
-                                                                                    @foreach (var tob in LsFixes.Where(ut => ut.Gvars == 32 && ut.Itb == 2 && ut.Elea != 0))
-                                                                                    {
-                                                                                        <option value=@tob.Elea>@tob.Liba</option>
-                                                                                    }
-                                                                                </InputSelect>
-                                                                            }
-                                                                            else
-                                                                            { // show item as read-only
-                                                                                <select @bind="rf.Ztyp" class="col-md-1" style="width:auto" disabled>
-                                                                                    <option class="jchx" value=0>?ztyp</option>
-                                                                                    @foreach (var tob in LsFixes.Where(ut => ut.Gvars == 32 && ut.Itb == 2 && ut.Elea != 0))
-                                                                                    {
-                                                                                        <option value=@tob.Elea>@tob.Liba</option>
-                                                                                    }
-                                                                                </select>
-                                                                            }
-                                                                        </ChildContent>
-                                                                        </GridColumn>
-                                                                <GridColumn TItem="RubfmtDto" HeaderText="Formule">
-                                                                    <ChildContent Context="rf">
-                                                                    @if (EdFmtRowguid == rf.Rowguid)
-                                                                    { // show draftPln inputs
-                                                                        <Button Color="ButtonColor.Secondary" Class="btn btn-default btn-sm d-inline-flex align-items-center gap-1"
-                                                                                @onclick="() => showFrFmtModal(draftFmt, 1)">
-                                                                            <i class="bi bi-pencil-square"></i>
-                                                                            <span class="text-truncate flex-grow-1">@draftFmt?.Ftsrc</span>
-                                                                        </Button>
-                                                                    }
-                                                                    else
-                                                                    { // show item as read-only
-                                                                        <Button Color="ButtonColor.Secondary" Class="btn btn-default btn-sm d-inline-flex align-items-center gap-1"
-                                                                                @onclick="() => showFrFmtModal(rf, 2)">
-                                                                            <i class="bi bi-pencil-square"></i>
-                                                                            <span class="text-truncate flex-grow-1">@rf.Ftsrc</span>
-                                                                        </Button>
-                                                                    }
-                                                                </ChildContent>
-                                                            </GridColumn> *@
 
                                                             <GridColumn TItem="RubfmtDto" HeaderText="Valeur" Class="xcol2">
                                                                 <ChildContent Context="rf">
@@ -222,42 +169,6 @@ else
                                                                     }
                                                                 </ChildContent>
                                                             </GridColumn>
-                                                            @* <GridColumn TItem="RubfmtDto" HeaderText="Col">
-                                                                        <ChildContent Context="rf">
-                                                                            @if (EdFmtRowguid == rf.Rowguid)
-                                                                            { // show draftPln inputs
-                                                                              <InputNumber @bind-Value="draftFmt.Col" style="width:60px" />
-                                                                            }
-                                                                            else
-                                                                            { // show item as read-only
-                                                                              @rf.Col
-                                                                            }
-                                                                        </ChildContent>
-                                                                    </GridColumn>
-                                                                    <GridColumn TItem="RubfmtDto" HeaderText="Lne">
-                                                                        <ChildContent Context="rf">
-                                                                            @if (EdFmtRowguid == rf.Rowguid)
-                                                                            { // show draftPln inputs
-                                                                              <InputNumber @bind-Value="draftFmt.Lne" style="width:60px" />
-                                                                            }
-                                                                            else
-                                                                            { // show item as read-only
-                                                                              @rf.Lne
-                                                                            }
-                                                                        </ChildContent>
-                                                                    </GridColumn>
-                                                                    <GridColumn TItem="RubfmtDto" HeaderText="Fmt" Class="xcol2">
-                                                                        <ChildContent Context="rf">
-                                                                            @if (EdFmtRowguid == rf.Rowguid)
-                                                                            { // show draftPln inputs
-                                                                              <InputText @bind-Value="draftFmt.Lgtf" style="width:100px" />
-                                                                            }
-                                                                            else
-                                                                            { // show item as read-only
-                                                                              @rf.Lgtf
-                                                                            }
-                                                                        </ChildContent>
-                                                                    </GridColumn> *@
                                                             <GridColumn TItem="RubfmtDto" HeaderText="Eta">
                                                                 <ChildContent Context="rf">
                                                                     @if (IsEditing(EntityLevel.Fmt, rf.Rowguid) && draftFmt is not null)
@@ -345,6 +256,7 @@ else
                                                             </GridColumn>
                                                         </GridColumns>
                                                     </Grid>
+                                                    </CascadingValue>
                                                 </div>
                                             }
                                         </div>
@@ -546,7 +458,9 @@ else
     public string Imessage = "", Jmessage = "", Kmessage = "";
     public bool yaPgLink = false;
     [CascadingParameter]
-    private Task<AuthenticationState>? AuthState { get; set; }
+    public Task<AuthenticationState>? AuthState { get; set; }
+    [CascadingParameter] 
+    public RubvarDto RubrContext { get; set; }
     [Parameter]
     public RenderFragment ChildContent { get; set; }
     [Parameter]
@@ -597,8 +511,12 @@ else
     private int _UorgId = 0;
 
     private Dictionary<Guid, bool> _isLightBg = new();  // Track light background
-    private bool IsRowEditing(Guid rowguid) => _activeEditRowguid == rowguid;
-    private bool IsAnyRowEditing => _activeEditRowguid != null;
+    // protected bool IsAnyRowEditing
+    // => _rowStates.Values.Any(s => s != RowState.Default);
+    // protected bool IsRowEditing(Guid rowguid)
+    //     => _rowStates.Any(kv => kv.Key.rowguid == rowguid && kv.Value != RowState.Default);
+    //private bool IsRowEditing(Guid rowguid) => _activeEditRowguid == rowguid;
+    //private bool IsAnyRowEditing => _activeEditRowguid != null;
 
     private List<Gplan> LsPlans = new();
     private List<Gpfixe> LsFixes = new();
@@ -624,7 +542,7 @@ else
     //data
     public List<PlngenDto> MyDaPlans => PlanItems;
     public List<RubvarDto> MyDaRubs => RubItems;
-    public List<RubfmtDto> MyDaFmts => FmtItems;
+    public List<RubfmtDto> MyDaFmts => FmtItems; //curRubr?.Rubfmts; //FmtItems;
     private bool CanOpenMGrid = false;
 
     private List<PlngenDto> LsPlsEchs => orgPlns.Where(pl => pl.Ptyp == 2).ToList();
@@ -729,25 +647,23 @@ else
         Console.WriteLine($"Plan InP : {IMyPlan} et InR : {IMyRub}");
         curPlan = new();
         curRubr = new();
-        if (IMyPlan != 0)
+        CanOpenMGrid = false;
+
+        curPlan = orgPlns?.FirstOrDefault(pln => pln.Id == IMyPlan);
+
+        if (curPlan != null)
         {
-            //await UpdateMyDaPlans();
-            curPlan = orgPlns?.FirstOrDefault(pln => pln.Ptyp == IMyGpln);
-            Console.WriteLine($"Grid no plan : {curPlan.Id} et no rub : {IMyRub} ");
-        }
-        if (IMyDom != 0 && IMyPlan != 0 && IMyRub != 0)
-        {
-            curRubr = curPlan?.Rubvars.FirstOrDefault(rub => rub.Id == IMyRub);
-            await UpdateMyDaFmts();
-            Console.WriteLine($"Grid no rub : {curRubr.Id}");
+            await UpdateMyDaRubs();
+            curRubr = curPlan.Rubvars.FirstOrDefault(rub => rub.Id == IMyRub);
+
             RubRenderKey = Guid.NewGuid();
-            //PlnRenderKey = Guid.NewGuid();
-            CanOpenMGrid = true;
-        }
-        else
-        {
-            curRubr = new();
-            CanOpenMGrid = false;
+
+            if (curRubr != null)
+            {
+                await UpdateMyDaFmts();
+                Console.WriteLine($"Grid no rub : {curRubr.Id}");
+                CanOpenMGrid = true;
+            }
         }
     }
     public async Task StartFmtNew(RubvarDto myrub)
@@ -789,7 +705,6 @@ else
             Xedt1 = 0
         };
 
-        //FmtItems.Insert(0, newFmt);
         myrub.Rubfmts.Insert(0, newFmt);
         await UpdateMyDaFmts();
 
@@ -812,7 +727,7 @@ else
         draftPln = DeepClone(item);
 
         BeginEdit(EntityLevel.Plan, rowguid, draftPln);
-        _rowPendingOpTypeByRow[rowguid] = PendingOpType.Update;
+        //_rowPendingOpTypeByRow[rowguid] = PendingOpType.Update;
 
         StateHasChanged();
     }
@@ -899,51 +814,35 @@ else
     // Update method -call this when source data changes
     private void InitializeMyDaPlans()
     {
-        PlanItems.Clear();
-        if (IMyGpln != 0 && IMyDom != 0)
-        {
-            PlanItems.AddRange(
-                orgPlns?.Where(pl => pl.Ptyp == IMyGpln && pl.Todom == IMyDom)
-                    ?? Enumerable.Empty<PlngenDto>());
-        }
+        PlanItems = orgPlns?.Where(pl => pl.Ptyp == IMyGpln && pl.Todom == IMyDom && pl.Toatr == 0 && pl.Tovue == IMyVue).ToList()
+            ?? new List<PlngenDto>();
     }
     private void InitializeMyDaRubs()
     {
-        RubItems.Clear();
-        RubItems.AddRange(
-            curPlan?.Rubvars.ToList()
-            ?? Enumerable.Empty<RubvarDto>());
+        RubItems = curPlan.Rubvars.ToList()
+            ?? new List<RubvarDto>();
     }
     private void InitializeMyDaFmts()
     {
-        FmtItems.Clear();
-        FmtItems.AddRange(
-            curRubr?.Rubfmts.ToList()
-        ?? Enumerable.Empty<RubfmtDto>());
+        FmtItems = curRubr.Rubfmts.ToList()
+            ?? new List<RubfmtDto>();
     }
-    private async Task UpdateMyDaPlans()
+    private Task UpdateMyDaPlans()
     {
-        PlanItems.Clear();
-        if (IMyGpln != 0 && IMyDom != 0)
-        {
-            PlanItems.AddRange(
-                orgPlns?.Where(pl => pl.Ptyp == IMyGpln && pl.Todom == IMyDom)
-                ?? Enumerable.Empty<PlngenDto>());
-        }
+        PlanItems = orgPlns?
+            .Where(pl => pl.Ptyp == IMyGpln && pl.Todom == IMyDom && pl.Toatr == 0 && pl.Tovue == IMyVue)
+            .ToList() ?? new List<PlngenDto>();
+        return Task.CompletedTask;
     }
-    private async Task UpdateMyDaRubs()
+    private Task UpdateMyDaRubs()
     {
-        RubItems.Clear();
-        RubItems.AddRange(
-            curPlan?.Rubvars.ToList()
-            ?? Enumerable.Empty<RubvarDto>());
+        RubItems = curPlan?.Rubvars?.ToList() ?? new List<RubvarDto>();
+        return Task.CompletedTask;
     }
-    private async Task UpdateMyDaFmts()
+    private Task UpdateMyDaFmts()
     {
-        FmtItems.Clear();
-        FmtItems.AddRange(
-            curRubr?.Rubfmts.ToList()
-            ?? Enumerable.Empty<RubfmtDto>());
+        FmtItems = curRubr?.Rubfmts?.ToList() ?? new List<RubfmtDto>();
+        return Task.CompletedTask;
     }
 
     //PLAN Formule modals
@@ -1087,6 +986,37 @@ else
         {
             Console.WriteLine($"❌ Error: {ex.Message}");
             // Safety: stay on page
+        }
+    }
+    protected override void OnLocalCollectionMutated(EntityLevel level, CollectionMutation mutation, object entity)
+    {
+        switch (level)
+        {
+            case EntityLevel.Plan when entity is PlngenDto plan:
+                SyncList(orgPlns, plan, mutation);
+                break;
+            case EntityLevel.Rub when entity is RubvarDto rub && curPlan is not null:
+                SyncList(curPlan.Rubvars, rub, mutation);
+                break;
+            case EntityLevel.Fmt when entity is RubfmtDto fmt && curRubr is not null:
+                SyncList(curRubr.Rubfmts, fmt, mutation);
+                break;
+        }
+    }
+
+    private static void SyncList<T>(List<T> list, T entity, CollectionMutation mutation) where T : class
+    {
+        var rowguid = MLEntityKeyHelper.GetRowguidAsGuid(entity);
+        switch (mutation)
+        {
+            case CollectionMutation.Added:
+            case CollectionMutation.Replaced:
+                var idx = list.FindIndex(x => MLEntityKeyHelper.GetRowguidAsGuid(x) == rowguid);
+                if (idx >= 0) list[idx] = entity; else list.Add(entity);
+                break;
+            case CollectionMutation.Removed:
+                list.RemoveAll(x => MLEntityKeyHelper.GetRowguidAsGuid(x) == rowguid);
+                break;
         }
     }
     public void Dispose()  // â† ADD THIS

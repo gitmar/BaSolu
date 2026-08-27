@@ -57,6 +57,33 @@ else
                 </div>
             </div>
             <div class="form-group">
+                <div class="btn-toolbar" role="toolbar">
+                    <label class="fw-bold">Domaine :</label>
+                    <InputSelect @bind-Value="IMyDom"
+                                 @bind-Value:after="OnDomChanged"
+                                 class="me-3"
+                                 style="width:auto">
+                        <option value="0">?dom</option>
+                        @foreach (var tob in LsDoms)
+                        {
+                            <option value="@tob.Elea">@tob.Liba</option>
+                        }
+                    </InputSelect>
+                    <label class="me-2">Modele :</label>
+                    <InputSelect @bind-Value="IMyPlan"
+                                 @bind-Value:after="OuvreMGrid"
+                                 @key="PlnRenderKey"
+                                 class="me-3"
+                                 style="width:auto">
+                        <option value="0">?modele</option>
+                        @foreach (var upl in LsPlans.Where(pl => pl.Todom == IMyDom).ToList())
+                        {
+                            <option value="@upl.Id">@upl.Liba</option>
+                        }
+                    </InputSelect>
+                </div>
+            </div>
+            @* <div class="form-group">
                 <div class="btn btn-group">
                     <label class="fw-bold">Domaine :</label>
                     <InputSelect @bind-Value="IMyDom"
@@ -81,7 +108,7 @@ else
                         }
                     </InputSelect>
                 </div>
-            </div>
+            </div> *@
             <div class="container-fluid-fixed-top">
                 @if (curOrga == null)
                 {
@@ -106,6 +133,7 @@ else
                                         <div class="col-12">
                                             <Grid TItem="RubhieDto"
                                                   Data="@MyDaHies"
+                                                  @key="GetRenderKey(EntityLevel.Hie)"
                                                   AllowDetailView="true"
                                                   AllowRowClick="true"
                                                   OnRowClick="OnHieRowClick"
@@ -226,7 +254,7 @@ else
                                                             </div>
                                                             <Grid TItem="RubpstDto"
                                                                   Data="@MyDaPsts"
-                                                                  @key="FmtRenderKey"
+                                                                  @key="GetRenderKey(EntityLevel.Pst)"
                                                                   AllowPaging="true"
                                                                   RowClass="@((rf) => GetPstRowClass(rf))"
                                                                   Responsive="true">
@@ -249,10 +277,10 @@ else
                                                                         <ChildContent Context="rf">
                                                                             @if (IsPstEditing(rf) && draftFmt is not null)
                                                                             {
-                                                                                <InputText @bind-Value="rf.Padres"
-                                                                                           @oninput="e => OnChlInput(e, rf)"
-                                                                                           @onfocus="() => OnChlFocusHandler(selectedRub, rf)"
-                                                                                           @onfocusout="() => OnChlBlurHandler(selectedRub, rf)"
+                                                                                <InputText @bind-Value="draftFmt.Padres"
+                                                                                           @oninput="e => OnChlInput(e, draftFmt)"
+                                                                                           @onfocus="() => OnChlFocusHandler(selectedRub, draftFmt)"
+                                                                                           @onfocusout="() => OnChlBlurHandler(selectedRub, draftFmt)"
                                                                                            class="@(string.IsNullOrEmpty(Jmessage) ? "" : "is-invalid")" />
 
                                                                                 @if (!string.IsNullOrEmpty(Jmessage))
@@ -717,8 +745,8 @@ else
     private int _UorgId = 0;
 
     private Dictionary<Guid, bool> _isLightBg = new();  // Track light background
-    private bool IsRowEditing(Guid rowguid) => _activeEditRowguid == rowguid;
-    private bool IsAnyRowEditing => _activeEditRowguid != null;
+    //private bool IsRowEditing(Guid rowguid) => _activeEditRowguid == rowguid;
+    //private bool IsAnyRowEditing => _activeEditRowguid != null;
 
     private List<Gplan> LsPlans = new();
     //private List<Gplan> DomPlans = new();
@@ -849,34 +877,42 @@ else
             _locationHandler = _navManager.RegisterLocationChangingHandler(OnLocationChangingAsync);
         }
     }
+    private async Task OnDomChanged()
+    {
+        // Domain changed -> the previously selected plan is no longer valid
+        IMyPlan = 0;
+        curPlan = null;
+        PlnRenderKey = Guid.NewGuid(); // forces the Modele <select> to rebuild instead of diff
+        CanOpenMGrid = false;
+
+        await OuvreMGrid();
+    }
+
     private async Task OuvreMGrid()
     {
-        Console.WriteLine($"LsPlans : {LsPlans.Count} IMyDom : {IMyDom} et IMyPlan :{IMyPlan}");
-        if (IMyDom != 0)
-        {
-            //DomPlans = LsPlans.Where(pl => pl.Todom == 6).ToList();
-            //Console.WriteLine($"DomPlans : {DomPlans.Count}");
-            //LsPlans where Todom == IMyDom
-        } else
-        {
+        Console.WriteLine($"LsPlans : {LsPlans.Count} IMyDom : {IMyDom} et IMyPlan : {IMyPlan}");
 
-        }
         if (IMyDom != 0 && IMyPlan != 0 && orgPlns.Any())
         {
             curPlan = orgPlns.FirstOrDefault(pl => pl.Id == IMyPlan);
-            await UpdateMyDaHies();
-            //int gtib = 7;
-            //if (IMyDom == 1) gtib = 6;
-            LsGties = LsFixes.Where(ut => ut.Gvars == 36 && ut.Itb == IMyDom && ut.Elea != 0 && ut.Elea != 9).ToList();
-            //PlnRenderKey = Guid.NewGuid();
-            CanOpenMGrid = true;
+
+            if (curPlan != null)
+            {
+                await UpdateMyDaHies();
+                LsGties = LsFixes.Where(ut => ut.Gvars == 36 && ut.Itb == IMyDom && ut.Elea != 0 && ut.Elea != 9).ToList();
+                CanOpenMGrid = true;
+            }
+            else
+            {
+                CanOpenMGrid = false;
+            }
         }
         else
         {
             CanOpenMGrid = false;
         }
     }
-    void OnHieRowClick(GridRowEventArgs<RubhieDto> args)
+    private async Task OnHieRowClick(GridRowEventArgs<RubhieDto> args)
     {
         Console.WriteLine($"OnHieRowClick Triggered : {args.Item.Id}");
         curRubr = args.Item; //get gRubsMap
@@ -885,7 +921,9 @@ else
         {
             return;
         }
-        InitializeMyDaPsts();
+        FmtRenderKey = Guid.NewGuid();
+        await UpdateMyDaPsts();
+        //InitializeMyDaPsts();
         //MyDaHies = new ObservableCollection<RubvarDto>(curPlan.Rubvars);
         StateHasChanged();
     }
@@ -1021,46 +1059,35 @@ else
     // Update method -call this when source data changes
     private void InitializeMyDaPlans()
     {
-        PlanItems.Clear();
-        PlanItems.AddRange(
-            orgPlns?.Where(pl => pl.Ptyp == IMyGpln && pl.Todom == IMyDom)
-            ?? Enumerable.Empty<PlngenDto>());
+        PlanItems = orgPlns?.Where(pl => pl.Ptyp == IMyGpln && pl.Todom == IMyDom && pl.Toatr == 0 && pl.Tovue == IMyVue).ToList()
+            ?? new List<PlngenDto>();
     }
     private void InitializeMyDaHies()
     {
-        HieItems.Clear();
-        HieItems.AddRange(
-            curPlan?.Rubhies.ToList()
-            ?? Enumerable.Empty<RubhieDto>());
-        Console.WriteLine($"curPlan : {curPlan?.Id} et nb. Hies : {curPlan?.Rubhies.Count}");
+        HieItems = curPlan.Rubhies.ToList()
+            ?? new List<RubhieDto>();
     }
     private void InitializeMyDaPsts()
     {
-        PstItems.Clear();
-        PstItems.AddRange(
-            curRubr?.Rubpsts.ToList()
-        ?? Enumerable.Empty<RubpstDto>());
+        PstItems = curRubr.Rubpsts.ToList()
+            ?? new List<RubpstDto>();
     }
-    private async Task UpdateMyDaPlans()
+    private Task UpdateMyDaPlans()
     {
-        PlanItems.Clear();
-        PlanItems.AddRange(
-            orgPlns?.Where(pl => pl.Ptyp == IMyGpln && pl.Todom == IMyDom)
-            ?? Enumerable.Empty<PlngenDto>());
+        PlanItems = orgPlns?
+            .Where(pl => pl.Ptyp == IMyGpln && pl.Todom == IMyDom && pl.Toatr == 0 && pl.Tovue == IMyVue)
+            .ToList() ?? new List<PlngenDto>();
+        return Task.CompletedTask;
     }
-    private async Task UpdateMyDaHies()
+    private Task UpdateMyDaHies()
     {
-        HieItems.Clear();
-        HieItems.AddRange(
-            curPlan?.Rubhies.ToList()
-            ?? Enumerable.Empty<RubhieDto>());
+        HieItems = curPlan?.Rubhies?.ToList() ?? new List<RubhieDto>();
+        return Task.CompletedTask;
     }
-    private async Task UpdateMyDaPsts()
+    private Task UpdateMyDaPsts()
     {
-        PstItems.Clear();
-        PstItems.AddRange(
-            curRubr?.Rubpsts.ToList()
-            ?? Enumerable.Empty<RubpstDto>());
+        PstItems = curRubr?.Rubpsts?.ToList() ?? new List<RubpstDto>();
+        return Task.CompletedTask;
     }
 
     //PLAN Formule modals
@@ -1261,135 +1288,39 @@ else
     {
         ouvrirOrgn = false;
     }
+    protected override void OnLocalCollectionMutated(EntityLevel level, CollectionMutation mutation, object entity)
+    {
+        switch (level)
+        {
+            case EntityLevel.Plan when entity is PlngenDto plan:
+                SyncList(orgPlns, plan, mutation);
+                break;
+            case EntityLevel.Hie when entity is RubhieDto rub && curPlan is not null:
+                SyncList(curPlan.Rubhies, rub, mutation);
+                break;
+            case EntityLevel.Pst when entity is RubpstDto fmt && curRubr is not null:
+                SyncList(curRubr.Rubpsts, fmt, mutation);
+                break;
+        }
+    }
+
+    private static void SyncList<T>(List<T> list, T entity, CollectionMutation mutation) where T : class
+    {
+        var rowguid = MLEntityKeyHelper.GetRowguidAsGuid(entity);
+        switch (mutation)
+        {
+            case CollectionMutation.Added:
+            case CollectionMutation.Replaced:
+                var idx = list.FindIndex(x => MLEntityKeyHelper.GetRowguidAsGuid(x) == rowguid);
+                if (idx >= 0) list[idx] = entity; else list.Add(entity);
+                break;
+            case CollectionMutation.Removed:
+                list.RemoveAll(x => MLEntityKeyHelper.GetRowguidAsGuid(x) == rowguid);
+                break;
+        }
+    }
     public void Dispose()  // â† ADD THIS
     {
         Console.WriteLine("ðŸ§¹ Child Prubsaie cleaning up");
     }
-    // public async Task StartRubEdit(RubhieDto item)
-    // {
-    //     var rowguid = item.Rowguid;
-    //     if (item.Id == default)
-    //     {
-    //         Imessage = "🚫 Cannot edit new Rubrique: Please save it first.";
-    //         return;
-    //     }
-
-    //     if (rowguid == Guid.Empty) return;
-    //     if (IsAnyRowEditing && !IsRowEditing(rowguid)) return;
-
-    //     //item.Xedt1 = -1;
-    //     //if (item.Iele != 0) item.Iui = (int)item.Iele;
-
-    //     _edHieOriginals[rowguid] = DeepClone(item);
-    //     draftRub = DeepClone(item);
-
-    //     RubRenderKey = rowguid;
-    //     BeginEdit(EntityLevel.Hie, rowguid, draftRub);
-
-    //     StateHasChanged();
-    // }
-    // public async Task StartPlnNew()
-    // {
-    //     if (IsAnyRowEditing)
-    //     {
-    //         Imessage = "prog cannot be added when any row is editing";
-    //         return;
-    //     }
-    //     Console.WriteLine("Commence ici");
-    //     var lsnb = NextSeq(MyDaPlans, p => p.Iui);
-    //     var newPln = new PlngenDto
-    //     {
-    //         Rowguid = Guid.NewGuid(),
-    //         Idorg = curOrga.Idorg,
-    //         Iui = lsnb,
-    //         Ptyp = IMyGpln,
-    //         Todom = IMyDom,
-    //         Ogtyp = 0,
-    //         Totyp = IMyGtie,
-    //         Toatr = 0,
-    //         Tovue = IMyVue,
-    //         Liba = "",
-    //         Abg = "",
-    //         Fpsrc = "",
-    //         Fpexe = "",
-    //         Fpisrc = 0,
-    //         Styp = 0,
-    //         Eta = 1,
-    //         Xadd1 = -1,
-    //         Xedt1 = 0
-    //     };
-
-    //     PlanItems.Insert(0, newPln);
-    //     orgPlns.Insert(0, newPln);
-
-    //     SetRowState(EntityLevel.Plan, newPln.Rowguid, RowState.AddPending);
-    //     //SetLightBackground(newPln.Rowguid, true);
-
-    //     draftPln = DeepClone(newPln);
-    //     Console.WriteLine($"NEWPLN : {newPln.Rowguid}");
-    //     Console.WriteLine($"DRAFTPLN : {newPln.Rowguid}");
-    //     BeginAdd(EntityLevel.Plan, newPln.Rowguid, draftPln);
-    //     //AddRowguid == item.Rowguid
-    //     //Console.WriteLine($"{newPln.Ptyp} et {newPln.Totyp} et {newPln.Todom} et {newPln.Tovue}");
-    //     PlnRenderKey = newPln.Rowguid;
-
-    //     //SetRowState(EntityLevel.Plan, draftPln.Rowguid, RowState.AddPending);
-    //     await InvokeAsync(StateHasChanged);
-    // }
-    // public async Task StartRubNew(PlngenDto mypln)
-    // {
-    //     if (mypln.Id <= 0)
-    //     {
-    //         Imessage = "🚫 Cannot add Rubrique: Plan must be saved first.";
-    //         await InvokeAsync(StateHasChanged);
-    //         return;
-    //     }
-
-    //     if (IsAnyRowEditing)
-    //     {
-    //         Imessage = "rub cannot be added when any row is editing";
-    //         await InvokeAsync(StateHasChanged);
-    //         return;
-    //     }
-    //     var lsnb = NextSeq(MyDaHies, p => p.Iui);
-    //     var newRub = new RubhieDto
-    //     {
-    //         Rowguid = Guid.NewGuid(),
-    //         Prowguid = mypln.Rowguid,
-    //         Idorg = mypln.Idorg,
-    //         Ipln = mypln.Id,
-    //         Scdrub = "",
-    //         Iui = lsnb,
-    //         Torub = 0,
-    //         Utyp = 2,
-    //         Tovue = mypln.Tovue,
-    //         Ustyp = 0,
-    //         //Dtperi = 0,
-    //         Liba = "",
-    //         Abg = "",
-    //         Frsrc = "",
-    //         Frexe = "",
-    //         Frisrc = 0,
-    //         //Ecmount = 0,
-    //         //Ecannu = 0,
-    //         //Nbech = 0,
-    //         //Ddval = 0,
-    //         //Dfval = 0,
-    //         Eaut = 0,
-    //         Atyp = 3,
-    //         //Eint = 0,
-    //         Eta = 1,
-    //         Xadd1 = -1,
-    //         Xedt1 = 0
-    //     };
-
-    //     HieItems.Insert(0, newRub);
-    //     curPlan.Rubhies.Insert(0, newRub);
-
-    //     draftRub = DeepClone(newRub);
-    //     BeginAdd(EntityLevel.Hie, newRub.Rowguid, draftRub);
-
-    //     RubRenderKey = newRub.Rowguid;
-    //     await InvokeAsync(StateHasChanged);
-    // }
 }

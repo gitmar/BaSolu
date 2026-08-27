@@ -20,23 +20,25 @@ namespace GxPilo.Components.Uifrags
         protected readonly Dictionary<(EntityLevel level, Guid rowguid), PendingOpType> _rowPendingOpTypeByRow = new();
         protected readonly Dictionary<(EntityLevel level, Guid rowguid), PendingOpInfo> _rowOpInfoByRow = new();
         protected readonly Dictionary<Guid, Guid> _pendingOpIdsByRow = new();
-        protected Guid? _activeEditRowguid;
-        protected EntityLevel? _activeEditLevel;
+        protected bool IsAnyRowEditing
+            => _rowStates.Values.Any(s => s != RowState.Default);
+
+        protected bool IsRowEditing(Guid rowguid)
+            => _rowStates.Any(kv => kv.Key.rowguid == rowguid && kv.Value != RowState.Default);
+
         protected readonly Dictionary<Guid, bool> _isLightBg = new();
 
-        protected readonly List<PlngenDto> PlanItems = new();
-        protected readonly List<RubvarDto> RubItems = new();
-        protected readonly List<RubfmtDto> FmtItems = new();
-        protected readonly List<RubhieDto> HieItems = new();
-        protected readonly List<RubpstDto> PstItems = new();
-        protected readonly List<TierspDto> TieItems = new();
-        protected readonly List<ActsaieDto> ActItems = new();
-        protected readonly List<ActdetDto> AdtItems = new();
-        protected readonly List<ResdonDto> ResItems = new();
-        protected readonly List<ResdetDto> RdtItems = new();
-        protected readonly List<ResbroDto> BroItems = new();
-        //protected readonly List<GstablDto> GtbItems = new();
-        //protected readonly List<GstablDto> GchItems = new();
+        protected List<PlngenDto> PlanItems = new();
+        protected List<RubvarDto> RubItems = new();
+        protected List<RubfmtDto> FmtItems = new();
+        protected List<RubhieDto> HieItems = new();
+        protected List<RubpstDto> PstItems = new();
+        protected List<TierspDto> TieItems = new();
+        protected List<ActsaieDto> ActItems = new();
+        protected List<ActdetDto> AdtItems = new();
+        protected List<ResdonDto> ResItems = new();
+        protected List<ResdetDto> RdtItems = new();
+        protected List<ResbroDto> BroItems = new();
         protected object? _draftPlan { get; set; }
         protected object? _draftRub { get; set; }
         protected object? _draftFmt { get; set; }
@@ -61,15 +63,18 @@ namespace GxPilo.Components.Uifrags
         }
 
         protected abstract void SubscribeToGuard();
-        protected abstract string GetEntitySet(EntityLevel level);
         protected abstract void AddToLocalCollection(EntityLevel level, object entity);
-        //protected abstract void RemoveFromLocalCollection(EntityLevel level, object entity);
+        protected abstract void RemoveFromLocalCollection(EntityLevel level, object entity);
         protected abstract void RollbackPendingState(EntityLevel level, object entity, bool isNew);
         protected abstract void ReplaceInLocalCollection(EntityLevel level, object entity);
         protected abstract void CopyDraftToGridItem(EntityLevel level, object entity);
-        //protected abstract void CopyDraftTblToGridItem(EntityLevel level, object entity, int tent);
-        //protected abstract void CopyDraftTblToGridItem<T>(T gridItem, int tent);
-        //protected abstract void CopyDraftTblToGridItem(EntityLevel level, object entity, int tent);
+        protected abstract Task ConfirmAdd(EntityLevel level, object entity, bool isConfirm);
+        protected abstract Task ConfirmEdit(EntityLevel level, object entity, bool isConfirm);
+        //protected abstract Task ConfirmCancel(EntityLevel level, object entity);
+        protected abstract Task ConfirmDelete(EntityLevel level, object entity, bool isConfirm);
+        protected abstract Task CancelAdd(EntityLevel level, object entity);
+        protected abstract Task CancelEdit(EntityLevel level, object entity);
+        protected abstract Task CancelDelete(EntityLevel level, object entity);
         protected abstract void RestoreOriginalGridItem(EntityLevel level, object entity);
         protected abstract void FinalizeConfirmedState(EntityLevel level, object entity, string message);
         //protected abstract void EndEdit(EntityLevel level);
@@ -77,7 +82,6 @@ namespace GxPilo.Components.Uifrags
         {
         }
         protected virtual bool Validate(EntityLevel level, object entity) => true;
-        
         protected T DeepClone<T>(T entity)
         {
             var settings = new JsonSerializerSettings
@@ -88,145 +92,41 @@ namespace GxPilo.Components.Uifrags
             var json = JsonConvert.SerializeObject(entity, settings);
             return JsonConvert.DeserializeObject<T>(json, settings)!;
         }
-
-        //protected object DeepClone(object entity)
-        //{
-        //    var settings = new JsonSerializerSettings
-        //    {
-        //        ReferenceLoopHandling = ReferenceLoopHandling.Ignore
-        //    };
-
-        //    var json = JsonConvert.SerializeObject(entity, settings);
-        //    return JsonConvert.DeserializeObject(json, entity.GetType(), settings)!;
-        //}
-
         protected int NextSeq<T>(IEnumerable<T> source, Func<T, int?> selector)
         {
             var maxSeq = source.Any() ? source.Max(selector) ?? 0 : 0;
             return maxSeq + 1;
         }
-
         protected PendingOpType GetPendingOpType(EntityLevel level, Guid rowguid)
             => _rowPendingOpTypeByRow.TryGetValue((level, rowguid), out var value)
                 ? value
                 : PendingOpType.Update;
-
         protected void SetPendingOpType(EntityLevel level, Guid rowguid, PendingOpType op)
             => _rowPendingOpTypeByRow[(level, rowguid)] = op;
-
         protected void SetOpInfo(EntityLevel level, Guid rowguid, PendingOpInfo info)
             => _rowOpInfoByRow[(level, rowguid)] = info;
-
         protected PendingOpInfo? GetOpInfo(EntityLevel level, Guid rowguid)
             => _rowOpInfoByRow.TryGetValue((level, rowguid), out var value)
                 ? value
                 : null;
-
-        protected async Task ConfirmAdd(EntityLevel level, object? draft, bool isConfirm)
-        {           // EndEdit(level);
-        
-            await UnifiedAddAction(level, draft, isConfirm);
-            await InvokeAsync(StateHasChanged);
-        }
-        //protected async Task ConfirmTblAdd(EntityLevel level, object? draft, bool isConfirm, int tent)
-        //{           // EndEdit(level);
-
-        //    await UnifiedTblAddAction(level, draft, isConfirm, tent);
-        //    await InvokeAsync(StateHasChanged);
-        //}
-        protected async Task ConfirmEdit(EntityLevel level, object? draft, bool isConfirm)
+        protected virtual string GetEntitySetName(EntityLevel level)
         {
-            if (draft is null) return;
-            await UnifiedEditAction(level, draft, isConfirm);
-            EndRowEdit(); //
-            await InvokeAsync(StateHasChanged);
-        }
-
-        private async Task UnifiedAddAction(EntityLevel level, object entity, bool isConfirm)
-        {
-            var rowguid = MLEntityKeyHelper.GetRowguidAsGuid(entity);
-            if (!isConfirm) //cancel
+            return level switch
             {
-                RollbackPendingState(level, entity, true);
-                return;
-            }
-            Console.WriteLine("AVANT VALIDATE");
-            if (!Validate(level, entity))
-                return;
-            Console.WriteLine("APRES VALIDATE");
-            // Copy draft values into the grid item
-            CopyDraftToGridItem(level, entity);
-
-            var entitySet = GetEntitySet(level);
-
-            // 🔥 Always insert for new rows
-            var opId = await Guard.TrackInsert(entitySet, entity);
-
-            SetPendingOpType(level, rowguid, PendingOpType.Insert);
-            SetOpInfo(level, rowguid, new PendingOpInfo(opId, PendingOpType.Insert));
-
-            // Ensure the new entity is in the local collection
-            AddToLocalCollection(level, entity);
-            OnEntitySaved(level, entity);
-
-            FinalizeConfirmedState(level, entity, $"✅ {entity.GetType().Name} tracked (insert)");
+                EntityLevel.Plan => "Plngens",
+                EntityLevel.Rub => "Rubvars",
+                EntityLevel.Fmt => "Rubfmts",
+                EntityLevel.Hie => "Rubhies",
+                EntityLevel.Pst => "Rubpsts",
+                EntityLevel.Tie => "Tiersps",
+                EntityLevel.Act => "Actsaies",
+                EntityLevel.Adt => "Actdets",
+                EntityLevel.Res => "Resdons",
+                EntityLevel.Rdt => "Resdets",
+                EntityLevel.Bro => "Resbros",
+                _ => throw new ArgumentOutOfRangeException(nameof(level), level, null)
+            };
         }
-        //private async Task UnifiedTblAddAction(EntityLevel level, object entity, bool isConfirm, int tent)
-        //{
-        //    var rowguid = MLEntityKeyHelper.GetRowguidAsGuid(entity);
-        //    if (!isConfirm) //cancel
-        //    {
-        //        RollbackPendingState(level, entity, true);
-        //        return;
-        //    }
-        //    Console.WriteLine("AVANT VALIDATE");
-        //    if (!Validate(level, entity))
-        //        return;
-        //    Console.WriteLine("APRES VALIDATE");
-        //    // Copy draft values into the grid item
-        //    CopyDraftTblToGridItem(level, entity, tent);
-
-        //    var entitySet = GetEntitySet(level);
-
-        //    // 🔥 Always insert for new rows
-        //    var opId = await Guard.TrackInsert(entitySet, entity);
-
-        //    SetPendingOpType(level, rowguid, PendingOpType.Insert);
-        //    SetOpInfo(level, rowguid, new PendingOpInfo(opId, PendingOpType.Insert));
-
-        //    // Ensure the new entity is in the local collection
-        //    AddToLocalCollection(level, entity);
-        //    OnEntitySaved(level, entity);
-
-        //    FinalizeConfirmedState(level, entity, $"✅ {entity.GetType().Name} tracked (insert)");
-        //}
-        private async Task UnifiedEditAction(EntityLevel level, object entity, bool isConfirm)
-        {
-            var rowguid = MLEntityKeyHelper.GetRowguidAsGuid(entity);
-            if (!isConfirm)
-            {
-                RollbackPendingState(level, entity, false);
-                return;
-            }
-
-            if (!Validate(level, entity))
-                return;
-
-            CopyDraftToGridItem(level, entity);
-
-            var entitySet = GetEntitySet(level);
-            var key = MLEntityKeyHelper.GetKeyAsObject(entity);
-            var opId = await Guard.TrackUpdate(entitySet, key, entity);
-
-            SetPendingOpType(level, rowguid, PendingOpType.Update);
-            SetOpInfo(level, rowguid, new PendingOpInfo(opId, PendingOpType.Update));
-
-            ReplaceInLocalCollection(level, entity);
-            OnEntitySaved(level, entity);
-
-            FinalizeConfirmedState(level, entity, $"✅ {entity.GetType().Name} tracked");
-        }       
-        
         protected void RemoveByRowguid(EntityLevel level, Guid rowguid)
         {
             switch (level)
@@ -267,17 +167,8 @@ namespace GxPilo.Components.Uifrags
                 default:
                     throw new ArgumentOutOfRangeException(nameof(level));
             }
-            EndRowEdit();
+            EndRowEdit(level);
         }
-        protected class EntityEditState
-        {
-            public bool IsAdd { get; set; }
-            public bool IsEdit { get; set; }
-            public Guid? AddRowguid { get; set; }
-            public Guid? EditRowguid { get; set; }
-            public Guid? DeleteRowguid { get; set; }
-        }
-
         protected EntityEditState GetEditState(EntityLevel level)
         {
             if (!_editStates.TryGetValue(level, out var state))
@@ -300,7 +191,6 @@ namespace GxPilo.Components.Uifrags
             };
             Console.WriteLine("editstate = edit false");
         }
-
         protected void SetEditState(EntityLevel level, bool isAdd, bool isEdit, Guid? rowguid)
         {
             var s = GetEditState(level);
@@ -310,32 +200,40 @@ namespace GxPilo.Components.Uifrags
             s.EditRowguid = isEdit ? rowguid : null;
             s.DeleteRowguid = null;
         }
-        //ROW MANAGEMENT
-        protected void StartRowEdit(Guid rowguid, EntityLevel level)
+        protected Guid GetRenderKey(EntityLevel level)
         {
-            _activeEditRowguid = rowguid;
-            _activeEditLevel = level;
+            if (!_renderKeys.TryGetValue(level, out var key))
+            {
+                key = Guid.NewGuid();
+                _renderKeys[level] = key;
+            }
+            return key;
         }
-
-        protected void EndRowEdit()
+        protected void BumpRenderKey(EntityLevel level)
         {
-            _activeEditRowguid = null;
-            _activeEditLevel = null;
+            _renderKeys[level] = Guid.NewGuid();
+        }
+        protected virtual void OnLocalCollectionMutated(EntityLevel level, CollectionMutation mutation, object entity)
+        {
+        }
+        protected void EndRowEdit(EntityLevel level)
+        {
+            var es = GetEditState(level);
+            es.IsAdd = false;
+            es.IsEdit = false;
+            es.AddRowguid = null;
+            es.EditRowguid = null;
+            es.DeleteRowguid = null;
         }
         protected string GetRowCssFor(EntityLevel level, Guid rowguid)
         {
             var state = GetRowState(level, rowguid);
             var isLight = IsLightBackground(rowguid);
-            var isActiveEdit = _activeEditRowguid == rowguid;
-            var isOtherRowEditing = _activeEditRowguid != null && !isActiveEdit;
-            
-            //var item = _PlanItems.FirstOrDefault(x => x.Rowguid == rowguid);
-            ///var cancelled = item?.IsCancelled == true ? "cancelled" : "";
-
-
+            var isActiveEdit = GetRowState(level, rowguid) is RowState.AddPending or RowState.EditPending;
+            var isOtherRowEditing = IsAnyRowEditing && !isActiveEdit;
+   
             return GetRowCss(state, isLight, rowguid, isActiveEdit, isOtherRowEditing);
         }
-        
         protected string GetPlanRowClass(PlngenDto pln) => GetRowCssFor(EntityLevel.Plan, pln.Rowguid);
         protected string GetRubRowClass(RubvarDto rub) => GetRowCssFor(EntityLevel.Rub, rub.Rowguid);
         protected string GetFmtRowClass(RubfmtDto fmt) => GetRowCssFor(EntityLevel.Fmt, fmt.Rowguid);
@@ -349,6 +247,7 @@ namespace GxPilo.Components.Uifrags
         protected string GetBroRowClass(ResbroDto bro) => GetRowCssFor(EntityLevel.Bro, bro.Rowguid);
         protected string GetFixRowClass(GstablDto fix) => GetRowCssFor(EntityLevel.Plan, fix.Rowguid);
         protected string GetChlRowClass(GstablDto chl) => GetRowCssFor(EntityLevel.Plan, chl.Rowguid);
+        
         protected RowState GetRowState(EntityLevel level, Guid rowguid)
         {
             var state = _rowStates.TryGetValue((level, rowguid), out var value)
@@ -357,27 +256,16 @@ namespace GxPilo.Components.Uifrags
 
             return state;
         }
-        //=> _rowStates.TryGetValue((level, rowguid), out var value) ? value : RowState.Default;
-
         protected void SetRowState(EntityLevel level, Guid rowguid, RowState state)
         {
             Console.WriteLine($"row state IS SET : {state}");
             _rowStates[(level, rowguid)] = state;
         }
-           // => _rowStates[(level, rowguid)] = state;
-
-        protected void StartRowDelete(EntityLevel level, Guid rowguid)
-        {
-            SetRowState(level, rowguid, RowState.DeletePending);
-            StartRowEdit(rowguid, level);
-        }
-
+        // --- shared start-edit entry point --- 
         protected void ResetRowState(EntityLevel level, Guid rowguid)
             => _rowStates.Remove((level, rowguid));
-
         protected bool IsLightBackground(Guid rowguid)
             => _isLightBg.TryGetValue(rowguid, out var value) && value;
-
         protected string GetRowCss(RowState state, bool isLight, Guid rowguid, bool isActiveEdit, bool isOtherRowEditing)
         {
             var css = new List<string>();
@@ -409,6 +297,19 @@ namespace GxPilo.Components.Uifrags
             }
             return string.Join(" ", css);
         }
+        private readonly Dictionary<EntityLevel, Guid> _renderKeys = new();
+        protected class EntityEditState
+        {
+            public bool IsAdd { get; set; }
+            public bool IsEdit { get; set; }
+            public Guid? AddRowguid { get; set; }
+            public Guid? EditRowguid { get; set; }
+            public Guid? DeleteRowguid { get; set; }
+        }
+        protected enum CollectionMutation { Added, Removed, Replaced }
+
+        // Fired after PlanItems/RubItems/FmtItems (etc.) have been mutated,
+        // so a derived component can keep its own source-of-truth lists
+        // (orgPlns, curPlan.Rubvars, curRubr.Rubfmts, ...) in sync.
     }
-    //public record class PendingOpInfo(Guid OpId, PendingOpType OpType);
 }

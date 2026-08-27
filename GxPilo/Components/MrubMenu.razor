@@ -54,7 +54,7 @@ else
                 <!-- Main Content -->
                 @if (this != null)
                 {
-                    @if (_chxMenu != 0 && toChild != null && curOrga != null)
+                    @if (_chxMenu != 0 && toChild != null && curOrga != null && orgPlns.Any())
                     {
                     if (_chxMenu == 1)
                     { //grilles rubriques
@@ -64,6 +64,7 @@ else
                             _guard="_guard"
                             curOrga="@curOrga"
                             toChild="@toChild"
+                            orgPlns="@orgPlns"
                             _InODaClient="@_MyODaClient">
                             <ChildContent>
                                 @* <h2 class="child-box">Hello GRILLES</h2> *@
@@ -78,6 +79,7 @@ else
                             _guard="_guard"
                             curOrga="@curOrga"
                             toChild="@toChild"
+                            orgPlns="@orgPlns"
                             _InODaClient="@_MyODaClient">
                             <ChildContent>
                                 @* <h2 class="child-box">Hello GRILLES</h2> *@
@@ -92,6 +94,7 @@ else
                                 _guard="_guard"
                                 curOrga="@curOrga"
                                 toChild="@toChild"
+                                orgPlns="@orgPlns"
                                 _InODaClient="@_MyODaClient">
                                 <ChildContent>
                                     @* <h2 class="child-box">Hello GRILLES</h2> *@
@@ -106,6 +109,7 @@ else
                                      _guard="_guard"
                                      curOrga="@curOrga"
                                      toChild="@toChild"
+                                     orgPlns="@orgPlns"
                                      _InODaClient="@_MyODaClient">
                                 <ChildContent>
                                 </ChildContent>
@@ -150,6 +154,7 @@ else
     //private Task<AuthenticationState>? AuthState { get; set; }
     private ClaimsPrincipal authUser;
     private bool isAuthenticated = false;
+    public List<PlngenDto> orgPlns = new();
     //Guard
     private int _nbChanges = 0;
     private IDisposable? _locationHandler;
@@ -239,9 +244,16 @@ else
             curOrga = await _MyODaClient
                 .For<GxorgaDto>("Gxorgas")
                 .Key(key)
-                .Expand(o => o.Plngens.Select(p => p.Rubvars))
-                .Expand(o => o.Plngens.Select(p => p.Rubhies))
+                //.Expand(o => o.Plngens.Select(p => p.Rubvars))
+                //.Expand(o => o.Plngens.Select(p => p.Rubhies))
                 .FindEntryAsync();
+            var msgsie = await _MyODaClient
+            .For<PlngenDto>("Plngens")
+            .Filter(f => f.Idorg == key && (f.Ptyp == 3 || f.Ptyp == 4)) //3grille4hierss
+            .Expand("Rubvars($expand=Rubfmts)")
+            .Expand("Rubhies($expand=Rubpsts)")
+            .FindEntriesAsync();
+            orgPlns = msgsie.ToList();
             Console.WriteLine($"loadOrgaAsync completed :{curOrga?.Raison}");
         }
         catch (Exception ex)

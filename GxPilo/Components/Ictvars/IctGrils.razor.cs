@@ -16,13 +16,29 @@ namespace GxPilo.Components.Ictvars
         {
         }
 
-        protected override string GetEntitySet(EntityLevel level) => level switch
+        //protected override string GetEntitySet(EntityLevel level) => level switch
+        //{
+        //    EntityLevel.Plan => "Plngens",
+        //    EntityLevel.Rub => "Rubvars",
+        //    EntityLevel.Fmt => "Rubfmts",
+        //    _ => throw new ArgumentOutOfRangeException(nameof(level))
+        //};
+
+        protected override string GetEntitySetName(EntityLevel level)
         {
-            EntityLevel.Plan => "Plngens",
-            EntityLevel.Rub => "Rubvars",
-            EntityLevel.Fmt => "Rubfmts",
-            _ => throw new ArgumentOutOfRangeException(nameof(level))
-        };
+            return base.GetEntitySetName(level);
+        }
+        //protected override void ConfirmAdd(EntityLevel level, object entity, bool isConfirm)
+        //{
+        //}
+        //protected override void ConfirmEdit(EntityLevel level, object? entity, bool isConfirm)
+        //{ }
+        //protected override void ConfirmDelete(EntityLevel level, object entity, bool isConfirm)
+        //{ }
+        //protected override void ConfirmCancel(EntityLevel level, object entity)
+        //{ }
+        //protected override void RemoveFromLocalCollection(EntityLevel level, object entity)
+        //{ }
         protected override void OnEntitySaved(EntityLevel level, object entity)
         {
             switch (level)

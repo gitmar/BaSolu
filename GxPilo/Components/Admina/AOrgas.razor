@@ -520,6 +520,20 @@ else if (edOrgContext != null && curOrga != null)
                                 </EditForm>
                                 </Content>
                             </Tab>
+                            <Tab Title="Adresses">
+                                <Content>
+                                    <Aogadrs @ref="mygadr"
+                                         curOrga="@curOrga"
+                                         OnAdrSaved="@OnAdrSaved"
+                                         OnAdrAbandon="@OnAdrAbandon"
+                                         _guard="@_guard"
+                                         _InODaClient="@_MyODaClient">
+                                        <ChildContent>
+                                            <h2 class="child-box">Hello TABLES</h2>
+                                        </ChildContent>
+                                    </Aogadrs>
+                                </Content>
+                            </Tab>
                             <Tab Title="Domaines">
                                 <Content>
                                     <EditForm EditContext="edFixContext">
@@ -1185,11 +1199,12 @@ else if (edOrgContext != null && curOrga != null)
     private EditContext edFixContext;
     public EventCallback<PendingState> OnPendingStateChanged { get; set; }
     //private EditContext edColContext;
-    
+
     private Guid? DomRenderKey = null;
     private Guid? AptRenderKey = null;
     private Guid? AflRenderKey = null;
 
+    private Aogadrs mygadr;
     private Aogcols myicols;
     private string colstore = "", aflcolstore = "";
     //private bool OptColValid = false;
@@ -2038,6 +2053,24 @@ else if (edOrgContext != null && curOrga != null)
 
         var json = JsonConvert.SerializeObject(entity, settings);
         return JsonConvert.DeserializeObject(json, entity.GetType(), settings)!;
+    }
+    //Gestion Adresses
+    //OnAdrSaved="@(async (adr) => await OnAdrSaved.InvokeAsync(adr))"
+    //ConfAdrEdit="@(p => ConfAdrEdit(EntityLevel.Rub, p))"
+    //CancAdrEdit="@(p => CancAdrEdit(EntityLevel.Rub, p))"
+    //ConfAdrDelete="@(p => ConfAdrDelete(EntityLevel.Rub, p))"
+    //CancAdrDelete="@(p => CancAdrDelete(EntityLevel.Rub, p))"
+    private async Task OnAdrSaved()
+    {
+        //await UnifiedEditAction(entity, true, level);
+        await InvokeAsync(StateHasChanged);
+        //EndRowEdit();
+    }
+    private async Task OnAdrAbandon()
+    {
+        //await UnifiedEditAction(entity, true, level);
+        await InvokeAsync(StateHasChanged);
+        //EndRowEdit();
     }
     private void OnCheckboxChanged(Microsoft.AspNetCore.Components.ChangeEventArgs e, GstablDto scol, string propertyName)
     {

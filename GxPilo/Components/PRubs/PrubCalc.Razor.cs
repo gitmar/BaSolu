@@ -16,19 +16,12 @@ namespace GxPilo.Components.MRubs
         {
         }
 
-        protected override string GetEntitySet(EntityLevel level) => level switch
+        protected override string GetEntitySetName(EntityLevel level)
         {
-            EntityLevel.Plan => "Plngens",
-            EntityLevel.Rub => "Rubvars",
-            EntityLevel.Fmt => "Rubfmts",
-            EntityLevel.Tie => "Tiersps",
-            EntityLevel.Act => "Actsaies",
-            EntityLevel.Adt => "Actdets",
-            EntityLevel.Res => "Resdons",
-            EntityLevel.Rdt => "Resdets",
-            EntityLevel.Bro => "Resbros",
-            _ => throw new ArgumentOutOfRangeException(nameof(level))
-        };
+            return base.GetEntitySetName(level);
+        }
+        protected override void RemoveFromLocalCollection(EntityLevel level, object entity)
+        { }
         protected override void OnEntitySaved(EntityLevel level, object entity)
         {
             switch (level)

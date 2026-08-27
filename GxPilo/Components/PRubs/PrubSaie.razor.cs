@@ -16,19 +16,20 @@ namespace GxPilo.Components.PRubs
         {
         }
 
-        protected override string GetEntitySet(EntityLevel level) => level switch
+        protected override string GetEntitySetName(EntityLevel level)
         {
-            EntityLevel.Plan => "Plngens",
-            EntityLevel.Rub => "Rubvars",
-            EntityLevel.Fmt => "Rubfmts",
-            //EntityLevel.Tie => "Tiersps",
-            //EntityLevel.Act => "Actsaies",
-            //EntityLevel.Adt => "Actdets",
-            //EntityLevel.Res => "Resdons",
-            //EntityLevel.Rdt => "Resdets",
-            //EntityLevel.Bro => "Resbros",
-            _ => throw new ArgumentOutOfRangeException(nameof(level))
-        };
+            return base.GetEntitySetName(level);
+        }
+        //protected override void ConfirmAdd(EntityLevel level, object entity)
+        //{ }
+        //protected override void ConfirmEdit(EntityLevel level, object entity)
+        //{ }
+        //protected override void ConfirmCancel(EntityLevel level, object entity)
+        //{ }
+        //protected override void ConfirmDelete(EntityLevel level, object entity)
+        //{ }
+        //protected override void RemoveFromLocalCollection(EntityLevel level, object entity)
+        //{ }
         protected override void OnEntitySaved(EntityLevel level, object entity)
         {
             switch (level)
@@ -62,17 +63,17 @@ namespace GxPilo.Components.PRubs
             {
                 case EntityLevel.Plan:
                     draftPln = null;
-                    PlnRenderKey = Guid.Empty;
+                    //PlnRenderKey = Guid.Empty;
                     break;
 
                 case EntityLevel.Rub:
                     draftRub = null;
-                    RubRenderKey = Guid.Empty;
+                    //RubRenderKey = Guid.Empty;
                     break;
 
                 case EntityLevel.Fmt:
                     draftFmt = null;
-                    FmtRenderKey = Guid.Empty;
+                    //FmtRenderKey = Guid.Empty;
                     break;
             }
 
@@ -87,8 +88,8 @@ namespace GxPilo.Components.PRubs
                     if (idxp >= 0)
                         PlanItems[idxp] = DeepClone(_edPlnOriginals[rowguid]);
                     draftPln = null;
-                    PlnRenderKey = Guid.Empty;
-                    Console.WriteLine($"Cancel row {rowguid}: draftPln={(draftPln == null ? "null" : "set")}, PlnRenderKey={PlnRenderKey}");
+                    //PlnRenderKey = Guid.Empty;
+                    //Console.WriteLine($"Cancel row {rowguid}: draftPln={(draftPln == null ? "null" : "set")}, PlnRenderKey={PlnRenderKey}");
 
                     break;
                 case EntityLevel.Rub:
@@ -96,14 +97,14 @@ namespace GxPilo.Components.PRubs
                     if (idxr >= 0)
                         RubItems[idxr] = DeepClone(_edRubOriginals[rowguid]);
                     draftRub = null;
-                    RubRenderKey = Guid.Empty;
+                    //RubRenderKey = Guid.Empty;
                     break;
                 case EntityLevel.Fmt:
                     var idxf = FmtItems.FindIndex(x => x.Rowguid == rowguid);
                     if (idxf >= 0)
                         FmtItems[idxf] = DeepClone(_edFmtOriginals[rowguid]);
                     draftFmt = null;
-                    FmtRenderKey = Guid.Empty;
+                    //FmtRenderKey = Guid.Empty;
                     break;
             }
         }
