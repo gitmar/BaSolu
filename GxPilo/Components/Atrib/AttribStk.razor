@@ -72,7 +72,7 @@
                         {
                             <InputSelect @bind-Value="draftAtr.Ztbl">
                                 <option value=0>aucun</option>
-                                @foreach (var fx in EnsTbls.Where(t => t.Tenr == 1 && t.Btyp == 2))
+                                @foreach (var fx in EnsTbls.Where(t => t.Tenr == 1 && t.Tcol == 2))
                                 {
                                     <option value=@fx.Tref>@fx.Liba</option>
                                 }
@@ -82,7 +82,7 @@
                         {
                             <InputSelect @bind-Value="item.Ztbl" class="me-3" style="width:auto" disabled>
                                 <option value=0>aucun</option>
-                                @foreach (var fx in EnsTbls.Where(t => t.Tenr == 1 && t.Btyp == 2))
+                                @foreach (var fx in EnsTbls.Where(t => t.Tenr == 1 && t.Tcol == 2))
                                 {
                                     <option value=@fx.Tref>@fx.Liba</option>
                                 }
@@ -189,7 +189,7 @@
             @if (inZfro == 2)
             {
                 <InputSelect @bind-Value="draftAtr.Ztbl" class="me-3" style="width:auto">
-                    @foreach (var fx in EnsTbls.Where(t => t.Tenr == 1 && t.Btyp == 2))
+                    @foreach (var fx in EnsTbls.Where(t => t.Tenr == 1 && t.Tcol == 2))
                     {
                         <option value=@fx.Tenr>@fx.Liba</option>
                     }

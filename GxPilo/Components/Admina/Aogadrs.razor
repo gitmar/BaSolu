@@ -6,69 +6,252 @@
 @using GxShared.Interfaces
 @using Simple.OData.Client
 
-@inherits ComponentBase
-
-<div class="address-form">
-    <EditForm Model="@Address" OnValidSubmit="@OnAdrSaved">
-        <DataAnnotationsValidator />
-        <ValidationSummary />
-        <div class="form-group">
-            <div class="btn-toolbar" role="toolbar">
-                <label class="me-2">Adrtype :</label>
-                <InputSelect @bind-Value="ITypAdr"
-                             @bind-Value:after="OuvreMGrid"
-                             class="me-3"
-                             style="width:auto">
-                    <option value="0">?Tyadr</option>
-                    @foreach (var tob in LsFixes)
-                    {
-                        <option value=@tob.Elea>@tob.Liba</option>
-                    }
-                </InputSelect>
-                <label class="me-2">Adrtype :</label>
-                <InputSelect @bind-Value="IMyAdr"
-                             @bind-Value:after="OuvreMGrid"
-                             class="me-3"
-                             style="width:auto">
-                    <option value="0">?adr</option>
-                    @foreach (var tob in LsAdrs)
-                    {
-                        <option value=@tob.Id>@tob.Adr</option>
-                    }
-                </InputSelect>
-            </div>
-        </div>
-        @if (CanOpenMGrid)
-        {
-            <div class="form-group">
-                <label>Street</label>
-                <InputText @bind-Value="Address.Npays" class="form-control" />
-            </div>
-
-            <div class="form-group">
-                <label>City</label>
-                <InputText @bind-Value="Address.Scity" class="form-control" />
-            </div>
-
-            <div class="form-group">
-                <label>Postal Code</label>
-                <InputText @bind-Value="Address.Adr" class="form-control" />
-            </div>
-            <div class="form-group">
-                <label>Country</label>
-                <InputText @bind-Value="Address.Natio" class="form-control" />
-            </div>
-
-            <button type="submit" class="btn btn-primary">Save</button>
-            <button type="button" class="btn btn-secondary" @onclick="OnCancel">Cancel</button>
-            @if (CanDelete)
-            {
-                <button type="button" class="btn btn-danger" @onclick="OnDelete">Delete</button>
-            }
-        }
-    </EditForm>
+<div class="btn-toolbar" role="toolbar">
+    <label class="me-2">Adrtype :</label>
+    <InputSelect @bind-Value="ITypAdr"
+                 class="me-3"
+                 style="width:auto">
+        <option value="0">?Tyadr</option>
+        <option value="1">De base</option>
+        <option value="2">Livraison</option>
+        <option value="3">Paiement</option>
+    </InputSelect>
+    @if (ITypAdr > 0 && !CanAjoutAdr)
+    {
+        <Button Color="ButtonColor.Primary" Size="ButtonSize.Small"
+        @onclick="() => StartAdrNew()">
+            <span style="display:inline-flex; align-items:center; gap:2px;">
+                <span>➕</span>
+                <span>Add</span>
+            </span>
+        </Button>
+    }
 </div>
 
+<div class="address-form">
+    <EditForm Model="@MyDaAdres">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+        
+        @if (CanAjoutAdr)
+        {
+            <div class="address-form">
+                    <div class="form-group">
+                        <label>Principale</label>
+                        <InputText @bind-Value="draftAdr.Adr" class="form-control" />
+                    </div>
+
+                    <div class="form-group">
+                        <label>Secondaire</label>
+                        <InputText @bind-Value="draftAdr.Adr2" class="form-control" />
+                    </div>
+
+                    <div class="form-group">
+                        <label>Pays</label>
+                        <InputText @bind-Value="draftAdr.Rpays" class="form-control" />
+                    </div>
+
+                    <div class="form-group">
+                        <label>Region</label>
+                        <InputText @bind-Value="draftAdr.Sregio" class="form-control" />
+                    </div>
+
+                    <div class="form-group">
+                        <label>Ville</label>
+                        <InputText @bind-Value="draftAdr.Scity" class="form-control" />
+                    </div>
+
+                    <button type="button" class="btn btn-primary" @onclick="() => ConfAdrAdd(draftAdr)">Confirm</button>
+                    <button type="button" class="btn btn-secondary" @onclick="CancAdrAdd">Cancel</button>
+            </div>
+        }
+        <div class="mt-2">
+                    <Grid TItem="GsadrDto"
+                    Data="@MyDaAdres"
+                    @key="AdrRenderKey"
+                    AllowDetailView="true"
+                    AllowPaging="true"
+                    RowClass="@((item) => GetAdrRowClass(item))"
+                    Responsive="true">
+                        <GridColumns>
+                            <GridColumn TItem="GsadrDto" HeaderText="No" Class="xcol1">
+                                <ChildContent Context="item">
+                                    <span>@item?.Iui</span>
+                                </ChildContent>
+                            </GridColumn>
+                            <GridColumn TItem="GsadrDto" HeaderText="Principale" Class="xcol2">
+                                <ChildContent Context="item">
+                                    @if (EdAdrRowguid == item.Rowguid)
+                                    {
+                                        <InputText @bind-Value="draftAdr.Adr" class="form-control" />
+                                    } 
+                                    else 
+                                    {
+                                        @item.Adr
+                                    }
+                                </ChildContent>
+                            </GridColumn>
+                            <GridColumn TItem="GsadrDto" HeaderText="Secondaire" Class="xcol2">
+                                <ChildContent Context="item">
+                            @if (EdAdrRowguid == item.Rowguid)
+                            {
+                                <InputText @bind-Value="draftAdr.Adr2" class="form-control" />
+                            }
+                            else
+                            {
+                                @item.Adr2
+                            }
+                                </ChildContent>
+                            </GridColumn>
+                            <GridColumn TItem="GsadrDto" HeaderText="Pays" Class="xcol2">
+                                <ChildContent Context="item">
+                            @if (EdAdrRowguid == item.Rowguid)
+                            {
+                                <InputText @bind-Value="draftAdr.Rpays" class="form-control" />
+                            }
+                            else
+                            {
+                                @item.Rpays
+                            }
+                                    @item.Rpays
+                                </ChildContent>
+                            </GridColumn>
+                            <GridColumn TItem="GsadrDto" HeaderText="Region" Class="xcol2">
+                                <ChildContent Context="item">
+                            @if (EdAdrRowguid == item.Rowguid)
+                            {
+                                <InputText @bind-Value="draftAdr.Sregio" class="form-control" />
+                            }
+                            else
+                            {
+                                @item.Sregio
+                            }
+                                </ChildContent>
+                            </GridColumn>
+                            <GridColumn TItem="GsadrDto" HeaderText="City" Class="xcol1">
+                                <ChildContent Context="item">
+                            @if (EdAdrRowguid == item.Rowguid)
+                            {
+                                <InputText @bind-Value="draftAdr.Scity" class="form-control" />
+                            }
+                            else
+                            {
+                                @item.Scity
+                            }
+                                </ChildContent>
+                            </GridColumn>
+                    <GridColumn TItem="GsadrDto" HeaderText="Actions" Filterable="false" Class="xcol2 actions-col">
+                        <ChildContent Context="item">
+                            @switch (GetRowState(item.Rowguid))
+                            {
+                                case RowState.Locked:
+                                    <span class="text-muted">—</span>
+                                    break;
+
+                                @* case RowState.AddPending:
+                                            <Button Color="ButtonColor.Success" Size="ButtonSize.Small"
+                                                    @onclick="() => ConfAdrAdd(EntityLevel.Adr, draftAdr)">
+                                                ✅ Confirm
+                                            </Button>
+                                            <Button Color="ButtonColor.Success" Size="ButtonSize.Small"
+                                                    @onclick="() => StartAdrAdd(draftAdr)">
+                                                ❌ Cancel
+                                            </Button>
+                                            break; *@
+
+                                case RowState.DeletePending:
+                                    <Button Color="ButtonColor.Danger" Size="ButtonSize.Small"
+                                            @onclick="() => ConfAdrDelete(EntityLevel.Adr, item)">
+                                        ⚠️ Confirm
+                                    </Button>
+                                    <Button Color="ButtonColor.Secondary" Size="ButtonSize.Small"
+                                            @onclick="() => CancAdrDelete(EntityLevel.Adr, item)">
+                                        ❎ Cancel
+                                    </Button>
+                                    break;
+                                case RowState.EditPending:
+                                    @if (draftAdr != null)
+                                    {
+                                        <Button Color="ButtonColor.Success" Size="ButtonSize.Small"
+                                                @onclick="() => ConfAdrEdit(draftAdr)">
+                                            ✅ Confirm
+                                        </Button>
+                                        <Button Color="ButtonColor.Secondary" Size="ButtonSize.Small"
+                                                @onclick="() => CancAdrEdit(EntityLevel.Adr, draftAdr)">
+                                            ❌ Cancel
+                                        </Button>
+                                    }
+                                    break;
+                                default:
+                                    @if (item.Id > 0)
+                                    {
+                                        <Button Color="ButtonColor.Warning" Size="ButtonSize.Small"
+                                                @onclick="() => StartAdrEdit(item)">
+                                            ✏️ Edit
+                                        </Button>
+                                        @if (item.Eaut != 9)
+                                        {
+                                            <Button Color="ButtonColor.Danger" Size="ButtonSize.Small"
+                                                    @onclick="() => StartAdrDelete(item)">
+                                                🗑 Delete
+                                            </Button>
+                                        }
+                                    }
+                                    break;
+                            }
+                        </ChildContent>
+                    </GridColumn>
+                        </GridColumns>
+                    </Grid>
+                </div>
+    </EditForm>
+</div>
+<style>
+    .xcolx {
+        width: 40px !important;
+    }
+
+    .xcol1 {
+        width: 60px;
+    }
+
+    .xcol2 {
+        width: 120px;
+    }
+
+    .xcol3 {
+        width: 180px;
+    }
+
+    .xcol4 {
+        width: 240px;
+    }
+        /* Ensure inputs inside these columns fill the width */
+        .xcol1 input,
+        .xcol2 input,
+        .xcol3 input,
+        .xcol4 input {
+            width: 100%;
+            box-sizing: border-box; /* prevents overflow due to padding/border */
+        }
+    /* Make the whole cell a flex container so buttons line up horizontally */
+    .actions-col {
+        display: flex;
+        flex-direction: row;
+        gap: 6px; /* spacing between buttons */
+        align-items: center; /* vertical alignment */
+        justify-content: flex-start;
+    }
+        /* Apply to all buttons in your grid (or globally if you prefer) */
+        .actions-col .btn {
+            display: inline-flex; /* flex container */
+            flex-direction: row; /* horizontal layout */
+            align-items: center; /* vertical centering */
+            gap: 4px; /* spacing between emoji and text */
+            white-space: nowrap; /* prevent wrapping onto two lines */
+            line-height: 1.2; /* normalize baseline */
+        }
+</style>
 @code {
     [Parameter]
     public RenderFragment ChildContent { get; set; }
@@ -79,8 +262,12 @@
     //guard
     [Parameter]
     public IPendingChangesGuard _guard { get; set; }
-    [Parameter] public EventCallback OnAdrSaved { get; set; }
-    [Parameter] public EventCallback OnAdrAbandon { get; set; }
+    //[Parameter]
+    //public EventCallback<PendingState> OnPendingStateChanged { get; set; }
+    [Parameter]
+    public int NbChanges { get; set; }
+    [Parameter]
+    public EventCallback<int> NbChangesChanged { get; set; }  // 🔥 CRITICAL
     // Actions passed in from parent
     //[Parameter] public EventCallback<GsadrDto> ConfAdrEdit { get; set; }
     //[Parameter] public EventCallback<GsadrDto> CancAdrEdit { get; set; }
@@ -94,26 +281,231 @@
     [Parameter] public TieaflDto tieafl { get; set; }
     [Parameter] public TiwaflDto tiwafl { get; set; }
 
-    public GsadrDto Address { get; set; } = new();
-    private int ITypAdr { get; set; } = 0;
-    private int IMyAdr { get; set; } = 0;
-    private List<GsadrDto> LsAdrs { get; set; } = new();
+    //[Parameter] public EventCallback OnAdrSave { get; set; }
+    //[Parameter] public EventCallback OnAdrAbandon { get; set; }
+
+    //public List<GsadrDto> MyDaAdres { get; set; } = new();
+    private GsadrDto curAdres { get; set; } = new();
+    private GsadrDto draftAdr { get; set; } = new();
     private List<Gpfixe> LsFixes = new();
 
-    private bool CanDelete => Address != null && Address.Id != 0;
-    private bool CanOpenMGrid = false;
+    private int ITypAdr { get; set; } = 0;
 
-    private async Task OuvreMGrid()
+    private List<GsadrDto> MyDaAdres => curOrga?.Gsadrs ?? new List<GsadrDto>();
+
+    private bool isAdrAdding = false, isAdrEditing = false;
+    //private bool CanOpenMGrid = false;
+    private bool CanAjoutAdr = false;
+    private bool CanEditAdr = false;
+    private Guid? AdrRenderKey = null;
+
+    private Dictionary<Guid, RowState> _rowStates = new();
+    private Dictionary<Guid, bool> _isLightBg = new();  // Track light background
+    private void SetLightBackground(Guid rowguid, bool isLight)
     {
-        if (IMyAdr != 0 && ITypAdr != 0)
+        _isLightBg[rowguid] = isLight;
+    }
+    // Disable ALL actions when ANY row editing
+    private Guid? _activeEditRowguid = null;
+    private EntityLevel? _activeEditLevel = null;
+    private Guid? AdAdrRowguid = null;
+    private Guid? EdAdrRowguid = null;// Currently editing row ID
+    private bool CanEditRows() => _activeEditRowguid == null;
+    private bool IsRowEditing(Guid rowguid) => _activeEditRowguid == rowguid;
+    private bool IsAnyRowEditing => _activeEditRowguid != null;
+
+    public enum RowState
+    {
+        Normal,
+        EditPending,
+        DeletePending,
+        AddPending,  // 🔥 NEW for Add
+        Locked
+    }
+    public enum EntityLevel { Adr }
+
+    // private async Task OuvreMGrid()
+    // {
+    //     if (ITypAdr != 0)
+    //     {
+    //         //await UpdateMyDaPlans();
+    //         CanOpenMGrid = true;
+    //     }
+    //     else
+    //     {
+    //         CanOpenMGrid = false;
+    //     }
+    // }
+    // and call this in OnParametersSet
+    protected override void OnParametersSet()
+    {
+        SubscribeToGuard();
+    }
+    // set up subscription locally
+    private void SubscribeToGuard()
+    {
+        _guard.OnChanges += async () =>
         {
-            //await UpdateMyDaPlans();
-            CanOpenMGrid = true;
-        }
-        else
+            NbChanges = _guard.GetPendingChangesCount();
+            await NbChangesChanged.InvokeAsync(NbChanges);
+            StateHasChanged();
+        };
+    }
+    private async Task StartAdrNew()
+    {
+        GsadrDto nwAdr = new();
+        nwAdr.Rowguid = Guid.NewGuid();
+        nwAdr.Idorg = curOrga.Idorg;
+        nwAdr.Orig = vientde; //institution
+        nwAdr.Atyp = ITypAdr; //1debase2second3paiement...
+
+        nwAdr.Eta = 1; //actif
+        draftAdr = nwAdr;
+        //AdAdrRowguid = nw
+        CanAjoutAdr = true;
+    }
+    private async Task StartAdrEdit(GsadrDto item)
+    {
+        draftAdr = item;
+        EdAdrRowguid = item.Rowguid;
+        CanEditAdr = true;
+        //EndRowEdit();  // Close single edit mode
+    }
+    private async Task ConfAdrAdd(GsadrDto myadr)
+    {
+        await _guard.TrackInsert("gsadrs", myadr);
+        curOrga?.Gsadrs.Insert(0, myadr);
+        AdrRenderKey = Guid.NewGuid();
+        AdAdrRowguid = null;
+        CanAjoutAdr = false;
+    }
+    private async Task ConfAdrEdit(GsadrDto myadr)
+    {
+        var key = myadr.Id;
+        await _guard.TrackUpdate("gsadrs", key, myadr);
+        //await OnEntitySaved(EntityOgpe.Gdom, myadr);        //EndRowEdit();  // Close single edit mode
+        EdAdrRowguid = null;
+    }
+    private async Task ConfAdrDelete(EntityLevel level, GsadrDto item)
+    {
+        var key = item.Id; // helper to extract PK
+        await _guard.TrackDelete("gsadrs", key, item.Rowguid);
+        //EndRowEdit();  // Close single edit mode
+    }
+
+
+    private async Task CancAdrEdit(EntityLevel level, GsadrDto item)
+    {
+
+        //EndRowEdit();  // Close single edit mode
+    }
+    private async Task CancAdrDelete(EntityLevel level, GsadrDto item)
+    {
+
+        //EndRowEdit();  // Close single edit mode
+    }
+    
+    private async Task StartAdrDelete(GsadrDto item)
+    {
+
+        //EndRowEdit();  // Close single edit mode
+    }
+
+    // private async Task StartAdrAdd()
+    // {
+    //     CanAjoutAdr = true;
+
+    //     //EndRowEdit();  // Close single edit mode
+    // }
+
+    private async Task CancAdrAdd()
+    {
+        CanAjoutAdr = false;
+        //EndRowEdit();  // Close single edit mode
+    }
+    //Rows management
+    private string GetAdrRowClass(GsadrDto pln)
+    {
+        var state = GetRowState(pln.Rowguid);
+        var isLight = IsLightBackground(pln.Rowguid);  // 🔥 Uses your existing
+
+        // 🔥 NEW: Single Active Row Editing
+        var isActiveEdit = _activeEditRowguid == pln.Rowguid;
+        var isOtherRowEditing = _activeEditRowguid != null && !isActiveEdit;
+
+        return GetRowCss(state, isLight, pln.Rowguid, isActiveEdit, isOtherRowEditing);
+    }
+    private RowState GetRowState(Guid rowguid, object? parent = null)
+    {
+        if (_rowStates.TryGetValue(rowguid, out var state)) return state;
+
+        // Context-aware lookup
+        // if (parent is Gsgfix mypln)
+        // {
+        //     if (mypln.Rowguid == rowguid && IsFixRowLocked(rowguid)) return RowState.Locked;
+        //     var rub = mypln.Rubvars?.FirstOrDefault(r => r.Rowguid == rowguid);
+        //     if (rub != null && IsRubRowLocked(rowguid)) return RowState.Locked;
+        // }
+        // 🔥 MISSING: Final return for normal state
+        return _rowStates.TryGetValue(rowguid, out var cachedState) ? cachedState : RowState.Normal;
+    }
+    private void SetRowState(Guid rowguid, RowState state)  // Remove <T>
+    {
+        _rowStates[rowguid] = state;
+    }
+    private void ResetRowState(Guid rowguid)  // Reset specific row
+    {
+        _rowStates.Remove(rowguid);  // Back to Normal
+    }
+    private string GetRowCss(RowState state, bool isLight, Guid rowguid,
+        bool isActiveEdit, bool isOtherRowEditing)
+    {
+        var css = new List<string>();
+
+        if (isLight) css.Add("bg-light");
+
+        // 🔥 YOUR EXISTING: NEW ADD detection (Xadd1 == -1)
+        var isNewAdd = ((dynamic)MyDaAdres.FirstOrDefault(p => p.Rowguid == rowguid))?.Xadd1 == -1;
+
+        // 🔥 HIGHEST PRIORITY: Single Row Editing
+        if (isActiveEdit)
         {
-            CanOpenMGrid = false;
+            css.Add("row-active-edit");  // Thick yellow border + highlight
+            return string.Join(" ", css);  // EARLY RETURN - editing overrides all
         }
+
+        // 🔥 NEXT: Other rows when editing active → READONLY
+        if (isOtherRowEditing)
+        {
+            css.Add("row-readonly");
+            css.Add("opacity-65");
+            css.Add("cursor-not-allowed");
+        }
+
+        // 🔥 YOUR EXISTING RowState logic
+        switch (state)
+        {
+            case RowState.AddPending:
+            case RowState.EditPending when isNewAdd:
+                css.Add("border-start border-warning border-3");
+                //css.Add("new-add-indicator");
+                break;
+            case RowState.EditPending:
+                css.Add("border-start border-info border-3");
+                break;
+            case RowState.DeletePending:
+                css.Add("bg-danger-subtle");
+                break;
+            case RowState.Locked:
+                css.Add("bg-secondary-subtle opacity-75");
+                break;
+        }
+
+        return string.Join(" ", css);
+    }
+    private bool IsLightBackground(Guid rowguid)
+    {
+        return _isLightBg.ContainsKey(rowguid) && _isLightBg[rowguid];
     }
     //private async Task OnAdrSaved()
     //{
@@ -123,14 +515,4 @@
     //{
     //    await OnAdrAbandon.InvokeAsync(Address);
     //}
-
-    private async Task OnDelete()
-    {
-        //await OnDeleted.InvokeAsync(Address);
-    }
-
-    private async Task OnCancel()
-    {
-        //await OnCanceled.InvokeAsync();
-    }
 }

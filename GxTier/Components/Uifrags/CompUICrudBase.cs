@@ -3,6 +3,8 @@ using System.Security.Cryptography;
 
 using BlazorBootstrap;
 
+//using GxPilo.Components.Plans;
+
 using GxShared.GxDtos;
 using GxShared.Helpers;
 using GxShared.Helpers.CrudHelpers;
@@ -20,9 +22,6 @@ namespace GxTie.Components.Uifrags
         protected readonly Dictionary<Guid, RubhieDto> _edHieOriginals = new();
         protected readonly Dictionary<Guid, RubpstDto> _edPstOriginals = new();
         protected readonly Dictionary<Guid, TierspDto> _edTieOriginals = new();
-        protected readonly Dictionary<Guid, TieaflDto> _edAftOriginals = new();
-        protected readonly Dictionary<Guid, TiewelDto> _edTiwOriginals = new();
-        protected readonly Dictionary<Guid, TiwaflDto> _edAfwOriginals = new();
         protected readonly Dictionary<Guid, ActsaieDto> _edActOriginals = new();
         protected readonly Dictionary<Guid, ActdetDto> _edAdtOriginals = new();
         protected readonly Dictionary<Guid, ResdonDto> _edResOriginals = new();
@@ -32,55 +31,150 @@ namespace GxTie.Components.Uifrags
         {
 
         }
+
         protected abstract void ClearAddRow(EntityLevel level, Guid rowguid);
         protected abstract void ClearEditRow(EntityLevel level, Guid rowguid);
-        protected void BeginEdit(EntityLevel level, Guid rowguid, object draft)
+        protected override async Task ConfirmAdd(EntityLevel level, object draft, bool isConfirm)
         {
-            var s = GetEditState(level);
-            s.IsAdd = false;
-            s.IsEdit = true;
-            s.AddRowguid = null;
-            s.EditRowguid = rowguid;
-            s.DeleteRowguid = null;
 
-            //SetDraft(level, draft);
-            BeginEditRow(level, rowguid, draft);
-            //SetRowState(level, rowguid, RowState.EditPending);
-            ////_rowPendingOpTypeByRow[rowguid] = PendingOpType.Update;
+            //var rowguid = EntityKeyHelper.GetRowguid(draft!); // get it from the draft
+            await UnifiedAddAction(level, draft, PendingOpType.Insert, isConfirm);
+            //var soe = curRubr.Rubfmts.ToList();
+            EndRowEdit(level); //
+            BumpRenderKey(level);                 // <-- add this
+            await InvokeAsync(StateHasChanged);
         }
-        protected async Task CancelAdd(EntityLevel level, object entity)
+        protected override async Task ConfirmEdit(EntityLevel level, object draft, bool isConfirm)
         {
-            var rowguid = MLEntityKeyHelper.GetRowguidAsGuid(entity);
-            await UnifiedCancelAction(level, entity, PendingOpType.Insert, rowguid);
-            ClearAddRow(level, rowguid);
-            EndRowEdit();
-        }
-        protected async Task ConfirmDelete(EntityLevel level, object entity, bool isConfirm)
+            if (draft is null) return;
+            await UnifiedEditAction(level, draft, PendingOpType.Insert, isConfirm);
+            EndRowEdit(level); //
+            BumpRenderKey(level);                 // <-- add this
+            await InvokeAsync(StateHasChanged);
+        }   
+        protected override async Task ConfirmDelete(EntityLevel level, object entity, bool isConfirm)
         {
             var rowguid = MLEntityKeyHelper.GetRowguidAsGuid(entity);
             await UnifiedDeleteAction(level, entity, isConfirm);
             ClearAddRow(level, rowguid);
+            BumpRenderKey(level);                 // <-- add this
             await InvokeAsync(StateHasChanged);
         }
-        protected async Task CancelEdit(EntityLevel level, object entity)
+        protected override async Task CancelAdd(EntityLevel level, object entity)
+        {
+            var rowguid = MLEntityKeyHelper.GetRowguidAsGuid(entity);
+            await UnifiedCancelAction(level, entity, PendingOpType.Insert);
+            ClearAddRow(level, rowguid);
+            EndRowEdit(level);
+            BumpRenderKey(level);                 // <-- add this
+            await InvokeAsync(StateHasChanged);
+        }
+        protected override async Task CancelEdit(EntityLevel level, object entity)
         {
             var rowguid = MLEntityKeyHelper.GetRowguidAsGuid(entity);
             Console.WriteLine($"CancelEdit rowguid = {rowguid}");
             //await UnifiedCancelAction(level, entity, PendingOpType.Update);
-            await UnifiedCancelAction(level, entity, PendingOpType.Update, rowguid);
+            await UnifiedCancelAction(level, entity, PendingOpType.Update);
             ClearEditRow(level, rowguid);
             //await ClearEditRow(level, entity);
-            EndRowEdit();
+            EndRowEdit(level);
+            BumpRenderKey(level);                 // <-- add this
+            await InvokeAsync(StateHasChanged);
         }
-        protected async Task CancelDelete(EntityLevel level, object entity)
+        protected override async Task CancelDelete(EntityLevel level, object entity)
         {
             var rowguid = MLEntityKeyHelper.GetRowguidAsGuid(entity);
-            await UnifiedCancelAction(level, entity, PendingOpType.Delete, rowguid);
+            await UnifiedCancelAction(level, entity, PendingOpType.Delete);
+            BumpRenderKey(level);                 // <-- add this
+            await InvokeAsync(StateHasChanged);
         }
-        private async Task UnifiedCancelAction(EntityLevel level, object entity, PendingOpType opType, Guid rowguid)
-        {
-            var opInfo = GetOpInfo(level, rowguid);
 
+        // --- Unified actions (generic) ---
+        protected async Task UnifiedAddAction(EntityLevel level, object entity, PendingOpType opType, bool isConfirm)
+        {
+            var rowguid = EntityKeyHelper.GetRowguid(entity); // trust the entity, not the caller's guid
+            var isNew = GetPendingOpType(level, rowguid) == PendingOpType.Insert;
+            string entitySetName = GetEntitySetName(level);
+            if (!isConfirm)
+            {
+                if (isNew)
+                    RemoveFromLocalCollection(level, entity);
+                RollbackPendingState(level, entity, isNew);
+                return;
+            }
+            CopyDraftToGridItem(level, entity);
+            //CopyDraftTablToGridItem(entity, 1); // Assuming 1 is the tent for the main entity
+
+            Guid opId;
+            if (isNew)
+            {
+                opId = await Guard.TrackInsert(entitySetName, entity);
+                ////SetPendingOpType(level, rowguid, PendingOpType.Insert);
+            }
+            else
+            {
+                var key = EntityKeyHelper.GetKey(entity, level);
+                opId = await Guard.TrackUpdate(entitySetName, key, entity);
+                ////SetPendingOpType(level, rowguid, PendingOpType.Update);
+            }
+
+            SetOpInfo(level, rowguid, new PendingOpInfo(opId, isNew ? PendingOpType.Insert : PendingOpType.Update));
+
+            if (isNew)
+            {
+                RemoveFromLocalCollection(level, entity);
+                AddToLocalCollection(level, entity);
+            }
+
+            FinalizeConfirmedState(level, entity, $"✅ {entitySetName} tracked");
+        }
+        protected async Task UnifiedEditAction(EntityLevel level, object entity, PendingOpType opType, bool isConfirm)
+        {
+            var rowguid = EntityKeyHelper.GetRowguid(entity);
+            string entitySetName = GetEntitySetName(level);
+            if (!isConfirm)
+            {
+                RollbackPendingState(level, entity, false);
+                return;
+            }
+            if (!Validate(level,entity))
+                return;
+
+            CopyDraftToGridItem(level, entity); // Assuming 2 is the tent for the child entity
+
+            var key = EntityKeyHelper.GetKey(entity, level);
+            var opId = await Guard.TrackUpdate(entitySetName, key, entity);
+            ////SetPendingOpType(level, rowguid, PendingOpType.Update);
+            SetOpInfo(level, rowguid, new PendingOpInfo(opId, PendingOpType.Update));
+
+            ReplaceInLocalCollection(level, entity);
+
+            FinalizeConfirmedState(level, entity, $"✅ {entitySetName} tracked");
+        }
+        protected async Task UnifiedDeleteAction(EntityLevel level, object entity, PendingOpType opType, bool isConfirm)
+        {
+            var rowguid = EntityKeyHelper.GetRowguid(entity);
+            string entitySetName = GetEntitySetName(level);
+            if (!isConfirm)
+            {
+                SetRowState(level, rowguid, RowState.Default);
+                return;
+            }
+
+            var key = EntityKeyHelper.GetKey(entity, level);
+            var opId = await Guard.TrackDelete(entitySetName, key, rowguid);
+            ////SetPendingOpType(level, rowguid, PendingOpType.Delete);
+            SetOpInfo(level, rowguid, new PendingOpInfo(opId, PendingOpType.Delete));
+
+            RemoveFromLocalCollection(level, entity);
+
+            FinalizeConfirmedState(level, entity, $"✅ {entitySetName} deletion tracked");
+        }
+        protected async Task UnifiedCancelAction(EntityLevel level, object entity, PendingOpType opType)
+        {
+            var rowguid = EntityKeyHelper.GetRowguid(entity);
+            var opInfo = GetOpInfo(level, rowguid);
+            string entitySetName = GetEntitySetName(level); // You can customize this based on your entity type
             if (opInfo is not null)
                 await Guard.CancelTrackAsync(opInfo.OpId, opType);
 
@@ -104,137 +198,130 @@ namespace GxTie.Components.Uifrags
                     break;
             }
         }
-        private async Task UnifiedDeleteAction(EntityLevel level, object item, bool isConfirm)
+        protected async Task UnifiedDeleteAction(EntityLevel level, object item, bool isConfirm)
         {
             var rowguid = MLEntityKeyHelper.GetRowguidAsGuid(item);
-            var entitySet = GetEntitySet(level);
+            var entitySetName = GetEntitySetName(level);
             var key = MLEntityKeyHelper.GetKeyAsObject(item);
-            var opId = await Guard.TrackDelete(entitySet, key, rowguid);
-            SetPendingOpType(level, rowguid, PendingOpType.Delete);
+            var opId = await Guard.TrackDelete(entitySetName, key, rowguid);
+            ////SetPendingOpType(level, rowguid, PendingOpType.Delete);
             SetOpInfo(level, rowguid, new PendingOpInfo(opId, PendingOpType.Delete));
             RemoveByRowguid(level, rowguid);
             SetDeleteFlags(item);
             Console.WriteLine($"ROW is removed");
             await InvokeAsync(StateHasChanged);
         }
-        
+        //protected void BeginAdd(EntityLevel level, Guid rowguid, object draft)
+        //{
+        //    var s = GetEditState(level);
+        //    s.IsAdd = true;
+        //    s.IsEdit = false;
+        //    s.AddRowguid = rowguid;
+        //    s.EditRowguid = null;
+        //    s.DeleteRowguid = null;
+
+        //    BeginAddRow(level, rowguid, draft);
+        //    SetPendingOpType2(level, rowguid, PendingOpType.Insert);   // <- use the helper, matches GetPendingOpType's key
+        //}
+        // --- shared start-edit entry point ---
+        protected async Task StartRowAdd<TDto>(
+    EntityLevel level,
+    TDto newItem,
+    List<TDto> list,
+    Action<TDto> setDraftField) where TDto : class
+        {
+            var rowguid = EntityKeyHelper.GetRowguid(newItem);
+            if (rowguid == Guid.Empty) return;
+            if (IsAnyRowEditing && !IsRowEditing(rowguid)) return;
+
+            list.Insert(0, newItem);
+            var draft = DeepClone(newItem);
+            setDraftField(draft);
+
+            BeginAdd(level, rowguid, draft);
+            BumpRenderKey(level);                 // <-- add this
+            await InvokeAsync(StateHasChanged);
+        }
+        protected async Task StartRowEdit<TDto>(
+            EntityLevel level,
+            TDto item,
+            Dictionary<Guid, TDto> originalsStore,
+            Action<TDto> setDraftField) where TDto : class
+        {
+            var rowguid = EntityKeyHelper.GetRowguid(item);
+            if (rowguid == Guid.Empty) return;
+            if (IsAnyRowEditing && !IsRowEditing(rowguid)) return;
+
+            originalsStore[rowguid] = DeepClone(item);
+            var draft = DeepClone(item);
+            setDraftField(draft);
+
+            BeginEdit(level, rowguid, draft);
+            BumpRenderKey(level);                 // <-- add this
+            await InvokeAsync(StateHasChanged);
+        }
+        protected async Task StartRowDelete(EntityLevel level, Guid rowguid)
+        {
+            if (rowguid == Guid.Empty) return;
+            if (IsAnyRowEditing && !IsRowEditing(rowguid)) return;
+
+            SetRowState(level, rowguid, RowState.DeletePending);
+            BumpRenderKey(level);                 // <-- add this
+            await InvokeAsync(StateHasChanged);
+        }
         protected void BeginAdd(EntityLevel level, Guid rowguid, object draft)
         {
-            var s = GetEditState(level);
-            s.IsAdd = true;
-            s.IsEdit = false;
-            s.AddRowguid = rowguid;
-            s.EditRowguid = null;
-            s.DeleteRowguid = null;
+            SetDraft(level, draft);
+            SetEditState(level, isAdd: true, isEdit: false, rowguid);   // <- restore this
+            SetRowState(level, rowguid, RowState.AddPending);
+            SetPendingOpType(level, rowguid, PendingOpType.Insert);
+            SetLightBackground(rowguid, true);
+        }
 
-            //SetDraft(level, draft);
-            BeginAddRow(level, rowguid, draft);
-            //SetRowState(level, rowguid, RowState.AddPending);
-            _rowPendingOpTypeByRow[rowguid] = PendingOpType.Insert;
-        }
-        protected void CommitPlnDraft(PlngenDto target, PlngenDto source)
+        protected void BeginEdit(EntityLevel level, Guid rowguid, object draft)
         {
-            target.Idorg = source.Idorg;
-            target.Rowguid = source.Rowguid;
-            target.Iui = source.Iui;
-            target.Ptyp = source.Ptyp;
-            target.Todom = source.Todom;
-            target.Ogtyp = source.Ogtyp;
-            target.Totyp = source.Totyp;
-            target.Toatr = source.Toatr;
-            target.Tovue = source.Tovue;
-            target.Liba = source.Liba;
-            target.Abg = source.Abg;
-            target.Fpsrc = source.Fpsrc;
-            target.Fpexe = source.Fpexe;
-            target.Fpisrc = source.Fpisrc;
-            target.Styp = source.Styp;
-            target.Eta = source.Eta;
-            target.Xadd1 = source.Xadd1;
-            target.Xedt1 = source.Xedt1;
+            SetDraft(level, draft);
+            SetEditState(level, isAdd: false, isEdit: true, rowguid);   // <- restore this
+            SetRowState(level, rowguid, RowState.EditPending);
+            SetPendingOpType(level, rowguid, PendingOpType.Update);
+            SetLightBackground(rowguid, true);
         }
-        protected void CommitRubDraft(RubvarDto target, RubvarDto source)
-        {
-            target.Idorg = source.Idorg;
-            target.Rowguid = source.Rowguid;
-            target.Ipln = source.Ipln;
-            target.Iui = source.Iui;
-            target.Atyp = source.Atyp;
-            target.Scdrub = source.Scdrub;
-            target.Frsrc = source.Frsrc;
-            //target.Rtyp = source.Rtyp;
-            //target.Toatr = source.Toatr;
-            target.Tovue = source.Tovue;
-            target.Liba = source.Liba;
-            target.Abg = source.Abg;
+        //    protected async Task StartRowEdit<TDto>(
+        //EntityLevel level,
+        //TDto item,
+        //Dictionary<Guid, TDto> originalsStore,
+        //Action<TDto> setDraftField) where TDto : class
+        //    {
+        //        var rowguid = EntityKeyHelper.GetRowguid(item);
+        //        if (rowguid == Guid.Empty) return;
+        //        if (IsAnyRowEditing && !IsRowEditing(rowguid)) return;
 
-            target.Eta = source.Eta;
-            target.Xadd1 = source.Xadd1;
-            target.Xedt1 = source.Xedt1;
-        }
-        protected void CommitFmtDraft(RubfmtDto target, RubfmtDto source)
-        {
-            target.Idorg = source.Idorg;
-            target.Rowguid = source.Rowguid;
-            target.Irub = source.Irub;
-            target.Iui = source.Iui;
-            target.Ztyp = source.Ztyp;
-            target.Zcdrub = source.Zcdrub;
-            target.Ftsrc = source.Ftsrc;
-            //target.Rtyp = source.Rtyp;
-            //target.Toatr = source.Toatr;
-            //target.Tovue = source.Tovue;
-            target.Liba = source.Liba;
-            target.Abg = source.Abg;
+        //        originalsStore[rowguid] = DeepClone(item);
+        //        var draft = DeepClone(item);
+        //        setDraftField(draft);          // assigns to draftFmt/draftPln/etc.
 
-            target.Eta = source.Eta;
-            target.Xadd1 = source.Xadd1;
-            target.Xedt1 = source.Xedt1;
-        }
-        protected void CommitHieDraft(RubhieDto target, RubhieDto source)
-        {
-            target.Idorg = source.Idorg;
-            target.Rowguid = source.Rowguid;
-            target.Ipln = source.Ipln;
-            target.Iui = source.Iui;
-            target.Atyp = source.Atyp;
-            target.Scdrub = source.Scdrub;
-            target.Frsrc = source.Frsrc;
-            //target.Rtyp = source.Rtyp;
-            //target.Toatr = source.Toatr;
-            target.Tovue = source.Tovue;
-            target.Liba = source.Liba;
-            target.Abg = source.Abg;
+        //        BeginEdit(level, rowguid, draft);   // BeginEdit now owns SetPendingOpType internally
+        //        await InvokeAsync(StateHasChanged);
+        //    }
+        //protected void BeginAdd(EntityLevel level, Guid rowguid, object draft)
+        //{
+        //    var s = GetEditState(level);
+        //    s.IsAdd = true;
+        //    s.IsEdit = false;
+        //    s.AddRowguid = rowguid;
+        //    s.EditRowguid = null;
+        //    s.DeleteRowguid = null;
 
-            target.Eta = source.Eta;
-            target.Xadd1 = source.Xadd1;
-            target.Xedt1 = source.Xedt1;
-        }
-        protected void CommitPstDraft(RubpstDto target, RubpstDto source)
-        {
-            target.Idorg = source.Idorg;
-            target.Rowguid = source.Rowguid;
-            target.Ihie = source.Ihie;
-            target.Iui = source.Iui;
-            target.Ztyp = source.Ztyp;
-            target.Zcdrub = source.Zcdrub;
-            target.Ftsrc = source.Ftsrc;
-            //target.Rtyp = source.Rtyp;
-            //target.Toatr = source.Toatr;
-            //target.Tovue = source.Tovue;
-            target.Liba = source.Liba;
-            target.Abg = source.Abg;
-
-            target.Eta = source.Eta;
-            target.Xadd1 = source.Xadd1;
-            target.Xedt1 = source.Xedt1;
-        }
+        //    //SetDraft(level, draft);
+        //    BeginAddRow(level, rowguid, draft);
+        //    //SetRowState(level, rowguid, RowState.AddPending);
+        //    _rowPendingOpTypeByRow[rowguid] = PendingOpType.Insert;
+        //}
         protected bool IsPlanEditing(PlngenDto item) => IsEditing(EntityLevel.Plan, item.Rowguid);
         protected bool IsRubEditing(RubvarDto item) => IsEditing(EntityLevel.Rub, item.Rowguid);
         protected bool IsFmtEditing(RubfmtDto item) => IsEditing(EntityLevel.Fmt, item.Rowguid);
         protected bool IsHieEditing(RubhieDto item) => IsEditing(EntityLevel.Hie, item.Rowguid);
         protected bool IsPstEditing(RubpstDto item) => IsEditing(EntityLevel.Pst, item.Rowguid);
-
         protected bool IsEditing(EntityLevel level, Guid rowguid)
         {
             var es = GetEditState(level);
@@ -242,6 +329,13 @@ namespace GxTie.Components.Uifrags
                    ((es.IsAdd && es.AddRowguid == rowguid) ||
                     (es.IsEdit && es.EditRowguid == rowguid));
         }
+        //protected bool IsEditing(EntityLevel level, Guid rowguid)
+        //{
+        //    var es = GetEditState(level);
+        //    return (es.IsAdd || es.IsEdit) &&
+        //           ((es.IsAdd && es.AddRowguid == rowguid) ||
+        //            (es.IsEdit && es.EditRowguid == rowguid));
+        //}
 
         //protected bool IsPlanEditing(PlngenDto item)
         //{
@@ -300,69 +394,16 @@ namespace GxTie.Components.Uifrags
         //    DeleteRowguid = null;
         //}
         //UI Page row manage
-        protected void BeginAddRow(EntityLevel level, Guid rowguid, object draft)
-        {
-            SetDraft(level, draft);
-            StartRowEdit(rowguid, level);
-            SetRowState(level, rowguid, RowState.AddPending);
-            //var opId = await CommitAddOrUpdateAsync(entity, isNew, entitySet);
-            ////_rowPendingOpTypeByRow[rowguid] = PendingOpType.Insert;
-            //_pendingOpIdsByRow[rowguid] = opId;
-            SetLightBackground(rowguid, true);
-        }
-        protected void BeginEditRow(EntityLevel level, Guid rowguid, object draft)
-        {
-            SetDraft(level, draft);
-            StartRowEdit(rowguid, level);
-            SetRowState(level, rowguid, RowState.EditPending);
-            //var opId = await CommitAddOrUpdateAsync(entity, isNew, entitySet);
-            ////_rowPendingOpTypeByRow[rowguid] = PendingOpType.Update;
-            SetLightBackground(rowguid, true);
-            //_pendingOpIdsByRow[rowguid] = opId;
-        }
-        private void SetLightBackground(Guid rowguid, bool isLight)
-        {
-            _isLightBg[rowguid] = isLight;
-        }
-        private bool GetLightBackground(Guid rowguid)
-        {
-            return _isLightBg.GetValueOrDefault(rowguid, false);
-        }
-        protected override void AddToLocalCollection(EntityLevel level, object entity)
-        {
-            switch (level)
-            {
-                case EntityLevel.Plan:
-                    if (entity is PlngenDto plan) PlanItems.Add(plan);
-                    break;
-                case EntityLevel.Rub:
-                    if (entity is RubvarDto rub) RubItems.Add(rub);
-                    break;
-                case EntityLevel.Fmt:
-                    if (entity is RubfmtDto fmt) FmtItems.Add(fmt);
-                    break;
-                case EntityLevel.Tie:
-                    if (entity is TierspDto tie) TieItems.Add(tie);
-                    break;
-                case EntityLevel.Act:
-                    if (entity is ActsaieDto act) ActItems.Add(act);
-                    break;
-                case EntityLevel.Adt:
-                    if (entity is ActdetDto adt) AdtItems.Add(adt);
-                    break;
-                case EntityLevel.Res:
-                    if (entity is ResdonDto res) ResItems.Add(res);
-                    break;
-                case EntityLevel.Rdt:
-                    if (entity is ResdetDto rdt) RdtItems.Add(rdt);
-                    break;
-                case EntityLevel.Bro:
-                    if (entity is ResbroDto bro) BroItems.Add(bro);
-                    break;
-                default:
-                    throw new ArgumentOutOfRangeException(nameof(level));
-            }
-        }
+        //protected void BeginAddRow(EntityLevel level, Guid rowguid, object draft)
+        //{
+        //    SetDraft(level, draft);
+        //    StartRowEdit(rowguid, level);
+        //    SetRowState(level, rowguid, RowState.AddPending);
+        //    //var opId = await CommitAddOrUpdateAsync(entity, isNew, entitySet);
+        //    ////_rowPendingOpTypeByRow[rowguid] = PendingOpType.Insert;
+        //    //_pendingOpIdsByRow[rowguid] = opId;
+        //    SetLightBackground(rowguid, true);
+        //}
         protected override void RollbackPendingState(EntityLevel level, object entity, bool isNew)
         {
             var rowguid = MLEntityKeyHelper.GetRowguidAsGuid(entity);
@@ -391,7 +432,110 @@ namespace GxTie.Components.Uifrags
             //EndRowEdit();
             SetLightBackground(rowguid, false);
         }
+        private void SetLightBackground(Guid rowguid, bool isLight)
+        {
+            _isLightBg[rowguid] = isLight;
+        }
+        private bool GetLightBackground(Guid rowguid)
+        {
+            return _isLightBg.GetValueOrDefault(rowguid, false);
+        }
 
+        protected override void AddToLocalCollection(EntityLevel level, object entity)
+        {
+            switch (level)
+            {
+                case EntityLevel.Plan:
+                    if (entity is PlngenDto plan) PlanItems.Add(plan);
+                    break;
+                case EntityLevel.Rub:
+                    if (entity is RubvarDto rub) RubItems.Add(rub);
+                    break;
+                case EntityLevel.Fmt:
+                    if (entity is RubfmtDto fmt) FmtItems.Add(fmt);
+                    break;
+                case EntityLevel.Hie:
+                    if (entity is RubhieDto hie) HieItems.Add(hie);
+                    break;
+                case EntityLevel.Pst:
+                    if (entity is RubpstDto pst) PstItems.Add(pst);
+                    break;
+                case EntityLevel.Tie:
+                    if (entity is TierspDto tie) TieItems.Add(tie);
+                    break;
+                case EntityLevel.Act:
+                    if (entity is ActsaieDto act) ActItems.Add(act);
+                    break;
+                case EntityLevel.Adt:
+                    if (entity is ActdetDto adt) AdtItems.Add(adt);
+                    break;
+                case EntityLevel.Res:
+                    if (entity is ResdonDto res) ResItems.Add(res);
+                    break;
+                case EntityLevel.Rdt:
+                    if (entity is ResdetDto rdt) RdtItems.Add(rdt);
+                    break;
+                case EntityLevel.Bro:
+                    if (entity is ResbroDto bro) BroItems.Add(bro);
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(level));
+            }
+            OnLocalCollectionMutated(level, CollectionMutation.Added, entity);
+        }
+        protected override void RemoveFromLocalCollection(EntityLevel level, object entity)
+        {
+            switch (level)
+            {
+                case EntityLevel.Plan:
+                    if (entity is PlngenDto plan)
+                        PlanItems.RemoveAll(x => x.Rowguid == plan.Rowguid);
+                    break;
+                case EntityLevel.Rub:
+                    if (entity is RubvarDto rub)
+                        RubItems.RemoveAll(x => x.Rowguid == rub.Rowguid);
+                    break;
+                case EntityLevel.Fmt:
+                    if (entity is RubfmtDto fmt)
+                        FmtItems.RemoveAll(x => x.Rowguid == fmt.Rowguid);
+                    break;
+                case EntityLevel.Hie:
+                    if (entity is RubhieDto hie)
+                        HieItems.RemoveAll(x => x.Rowguid == hie.Rowguid);
+                    break;
+                case EntityLevel.Pst:
+                    if (entity is RubpstDto pst)
+                        PstItems.RemoveAll(x => x.Rowguid == pst.Rowguid);
+                    break;
+                case EntityLevel.Tie:
+                    if (entity is TierspDto tie)
+                        TieItems.RemoveAll(x => x.Rowguid == tie.Rowguid);
+                    break;
+                case EntityLevel.Act:
+                    if (entity is ActsaieDto act)
+                        ActItems.RemoveAll(x => x.Rowguid == act.Rowguid);
+                    break;
+                case EntityLevel.Adt:
+                    if (entity is ActdetDto adt)
+                        AdtItems.RemoveAll(x => x.Rowguid == adt.Rowguid);
+                    break;
+                case EntityLevel.Res:
+                    if (entity is ResdonDto res)
+                        ResItems.RemoveAll(x => x.Rowguid == res.Rowguid);
+                    break;
+                case EntityLevel.Rdt:
+                    if (entity is ResdetDto rdt)
+                        RdtItems.RemoveAll(x => x.Rowguid == rdt.Rowguid);
+                    break;
+                case EntityLevel.Bro:
+                    if (entity is ResbroDto bro)
+                        BroItems.RemoveAll(x => x.Rowguid == bro.Rowguid);
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(level));
+            }
+            OnLocalCollectionMutated(level, CollectionMutation.Removed, entity);
+        }
         protected override void ReplaceInLocalCollection(EntityLevel level, object entity)
         {
             switch (level)
@@ -415,6 +559,20 @@ namespace GxTie.Components.Uifrags
                     {
                         var index = FmtItems.FindIndex(x => x.Rowguid == fmt.Rowguid);
                         if (index >= 0) FmtItems[index] = fmt;
+                    }
+                    break;
+                case EntityLevel.Hie:
+                    if (entity is RubhieDto hie)
+                    {
+                        var index = HieItems.FindIndex(x => x.Rowguid == hie.Rowguid);
+                        if (index >= 0) HieItems[index] = hie;
+                    }
+                    break;
+                case EntityLevel.Pst:
+                    if (entity is RubpstDto pst)
+                    {
+                        var index = PstItems.FindIndex(x => x.Rowguid == pst.Rowguid);
+                        if (index >= 0) PstItems[index] = pst;
                     }
                     break;
                 case EntityLevel.Tie:
@@ -462,7 +620,9 @@ namespace GxTie.Components.Uifrags
                 default:
                     throw new ArgumentOutOfRangeException(nameof(level));
             }
+            OnLocalCollectionMutated(level, CollectionMutation.Replaced, entity);
         }
+
         protected override void CopyDraftToGridItem(EntityLevel level, object entity)
         {
             switch (level)
@@ -475,6 +635,7 @@ namespace GxTie.Components.Uifrags
                         plan.Liba = draftPlan.Liba; //designation
                         plan.Abg = draftPlan.Abg; //abrege
                         plan.Fpsrc = draftPlan.Fpsrc; //formule-non valider
+                        plan.Iele = draftPlan.Iele; //compteur
                         plan.Eta = draftPlan.Eta; //etat
                         break;
                     }
@@ -495,10 +656,12 @@ namespace GxTie.Components.Uifrags
                         rub.Scdrub = draftRub.Scdrub; //code
                         rub.Zcod = draftRub.Zcod; //refer
                         rub.Atyp = draftRub.Atyp; //atyp
+                        rub.Utyp = draftRub.Utyp;//utyp
                         rub.Frsrc = draftRub.Frsrc; //formule
                         rub.Ecmount = draftRub.Ecmount;
                         rub.Ecannu = draftRub.Ecannu;
                         rub.Nbech = draftRub.Nbech;
+                        rub.Iele = draftRub.Iele; //compteur
                         rub.Eta = draftRub.Eta; //etat
                     }
                     break;
@@ -513,11 +676,14 @@ namespace GxTie.Components.Uifrags
                         fmt.Zcdrub = draftFmt.Zcdrub; //code
                         fmt.Zcod = draftFmt.Zcod; //refer
                         fmt.Ztyp = draftFmt.Ztyp; //ztyp
-
+                        fmt.Dstr = draftFmt.Dstr; //debut grid
+                        fmt.Fstr = draftFmt.Fstr; //fin grid
                         fmt.Ftsrc = draftFmt.Ftsrc; //formule
                         fmt.Col = draftFmt.Col; //col
                         fmt.Lne = draftFmt.Lne; //lne
                         fmt.Lgtf = draftFmt.Lgtf; //lgtf
+                        fmt.Aval = draftFmt.Aval; //valeur
+                        fmt.Iele = draftFmt.Iele; //compteur
                         fmt.Eta = draftFmt.Eta; //etat
                     }
                     break;
@@ -530,8 +696,52 @@ namespace GxTie.Components.Uifrags
                         tie.Xmatri = draftTie.Xmatri; //matricule
                         tie.Nom = draftTie.Nom; //abrege
                         tie.Pnom = draftTie.Pnom; //formule-non valider
+                        tie.Iele = draftTie.Iele; //compteur
                         tie.Eta = draftTie.Eta; //etat
                         break;
+                    }
+                    break;
+                case EntityLevel.Hie:
+                    if (entity is RubhieDto hie && _draftHie is RubhieDto draftHie)
+                    {
+                        if (draftHie == null) return;
+                        hie.Idorg = draftHie.Idorg; //orga
+                        hie.Ipln = draftHie.Ipln; //parent
+                        hie.Raison = draftHie.Raison; //designation
+                        hie.Liba = draftHie.Liba;
+                        //hieHIE
+                        if (string.IsNullOrEmpty(draftHie.Raison))
+                        {
+                            draftHie.Raison = draftHie.Liba;
+                        }
+                        hie.Abg = draftHie.Abg; //abrege
+                        hie.Scdrub = draftHie.Scdrub; //code
+                        hie.Zcod = draftHie.Zcod; //refer
+                        hie.Atyp = draftHie.Atyp; //atyp
+                        hie.Frsrc = draftHie.Frsrc; //formule
+                        hie.Iele = draftHie.Iele; //compteur
+                        hie.Eta = draftHie.Eta; //etat
+                    }
+                    break;
+                case EntityLevel.Pst:
+                    if (entity is RubpstDto pst && _draftPst is RubpstDto draftPst)
+                    {
+                        if (draftPst == null) return;
+                        pst.Idorg = draftPst.Idorg; //orga
+                        pst.Ihie = draftPst.Ihie; //parent
+                        pst.Padres = draftPst.Padres; //adresse
+                        pst.Liba = draftPst.Liba; //designation
+                        pst.Abg = draftPst.Abg; //abrege
+                        pst.Zcdrub = draftPst.Zcdrub; //code
+                        pst.Zcod = draftPst.Zcod; //refer
+                        pst.Ztyp = draftPst.Ztyp; //ztyp
+
+                        pst.Ftsrc = draftPst.Ftsrc; //formule
+                        pst.Col = draftPst.Col; //col
+                        pst.Lne = draftPst.Lne; //lne
+                        pst.Lgtf = draftPst.Lgtf; //lgtf
+                        pst.Iele = draftPst.Iele; //compteur
+                        pst.Eta = draftPst.Eta; //etat
                     }
                     break;
                 case EntityLevel.Act:
@@ -549,6 +759,7 @@ namespace GxTie.Components.Uifrags
                         act.Ecmount = draftAct.Ecmount;
                         act.Ecannu = draftAct.Ecannu;
                         act.Nbech = draftAct.Nbech;
+                        act.Iele = draftAct.Iele; //compteur
                         act.Eta = draftAct.Eta; //etat
                     }
                     break;
@@ -565,6 +776,7 @@ namespace GxTie.Components.Uifrags
                         adt.Atyp = draftAdt.Atyp; //ztyp
 
                         ////adt.Ftsrc = draftAdt.Ftsrc; //formule
+                        adt.Iele = draftAdt.Iele; //compteur
                         adt.Eta = draftAdt.Eta; //etat
                     }
                     break;
@@ -583,6 +795,7 @@ namespace GxTie.Components.Uifrags
                         //res.Ecmount = draftRes.Ecmount;
                         //res.Ecannu = draftRes.Ecannu;
                         //res.Nbech = draftRes.Nbech;
+                        //res.Iele = draftRes.Iele; //compteur
                         res.Eta = draftRes.Eta; //etat
                         break;
                     }
@@ -599,6 +812,7 @@ namespace GxTie.Components.Uifrags
                         ////rdt.Zcod = draftRdt.Zcod; //refer
                         rdt.Atyp = draftRdt.Atyp; //ztyp
 
+                        rdt.Iele = draftRdt.Iele; //compteur
                         rdt.Eta = draftRdt.Eta; //etat
                     }
                     break;
@@ -617,6 +831,7 @@ namespace GxTie.Components.Uifrags
                         //bro.Ecmount = draftBro.Ecmount;
                         //bro.Ecannu = draftBro.Ecannu;
                         //bro.Nbech = draftBro.Nbech;
+                        bro.Iele = draftBro.Iele; //compteur
                         bro.Eta = draftBro.Eta; //etat
                     }
                     break;
@@ -637,6 +852,7 @@ namespace GxTie.Components.Uifrags
                         plan.Liba = originalPlan.Liba;
                         plan.Abg = originalPlan.Abg;
                         plan.Fpsrc = originalPlan.Fpsrc;
+                        plan.Iele = originalPlan.Iele; //compteur
                         plan.Eta = originalPlan.Eta;
                     }
                     break;
@@ -657,6 +873,7 @@ namespace GxTie.Components.Uifrags
                         rub.Ecmount = originalRub.Ecmount;
                         rub.Ecannu = originalRub.Ecannu;
                         rub.Nbech = originalRub.Nbech;
+                        rub.Iele = originalRub.Iele; //compteur
                         rub.Eta = originalRub.Eta;
                     }
                     break;
@@ -667,6 +884,8 @@ namespace GxTie.Components.Uifrags
                         fmt.Rowguid = originalFmt.Rowguid;
                         fmt.Idorg = originalFmt.Idorg; //orga
                         fmt.Irub = originalFmt.Irub; //parent
+                        fmt.Dstr = originalFmt.Dstr; //debut grid
+                        fmt.Fstr = originalFmt.Fstr;
                         fmt.Liba = originalFmt.Liba; //designation
                         fmt.Abg = originalFmt.Abg; //abrege
                         fmt.Zcdrub = originalFmt.Zcdrub; //code
@@ -677,25 +896,176 @@ namespace GxTie.Components.Uifrags
                         fmt.Col = originalFmt.Col; //col
                         fmt.Lne = originalFmt.Lne; //lne
                         fmt.Lgtf = originalFmt.Lgtf; //lgtf
+                        fmt.Aval = originalFmt.Aval; //valeur
+                        fmt.Iele = originalFmt.Iele; //compteur
                         fmt.Eta = originalFmt.Eta; //etat
                     }
                     break;
-                case EntityLevel.Tiw:
-                    if (entity is TiewelDto tiw &&
-                        _edTiwOriginals.TryGetValue(tiw.Rowguid, out var originalTiw))
+                case EntityLevel.Hie:
+                    if (entity is RubhieDto hie &&
+                        _edHieOriginals.TryGetValue(hie.Rowguid, out var originalHie))
                     {
-                        tiw.Rowguid = originalTiw.Rowguid;
-                        tiw.Idorg = originalTiw.Idorg;
-                        tiw.Nom = originalTiw.Nom;
-                        tiw.Pnom = originalTiw.Pnom;
-                        tiw.Bnom = originalTiw.Bnom;
-
-                        tiw.Eta = originalTiw.Eta;
+                        hie.Rowguid = originalHie.Rowguid;
+                        hie.Idorg = originalHie.Idorg;
+                        hie.Ipln = originalHie.Ipln;
+                        hie.Liba = originalHie.Liba;
+                        hie.Raison = originalHie.Raison;
+                        hie.Abg = originalHie.Abg;
+                        hie.Scdrub = originalHie.Scdrub;
+                        hie.Zcod = originalHie.Zcod;
+                        hie.Atyp = originalHie.Atyp;
+                        hie.Frsrc = originalHie.Frsrc;
+                        hie.Iele = originalHie.Iele; //compteur
+                        hie.Eta = originalHie.Eta;
                     }
                     break;
+                case EntityLevel.Pst:
+                    if (entity is RubpstDto pst &&
+                        _edPstOriginals.TryGetValue(pst.Rowguid, out var originalPst))
+                    {
+                        pst.Rowguid = originalPst.Rowguid;
+                        pst.Idorg = originalPst.Idorg; //orga
+                        pst.Ihie = originalPst.Ihie; //parent
+                        pst.Padres = originalPst.Padres; //address
+                        //pst.Dstr = originalPst.Dstr; //debut grid
+                        //pst.Fstr = originalPst.Fstr;
+                        pst.Liba = originalPst.Liba; //designation
+                        pst.Abg = originalPst.Abg; //abrege
+                        pst.Zcdrub = originalPst.Zcdrub; //code
+                        pst.Zcod = originalPst.Zcod; //refer
+                        pst.Ztyp = originalPst.Ztyp; //ztyp
 
+                        pst.Ftsrc = originalPst.Ftsrc; //formule
+                        pst.Col = originalPst.Col; //col
+                        pst.Lne = originalPst.Lne; //lne
+                        pst.Lgtf = originalPst.Lgtf; //lgtf
+                        pst.Aval = originalPst.Aval; //valeur
+                        pst.Iele = originalPst.Iele; //compteur
+                        pst.Eta = originalPst.Eta; //etat
+                    }
+                    break;
             }
         }
+        //committing drafts
+        protected void CommitPlnDraft(PlngenDto target, PlngenDto source)
+        {
+            target.Idorg = source.Idorg;
+            target.Rowguid = source.Rowguid;
+            target.Iui = source.Iui;
+            target.Ptyp = source.Ptyp;
+            target.Todom = source.Todom;
+            //target.Ogtyp = source.Ogtyp;
+            target.Totyp = source.Totyp;
+            target.Toatr = source.Toatr;
+            target.Tovue = source.Tovue;
+            target.Liba = source.Liba;
+            target.Abg = source.Abg;
+            target.Fpsrc = source.Fpsrc;
+            target.Fpexe = source.Fpexe;
+            target.Fpisrc = source.Fpisrc;
+            target.Styp = source.Styp;
+            target.Eta = source.Eta;
+            target.Xadd1 = source.Xadd1;
+            target.Xedt1 = source.Xedt1;
+        }
+        protected void CommitRubDraft(RubvarDto target, RubvarDto source)
+        {
+            target.Idorg = source.Idorg;
+            target.Rowguid = source.Rowguid;
+            target.Ipln = source.Ipln;
+            target.Iui = source.Iui;
+            target.Atyp = source.Atyp;
+            target.Vgpe = source.Vgpe;
+            target.Scdrub = source.Scdrub;
+            target.Frsrc = source.Frsrc;
+            //target.Rtyp = source.Rtyp;
+            //target.Toatr = source.Toatr;
+            target.Tovue = source.Tovue;
+            target.Liba = source.Liba;
+            target.Abg = source.Abg;
+
+            target.Eta = source.Eta;
+            target.Xadd1 = source.Xadd1;
+            target.Xedt1 = source.Xedt1;
+        }
+        protected void CommitFmtDraft(RubfmtDto target, RubfmtDto source)
+        {
+            target.Idorg = source.Idorg;
+            target.Rowguid = source.Rowguid;
+            target.Irub = source.Irub;
+            target.Iui = source.Iui;
+            target.Ztyp = source.Ztyp;
+            target.Zcdrub = source.Zcdrub;
+            target.Ftsrc = source.Ftsrc;
+            //target.Rtyp = source.Rtyp;
+            //target.Toatr = source.Toatr;
+            //target.Tovue = source.Tovue;
+            target.Liba = source.Liba;
+            target.Abg = source.Abg;
+
+            target.Dstr = source.Dstr;
+            target.Fstr = source.Fstr;
+            target.Aval = source.Aval;
+            target.Iele = source.Iele;
+            target.Eta = source.Eta;
+            target.Xadd1 = source.Xadd1;
+            target.Xedt1 = source.Xedt1;
+        }
+        protected void CommitHieDraft(RubhieDto target, RubhieDto source)
+        {
+            target.Idorg = source.Idorg;
+            target.Rowguid = source.Rowguid;
+            target.Ipln = source.Ipln;
+            target.Iui = source.Iui;
+            target.Atyp = source.Atyp;
+            target.Scdrub = source.Scdrub;
+            target.Frsrc = source.Frsrc;
+            //target.Rtyp = source.Rtyp;
+            //target.Toatr = source.Toatr;
+            target.Tovue = source.Tovue;
+            target.Liba = source.Liba;
+            target.Abg = source.Abg;
+
+            target.Eta = source.Eta;
+            target.Xadd1 = source.Xadd1;
+            target.Xedt1 = source.Xedt1;
+        }
+        protected void CommitPstDraft(RubpstDto target, RubpstDto source)
+        {
+            target.Idorg = source.Idorg;
+            target.Rowguid = source.Rowguid;
+            target.Ihie = source.Ihie;
+            target.Iui = source.Iui;
+            target.Ztyp = source.Ztyp;
+            target.Zcdrub = source.Zcdrub;
+            target.Ftsrc = source.Ftsrc;
+            //target.Rtyp = source.Rtyp;
+            //target.Toatr = source.Toatr;
+            //target.Tovue = source.Tovue;
+            target.Liba = source.Liba;
+            target.Abg = source.Abg;
+
+            target.Eta = source.Eta;
+            target.Xadd1 = source.Xadd1;
+            target.Xedt1 = source.Xedt1;
+        }
+
+        protected void CommitGtbDraft(GstablDto target, GstablDto source)
+        {
+            target.Idorg = source.Idorg;
+            target.Rowguid = source.Rowguid;
+            target.Iui = source.Iui;
+            target.Scdrub = source.Scdrub;
+            //target.Rtyp = source.Rtyp;
+            //target.Toatr = source.Toatr;
+            target.Liba = source.Liba;
+            target.Abg = source.Abg;
+
+            target.Eta = source.Eta;
+            target.Xadd1 = source.Xadd1;
+            target.Xedt1 = source.Xedt1;
+        }
+        //divers settings
         protected object? GetDraft(EntityLevel level)
         {
             return level switch
@@ -703,6 +1073,8 @@ namespace GxTie.Components.Uifrags
                 EntityLevel.Plan => _draftPlan,
                 EntityLevel.Rub => _draftRub,
                 EntityLevel.Fmt => _draftFmt,
+                EntityLevel.Hie => _draftHie,
+                EntityLevel.Pst => _draftPst,
                 EntityLevel.Tie => _draftTie,
                 EntityLevel.Act => _draftAct,
                 EntityLevel.Adt => _draftAdt,
@@ -726,10 +1098,10 @@ namespace GxTie.Components.Uifrags
                     _draftFmt = draft;
                     break;
                 case EntityLevel.Hie:
-                    _draftRub = draft;
+                    _draftHie = draft;
                     break;
                 case EntityLevel.Pst:
-                    _draftFmt = draft;
+                    _draftPst = draft;
                     break;
                 case EntityLevel.Tie:
                     _draftTie = draft;
@@ -766,10 +1138,9 @@ namespace GxTie.Components.Uifrags
             s.EditRowguid = null;
             s.DeleteRowguid = null;
 
-            EndRowEdit(); //
+            EndRowEdit(level); //
             StateHasChanged();
         }
-
         protected static void ReplaceByRowguid<T>(List<T> items, T entity, Func<T, Guid> getRowguid)
         {
             var rowguid = getRowguid(entity);
@@ -777,9 +1148,5 @@ namespace GxTie.Components.Uifrags
             if (index >= 0)
                 items[index] = entity;
         }
-        //protected override void EndEdit(EntityLevel level)
-        //{
-        //    EndRowEdit();
-        //}
     }
 }

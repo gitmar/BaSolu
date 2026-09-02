@@ -15,7 +15,9 @@
 @using Blazored.LocalStorage
 @using GxShared.Helpers
 @using GxShared.Sess
+@using GxTie.Components.Apcomp
 @using GxTie.Services
+@using GxShared.Cols.Models
 @using GxShared.Others
 @using Simple.OData.Client
 @using Simple.OData.Client.Extensions
@@ -141,13 +143,24 @@
                                                           RenderKey="parent-grid"
                                                           GMode="@GtieMode"
                                                           IsEditing="@isTieEditing"
+                                                          IsViewing="@isTieViewing"
+                                                          Idorg="@curOrga.Idorg"
+                                                          Ctx="@TiwCtx"
+                                                          EnsTbls="@EnsTbls"
+                                                          EdRowguid="@EdTiwRowguid" />
+                                        }
+                                        @* @if (draftTiw != null)
+                                        {
+                                            <PTiwGdHelper Draft="@draftTiw"
+                                                          RenderKey="parent-grid"
+                                                          GMode="@GtieMode"
+                                                          IsEditing="@isTieEditing"
                                                           IsViewing = "@isTieViewing"
                                                           Visibility="@Visibility"
                                                           EnsTbls="@EnsTbls"
                                                           EdRowguid="@EdTiwRowguid" />
-                                        }
+                                        } *@
                                     </div>
-
                                     <!-- Additional dynamic attributes -->
                                     <label class="fw-bold">ATTRIBUT++(s)</label>
                                     <div class="card">
@@ -228,6 +241,29 @@
                                         @RenderCategories(EnsCats.Where(c => c.Pid == null))
                                     </div>
                                 </EditForm>
+                                <!-- Additional adresses -->
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <label class="fw-bold">ADRESSES</label>
+                                        <button @onclick="VaOpenAdres">
+                                            Adresses plus
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="row mb-2">
+                                    @if (isOpenAdres)
+                                    {
+                                        <Gsdadr @bind-NbChanges="_nbChanges"
+                                                curOrga="@curOrga"
+                                                _guard="@_guard"
+                                                EnsTbls="@EnsTbls"
+                                                Actx="@Actx">
+                                            @* <ChildContent>
+                                                                     <h2 class="child-box">Hello GRILLES</h2>
+                                                                </ChildContent> *@
+                                        </Gsdadr>
+                                    }
+                                </div>
                                 @if (!isTieViewing)
                                 {
                                     <div class="d-flex align-items-center gap-2">
@@ -321,22 +357,24 @@
                                         <div>
                                             @if (draftAfl != null)
                                             {
+                                                <span>ICI VUE VUE ICI </span>
                                                 <!-- Cascade stable reference -->
                                                 <CTiwGdHelper SubAfls="@curTiw.Tiwafls.ToList()"
-                                                RenderKey="child-grid"
-                                                GMode="@GaflMode"
-                                                IsEditing="@isAflEditing"
-                                                IsViewing="@isAflViewing"
-                                                AflVisibility="@AflVisibility"
-                                                EnsTbls="@EnsTbls"
-                                                EdRowguid="@EdAflRowguid"
-                                                SelectedGroup="@IMyGAfl"
-                                                ConfirmEdit="@(p => ConfirmEdit(EntityLevel.Rub, p))"
-                                                CancelEdit="@(p => CancelEdit(EntityLevel.Rub, p))"
-                                                ConfirmDelete="@(p => ConfirmDelete(EntityLevel.Rub, p))"
-                                                CancelDelete="@(p => CancelDelete(EntityLevel.Rub, p))"
-                                                StartRubEdit="@(p => StartRubEdit(p, p.Rowguid))"
-                                                StartRowDelete="@(id => StartRowDelete(id, EntityLevel.Rub))" />
+                                                              RenderKey="child-grid"
+                                                              GMode="@GaflMode"
+                                                              IsEditing="@isAflEditing"
+                                                              IsViewing="@isAflViewing"
+                                                              Idorg="@curOrga.Idorg"
+                                                              Ctx="@AflCtx"
+                                                              EnsTbls="@EnsTbls"
+                                                              EdRowguid="@EdAflRowguid"
+                                                              SelectedGroup="@IMyGAfl"
+                                                              ConfirmEdit="@(p => ConfirmEdit(EntityLevel.Rub, p))"
+                                                              CancelEdit="@(p => CancelEdit(EntityLevel.Rub, p))"
+                                                              ConfirmDelete="@(p => ConfirmDelete(EntityLevel.Rub, p))"
+                                                              CancelDelete="@(p => CancelDelete(EntityLevel.Rub, p))"
+                                                              StartRubEdit="@(p => StartRubEdit(p, p.Rowguid))"
+                                                              StartRowDelete="@(id => StartRowDelete(id, EntityLevel.Rub))" />
                                                 <div class="d-flex align-items-center gap-2 mb-2">
                                                     <Button Color="ButtonColor.Primary"
                                                     Size="ButtonSize.Small"
@@ -828,6 +866,9 @@
     //viewing
     private bool isTieViewing = false;
     private bool isAflViewing = false; 
+    //adress
+    private bool isOpenAdres = false;
+    public AdrContext Actx { get; set; }  // parent context for address management
 
     //Global
     private int _lgcdu = 0;
@@ -842,6 +883,20 @@
 
     private TiewelDto curTiw = new();
     private TiwaflDto curAfl = new();
+    // Visibility field/property can be deleted from this page's @code block if unused elsewhere.
+    private ColPrefContext TiwCtx => new()
+    {
+        Totyp = 1,  // cible
+        Efrm = 2,  // Tiewel/welcome — same subscription context as the affiliate form
+        Styp = 1   // the cible itself, not an affiliate role
+    };
+    // AflVisibility field/property can be deleted from this page's @code block if it's no longer used elsewhere.
+    private ColPrefContext AflCtx => new()
+    {
+        Totyp = 1,       // cible
+        Efrm = 2,       // Tiewel/welcome — this is the InscTiw (subscription) context per your earlier model
+        Styp = IMyGAfl  // whichever affiliate role is currently selected (conjoint/parent/enfant/...)
+    };
     //data
     private List<TiewelDto> MyDaTies { get; set; } = new();
     private List<TiwaflDto> MyDaAfls { get; set; } = new();
@@ -906,6 +961,9 @@
         DlAflRowguid != rowGuid;
 
     //private int renderCount;
+    //Guard
+    private int _nbChanges = 0;
+    private IDisposable? _locationHandler;
     protected override async Task OnInitializedAsync()
     {
         isLoading = true;
@@ -959,6 +1017,7 @@
             // Load visibility rules
             await LoadTieVisibilityAsync();
             await LoadAflVisibilityAsync();
+            _nbChanges = _guard.GetPendingChangesCount();
         }
         catch (Exception ex)
         {
@@ -1000,6 +1059,7 @@
         AflVisibility = System.Text.Json.JsonSerializer.Deserialize<Dictionary<string, bool>>(json) ?? new();
         Console.WriteLine("AflVisibility loaded 2");
     }
+    
     private void OnTabChanged(int tabIndex)
     {
       refTab = tabIndex;
@@ -2163,6 +2223,23 @@
         // For example, save to the database or update the UI
         Console.WriteLine($"Entity saved: {entity.Nom}, {entity.Pnom}");
         return Task.CompletedTask;
+    }
+    private async Task VaOpenAdres()
+    {
+        Actx = new();
+        Actx.Atyp = 3; //tiw
+        Actx.Itie = 0;
+        Actx.Itiw = curTiw.Id;
+        Actx.Iefl = 0;
+        Actx.Iwfl = 0;
+        if (isOpenAdres)
+        {
+            isOpenAdres = false;
+        }
+        else
+        {
+            isOpenAdres = true;
+        }
     }
     private void showPgLink()
     {

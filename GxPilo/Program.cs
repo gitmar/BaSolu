@@ -6,6 +6,7 @@ using Blazored.LocalStorage;
 
 using GxPilo;
 using GxPilo.Services;
+using GxPilo.Services.Cols;
 
 using GxShared.GxGuards;
 using GxShared.Helpers;
@@ -80,6 +81,8 @@ builder.Services.AddScoped<IODataClient>(sp =>
 builder.Services.AddScoped<IPendingOpsStore, NoOpOpsStore>(); // Required for PendingChangesGuard
 builder.Services.AddScoped<IPendingChangesGuard, PendingChangesGuard>();
 
+// Column preferences client wrapper
+builder.Services.AddScoped<ColumnPreferencesClient>();
 // ----------------------------
 // App Services
 // ----------------------------

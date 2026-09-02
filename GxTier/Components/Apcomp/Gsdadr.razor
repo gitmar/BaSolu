@@ -1,0 +1,244 @@
+﻿@page "/gsdadr"
+@using GxShared.GxDtos
+@using GxShared.Interfaces
+@using GxShared.Helpers.CrudHelpers
+@using GxShared.Sess
+@using GxTie.Services
+
+@* <h3>Addresses</h3> *@
+
+@* <p>Pending changes: @NbChanges</p> *@
+
+<button class="btn btn-primary" @onclick="StartAdd">➕ Add Address</button>
+
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>Group</th>
+            <th>Address</th>
+            <th>Phone</th>
+            <th>Country</th>
+            <th>Region</th>
+            <th>Province</th>
+            <th>City</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var adr in Addresses)
+        {
+            <tr>
+                <td>@GetAgpeLabel(adr.Agpe)</td>
+                <td>@adr.Adr</td>
+                <td>@adr.Phonenumber</td>
+                <td>@adr.Rpays</td>
+                <td>@adr.Sregio</td>
+                <td>@adr.Sprovi</td>
+                <td>@adr.Scity</td>
+                <td>
+                    <button class="btn btn-warning btn-sm" @onclick="() => StartEdit(adr)">✏️ Edit</button>
+                    <button class="btn btn-danger btn-sm" @onclick="() => Delete(adr)">🗑 Delete</button>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+@if (curAdres is not null)
+{
+    <EditForm Model="curAdres" OnValidSubmit="Save">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+
+        <!-- Atyp comes from parent -->
+        @* <span>@curAdres.Atyp</span> *@
+        <!-- Agpe dropdown -->
+        <div class="mb-3">
+            <label>Group</label>
+            <InputSelect @bind-Value="curAdres.Agpe" class="form-select">
+                <option value="1">Infos</option>
+                <option value="2">Livraison</option>
+                <option value="3">Payement</option>
+            </InputSelect>
+        </div>
+
+        <div class="mb-3">
+            <label>Address</label>
+            <InputText @bind-Value="curAdres.Adr" class="form-control" />
+        </div>
+
+        <div class="mb-3">
+            <label>Phone</label>
+            <InputText @bind-Value="curAdres.Phonenumber" class="form-control" />
+        </div>
+
+        <!-- Country dropdown from EnsTbls -->
+        <div class="mb-3">
+            <label>Country</label>
+            <InputSelect @bind-Value="curAdres.Npays" style="font-weight:bold">
+                <option value="">-- Select a country --</option>
+                @foreach (var tob in EnsTbls.FirstOrDefault(t => t.Tref == 31)?.TbItems ?? new List<Gtvar>())
+                {
+                    <option value="@tob.Aval">@tob.Liba</option>
+                }
+            </InputSelect>
+        </div>
+
+        <!-- Region dropdown -->
+        <div class="mb-3">
+            <label>Region</label>
+            <InputSelect @bind-Value="curAdres.Sregio">
+                <option value="">-- Select a region --</option>
+                @foreach (var tob in EnsTbls.FirstOrDefault(t => t.Tref == 32)?.TbItems ?? new List<Gtvar>())
+                {
+                    <option value="@tob.Aval">@tob.Liba</option>
+                }
+            </InputSelect>
+        </div>
+
+        <!-- Province dropdown -->
+        <div class="mb-3">
+            <label>Province</label>
+            <InputSelect @bind-Value="curAdres.Sprovi">
+                <option value="">-- Select a province --</option>
+                @foreach (var tob in EnsTbls.FirstOrDefault(t => t.Tref == 33)?.TbItems ?? new List<Gtvar>())
+                {
+                    <option value="@tob.Aval">@tob.Liba</option>
+                }
+            </InputSelect>
+        </div>
+
+        <!-- City dropdown -->
+        <div class="mb-3">
+            <label>City</label>
+            <InputSelect @bind-Value="curAdres.Scity">
+                <option value="">-- Select a city --</option>
+                @foreach (var tob in EnsTbls.FirstOrDefault(t => t.Tref == 34)?.TbItems ?? new List<Gtvar>())
+                {
+                    <option value="@tob.Aval">@tob.Liba</option>
+                }
+            </InputSelect>
+        </div>
+
+        <button class="btn btn-success" type="submit">💾 Save</button>
+        <button class="btn btn-secondary" @onclick="Cancel">❌ Cancel</button>
+    </EditForm>
+}
+
+@code {
+    [Parameter] public GxorgaDto curOrga { get; set; } = default!;
+    //[Parameter] public int Atyp { get; set; }   // parent provides type
+    [Parameter] public AdrContext Actx { get; set; }  // parent context for address management
+    
+    [Parameter] public IPendingChangesGuard _guard { get; set; } = default!;
+    [Parameter] public EventCallback<PendingState> OnPendingStateChanged { get; set; }
+    [Parameter] public int NbChanges { get; set; }
+    [Parameter] public EventCallback<int> NbChangesChanged { get; set; }
+    [Parameter] public List<Gtabl> EnsTbls { get; set; } = new();
+    private List<GsadrDto> Addresses = new();
+    private GsadrDto? curAdres;
+
+    protected override async Task OnInitializedAsync()
+    {
+        Addresses = curOrga.Gsadrs.ToList();
+        //EnsTbls = await _rendAgres.LoadOrgaTables(); // load lookup tables
+    }
+
+    protected override void OnParametersSet()
+    {
+        SubscribeToGuard();
+    }
+
+    private void SubscribeToGuard()
+    {
+        _guard.OnChanges += async () =>
+        {
+            NbChanges = _guard.GetPendingChangesCount();
+            await NbChangesChanged.InvokeAsync(NbChanges);
+            StateHasChanged();
+        };
+    }
+
+    private void StartAdd()
+    {
+        curAdres = new GsadrDto 
+        { 
+            Idorg = curOrga.Idorg,
+            Atyp = Actx.Atyp,
+            Itie = Actx.Itie,
+            Itiw = Actx.Itiw,
+            Iefl = Actx.Iefl,
+            Iwfl = Actx.Iwfl
+        };
+    }
+
+    private void StartEdit(GsadrDto adr)
+    {
+        curAdres = new GsadrDto
+        {
+            Id = adr.Id,
+            Idorg = adr.Idorg,
+            Atyp = adr.Atyp,
+            Agpe = adr.Agpe,
+            Adr = adr.Adr,
+            Itie = adr.Itie,
+            Itiw = adr.Itiw,
+            Iefl = adr.Iefl,
+            Iwfl = adr.Iwfl,
+            Phonenumber = adr.Phonenumber,
+            Npays = adr.Npays,
+            Sregio = adr.Sregio,
+            Sprovi = adr.Sprovi,
+            Scity = adr.Scity
+        };
+    }
+
+    private async Task Save()
+    {
+        if (curAdres is null) return;
+
+        bool isNew = GetXadd1(curAdres) == -1;
+        if (isNew)
+        {
+            await _guard.TrackInsert("gsadrs", curAdres);
+            Addresses.Add(curAdres);
+            Console.WriteLine($"➕ NEW {nameof(GsadrDto)} → TrackInsert");
+        }
+        else
+        {
+            var key = GetEntityKey(curAdres);
+            await _guard.TrackUpdate("gsadrs", key, curAdres);
+            Console.WriteLine($"✏️ EXISTING {nameof(GsadrDto)} → TrackUpdate");
+        }
+
+        //Addresses = await AddressService.GetAllAsync();
+        curAdres = null;
+    }
+
+    private async Task Delete(GsadrDto adr)
+    {
+        var key = GetEntityKey(adr);
+        var rowguid = MLEntityKeyHelper.GetRowguidAsGuid(adr);
+        await _guard.TrackDelete("gsadrs", key, rowguid);
+        Console.WriteLine($"🗑 DELETE {nameof(GsadrDto)} → TrackDelete");
+        Addresses.Remove(adr);
+        //Addresses = curOrga.Gsadrs.ToList();
+    }
+
+    private void Cancel()
+    {
+        curAdres = null;
+    }
+
+    private string GetAgpeLabel(int? agpe) => agpe switch
+    {
+        1 => "Infos",
+        2 => "Livraison",
+        3 => "Payement",
+        _ => "Unknown"
+    };
+
+    // Helpers
+    private int GetXadd1(GsadrDto entity) => entity.Id;
+    private object GetEntityKey(GsadrDto entity) => entity.Id;
+}

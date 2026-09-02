@@ -10,7 +10,8 @@
 
 @using Newtonsoft.Json;
 
-@using GxShared.GxDtos
+@using GxShared.GxDtos;
+@using GxShared.Cols.Models;
 
 @inject HttpClientService _clieManager
 
@@ -160,7 +161,7 @@
         //Tstyp(2cnj3par4enf..
         //Efrm(1accu2enrol)
         var selectedCol = LsPcols.FirstOrDefault(uc =>  uc.Totyp == IMyGpe && uc.Efrm == EtRef 
-            && uc.Btyp == IMyDom);
+            && uc.Tcol == IMyDom);
         Console.WriteLine($"Valeur colonnes entrees : {EtRef} et/{IMyGpe} et/{IMyAfl} puis//-{selectedCol?.Fgsrc}");
         string strStore = selectedCol != null ? selectedCol.Fgsrc : string.Empty;
         Columns = ColsPreferences.DeserializePreferences(strStore);
@@ -191,7 +192,7 @@
             return;
         }
         var selectedCol = LsFcols.FirstOrDefault(uc =>
-            uc.Totyp == IMyAfl && uc.Efrm == EtRef && uc.Btyp == IMyDom);
+            uc.Totyp == IMyAfl && uc.Efrm == EtRef && uc.Tcol == IMyDom);
         string strStore = selectedCol?.Fgsrc ?? string.Empty;
         AflColumns = ColsPreferences.DeserializePreferences(strStore);
         foreach (var ocol in LsOcols)
@@ -234,7 +235,7 @@
     {
         ColsToSave ctosave = new();
         ctosave.Idorg = curOrga.Idorg;
-        ctosave.Btyp = IMyDom; //1tiers/2mat
+        ctosave.Tcol = IMyDom; //1tiers/2mat
         ctosave.Otyp =  2; //colonnes
         ctosave.Styp = curItb; //1princ/2afil
         ctosave.Tref = 0;

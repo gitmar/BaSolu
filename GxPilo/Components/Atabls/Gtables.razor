@@ -109,7 +109,7 @@ else
                                 //Gvars = 4, Itb = 4, Gtyp = IMyGtbl, //2optionnel1integre
                                 <!--Contenu des tables-->
                                 <Grid TItem="GstablDto"
-                                      Data="@MyDaRubrs.Where(ti => ti.Gtyp == IMyGtbl && ti.Btyp == IMyBas)"
+                                      Data="@MyDaRubrs.Where(ti => ti.Gtyp == IMyGtbl && ti.Ktyp == IMyBas)"
                                       @key="FixRenderKey"
                                       AllowDetailView="true"
                                       AllowPaging="true"
@@ -782,7 +782,7 @@ else
                         .ToList();
                 // Console.WriteLine($"Gstabls loaded: {curOrga.Gstabls.Count}");
                 var testa = MyDaRubrs?.FirstOrDefault();
-                Console.WriteLine($"Rubrics loaded: {MyDaRubrs?.Count} / etG {testa?.Gtyp} etB {testa?.Btyp}");
+                Console.WriteLine($"Rubrics loaded: {MyDaRubrs?.Count} / etG {testa?.Gtyp} etB {testa?.Ktyp}");
 
                 // Child collection: linked to Rubrics - otyp1tables - tenr2base
                 MyDaChlds = new();
@@ -845,7 +845,7 @@ else
             Rowguid = Guid.NewGuid(),
             Idorg = curOrga.Idorg, //pere Id
             Gtyp = IMyGtbl, //2optionnel1integre
-            Btyp = IMyBas, //1tiers2matiere
+            Ktyp = IMyBas, //1tiers2matiere
             Tenr = 1, //1base2elemt
             Iui = lsnb,
             Pid = 0,
@@ -909,7 +909,7 @@ else
             Rowguid = Guid.NewGuid(),
             Idorg = curOrga.Idorg, //pere Id
             Gtyp = IMyGtbl, //2optionnel1integre
-            Btyp = IMyBas, //1tiers2matiere
+            Ktyp = IMyBas, //1tiers2matiere
             Tenr = 2, //1base2elemt
             Iui = lsnb,
             Pid = mytabl.Id,
@@ -1129,7 +1129,7 @@ else
                     fix.Rowguid = df.Rowguid;
                     fix.Idorg = df.Idorg;
                     fix.Gtyp = df.Gtyp;
-                    fix.Btyp = df.Btyp;
+                    fix.Ktyp = df.Ktyp;
                     fix.Tenr = df.Tenr;
                     fix.Pid = df.Pid;
                     fix.Xdpd = df.Xdpd;
@@ -1150,7 +1150,7 @@ else
                     chl.Rowguid = dc.Rowguid;
                     chl.Idorg = dc.Idorg;
                     chl.Gtyp = dc.Gtyp;
-                    chl.Btyp = dc.Btyp;
+                    chl.Ktyp = dc.Ktyp;
                     chl.Tenr = dc.Tenr;
                     chl.Pid = dc.Pid;
                     chl.Xdpd = dc.Xdpd;
@@ -1740,7 +1740,7 @@ else
                     pln.Rowguid = draftFix.Rowguid;
                     pln.Idorg = draftFix.Idorg; //pere Id
                     pln.Gtyp = draftFix.Gtyp; //2optionnel1integre
-                    pln.Btyp = draftFix.Btyp; //1tiers2matiere
+                    pln.Ktyp = draftFix.Ktyp; //1tiers2matiere
                     pln.Tenr = draftFix.Tenr; //1base2elemt
                     pln.Pid = draftFix.Pid;
                     pln.Xdpd = draftFix.Xdpd;
@@ -1759,7 +1759,7 @@ else
                     rub.Rowguid = draftChl.Rowguid;
                     rub.Idorg = draftChl.Idorg; //pere Id
                     rub.Gtyp = draftChl.Gtyp; //2optionnel1integre
-                    rub.Btyp = draftChl.Btyp; //1tiers2matiere
+                    rub.Ktyp = draftChl.Ktyp; //1tiers2matiere
                     rub.Tenr = draftChl.Tenr; //1base2elemt
                     rub.Pid = draftChl.Pid;
                     rub.Xdpd = draftChl.Xdpd;

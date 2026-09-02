@@ -1,0 +1,201 @@
+﻿@using GxPilo.Services.Cols
+@using GxShared.Cols.Models
+
+@inject ColumnPreferencesClient PrefClient
+
+<div class="d-flex align-items-end gap-3 flex-wrap mb-3">
+    @if (!awaitingRegenerateConfirm)
+    {
+        <button class="btn btn-outline-warning btn-sm" @onclick="RegenerateCatalog" disabled="@isBusy">
+            Régénérer le catalogue
+        </button>
+        <div class="col-md-2"></div>
+        <button class="btn btn-primary btn-sm" @onclick="SaveSelection" disabled="@isBusy">
+            @(isSaving ? "..." : "Enregistrer")
+        </button>
+        <button class="btn btn-secondary btn-sm" @onclick="CancelChanges" disabled="@isBusy">
+            Annuler
+        </button>
+    }
+    else
+    {
+        <button class="btn btn-outline-primary btn-sm" @onclick="ConfCatGener" disabled="@isBusy">
+            @(isRegenerateBusy ? "..." : "Confirmer génération")
+        </button>
+        <button class="btn btn-secondary btn-sm" @onclick="CnclCatGener" disabled="@isBusy">
+            Annuler confirmation
+        </button>
+    }
+</div>
+
+@if (statusMessage is not null)
+{
+    <span class="@(statusOk ? "text-success" : "text-danger")">@statusMessage</span>
+}
+
+<div class="row mb-3">
+    @if (isLoading)
+    {
+        <p><em>Chargement...</em></p>
+    }
+    else if (isRegenerateBusy)
+    {
+        <p><em>Régénération en cours...</em></p>
+    }
+    else
+    {
+        <Grid TItem="LSelCol" Data="@_workingCols" Class="table table-sm table-striped" AllowPaging="true">
+            <GridColumns>
+                <GridColumn TItem="LSelCol" HeaderText="Rang" Class="xcol1">
+                    <InputNumber @bind-Value="@context.ColNo" style="width:80px;" placeholder="Rang" />
+                </GridColumn>
+                <GridColumn TItem="LSelCol" HeaderText="Original" Class="xcol2">
+                    @context.ColName
+                </GridColumn>
+                <GridColumn TItem="LSelCol" HeaderText="Personnalisé" Class="xcol2">
+                    <InputText @bind-Value="@context.Ulabel" placeholder="Label" />
+                </GridColumn>
+                <GridColumn TItem="LSelCol" HeaderText="Visible" Class="xcol1">
+                    <input type="checkbox" checked="@context.IsVisible"
+                           @onchange="@(e => context.IsVisible = (bool)e.Value!)" />
+                </GridColumn>
+            </GridColumns>
+        </Grid>
+    }
+</div>
+<style>
+    .xcolx {
+        width: 40px !important;
+    }
+
+    .xcol1 {
+        width: 60px;
+    }
+
+    .xcol2 {
+        width: 120px;
+    }
+
+    .xcol3 {
+        width: 180px;
+    }
+
+    .xcol4 {
+        width: 240px;
+    }
+        /* Ensure inputs inside these columns fill the width */
+        .xcol1 input,
+        .xcol2 input,
+        .xcol3 input,
+        .xcol4 input {
+            width: 100%;
+            box-sizing: border-box; /* prevents overflow due to padding/border */
+        }
+</style>
+@code {
+    [Parameter] public int Idorg { get; set; }
+
+    private int selTotyp = 1;
+    private int selEfrm = 1;
+    private int selStyp = 1;
+
+    private List<LSelCol> _workingCols = new();
+
+    // Which button set is showing: normal (Régénérer/Enregistrer/Annuler) vs. confirm-regenerate prompt.
+    private bool awaitingRegenerateConfirm = false;
+
+    // Is any async operation actually in flight right now (disables everything regardless of mode).
+    private bool isLoading;
+    private bool isSaving;
+    private bool isRegenerateBusy;
+    private bool isBusy => isLoading || isSaving || isRegenerateBusy;
+
+    private string? statusMessage;
+    private bool statusOk;
+
+    protected override async Task OnInitializedAsync() => await LoadColumns();
+
+    private ColPrefContext BuildCtx() => new()
+    {
+        Totyp = selTotyp,
+        Efrm = selTotyp is 1 or 6 ? selEfrm : 1,
+        Styp = selTotyp == 1 ? selStyp : 1
+    };
+
+    private async Task OnSelectionChanged() => await LoadColumns();
+
+    private async Task LoadColumns()
+    {
+        isLoading = true;
+        statusMessage = null;
+        try
+        {
+            _workingCols = await PrefClient.LoadAsync(Idorg, BuildCtx());
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private async Task SaveSelection()
+    {
+        isSaving = true;
+        statusMessage = null;
+        try
+        {
+            statusOk = await PrefClient.SaveAsync(Idorg, BuildCtx(), _workingCols);
+            statusMessage = statusOk ? "Colonnes enregistrées." : "Échec de l'enregistrement.";
+        }
+        finally
+        {
+            isSaving = false;
+        }
+    }
+
+    private async Task CancelChanges()
+    {
+        statusMessage = null;
+        await LoadColumns();
+    }
+
+    // Step 1: user clicks "Régénérer le catalogue" — just switches to the confirm prompt, no API call yet.
+    private void RegenerateCatalog()
+    {
+        awaitingRegenerateConfirm = true;
+        statusMessage = null;
+    }
+
+    // Step 2a: user confirms — actually run the regeneration, then return to normal state ("renew with the beginning").
+    private async Task ConfCatGener()
+    {
+        isRegenerateBusy = true;
+        statusMessage = null;
+        try
+        {
+            var count = await PrefClient.SeedCatalogAsync();
+            statusOk = true;
+            statusMessage = count > 0
+                ? $"{count} nouvelle(s) colonne(s) ajoutée(s) au catalogue."
+                : "Catalogue déjà à jour.";
+            await LoadColumns(); // refresh grid — new columns may now apply to the current context
+        }
+        catch
+        {
+            statusOk = false;
+            statusMessage = "Échec de la régénération du catalogue.";
+        }
+        finally
+        {
+            isRegenerateBusy = false;
+            awaitingRegenerateConfirm = false; // back to the normal button set
+        }
+    }
+
+    // Step 2b: user backs out — no API call, just return to normal state.
+    private void CnclCatGener()
+    {
+        awaitingRegenerateConfirm = false;
+        statusMessage = null;
+    }
+}

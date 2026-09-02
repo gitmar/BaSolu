@@ -1,0 +1,44 @@
+﻿@using GxPilo.Services.Cols
+@using GxShared.Cols.Models
+
+@* ColumnPickerModal.razor *@
+@inject ColumnPreferencesClient PrefClient
+
+<Modal @ref="modalRef" Title="Choisir les colonnes">
+    <BodyTemplate>
+        @foreach (var col in _workingCols)
+        {
+            <div class="form-check">
+                <input class="form-check-input" type="checkbox"
+                       checked="@col.IsVisible"
+                       @onchange="@(e => col.IsVisible = (bool)e.Value!)" />
+                <label class="form-check-label">@col.Ulabel</label>
+            </div>
+        }
+    </BodyTemplate>
+    <FooterTemplate>
+        <Button Color="ButtonColor.Primary" @onclick="Save">Enregistrer</Button>
+    </FooterTemplate>
+</Modal>
+
+@code {
+    [Parameter] public int Idorg { get; set; }
+
+    private Modal modalRef = default!;
+    private List<LSelCol> _workingCols = new();
+    private ColPrefContext _ctx = default!;
+
+    // Ctx is now passed explicitly at open-time, not bound as a [Parameter]
+    public async Task OpenAsync(ColPrefContext ctx)
+    {
+        _ctx = ctx;
+        _workingCols = await PrefClient.LoadAsync(Idorg, _ctx);
+        await modalRef.ShowAsync();
+    }
+
+    private async Task Save()
+    {
+        await PrefClient.SaveAsync(Idorg, _ctx, _workingCols);
+        await modalRef.HideAsync();
+    }
+}

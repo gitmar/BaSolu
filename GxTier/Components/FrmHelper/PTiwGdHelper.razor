@@ -3,9 +3,48 @@
 @using GxShared.Helpers
 @using GxShared.Sess
 
+@using GxShared.Cols.Models
+
 @* <h3>PTiwGdHelper</h3> *@
 
-@if (Draft != null)
+@using GxShared.Others
+@using GxShared.Helpers
+@using GxShared.GxDtos
+@using GxShared.Sess
+
+<div class="card">
+    <div class="card-body p-3">
+        <ColDrivenFields Idorg="@Idorg" Ctx="@Ctx" Model="@Draft"
+                         EnsTbls="@EnsTbls" IsEditing="@isEditing" />
+    </div>
+</div>
+
+@code {
+    // New — feeds ColDrivenFields
+    [Parameter] public int Idorg { get; set; }
+    [Parameter] public ColPrefContext Ctx { get; set; } = default!;
+
+    // Existing — unchanged
+    [Parameter] public TiewelDto Draft { get; set; }
+    [Parameter] public GridMode GMode { get; set; } = GridMode.None;
+    [Parameter] public bool isEditing { get; set; } = false;
+    [Parameter] public bool isViewing { get; set; } = false;
+    [Parameter] public List<Gtabl> EnsTbls { get; set; }
+    [Parameter] public string RenderKey { get; set; }
+    [Parameter] public Guid? EdRowguid { get; set; }
+
+    // Removed: [Parameter] public Dictionary<string, bool> Visibility — superseded by Ctx
+
+    protected override void OnParametersSet()
+    {
+        if (isViewing == true)
+        {
+            isEditing = false;
+        }
+    }
+}
+
+@* @if (Draft != null)
 {
     <div class="card">
         <div class="card-body p-3">
@@ -85,7 +124,7 @@
                     {
                         <option value=@opt.Elea>@opt.Liba</option>
                     }
-                </InputSelect> *@
+                </InputSelect> 
             </FormField>
             
             <!-- FIELD 7: Relat (int) -->
@@ -110,7 +149,7 @@
                     {
                         <option value=@opt.Elea>@opt.Liba</option>
                     }
-                </InputSelect*@
+                </InputSelect
             </FormField>
             <!-- FIELD 8: Sexe (int) -->
             <FormField Label="Sexe" IsVisible="@Visibility.GetValueOrDefault("Sexe", true)">
@@ -134,7 +173,7 @@
                     {
                         <option value=@opt.Elea>@opt.Liba</option>
                     }
-                </InputSelect> *@
+                </InputSelect> 
             </FormField>
 
             <!-- FIELD 9: Sitmat (int) -->
@@ -159,7 +198,7 @@
                     {
                         <option value=@opt.Elea>@opt.Liba</option>
                     }
-                </InputSelect> *@
+                </InputSelect> 
             </FormField>
         
             <!-- FIELD 10: Fonction -->
@@ -184,7 +223,7 @@
                     {
                         <option value=@opt.Elea>@opt.Liba</option>
                     }
-                </InputSelect> *@
+                </InputSelect> 
             </FormField>
        
             <!-- FIELD 11: Grade -->
@@ -209,7 +248,7 @@
                     {
                         <option value=@opt.Elea>@opt.Liba</option>
                     }
-                </InputSelect> *@
+                </InputSelect> 
             </FormField>
    
             <!-- FIELD 12: Email -->
@@ -296,7 +335,7 @@
                         <option value=@opt.Elea>@opt.Liba</option>
                     }
                 </InputSelect> 
-            </FormField>*@
+            </FormField>
         
             <!-- FIELD 18: Pays de résidence -->
             <FormField Label="Residence" IsVisible="@Visibility.GetValueOrDefault("Rpays", true)">
@@ -320,7 +359,7 @@
                     {
                         <option value=@opt.Abg>@opt.Liba</option>
                     }
-                </InputSelect> *@
+                </InputSelect> 
             </FormField>
            
             <!-- FIELD 19: Nationalité (string) -->
@@ -345,7 +384,7 @@
                     {
                         <option value=@opt.Abg>@opt.Liba</option>
                     }
-                </InputSelect> *@
+                </InputSelect> 
             </FormField>
   
             <!-- FIELD 20: Méthode de paiement -->
@@ -370,13 +409,17 @@
                     {
                         <option value=@opt.Elea>@opt.Liba</option>
                     }
-                </InputSelect> *@
+                </InputSelect> 
             </FormField>
         </div>
     </div>
 }
 
 @code {
+    // New — feeds ColDrivenFields
+    [Parameter] public int Idorg { get; set; }
+    [Parameter] public ColPrefContext Ctx { get; set; } = default!;
+
     [Parameter] public TiewelDto Draft { get; set; }
     [Parameter] public GridMode GMode { get; set; } = GridMode.None;
     [Parameter] public bool isEditing { get; set; } = false;
@@ -401,4 +444,4 @@
             isEditing = false;
         }
     }
-}
+} *@

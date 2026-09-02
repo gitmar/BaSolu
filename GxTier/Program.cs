@@ -16,6 +16,7 @@ using GxShared.Sess;
 
 using GxTie;
 using GxTie.Services;
+using GxTie.Components.Cols;
 using GxTie.Services.Calculation;
 
 using Microsoft.AspNetCore.Components.Authorization;
@@ -133,6 +134,7 @@ builder.Services.AddScoped<Userbag>();
 builder.Services.AddScoped<IPuzzleSyncService, PuzzleSyncService>();
 builder.Services.AddScoped<ChildVars>();
 builder.Services.AddScoped<RendAgres>();
+builder.Services.AddScoped<ColumnPreferencesClient>();
 builder.Services.AddScoped<ClieAppState>();
 builder.Services.AddScoped<SessionContextService>();
 builder.Services.AddScoped<SessionContextClient>();

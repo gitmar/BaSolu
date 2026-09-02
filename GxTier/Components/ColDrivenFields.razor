@@ -1,0 +1,122 @@
+﻿@* ColDrivenFields.razor *@
+@using System.Reflection
+@using GxShared.Cols.Models
+@using GxShared.Sess
+@using GxTie.Components.Cols
+
+@inject ColumnPreferencesClient PrefClient
+
+@if (_isLoading)
+{
+    <p><em>Chargement...</em></p>
+}
+else
+{
+    @foreach (var col in _columns)
+    {
+        <FormField Label="@col.Ulabel" IsVisible="@col.IsVisible">
+            @switch (col.Atyp)
+            {
+                case ColAtyp.Text:
+                    @if (IsEditing)
+                    {
+                        <input class="form-control" value="@GetValue(Model, col.ColName)"
+                               @onchange="@(e => SetValue(col.ColName, e.Value))" />
+                    }
+                    else
+                    {
+                        <span class="form-control-plaintext">@GetValue(Model, col.ColName)</span>
+                    }
+                    break;
+
+                case ColAtyp.Number:
+                    @if (IsEditing)
+                    {
+                        <input type="number" class="form-control" value="@GetValue(Model, col.ColName)"
+                               @onchange="@(e => SetValue(col.ColName, e.Value))" />
+                    }
+                    else
+                    {
+                        <span class="form-control-plaintext">@GetValue(Model, col.ColName)</span>
+                    }
+                    break;
+
+                case ColAtyp.Date:
+                    @if (IsEditing)
+                    {
+                        <input type="date" class="form-control" value="@GetValue(Model, col.ColName)"
+                               @onchange="@(e => SetValue(col.ColName, e.Value))" />
+                    }
+                    else
+                    {
+                        <span class="form-control-plaintext">@GetValue(Model, col.ColName)</span>
+                    }
+                    break;
+
+                case ColAtyp.Select:
+                    <InputSelect Value="@(GetValue(Model, col.ColName)?.ToString() ?? "0")"
+                                 ValueChanged="@((string v) => SetValue(col.ColName, v))"
+                                 ValueExpression="@(() => _dummy)"
+                                 class="form-select" disabled="@(!IsEditing)">
+                        <option value="0">Choisir...</option>
+                        @foreach (var opt in EnsTbls.FirstOrDefault(t => t.Tenr == 1 && t.Tref == col.Tref)?.TbItems ?? new())
+                        {
+                            <option value="@opt.Aval">@opt.Liba</option>
+                        }
+                    </InputSelect>
+                    break;
+
+                case ColAtyp.Checkbox:
+                    <input type="checkbox" checked="@((bool?)GetValue(Model, col.ColName) ?? false)"
+                           disabled="@(!IsEditing)"
+                           @onchange="@(e => SetValue(col.ColName, e.Value))" />
+                    break;
+            }
+        </FormField>
+    }
+}
+
+@code {
+    [Parameter, EditorRequired] public int Idorg { get; set; }
+    [Parameter, EditorRequired] public ColPrefContext Ctx { get; set; } = default!;
+    [Parameter, EditorRequired] public object Model { get; set; } = default!;
+    [Parameter, EditorRequired] public List<Gtabl> EnsTbls { get; set; } = new();
+    [Parameter] public bool IsEditing { get; set; }
+
+    private List<LSelCol> _columns = new();
+    private bool _isLoading;
+    private string _dummy = ""; // satisfies ValueExpression requirement for InputSelect binding
+
+    protected override async Task OnParametersSetAsync()
+    {
+        _isLoading = true;
+        _columns = await PrefClient.LoadAsync(Idorg, Ctx);
+        _isLoading = false;
+    }
+
+    private static readonly Dictionary<(Type, string), PropertyInfo> _propCache = new();
+
+    private static PropertyInfo GetProp(object target, string name)
+    {
+        var key = (target.GetType(), name);
+        if (!_propCache.TryGetValue(key, out var pi))
+        {
+            pi = target.GetType().GetProperty(name)
+                 ?? throw new InvalidOperationException($"Propriété '{name}' introuvable sur {target.GetType().Name}");
+            _propCache[key] = pi;
+        }
+        return pi;
+    }
+
+    private object? GetValue(object target, string colName) => GetProp(target, colName).GetValue(target);
+
+    private void SetValue(string colName, object? rawValue)
+    {
+        var pi = GetProp(Model, colName);
+        var targetType = Nullable.GetUnderlyingType(pi.PropertyType) ?? pi.PropertyType;
+        object? converted = rawValue is null || rawValue as string == ""
+            ? null
+            : Convert.ChangeType(rawValue.ToString(), targetType);
+        pi.SetValue(Model, converted);
+    }
+}

@@ -1,0 +1,52 @@
+﻿@using GxPilo.Services.Cols
+@using System.Security.Claims
+
+<h3>ColumnCatalog</h3>
+
+@page "/columncatalog"
+@inject ColumnPreferencesClient PrefClient
+@* @attribute [Authorize(Roles = "Admin")]
+ *@
+<h3>Catalogue des colonnes</h3>
+<p class="text-muted">
+    Régénère le catalogue de colonnes à partir des DTOs actuels — opération globale,
+    sans lien avec une organisation en particulier. Sans danger à relancer.
+</p>
+
+<Button Color="ButtonColor.Primary" Loading="@isSeeding" @onclick="GenerateCatalog">
+    Générer le catalogue
+</Button>
+
+@if (lastResult is not null)
+{
+    <div class="alert @(lastResult >= 0 ? "alert-success" : "alert-danger") mt-3">
+        @if (lastResult > 0)
+        {
+            <text>@lastResult nouvelle(s) colonne(s) ajoutée(s).</text>
+        }
+        else if (lastResult == 0)
+        {
+
+            <text>Catalogue déjà à jour.</text>
+        }
+        else
+        {
+
+            <text>Échec de la génération.</text>
+        }
+    </div>
+}
+
+@code {
+    private bool isSeeding;
+    private int? lastResult;
+
+    private async Task GenerateCatalog()
+    {
+        isSeeding = true;
+        lastResult = null;
+        try { lastResult = await PrefClient.SeedCatalogAsync(); }
+        catch { lastResult = -1; }
+        finally { isSeeding = false; }
+    }
+}
