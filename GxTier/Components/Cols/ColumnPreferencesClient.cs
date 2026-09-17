@@ -8,7 +8,6 @@ namespace GxTie.Components.Cols
     public class ColumnPreferencesClient
     {
         private readonly HttpClient _http;
-
         public ColumnPreferencesClient(IHttpClientFactory httpClientFactory)
         {
             _http = httpClientFactory.CreateClient("AuthClient");
@@ -26,11 +25,8 @@ namespace GxTie.Components.Cols
             return resp.IsSuccessStatusCode;
         }
 
-        public async Task<bool> SeedAsync(int idorg)
-        {
-            var resp = await _http.PostAsync($"Colprefs/{idorg}/seed", null);
-            return resp.IsSuccessStatusCode;
-        }
+        // SeedAsync removed — org rows are override-only now; no per-org seeding action exists server-side.
+
         public async Task<bool> ResetAsync(int idorg, ColPrefContext ctx)
         {
             var resp = await _http.PostAsync($"Colprefs/{idorg}/reset{Qs(ctx)}", null);

@@ -1,7 +1,54 @@
 ﻿@using GxPilo.Services.Cols
 @using GxShared.Cols.Models
+@using GxShared.Sess
 
 @inject ColumnPreferencesClient PrefClient
+
+<div class="d-flex align-items-end gap-3 flex-wrap mb-3">
+    <div>
+        <label class="fw-bold">Catégorie :</label>
+        <InputSelect @bind-Value="selTotyp" @bind-Value:after="OnSelectionChanged">
+            <option value="1">Cible</option>
+            <option value="2">Opérateur</option>
+            <option value="3">Client</option>
+            <option value="4">Fournisseur</option>
+            <option value="5">Partenaire</option>
+            <option value="6">Produit</option>
+        </InputSelect>
+    </div>
+
+    @if (selTotyp == 1)
+    {
+        <div>
+            <label class="fw-bold">Formulaire :</label>
+            <InputSelect @bind-Value="selEfrm" @bind-Value:after="OnSelectionChanged">
+                <option value="1">Tiersp (normal)</option>
+                <option value="2">Tiewel (accueil)</option>
+            </InputSelect>
+        </div>
+        <div>
+            <label class="fw-bold">Affilié :</label>
+            <InputSelect @bind-Value="selStyp" @bind-Value:after="OnSelectionChanged">
+                <option value="1">Lui-même</option>
+                <option value="2">Conjoint</option>
+                <option value="3">Parent</option>
+                <option value="4">Enfant</option>
+                <option value="5">Parrain</option>
+                <option value="6">Filleul</option>
+            </InputSelect>
+        </div>
+    }
+    else if (selTotyp == 6)
+    {
+        <div>
+            <label class="fw-bold">Formulaire :</label>
+            <InputSelect @bind-Value="selEfrm" @bind-Value:after="OnSelectionChanged">
+                <option value="1">Entrée</option>
+                <option value="2">Validation</option>
+            </InputSelect>
+        </div>
+    }
+</div>
 
 <div class="d-flex align-items-end gap-3 flex-wrap mb-3">
     @if (!awaitingRegenerateConfirm)
@@ -59,6 +106,34 @@
                     <input type="checkbox" checked="@context.IsVisible"
                            @onchange="@(e => context.IsVisible = (bool)e.Value!)" />
                 </GridColumn>
+                <GridColumn TItem="LSelCol" HeaderText="Table" Class="xcol2">
+                    @if (context.Atyp == 1 || context.Atyp == 2)
+                    {
+                        <InputSelect @bind-Value="@context.Tref">
+                            <option value=0>aucun</option>
+                            @foreach (var tob in EnsTbls.Where(ut => ut.Tenr == 1))
+                            {
+                                <option value=@tob.Tref>@tob.Liba</option>
+                            }
+                        </InputSelect>
+                    }
+                    else
+                    {
+                        <span>N/A</span>
+                    }
+                </GridColumn>
+                <GridColumn TItem="LSelCol" HeaderText="Parent" Class="xcol2">
+                    @if (context.Tref > 0)
+                    {
+                        <InputSelect @bind-Value="@context.Pref">
+                            <option value="0">aucun (racine)</option>
+                            @foreach (var tob in EnsTbls.Where(ut => ut.Tenr == 1 && ut.Tref != context.Tref))
+                            {
+                                <option value=@tob.Tref>@tob.Liba</option>
+                            }
+                        </InputSelect>
+                    }
+                </GridColumn>
             </GridColumns>
         </Grid>
     }
@@ -94,7 +169,7 @@
 </style>
 @code {
     [Parameter] public int Idorg { get; set; }
-
+    [Parameter] public List<Gtabl> EnsTbls { get; set; }
     private int selTotyp = 1;
     private int selEfrm = 1;
     private int selStyp = 1;
@@ -122,7 +197,7 @@
         Styp = selTotyp == 1 ? selStyp : 1
     };
 
-    private async Task OnSelectionChanged() => await LoadColumns();
+    //private async Task OnSelectionChanged() => await LoadColumns();
 
     private async Task LoadColumns()
     {
@@ -137,7 +212,12 @@
             isLoading = false;
         }
     }
-
+    private async Task OnSelectionChanged()
+    {
+        if (selTotyp != 1 && selTotyp != 6) selEfrm = 1;
+        if (selTotyp != 1) selStyp = 1;
+        await LoadColumns();
+    }
     private async Task SaveSelection()
     {
         isSaving = true;

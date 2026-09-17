@@ -1,5 +1,10 @@
-﻿using GxShared.Others;
+﻿using GxFormula.ForaBizz;
+
+using GxShared.Others;
 using GxShared.Sess;
+using GxTie.Services;
+
+using GxTie.Services.Calculation;
 
 namespace GxTie.StaticHelpers
 {
@@ -61,5 +66,22 @@ namespace GxTie.StaticHelpers
                 ? Math.Round(d, 3)
                 : null;
         }
+    public static IServiceCollection AddCalculationPipeline(this IServiceCollection services)
+        {
+            services.AddSingleton<FormulaEngine>();
+            services.AddSingleton<ProgramLineParser>();
+
+            services.AddScoped<ICalculationPersistence, CalculationPersistence>();
+            services.AddScoped<ICalculationService, CalculationService>();
+            services.AddScoped<ICalculationWorkflow, CalculationWorkflow>();
+
+            services.AddSingleton<FormulaEngine>();
+            services.AddSingleton<ProgramLineParser>();
+            services.AddSingleton<IProgramLineParser, ProgramLineParser>(); // if ProgramCalculator needs the interface form — see note below
+            services.AddScoped<IProgramCalculator, ProgramCalculator>();
+            services.AddScoped<IActsaieDataService, ActsaieDataService>();
+            return services;
+        }
+
     }
-    }
+}

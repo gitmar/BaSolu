@@ -1,4 +1,6 @@
 ﻿using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
+using System.Reflection;
 using System.Security.Cryptography;
 
 using BlazorBootstrap;
@@ -11,17 +13,18 @@ using GxShared.Helpers.CrudHelpers;
 using GxShared.Interfaces;
 using GxShared.Sess;
 
+using Newtonsoft.Json;
+
 namespace GxTie.Components.Uifrags
 {
     public abstract class CompUICrudBase : MultiLevelCrudBase
     {
         protected readonly Dictionary<Guid, PendingOpType> _rowPendingOpTypeByRow = new();
-        protected readonly Dictionary<Guid, PlngenDto> _edPlnOriginals = new();
-        protected readonly Dictionary<Guid, RubvarDto> _edRubOriginals = new();
-        protected readonly Dictionary<Guid, RubfmtDto> _edFmtOriginals = new();
-        protected readonly Dictionary<Guid, RubhieDto> _edHieOriginals = new();
-        protected readonly Dictionary<Guid, RubpstDto> _edPstOriginals = new();
+        
         protected readonly Dictionary<Guid, TierspDto> _edTieOriginals = new();
+        protected readonly Dictionary<Guid, TiewelDto> _edTiwOriginals = new();
+        protected readonly Dictionary<Guid, TieaflDto> _edAflOriginals = new();
+        protected readonly Dictionary<Guid, TiwaflDto> _edWflOriginals = new();
         protected readonly Dictionary<Guid, ActsaieDto> _edActOriginals = new();
         protected readonly Dictionary<Guid, ActdetDto> _edAdtOriginals = new();
         protected readonly Dictionary<Guid, ResdonDto> _edResOriginals = new();
@@ -31,9 +34,8 @@ namespace GxTie.Components.Uifrags
         {
 
         }
-
-        protected abstract void ClearAddRow(EntityLevel level, Guid rowguid);
-        protected abstract void ClearEditRow(EntityLevel level, Guid rowguid);
+        //protected abstract void ClearAddRow(EntityLevel level, Guid rowguid);
+        //protected abstract void ClearEditRow(EntityLevel level, Guid rowguid);
         protected override async Task ConfirmAdd(EntityLevel level, object draft, bool isConfirm)
         {
 
@@ -56,7 +58,7 @@ namespace GxTie.Components.Uifrags
         {
             var rowguid = MLEntityKeyHelper.GetRowguidAsGuid(entity);
             await UnifiedDeleteAction(level, entity, isConfirm);
-            ClearAddRow(level, rowguid);
+            ////ClearAddRow(level, rowguid);
             BumpRenderKey(level);                 // <-- add this
             await InvokeAsync(StateHasChanged);
         }
@@ -64,7 +66,7 @@ namespace GxTie.Components.Uifrags
         {
             var rowguid = MLEntityKeyHelper.GetRowguidAsGuid(entity);
             await UnifiedCancelAction(level, entity, PendingOpType.Insert);
-            ClearAddRow(level, rowguid);
+            ////ClearAddRow(level, rowguid);
             EndRowEdit(level);
             BumpRenderKey(level);                 // <-- add this
             await InvokeAsync(StateHasChanged);
@@ -75,7 +77,7 @@ namespace GxTie.Components.Uifrags
             Console.WriteLine($"CancelEdit rowguid = {rowguid}");
             //await UnifiedCancelAction(level, entity, PendingOpType.Update);
             await UnifiedCancelAction(level, entity, PendingOpType.Update);
-            ClearEditRow(level, rowguid);
+            ////ClearEditRow(level, rowguid);
             //await ClearEditRow(level, entity);
             EndRowEdit(level);
             BumpRenderKey(level);                 // <-- add this
@@ -286,42 +288,10 @@ namespace GxTie.Components.Uifrags
             SetPendingOpType(level, rowguid, PendingOpType.Update);
             SetLightBackground(rowguid, true);
         }
-        //    protected async Task StartRowEdit<TDto>(
-        //EntityLevel level,
-        //TDto item,
-        //Dictionary<Guid, TDto> originalsStore,
-        //Action<TDto> setDraftField) where TDto : class
-        //    {
-        //        var rowguid = EntityKeyHelper.GetRowguid(item);
-        //        if (rowguid == Guid.Empty) return;
-        //        if (IsAnyRowEditing && !IsRowEditing(rowguid)) return;
-
-        //        originalsStore[rowguid] = DeepClone(item);
-        //        var draft = DeepClone(item);
-        //        setDraftField(draft);          // assigns to draftFmt/draftPln/etc.
-
-        //        BeginEdit(level, rowguid, draft);   // BeginEdit now owns SetPendingOpType internally
-        //        await InvokeAsync(StateHasChanged);
-        //    }
-        //protected void BeginAdd(EntityLevel level, Guid rowguid, object draft)
-        //{
-        //    var s = GetEditState(level);
-        //    s.IsAdd = true;
-        //    s.IsEdit = false;
-        //    s.AddRowguid = rowguid;
-        //    s.EditRowguid = null;
-        //    s.DeleteRowguid = null;
-
-        //    //SetDraft(level, draft);
-        //    BeginAddRow(level, rowguid, draft);
-        //    //SetRowState(level, rowguid, RowState.AddPending);
-        //    _rowPendingOpTypeByRow[rowguid] = PendingOpType.Insert;
-        //}
-        protected bool IsPlanEditing(PlngenDto item) => IsEditing(EntityLevel.Plan, item.Rowguid);
-        protected bool IsRubEditing(RubvarDto item) => IsEditing(EntityLevel.Rub, item.Rowguid);
-        protected bool IsFmtEditing(RubfmtDto item) => IsEditing(EntityLevel.Fmt, item.Rowguid);
-        protected bool IsHieEditing(RubhieDto item) => IsEditing(EntityLevel.Hie, item.Rowguid);
-        protected bool IsPstEditing(RubpstDto item) => IsEditing(EntityLevel.Pst, item.Rowguid);
+        protected bool IsTieEditing(TierspDto item) => IsEditing(EntityLevel.Tie, item.Rowguid);
+        protected bool IsTiwEditing(TiewelDto item) => IsEditing(EntityLevel.Tiw, item.Rowguid);
+        protected bool IsAflEditing(TieaflDto item) => IsEditing(EntityLevel.Afl, item.Rowguid);
+        protected bool IsWflEditing(TiwaflDto item) => IsEditing(EntityLevel.Wfl, item.Rowguid);
         protected bool IsEditing(EntityLevel level, Guid rowguid)
         {
             var es = GetEditState(level);
@@ -329,38 +299,6 @@ namespace GxTie.Components.Uifrags
                    ((es.IsAdd && es.AddRowguid == rowguid) ||
                     (es.IsEdit && es.EditRowguid == rowguid));
         }
-        //protected bool IsEditing(EntityLevel level, Guid rowguid)
-        //{
-        //    var es = GetEditState(level);
-        //    return (es.IsAdd || es.IsEdit) &&
-        //           ((es.IsAdd && es.AddRowguid == rowguid) ||
-        //            (es.IsEdit && es.EditRowguid == rowguid));
-        //}
-
-        //protected bool IsPlanEditing(PlngenDto item)
-        //{
-        //    var es = GetEditState(EntityLevel.Plan);
-        //    return (es.IsAdd || es.IsEdit) &&
-        //           ((es.IsAdd && es.AddRowguid == item.Rowguid) ||
-        //            (es.IsEdit && es.EditRowguid == item.Rowguid));
-        //}
-
-
-        //protected bool IsRubEditing(RubvarDto item)
-        //{
-        //    var es = GetEditState(EntityLevel.Rub);
-        //    return (es.IsAdd || es.IsEdit) &&
-        //           ((es.IsAdd && es.AddRowguid == item.Rowguid) ||
-        //            (es.IsEdit && es.EditRowguid == item.Rowguid));
-        //}
-
-        //protected bool IsFmtEditing(RubfmtDto item)
-        //{
-        //    var es = GetEditState(EntityLevel.Fmt);
-        //    return (es.IsAdd || es.IsEdit) &&
-        //           ((es.IsAdd && es.AddRowguid == item.Rowguid) ||
-        //            (es.IsEdit && es.EditRowguid == item.Rowguid));
-        //}
         private void SetDeleteFlags(object item) => SetFlags(item, 0, 0, -1);
         // Generic flag setter
         private void SetFlags<T>(T entity, int xadd1, int xedt1, int xdel1)
@@ -380,30 +318,6 @@ namespace GxTie.Components.Uifrags
             //_messageService.Show("✅ Saved successfully", ToastType.Success);
             StateHasChanged();
         }
-        //protected void ClearRowState(EntityLevel level, Guid rowguid)
-        //{
-        //    _rowStates.Remove((level, rowguid));
-        //    Console.WriteLine("22Pln ROW cleared");
-        //}
-        //protected void ClearEditFlags()
-        //{
-        //    IsAdd = false;
-        //    IsEdit = false;
-        //    AddRowguid = null;
-        //    EditRowguid = null;
-        //    DeleteRowguid = null;
-        //}
-        //UI Page row manage
-        //protected void BeginAddRow(EntityLevel level, Guid rowguid, object draft)
-        //{
-        //    SetDraft(level, draft);
-        //    StartRowEdit(rowguid, level);
-        //    SetRowState(level, rowguid, RowState.AddPending);
-        //    //var opId = await CommitAddOrUpdateAsync(entity, isNew, entitySet);
-        //    ////_rowPendingOpTypeByRow[rowguid] = PendingOpType.Insert;
-        //    //_pendingOpIdsByRow[rowguid] = opId;
-        //    SetLightBackground(rowguid, true);
-        //}
         protected override void RollbackPendingState(EntityLevel level, object entity, bool isNew)
         {
             var rowguid = MLEntityKeyHelper.GetRowguidAsGuid(entity);
@@ -412,7 +326,7 @@ namespace GxTie.Components.Uifrags
             {
                 Console.WriteLine($"NEW ROW TO REMOVE : {rowguid}");
                 RemoveByRowguid(level, rowguid);
-                ClearAddRow(level, rowguid);
+                ////ClearAddRow(level, rowguid);
             }
             //RemoveFromLocalCollection(level, entity);
             else
@@ -445,23 +359,17 @@ namespace GxTie.Components.Uifrags
         {
             switch (level)
             {
-                case EntityLevel.Plan:
-                    if (entity is PlngenDto plan) PlanItems.Add(plan);
-                    break;
-                case EntityLevel.Rub:
-                    if (entity is RubvarDto rub) RubItems.Add(rub);
-                    break;
-                case EntityLevel.Fmt:
-                    if (entity is RubfmtDto fmt) FmtItems.Add(fmt);
-                    break;
-                case EntityLevel.Hie:
-                    if (entity is RubhieDto hie) HieItems.Add(hie);
-                    break;
-                case EntityLevel.Pst:
-                    if (entity is RubpstDto pst) PstItems.Add(pst);
-                    break;
                 case EntityLevel.Tie:
                     if (entity is TierspDto tie) TieItems.Add(tie);
+                    break;
+                case EntityLevel.Tiw:
+                    if (entity is TiewelDto tiw) TiwItems.Add(tiw);
+                    break;
+                case EntityLevel.Afl:
+                    if (entity is TieaflDto afl) AflItems.Add(afl);
+                    break;
+                case EntityLevel.Wfl:
+                    if (entity is TiwaflDto wfl) WflItems.Add(wfl);
                     break;
                 case EntityLevel.Act:
                     if (entity is ActsaieDto act) ActItems.Add(act);
@@ -487,29 +395,21 @@ namespace GxTie.Components.Uifrags
         {
             switch (level)
             {
-                case EntityLevel.Plan:
-                    if (entity is PlngenDto plan)
-                        PlanItems.RemoveAll(x => x.Rowguid == plan.Rowguid);
-                    break;
-                case EntityLevel.Rub:
-                    if (entity is RubvarDto rub)
-                        RubItems.RemoveAll(x => x.Rowguid == rub.Rowguid);
-                    break;
-                case EntityLevel.Fmt:
-                    if (entity is RubfmtDto fmt)
-                        FmtItems.RemoveAll(x => x.Rowguid == fmt.Rowguid);
-                    break;
-                case EntityLevel.Hie:
-                    if (entity is RubhieDto hie)
-                        HieItems.RemoveAll(x => x.Rowguid == hie.Rowguid);
-                    break;
-                case EntityLevel.Pst:
-                    if (entity is RubpstDto pst)
-                        PstItems.RemoveAll(x => x.Rowguid == pst.Rowguid);
-                    break;
                 case EntityLevel.Tie:
                     if (entity is TierspDto tie)
                         TieItems.RemoveAll(x => x.Rowguid == tie.Rowguid);
+                    break;
+                case EntityLevel.Tiw:
+                    if (entity is TiewelDto tiw)
+                        TiwItems.RemoveAll(x => x.Rowguid == tiw.Rowguid);
+                    break;
+                case EntityLevel.Afl:
+                    if (entity is TieaflDto afl)
+                        AflItems.RemoveAll(x => x.Rowguid == afl.Rowguid);
+                    break;
+                case EntityLevel.Wfl:
+                    if (entity is TiwaflDto wfl)
+                        WflItems.RemoveAll(x => x.Rowguid == wfl.Rowguid);
                     break;
                 case EntityLevel.Act:
                     if (entity is ActsaieDto act)
@@ -540,46 +440,32 @@ namespace GxTie.Components.Uifrags
         {
             switch (level)
             {
-                case EntityLevel.Plan:
-                    if (entity is PlngenDto plan)
-                    {
-                        var index = PlanItems.FindIndex(x => x.Rowguid == plan.Rowguid);
-                        if (index >= 0) PlanItems[index] = plan;
-                    }
-                    break;
-                case EntityLevel.Rub:
-                    if (entity is RubvarDto rub)
-                    {
-                        var index = RubItems.FindIndex(x => x.Rowguid == rub.Rowguid);
-                        if (index >= 0) RubItems[index] = rub;
-                    }
-                    break;
-                case EntityLevel.Fmt:
-                    if (entity is RubfmtDto fmt)
-                    {
-                        var index = FmtItems.FindIndex(x => x.Rowguid == fmt.Rowguid);
-                        if (index >= 0) FmtItems[index] = fmt;
-                    }
-                    break;
-                case EntityLevel.Hie:
-                    if (entity is RubhieDto hie)
-                    {
-                        var index = HieItems.FindIndex(x => x.Rowguid == hie.Rowguid);
-                        if (index >= 0) HieItems[index] = hie;
-                    }
-                    break;
-                case EntityLevel.Pst:
-                    if (entity is RubpstDto pst)
-                    {
-                        var index = PstItems.FindIndex(x => x.Rowguid == pst.Rowguid);
-                        if (index >= 0) PstItems[index] = pst;
-                    }
-                    break;
                 case EntityLevel.Tie:
                     if (entity is TierspDto tie)
                     {
                         var index = TieItems.FindIndex(x => x.Rowguid == tie.Rowguid);
                         if (index >= 0) TieItems[index] = tie;
+                    }
+                    break;
+                case EntityLevel.Tiw:
+                    if (entity is TiewelDto tiw)
+                    {
+                        var index = TiwItems.FindIndex(x => x.Rowguid == tiw.Rowguid);
+                        if (index >= 0) TiwItems[index] = tiw;
+                    }
+                    break;
+                case EntityLevel.Afl:
+                    if (entity is TieaflDto afl)
+                    {
+                        var index = AflItems.FindIndex(x => x.Rowguid == afl.Rowguid);
+                        if (index >= 0) AflItems[index] = afl;
+                    }
+                    break;
+                case EntityLevel.Wfl:
+                    if (entity is TiwaflDto wfl)
+                    {
+                        var index = WflItems.FindIndex(x => x.Rowguid == wfl.Rowguid);
+                        if (index >= 0) WflItems[index] = wfl;
                     }
                     break;
                 case EntityLevel.Act:
@@ -623,464 +509,391 @@ namespace GxTie.Components.Uifrags
             OnLocalCollectionMutated(level, CollectionMutation.Replaced, entity);
         }
 
-        protected override void CopyDraftToGridItem(EntityLevel level, object entity)
+protected void CopyPropertiesWithRules<T>(T target, T source)
+    {
+        if (target == null || source == null) return;
+
+        // Manual blacklist for audit/system fields
+        var blacklist = new HashSet<string>
+    {
+        "Datc", "Dati", "Datu", "Demb", "Dinscr",
+        "Rowguid", "Xrowguid"
+    };
+
+        var props = typeof(T).GetProperties(BindingFlags.Public | BindingFlags.Instance);
+
+        foreach (var prop in props)
         {
-            switch (level)
+            // Skip if property is blacklisted
+            if (blacklist.Contains(prop.Name))
+                continue;
+
+            // Skip if property has [Key] attribute
+            if (prop.GetCustomAttribute<KeyAttribute>() != null)
+                continue;
+
+            // Skip if property has [JsonIgnore] attribute
+            if (prop.GetCustomAttribute<JsonIgnoreAttribute>() != null)
+                continue;
+
+            // Skip if property is not writable
+            if (!prop.CanWrite) continue;
+
+            var value = prop.GetValue(source);
+
+            // Commit only non-null values
+            if (value != null)
             {
-                case EntityLevel.Plan:
-                    if (entity is PlngenDto plan && _draftPlan is PlngenDto draftPlan)
-                    {
-                        if (draftPlan == null) return;
-                        plan.Idorg = draftPlan.Idorg; //orga
-                        plan.Liba = draftPlan.Liba; //designation
-                        plan.Abg = draftPlan.Abg; //abrege
-                        plan.Fpsrc = draftPlan.Fpsrc; //formule-non valider
-                        plan.Iele = draftPlan.Iele; //compteur
-                        plan.Eta = draftPlan.Eta; //etat
-                        break;
-                    }
-                    break;
-                case EntityLevel.Rub:
-                    if (entity is RubvarDto rub && _draftRub is RubvarDto draftRub)
-                    {
-                        if (draftRub == null) return;
-                        rub.Idorg = draftRub.Idorg; //orga
-                        rub.Ipln = draftRub.Ipln; //parent
-                        rub.Liba = draftRub.Liba; //designation
-                        //RUBHIE
-                        //if (string.IsNullOrEmpty(draftRub.Raison))
-                        //{
-                        //    draftRub.Raison = draftRub.Liba;
-                        //}
-                        rub.Abg = draftRub.Abg; //abrege
-                        rub.Scdrub = draftRub.Scdrub; //code
-                        rub.Zcod = draftRub.Zcod; //refer
-                        rub.Atyp = draftRub.Atyp; //atyp
-                        rub.Utyp = draftRub.Utyp;//utyp
-                        rub.Frsrc = draftRub.Frsrc; //formule
-                        rub.Ecmount = draftRub.Ecmount;
-                        rub.Ecannu = draftRub.Ecannu;
-                        rub.Nbech = draftRub.Nbech;
-                        rub.Iele = draftRub.Iele; //compteur
-                        rub.Eta = draftRub.Eta; //etat
-                    }
-                    break;
-                case EntityLevel.Fmt:
-                    if (entity is RubfmtDto fmt && _draftFmt is RubfmtDto draftFmt)
-                    {
-                        if (draftFmt == null) return;
-                        fmt.Idorg = draftFmt.Idorg; //orga
-                        fmt.Irub = draftFmt.Irub; //parent
-                        fmt.Liba = draftFmt.Liba; //designation
-                        fmt.Abg = draftFmt.Abg; //abrege
-                        fmt.Zcdrub = draftFmt.Zcdrub; //code
-                        fmt.Zcod = draftFmt.Zcod; //refer
-                        fmt.Ztyp = draftFmt.Ztyp; //ztyp
-                        fmt.Dstr = draftFmt.Dstr; //debut grid
-                        fmt.Fstr = draftFmt.Fstr; //fin grid
-                        fmt.Ftsrc = draftFmt.Ftsrc; //formule
-                        fmt.Col = draftFmt.Col; //col
-                        fmt.Lne = draftFmt.Lne; //lne
-                        fmt.Lgtf = draftFmt.Lgtf; //lgtf
-                        fmt.Aval = draftFmt.Aval; //valeur
-                        fmt.Iele = draftFmt.Iele; //compteur
-                        fmt.Eta = draftFmt.Eta; //etat
-                    }
-                    break;
-                case EntityLevel.Tie:
-                    if (entity is TierspDto tie && _draftTie is TierspDto draftTie)
-                    {
-                        if (draftTie == null) return;
-                        tie.Idorg = draftTie.Idorg; //orga
-                        tie.Smatri = draftTie.Smatri; //matricule
-                        tie.Xmatri = draftTie.Xmatri; //matricule
-                        tie.Nom = draftTie.Nom; //abrege
-                        tie.Pnom = draftTie.Pnom; //formule-non valider
-                        tie.Iele = draftTie.Iele; //compteur
-                        tie.Eta = draftTie.Eta; //etat
-                        break;
-                    }
-                    break;
-                case EntityLevel.Hie:
-                    if (entity is RubhieDto hie && _draftHie is RubhieDto draftHie)
-                    {
-                        if (draftHie == null) return;
-                        hie.Idorg = draftHie.Idorg; //orga
-                        hie.Ipln = draftHie.Ipln; //parent
-                        hie.Raison = draftHie.Raison; //designation
-                        hie.Liba = draftHie.Liba;
-                        //hieHIE
-                        if (string.IsNullOrEmpty(draftHie.Raison))
-                        {
-                            draftHie.Raison = draftHie.Liba;
-                        }
-                        hie.Abg = draftHie.Abg; //abrege
-                        hie.Scdrub = draftHie.Scdrub; //code
-                        hie.Zcod = draftHie.Zcod; //refer
-                        hie.Atyp = draftHie.Atyp; //atyp
-                        hie.Frsrc = draftHie.Frsrc; //formule
-                        hie.Iele = draftHie.Iele; //compteur
-                        hie.Eta = draftHie.Eta; //etat
-                    }
-                    break;
-                case EntityLevel.Pst:
-                    if (entity is RubpstDto pst && _draftPst is RubpstDto draftPst)
-                    {
-                        if (draftPst == null) return;
-                        pst.Idorg = draftPst.Idorg; //orga
-                        pst.Ihie = draftPst.Ihie; //parent
-                        pst.Padres = draftPst.Padres; //adresse
-                        pst.Liba = draftPst.Liba; //designation
-                        pst.Abg = draftPst.Abg; //abrege
-                        pst.Zcdrub = draftPst.Zcdrub; //code
-                        pst.Zcod = draftPst.Zcod; //refer
-                        pst.Ztyp = draftPst.Ztyp; //ztyp
-
-                        pst.Ftsrc = draftPst.Ftsrc; //formule
-                        pst.Col = draftPst.Col; //col
-                        pst.Lne = draftPst.Lne; //lne
-                        pst.Lgtf = draftPst.Lgtf; //lgtf
-                        pst.Iele = draftPst.Iele; //compteur
-                        pst.Eta = draftPst.Eta; //etat
-                    }
-                    break;
-                case EntityLevel.Act:
-                    if (entity is ActsaieDto act && _draftAct is ActsaieDto draftAct)
-                    {
-                        if (draftAct == null) return;
-                        act.Idorg = draftAct.Idorg; //orga
-                        act.Itie = draftAct.Itie; //parent
-                        act.Scdrub = draftAct.Scdrub; //code
-                        act.Liba = draftAct.Liba; //designation
-                        act.Abg = draftAct.Abg; //abrege
-                        ////act.Zcod = draftAct.Zcod; //refer
-                        act.Atyp = draftAct.Atyp; //atyp
-                        ////act.Frsrc = draftAct.Frsrc; //formule
-                        act.Ecmount = draftAct.Ecmount;
-                        act.Ecannu = draftAct.Ecannu;
-                        act.Nbech = draftAct.Nbech;
-                        act.Iele = draftAct.Iele; //compteur
-                        act.Eta = draftAct.Eta; //etat
-                    }
-                    break;
-                case EntityLevel.Adt:
-                    if (entity is ActdetDto adt && _draftAdt is ActdetDto draftAdt)
-                    {
-                        if (draftAdt == null) return;
-                        adt.Idorg = draftAdt.Idorg; //orga
-                        adt.Iact = draftAdt.Iact; //parent
-                        adt.Liba = draftAdt.Liba; //designation
-                        adt.Abg = draftAdt.Abg; //abrege
-                        adt.Zcdrub = draftAdt.Zcdrub; //code
-                        ////adt.Zcod = draftAdt.Zcod; //refer
-                        adt.Atyp = draftAdt.Atyp; //ztyp
-
-                        ////adt.Ftsrc = draftAdt.Ftsrc; //formule
-                        adt.Iele = draftAdt.Iele; //compteur
-                        adt.Eta = draftAdt.Eta; //etat
-                    }
-                    break;
-                case EntityLevel.Res:
-                    if (entity is ResdonDto res && _draftRes is ResdonDto draftRes)
-                    {
-                        if (draftRes == null) return;
-                        res.Idorg = draftRes.Idorg; //orga
-                        res.Itie = draftRes.Itie; //parent
-                        res.Iact = draftRes.Iact; //parent2
-                        res.Scdrub = draftRes.Scdrub; //code
-                        //res.Liba = draftRes.Liba; //designation
-                        //res.Abg = draftRes.Abg; //abrege
-                        ////res.Zcod = draftRes.Zcod; //refer
-                        res.Atyp = draftRes.Atyp; //atyp
-                        //res.Ecmount = draftRes.Ecmount;
-                        //res.Ecannu = draftRes.Ecannu;
-                        //res.Nbech = draftRes.Nbech;
-                        //res.Iele = draftRes.Iele; //compteur
-                        res.Eta = draftRes.Eta; //etat
-                        break;
-                    }
-                    break;
-                case EntityLevel.Rdt:
-                    if (entity is ResdetDto rdt && _draftRdt is ResdetDto draftRdt)
-                    {
-                        if (draftRdt == null) return;
-                        rdt.Idorg = draftRdt.Idorg; //orga
-                        rdt.Ires = draftRdt.Ires; //parent
-                        //rdt.Liba = draftRdt.Liba; //designation
-                        //rdt.Abg = draftRdt.Abg; //abrege
-                        rdt.Zcdrub = draftRdt.Zcdrub; //code
-                        ////rdt.Zcod = draftRdt.Zcod; //refer
-                        rdt.Atyp = draftRdt.Atyp; //ztyp
-
-                        rdt.Iele = draftRdt.Iele; //compteur
-                        rdt.Eta = draftRdt.Eta; //etat
-                    }
-                    break;
-                case EntityLevel.Bro:
-                    if (entity is ResbroDto bro && _draftBro is ResbroDto draftBro)
-                    {
-                        if (draftBro == null) return;
-                        bro.Idorg = draftBro.Idorg; //orga
-                        bro.Itie = draftBro.Itie; //parent
-                        bro.Iact = draftBro.Iact; //parent2
-                        bro.Scdrub = draftBro.Scdrub; //code
-                        //bro.Liba = draftBro.Liba; //designation
-                        //bro.Abg = draftBro.Abg; //abrege
-                        ////bro.Zcod = draftBro.Zcod; //refer
-                        bro.Atyp = draftBro.Atyp; //atyp
-                        //bro.Ecmount = draftBro.Ecmount;
-                        //bro.Ecannu = draftBro.Ecannu;
-                        //bro.Nbech = draftBro.Nbech;
-                        bro.Iele = draftBro.Iele; //compteur
-                        bro.Eta = draftBro.Eta; //etat
-                    }
-                    break;
-                default:
-                    throw new ArgumentOutOfRangeException(nameof(level));
+                prop.SetValue(target, value);
             }
         }
-        protected override void RestoreOriginalGridItem(EntityLevel level, object entity)
+    }
+
+    protected override void CopyDraftToGridItem(EntityLevel level, object entity)
+    {
+        switch (level)
         {
-            switch (level)
+            case EntityLevel.Tie:
+                if (entity is TierspDto tie && _draftTie is TierspDto draftTie)
+                {
+                    CopyPropertiesWithRules(tie, draftTie);
+                }
+                break;
+            case EntityLevel.Tiw:
+                if (entity is TiewelDto tiw && _draftTiw is TiewelDto draftTiw)
+                {
+                    CopyPropertiesWithRules(tiw, draftTiw);
+                }
+                break;
+            case EntityLevel.Act:
+                if (entity is ActsaieDto act && _draftAct is ActsaieDto draftAct)
+                {
+                    CopyPropertiesWithRules(act, draftAct);
+                }
+                break;
+            case EntityLevel.Adt:
+                if (entity is ActdetDto adt && _draftAdt is ActdetDto draftAdt)
+                {
+                    CopyPropertiesWithRules(adt, draftAdt);
+                }
+                break;
+            case EntityLevel.Res:
+                if (entity is ResdonDto res && _draftRes is ResdonDto draftRes)
+                {
+                    CopyPropertiesWithRules(res, draftRes);
+                }
+                break;
+            case EntityLevel.Rdt:
+                if (entity is ResdetDto rdt && _draftRdt is ResdetDto draftRdt)
+                {
+                    CopyPropertiesWithRules(rdt, draftRdt);
+                }
+                break;
+            case EntityLevel.Bro:
+                if (entity is ResbroDto bro && _draftBro is ResbroDto draftBro)
+                {
+                    CopyPropertiesWithRules(bro, draftBro);
+                }
+                break;
+            default:
+                throw new ArgumentOutOfRangeException(nameof(level));
+        }
+    }
+
+    protected override void RestoreOriginalGridItem(EntityLevel level, object entity)
+    {
+        switch (level)
+        {
+            case EntityLevel.Tie:
+                if (entity is TiewelDto tie && _draftTie is TiewelDto draftTie)
+                {
+                    CopyPropertiesWithRules(tie, draftTie);
+                }
+                break;
+            default:
+                throw new ArgumentOutOfRangeException(nameof(level));
+        }
+    }
+
+    //committing drafts
+    protected void CommitTieDraft(TierspDto target, TierspDto source)
+        {
+            // Manual blacklist for audit/system fields
+            var blacklist = new HashSet<string>
             {
-                case EntityLevel.Plan:
-                    if (entity is PlngenDto plan &&
-                        _edPlnOriginals.TryGetValue(plan.Rowguid, out var originalPlan))
-                    {
-                        plan.Rowguid = originalPlan.Rowguid;
-                        plan.Idorg = originalPlan.Idorg;
-                        plan.Liba = originalPlan.Liba;
-                        plan.Abg = originalPlan.Abg;
-                        plan.Fpsrc = originalPlan.Fpsrc;
-                        plan.Iele = originalPlan.Iele; //compteur
-                        plan.Eta = originalPlan.Eta;
-                    }
-                    break;
-
-                case EntityLevel.Rub:
-                    if (entity is RubvarDto rub &&
-                        _edRubOriginals.TryGetValue(rub.Rowguid, out var originalRub))
-                    {
-                        rub.Rowguid = originalRub.Rowguid;
-                        rub.Idorg = originalRub.Idorg;
-                        rub.Ipln = originalRub.Ipln;
-                        rub.Liba = originalRub.Liba;
-                        rub.Abg = originalRub.Abg;
-                        rub.Scdrub = originalRub.Scdrub;
-                        rub.Zcod = originalRub.Zcod;
-                        rub.Atyp = originalRub.Atyp;
-                        rub.Frsrc = originalRub.Frsrc;
-                        rub.Ecmount = originalRub.Ecmount;
-                        rub.Ecannu = originalRub.Ecannu;
-                        rub.Nbech = originalRub.Nbech;
-                        rub.Iele = originalRub.Iele; //compteur
-                        rub.Eta = originalRub.Eta;
-                    }
-                    break;
-                case EntityLevel.Fmt:
-                    if (entity is RubfmtDto fmt &&
-                        _edFmtOriginals.TryGetValue(fmt.Rowguid, out var originalFmt))
-                    {
-                        fmt.Rowguid = originalFmt.Rowguid;
-                        fmt.Idorg = originalFmt.Idorg; //orga
-                        fmt.Irub = originalFmt.Irub; //parent
-                        fmt.Dstr = originalFmt.Dstr; //debut grid
-                        fmt.Fstr = originalFmt.Fstr;
-                        fmt.Liba = originalFmt.Liba; //designation
-                        fmt.Abg = originalFmt.Abg; //abrege
-                        fmt.Zcdrub = originalFmt.Zcdrub; //code
-                        fmt.Zcod = originalFmt.Zcod; //refer
-                        fmt.Ztyp = originalFmt.Ztyp; //ztyp
-
-                        fmt.Ftsrc = originalFmt.Ftsrc; //formule
-                        fmt.Col = originalFmt.Col; //col
-                        fmt.Lne = originalFmt.Lne; //lne
-                        fmt.Lgtf = originalFmt.Lgtf; //lgtf
-                        fmt.Aval = originalFmt.Aval; //valeur
-                        fmt.Iele = originalFmt.Iele; //compteur
-                        fmt.Eta = originalFmt.Eta; //etat
-                    }
-                    break;
-                case EntityLevel.Hie:
-                    if (entity is RubhieDto hie &&
-                        _edHieOriginals.TryGetValue(hie.Rowguid, out var originalHie))
-                    {
-                        hie.Rowguid = originalHie.Rowguid;
-                        hie.Idorg = originalHie.Idorg;
-                        hie.Ipln = originalHie.Ipln;
-                        hie.Liba = originalHie.Liba;
-                        hie.Raison = originalHie.Raison;
-                        hie.Abg = originalHie.Abg;
-                        hie.Scdrub = originalHie.Scdrub;
-                        hie.Zcod = originalHie.Zcod;
-                        hie.Atyp = originalHie.Atyp;
-                        hie.Frsrc = originalHie.Frsrc;
-                        hie.Iele = originalHie.Iele; //compteur
-                        hie.Eta = originalHie.Eta;
-                    }
-                    break;
-                case EntityLevel.Pst:
-                    if (entity is RubpstDto pst &&
-                        _edPstOriginals.TryGetValue(pst.Rowguid, out var originalPst))
-                    {
-                        pst.Rowguid = originalPst.Rowguid;
-                        pst.Idorg = originalPst.Idorg; //orga
-                        pst.Ihie = originalPst.Ihie; //parent
-                        pst.Padres = originalPst.Padres; //address
-                        //pst.Dstr = originalPst.Dstr; //debut grid
-                        //pst.Fstr = originalPst.Fstr;
-                        pst.Liba = originalPst.Liba; //designation
-                        pst.Abg = originalPst.Abg; //abrege
-                        pst.Zcdrub = originalPst.Zcdrub; //code
-                        pst.Zcod = originalPst.Zcod; //refer
-                        pst.Ztyp = originalPst.Ztyp; //ztyp
-
-                        pst.Ftsrc = originalPst.Ftsrc; //formule
-                        pst.Col = originalPst.Col; //col
-                        pst.Lne = originalPst.Lne; //lne
-                        pst.Lgtf = originalPst.Lgtf; //lgtf
-                        pst.Aval = originalPst.Aval; //valeur
-                        pst.Iele = originalPst.Iele; //compteur
-                        pst.Eta = originalPst.Eta; //etat
-                    }
-                    break;
+                nameof(TierspDto.Datc),
+                nameof(TierspDto.Dati),
+                nameof(TierspDto.Datu),
+                nameof(TierspDto.Xrowguid)
+            };
+            var props = typeof(TierspDto).GetProperties(BindingFlags.Public | BindingFlags.Instance);
+            foreach (var prop in props)
+            {
+                // Skip if property is blacklisted
+                if (blacklist.Contains(prop.Name))
+                    continue;
+                // Skip if property has [Key] attribute
+                if (prop.GetCustomAttribute<KeyAttribute>() != null)
+                    continue;
+                // Skip if property has [JsonIgnore] attribute
+                if (prop.GetCustomAttribute<JsonIgnoreAttribute>() != null)
+                    continue;
+                // Skip if property is not writable
+                if (!prop.CanWrite) continue;
+                var value = prop.GetValue(source);
+                // Commit only non-null values
+                if (value != null)
+                {
+                    prop.SetValue(target, value);
+                }
             }
         }
-        //committing drafts
-        protected void CommitPlnDraft(PlngenDto target, PlngenDto source)
+     
+        protected void CommitTiwDraft(TiewelDto target, TiewelDto source)
         {
-            target.Idorg = source.Idorg;
-            target.Rowguid = source.Rowguid;
-            target.Iui = source.Iui;
-            target.Ptyp = source.Ptyp;
-            target.Todom = source.Todom;
-            //target.Ogtyp = source.Ogtyp;
-            target.Totyp = source.Totyp;
-            target.Toatr = source.Toatr;
-            target.Tovue = source.Tovue;
-            target.Liba = source.Liba;
-            target.Abg = source.Abg;
-            target.Fpsrc = source.Fpsrc;
-            target.Fpexe = source.Fpexe;
-            target.Fpisrc = source.Fpisrc;
-            target.Styp = source.Styp;
-            target.Eta = source.Eta;
-            target.Xadd1 = source.Xadd1;
-            target.Xedt1 = source.Xedt1;
-        }
-        protected void CommitRubDraft(RubvarDto target, RubvarDto source)
-        {
-            target.Idorg = source.Idorg;
-            target.Rowguid = source.Rowguid;
-            target.Ipln = source.Ipln;
-            target.Iui = source.Iui;
-            target.Atyp = source.Atyp;
-            target.Vgpe = source.Vgpe;
-            target.Scdrub = source.Scdrub;
-            target.Frsrc = source.Frsrc;
-            //target.Rtyp = source.Rtyp;
-            //target.Toatr = source.Toatr;
-            target.Tovue = source.Tovue;
-            target.Liba = source.Liba;
-            target.Abg = source.Abg;
-
-            target.Eta = source.Eta;
-            target.Xadd1 = source.Xadd1;
-            target.Xedt1 = source.Xedt1;
-        }
-        protected void CommitFmtDraft(RubfmtDto target, RubfmtDto source)
-        {
-            target.Idorg = source.Idorg;
-            target.Rowguid = source.Rowguid;
-            target.Irub = source.Irub;
-            target.Iui = source.Iui;
-            target.Ztyp = source.Ztyp;
-            target.Zcdrub = source.Zcdrub;
-            target.Ftsrc = source.Ftsrc;
-            //target.Rtyp = source.Rtyp;
-            //target.Toatr = source.Toatr;
-            //target.Tovue = source.Tovue;
-            target.Liba = source.Liba;
-            target.Abg = source.Abg;
-
-            target.Dstr = source.Dstr;
-            target.Fstr = source.Fstr;
-            target.Aval = source.Aval;
-            target.Iele = source.Iele;
-            target.Eta = source.Eta;
-            target.Xadd1 = source.Xadd1;
-            target.Xedt1 = source.Xedt1;
-        }
-        protected void CommitHieDraft(RubhieDto target, RubhieDto source)
-        {
-            target.Idorg = source.Idorg;
-            target.Rowguid = source.Rowguid;
-            target.Ipln = source.Ipln;
-            target.Iui = source.Iui;
-            target.Atyp = source.Atyp;
-            target.Scdrub = source.Scdrub;
-            target.Frsrc = source.Frsrc;
-            //target.Rtyp = source.Rtyp;
-            //target.Toatr = source.Toatr;
-            target.Tovue = source.Tovue;
-            target.Liba = source.Liba;
-            target.Abg = source.Abg;
-
-            target.Eta = source.Eta;
-            target.Xadd1 = source.Xadd1;
-            target.Xedt1 = source.Xedt1;
-        }
-        protected void CommitPstDraft(RubpstDto target, RubpstDto source)
-        {
-            target.Idorg = source.Idorg;
-            target.Rowguid = source.Rowguid;
-            target.Ihie = source.Ihie;
-            target.Iui = source.Iui;
-            target.Ztyp = source.Ztyp;
-            target.Zcdrub = source.Zcdrub;
-            target.Ftsrc = source.Ftsrc;
-            //target.Rtyp = source.Rtyp;
-            //target.Toatr = source.Toatr;
-            //target.Tovue = source.Tovue;
-            target.Liba = source.Liba;
-            target.Abg = source.Abg;
-
-            target.Eta = source.Eta;
-            target.Xadd1 = source.Xadd1;
-            target.Xedt1 = source.Xedt1;
+            // Manual blacklist for audit/system fields
+            var blacklist = new HashSet<string>
+            {
+                nameof(TiewelDto.Datc),
+                nameof(TiewelDto.Dati),
+                nameof(TiewelDto.Datu),
+                nameof(TiewelDto.Xrowguid)
+            };
+            var props = typeof(TiewelDto).GetProperties(BindingFlags.Public | BindingFlags.Instance);
+            foreach (var prop in props)
+            {
+                // Skip if property is blacklisted
+                if (blacklist.Contains(prop.Name))
+                    continue;
+                // Skip if property has [Key] attribute
+                if (prop.GetCustomAttribute<KeyAttribute>() != null)
+                    continue;
+                // Skip if property has [JsonIgnore] attribute
+                if (prop.GetCustomAttribute<JsonIgnoreAttribute>() != null)
+                    continue;
+                // Skip if property is not writable
+                if (!prop.CanWrite) continue;
+                var value = prop.GetValue(source);
+                // Commit only non-null values
+                if (value != null)
+                {
+                    prop.SetValue(target, value);
+                }
+            }
         }
 
-        protected void CommitGtbDraft(GstablDto target, GstablDto source)
+        protected void CommitAflDraft(TieaflDto target, TieaflDto source)
         {
-            target.Idorg = source.Idorg;
-            target.Rowguid = source.Rowguid;
-            target.Iui = source.Iui;
-            target.Scdrub = source.Scdrub;
-            //target.Rtyp = source.Rtyp;
-            //target.Toatr = source.Toatr;
-            target.Liba = source.Liba;
-            target.Abg = source.Abg;
-
-            target.Eta = source.Eta;
-            target.Xadd1 = source.Xadd1;
-            target.Xedt1 = source.Xedt1;
+            // Manual blacklist for audit/system fields
+            var blacklist = new HashSet<string>
+            {
+                nameof(TieaflDto.Datc),
+            };
+            var props = typeof(TieaflDto).GetProperties(BindingFlags.Public | BindingFlags.Instance);
+            foreach (var prop in props)
+            {
+                // Skip if property is blacklisted
+                if (blacklist.Contains(prop.Name))
+                    continue;
+                // Skip if property has [Key] attribute
+                if (prop.GetCustomAttribute<KeyAttribute>() != null)
+                    continue;
+                // Skip if property has [JsonIgnore] attribute
+                if (prop.GetCustomAttribute<JsonIgnoreAttribute>() != null)
+                    continue;
+                // Skip if property is not writable
+                if (!prop.CanWrite) continue;
+                var value = prop.GetValue(source);
+                // Commit only non-null values
+                if (value != null)
+                {
+                    prop.SetValue(target, value);
+                }
+            }
+        }
+        protected void CommitWflDraft(TiwaflDto target, TiwaflDto source)
+        {
+            // Manual blacklist for audit/system fields
+            var blacklist = new HashSet<string>
+            {
+                nameof(TiwaflDto.Datc),
+            };
+            var props = typeof(TiwaflDto).GetProperties(BindingFlags.Public | BindingFlags.Instance);
+            foreach (var prop in props)
+            {
+                // Skip if property is blacklisted
+                if (blacklist.Contains(prop.Name))
+                    continue;
+                // Skip if property has [Key] attribute
+                if (prop.GetCustomAttribute<KeyAttribute>() != null)
+                    continue;
+                // Skip if property has [JsonIgnore] attribute
+                if (prop.GetCustomAttribute<JsonIgnoreAttribute>() != null)
+                    continue;
+                // Skip if property is not writable
+                if (!prop.CanWrite) continue;
+                var value = prop.GetValue(source);
+                // Commit only non-null values
+                if (value != null)
+                {
+                    prop.SetValue(target, value);
+                }
+            }
+        }
+        protected void CommitActDraft(ActsaieDto target, ActsaieDto source)
+        {
+            // Manual blacklist for audit/system fields
+            var blacklist = new HashSet<string>
+            {
+                nameof(ActsaieDto.Datc),
+            };
+            var props = typeof(ActsaieDto).GetProperties(BindingFlags.Public | BindingFlags.Instance);
+            foreach (var prop in props)
+            {
+                // Skip if property is blacklisted
+                if (blacklist.Contains(prop.Name))
+                    continue;
+                // Skip if property has [Key] attribute
+                if (prop.GetCustomAttribute<KeyAttribute>() != null)
+                    continue;
+                // Skip if property has [JsonIgnore] attribute
+                if (prop.GetCustomAttribute<JsonIgnoreAttribute>() != null)
+                    continue;
+                // Skip if property is not writable
+                if (!prop.CanWrite) continue;
+                var value = prop.GetValue(source);
+                // Commit only non-null values
+                if (value != null)
+                {
+                    prop.SetValue(target, value);
+                }
+            }
+        }
+        protected void CommitAdtDraft(ActdetDto target, ActdetDto source)
+        {
+            // Manual blacklist for audit/system fields
+            var blacklist = new HashSet<string>
+            {
+                nameof(ActdetDto.Datc),
+            };
+            var props = typeof(ActdetDto).GetProperties(BindingFlags.Public | BindingFlags.Instance);
+            foreach (var prop in props)
+            {
+                // Skip if property is blacklisted
+                if (blacklist.Contains(prop.Name))
+                    continue;
+                // Skip if property has [Key] attribute
+                if (prop.GetCustomAttribute<KeyAttribute>() != null)
+                    continue;
+                // Skip if property has [JsonIgnore] attribute
+                if (prop.GetCustomAttribute<JsonIgnoreAttribute>() != null)
+                    continue;
+                // Skip if property is not writable
+                if (!prop.CanWrite) continue;
+                var value = prop.GetValue(source);
+                // Commit only non-null values
+                if (value != null)
+                {
+                    prop.SetValue(target, value);
+                }
+            }
+        }
+        protected void CommitResDraft(ResdonDto target, ResdonDto source)
+        {
+            // Manual blacklist for audit/system fields
+            var blacklist = new HashSet<string>
+            {
+                nameof(ResdonDto.Datc),
+            };
+            var props = typeof(ResdonDto).GetProperties(BindingFlags.Public | BindingFlags.Instance);
+            foreach (var prop in props)
+            {
+                // Skip if property is blacklisted
+                if (blacklist.Contains(prop.Name))
+                    continue;
+                // Skip if property has [Key] attribute
+                if (prop.GetCustomAttribute<KeyAttribute>() != null)
+                    continue;
+                // Skip if property has [JsonIgnore] attribute
+                if (prop.GetCustomAttribute<JsonIgnoreAttribute>() != null)
+                    continue;
+                // Skip if property is not writable
+                if (!prop.CanWrite) continue;
+                var value = prop.GetValue(source);
+                // Commit only non-null values
+                if (value != null)
+                {
+                    prop.SetValue(target, value);
+                }
+            }
+        }
+        protected void CommitRdtDraft(ResdetDto target, ResdetDto source)
+        {
+            // Manual blacklist for audit/system fields
+            var blacklist = new HashSet<string>
+            {
+                nameof(ResdetDto.Datc),
+            };
+            var props = typeof(ResdetDto).GetProperties(BindingFlags.Public | BindingFlags.Instance);
+            foreach (var prop in props)
+            {
+                // Skip if property is blacklisted
+                if (blacklist.Contains(prop.Name))
+                    continue;
+                // Skip if property has [Key] attribute
+                if (prop.GetCustomAttribute<KeyAttribute>() != null)
+                    continue;
+                // Skip if property has [JsonIgnore] attribute
+                if (prop.GetCustomAttribute<JsonIgnoreAttribute>() != null)
+                    continue;
+                // Skip if property is not writable
+                if (!prop.CanWrite) continue;
+                var value = prop.GetValue(source);
+                // Commit only non-null values
+                if (value != null)
+                {
+                    prop.SetValue(target, value);
+                }
+            }
+        }
+        protected void CommitBroDraft(ResbroDto target, ResbroDto source)
+        {
+            // Manual blacklist for audit/system fields
+            var blacklist = new HashSet<string>
+            {
+                nameof(ResbroDto.Datc),
+            };
+            var props = typeof(ResbroDto).GetProperties(BindingFlags.Public | BindingFlags.Instance);
+            foreach (var prop in props)
+            {
+                // Skip if property is blacklisted
+                if (blacklist.Contains(prop.Name))
+                    continue;
+                // Skip if property has [Key] attribute
+                if (prop.GetCustomAttribute<KeyAttribute>() != null)
+                    continue;
+                // Skip if property has [JsonIgnore] attribute
+                if (prop.GetCustomAttribute<JsonIgnoreAttribute>() != null)
+                    continue;
+                // Skip if property is not writable
+                if (!prop.CanWrite) continue;
+                var value = prop.GetValue(source);
+                // Commit only non-null values
+                if (value != null)
+                {
+                    prop.SetValue(target, value);
+                }
+            }
         }
         //divers settings
         protected object? GetDraft(EntityLevel level)
         {
             return level switch
             {
-                EntityLevel.Plan => _draftPlan,
-                EntityLevel.Rub => _draftRub,
-                EntityLevel.Fmt => _draftFmt,
-                EntityLevel.Hie => _draftHie,
-                EntityLevel.Pst => _draftPst,
+                EntityLevel.Tiw => _draftTiw,
                 EntityLevel.Tie => _draftTie,
-                EntityLevel.Act => _draftAct,
-                EntityLevel.Adt => _draftAdt,
-                EntityLevel.Res => _draftRes,
-                EntityLevel.Rdt => _draftRdt,
-                EntityLevel.Bro => _draftBro,
+                EntityLevel.Afl => _draftAfl,
+                EntityLevel.Wfl => _draftWfl,
                 _ => throw new ArgumentOutOfRangeException(nameof(level))
             };
         }
@@ -1088,23 +901,17 @@ namespace GxTie.Components.Uifrags
         {
             switch (level)
             {
-                case EntityLevel.Plan:
-                    _draftPlan = draft;
-                    break;
-                case EntityLevel.Rub:
-                    _draftRub = draft;
-                    break;
-                case EntityLevel.Fmt:
-                    _draftFmt = draft;
-                    break;
-                case EntityLevel.Hie:
-                    _draftHie = draft;
-                    break;
-                case EntityLevel.Pst:
-                    _draftPst = draft;
-                    break;
                 case EntityLevel.Tie:
                     _draftTie = draft;
+                    break;
+                case EntityLevel.Tiw:
+                    _draftTiw = draft;
+                    break;
+                case EntityLevel.Afl:
+                    _draftAfl = draft;
+                    break;
+                case EntityLevel.Wfl:
+                    _draftWfl = draft;
                     break;
                 case EntityLevel.Act:
                     _draftAct = draft;

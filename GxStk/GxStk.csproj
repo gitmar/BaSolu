@@ -14,11 +14,7 @@
   </PropertyGroup>
   <Target Name="GenerateVersionJson" BeforeTargets="ComputeFilesToPublish">
     <Message Text="Generating version.json with Version=$(Version), SchemaVersion=$(SchemaVersion)" Importance="high" />
-    <WriteLinesToFile
-      File="$(ProjectDir)wwwroot/version.json"
-      Lines='{"appVersion":"$(Version)","schemaVersion":$(SchemaVersion)}'
-      Overwrite="true"
-      Encoding="UTF-8" />
+    <WriteLinesToFile File="$(ProjectDir)wwwroot/version.json" Lines="{&quot;appVersion&quot;:&quot;$(Version)&quot;,&quot;schemaVersion&quot;:$(SchemaVersion)}" Overwrite="true" Encoding="UTF-8" />
   </Target>
   <!--<PropertyGroup>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
@@ -26,6 +22,7 @@
   <ItemGroup>
     <Compile Remove="ClieModels\**" />
     <Compile Remove="Components\Admina\**" />
+    <Compile Remove="Components\FrmHelper\**" />
     <Compile Remove="Components\InAdmTest\**" />
     <Compile Remove="Components\Secuope\**" />
     <Compile Remove="Connected Services\**" />
@@ -36,6 +33,7 @@
     <Compile Remove="YYYFormulas\**" />
     <Content Remove="ClieModels\**" />
     <Content Remove="Components\Admina\**" />
+    <Content Remove="Components\FrmHelper\**" />
     <Content Remove="Components\InAdmTest\**" />
     <Content Remove="Components\Secuope\**" />
     <Content Remove="Connected Services\**" />
@@ -46,6 +44,7 @@
     <Content Remove="YYYFormulas\**" />
     <EmbeddedResource Remove="ClieModels\**" />
     <EmbeddedResource Remove="Components\Admina\**" />
+    <EmbeddedResource Remove="Components\FrmHelper\**" />
     <EmbeddedResource Remove="Components\InAdmTest\**" />
     <EmbeddedResource Remove="Components\Secuope\**" />
     <EmbeddedResource Remove="Connected Services\**" />
@@ -56,6 +55,7 @@
     <EmbeddedResource Remove="YYYFormulas\**" />
     <None Remove="ClieModels\**" />
     <None Remove="Components\Admina\**" />
+    <None Remove="Components\FrmHelper\**" />
     <None Remove="Components\InAdmTest\**" />
     <None Remove="Components\Secuope\**" />
     <None Remove="Connected Services\**" />
@@ -89,13 +89,6 @@
 
   <ItemGroup>
     <Content Remove="Components\CorrigMenu.razor" />
-    <Content Remove="Components\FrmHelper\ChildGridHelper.razor" />
-    <Content Remove="Components\FrmHelper\ChildGridHelper8.razor" />
-    <Content Remove="Components\FrmHelper\MainGridHelper.razor" />
-    <Content Remove="Components\FrmHelper\MainGridHelper8.razor" />
-    <Content Remove="Components\FrmHelper\SelectedField.razor" />
-    <Content Remove="Components\FrmHelper\TabhieComponent.razor" />
-    <Content Remove="Components\FrmHelper\TabselComponent.razor" />
     <Content Remove="Components\Identity\AdmLogin.razor" />
     <Content Remove="Components\Identity\BzmailConf.razor" />
     <Content Remove="Components\Identity\OldRegister.razor" />
@@ -147,7 +140,8 @@
     <PackageReference Include="Microsoft.AspNetCore.Http" Version="2.3.0" />
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="9.0.2" />
     <!-- EF Core: keep ONLY 8.x -->
-    <PackageReference Include="Simple.OData.Client" Version="6.0.1" />
+    <PackageReference Include="Simple.OData.Client" Version="5.26.0" />
+    <!--6.0.1-->
     <PackageReference Include="Microsoft.OData.Core" Version="7.9.4" />
     <PackageReference Include="Microsoft.OData.Edm" Version="7.9.4" />
     <PackageReference Include="Microsoft.Spatial" Version="7.9.4" />

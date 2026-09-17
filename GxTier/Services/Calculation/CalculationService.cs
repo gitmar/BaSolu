@@ -48,7 +48,7 @@ namespace GxTie.Services.Calculation
             => new()
             {
                 Itie = ctx.Itie,
-                Ipln = ctx.Ipln,
+                Ipln = ctx.Ipln ?? 0,
                 Irub = line.Irub ?? 0,
                 Atyp = result.Type.HasValue ? (int)result.Type.Value : 0,
                 Inptvalue = result.Value?.ToString(),
@@ -60,7 +60,7 @@ namespace GxTie.Services.Calculation
             => new()
             {
                 Itie = ctx.Itie,
-                Ipln = ctx.Ipln,
+                Ipln = ctx.Ipln ?? 0,
                 Irub = line.Irub ?? 0,
                 Atyp = result.Type.HasValue ? (int)result.Type.Value : 0,
                 Inptvalue = result.Value?.ToString(),
@@ -71,9 +71,9 @@ namespace GxTie.Services.Calculation
         public static ResdetDto MapToResdet(CalcContext ctx, ProgramLine line, FormulaResult result)
             => new()
             {
-                Itie = ctx.Itie,
+                Itie = ctx.Itie ?? 0,
                 Ires = 0,
-                Ipln = ctx.Ipln,
+                Ipln = ctx.Ipln ?? 0,
                 Irub = line.Irub ?? 0,
                 Ifmt = line.Ifmt ?? 0,
                 Atyp = result.Type.HasValue ? (int)result.Type.Value : 0,

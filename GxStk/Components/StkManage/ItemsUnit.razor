@@ -254,7 +254,8 @@
 
         //Register delete with OData context
         var key = GetEntityKey(item);
-        _guard.TrackDelete("Stkuns", key);
+        var rowguid = item.Rowguid;
+        await _guard.TrackDelete("Stkuns", key, rowguid);
 
         await NotifyPendingChanges();
     }

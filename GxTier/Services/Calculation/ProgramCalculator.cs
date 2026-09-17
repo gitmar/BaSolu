@@ -7,7 +7,7 @@ namespace GxTie.Services.Calculation
     {
         Task<CalcSession> RunCalcAsync(CalcContext ctx, CalcSession session);
     }
-
+    
     internal sealed class ProgramCalculator : IProgramCalculator
     {
         private readonly FormulaEngine _engine;

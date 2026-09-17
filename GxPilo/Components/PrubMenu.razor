@@ -85,6 +85,20 @@ else
                             </PrubCalc>
                         }
                         else if (_chxMenu == 3)
+                        { //BULLETINS
+                            <RubFact @ref="mygfac"
+                                     toMenu="@_chxMenu"
+                                     @bind-NbChanges="_nbChanges"
+                                     _guard="_guard"
+                                     curOrga="@curOrga"
+                                     toChild="@toChild"
+                                     _InODaClient="@_MyODaClient">
+                                <ChildContent>
+                                    <h2 class="child-box">Hello GRILLES</h2>
+                                </ChildContent>
+                            </RubFact> 
+                        }
+                        else if (_chxMenu == 3)
                         { //VENTILATIONS
                             <PrubVent @ref="mygvnt"
                                       toMenu="@_chxMenu"
@@ -177,8 +191,9 @@ else
     {
         new GxMenuItem { Id = 1, Text = "VARIABLES", Icon = "bi bi-box-arrow-in-down" },
         new GxMenuItem { Id = 2, Text = "CALCULS", Icon = "bi bi-house-door" },
-        new GxMenuItem { Id = 3, Text = "VENTILATION", Icon = "bi bi-house-door" },
-        //new GxMenuItem { Id = 4, Text = "FACTURES", Icon = "bi bi-house-door" },
+        new GxMenuItem { Id = 3, Text = "BULLETINS", Icon = "bi bi-house-door" },
+        new GxMenuItem { Id = 4, Text = "VENTILATION", Icon = "bi bi-house-door" },
+        //new GxMenuItem { Id = 5, Text = "FACTURES", Icon = "bi bi-house-door" },
         // new GxMenuItem { Id = 1, Text = "Prog.SAISIE", Icon = "bi bi-box-arrow-in-down" },
         // new GxMenuItem { Id = 2, Text = "Prog.CALCUL", Icon = "bi bi-house-door" },
         // new GxMenuItem { Id = 3, Text = "VENTILATION", Icon = "bi bi-house-door" },
@@ -247,7 +262,7 @@ else
                 .FindEntryAsync();
             var msgsie = await _MyODaClient
                 .For<PlngenDto>("Plngens")
-                .Filter(f => f.Idorg == key && (f.Ptyp == 3 || f.Ptyp == 4)) //3grille4hierss
+                .Filter(f => f.Idorg == key && (f.Ptyp == 2 || f.Ptyp == 5)) //2eche5progr
                 .Expand("Rubvars($expand=Rubfmts)")
                 //.Expand("Rubhies($expand=Rubpsts)")
                 .FindEntriesAsync();
@@ -318,7 +333,8 @@ else
 
         if (_chxMenu == 1) strComp = "VARIABLES";
         if (_chxMenu == 2) strComp = "CALCULS";
-        if (_chxMenu == 3) strComp = "VENTILATION";
+        if (_chxMenu == 3) strComp = "BULLETINS";
+        if (_chxMenu == 4) strComp = "VENTILATION";
         //if (_chxMenu == 4) strComp = "FACTURES";
 
         //if (_chxMenu == 6) strComp = $"TEST ECHEANCIER";

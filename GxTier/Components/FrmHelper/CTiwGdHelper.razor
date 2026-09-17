@@ -12,7 +12,7 @@
         @foreach (var Adraft in SubAfls)
         {
             <div class="border-bottom pb-2 mb-2">
-                <ColDrivenFields Idorg="@Idorg" Ctx="@Ctx" Model="@Adraft"
+                <ColDrivenFields Idorg="@Idorg" PcolCtx="@PColCtx" Model="@Adraft"
                                  EnsTbls="@EnsTbls" IsEditing="@isEditing" />
 
                 @if (isEditing)
@@ -40,7 +40,7 @@
 @code {
     // New — feeds ColDrivenFields
     [Parameter] public int Idorg { get; set; }
-    [Parameter] public ColPrefContext Ctx { get; set; } = default!;
+    [Parameter] public ColPrefContext PColCtx { get; set; } = default!;
 
     // Existing — unchanged
     [Parameter] public List<TiwaflDto> SubAfls { get; set; }

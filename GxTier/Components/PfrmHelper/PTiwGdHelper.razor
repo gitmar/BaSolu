@@ -1,0 +1,96 @@
+﻿@using GxShared.Others
+@using GxShared.Helpers
+@using GxShared.GxDtos
+@using GxShared.Sess
+@using GxShared.Cols.Models
+@using GxTie.Components
+@using Newtonsoft.Json
+
+<!-- Person fields -->
+<div class="card mb-3">
+    <div class="card-body p-3">
+        <ColDrivenFields Idorg="@Idorg" PColCtx="@Ctx" Model="@(IsEditing ? (Draft ?? Entity) : Entity)"
+                          EnsTbls="@EnsTbls" IsEditing="@IsEditing" />
+
+        @if (IsEditing)
+        {
+            <div class="d-flex gap-2 mt-2">
+                <Button Color="ButtonColor.Success" @onclick="() => OnConfirm.InvokeAsync(Entity)">✅ Confirm</Button>
+                <Button Color="ButtonColor.Secondary" @onclick="() => OnCancel.InvokeAsync(Entity)">✖ Cancel</Button>
+            </div>
+        }
+    </div>
+</div>
+
+<!-- Affiliates — folded in, no separate tab -->
+@if (CanEditChildren)
+{
+    <label class="fw-bold">Affiliés</label>
+    <div class="d-flex align-items-center gap-2 mb-2">
+        <label>Groupe :</label>
+        <InputSelect TValue="int" 
+             Value="SelectedGroup" 
+             ValueChanged="EventCallback.Factory.Create<int>(this, OnGroupChanged)" 
+             ValueExpression="@(() => SelectedGroup)">
+            <option value="0">Sélectionner...</option>
+            @foreach (var g in GroupOptions)
+            {
+                <option value="@g.Elea">@g.Liba</option>
+            }
+        </InputSelect>
+
+        <Button Color="ButtonColor.Primary" Size="ButtonSize.Small"
+                Disabled="@(SelectedGroup < 1 || IsAnyEditing)"
+                @onclick="() => OnAddChild.InvokeAsync(SelectedGroup)">
+            ➕ Add Child
+        </Button>
+    </div>
+
+    <CTiwGdHelper Idorg="@Idorg" CurTiw="@Entity" WflItems="@WflItems" EnsTbls="@EnsTbls"
+                  IsViewing="@IsAflViewing"
+                  IsAnyEditing="@IsAnyEditing"
+                  IsEditingFn="@IsEditingFn"
+                  GetDraftFn="@GetDraftFn"
+                  OnStartEdit="@OnStartEditAfl"
+                  OnConfirm="@OnConfirmAfl"
+                  OnCancel="@OnCancelAfl"
+                  OnDelete="@OnDeleteAfl" />
+}
+else
+{
+    <div class="alert alert-warning">🚫 Save the main record before adding children.</div>
+}
+
+@code {
+    // --- Person-level ---
+    [Parameter, EditorRequired] public int Idorg { get; set; }
+    [Parameter, EditorRequired] public TiewelDto Entity { get; set; } = default!;
+    [Parameter] public TiewelDto? Draft { get; set; }
+    [Parameter, EditorRequired] public List<Gtabl> EnsTbls { get; set; } = new();
+    [Parameter] public bool IsEditing { get; set; }
+    [Parameter] public EventCallback<TiewelDto> OnConfirm { get; set; }
+    [Parameter] public EventCallback<TiewelDto> OnCancel { get; set; }
+
+    // --- Affiliate-level passthrough ---
+    [Parameter, EditorRequired] public List<TiwaflDto> WflItems { get; set; } = new();
+    [Parameter] public bool IsAflViewing { get; set; }
+    [Parameter] public bool IsAnyEditing { get; set; }
+    [Parameter, EditorRequired] public Func<TiwaflDto, bool> IsEditingFn { get; set; } = default!;
+    [Parameter, EditorRequired] public Func<TiwaflDto?> GetDraftFn { get; set; } = default!;
+    [Parameter] public EventCallback<TiwaflDto> OnStartEditAfl { get; set; }
+    [Parameter] public EventCallback<TiwaflDto> OnConfirmAfl { get; set; }
+    [Parameter] public EventCallback<TiwaflDto> OnCancelAfl { get; set; }
+    [Parameter] public EventCallback<TiwaflDto> OnDeleteAfl { get; set; }
+
+    // --- Add-child controls ---
+    [Parameter] public List<Gpvar> GroupOptions { get; set; } = new();
+    [Parameter] public int SelectedGroup { get; set; }
+    [Parameter] public EventCallback<int> SelectedGroupChanged { get; set; }
+    [Parameter] public EventCallback<int> OnAddChild { get; set; }
+
+
+    private bool CanEditChildren => Entity.Id > 0;
+
+    private ColPrefContext Ctx => new() { Totyp = 1, Efrm = 2, Styp = 1 };
+    private async Task OnGroupChanged(int value) => await SelectedGroupChanged.InvokeAsync(value);
+}

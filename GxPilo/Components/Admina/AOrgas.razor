@@ -556,21 +556,6 @@ else if (edOrgContext != null && curOrga != null)
                                 </EditForm>
                             </Content>
                         </Tab>
-                        <Tab Title="Adresses">
-                            <Content>
-                                <Aogadrs @ref="mygadr"
-                                         curOrga="@curOrga"
-                                         vientde="1"
-                                         isfor="1"
-                                         @bind-NbChanges="_nbChanges"
-                                         _guard="@_guard"
-                                         _InODaClient="@_MyODaClient">
-                                    <ChildContent>
-                                        <h2 class="child-box">Hello TABLES</h2>
-                                    </ChildContent>
-                                </Aogadrs>
-                            </Content>
-                        </Tab>
                         <Tab Title="Domaines">
                             <Content>
                                 <EditForm EditContext="edFixContext">
@@ -1056,7 +1041,7 @@ else if (edOrgContext != null && curOrga != null)
                         </Tab>
                         <Tab Title="Colonnes">
                             <Content>
-                                <OrgColumnSelector Idorg="@curOrga.Idorg" />
+                                <OrgColumnSelector Idorg="@curOrga.Idorg" EnsTbls="@EnsTbls" />
                             </Content>
                         </Tab>
                     </Tabs>
@@ -1306,7 +1291,7 @@ else if (edOrgContext != null && curOrga != null)
     private Guid? AptRenderKey = null;
     private Guid? AflRenderKey = null;
 
-    private Aogadrs mygadr;
+    //private Aogadrs mygadr;
     private Aogcols myicols;
 
     //column management
@@ -1690,7 +1675,7 @@ else if (edOrgContext != null && curOrga != null)
     private async Task VaOpenAdres()
     {
         Actx = new();
-        Actx.Atyp = 1; //orga
+        Actx.Agpe = 1; //orga
         Actx.Itie = 0;
         Actx.Itiw = 0;
         Actx.Iefl = 0;

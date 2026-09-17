@@ -2,7 +2,6 @@
 
 @using GxShared.Helpers
 @using GxStk.Services
-@using GxShared.Helpers
 @using GxShared.Sess
 @using GxShared.GxDtos
 @using GxShared.Interfaces
@@ -177,7 +176,8 @@
 
         // Register delete with OData context
         var key = GetEntityKey(item);
-        _guard.TrackDelete("Stkitus", key);
+        Guid rowguid = item?.Rowguid ?? Guid.Empty;
+        await _guard.TrackDelete("Stkitus", key, rowguid);
 
         await NotifyPendingChanges();
     }

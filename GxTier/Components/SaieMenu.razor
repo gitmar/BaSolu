@@ -63,29 +63,50 @@
                         <InputText @bind-Value="strSes" disabled />
                     </div>
                 </div>
+
                 <div class="row mb-2">
                     <div class="d-flex align-items-center gap-2">
                         <label>Programme :</label>
                         <div class="text-center">
-                            <InputSelect id="pgrId" @bind-Value="ImyProg">
+                            <InputSelect id="pgrId"
+                                @bind-Value="ImyProg"
+                                @bind-Value:after="OnProgChanged">
+                                <option value="0"></option>
+                                @foreach (var pgr in LsProgs)
+                                {
+                                    <option value="@pgr.Id">@pgr.Liba</option>
+                                }
+                            </InputSelect>
+                            @* <InputSelect id="pgrId" @bind-Value="ImyProg">
                                 <option value=0></option>
                                 @foreach (var pgr in LsProgs)
                                 {
-                                    <option value=@pgr.Id @onclick="() => GetSelectedProg(pgr)">@pgr.Liba</option>
+                                    <option value=@pgr.Id @onchange="() => GetSelectedProg(pgr)">@pgr.Liba</option>
                                 }
-                            </InputSelect>
+                            </InputSelect> *@
                         </div>
 
                         <label for="TypDiv">Service :</label>
                         <div>
-                            <InputSelect id="TypDiv" @bind-Value="ImyDiv" @onclick="@trierTiers">
+                            <InputSelect id="TypDiv"
+                                @bind-Value="ImyDiv"
+                                @bind-Value:after="OnDivChanged">
+                                <option value="0"></option>
+                                <option value="-1">Tous</option>
+                                @foreach (var divo in LsDivs)
+                                {
+                                    <option value="@divo.Ihie">@divo.Abg-@divo.Liba</option>
+                                }
+                                </InputSelect>
+
+                            @* <InputSelect id="TypDiv" @bind-Value="ImyDiv" @onchange="@trierTiers()">
                                 <option value=0></option>
                                 <option value=-1>Tous</option>
                                 @foreach (var divo in LsDivs)
                                 {
                                     <option value=@divo.Ihie>@divo.Abg-@divo.Liba</option>
                                 }
-                            </InputSelect>
+                            </InputSelect> *@
                         </div>
 
                     </div>
@@ -113,7 +134,6 @@
                                           ChxGpe="@Ugpe"
                                           _guard="@_guard"
                                           PreTiers="@PreTiers"
-                                          PreActs="@orgActs"
                                           SessOpen="@SessOpen"
                                           _saieSession="@CurrentSaieSession"
                                           _MyODaClient="_MyODaClient">
@@ -181,7 +201,7 @@
 @code {
     [Parameter] public CalcContext? CalcContext { get; set; }
     private ClaimsPrincipal authUser;
-    
+
     public GxorgaDto curOrga = new GxorgaDto();
     public ChildVars toChild = new();
     public MyMenuVars froMenu = new();
@@ -206,7 +226,7 @@
 
     public PlngenDto curProg = new();
     public Gsedat curSes = new();
-    
+
     public List<TierspDto> EnsTiers { get; set; } = new();
     public List<TierspDto> PreTiers { get; set; } = new();
 
@@ -217,44 +237,46 @@
     public string _strOrga = "", _curSigle = "", strmeta = "", strmeta2 = "";
     private int Ugpe = 0;
     private string gpeLiba = "";
+    private int ImyProg = 0;
+    private int ImyDiv = 0;
 
-    private int _imyProg = 0;
-    public int ImyProg
-    {
-        get => _imyProg;
-        set
-        {
-            _imyProg = value;
-            var selected = LsProgs.FirstOrDefault(p => p.Id == value);
-            if (selected != null)
-            {   // fire-and-forget
-                _ = HandleSelectedProgAsync(selected);
-            }
-        }
-    }
-    private async Task HandleSelectedProgAsync(Gplan selected)
-    {
-        await GetSelectedProg(selected);
-    }
-    private int _imyDiv = 0;
-    public int ImyDiv
-    {
-        get => _imyDiv;
-        set
-        {
-            _imyDiv = value;
-            trierTiers(); // your existing method, adjust if it needs the selected Id
-        }
-    }
+    // private int _imyProg = 0;
+    // public int ImyProg
+    // {
+    //     get => _imyProg;
+    //     set
+    //     {
+    //         _imyProg = value;
+    //         var selected = LsProgs.FirstOrDefault(p => p.Id == value);
+    //         if (selected != null)
+    //         {   // fire-and-forget
+    //             _ = HandleSelectedProgAsync(selected);
+    //         }
+    //     }
+    // }
+    // private int _imyDiv = 0;
+    // public int ImyDiv
+    // {
+    //     get => _imyDiv;
+    //     set
+    //     {
+    //         _imyDiv = value;
+    //         trierTiers(); // your existing method, adjust if it needs the selected Id
+    //     }
+    // }
+    // private async Task HandleSelectedProgAsync(Gplan selected)
+    // {
+    //     await GetSelectedProg(selected);
+    // }
     // Optional: shared methods for parsing, evaluating, persisting
-    public void EvaluateAll()
-    {
-        // foreach(var line in FormulaLines)
-        // {
-        //     line.Result = _formulaService.EvaluateFormula(line.Formula, line).ToString();
-        // });
+    // public void EvaluateAll()
+    // {
+    //     // foreach(var line in FormulaLines)
+    //     // {
+    //     //     line.Result = _formulaService.EvaluateFormula(line.Formula, line).ToString();
+    //     // });
 
-    }
+    // }
 
     public void RefreshStream()
     {
@@ -521,35 +543,39 @@
         // Replace with your real repository / API call.
         return await Task.FromResult(new TierspDto());
     }
-
-    private async Task GetSelectedProg(Gplan bropln)
+    private async Task OnProgChanged()
     {
-        //Console.WriteLine($"ICI PROGRAMMES : {EnsProgs.Count()}");
-        curProg = new();
-        PreRubs = new();
-        curProg = curOrga.Plngens.Where(pl => pl.Id == bropln.Id).FirstOrDefault();
-        if (curProg != null)
+        if (ImyProg != 0)
         {
-            //Console.WriteLine($"ICI prog Id : {curProg.Idorg}");
-            toChild.curProg = curProg;
-            PreRubs = curProg.Rubvars.ToList();
-            //_rubvarResolver = new RubvarResolver(curProg.Rubvars.ToList());
-            var curDivpln = curOrga.Plngens.Where(pl => pl.Id == curProg.Plsdiv).FirstOrDefault();
-            if (curDivpln != null)
+            //Console.WriteLine($"ICI PROGRAMMES : {EnsProgs.Count()}");
+            curProg = new();
+            PreRubs = new();
+            //curProg = LsProgs.FirstOrDefault(x => x.Id == ImyProg);
+            //curProg = curOrga.Plngens.Where(pl => pl.Id == bropln.Id).FirstOrDefault();
+            curProg = curOrga.Plngens.FirstOrDefault(x => x.Id == ImyProg);
+            if (curProg != null)
             {
-                List<Gpdivh> inDivs = await _rendAgres.LoadOrgaPostes();
-                LsDivs = inDivs?.Where(ud => ud.Ihie == curDivpln.Id && ud.Sidiv == 1).ToList();
-                Console.WriteLine($"nb.Divs : {LsDivs.Count}");
-            }
-            else
-            {
-                Console.WriteLine($"CURDIV : {curProg.Plsdiv}");
-                LsDivs = new();
+                //Console.WriteLine($"ICI prog Id : {curProg.Idorg}");
+                toChild.curProg = curProg;
+                PreRubs = curProg.Rubvars.ToList();
+                //_rubvarResolver = new RubvarResolver(curProg.Rubvars.ToList());
+                var curDivpln = curOrga.Plngens.FirstOrDefault(pl => pl.Id == curProg.Plsdiv);
+                if (curDivpln != null)
+                {
+                    var inDivs = await _rendAgres.LoadOrgaPostes();
+                    LsDivs = inDivs.Where(ud => ud.Ihie == curDivpln.Id && ud.Sidiv == 1).ToList();
+                    Console.WriteLine($"nb.Divs : {LsDivs.Count}");
+                }
+                else
+                {
+                    Console.WriteLine($"CURDIV : {curProg.Plsdiv}");
+                    LsDivs = new();
+                }
             }
         }
         //Console.WriteLine($"Ens. Progs : {EnsProgs.Count()}");
     }
-    private void trierTiers()
+    private async Task OnDivChanged()
     {
         Console.WriteLine("TRIE Commence");
         if (ImyDiv > 0) //not -1 not 0

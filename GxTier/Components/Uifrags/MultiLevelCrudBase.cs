@@ -28,23 +28,29 @@ namespace GxTie.Components.Uifrags
 
         protected readonly Dictionary<Guid, bool> _isLightBg = new();
 
-        protected List<PlngenDto> PlanItems = new();
-        protected List<RubvarDto> RubItems = new();
-        protected List<RubfmtDto> FmtItems = new();
-        protected List<RubhieDto> HieItems = new();
-        protected List<RubpstDto> PstItems = new();
+        //protected List<PlngenDto> PlanItems = new();
+        //protected List<RubvarDto> RubItems = new();
+        //protected List<RubfmtDto> FmtItems = new();
+        //protected List<RubhieDto> HieItems = new();
+        //protected List<RubpstDto> PstItems = new();
         protected List<TierspDto> TieItems = new();
+        protected List<TiewelDto> TiwItems = new();
+        protected List<TieaflDto> AflItems = new();
+        protected List<TiwaflDto> WflItems = new();
         protected List<ActsaieDto> ActItems = new();
         protected List<ActdetDto> AdtItems = new();
         protected List<ResdonDto> ResItems = new();
         protected List<ResdetDto> RdtItems = new();
         protected List<ResbroDto> BroItems = new();
-        protected object? _draftPlan { get; set; }
-        protected object? _draftRub { get; set; }
-        protected object? _draftFmt { get; set; }
-        protected object? _draftHie { get; set; }
-        protected object? _draftPst { get; set; }
+        //protected object? _draftPlan { get; set; }
+        //protected object? _draftRub { get; set; }
+        //protected object? _draftFmt { get; set; }
+        //protected object? _draftHie { get; set; }
+        //protected object? _draftPst { get; set; }
         protected object? _draftTie { get; set; }
+        protected object? _draftTiw { get; set; }
+        protected object? _draftAfl { get; set; }
+        protected object? _draftWfl { get; set; }
         protected object? _draftAct { get; set; }
         protected object? _draftAdt { get; set; }
         protected object? _draftRes { get; set; }
@@ -113,12 +119,10 @@ namespace GxTie.Components.Uifrags
         {
             return level switch
             {
-                EntityLevel.Plan => "Plngens",
-                EntityLevel.Rub => "Rubvars",
-                EntityLevel.Fmt => "Rubfmts",
-                EntityLevel.Hie => "Rubhies",
-                EntityLevel.Pst => "Rubpsts",
                 EntityLevel.Tie => "Tiersps",
+                EntityLevel.Tiw => "Tiewels",
+                EntityLevel.Afl => "Tieafls",
+                EntityLevel.Wfl => "Tiwafls",
                 EntityLevel.Act => "Actsaies",
                 EntityLevel.Adt => "Actdets",
                 EntityLevel.Res => "Resdons",
@@ -131,23 +135,17 @@ namespace GxTie.Components.Uifrags
         {
             switch (level)
             {
-                case EntityLevel.Plan:
-                    PlanItems.RemoveAll(x => x.Rowguid == rowguid);
-                    break;
-                case EntityLevel.Rub:
-                    RubItems.RemoveAll(x => x.Rowguid == rowguid);
-                    break;
-                case EntityLevel.Fmt:
-                    FmtItems.RemoveAll(x => x.Rowguid == rowguid);
-                    break;
-                case EntityLevel.Hie:
-                    HieItems.RemoveAll(x => x.Rowguid == rowguid);
-                    break;
-                case EntityLevel.Pst:
-                    PstItems.RemoveAll(x => x.Rowguid == rowguid);
-                    break;
                 case EntityLevel.Tie:
                     TieItems.RemoveAll(x => x.Rowguid == rowguid);
+                    break;
+                case EntityLevel.Tiw:
+                    TiwItems.RemoveAll(x => x.Rowguid == rowguid);
+                    break;
+                case EntityLevel.Afl:
+                    AflItems.RemoveAll(x => x.Rowguid == rowguid);
+                    break;
+                case EntityLevel.Wfl:
+                    WflItems.RemoveAll(x => x.Rowguid == rowguid);
                     break;
                 case EntityLevel.Act:
                     ActItems.RemoveAll(x => x.Rowguid == rowguid);
@@ -234,20 +232,15 @@ namespace GxTie.Components.Uifrags
    
             return GetRowCss(state, isLight, rowguid, isActiveEdit, isOtherRowEditing);
         }
-        protected string GetPlanRowClass(PlngenDto pln) => GetRowCssFor(EntityLevel.Plan, pln.Rowguid);
-        protected string GetRubRowClass(RubvarDto rub) => GetRowCssFor(EntityLevel.Rub, rub.Rowguid);
-        protected string GetFmtRowClass(RubfmtDto fmt) => GetRowCssFor(EntityLevel.Fmt, fmt.Rowguid);
-        protected string GetHieRowClass(RubhieDto hie) => GetRowCssFor(EntityLevel.Hie, hie.Rowguid);
-        protected string GetPstRowClass(RubpstDto pst) => GetRowCssFor(EntityLevel.Pst, pst.Rowguid);
         protected string GetTieRowClass(TierspDto tie) => GetRowCssFor(EntityLevel.Tie, tie.Rowguid);
+        protected string GetTiwRowClass(TiewelDto tiw) => GetRowCssFor(EntityLevel.Tiw, tiw.Rowguid);
+        protected string GetAflRowClass(TieaflDto afl) => GetRowCssFor(EntityLevel.Afl, afl.Rowguid);
+        protected string GetWflRowClass(TiwaflDto wfl) => GetRowCssFor(EntityLevel.Wfl, wfl.Rowguid);
         protected string GetActRowClass(ActsaieDto act) => GetRowCssFor(EntityLevel.Act, act.Rowguid);
         protected string GetAdtRowClass(ActdetDto adt) => GetRowCssFor(EntityLevel.Adt, adt.Rowguid);
         protected string GetResRowClass(ResdonDto res) => GetRowCssFor(EntityLevel.Res, res.Rowguid);
         protected string GetRdtRowClass(ResdetDto rdt) => GetRowCssFor(EntityLevel.Rdt, rdt.Rowguid);
         protected string GetBroRowClass(ResbroDto bro) => GetRowCssFor(EntityLevel.Bro, bro.Rowguid);
-        protected string GetFixRowClass(GstablDto fix) => GetRowCssFor(EntityLevel.Plan, fix.Rowguid);
-        protected string GetChlRowClass(GstablDto chl) => GetRowCssFor(EntityLevel.Plan, chl.Rowguid);
-        
         protected RowState GetRowState(EntityLevel level, Guid rowguid)
         {
             var state = _rowStates.TryGetValue((level, rowguid), out var value)

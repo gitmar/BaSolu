@@ -234,7 +234,7 @@
         line.Froloc = draftLine.Froloc;
         line.Toloc = draftLine.Toloc;
         var key = GetEntityKey(draftLine); // helper to extract PK
-        _guard.TrackUpdate("Stktflnes", key, draftLine);
+        await _guard.TrackUpdate("Stktflnes", key, draftLine);
         editRowguid = null;
         await NotifyPendingChanges();
     }
@@ -246,7 +246,8 @@
         curTransfer.Stktflnes.Remove(line);
         // Extract PK using your helper
         var key = GetEntityKey(line);
-        _guard.TrackDelete("Stktflnes", key);
+        var rowguid = line.Rowguid;
+        await _guard.TrackDelete("Stktflnes", key, rowguid);
         Console.WriteLine($"🗑️ {line.Id} queued for delete");
         await NotifyPendingChanges();
     }

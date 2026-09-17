@@ -15,18 +15,15 @@ namespace GxTie.Services.Calculation
             // Internal calculators (scoped)
             services.AddScoped<ISaieCalculator, SaieCalculator>();
             services.AddScoped<IProgramCalculator, ProgramCalculator>();
-
+            services.AddScoped<IActsaieDataService, ActsaieDataService>();
             // Session factory removed – session creation now lives in ISaieCalculator.InitializeAsync.
             // If you still need ISaieSessionFactory for legacy code, keep it as a thin wrapper
             // over ISaieCalculator, but do not use it in new workflows.
             // services.AddSingleton<ISaieSessionFactory, SaieSessionFactory>();
-
             // Persistence (scoped)
             services.AddScoped<ICalculationPersistence, CalculationPersistence>();
-
             // Public calculation service (facade over calculators)
             services.AddScoped<ICalculationService, CalculationService>();
-
             // Workflow and higher-level services (orchestration + persistence)
             services.AddScoped<ICalculationWorkflow, CalculationWorkflow>();
             services.AddScoped<ISaieWorkflowService, SaieWorkflowService>();
