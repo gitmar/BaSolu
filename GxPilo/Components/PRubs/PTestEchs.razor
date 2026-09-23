@@ -924,12 +924,12 @@ else
     }
     public async Task StartRubNew(PlngenDto mypln)
     {
-        if (mypln.Id <= 0)
-        {
-            Imessage = "🚫 Cannot add Rubrique: Plan must be saved first.";
-            await InvokeAsync(StateHasChanged);
-            return;
-        }
+        // if (mypln.Id <= 0)
+        // {
+        //     Imessage = "🚫 Cannot add Rubrique: Plan must be saved first.";
+        //     await InvokeAsync(StateHasChanged);
+        //     return;
+        // }
 
         if (IsAnyRowEditing) 
         {
@@ -979,11 +979,11 @@ else
     }
     public async Task StartFmtNew(RubvarDto myrub)
     {
-        if (myrub.Id <= 0)
-        {
-            Imessage = "🚫 Cannot add Format: Rubrique must be saved first.";
-            return;
-        }
+        // if (myrub.Id <= 0)
+        // {
+        //     Imessage = "🚫 Cannot add Format: Rubrique must be saved first.";
+        //     return;
+        // }
 
         if (IsAnyRowEditing)
         {
@@ -1199,18 +1199,37 @@ else
     // Update method -call this when source data changes
     private void InitializeMyDaPlans()
     {
-        //PlanItems = orgPlns?.Where(pl => pl.Ptyp == IMyGpln && pl.Todom == IMyDom && pl.Toatr == 0 && pl.Tovue == IMyVue).ToList()
-        //    ?? new List<PlngenDto>();
+        PlanItems = curOrga.Plngens?.Where(pl => pl.Ptyp == IMyGpln).ToList() // && pl.Todom == IMyDom && pl.Toatr == 0 && pl.Tovue == IMyVue).ToList()
+            ?? new List<PlngenDto>();
+        if (PlanItems.Any()) curPlan = PlanItems.FirstOrDefault();
     }
     private void InitializeMyDaRubs()
     {
-        RubItems = curPlan.Rubvars.ToList()
+        curRubr = new();
+        if (curPlan != null)
+        {
+            RubItems = curPlan.Rubvars.ToList()
             ?? new List<RubvarDto>();
+            curRubr = RubItems.FirstOrDefault();
+        }
+        else
+        {
+            RubItems = new List<RubvarDto>();
+        }
     }
     private void InitializeMyDaFmts()
     {
-        FmtItems = curRubr.Rubfmts.ToList()
+        //curFmat = new();
+        if (curRubr != null)
+        {
+            FmtItems = curRubr.Rubfmts.ToList()
             ?? new List<RubfmtDto>();
+            //curFmt = FmtItems.FirstOrDefault();
+        }
+        else
+        {
+            FmtItems = new List<RubfmtDto>();
+        }
     }
     private Task UpdateMyDaPlans()
     {

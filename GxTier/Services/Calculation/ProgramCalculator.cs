@@ -1,6 +1,8 @@
 ﻿using GxFormula.ForaBizz;
 using GxFormula.Forasource;
 
+using GxShared.GxDtos;
+
 namespace GxTie.Services.Calculation
 {
     public interface IProgramCalculator
@@ -27,9 +29,11 @@ namespace GxTie.Services.Calculation
             var evalCtx = BuildEvalContext(ctx);
             var lines = _parser.Parse(new PlngenLineSource(ctx.Program));
 
+            var resdonByLineNumber = new Dictionary<int, ResdonDto>();
+            var resbroByLineNumber = new Dictionary<int, ResbroDto>();
+
             foreach (var line in lines)
             {
-                // Skip comment / label lines
                 if (IsCommentLine(line.Formula))
                     continue;
 
@@ -37,23 +41,89 @@ namespace GxTie.Services.Calculation
                 if (result is null)
                     continue;
 
-                session.Outputs[line.LineNumber ?? 0] =
-                    ResultMapper.MapToOutputStream(ctx, line, result);
-
-                if (ctx.IsTestMode)
+                if (line.IsDetail && line.ParentLineNumber.HasValue)
                 {
-                    session.Resbros.Add(ResultMapper.MapToResbro(ctx, line, result));
+                    if (ctx.IsTestMode)
+                    {
+                        if (!resbroByLineNumber.TryGetValue(line.ParentLineNumber.Value, out var parentResbro))
+                            throw new InvalidOperationException(
+                                $"Detail line @{line.ParentLineNumber}#{line.DetailCode} has no parent line @{line.ParentLineNumber} evaluated in this program.");
+
+                        var bdet = ResultMapper.MapToResbdet(ctx, line, result);
+                        bdet.Prowguid = parentResbro.Rowguid;
+                        bdet.Zcdrub = line.DetailCode;
+                        session.Resbdets.Add(bdet);
+                    }
+                    else
+                    {
+                        if (!resdonByLineNumber.TryGetValue(line.ParentLineNumber.Value, out var parentResdon))
+                            throw new InvalidOperationException(
+                                $"Detail line @{line.ParentLineNumber}#{line.DetailCode} has no parent line @{line.ParentLineNumber} evaluated in this program.");
+
+                        var det = ResultMapper.MapToResdet(ctx, line, result);
+                        det.Prowguid = parentResdon.Rowguid;
+                        det.Zcdrub = line.DetailCode;
+                        session.Resdets.Add(det);
+                    }
                 }
                 else
                 {
-                    session.Resdons.Add(ResultMapper.MapToResdon(ctx, line, result));
-                    if (line.SaveDetail)
-                        session.Resdets.Add(ResultMapper.MapToResdet(ctx, line, result));
+                    session.Outputs[line.LineNumber ?? 0] = ResultMapper.MapToOutputStream(ctx, line, result);
+
+                    if (ctx.IsTestMode)
+                    {
+                        var bro = ResultMapper.MapToResbro(ctx, line, result);
+                        bro.Rowguid = Guid.NewGuid();
+                        session.Resbros.Add(bro);
+                        resbroByLineNumber[line.LineNumber ?? 0] = bro;
+                    }
+                    else
+                    {
+                        var don = ResultMapper.MapToResdon(ctx, line, result);
+                        don.Rowguid = Guid.NewGuid();
+                        session.Resdons.Add(don);
+                        resdonByLineNumber[line.LineNumber ?? 0] = don;
+                    }
                 }
             }
 
             return Task.FromResult(session);
         }
+        //public Task<CalcSession> RunCalcAsync(CalcContext ctx, CalcSession session)
+        //{
+        //    if (ctx.Program is null)
+        //        throw new ArgumentNullException(nameof(ctx.Program));
+
+        //    var evalCtx = BuildEvalContext(ctx);
+        //    var lines = _parser.Parse(new PlngenLineSource(ctx.Program));
+
+        //    foreach (var line in lines)
+        //    {
+        //        // Skip comment / label lines
+        //        if (IsCommentLine(line.Formula))
+        //            continue;
+
+        //        var result = _engine.Evaluate(line.Formula, evalCtx);
+        //        if (result is null)
+        //            continue;
+
+        //        session.Outputs[line.LineNumber ?? 0] =
+        //            ResultMapper.MapToOutputStream(ctx, line, result);
+
+        //        if (ctx.IsTestMode)
+        //        {
+        //            session.Resbros.Add(ResultMapper.MapToResbro(ctx, line, result));
+        //        }
+        //        else
+        //        {
+        //            session.Resdons.Add(ResultMapper.MapToResdon(ctx, line, result));
+        //            if (line.SaveDetail)
+        //                session.Resdets.Add(ResultMapper.MapToResdet(ctx, line, result));
+        //        }
+        //    }
+
+        //    return Task.FromResult(session);
+        //}
 
         private static bool IsCommentLine(string? formula)
         {

@@ -53,24 +53,55 @@
 }
 else
 {
-    <div class="d-flex align-items-center g-2">
-        <InputRadioGroup @bind-Value="CalcDir">
-            <div class="col-2">
-                <div class="form-check">
-                    <InputRadio class="form-check-input border-1 border-dark" Value="1" />
-                    <label class="form-check-label">All</label>
-                </div>
-            </div>
-            <div class="col-auto">
-                <div class="form-check">
-                    <InputRadio class="form-check-input border-1 border-dark" Value="2" />
-                    <label class="form-check-label">From</label>
-                </div>
-            </div>
-        </InputRadioGroup>
+    if (SessOpen)
+    {
+<div class="d-flex align-items-center gap-2 ms-2">
+    <InputRadioGroup @bind-Value="CalcDir" onchange="OnCalcDirChanged" class="d-flex flex-row gap-2">
+        <div class="form-check">
+            <InputRadio class="form-check-input border-1 border-dark" Value="1" />
+            <label class="form-check-label">All</label>
+        </div>
+        <div class="form-check">
+            <InputRadio class="form-check-input border-1 border-dark" Value="2" />
+            <label class="form-check-label">From</label>
+        </div>
+    </InputRadioGroup>
+
+    <InputSelect @bind-Value="Ditie" disabled="@(CalcDir != 2)">
+        @foreach (var tie in PreTiers)
+        {
+            <option value="@tie.Id">@tie.Smatri - @tie.Nom - @tie.Pnom</option>
+        }
+    </InputSelect>
+
+    <span>To</span>
+
+    <InputSelect @bind-Value="Fitie" disabled="@(CalcDir != 2)">
+        @foreach (var tie in PreTiers)
+        {
+            <option value="@tie.Id">@tie.Smatri - @tie.Nom - @tie.Pnom</option>
+        }
+    </InputSelect>
+
+</div>
+
+
+    @* <div class="d-flex align-items-center g-2">
+        <InputRadioGroup @bind-Value="CalcDir" onchange="OnCalcDirChanged">
+    <div class="col-3">
+        <div class="form-check">
+            <InputRadio class="form-check-input border-1 border-dark" Value="1" />
+            <label class="form-check-label">All</label>
+        </div>
+        <div class="form-check">
+            <InputRadio class="form-check-input border-1 border-dark" Value="2" />
+            <label class="form-check-label">From</label>
+        </div>
+    </div>
+</InputRadioGroup>
         <div class="col-auto">
             <InputSelect @bind-Value="Ditie" disabled="@(CalcDir != 2)">
-                @foreach (var tie in SortedTiers)
+                @foreach (var tie in PreTiers)
                 {
                     <option value=@tie.Id>@tie.Smatri - @tie.Nom - @tie.Pnom</option>
                 }
@@ -81,23 +112,14 @@ else
         </div>
         <div class="col-auto">
             <InputSelect @bind-Value="Fitie" disabled="@(CalcDir != 2)">
-                @foreach (var tie in SortedTiers)
+                @foreach (var tie in PreTiers)
                 {
                     <option value=@tie.Id>@tie.Smatri - @tie.Nom - @tie.Pnom</option>
                 }
             </InputSelect>
         </div>
-        <div class="col-auto">
-            <label>Session :</label>
-        </div>
-        <div class="col-auto">
-            @* ASSUMPTION: session/period is a plain date picked by the user (their "ddmmyyyy").
-               If session is actually a selectable code/period object rather than a raw date,
-               swap this for an InputSelect bound to that list instead. *@
-            <InputDate @bind-Value="SessionDate" />
-        </div>
-    </div>
-
+    </div> *@
+    }
     <div class="d-flex align-items-center gap-2">
         @if (CanCalc)
         {
@@ -195,13 +217,16 @@ else
     [Parameter] public PlngenDto curProg { get; set; }
     [Parameter] public IODataClient _MyODaClient { get; set; }
     [Parameter] public bool IsTestMode { get; set; }
+    [Parameter] public List<Gpgrid> InsGpdata { get; set; }
 
     [Parameter] public int NbChanges { get; set; }
     [Parameter] public EventCallback<int> NbChangesChanged { get; set; }
+    [Parameter] public DateTime _sessionDate { get; set; }
+    [Parameter] public DateTime DayDate { get; set; }
 
     private CalcSession Session { get; set; } = new();
     private bool HasResults => Session.Resdons.Count > 0 || Session.Resbros.Count > 0 || Session.Resdets.Count > 0;
-    private bool CanCalc => SessOpen && CalcDir != 0 && ImyDiv != 0 && ((Ditie != 0 && Fitie != 0) || CalcDir == 1);
+    private bool CanCalc => SessOpen && CalcDir != 0 && ImyDiv != 0 && Ditie != 0 && Fitie != 0;
     private string Imessage = "";
 
     private List<string> AvailableScdrubs = new();
@@ -216,23 +241,32 @@ else
     private int CalcDir = 1;
     private int Ditie = 0, Fitie = 0;
 
-    // ASSUMPTION: session date defaults to today; user can change it via the date picker above.
-    private DateTime SessionDate = DateTime.Today;
-
     // Loading / UI state
     private bool isLoading = true;
     private bool isBusy = false;
     private bool isFicheVisible = false;
 
     // Tiers sorted by the human-meaningful key (Smatri), Id stays a pure PK — no sync needed.
-    private List<TierspDto> SortedTiers =>
-        PreTiers.OrderBy(t => t.Smatri, StringComparer.Ordinal).ToList();
+    //private List<TierspDto> SortedTiers =>
+    //    PreTiers.OrderBy(t => t.Smatri, StringComparer.Ordinal).ToList();
 
     protected override Task OnInitializedAsync()
     {
+        isLoading = true;
+        //as CalcDir = 1 //tous
+        if (PreTiers.Any())
+        {
+            OnCalcDirChanged(1); //tous
+            //Ditie = PreTiers.FirstOrDefault()?.Id ?? 0;
+            //Fitie = PreTiers.LastOrDefault()?.Id ?? 0;
+        } else 
+        {
+            Ditie = 0;
+            Fitie = 0;
+        }
         isLoading = false;
         return Task.CompletedTask;
-    }
+    }   
 
     private Task OuvrirFiche(int orig)
     {
@@ -243,7 +277,7 @@ else
 
     // Single unified tier-resolution: CalcDir only changes the filter,
     // never the pipeline — "one person" is just a range/list of size 1.
-    private List<TierspDto> ResolveSelectedTiers()
+    private async Task<List<TierspDto>> ResolveSelectedTiers()
     {
         if (CalcDir == 1) // All
             return PreTiers.ToList();
@@ -262,6 +296,13 @@ else
             .ToList();
     }
 
+    
+    private void ToggleScdrub(string scdrub, bool isChecked)
+    {
+        if (isChecked) SelectedScdrubs.Add(scdrub);
+        else SelectedScdrubs.Remove(scdrub);
+        BuildPreviewRows();
+    }
     private async Task<CalcContext?> BuildContextAsync(TierspDto tier, PlngenDto prog)
     {
         var rubvarIds = prog.Rubvars.Select(r => r.Id).ToList();
@@ -269,7 +310,7 @@ else
         // Loads Actsaie/Actdet already produced by Saiepart for this tier,
         // filtered to the session date per Vgpe validity rules (session/moment/always/echeancier).
         var (actsaies, actdets) = await _actsaieData.LoadForTierAsync(
-            tier.Id, curOrga.Idorg, SessionDate, rubvarIds);
+            tier.Id, curOrga.Idorg, _sessionDate, rubvarIds);
 
         return new CalcContext
         {
@@ -279,20 +320,20 @@ else
             Ipln = prog.Id,
             Tier = tier,
             Itie = tier.Id,
-            IsTestMode = IsTestMode,
-            SessionDate = SessionDate,
+            SessionDate = _sessionDate,
             Actsaies = actsaies,
-            Actdets = actdets
+            Actdets = actdets,
+            EnsGpdata = InsGpdata ?? new List<Gpgrid>(),   // <-- same list, reused for every tier
+            IsTestMode = IsTestMode
         };
     }
-
     private async Task<List<CalcContext>> BuildCalcContextsAsync()
     {
         var prog = curOrga.Plngens.FirstOrDefault(p => p.Id == curProg.Id);
         if (prog is null)
             return new List<CalcContext>();
 
-        var tiers = ResolveSelectedTiers();
+        var tiers = await ResolveSelectedTiers();
         var contexts = new List<CalcContext>();
 
         foreach (var t in tiers)
@@ -303,12 +344,6 @@ else
         }
 
         return contexts;
-    }
-    private void ToggleScdrub(string scdrub, bool isChecked)
-    {
-        if (isChecked) SelectedScdrubs.Add(scdrub);
-        else SelectedScdrubs.Remove(scdrub);
-        BuildPreviewRows();
     }
     private async Task OnRunAsync()
     {
@@ -395,6 +430,17 @@ else
             })
             .ToList();
     }
+    private async Task OnCalcDirChanged(int newValue)
+    {
+        CalcDir = newValue;
+        Ditie = PreTiers.FirstOrDefault()?.Id ?? 0;
+        Fitie = PreTiers.LastOrDefault()?.Id ?? 0;
+        if (CalcDir == 1)
+        {
+            await ResolveSelectedTiers(); //ensure all tiers are been selected
+        }
+    }
+
     private async Task OnSaveAsync()
     {
         if (!HasResults || _lastContexts.Count == 0)

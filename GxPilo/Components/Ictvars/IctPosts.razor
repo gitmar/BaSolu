@@ -1059,18 +1059,37 @@ else
     // Update method -call this when source data changes
     private void InitializeMyDaPlans()
     {
-        PlanItems = orgPlns?.Where(pl => pl.Ptyp == IMyGpln && pl.Todom == IMyDom && pl.Toatr == 0 && pl.Tovue == IMyVue).ToList()
+        PlanItems = orgPlns?.Where(pl => pl.Ptyp == IMyGpln).ToList() // && pl.Todom == IMyDom && pl.Toatr == 0 && pl.Tovue == IMyVue).ToList()
             ?? new List<PlngenDto>();
+        if (PlanItems.Any()) curPlan = PlanItems.FirstOrDefault();
     }
     private void InitializeMyDaHies()
     {
-        HieItems = curPlan.Rubhies.ToList()
+        curRubr = new();
+        if (curPlan != null)
+        {
+            HieItems = curPlan.Rubhies.ToList()
             ?? new List<RubhieDto>();
+            curRubr = HieItems.FirstOrDefault();
+        }
+        else
+        {
+            HieItems = new List<RubhieDto>();
+        }
     }
     private void InitializeMyDaPsts()
     {
-        PstItems = curRubr.Rubpsts.ToList()
+        //curFmat = new();
+        if (curRubr != null)
+        {
+            PstItems = curRubr.Rubpsts.ToList()
             ?? new List<RubpstDto>();
+            //curPst = PstItems.FirstOrDefault();
+        }
+        else
+        {
+            PstItems = new List<RubpstDto>();
+        }
     }
     private Task UpdateMyDaPlans()
     {

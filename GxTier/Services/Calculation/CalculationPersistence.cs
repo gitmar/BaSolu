@@ -70,10 +70,16 @@ namespace GxTie.Services.Calculation
                 det.Iord = ctx.Iord;
                 det.Iraw = MyConverters.Trunc1000(det.Iraw).ToString();
             }
-
+            foreach (var bdet in session.Resbdets)
+            {
+                bdet.Csess = ctx.Csess;
+                bdet.Iord = ctx.Iord;
+                bdet.Iraw = MyConverters.Trunc1000(bdet.Iraw).ToString();
+            }
             await TrackAllAsync("Resdons", session.Resdons);
             await TrackAllAsync("Resbros", session.Resbros);
             await TrackAllAsync("Resdets", session.Resdets);
+            await TrackAllAsync("Resbdets", session.Resbdets);
         }
 
         private void SyncGridToSaieSession(SaieSession session)

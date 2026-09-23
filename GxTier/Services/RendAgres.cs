@@ -75,6 +75,17 @@ namespace GxTie.Services
 
             return result ?? new List<Gtabl>();
         }
+        public async Task<List<Gtabl>> LoadOrgaVgroups()
+        {
+            var json = await _clieManager.SendRequestAsync(
+                "AuthClient",
+                HttpMethod.Get,
+                "lgauth/allvgroups");
+
+            var result = JsonConvert.DeserializeObject<List<Gtabl>>(json);
+
+            return result ?? new List<Gtabl>();
+        }
         public async Task<List<Gpatr>> LoadOrgaAtribs()
         {
             var json = await _clieManager.SendRequestAsync(
@@ -123,6 +134,22 @@ namespace GxTie.Services
             var result = JsonConvert.DeserializeObject<List<Gpgrid>>(json);
 
             return result ?? new List<Gpgrid>();
+        }
+        public async Task<List<Gxuser>> LoadOrgaUsers()
+        {
+            //FmtPsts
+            var json = await _clieManager.SendRequestAsync("AuthClient", HttpMethod.Get, "lgauth/allusers");
+            var result = JsonConvert.DeserializeObject<List<Gxuser>>(json);
+            if (result.Any())
+            {
+                Console.WriteLine($"Nb Roles : {result.Count}");
+                return result.ToList();
+            }
+            else
+            {
+                Console.WriteLine("Nb Roles : null");
+                return new();
+            }
         }
     }
 }

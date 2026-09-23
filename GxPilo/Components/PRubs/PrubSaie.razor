@@ -15,6 +15,7 @@
 @using System.Text.RegularExpressions
 @using System.Security.Claims
 @using GxPilo.Components.Uifrags
+@using GxPilo.Components.Atabls
 @using GxPilo.Services
 @using BlazorBootstrap
 @using Blazored.LocalStorage
@@ -110,322 +111,326 @@ else
                             @if (CanOpenMGrid)
                             {
                                 <Grid TItem="PlngenDto"
-                                      Data="@MyDaPlans"
-                                      @key="GetRenderKey(EntityLevel.Plan)"
-                                      RowKeySelector="(item) => item.Rowguid"
-                                      AllowRowClick="true"
-                                      OnRowClick="OnPlnRowClick"
-                                      AllowDetailView="true"
-                                      RowClass="@((item) => GetPlanRowClass(item))"
-                                      Responsive="true">
-                                    <GridColumns>
-                                        <GridColumn TItem="PlngenDto" HeaderText="No" Class="xcol1">
-                                            <ChildContent Context="item">
-                                                    @if (item.Xadd1 == -1)
-                                                    {
-                                                        <span>@item?.Iui</span>
-                                                    }
-                                                    else
-                                                    {
-                                                    <span>@(item.Xedt1 == -1 ? item?.Iui : (item?.Iui == 0 ? item?.Iele : item?.Iui))</span>
-                                                    }
-                                            </ChildContent>
-                                        </GridColumn>
-                                        <GridColumn TItem="PlngenDto" HeaderText="Designation" Class="xcol4">
-                                            <ChildContent Context="item">
-                                                @if (IsPlanEditing(item) && draftPln is not null)
-                                                {
+                                                  Data="@MyDaPlans"
+                                                  @key="GetRenderKey(EntityLevel.Plan)"
+                                                  RowKeySelector="(item) => item.Rowguid"
+                                                  AllowRowClick="true"
+                                                  OnRowClick="OnPlnRowClick"
+                                                  AllowDetailView="true"
+                                                  RowClass="@((item) => GetPlanRowClass(item))"
+                                                  Responsive="true">
+                                                <GridColumns>
+                                                    <GridColumn TItem="PlngenDto" HeaderText="No" Class="xcol1">
+                                                        <ChildContent Context="item">
+                                                            @if (item.Xadd1 == -1)
+                                                            {
+                                                                <span>@item?.Iui</span>
+                                                            }
+                                                            else
+                                                            {
+                                                                <span>@(item.Xedt1 == -1 ? item?.Iui : (item?.Iui == 0 ? item?.Iele : item?.Iui))</span>
+                                                            }
+                                                        </ChildContent>
+                                                    </GridColumn>
+                                                    <GridColumn TItem="PlngenDto" HeaderText="Designation" Class="xcol4">
+                                                        <ChildContent Context="item">
+                                                            @if (IsPlanEditing(item) && draftPln is not null)
+                                                            {
 
-                                                    <InputText @bind-Value="draftPln.Liba" />
-                                                }
-                                                else
-                                                {
-                                                    @item.Liba
-                                                }
-                                            </ChildContent>
-                                        </GridColumn>
-                                        <GridColumn TItem="PlngenDto" HeaderText="abrege" Class="xcol2">
-                                            <ChildContent Context="item">
-                                                @if (IsPlanEditing(item) && draftPln is not null)
-                                                {
+                                                                <InputText @bind-Value="draftPln.Liba" />
+                                                            }
+                                                            else
+                                                            {
+                                                                @item.Liba
+                                                            }
+                                                        </ChildContent>
+                                                    </GridColumn>
+                                                    <GridColumn TItem="PlngenDto" HeaderText="abrege" Class="xcol2">
+                                                        <ChildContent Context="item">
+                                                            @if (IsPlanEditing(item) && draftPln is not null)
+                                                            {
 
-                                                    <InputText @bind-Value="draftPln.Abg" />
-                                                }
-                                                else
-                                                {
-                                                    @item.Abg
-                                                }
-                                            </ChildContent>
-                                        </GridColumn>
-                                        <GridColumn TItem="PlngenDto" HeaderText="Eta" Class="xcol1">
-                                            <HeaderContent>
-                                                @* @if (PeutOuvrirPlan)
-                                                { *@
-                                                    <button class="btn btn-primary btn-sm @(IsLevelBusy(EntityLevel.Plan) ? "disabled-action" : "")"
-                                                            disabled="@IsLevelBusy(EntityLevel.Plan)"
-                                                            @onclick="StartPlnNew">
-                                                        <span style="display:inline-flex; align-items:center; gap:4px;">
-                                                            <span>➕</span>
-                                                            <span>Add</span>
-                                                        </span>
-                                                    </button>
-                                                @* } *@
-                                            </HeaderContent>
-                                            <ChildContent Context="item">
-                                                @if (IsPlanEditing(item) && draftPln is not null)
-                                                {
-                                                    <InputSelect @bind-Value="draftPln.Eta">
-                                                        <option class="jchx" value=0>?choisir</option>
-                                                        @foreach (var tob in LsFixes.Where(ut => ut.Gvars == 32 && ut.Itb == 1 && ut.Elea != 0))
-                                                        {
-                                                            <option value=@tob.Elea>@tob.Liba</option>
-                                                        }
-                                                    </InputSelect>
-                                                }
-                                                else
-                                                {
-                                                    <InputSelect @bind-Value="item.Eta" disabled="true">
-                                                        <option class="jchx" value=0>?choisir</option>
-                                                        @foreach (var tob in LsFixes.Where(ut => ut.Gvars == 32 && ut.Itb == 1 && ut.Elea != 0))
-                                                        {
-                                                            <option value=@tob.Elea>@tob.Liba</option>
-                                                        }
-                                                    </InputSelect>
-                                                }
-                                            </ChildContent>
-                                        </GridColumn>
-                                        <GridColumn TItem="PlngenDto" HeaderText="Actions" Filterable="false" Class="xcol2 actions-col">
-                                            <ChildContent Context="item">
-                                                @switch (GetRowState(EntityLevel.Plan, item.Rowguid))
-                                                {
-                                                    case RowState.Locked:
-                                                        <span class="text-muted">—</span>
-                                                        break;
+                                                                <InputText @bind-Value="draftPln.Abg" />
+                                                            }
+                                                            else
+                                                            {
+                                                                @item.Abg
+                                                            }
+                                                        </ChildContent>
+                                                    </GridColumn>
+                                                    <GridColumn TItem="PlngenDto" HeaderText="Eta" Class="xcol1">
+                                                        <HeaderContent>
+                                                            @* @if (PeutOuvrirPlan)
+                                                            { *@
+                                                            <button class="btn btn-primary btn-sm @(IsLevelBusy(EntityLevel.Plan) ? "disabled-action" : "")"
+                                                                    disabled="@IsLevelBusy(EntityLevel.Plan)"
+                                                                    @onclick="StartPlnNew">
+                                                                <span style="display:inline-flex; align-items:center; gap:4px;">
+                                                                    <span>➕</span>
+                                                                    <span>Add</span>
+                                                                </span>
+                                                            </button>
+                                                            @* } *@
+                                                        </HeaderContent>
+                                                        <ChildContent Context="item">
+                                                            @if (IsPlanEditing(item) && draftPln is not null)
+                                                            {
+                                                                <InputSelect @bind-Value="draftPln.Eta">
+                                                                    <option class="jchx" value=0>?choisir</option>
+                                                                    @foreach (var tob in LsFixes.Where(ut => ut.Gvars == 32 && ut.Itb == 1 && ut.Elea != 0))
+                                                                    {
+                                                                        <option value=@tob.Elea>@tob.Liba</option>
+                                                                    }
+                                                                </InputSelect>
+                                                            }
+                                                            else
+                                                            {
+                                                                <InputSelect @bind-Value="item.Eta" disabled="true">
+                                                                    <option class="jchx" value=0>?choisir</option>
+                                                                    @foreach (var tob in LsFixes.Where(ut => ut.Gvars == 32 && ut.Itb == 1 && ut.Elea != 0))
+                                                                    {
+                                                                        <option value=@tob.Elea>@tob.Liba</option>
+                                                                    }
+                                                                </InputSelect>
+                                                            }
+                                                        </ChildContent>
+                                                    </GridColumn>
+                                                    <GridColumn TItem="PlngenDto" HeaderText="Actions" Filterable="false" Class="xcol2 actions-col">
+                                                        <ChildContent Context="item">
+                                                            @switch (GetRowState(EntityLevel.Plan, item.Rowguid))
+                                                            {
+                                                                case RowState.Locked:
+                                                                    <span class="text-muted">—</span>
+                                                                    break;
 
-                                                    case RowState.AddPending:
-                                                        <Button Color="ButtonColor.Success" Size="ButtonSize.Small"
-                                                                @onclick="() => ConfirmAdd(EntityLevel.Plan, draftPln, true)">
-                                                            ✅ Confirm
-                                                        </Button>
-                                                        <Button Color="ButtonColor.Success" Size="ButtonSize.Small"
-                                                                @onclick="() => StartCancelAdd(EntityLevel.Plan, draftPln)">
-                                                            ❌ Cancel
-                                                        </Button>
-                                                        break;
-                                                    case RowState.EditPending:
-                                                        <Button Color="ButtonColor.Success" Size="ButtonSize.Small"
-                                                                @onclick="() => ConfirmEdit(EntityLevel.Plan, draftPln, true)">
-                                                            ✅ Confirm
-                                                        </Button>
-                                                        <Button Color="ButtonColor.Secondary" Size="ButtonSize.Small"
-                                                                @onclick="() => CancelEdit(EntityLevel.Plan, item)">
-                                                            ❌ Cancel
-                                                        </Button>
-                                                        break;
-                                                    case RowState.DeletePending:
-                                                        <Button Color="ButtonColor.Danger" Size="ButtonSize.Small"
-                                                                @onclick="() => ConfirmDelete(EntityLevel.Plan, item, true)">
-                                                            ⚠️ Confirm
-                                                        </Button>
-                                                        <Button Color="ButtonColor.Secondary" Size="ButtonSize.Small"
-                                                                @onclick="() => CancelDelete(EntityLevel.Plan, item)">
-                                                            ❎ Cancel
-                                                        </Button>
-                                                        break;
-                                                    default:
-                                                        <Button Color="ButtonColor.Warning" Size="ButtonSize.Small"
-                                                                @onclick="() => StartPlnEdit(item)">
-                                                            ✏️ Edit
-                                                        </Button>
-                                                        <Button Color="ButtonColor.Danger" Size="ButtonSize.Small"
-                                                                @onclick="() => StartRowDelete(EntityLevel.Plan, item.Rowguid)">
-                                                            🗑 Delete
-                                                        </Button>
-                                                        break;
-                                                }
-                                            </ChildContent>
-                                        </GridColumn>
-                                    </GridColumns>
-                                    <GridDetailView TItem="PlngenDto" Context="selectedPln">
-                                        @if (selectedPln is not null)
-                                        {
-                                            <div class="mt-2 border-start border-primary border-3 bg-light bg-opacity-25 rounded-end">
-                                                <div class="row align-items-center mb-2">
-                                                    <div class="col-auto">
-                                                        <i class="bi bi-chevron-right text-primary"></i>
-                                                    </div>
-                                                    <div class="col">
-                                                        <small class="text-muted fw-semibold">
-                                                            Plan ← @selectedPln.Liba (No: @selectedPln.Iele)
-                                                        </small>
-                                                    </div>
-                                                </div>
-                                                <div class="row">
-                                                    <div class="col-2">
-                                                        <Button Color="ButtonColor.Secondary" Class="btn btn-default btn-sm" @onclick="() => showPgLink()">
-                                                            Dpdce
-                                                        </Button>
-                                                    </div>
-                                                    @if (yaPgLink)
+                                                                case RowState.AddPending:
+                                                                    <Button Color="ButtonColor.Success" Size="ButtonSize.Small"
+                                                                            @onclick="() => ConfirmAdd(EntityLevel.Plan, draftPln, true)">
+                                                                        ✅ Confirm
+                                                                    </Button>
+                                                                    <Button Color="ButtonColor.Success" Size="ButtonSize.Small"
+                                                                            @onclick="() => StartCancelAdd(EntityLevel.Plan, draftPln)">
+                                                                        ❌ Cancel
+                                                                    </Button>
+                                                                    break;
+                                                                case RowState.EditPending:
+                                                                    <Button Color="ButtonColor.Success" Size="ButtonSize.Small"
+                                                                            @onclick="() => ConfirmEdit(EntityLevel.Plan, draftPln, true)">
+                                                                        ✅ Confirm
+                                                                    </Button>
+                                                                    <Button Color="ButtonColor.Secondary" Size="ButtonSize.Small"
+                                                                            @onclick="() => CancelEdit(EntityLevel.Plan, item)">
+                                                                        ❌ Cancel
+                                                                    </Button>
+                                                                    break;
+                                                                case RowState.DeletePending:
+                                                                    <Button Color="ButtonColor.Danger" Size="ButtonSize.Small"
+                                                                            @onclick="() => ConfirmDelete(EntityLevel.Plan, item, true)">
+                                                                        ⚠️ Confirm
+                                                                    </Button>
+                                                                    <Button Color="ButtonColor.Secondary" Size="ButtonSize.Small"
+                                                                            @onclick="() => CancelDelete(EntityLevel.Plan, item)">
+                                                                        ❎ Cancel
+                                                                    </Button>
+                                                                    break;
+                                                                default:
+                                                                    <Button Color="ButtonColor.Warning" Size="ButtonSize.Small"
+                                                                            @onclick="() => StartPlnEdit(item)">
+                                                                        ✏️ Edit
+                                                                    </Button>
+                                                                    <Button Color="ButtonColor.Primary" Size="ButtonSize.Small"
+                                                                            @onclick="() => StartGpeSetup(item, 1)">
+                                                                        ✏️ Groupe
+                                                                    </Button>
+                                                                    <Button Color="ButtonColor.Danger" Size="ButtonSize.Small"
+                                                                            @onclick="() => StartRowDelete(EntityLevel.Plan, item.Rowguid)">
+                                                                        🗑 Delete
+                                                                    </Button>
+                                                                    break;
+                                                            }
+                                                        </ChildContent>
+                                                    </GridColumn>
+                                                </GridColumns>
+                                                <GridDetailView TItem="PlngenDto" Context="selectedPln">
+                                                    @if (selectedPln is not null)
                                                     {
-                                                        <div class="col-3">
-                                                            <label>Division</label>
-                                                        </div>
-                                                        <div class="col-3">
-                                                            <label>Grille</label>
-                                                        </div>
-                                                        <div class="col-3">
-                                                            <label>Echeancier</label>
-                                                        </div>
-                                                    }
-                                                </div>
-                                                <div class="row">
-                                                    <div class="xcol2"></div>
-                                                    @if (yaPgLink)
-                                                    {
-                                                        @if (draftPln?.Rowguid == selectedPln.Rowguid)
-                                                        {
-                                                            <div class="col-3">
-                                                                <InputSelect @bind-Value="draftPln.Plsdiv"
-                                                                             class="w-100">
-                                                                    <option value=0>?choisir</option>
-                                                                    @foreach (var tob in LsPlsDivs)
-                                                                    {
-                                                                        <option value=@tob.Id>@tob.Abg-@tob.Liba</option>
-                                                                    }
-                                                                </InputSelect>
+                                                        <div class="mt-2 border-start border-primary border-3 bg-light bg-opacity-25 rounded-end">
+                                                            <div class="row align-items-center mb-2">
+                                                                <div class="col-auto">
+                                                                    <i class="bi bi-chevron-right text-primary"></i>
+                                                                </div>
+                                                                <div class="col">
+                                                                    <small class="text-muted fw-semibold">
+                                                                        Plan ← @selectedPln.Liba (No: @selectedPln.Iele)
+                                                                    </small>
+                                                                </div>
                                                             </div>
-                                                            <div class="col-3">
-                                                                <InputSelect @bind-Value="draftPln.Plsgri" class="w-100">
-                                                                    <option value=0>?choisir</option>
-                                                                    @foreach (var tob in LsPlsGris)
-                                                                    {
-                                                                        <option value=@tob.Id>@tob.Abg-@tob.Liba</option>
-                                                                    }
-                                                                </InputSelect>
+                                                            <div class="row">
+                                                                <div class="col-2">
+                                                                    <Button Color="ButtonColor.Secondary" Class="btn btn-default btn-sm" @onclick="() => showPgLink()">
+                                                                        Dpdce
+                                                                    </Button>
+                                                                </div>
+                                                                @if (yaPgLink)
+                                                                {
+                                                                    <div class="col-3">
+                                                                        <label>Division</label>
+                                                                    </div>
+                                                                    <div class="col-3">
+                                                                        <label>Grille</label>
+                                                                    </div>
+                                                                    <div class="col-3">
+                                                                        <label>Echeancier</label>
+                                                                    </div>
+                                                                }
                                                             </div>
-                                                            <div class="col-3">
-                                                                <InputSelect @bind-Value="draftPln.Plsech" class="w-100">
-                                                                    <option value=0>?choisir</option>
-                                                                    @foreach (var tob in LsPlsEchs)
+                                                            <div class="row">
+                                                                <div class="xcol2"></div>
+                                                                @if (yaPgLink)
+                                                                {
+                                                                    @if (draftPln?.Rowguid == selectedPln.Rowguid)
                                                                     {
-                                                                        <option value=@tob.Id>@tob.Abg-@tob.Liba</option>
-                                                                    }
-                                                                </InputSelect>
-                                                            </div>
-                                                        }
-                                                        else
-                                                        {
-                                                            <div class="col-3">
-                                                                <InputSelect @bind-Value="selectedPln.Plsdiv" disabled="true" class="w-100">
-                                                                    <option value=0>?choisir</option>
-                                                                    @foreach (var tob in LsPlsDivs)
-                                                                    {
-                                                                        <option value=@tob.Id>@tob.Abg-@tob.Liba</option>
-                                                                    }
-                                                                </InputSelect>
-                                                            </div>
-                                                            <div class="col-3">
-                                                                <InputSelect @bind-Value="selectedPln.Plsgri" disabled="true" class="w-100">
-                                                                    @foreach (var tob in LsPlsGris)
-                                                                    {
-                                                                        <option value=@tob.Id>@tob.Abg-@tob.Liba</option>
-                                                                    }
-                                                                </InputSelect>
-                                                            </div>
-                                                            <div class="col-3">
-                                                                <InputSelect @bind-Value="selectedPln.Plsech" disabled="true" class="w-100">
-                                                                    @foreach (var tob in LsPlsEchs)
-                                                                    {
-                                                                        <option value=@tob.Id>@tob.Abg-@tob.Liba</option>
-                                                                    }
-                                                                </InputSelect>
-                                                            </div>
-                                                        }
-                                                    }
-                                                </div>
-                                                <div class="row">
-                                                    <div class="col-12">
-                                                        <Grid TItem="RubvarDto"
-                                                              Data="@MyDaRubs"
-                                                              @key="GetRenderKey(EntityLevel.Rub)"
-                                                              RowKeySelector="(item) => item.Rowguid"
-                                                              AllowRowClick="true"
-                                                              OnRowClick="OnRubRowClick"
-                                                              AllowDetailView="true"
-                                                              RowClass="@((item) => GetRubRowClass(item))"
-                                                              Responsive="true">
-                                                            <GridColumns>
-                                                                <GridColumn TItem="RubvarDto" HeaderText="No" Class="xcol1">
-                                                                    <ChildContent Context="item">
-                                                                        @if (item.Xadd1 == -1)
-                                                                        {
-                                                                            <span>?@item?.Iui</span>
-                                                                        }
-                                                                        else
-                                                                        {
-                                                                            <span>
-                                                                                @(item.Xedt1 == -1 ? item?.Iui : (item?.Iui == 0 ? item?.Iele : item?.Iui))
-                                                                            </span>
-                                                                        }
-                                                                    </ChildContent>
-                                                                </GridColumn>
-                                                                <GridColumn TItem="RubvarDto" HeaderText="">
-                                                                    <HeaderContent>
-                                                                        Code
-                                                                        @if (!String.IsNullOrEmpty(Jmessage))
-                                                                        {
-                                                                            <span class="bg-info bg-opacity-10" style="font-style:italic;color:red">&nbsp;--> @Jmessage</span>
-                                                                        }
-                                                                    </HeaderContent>
-                                                                    <ChildContent Context="item">
-                                                                        <div style="width:90px" class="rubpoint">
-                                                                            @if (IsRubEditing(item) && draftRub is not null)
-                                                                            {
-                                                                                <InputText @bind-Value="draftRub.Scdrub"
-                                                                                           placeholder="code"
-                                                                                           class="w-100"
-                                                                                           maxlength="@_lgcdu"
-                                                                                           @onblur="@(() => OnChlBlurHandler(selectedPln, draftRub))"
-                                                                                           @onfocus="@(() => OnChlFocusHandler(selectedPln, draftRub))"
-                                                                                           pattern="@($"[0-9]{{{_lgcdu}}}")"
-                                                                                           title="@($"{_lgcdu} chiffres obligatoires et unique")"
-                                                                                           required />
-                                                                            }
-                                                                            else
-                                                                            {
-                                                                                @item.Scdrub
-                                                                            }
+                                                                        <div class="col-3">
+                                                                            <InputSelect @bind-Value="draftPln.Plsdiv"
+                                                                                         class="w-100">
+                                                                                <option value=0>?choisir</option>
+                                                                                @foreach (var tob in LsPlsDivs)
+                                                                                {
+                                                                                    <option value=@tob.Id>@tob.Abg-@tob.Liba</option>
+                                                                                }
+                                                                            </InputSelect>
                                                                         </div>
-                                                                    </ChildContent>
-                                                                </GridColumn>
-                                                                <GridColumn TItem="RubvarDto" HeaderText="Designation" Class="xcol3">
-                                                                    <ChildContent Context="item">
-                                                                        @if (IsRubEditing(item) && draftRub is not null)
-                                                                            {
-                                                                                <InputText @bind-Value="draftRub.Liba" />
-                                                                            }
-                                                                            else
-                                                                            {
-                                                                                @item.Liba
-                                                                            }
-                                                                    </ChildContent>
-                                                                </GridColumn>
-                                                                <GridColumn TItem="RubvarDto" HeaderText="Abrege" Class="xcol2">
-                                                                    <ChildContent Context="item">
-                                                                            @if (IsRubEditing(item) && draftRub is not null)
-                                                                            {
-                                                                                <InputText @bind-Value="draftRub.Abg" />
-                                                                            }
-                                                                            else
-                                                                            {
-                                                                                @item.Abg
-                                                                            }
-                                                                    </ChildContent>
-                                                                </GridColumn>
-                                                                <GridColumn TItem="RubvarDto" HeaderText="Refer" Class="xcol1">
-                                                                    <ChildContent Context="item">
-                                                                            @* @if (EdRubRowguid == item.Rowguid)
+                                                                        <div class="col-3">
+                                                                            <InputSelect @bind-Value="draftPln.Plsgri" class="w-100">
+                                                                                <option value=0>?choisir</option>
+                                                                                @foreach (var tob in LsPlsGris)
+                                                                                {
+                                                                                    <option value=@tob.Id>@tob.Abg-@tob.Liba</option>
+                                                                                }
+                                                                            </InputSelect>
+                                                                        </div>
+                                                                        <div class="col-3">
+                                                                            <InputSelect @bind-Value="draftPln.Plsech" class="w-100">
+                                                                                <option value=0>?choisir</option>
+                                                                                @foreach (var tob in LsPlsEchs)
+                                                                                {
+                                                                                    <option value=@tob.Id>@tob.Abg-@tob.Liba</option>
+                                                                                }
+                                                                            </InputSelect>
+                                                                        </div>
+                                                                    }
+                                                                    else
+                                                                    {
+                                                                        <div class="col-3">
+                                                                            <InputSelect @bind-Value="selectedPln.Plsdiv" disabled="true" class="w-100">
+                                                                                <option value=0>?choisir</option>
+                                                                                @foreach (var tob in LsPlsDivs)
+                                                                                {
+                                                                                    <option value=@tob.Id>@tob.Abg-@tob.Liba</option>
+                                                                                }
+                                                                            </InputSelect>
+                                                                        </div>
+                                                                        <div class="col-3">
+                                                                            <InputSelect @bind-Value="selectedPln.Plsgri" disabled="true" class="w-100">
+                                                                                @foreach (var tob in LsPlsGris)
+                                                                                {
+                                                                                    <option value=@tob.Id>@tob.Abg-@tob.Liba</option>
+                                                                                }
+                                                                            </InputSelect>
+                                                                        </div>
+                                                                        <div class="col-3">
+                                                                            <InputSelect @bind-Value="selectedPln.Plsech" disabled="true" class="w-100">
+                                                                                @foreach (var tob in LsPlsEchs)
+                                                                                {
+                                                                                    <option value=@tob.Id>@tob.Abg-@tob.Liba</option>
+                                                                                }
+                                                                            </InputSelect>
+                                                                        </div>
+                                                                    }
+                                                                }
+                                                            </div>
+                                                            <div class="row">
+                                                                <div class="col-12">
+                                                                    <Grid TItem="RubvarDto"
+                                                                          Data="selectedPln.Rubvars.ToList()"
+                                                                          @key="GetRenderKey(EntityLevel.Rub)"
+                                                                          RowKeySelector="(item) => item.Rowguid"
+                                                                          AllowRowClick="true"
+                                                                          OnRowClick="OnRubRowClick"
+                                                                          AllowDetailView="true"
+                                                                          RowClass="@((item) => GetRubRowClass(item))"
+                                                                          Responsive="true">
+                                                                        <GridColumns>
+                                                                            <GridColumn TItem="RubvarDto" HeaderText="No" Class="xcol1">
+                                                                                <ChildContent Context="item">
+                                                                                    @if (item.Xadd1 == -1)
+                                                                                    {
+                                                                                        <span>?@item?.Iui</span>
+                                                                                    }
+                                                                                    else
+                                                                                    {
+                                                                                        <span>
+                                                                                            @(item.Xedt1 == -1 ? item?.Iui : (item?.Iui == 0 ? item?.Iele : item?.Iui))
+                                                                                        </span>
+                                                                                    }
+                                                                                </ChildContent>
+                                                                            </GridColumn>
+                                                                            <GridColumn TItem="RubvarDto" HeaderText="">
+                                                                                <HeaderContent>
+                                                                                    Code
+                                                                                    @if (!String.IsNullOrEmpty(Jmessage))
+                                                                                    {
+                                                                                        <span class="bg-info bg-opacity-10" style="font-style:italic;color:red">&nbsp;--> @Jmessage</span>
+                                                                                    }
+                                                                                </HeaderContent>
+                                                                                <ChildContent Context="item">
+                                                                                    <div style="width:90px" class="rubpoint">
+                                                                                        @if (IsRubEditing(item) && draftRub is not null)
+                                                                                        {
+                                                                                            <InputText @bind-Value="draftRub.Scdrub"
+                                                                                                       placeholder="code"
+                                                                                                       class="w-100"
+                                                                                                       maxlength="@_lgcdu"
+                                                                                                       @onblur="@(() => OnChlBlurHandler(selectedPln, draftRub))"
+                                                                                                       @onfocus="@(() => OnChlFocusHandler(selectedPln, draftRub))"
+                                                                                                       pattern="@($"[0-9]{{{_lgcdu}}}")"
+                                                                                                       title="@($"{_lgcdu} chiffres obligatoires et unique")"
+                                                                                                       required />
+                                                                                        }
+                                                                                        else
+                                                                                        {
+                                                                                            @item.Scdrub
+                                                                                        }
+                                                                                    </div>
+                                                                                </ChildContent>
+                                                                            </GridColumn>
+                                                                            <GridColumn TItem="RubvarDto" HeaderText="Designation" Class="xcol3">
+                                                                                <ChildContent Context="item">
+                                                                                    @if (IsRubEditing(item) && draftRub is not null)
+                                                                                    {
+                                                                                        <InputText @bind-Value="draftRub.Liba" />
+                                                                                    }
+                                                                                    else
+                                                                                    {
+                                                                                        @item.Liba
+                                                                                    }
+                                                                                </ChildContent>
+                                                                            </GridColumn>
+                                                                            <GridColumn TItem="RubvarDto" HeaderText="Abrege" Class="xcol2">
+                                                                                <ChildContent Context="item">
+                                                                                    @if (IsRubEditing(item) && draftRub is not null)
+                                                                                    {
+                                                                                        <InputText @bind-Value="draftRub.Abg" />
+                                                                                    }
+                                                                                    else
+                                                                                    {
+                                                                                        @item.Abg
+                                                                                    }
+                                                                                </ChildContent>
+                                                                            </GridColumn>
+                                                                            <GridColumn TItem="RubvarDto" HeaderText="Refer" Class="xcol1">
+                                                                                <ChildContent Context="item">
+                                                                                    @* @if (EdRubRowguid == item.Rowguid)
                                                                             { // show draftPln inputs
                                                                               <InputText @bind-Value="draftRub.Zcod" />
                                                                             }
@@ -433,387 +438,387 @@ else
                                                                             { // show item as read-only
                                                                               @item.Zcod
                                                                             } *@
-                                                                            @item.Zcod
-                                                                    </ChildContent>
-                                                                </GridColumn>
-                                                                <GridColumn TItem="RubvarDto" HeaderText="Atyp">
-                                                                    <ChildContent Context="item">
-                                                                        @if (IsRubEditing(item) && draftRub is not null)
-                                                                        {
-                                                                            <InputSelect @bind-Value="draftRub.Atyp" class="col-md-1" style="width:auto">
-                                                                                @foreach (var tob in LsFixes.Where(ut => ut.Gvars == 32 && ut.Itb == 2 && ut.Elea != 0))
-                                                                                {
-                                                                                    <option value=@tob.Elea>@tob.Liba</option>
-                                                                                }
-                                                                            </InputSelect>
-                                                                        }
-                                                                        else
-                                                                        { // show item as read-only
-                                                                          <InputSelect @bind-Value="item.Atyp" class="col-md-1" style="width:auto" disabled>
-                                                                                @foreach (var tob in LsFixes.Where(ut => ut.Gvars == 32 && ut.Itb == 2 && ut.Elea != 0))
-                                                                                {
-                                                                                    <option value=@tob.Elea>@tob.Liba</option>
-                                                                                }
-                                                                            </InputSelect>
-                                                                        }
-                                                                    </ChildContent>
-                                                                </GridColumn>
-                                                                <GridColumn TItem="RubvarDto" HeaderText="Formule" Class="xcol1">
-                                                                    <ChildContent Context="item">
-                                                                            @if (IsRubEditing(item) && draftRub is not null)
-                                                                            { // show draftPln inputs
-                                                                              <Button Color="ButtonColor.Secondary" Class="btn btn-default btn-sm d-inline-flex align-items-center gap-1"
-                                                                                      @onclick="() => showFrRubModal(draftRub, 1)">
-                                                                                  <i class="bi bi-pencil-square"></i>
-                                                                                  <span class="text-truncate flex-grow-1">@draftRub?.Frsrc</span>
-                                                                              </Button>
-                                                                            }
-                                                                            else
-                                                                            { // show item as read-only
-                                                                              <Button Color="ButtonColor.Secondary" Class="btn btn-default btn-sm d-inline-flex align-items-center gap-1"
-                                                                                      @onclick="() => showFrRubModal(item, 2)">
-                                                                                  <i class="bi bi-pencil-square"></i>
-                                                                                  <span class="text-truncate flex-grow-1">@item.Frsrc</span>
-                                                                              </Button>
-                                                                            }
-                                                                    </ChildContent>
-                                                                </GridColumn>
-                                                                <GridColumn TItem="RubvarDto" HeaderText="Eta">
-                                                                    <HeaderContent>
-                                                                        @if (selectedPln is not null)
-                                                                        {
-                                                                            <button class="btn btn-primary btn-sm @(IsLevelBusy(EntityLevel.Rub) ? "disabled-action" : "")"
-                                                                                disabled="@IsLevelBusy(EntityLevel.Rub)"
-                                                                                    @onclick="() => StartRubNew(selectedPln)">
-                                                                                <span style="display:inline-flex; align-items:center; gap:4px;">
-                                                                                    <span>➕</span>
-                                                                                    <span>Add</span>
-                                                                                </span>
-                                                                            </button>
-                                                                        }
-                                                                    </HeaderContent>
-                                                                    <ChildContent Context="item">
-                                                                        @if (IsRubEditing(item) && draftRub is not null)
-                                                                        { // show draftPln inputs
-                                                                          <InputSelect @bind-Value="draftRub.Eta" class="col-md-1" style="width:auto">
-                                                                              <option class="jchx" value=0>?etat</option>
-                                                                                @foreach (var tob in LsFixes.Where(ut => ut.Gvars == 32 && ut.Itb == 1 && ut.Elea != 0))
-                                                                                {
-                                                                                    <option value=@tob.Elea>@tob.Liba</option>
-                                                                                }
-                                                                            </InputSelect>
-                                                                        }
-                                                                        else
-                                                                        { // show item as read-only
-                                                                          <InputSelect @bind-Value="item.Eta" class="col-md-1" style="width:auto" disabled>
-                                                                              <option class="jchx" value=0>?etat</option>
-                                                                                @foreach (var tob in LsFixes.Where(ut => ut.Gvars == 32 && ut.Itb == 1 && ut.Elea != 0))
-                                                                                {
-                                                                                    <option value=@tob.Elea>@tob.Liba</option>
-                                                                                }
-                                                                            </InputSelect>
-                                                                        }
-                                                                    </ChildContent>
-                                                                </GridColumn>
-                                                                <GridColumn TItem="RubvarDto" HeaderText="Actions" Filterable="false" Class="xcol2 actions-col">
-                                                                    <HeaderContent>
-                                                                        @if (!isFiltre)
-                                                                        {
-                                                                            <button class="btn btn-info btn-sm" @onclick="ToggleRubFiltering">
-                                                                                @(isRubFilteringEnabled ? "🚫 Out Filter" : "🔍 In Filter")
-                                                                            </button>
-                                                                        }
-                                                                    </HeaderContent>
-                                                                    <ChildContent Context="item">
-                                                                        @switch (GetRowState(EntityLevel.Rub, item.Rowguid))
-                                                                        {
-                                                                            case RowState.Locked:
-                                                                                <span class="text-muted">—</span>
-                                                                                break;
-
-                                                                            case RowState.AddPending:
-                                                                                <Button Color="ButtonColor.Success" Size="ButtonSize.Small"
-                                                                                        @onclick="() => ConfirmAdd(EntityLevel.Rub, draftRub, true)">
-                                                                                    ✅ Confirm
-                                                                                </Button>
-                                                                                <Button Color="ButtonColor.Success" Size="ButtonSize.Small"
-                                                                                        @onclick="() => StartCancelAdd(EntityLevel.Rub, draftRub)">
-                                                                                    ❌ Cancel
-                                                                                </Button>
-                                                                                break;
-                                                                            case RowState.EditPending:
-                                                                                <Button Color="ButtonColor.Success" Size="ButtonSize.Small"
-                                                                                        @onclick="() => ConfirmEdit(EntityLevel.Rub, draftRub, true)">
-                                                                                    ✅ Confirm
-                                                                                </Button>
-                                                                                <Button Color="ButtonColor.Secondary" Size="ButtonSize.Small"
-                                                                                        @onclick="() => CancelEdit(EntityLevel.Rub, item)">
-                                                                                    ❌ Cancel
-                                                                                </Button>
-                                                                                break;
-                                                                            case RowState.DeletePending:
-                                                                                <Button Color="ButtonColor.Danger" Size="ButtonSize.Small"
-                                                                                        @onclick="() => ConfirmDelete(EntityLevel.Rub, item, true)">
-                                                                                    ⚠️ Confirm
-                                                                                </Button>
-                                                                                <Button Color="ButtonColor.Secondary" Size="ButtonSize.Small"
-                                                                                        @onclick="() => CancelDelete(EntityLevel.Rub, item)">
-                                                                                    ❎ Cancel
-                                                                                </Button>
-                                                                                break;
-                                                                            default:
-                                                                                <Button Color="ButtonColor.Warning" Size="ButtonSize.Small"
-                                                                                        @onclick="() => StartRubEdit(item)">
-                                                                                    ✏️ Edit
-                                                                                </Button>
-                                                                                <Button Color="ButtonColor.Danger" Size="ButtonSize.Small"
-                                                                                        @onclick="() => StartRowDelete(EntityLevel.Rub, item.Rowguid)">
-                                                                                    🗑 Delete
-                                                                                </Button>
-                                                                                break;
-                                                                        }
-                                                                    </ChildContent>
-                                                                </GridColumn>
-                                                            </GridColumns>
-                                                            <GridDetailView TItem="RubvarDto" Context="selectedRub">
-                                                                @if (selectedRub is not null)
-                                                                {
-                                                                    <div class="mt-2 border-start border-primary border-3 bg-light bg-opacity-25 rounded-end">
-                                                                        <div class="row align-items-center mb-2">
-                                                                            <div class="col-auto">
-                                                                                <i class="bi bi-chevron-right text-primary"></i>
-                                                                            </div>
-                                                                            <div class="col">
-                                                                                <small class="text-muted fw-semibold">
-                                                                                    Rubrique ← @selectedRub.Liba (No: @selectedRub.Iele)
-                                                                                </small>
-                                                                            </div>
-                                                                        </div>
-                                                                <Grid TItem="RubfmtDto"
-                                                                      Data="@MyDaFmts"
-                                                                      @key="GetRenderKey(EntityLevel.Fmt)"
-                                                                      RowKeySelector="(rf) => rf.Rowguid"
-                                                                      AllowRowClick="true"
-                                                                      OnRowClick="OnFmtRowClick"
-                                                                      AllowPaging="true"
-                                                                      RowClass="@((rf) => GetFmtRowClass(rf))"
-                                                                      Responsive="true">
-                                                                    <GridColumns>
-                                                                        <GridColumn TItem="RubfmtDto" HeaderText="Code" Class="xcol1">
-                                                                            <ChildContent Context="rf">
-                                                                                @if (rf.Xadd1 == -1)
-                                                                                {
-                                                                                    <span>?@rf?.Iui</span>
-                                                                                }
-                                                                                else
-                                                                                {
-                                                                                    <span>
-                                                                                        @(rf.Xedt1 == -1 ? rf?.Iui : (rf?.Iui == 0 ? rf?.Iele : rf?.Iui))
-                                                                                    </span>
-                                                                                }
-                                                                            </ChildContent>
-                                                                        </GridColumn>
-                                                                        <GridColumn TItem="RubfmtDto" HeaderText="Libelle" Class="xcol3">
-                                                                            <ChildContent Context="rf">
-                                                                                @if (IsFmtEditing(rf) && draftFmt is not null)
-                                                                                { // show draftPln inputs
-                                                                                  <InputText @bind-Value="draftFmt.Liba" />
-                                                                                }
-                                                                                else
-                                                                                { // show item as read-only
-                                                                                  @rf.Liba
-                                                                                }
-                                                                            </ChildContent>
-                                                                        </GridColumn>
-                                                                        <GridColumn TItem="RubfmtDto" HeaderText="Abrege" Class="xcol2">
-                                                                            <ChildContent Context="rf">
-                                                                                @if (IsFmtEditing(rf) && draftFmt is not null)
-                                                                                { // show draftPln inputs
-                                                                                  <InputText @bind-Value="draftFmt.Abg" />
-                                                                                }
-                                                                                else
-                                                                                { // show item as read-only
-                                                                                  @rf.Abg
-                                                                                }
-                                                                            </ChildContent>
-                                                                        </GridColumn>
-                                                                        <GridColumn TItem="RubfmtDto" HeaderText="Ztyp">
-                                                                            <ChildContent Context="rf">
-                                                                                @if (IsFmtEditing(rf) && draftFmt is not null)
-                                                                                { // show draftPln inputs
-                                                                                    <InputSelect @bind-Value="draftFmt.Ztyp" class="col-md-1" style="width:auto">
-                                                                                        <option class="jchx" value=0>?ztyp</option>
-                                                                                        @foreach (var tob in LsFixes.Where(ut => ut.Gvars == 32 && ut.Itb == 2 && ut.Elea != 0))
-                                                                                        {
-                                                                                            <option value=@tob.Elea>@tob.Liba</option>
-                                                                                        }
-                                                                                    </InputSelect>
-                                                                                }
-                                                                                else
-                                                                                { // show item as read-only
-                                                                                  <select @bind="rf.Ztyp" class="col-md-1" style="width:auto" disabled>
-                                                                                      <option class="jchx" value=0>?ztyp</option>
-                                                                                        @foreach (var tob in LsFixes.Where(ut => ut.Gvars == 32 && ut.Itb == 2 && ut.Elea != 0))
-                                                                                        {
-                                                                                            <option value=@tob.Elea>@tob.Liba</option>
-                                                                                        }
-                                                                                    </select>
-                                                                                }
-                                                                            </ChildContent>
-                                                                        </GridColumn>
-                                                                        <GridColumn TItem="RubfmtDto" HeaderText="Formule">
-                                                                            <ChildContent Context="rf">
-                                                                                @if (IsFmtEditing(rf) && draftFmt is not null)
-                                                                                { // show draftPln inputs
-                                                                                  <Button Color="ButtonColor.Secondary" Class="btn btn-default btn-sm d-inline-flex align-items-center gap-1"
-                                                                                          @onclick="() => showFrFmtModal(draftFmt, 1)">
-                                                                                      <i class="bi bi-pencil-square"></i>
-                                                                                      <span class="text-truncate flex-grow-1">@draftFmt?.Ftsrc</span>
-                                                                                  </Button>
-                                                                                }
-                                                                                else
-                                                                                { // show item as read-only
-                                                                                  <Button Color="ButtonColor.Secondary" Class="btn btn-default btn-sm d-inline-flex align-items-center gap-1"
-                                                                                          @onclick="() => showFrFmtModal(rf, 2)">
-                                                                                      <i class="bi bi-pencil-square"></i>
-                                                                                      <span class="text-truncate flex-grow-1">@rf.Ftsrc</span>
-                                                                                  </Button>
-                                                                                }
-                                                                            </ChildContent>
-                                                                        </GridColumn>
-                                                                        <GridColumn TItem="RubfmtDto" HeaderText="Col">
-                                                                            <ChildContent Context="rf">
-                                                                                @if (IsFmtEditing(rf) && draftFmt is not null)
-                                                                                { // show draftPln inputs
-                                                                                  <InputNumber @bind-Value="draftFmt.Col" style="width:60px" />
-                                                                                }
-                                                                                else
-                                                                                { // show item as read-only
-                                                                                  @rf.Col
-                                                                                }
-                                                                            </ChildContent>
-                                                                        </GridColumn>
-                                                                        <GridColumn TItem="RubfmtDto" HeaderText="Lne">
-                                                                            <ChildContent Context="rf">
-                                                                                @if (IsFmtEditing(rf) && draftFmt is not null)
-                                                                                { // show draftPln inputs
-                                                                                  <InputNumber @bind-Value="draftFmt.Lne" style="width:60px" />
-                                                                                }
-                                                                                else
-                                                                                { // show item as read-only
-                                                                                  @rf.Lne
-                                                                                }
-                                                                            </ChildContent>
-                                                                        </GridColumn>
-                                                                        <GridColumn TItem="RubfmtDto" HeaderText="Fmt" Class="xcol2">
-                                                                            <ChildContent Context="rf">
-                                                                                @if (IsFmtEditing(rf) && draftFmt is not null)
-                                                                                { // show draftPln inputs
-                                                                                  <InputText @bind-Value="draftFmt.Lgtf" style="width:100px" />
-                                                                                }
-                                                                                else
-                                                                                { // show item as read-only
-                                                                                  @rf.Lgtf
-                                                                                }
-                                                                            </ChildContent>
-                                                                        </GridColumn>
-                                                                        <GridColumn TItem="RubfmtDto" HeaderText="Eta">
-                                                                            <ChildContent Context="rf">
-                                                                                @if (IsFmtEditing(rf) && draftFmt is not null)
-                                                                                { // show draftPln inputs
-                                                                                  <InputSelect @bind-Value="draftFmt.Eta" class="col-md-1" style="width:auto">
-                                                                                      <option class="jchx" value=0>?etat</option>
-                                                                                        @foreach (var tob in LsFixes.Where(ut => ut.Gvars == 32 && ut.Itb == 1 && ut.Elea != 0))
-                                                                                        {
-                                                                                            <option value=@tob.Elea>@tob.Liba</option>
-                                                                                        }
-                                                                                    </InputSelect>
-                                                                                }
-                                                                                else
-                                                                                { // show item as read-only
-                                                                                  <select @bind="rf.Eta" class="col-md-1" style="width:auto" disabled>
-                                                                                      <option class="jchx" value=0>?etat</option>
-                                                                                        @foreach (var tob in LsFixes.Where(ut => ut.Gvars == 32 && ut.Itb == 1 && ut.Elea != 0))
-                                                                                        {
-                                                                                            <option value=@tob.Elea>@tob.Liba</option>
-                                                                                        }
-                                                                                    </select>
-                                                                                }
-                                                                            </ChildContent>
-                                                                        </GridColumn>
-                                                                        <GridColumn TItem="RubfmtDto" HeaderText="Actions" Class="xcol2 actions-col">
-                                                                            <HeaderContent>
-                                                                                        <button class="btn btn-primary btn-sm @(IsLevelBusy(EntityLevel.Fmt) ? "disabled-action" : "")"
-                                                                                                disabled="@IsLevelBusy(EntityLevel.Fmt)"
-                                                                                                @onclick="() => StartFmtNew(selectedRub)">
+                                                                                    @item.Zcod
+                                                                                </ChildContent>
+                                                                            </GridColumn>
+                                                                            <GridColumn TItem="RubvarDto" HeaderText="Atyp">
+                                                                                <ChildContent Context="item">
+                                                                                    @if (IsRubEditing(item) && draftRub is not null)
+                                                                                    {
+                                                                                        <InputSelect @bind-Value="draftRub.Atyp" class="col-md-1" style="width:auto">
+                                                                                            @foreach (var tob in LsFixes.Where(ut => ut.Gvars == 32 && ut.Itb == 2 && ut.Elea != 0))
+                                                                                            {
+                                                                                                <option value=@tob.Elea>@tob.Liba</option>
+                                                                                            }
+                                                                                        </InputSelect>
+                                                                                    }
+                                                                                    else
+                                                                                    { // show item as read-only
+                                                                                        <InputSelect @bind-Value="item.Atyp" class="col-md-1" style="width:auto" disabled>
+                                                                                            @foreach (var tob in LsFixes.Where(ut => ut.Gvars == 32 && ut.Itb == 2 && ut.Elea != 0))
+                                                                                            {
+                                                                                                <option value=@tob.Elea>@tob.Liba</option>
+                                                                                            }
+                                                                                        </InputSelect>
+                                                                                    }
+                                                                                </ChildContent>
+                                                                            </GridColumn>
+                                                                            <GridColumn TItem="RubvarDto" HeaderText="Formule" Class="xcol1">
+                                                                                <ChildContent Context="item">
+                                                                                    @if (IsRubEditing(item) && draftRub is not null)
+                                                                                    { // show draftPln inputs
+                                                                                        <Button Color="ButtonColor.Secondary" Class="btn btn-default btn-sm d-inline-flex align-items-center gap-1"
+                                                                                                @onclick="() => showFrRubModal(draftRub, 1)">
+                                                                                            <i class="bi bi-pencil-square"></i>
+                                                                                            <span class="text-truncate flex-grow-1">@draftRub?.Frsrc</span>
+                                                                                        </Button>
+                                                                                    }
+                                                                                    else
+                                                                                    { // show item as read-only
+                                                                                        <Button Color="ButtonColor.Secondary" Class="btn btn-default btn-sm d-inline-flex align-items-center gap-1"
+                                                                                                @onclick="() => showFrRubModal(item, 2)">
+                                                                                            <i class="bi bi-pencil-square"></i>
+                                                                                            <span class="text-truncate flex-grow-1">@item.Frsrc</span>
+                                                                                        </Button>
+                                                                                    }
+                                                                                </ChildContent>
+                                                                            </GridColumn>
+                                                                            <GridColumn TItem="RubvarDto" HeaderText="Eta">
+                                                                                <HeaderContent>
+                                                                                    @if (selectedPln is not null)
+                                                                                    {
+                                                                                        <button class="btn btn-primary btn-sm @(IsLevelBusy(EntityLevel.Rub) ? "disabled-action" : "")"
+                                                                                                disabled="@IsLevelBusy(EntityLevel.Rub)"
+                                                                                                @onclick="() => StartRubNew(selectedPln)">
                                                                                             <span style="display:inline-flex; align-items:center; gap:4px;">
                                                                                                 <span>➕</span>
                                                                                                 <span>Add</span>
                                                                                             </span>
                                                                                         </button>
-                                                                            </HeaderContent>
-                                                                            <ChildContent Context="rf">
-                                                                                    @switch (GetRowState(EntityLevel.Fmt, rf.Rowguid))
-                                                                                    {
-                                                                                            case RowState.Locked:
-                                                                                                <span class="text-muted">—</span>
-                                                                                                break;
-
-                                                                                            case RowState.AddPending:
-                                                                                                <Button Color="ButtonColor.Success" Size="ButtonSize.Small"
-                                                                                                        @onclick="() => ConfirmAdd(EntityLevel.Fmt, draftFmt, true)">
-                                                                                                    ✅ Confirm
-                                                                                                </Button>
-                                                                                                <Button Color="ButtonColor.Success" Size="ButtonSize.Small"
-                                                                                                        @onclick="() => StartCancelAdd(EntityLevel.Fmt, draftFmt)">
-                                                                                                    ❌ Cancel
-                                                                                                </Button>
-                                                                                                break;
-                                                                                            case RowState.EditPending:
-                                                                                                <Button Color="ButtonColor.Success" Size="ButtonSize.Small"
-                                                                                                        @onclick="() => ConfirmEdit(EntityLevel.Fmt, draftFmt, true)">
-                                                                                                    ✅ Confirm
-                                                                                                </Button>
-                                                                                                <Button Color="ButtonColor.Secondary" Size="ButtonSize.Small"
-                                                                                                        @onclick="() => CancelEdit(EntityLevel.Fmt, rf)">
-                                                                                                    ❌ Cancel
-                                                                                                </Button>
-                                                                                                break;
-                                                                                            case RowState.DeletePending:
-                                                                                                <Button Color="ButtonColor.Danger" Size="ButtonSize.Small"
-                                                                                                        @onclick="() => ConfirmDelete(EntityLevel.Fmt, rf, true)">
-                                                                                                    ⚠️ Confirm
-                                                                                                </Button>
-                                                                                                <Button Color="ButtonColor.Secondary" Size="ButtonSize.Small"
-                                                                                                        @onclick="() => CancelDelete(EntityLevel.Fmt, rf)">
-                                                                                                    ❎ Cancel
-                                                                                                </Button>
-                                                                                                break;
-                                                                                            default:
-                                                                                                <Button Color="ButtonColor.Warning" Size="ButtonSize.Small"
-                                                                                                        @onclick="() => StartFmtEdit(rf)">
-                                                                                                    ✏️ Edit
-                                                                                                </Button>
-                                                                                                <Button Color="ButtonColor.Danger" Size="ButtonSize.Small"
-                                                                                                        @onclick="() => StartRowDelete(EntityLevel.Fmt, rf.Rowguid)">
-                                                                                                    🗑 Delete
-                                                                                                </Button>
-                                                                                                break;
                                                                                     }
-                                                                            </ChildContent>
-                                                                        </GridColumn>
-                                                                    </GridColumns>
-                                                                </Grid>
-                                                                    </div>
-                                                                }
-                                                            </GridDetailView>
-                                                        </Grid>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        }
-                                    </GridDetailView>
-                                </Grid>
+                                                                                </HeaderContent>
+                                                                                <ChildContent Context="item">
+                                                                                    @if (IsRubEditing(item) && draftRub is not null)
+                                                                                    { // show draftPln inputs
+                                                                                        <InputSelect @bind-Value="draftRub.Eta" class="col-md-1" style="width:auto">
+                                                                                            <option class="jchx" value=0>?etat</option>
+                                                                                            @foreach (var tob in LsFixes.Where(ut => ut.Gvars == 32 && ut.Itb == 1 && ut.Elea != 0))
+                                                                                            {
+                                                                                                <option value=@tob.Elea>@tob.Liba</option>
+                                                                                            }
+                                                                                        </InputSelect>
+                                                                                    }
+                                                                                    else
+                                                                                    { // show item as read-only
+                                                                                        <InputSelect @bind-Value="item.Eta" class="col-md-1" style="width:auto" disabled>
+                                                                                            <option class="jchx" value=0>?etat</option>
+                                                                                            @foreach (var tob in LsFixes.Where(ut => ut.Gvars == 32 && ut.Itb == 1 && ut.Elea != 0))
+                                                                                            {
+                                                                                                <option value=@tob.Elea>@tob.Liba</option>
+                                                                                            }
+                                                                                        </InputSelect>
+                                                                                    }
+                                                                                </ChildContent>
+                                                                            </GridColumn>
+                                                                            <GridColumn TItem="RubvarDto" HeaderText="Actions" Filterable="false" Class="xcol2 actions-col">
+                                                                                <HeaderContent>
+                                                                                    @if (!isFiltre)
+                                                                                    {
+                                                                                        <button class="btn btn-info btn-sm" @onclick="ToggleRubFiltering">
+                                                                                            @(isRubFilteringEnabled ? "🚫 Out Filter" : "🔍 In Filter")
+                                                                                        </button>
+                                                                                    }
+                                                                                </HeaderContent>
+                                                                                <ChildContent Context="item">
+                                                                                    @switch (GetRowState(EntityLevel.Rub, item.Rowguid))
+                                                                                    {
+                                                                                        case RowState.Locked:
+                                                                                            <span class="text-muted">—</span>
+                                                                                            break;
+
+                                                                                        case RowState.AddPending:
+                                                                                            <Button Color="ButtonColor.Success" Size="ButtonSize.Small"
+                                                                                                    @onclick="() => ConfirmAdd(EntityLevel.Rub, draftRub, true)">
+                                                                                                ✅ Confirm
+                                                                                            </Button>
+                                                                                            <Button Color="ButtonColor.Success" Size="ButtonSize.Small"
+                                                                                                    @onclick="() => StartCancelAdd(EntityLevel.Rub, draftRub)">
+                                                                                                ❌ Cancel
+                                                                                            </Button>
+                                                                                            break;
+                                                                                        case RowState.EditPending:
+                                                                                            <Button Color="ButtonColor.Success" Size="ButtonSize.Small"
+                                                                                                    @onclick="() => ConfirmEdit(EntityLevel.Rub, draftRub, true)">
+                                                                                                ✅ Confirm
+                                                                                            </Button>
+                                                                                            <Button Color="ButtonColor.Secondary" Size="ButtonSize.Small"
+                                                                                                    @onclick="() => CancelEdit(EntityLevel.Rub, item)">
+                                                                                                ❌ Cancel
+                                                                                            </Button>
+                                                                                            break;
+                                                                                        case RowState.DeletePending:
+                                                                                            <Button Color="ButtonColor.Danger" Size="ButtonSize.Small"
+                                                                                                    @onclick="() => ConfirmDelete(EntityLevel.Rub, item, true)">
+                                                                                                ⚠️ Confirm
+                                                                                            </Button>
+                                                                                            <Button Color="ButtonColor.Secondary" Size="ButtonSize.Small"
+                                                                                                    @onclick="() => CancelDelete(EntityLevel.Rub, item)">
+                                                                                                ❎ Cancel
+                                                                                            </Button>
+                                                                                            break;
+                                                                                        default:
+                                                                                            <Button Color="ButtonColor.Warning" Size="ButtonSize.Small"
+                                                                                                    @onclick="() => StartRubEdit(item)">
+                                                                                                ✏️ Edit
+                                                                                            </Button>
+                                                                                            <Button Color="ButtonColor.Danger" Size="ButtonSize.Small"
+                                                                                                    @onclick="() => StartRowDelete(EntityLevel.Rub, item.Rowguid)">
+                                                                                                🗑 Delete
+                                                                                            </Button>
+                                                                                            break;
+                                                                                    }
+                                                                                </ChildContent>
+                                                                            </GridColumn>
+                                                                        </GridColumns>
+                                                                        <GridDetailView TItem="RubvarDto" Context="selectedRub">
+                                                                            @if (selectedRub is not null)
+                                                                            {
+                                                                                <div class="mt-2 border-start border-primary border-3 bg-light bg-opacity-25 rounded-end">
+                                                                                    <div class="row align-items-center mb-2">
+                                                                                        <div class="col-auto">
+                                                                                            <i class="bi bi-chevron-right text-primary"></i>
+                                                                                        </div>
+                                                                                        <div class="col">
+                                                                                            <small class="text-muted fw-semibold">
+                                                                                                Rubrique ← @selectedRub.Liba (No: @selectedRub.Iele)
+                                                                                            </small>
+                                                                                        </div>
+                                                                                    </div>
+                                                                                    <Grid TItem="RubfmtDto"
+                                                                                          Data="selectedRub.Rubfmts.ToList()"
+                                                                                          @key="GetRenderKey(EntityLevel.Fmt)"
+                                                                                          RowKeySelector="(rf) => rf.Rowguid"
+                                                                                          AllowRowClick="true"
+                                                                                          OnRowClick="OnFmtRowClick"
+                                                                                          AllowPaging="true"
+                                                                                          RowClass="@((rf) => GetFmtRowClass(rf))"
+                                                                                          Responsive="true">
+                                                                                        <GridColumns>
+                                                                                            <GridColumn TItem="RubfmtDto" HeaderText="Code" Class="xcol1">
+                                                                                                <ChildContent Context="rf">
+                                                                                                    @if (rf.Xadd1 == -1)
+                                                                                                    {
+                                                                                                        <span>?@rf?.Iui</span>
+                                                                                                    }
+                                                                                                    else
+                                                                                                    {
+                                                                                                        <span>
+                                                                                                            @(rf.Xedt1 == -1 ? rf?.Iui : (rf?.Iui == 0 ? rf?.Iele : rf?.Iui))
+                                                                                                        </span>
+                                                                                                    }
+                                                                                                </ChildContent>
+                                                                                            </GridColumn>
+                                                                                            <GridColumn TItem="RubfmtDto" HeaderText="Libelle" Class="xcol3">
+                                                                                                <ChildContent Context="rf">
+                                                                                                    @if (IsFmtEditing(rf) && draftFmt is not null)
+                                                                                                    { // show draftPln inputs
+                                                                                                      <InputText @bind-Value="draftFmt.Liba" />
+                                                                                                    }
+                                                                                                    else
+                                                                                                    { // show item as read-only
+                                                                                                      @rf.Liba
+                                                                                                    }
+                                                                                                </ChildContent>
+                                                                                            </GridColumn>
+                                                                                            <GridColumn TItem="RubfmtDto" HeaderText="Abrege" Class="xcol2">
+                                                                                                <ChildContent Context="rf">
+                                                                                                    @if (IsFmtEditing(rf) && draftFmt is not null)
+                                                                                                    { // show draftPln inputs
+                                                                                                      <InputText @bind-Value="draftFmt.Abg" />
+                                                                                                    }
+                                                                                                    else
+                                                                                                    { // show item as read-only
+                                                                                                      @rf.Abg
+                                                                                                    }
+                                                                                                </ChildContent>
+                                                                                            </GridColumn>
+                                                                                            <GridColumn TItem="RubfmtDto" HeaderText="Ztyp">
+                                                                                                <ChildContent Context="rf">
+                                                                                                    @if (IsFmtEditing(rf) && draftFmt is not null)
+                                                                                                    { // show draftPln inputs
+                                                                                                        <InputSelect @bind-Value="draftFmt.Ztyp" class="col-md-1" style="width:auto">
+                                                                                                            <option class="jchx" value=0>?ztyp</option>
+                                                                                                            @foreach (var tob in LsFixes.Where(ut => ut.Gvars == 32 && ut.Itb == 2 && ut.Elea != 0))
+                                                                                                            {
+                                                                                                                <option value=@tob.Elea>@tob.Liba</option>
+                                                                                                            }
+                                                                                                        </InputSelect>
+                                                                                                    }
+                                                                                                    else
+                                                                                                    { // show item as read-only
+                                                                                                        <select @bind="rf.Ztyp" class="col-md-1" style="width:auto" disabled>
+                                                                                                            <option class="jchx" value=0>?ztyp</option>
+                                                                                                            @foreach (var tob in LsFixes.Where(ut => ut.Gvars == 32 && ut.Itb == 2 && ut.Elea != 0))
+                                                                                                            {
+                                                                                                                <option value=@tob.Elea>@tob.Liba</option>
+                                                                                                            }
+                                                                                                        </select>
+                                                                                                    }
+                                                                                                </ChildContent>
+                                                                                            </GridColumn>
+                                                                                            <GridColumn TItem="RubfmtDto" HeaderText="Formule">
+                                                                                                <ChildContent Context="rf">
+                                                                                                    @if (IsFmtEditing(rf) && draftFmt is not null)
+                                                                                                    { // show draftPln inputs
+                                                                                                        <Button Color="ButtonColor.Secondary" Class="btn btn-default btn-sm d-inline-flex align-items-center gap-1"
+                                                                                                                @onclick="() => showFrFmtModal(draftFmt, 1)">
+                                                                                                            <i class="bi bi-pencil-square"></i>
+                                                                                                            <span class="text-truncate flex-grow-1">@draftFmt?.Ftsrc</span>
+                                                                                                        </Button>
+                                                                                                    }
+                                                                                                    else
+                                                                                                    { // show item as read-only
+                                                                                                        <Button Color="ButtonColor.Secondary" Class="btn btn-default btn-sm d-inline-flex align-items-center gap-1"
+                                                                                                                @onclick="() => showFrFmtModal(rf, 2)">
+                                                                                                            <i class="bi bi-pencil-square"></i>
+                                                                                                            <span class="text-truncate flex-grow-1">@rf.Ftsrc</span>
+                                                                                                        </Button>
+                                                                                                    }
+                                                                                                </ChildContent>
+                                                                                            </GridColumn>
+                                                                                            <GridColumn TItem="RubfmtDto" HeaderText="Col">
+                                                                                                <ChildContent Context="rf">
+                                                                                                    @if (IsFmtEditing(rf) && draftFmt is not null)
+                                                                                                    { // show draftPln inputs
+                                                                                                      <InputNumber @bind-Value="draftFmt.Col" style="width:60px" />
+                                                                                                    }
+                                                                                                    else
+                                                                                                    { // show item as read-only
+                                                                                                      @rf.Col
+                                                                                                    }
+                                                                                                </ChildContent>
+                                                                                            </GridColumn>
+                                                                                            <GridColumn TItem="RubfmtDto" HeaderText="Lne">
+                                                                                                <ChildContent Context="rf">
+                                                                                                    @if (IsFmtEditing(rf) && draftFmt is not null)
+                                                                                                    { // show draftPln inputs
+                                                                                                      <InputNumber @bind-Value="draftFmt.Lne" style="width:60px" />
+                                                                                                    }
+                                                                                                    else
+                                                                                                    { // show item as read-only
+                                                                                                      @rf.Lne
+                                                                                                    }
+                                                                                                </ChildContent>
+                                                                                            </GridColumn>
+                                                                                            <GridColumn TItem="RubfmtDto" HeaderText="Fmt" Class="xcol2">
+                                                                                                <ChildContent Context="rf">
+                                                                                                    @if (IsFmtEditing(rf) && draftFmt is not null)
+                                                                                                    { // show draftPln inputs
+                                                                                                      <InputText @bind-Value="draftFmt.Lgtf" style="width:100px" />
+                                                                                                    }
+                                                                                                    else
+                                                                                                    { // show item as read-only
+                                                                                                      @rf.Lgtf
+                                                                                                    }
+                                                                                                </ChildContent>
+                                                                                            </GridColumn>
+                                                                                            <GridColumn TItem="RubfmtDto" HeaderText="Eta">
+                                                                                                <ChildContent Context="rf">
+                                                                                                    @if (IsFmtEditing(rf) && draftFmt is not null)
+                                                                                                    { // show draftPln inputs
+                                                                                                        <InputSelect @bind-Value="draftFmt.Eta" class="col-md-1" style="width:auto">
+                                                                                                            <option class="jchx" value=0>?etat</option>
+                                                                                                            @foreach (var tob in LsFixes.Where(ut => ut.Gvars == 32 && ut.Itb == 1 && ut.Elea != 0))
+                                                                                                            {
+                                                                                                                <option value=@tob.Elea>@tob.Liba</option>
+                                                                                                            }
+                                                                                                        </InputSelect>
+                                                                                                    }
+                                                                                                    else
+                                                                                                    { // show item as read-only
+                                                                                                        <select @bind="rf.Eta" class="col-md-1" style="width:auto" disabled>
+                                                                                                            <option class="jchx" value=0>?etat</option>
+                                                                                                            @foreach (var tob in LsFixes.Where(ut => ut.Gvars == 32 && ut.Itb == 1 && ut.Elea != 0))
+                                                                                                            {
+                                                                                                                <option value=@tob.Elea>@tob.Liba</option>
+                                                                                                            }
+                                                                                                        </select>
+                                                                                                    }
+                                                                                                </ChildContent>
+                                                                                            </GridColumn>
+                                                                                            <GridColumn TItem="RubfmtDto" HeaderText="Actions" Class="xcol2 actions-col">
+                                                                                                <HeaderContent>
+                                                                                                    <button class="btn btn-primary btn-sm @(IsLevelBusy(EntityLevel.Fmt) ? "disabled-action" : "")"
+                                                                                                            disabled="@IsLevelBusy(EntityLevel.Fmt)"
+                                                                                                            @onclick="() => StartFmtNew(selectedRub)">
+                                                                                                        <span style="display:inline-flex; align-items:center; gap:4px;">
+                                                                                                            <span>➕</span>
+                                                                                                            <span>Add</span>
+                                                                                                        </span>
+                                                                                                    </button>
+                                                                                                </HeaderContent>
+                                                                                                <ChildContent Context="rf">
+                                                                                                    @switch (GetRowState(EntityLevel.Fmt, rf.Rowguid))
+                                                                                                    {
+                                                                                                        case RowState.Locked:
+                                                                                                            <span class="text-muted">—</span>
+                                                                                                            break;
+
+                                                                                                        case RowState.AddPending:
+                                                                                                            <Button Color="ButtonColor.Success" Size="ButtonSize.Small"
+                                                                                                                    @onclick="() => ConfirmAdd(EntityLevel.Fmt, draftFmt, true)">
+                                                                                                                ✅ Confirm
+                                                                                                            </Button>
+                                                                                                            <Button Color="ButtonColor.Success" Size="ButtonSize.Small"
+                                                                                                                    @onclick="() => StartCancelAdd(EntityLevel.Fmt, draftFmt)">
+                                                                                                                ❌ Cancel
+                                                                                                            </Button>
+                                                                                                            break;
+                                                                                                        case RowState.EditPending:
+                                                                                                            <Button Color="ButtonColor.Success" Size="ButtonSize.Small"
+                                                                                                                    @onclick="() => ConfirmEdit(EntityLevel.Fmt, draftFmt, true)">
+                                                                                                                ✅ Confirm
+                                                                                                            </Button>
+                                                                                                            <Button Color="ButtonColor.Secondary" Size="ButtonSize.Small"
+                                                                                                                    @onclick="() => CancelEdit(EntityLevel.Fmt, rf)">
+                                                                                                                ❌ Cancel
+                                                                                                            </Button>
+                                                                                                            break;
+                                                                                                        case RowState.DeletePending:
+                                                                                                            <Button Color="ButtonColor.Danger" Size="ButtonSize.Small"
+                                                                                                                    @onclick="() => ConfirmDelete(EntityLevel.Fmt, rf, true)">
+                                                                                                                ⚠️ Confirm
+                                                                                                            </Button>
+                                                                                                            <Button Color="ButtonColor.Secondary" Size="ButtonSize.Small"
+                                                                                                                    @onclick="() => CancelDelete(EntityLevel.Fmt, rf)">
+                                                                                                                ❎ Cancel
+                                                                                                            </Button>
+                                                                                                            break;
+                                                                                                        default:
+                                                                                                            <Button Color="ButtonColor.Warning" Size="ButtonSize.Small"
+                                                                                                                    @onclick="() => StartFmtEdit(rf)">
+                                                                                                                ✏️ Edit
+                                                                                                            </Button>
+                                                                                                            <Button Color="ButtonColor.Danger" Size="ButtonSize.Small"
+                                                                                                                    @onclick="() => StartRowDelete(EntityLevel.Fmt, rf.Rowguid)">
+                                                                                                                🗑 Delete
+                                                                                                            </Button>
+                                                                                                            break;
+                                                                                                    }
+                                                                                                </ChildContent>
+                                                                                            </GridColumn>
+                                                                                        </GridColumns>
+                                                                                    </Grid>
+                                                                                </div>
+                                                                            }
+                                                                        </GridDetailView>
+                                                                    </Grid>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    }
+                                                </GridDetailView>
+                                            </Grid>
                             }
                         </div>
                     </EditForm>  
@@ -883,6 +888,25 @@ else
                 </BodyTemplate>
                 <FooterTemplate>
                     <Button Color="ButtonColor.Secondary" @onclick="() => gForuModal.HideAsync()">Cancel</Button>
+                </FooterTemplate>
+            </Modal>
+            <!-- Modal for VARIABLES GROUP -->
+            <Modal @ref="gVariaModal" Size="ModalSize.Large" Title="Variables Groups">
+                <BodyTemplate>
+                    <PrubGpe @ref="myrgpe"
+                            gIdorg="@gIdorg"
+                            curPlan="@curPlan"
+                            ensRubs="@ensRubs"
+                            _guard="@_guard"
+                            toChild="@toChild"
+                            _InODaClient="@_InODaClient">
+                        <ChildContent>
+                                @* <h2 class="child-box">Hello TABLES</h2> *@
+                        </ChildContent>
+                    </PrubGpe>
+                </BodyTemplate>
+                <FooterTemplate>
+                    <Button Color="ButtonColor.Secondary" @onclick="() => gVariaModal.HideAsync()">Fermer</Button>
                 </FooterTemplate>
             </Modal>
         </Authorized>
@@ -1055,7 +1079,8 @@ else
     public EventCallback<int> NbChangesChanged { get; set; }  // 🔥 CRITICAL
 
     private IDisposable? _locationHandler;
-
+    public PrubGpe myrgpe;
+    public int gIdorg = 0;
     //author
     private ClaimsPrincipal authUser;
     private bool isAuthenticated = true;
@@ -1123,6 +1148,7 @@ else
     private PlngenDto curPlan = new();
     private RubvarDto curRubr = new();
     private RubfmtDto curFmat = new();
+    public List<RubvarDto> ensRubs = new();
 
     private bool isRubCodeValid = false; //child blur
     private bool inModM => draftRub?.Ecmode != 1;
@@ -1155,9 +1181,10 @@ else
     Modal pForuModal = new(); //plans
     Modal rForuModal = new(); //rubriques
     Modal gForuModal = new(); //formats
+    Modal gVariaModal = new(); //fgpe variables
     private string patTitle = "", chlTitle = "", gsnTitle = "";
     private string patInitTitle = "", chlInitTitle = "", gsnInitTitle = "";
-    private string pstrFormu = "", rstrFormu = "", fstrFormu = "";
+    private string pstrFormu = "", rstrFormu = "", fstrFormu = "", rstrVaria = "";
     protected async Task TestConfirm()
     {
         Imessage = "TestConfirm reached";
@@ -1178,7 +1205,8 @@ else
             }
             if (toChild == null || curOrga == null)
             {
-                Console.WriteLine("Missing parent data");
+                Imessage = "MISSING parent data";
+                //Console.WriteLine("Missing parent data");
                 return;
             }
             LsVars = toChild.LsVars;
@@ -1210,9 +1238,10 @@ else
         }
         finally
         {
-            isLoading = false;
+            //isLoading = false;
             StateHasChanged();
         }
+        isLoading = false;
     }
     // and call this in OnParametersSet
     protected override void OnParametersSet()
@@ -1241,12 +1270,21 @@ else
             CanOpenMGrid = false;
         }
     }
+    private async Task IsPlanTabActive(PlngenDto mypln)
+    {
+        //StateHasChanged();
+    }
+    private async Task IsGroupTabActive()
+    {
+        //StateHasChanged();
+    }
+
     private async Task OnPlnRowClick(GridRowEventArgs<PlngenDto> args)
     {
         Console.WriteLine($"OnPlnRowClick Triggered : {args.Item.Id}");
         curPlan = args.Item;
 
-        if (curPlan == null || curPlan.Id == 0)
+        if (curPlan == null)
         {
             return;
         }
@@ -1263,7 +1301,7 @@ else
         Console.WriteLine($"OnRubRowClick Triggered : {args.Item.Id}");
         curRubr = args.Item;
 
-        if (curRubr == null || curRubr.Id == 0)
+        if (curRubr == null)
         {
             Console.WriteLine("OnRubRowClick: invalid selection");
             return;
@@ -1282,7 +1320,7 @@ else
     {
         Console.WriteLine($"OnFmtRowClick Triggered : {args.Item.Id}");
         curFmat = args.Item; //get gRubsMap
-        if (curFmat == null || curFmat.Id == 0)
+        if (curFmat == null)
         {
             return;
         }
@@ -1294,7 +1332,7 @@ else
     public async Task StartPlnNew()
     {
         Console.WriteLine($"MyDaPlans count at render: {MyDaPlans.Count}, guids: {string.Join(",", MyDaPlans.Select(p => p.Rowguid))}");
-        if (IsAnyRowEditing)
+        if (curOrga == null)
         {
             Imessage = "prog cannot be added when any row is editing";
             return;
@@ -1322,7 +1360,6 @@ else
             Xadd1 = -1,
             Xedt1 = 0
         };
-        //orgPlns.Insert(0, newRub);
         //prise order
         orgPlns?.Add(newPln);
         draftPln = DeepClone(newPln);
@@ -1335,14 +1372,14 @@ else
     }
     public async Task StartRubNew(PlngenDto mypln)
     {
-        if (mypln.Id <= 0)
-        {
-            Imessage = "🚫 Cannot add Rubrique: Plan must be saved first.";
-            await InvokeAsync(StateHasChanged);
-            return;
-        }
+        // if (mypln.Id <= 0)
+        // {
+        //     Imessage = "🚫 Cannot add Rubrique: Plan must be saved first.";
+        //     await InvokeAsync(StateHasChanged);
+        //     return;
+        // }
 
-        if (IsAnyRowEditing)
+        if (mypln == null)
         {
             Imessage = "rub cannot be added when any row is editing";
             await InvokeAsync(StateHasChanged);
@@ -1400,14 +1437,14 @@ else
     }
     public async Task StartFmtNew(RubvarDto myrub)
     {
-        if (myrub.Id <= 0)
-        {
-            Imessage = "🚫 Cannot add Format: Rubrique must be saved first.";
-            await InvokeAsync(StateHasChanged);
-            return;
-        }
+        // if (myrub.Id <= 0)
+        // {
+        //     Imessage = "🚫 Cannot add Format: Rubrique must be saved first.";
+        //     await InvokeAsync(StateHasChanged);
+        //     return;
+        // }
 
-        if (IsAnyRowEditing)
+        if (myrub == null)
         {
             Imessage = "fmt cannot be added when any row is editing";
             await InvokeAsync(StateHasChanged);
@@ -1551,21 +1588,35 @@ else
     }
     private void InitializeMyDaRubs()
     {
-        RubItems = curPlan.Rubvars.ToList()
+        curRubr = new();
+        if (curPlan != null)
+        {
+            RubItems = curPlan.Rubvars.ToList()
             ?? new List<RubvarDto>();
-        if (RubItems.Any()) curRubr = RubItems.FirstOrDefault();
+            curRubr = RubItems.FirstOrDefault();
+        }
+        else
+        {
+            RubItems = new List<RubvarDto>();
+        }
     }
     private void InitializeMyDaFmts()
     {
+        //curFmat = new();
         if (curRubr != null)
         {
             FmtItems = curRubr.Rubfmts.ToList()
             ?? new List<RubfmtDto>();
+            //curFmt = FmtItems.FirstOrDefault();
+        }
+        else
+        {
+            FmtItems = new List<RubfmtDto>();
         }
     }
     private Task UpdateMyDaPlans()
     {
-        PlanItems = orgPlns.ToList();
+        //PlanItems = orgPlns.ToList();
         PlanItems = orgPlns
             .Where(pl => pl.Ptyp == IMyGpln && pl.Todom == IMyDom && pl.Toatr == 0 && pl.Tovue == IMyVue)
             .ToList(); // ?? new List<PlngenDto>();
@@ -1631,6 +1682,24 @@ else
         {
             gForuModal.BodyCssClass = (orig == 1) ? "editable" : "readonly";
             gForuModal.ShowAsync();
+        }
+    }
+    //VGP set modals
+    void StartGpeSetup(PlngenDto mypln,int orig)
+    {
+        rstrVaria = "";
+        ensRubs = new();
+        if (mypln != null)
+        {
+            rstrVaria = mypln.Liba.Substring(0, 8);
+            curPlan = mypln;
+            gIdorg = mypln.Idorg;
+            ensRubs = mypln.Rubvars;
+        }
+        if (gVariaModal != null)
+        {
+            gVariaModal.BodyCssClass = (orig == 1) ? "editable" : "readonly";
+            gVariaModal.ShowAsync();
         }
     }
     private void showPgLink()

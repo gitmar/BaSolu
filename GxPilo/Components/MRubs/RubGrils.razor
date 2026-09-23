@@ -241,7 +241,7 @@ else
                                                 <div class="row">
                                                     <div class="col-12">
                                                         <Grid TItem="RubvarDto"
-                                                              Data="MyDaRubs"
+                                                              Data="selectedPln.Rubvars.ToList()"
                                                               @key="GetRenderKey(EntityLevel.Rub)"
                                                               AllowRowClick="true"
                                                               OnRowClick="OnRubRowClick"
@@ -826,16 +826,17 @@ else
         Console.WriteLine($"OnPlnRowClick Triggered : {args.Item.Id}");
         curPlan = args.Item;
 
-        if (curPlan == null || curPlan.Id == 0)
-        {
-            return;
-        }
+        //if (curPlan == null || curPlan.Id == 0)
+        //{ 
+        //    return Task.CompletedTask;
+        //}
 
         await UpdateMyDaRubs();   // now properly awaited
-        RubRenderKey = Guid.NewGuid();
+        //RubRenderKey = Guid.NewGuid();
 
         Console.WriteLine($"Id {curPlan.Id} nb rubs : {curPlan.Rubvars}");
         StateHasChanged();
+        //return Task.CompletedTask;
     }
 
     private async Task OnRubRowClick(GridRowEventArgs<RubvarDto> args)
@@ -843,7 +844,7 @@ else
         Console.WriteLine($"OnRubRowClick Triggered : {args.Item.Id}");
         curRubr = args.Item;
 
-        if (curRubr == null || curRubr.Id == 0)
+        if (curRubr == null)
         {
             Console.WriteLine("OnRubRowClick: invalid selection");
             return;
@@ -899,7 +900,7 @@ else
     // }
     public async Task StartPlnNew()
     {
-        if (IsAnyRowEditing)
+        if (curOrga == null)
         {
             Imessage = "prog cannot be added when any row is editing";
             return;
@@ -940,14 +941,14 @@ else
     }
     public async Task StartRubNew(PlngenDto mypln)
     {
-        if (mypln.Id <= 0)
-        {
-            Imessage = "🚫 Cannot add Rubrique: Plan must be saved first.";
-            await InvokeAsync(StateHasChanged);
-            return;
-        }
+        // if (mypln == null)
+        // {
+        //     Imessage = "🚫 Cannot add Rubrique: Plan must be saved first.";
+        //     await InvokeAsync(StateHasChanged);
+        //     return;
+        // }
 
-        if (IsAnyRowEditing)
+        if (mypln == null)
         {
             Imessage = "rub cannot be added when any row is editing";
             await InvokeAsync(StateHasChanged);
@@ -999,19 +1000,19 @@ else
     }
     public async Task StartFmtNew(RubvarDto myrub)
     {
-        if (myrub.Id <= 0)
+        if (myrub == null)
         {
             Imessage = "🚫 Cannot add Format: Rubrique must be saved first.";
             await InvokeAsync(StateHasChanged);
             return;
         }
 
-        if (IsAnyRowEditing)
-        {
-            Imessage = "fmt cannot be added when any row is editing";
-            await InvokeAsync(StateHasChanged);
-            return;
-        }
+        // if (IsAnyRowEditing)
+        // {
+        //     Imessage = "fmt cannot be added when any row is editing";
+        //     await InvokeAsync(StateHasChanged);
+        //     return;
+        // }
 
         var lsnb = NextSeq(MyDaFmts, p => p.Iui);
         var newFmt = new RubfmtDto
@@ -1165,7 +1166,11 @@ else
     }
     private Task UpdateMyDaRubs()
     {
-        RubItems = curPlan?.Rubvars?.ToList() ?? new List<RubvarDto>();
+        RubItems = new();
+        if (curPlan != null)
+        {
+            RubItems = curPlan?.Rubvars?.ToList() ?? new List<RubvarDto>();
+        }
         return Task.CompletedTask;
     }
     private Task UpdateMyDaFmts()

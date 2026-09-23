@@ -39,6 +39,8 @@ namespace GxPilo.Components.Uifrags
         protected List<ResdonDto> ResItems = new();
         protected List<ResdetDto> RdtItems = new();
         protected List<ResbroDto> BroItems = new();
+        protected List<GstablDto> GtbItems = new();
+        protected List<GstablDto> Gt2Items = new();
         protected object? _draftPlan { get; set; }
         protected object? _draftRub { get; set; }
         protected object? _draftFmt { get; set; }
@@ -50,8 +52,8 @@ namespace GxPilo.Components.Uifrags
         protected object? _draftRes { get; set; }
         protected object? _draftRdt { get; set; }
         protected object? _draftBro { get; set; }
-        //protected object? _draftGtb { get; set; }
-
+        protected object? _draftGtb { get; set; }
+        protected object? _draftGt2 { get; set; }
         protected MultiLevelCrudBase(IPendingChangesGuard guard)
         {
             Guard = guard;
@@ -124,6 +126,8 @@ namespace GxPilo.Components.Uifrags
                 EntityLevel.Res => "Resdons",
                 EntityLevel.Rdt => "Resdets",
                 EntityLevel.Bro => "Resbros",
+                EntityLevel.Gtb => "Gstabls",
+                EntityLevel.Gt2 => "Gstabls",
                 _ => throw new ArgumentOutOfRangeException(nameof(level), level, null)
             };
         }
@@ -163,6 +167,12 @@ namespace GxPilo.Components.Uifrags
                     break;
                 case EntityLevel.Bro:
                     BroItems.RemoveAll(x => x.Rowguid == rowguid);
+                    break;
+                case EntityLevel.Gtb:
+                    GtbItems.RemoveAll(x => x.Rowguid == rowguid);
+                    break;
+                case EntityLevel.Gt2:
+                    Gt2Items.RemoveAll(x => x.Rowguid == rowguid);
                     break;
                 default:
                     throw new ArgumentOutOfRangeException(nameof(level));
@@ -245,8 +255,8 @@ namespace GxPilo.Components.Uifrags
         protected string GetResRowClass(ResdonDto res) => GetRowCssFor(EntityLevel.Res, res.Rowguid);
         protected string GetRdtRowClass(ResdetDto rdt) => GetRowCssFor(EntityLevel.Rdt, rdt.Rowguid);
         protected string GetBroRowClass(ResbroDto bro) => GetRowCssFor(EntityLevel.Bro, bro.Rowguid);
-        protected string GetFixRowClass(GstablDto fix) => GetRowCssFor(EntityLevel.Plan, fix.Rowguid);
-        protected string GetChlRowClass(GstablDto chl) => GetRowCssFor(EntityLevel.Plan, chl.Rowguid);
+        protected string GetGtbRowClass(GstablDto gtb) => GetRowCssFor(EntityLevel.Gtb, gtb.Rowguid);
+        protected string GetGt2RowClass(GstablDto gt2) => GetRowCssFor(EntityLevel.Gt2, gt2.Rowguid);
         
         protected RowState GetRowState(EntityLevel level, Guid rowguid)
         {

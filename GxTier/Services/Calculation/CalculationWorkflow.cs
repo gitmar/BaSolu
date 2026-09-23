@@ -8,7 +8,7 @@ namespace GxTie.Services.Calculation
 {
     public interface ICalculationWorkflow
     {
-        Task<SaieSession> CreateSaieSessionAsync(PlngenDto program, TierspDto tier, List<Gtabl> ensTbls);
+        Task<SaieSession> CreateSaieSessionAsync(PlngenDto program, TierspDto tier, List<Gtabl> ensTbls, List<Gpgrid> ensGpdata);
         Task<SaieSession> CalculateSaieAsync(CalcContext ctx, SaieSession session);
         Task<SaieSession> CalculateAndSaveSaieAsync(
             CalcContext ctx, SaieSession session, PendingSaveMode inSaveMode);
@@ -32,7 +32,7 @@ namespace GxTie.Services.Calculation
         }
 
         public Task<SaieSession> CreateSaieSessionAsync(
-            PlngenDto program, TierspDto tier, List<Gtabl> ensTbls)
+            PlngenDto program, TierspDto tier, List<Gtabl> ensTbls, List<Gpgrid> ensGpdata)
             => _saieCalculator.InitializeAsync(program, tier, ensTbls);
 
         public Task<SaieSession> CalculateSaieAsync(CalcContext ctx, SaieSession session)

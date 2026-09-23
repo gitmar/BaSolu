@@ -62,6 +62,8 @@
                         <InputText @bind-Value="strExo" disabled />
                         <label>Session:</label>
                         <InputText @bind-Value="strSes" disabled />
+                        <label>/</label>
+                        <InputDate @bind-Value="SessionDate" /> @*bind-Value:after="OnDayDateChanged" /> *@
                     </div>
                 </div>
                 <div class="row mb-2">
@@ -88,7 +90,6 @@
                                 }
                             </InputSelect>
                         </div>
-
                     </div>
                     @if (!string.IsNullOrEmpty(Imessage))
                     {
@@ -114,7 +115,7 @@
                 <!-- Main Content //a integer froMenu -->
                 @if (_chxMenu != 0 && curOrga != null && toChild != null)
                 {
-                    @if (_chxMenu == 1)
+                    @if (_chxMenu == 1 && CanOpenCalcpart)
                     {
                         <Calcpart @ref="myfcalc"
                                   CurOrga="@curOrga"
@@ -125,9 +126,12 @@
                                   ChxGpe="@Ugpe"
                                   _guard="_guard"
                                   PreTiers="@PreTiers"
-                                  SessOpen="@SessOpen"
+                                  InsGpdata="_inGldata"
+                                  SessOpen="@CanOpenCalcpart"
+                                  _sessionDate="@SessionDate"
+                                  DayDate="@DayDate"
                                   _MyODaClient="@_MyODaClient">
-                            <ChildContent>
+                             <ChildContent>
 
                             </ChildContent>
                         </Calcpart>
@@ -228,6 +232,7 @@
     public List<Gpfixe> LsGties = new();
     public List<Grole> _invRoles = new();
     public List<Gpvar> EnsSess = new();
+    public List<Gpgrid> _inGldata = new();
     //public List<Gpvar> TbElems = new List<Gpvar>();
     //public List<Clvar> LsCols = new List<Clvar>();
     //public List<Rubhie> LsDivs = new List<Rubhie>();
@@ -238,6 +243,9 @@
     //private SaieSession? CurrentSaieSession;
     //private CalcSession? CurrentCalcSession;
     //private CalcContext? CurrentCalcContext;
+    // ASSUMPTION: session date defaults to today; user can change it via the date picker above.
+    public DateTime SessionDate = DateTime.Today;
+    public DateTime DayDate = DateTime.Today;
     //Navigation
     private int _chxGpe = 0, _chxMenu = 1;
     private string strComp = "Calculs";
@@ -248,8 +256,13 @@
     //Conditional management
     private bool isLoading = true;
     private bool isAuthenticated = false;
-    private bool _isInitialized;
-    public bool SessOpen => Ugpe != 0 && ImyProg != 0 && ImyDiv != 0; //toChild.inExo != null && toChild.inSes != null;
+    //public bool SessOpen => Ugpe != 0 && ImyProg != 0 && ImyDiv != 0; //toChild.inExo != null && toChild.inSes != null;
+    private bool CanOpenCalcpart =>
+        PreTiers is not null &&
+        PreTiers.Count > 0 &&
+        Ugpe != 0 &&
+        ImyProg != 0 &&
+        ImyDiv != 0;
     private bool FirstLoadCompleted = false;
     private bool ContentLoaded = false;
 
@@ -275,7 +288,7 @@
         set
         {
             _imyDiv = value;
-            trierTiers(); // your existing method, adjust if it needs the selected Id
+            //trierTiers(); // your existing method, adjust if it needs the selected Id
         }
     }
 
@@ -320,10 +333,6 @@
 
     protected override async Task OnInitializedAsync()
     {
-        if (_isInitialized)
-            return;
-
-        _isInitialized = true;
         isLoading = true;
 
         try
@@ -355,7 +364,6 @@
             LsTabls = LsVars.Where(tb => tb.Gvars == 5).ToList();
 
             Console.WriteLine($"Programmes en cours : {LsProgs.Count}");
-
             int xdom = 6;
             LsGties = LsFixes
                 .Where(ut => ut.Gvars == 36 && ut.Itb == xdom && ut.Elea != 0 && ut.Elea != 9)
@@ -396,17 +404,17 @@
             var lsSes = await _rendAgres.LoadOrgaSessios();
             curSes = lsSes?.FirstOrDefault(su => su.Eta == 1 && su.Igpe == 3);
 
-            if (curSes?.Ddat == null)
+            if (curSes == null)
             {
-                Console.WriteLine("No active session or Ddat is null");
+                Console.WriteLine("No active session or Dsess is null");
                 return;
             }
-
+            SessionDate = curSes?.Dsess ?? DateTime.Now;
             strSes = curSes.Liba;
             if (toChild != null)
                 toChild.inSes = curSes;
 
-            await LoadCalcOrgaAsync(_usrBag.Idorg, curSes.Ddat.Value.Year, curSes.Ddat.Value.Month);
+            await LoadCalcOrgaAsync(_usrBag.Idorg, curSes.Dsess.Year, curSes.Dsess.Month);
         }
         catch (Exception ex)
         {
@@ -482,15 +490,6 @@
     {
         _guard.ConfigureSaveMode(PendingSaveMode.Deferred);
     }
-    // // private ProgramTemplate BuildProgramTemplate(PlngenDto program)
-    // // {
-    // //     return new ProgramTemplate
-    // //     {
-    // //         Lines = ParseProgramLines(program.Fpsrc)
-    // //     };
-    // // }
-
-
     private void OnGpeChanged(EventArgs args)
     {
         Console.WriteLine($"gpe changed : {EnsTiers.Count}");
@@ -514,58 +513,6 @@
         }
         Console.WriteLine($"ens Tiers : {EnsTiers.Count}");
     }
-    // private async Task SelMenu(int noM)
-    // {
-    //     chxMenu = noM;
-    //     if (_chxMenu == 1) strComp = "Calculs";
-    //     if (_chxMenu == 2) strComp = "Validations";
-    //     allEnable = false;
-    //     StateHasChanged();
-    //     await Task.Delay(800);
-    // }
-    // private void GetSelectedProg(Gplan bropln)
-    // {
-    //     Console.WriteLine($"ICI PROGRAMMES : {EnsProgs.Count()}");
-    //     if (EnsProgs.Any())
-    //     {
-    //         foreach (var upl in EnsProgs)
-    //         {
-    //             Console.WriteLine($"1 plan : {upl.Idpln}");
-    //         }
-    //         Console.WriteLine($"compare plan : {bropln.Idpln}");
-    //         curProg = EnsProgs.Where(pl => pl.Id == bropln.Id).FirstOrDefault();
-    //         if (curProg != null)
-    //         {
-    //             Console.WriteLine($"ICI prog Id : {curProg.Idorg}");
-    //             EnsRubrs = curProg.Rubvars.ToList();
-
-    //         }
-    //         else
-    //         {
-    //             Console.WriteLine("ICI prog Id (nul)");
-    //         }
-    //     }
-
-    //     //if (_curpln != null
-    //     //{
-    //     //    //_lsRubs = _lsRubs.Where(ur => ur.Idpln == ipln).ToList();
-    //     //}
-    //     Console.WriteLine($"ICI RUBRIQUES : {curProg.Rubvars.Count()}");
-    //     //return _curProg;
-    // }
-    // void GetSelectedExos(string myexo)
-    // {
-    //     toChild.MainOptsOk = false;
-
-    //     toChild.curExo = myexo;
-    //     if (Ugpe != 0 && froMenu.Uexo != 0 && froMenu.Usesio != 0)
-    //     {
-    //         toChild.MainOptsOk = true;
-    //         toChild.curExo = myexo;
-    //         StateHasChanged();
-    //     }
-    // }
-
     void GetSelectedSesio(string mysesio)
     {
         toChild.MainOptsOk = false;
@@ -586,7 +533,10 @@
         curProg = curOrga.Plngens.Where(pl => pl.Id == bropln.Id).FirstOrDefault();
         if (curProg != null)
         {
-            //Console.WriteLine($"ICI prog Id : {curProg.Idorg}");
+            int igril = curProg.Plsgri ?? 0;
+                _inGldata = igril != 0
+                ? await _rendAgres.LoadOrgaGdata(igril)
+                : new List<Gpgrid>();
             toChild.curProg = curProg;
             EnsRubrs = curProg.Rubvars.ToList();
             //_rubvarResolver = new RubvarResolver(curProg.Rubvars.ToList());
@@ -659,6 +609,14 @@
         Console.WriteLine("PAS 2");
         await Task.Delay(1);
     }
+    //private void OnDayDateChanged()
+    //{
+        // Session date changed after a tier is already loaded — rebuild the context
+        // so subsequent Calculate/Save use the new date. Does NOT reload existing
+        // inputs; if that's desired, call OnLoadResetAsync() here instead.
+        //if (_curTier is not null)
+        //    BindLocalStateFromSession(Session);
+    //}
     void NavigateBack()
     {
         _navmanager.NavigateTo("/");

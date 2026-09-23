@@ -27,6 +27,8 @@ namespace GxPilo.Components.Uifrags
         protected readonly Dictionary<Guid, ResdonDto> _edResOriginals = new();
         protected readonly Dictionary<Guid, ResdetDto> _edRdtOriginals = new();
         protected readonly Dictionary<Guid, ResbroDto> _edBroOriginals = new();
+        protected readonly Dictionary<Guid, GstablDto> _edGtbOriginals = new();
+        protected readonly Dictionary<Guid, GstablDto> _edGt2Originals = new();
         protected CompUICrudBase(IPendingChangesGuard guard) : base(guard)
         {
 
@@ -51,13 +53,26 @@ namespace GxPilo.Components.Uifrags
             EndRowEdit(level); //
             BumpRenderKey(level);                 // <-- add this
             await InvokeAsync(StateHasChanged);
-        }   
-        protected override async Task ConfirmDelete(EntityLevel level, object entity, bool isConfirm)
+        }
+        //protected override async Task ConfirmDelete(EntityLevel level, object entity, bool isConfirm)
+        //{
+        //    var rowguid = MLEntityKeyHelper.GetRowguidAsGuid(entity);
+        //    await UnifiedDeleteAction(level, entity, isConfirm);
+        //    ClearAddRow(level, rowguid);
+        //    BumpRenderKey(level);                 // <-- add this
+        //    await InvokeAsync(StateHasChanged);
+        //}
+        protected override async Task ConfirmDelete(
+    EntityLevel level,
+    object entity,
+    bool isConfirm)
         {
-            var rowguid = MLEntityKeyHelper.GetRowguidAsGuid(entity);
+            if (entity is null)
+                return;
+
             await UnifiedDeleteAction(level, entity, isConfirm);
-            ClearAddRow(level, rowguid);
-            BumpRenderKey(level);                 // <-- add this
+
+            BumpRenderKey(level);
             await InvokeAsync(StateHasChanged);
         }
         protected override async Task CancelAdd(EntityLevel level, object entity)
@@ -81,14 +96,33 @@ namespace GxPilo.Components.Uifrags
             BumpRenderKey(level);                 // <-- add this
             await InvokeAsync(StateHasChanged);
         }
-        protected override async Task CancelDelete(EntityLevel level, object entity)
-        {
-            var rowguid = MLEntityKeyHelper.GetRowguidAsGuid(entity);
-            await UnifiedCancelAction(level, entity, PendingOpType.Delete);
-            BumpRenderKey(level);                 // <-- add this
-            await InvokeAsync(StateHasChanged);
-        }
+        //protected override async Task CancelDelete(EntityLevel level, object entity)
+        //{
+        //    var rowguid = MLEntityKeyHelper.GetRowguidAsGuid(entity);
+        //    await UnifiedCancelAction(level, entity, PendingOpType.Delete);
+        //    BumpRenderKey(level);                 // <-- add this
+        //    await InvokeAsync(StateHasChanged);
+        //}
+//        object entity)
+//{
+//    if (entity is null)
+//        return;
 
+//    var rowguid = EntityKeyHelper.GetRowguid(entity);
+
+//        SetRowState(level, rowguid, RowState.Default);
+
+//        BumpRenderKey(level);
+//        await InvokeAsync(StateHasChanged);
+//}
+
+        //protected void ClearDeleteUiState(
+        //    EntityLevel level,
+        //Guid rowguid)
+        //{
+        //    _rowStates.Remove((level, rowguid));
+        //    _rowPendingOpTypeByRow.Remove(rowguid);
+        //}
         // --- Unified actions (generic) ---
         protected async Task UnifiedAddAction(EntityLevel level, object entity, PendingOpType opType, bool isConfirm)
         {
@@ -151,24 +185,78 @@ namespace GxPilo.Components.Uifrags
 
             FinalizeConfirmedState(level, entity, $"✅ {entitySetName} tracked");
         }
-        protected async Task UnifiedDeleteAction(EntityLevel level, object entity, PendingOpType opType, bool isConfirm)
+        //protected async Task UnifiedDeleteAction(EntityLevel level, object entity, PendingOpType opType, bool isConfirm)
+        //{
+        //    var rowguid = EntityKeyHelper.GetRowguid(entity);
+        //    string entitySetName = GetEntitySetName(level);
+        //    if (!isConfirm)
+        //    {
+        //        SetRowState(level, rowguid, RowState.Default);
+        //        return;
+        //    }
+
+        //    var key = EntityKeyHelper.GetKey(entity, level);
+        //    var opId = await Guard.TrackDelete(entitySetName, key, rowguid);
+        //    ////SetPendingOpType(level, rowguid, PendingOpType.Delete);
+        //    SetOpInfo(level, rowguid, new PendingOpInfo(opId, PendingOpType.Delete));
+
+        //    RemoveFromLocalCollection(level, entity);
+
+        //    FinalizeConfirmedState(level, entity, $"✅ {entitySetName} deletion tracked");
+        //}
+    //    protected override async Task ConfirmDelete(
+    //EntityLevel level,
+    //object entity,
+    //bool isConfirm)
+    //    {
+    //        if (entity is null)
+    //            return;
+
+    //        var rowguid = EntityKeyHelper.GetRowguid(entity);
+    //        var entitySetName = GetEntitySetName(level);
+    //        var key = EntityKeyHelper.GetKey(entity, level);
+
+    //        var opId = await Guard.TrackDelete(
+    //            entitySetName,
+    //            key,
+    //            rowguid);
+
+    //        SetOpInfo(
+    //            level,
+    //            rowguid,
+    //            new PendingOpInfo(
+    //                opId,
+    //                PendingOpType.Delete));
+
+    //        RemoveFromLocalCollection(level, entity);
+
+    //        ClearDeleteUiState(level, rowguid);
+
+    //        BumpRenderKey(level);
+    //        await InvokeAsync(StateHasChanged);
+    //    }
+
+        protected override async Task CancelDelete(
+            EntityLevel level,
+            object entity)
         {
-            var rowguid = EntityKeyHelper.GetRowguid(entity);
-            string entitySetName = GetEntitySetName(level);
-            if (!isConfirm)
-            {
-                SetRowState(level, rowguid, RowState.Default);
+            if (entity is null)
                 return;
-            }
 
-            var key = EntityKeyHelper.GetKey(entity, level);
-            var opId = await Guard.TrackDelete(entitySetName, key, rowguid);
-            ////SetPendingOpType(level, rowguid, PendingOpType.Delete);
-            SetOpInfo(level, rowguid, new PendingOpInfo(opId, PendingOpType.Delete));
+            var rowguid = EntityKeyHelper.GetRowguid(entity);
 
-            RemoveFromLocalCollection(level, entity);
+            SetRowState(level, rowguid, RowState.Default);
 
-            FinalizeConfirmedState(level, entity, $"✅ {entitySetName} deletion tracked");
+            BumpRenderKey(level);
+            await InvokeAsync(StateHasChanged);
+        }
+
+        protected void ClearDeleteUiState(
+            EntityLevel level,
+            Guid rowguid)
+        {
+            _rowStates.Remove((level, rowguid));
+            _rowPendingOpTypeByRow.Remove(rowguid);
         }
         protected async Task UnifiedCancelAction(EntityLevel level, object entity, PendingOpType opType)
         {
@@ -198,75 +286,170 @@ namespace GxPilo.Components.Uifrags
                     break;
             }
         }
-        protected async Task UnifiedDeleteAction(EntityLevel level, object item, bool isConfirm)
-        {
-            var rowguid = MLEntityKeyHelper.GetRowguidAsGuid(item);
-            var entitySetName = GetEntitySetName(level);
-            var key = MLEntityKeyHelper.GetKeyAsObject(item);
-            var opId = await Guard.TrackDelete(entitySetName, key, rowguid);
-            ////SetPendingOpType(level, rowguid, PendingOpType.Delete);
-            SetOpInfo(level, rowguid, new PendingOpInfo(opId, PendingOpType.Delete));
-            RemoveByRowguid(level, rowguid);
-            SetDeleteFlags(item);
-            Console.WriteLine($"ROW is removed");
-            await InvokeAsync(StateHasChanged);
-        }
-        //protected void BeginAdd(EntityLevel level, Guid rowguid, object draft)
-        //{
-        //    var s = GetEditState(level);
-        //    s.IsAdd = true;
-        //    s.IsEdit = false;
-        //    s.AddRowguid = rowguid;
-        //    s.EditRowguid = null;
-        //    s.DeleteRowguid = null;
-
-        //    BeginAddRow(level, rowguid, draft);
-        //    SetPendingOpType2(level, rowguid, PendingOpType.Insert);   // <- use the helper, matches GetPendingOpType's key
-        //}
-        // --- shared start-edit entry point ---
-        protected async Task StartRowAdd<TDto>(
+        protected async Task UnifiedDeleteAction(
     EntityLevel level,
-    TDto newItem,
-    List<TDto> list,
-    Action<TDto> setDraftField) where TDto : class
+    object entity,
+    bool isConfirm)
+        {
+            if (entity is null)
+                return;
+
+            var rowguid = MLEntityKeyHelper.GetRowguid(entity);
+
+            if (!isConfirm)
+            {
+                SetRowState(level, rowguid, RowState.Default);
+                return;
+            }
+
+            var entitySetName = GetEntitySetName(level);
+            var key = EntityKeyHelper.GetKey(entity, level);
+
+            var opId = await Guard.TrackDelete(
+                entitySetName,
+                key,
+                rowguid);
+
+            SetOpInfo(
+                level,
+                rowguid,
+                new PendingOpInfo(
+                    opId,
+                    PendingOpType.Delete));
+
+            // The row is removed only after Confirm is clicked.
+            RemoveFromLocalCollection(level, entity);
+
+            // The operation is pending in the guard until FlushAsync().
+            ClearDeleteUiState(level, rowguid);
+        }
+        //    protected async Task StartRowAdd<TDto>(
+        //EntityLevel level,
+        //TDto newItem,
+        //List<TDto> list,
+        //Action<TDto> setDraftField) where TDto : class
+        //    {
+        //        var rowguid = EntityKeyHelper.GetRowguid(newItem);
+        //        if (rowguid == Guid.Empty) return;
+        //        if (IsAnyRowEditing && !IsRowEditing(rowguid)) return;
+
+        //        list.Insert(0, newItem);
+        //        var draft = DeepClone(newItem);
+        //        setDraftField(draft);
+
+        //        BeginAdd(level, rowguid, draft);
+        //        BumpRenderKey(level);                 // <-- add this
+        //        await InvokeAsync(StateHasChanged);
+        //    }
+        //    protected async Task StartRowEdit<TDto>(
+        //        EntityLevel level,
+        //        TDto item,
+        //        Dictionary<Guid, TDto> originalsStore,
+        //        Action<TDto> setDraftField) where TDto : class
+        //    {
+        //        var rowguid = EntityKeyHelper.GetRowguid(item);
+        //        if (rowguid == Guid.Empty) return;
+        //        if (IsAnyRowEditing && !IsRowEditing(rowguid)) return;
+
+        //        originalsStore[rowguid] = DeepClone(item);
+        //        var draft = DeepClone(item);
+        //        setDraftField(draft);
+
+        //        BeginEdit(level, rowguid, draft);
+        //        BumpRenderKey(level);                 // <-- add this
+        //        await InvokeAsync(StateHasChanged);
+        //    }
+        //    //protected async Task StartRowDelete(EntityLevel level, Guid rowguid)
+        //    //{
+        //    //    if (rowguid == Guid.Empty) return;
+        //    //    if (IsAnyRowEditing && !IsRowEditing(rowguid)) return;
+
+        //    //    SetRowState(level, rowguid, RowState.DeletePending);
+        //    //    BumpRenderKey(level);                 // <-- add this
+        //    //    await InvokeAsync(StateHasChanged);
+        //    //}
+        //    protected async Task StartRowDelete(EntityLevel level, Guid rowguid)
+        //    {
+        //        if (rowguid == Guid.Empty)
+        //            return;
+
+        //        // Do not block deletion because another row is already DeletePending.
+        //        // Only prevent deletion of a row that is already pending deletion.
+        //        if (GetRowState(level, rowguid) == RowState.DeletePending)
+        //            return;
+
+        //        SetRowState(level, rowguid, RowState.DeletePending);
+
+        //        BumpRenderKey(level);
+        //        await InvokeAsync(StateHasChanged);
+        //    }
+        protected async Task StartRowAdd<TDto>(
+        EntityLevel level,
+        TDto newItem,
+        List<TDto> list,
+        Action<TDto> setDraftField)
+        where TDto : class
         {
             var rowguid = EntityKeyHelper.GetRowguid(newItem);
-            if (rowguid == Guid.Empty) return;
-            if (IsAnyRowEditing && !IsRowEditing(rowguid)) return;
+
+            if (rowguid == Guid.Empty)
+                return;
+
+            // Only one add/edit draft is allowed.
+            if (IsAnyRowEditing && !IsRowEditing(rowguid))
+                return;
 
             list.Insert(0, newItem);
+
             var draft = DeepClone(newItem);
             setDraftField(draft);
 
             BeginAdd(level, rowguid, draft);
-            BumpRenderKey(level);                 // <-- add this
+
+            BumpRenderKey(level);
             await InvokeAsync(StateHasChanged);
         }
+
         protected async Task StartRowEdit<TDto>(
             EntityLevel level,
             TDto item,
             Dictionary<Guid, TDto> originalsStore,
-            Action<TDto> setDraftField) where TDto : class
+            Action<TDto> setDraftField)
+            where TDto : class
         {
             var rowguid = EntityKeyHelper.GetRowguid(item);
-            if (rowguid == Guid.Empty) return;
-            if (IsAnyRowEditing && !IsRowEditing(rowguid)) return;
+
+            if (rowguid == Guid.Empty)
+                return;
+
+            // Only one add/edit draft is allowed.
+            if (IsAnyRowEditing && !IsRowEditing(rowguid))
+                return;
 
             originalsStore[rowguid] = DeepClone(item);
+
             var draft = DeepClone(item);
             setDraftField(draft);
 
             BeginEdit(level, rowguid, draft);
-            BumpRenderKey(level);                 // <-- add this
+
+            BumpRenderKey(level);
             await InvokeAsync(StateHasChanged);
         }
-        protected async Task StartRowDelete(EntityLevel level, Guid rowguid)
+
+        protected async Task StartRowDelete(
+    EntityLevel level,
+    Guid rowguid)
         {
-            if (rowguid == Guid.Empty) return;
-            if (IsAnyRowEditing && !IsRowEditing(rowguid)) return;
+            if (rowguid == Guid.Empty)
+                return;
+
+            if (GetRowState(level, rowguid) == RowState.DeletePending)
+                return;
 
             SetRowState(level, rowguid, RowState.DeletePending);
-            BumpRenderKey(level);                 // <-- add this
+
+            BumpRenderKey(level);
             await InvokeAsync(StateHasChanged);
         }
         protected void BeginAdd(EntityLevel level, Guid rowguid, object draft)
@@ -286,42 +469,13 @@ namespace GxPilo.Components.Uifrags
             SetPendingOpType(level, rowguid, PendingOpType.Update);
             SetLightBackground(rowguid, true);
         }
-        //    protected async Task StartRowEdit<TDto>(
-        //EntityLevel level,
-        //TDto item,
-        //Dictionary<Guid, TDto> originalsStore,
-        //Action<TDto> setDraftField) where TDto : class
-        //    {
-        //        var rowguid = EntityKeyHelper.GetRowguid(item);
-        //        if (rowguid == Guid.Empty) return;
-        //        if (IsAnyRowEditing && !IsRowEditing(rowguid)) return;
-
-        //        originalsStore[rowguid] = DeepClone(item);
-        //        var draft = DeepClone(item);
-        //        setDraftField(draft);          // assigns to draftFmt/draftPln/etc.
-
-        //        BeginEdit(level, rowguid, draft);   // BeginEdit now owns SetPendingOpType internally
-        //        await InvokeAsync(StateHasChanged);
-        //    }
-        //protected void BeginAdd(EntityLevel level, Guid rowguid, object draft)
-        //{
-        //    var s = GetEditState(level);
-        //    s.IsAdd = true;
-        //    s.IsEdit = false;
-        //    s.AddRowguid = rowguid;
-        //    s.EditRowguid = null;
-        //    s.DeleteRowguid = null;
-
-        //    //SetDraft(level, draft);
-        //    BeginAddRow(level, rowguid, draft);
-        //    //SetRowState(level, rowguid, RowState.AddPending);
-        //    _rowPendingOpTypeByRow[rowguid] = PendingOpType.Insert;
-        //}
         protected bool IsPlanEditing(PlngenDto item) => IsEditing(EntityLevel.Plan, item.Rowguid);
         protected bool IsRubEditing(RubvarDto item) => IsEditing(EntityLevel.Rub, item.Rowguid);
         protected bool IsFmtEditing(RubfmtDto item) => IsEditing(EntityLevel.Fmt, item.Rowguid);
         protected bool IsHieEditing(RubhieDto item) => IsEditing(EntityLevel.Hie, item.Rowguid);
         protected bool IsPstEditing(RubpstDto item) => IsEditing(EntityLevel.Pst, item.Rowguid);
+        protected bool IsGtbEditing(GstablDto item) => IsEditing(EntityLevel.Gtb, item.Rowguid);
+        protected bool IsGt2Editing(GstablDto item) => IsEditing(EntityLevel.Gt2, item.Rowguid);
         protected bool IsEditing(EntityLevel level, Guid rowguid)
         {
             var es = GetEditState(level);
@@ -478,6 +632,12 @@ namespace GxPilo.Components.Uifrags
                 case EntityLevel.Bro:
                     if (entity is ResbroDto bro) BroItems.Add(bro);
                     break;
+                case EntityLevel.Gtb:
+                    if (entity is GstablDto gtb) GtbItems.Add(gtb);
+                    break;
+                case EntityLevel.Gt2:
+                    if (entity is GstablDto gt2) Gt2Items.Add(gt2);
+                    break;
                 default:
                     throw new ArgumentOutOfRangeException(nameof(level));
             }
@@ -530,6 +690,14 @@ namespace GxPilo.Components.Uifrags
                 case EntityLevel.Bro:
                     if (entity is ResbroDto bro)
                         BroItems.RemoveAll(x => x.Rowguid == bro.Rowguid);
+                    break;
+                case EntityLevel.Gtb:
+                    if (entity is GstablDto gtb)
+                        GtbItems.RemoveAll(x => x.Rowguid == gtb.Rowguid);
+                    break;
+                case EntityLevel.Gt2:
+                    if (entity is GstablDto gt2)
+                        Gt2Items.RemoveAll(x => x.Rowguid == gt2.Rowguid);
                     break;
                 default:
                     throw new ArgumentOutOfRangeException(nameof(level));
@@ -617,6 +785,20 @@ namespace GxPilo.Components.Uifrags
                         if (index >= 0) BroItems[index] = bro;
                     }
                     break;
+                case EntityLevel.Gtb:
+                    if (entity is GstablDto gtb)
+                    {
+                        var index = GtbItems.FindIndex(x => x.Rowguid == gtb.Rowguid);
+                        if (index >= 0) GtbItems[index] = gtb;
+                    }
+                    break;
+                case EntityLevel.Gt2:
+                    if (entity is GstablDto gt2)
+                    {
+                        var index = Gt2Items.FindIndex(x => x.Rowguid == gt2.Rowguid);
+                        if (index >= 0) Gt2Items[index] = gt2;
+                    }
+                    break;
                 default:
                     throw new ArgumentOutOfRangeException(nameof(level));
             }
@@ -631,6 +813,7 @@ namespace GxPilo.Components.Uifrags
                     if (entity is PlngenDto plan && _draftPlan is PlngenDto draftPlan)
                     {
                         if (draftPlan == null) return;
+                        plan.Rowguid = draftPlan.Rowguid;
                         plan.Idorg = draftPlan.Idorg; //orga
                         plan.Liba = draftPlan.Liba; //designation
                         plan.Abg = draftPlan.Abg; //abrege
@@ -644,6 +827,7 @@ namespace GxPilo.Components.Uifrags
                     if (entity is RubvarDto rub && _draftRub is RubvarDto draftRub)
                     {
                         if (draftRub == null) return;
+                        rub.Rowguid = draftRub.Rowguid;
                         rub.Idorg = draftRub.Idorg; //orga
                         rub.Ipln = draftRub.Ipln; //parent
                         rub.Liba = draftRub.Liba; //designation
@@ -669,6 +853,7 @@ namespace GxPilo.Components.Uifrags
                     if (entity is RubfmtDto fmt && _draftFmt is RubfmtDto draftFmt)
                     {
                         if (draftFmt == null) return;
+                        fmt.Rowguid = draftFmt.Rowguid;
                         fmt.Idorg = draftFmt.Idorg; //orga
                         fmt.Irub = draftFmt.Irub; //parent
                         fmt.Liba = draftFmt.Liba; //designation
@@ -691,6 +876,7 @@ namespace GxPilo.Components.Uifrags
                     if (entity is TierspDto tie && _draftTie is TierspDto draftTie)
                     {
                         if (draftTie == null) return;
+                        tie.Rowguid = draftTie.Rowguid;
                         tie.Idorg = draftTie.Idorg; //orga
                         tie.Smatri = draftTie.Smatri; //matricule
                         tie.Xmatri = draftTie.Xmatri; //matricule
@@ -705,6 +891,7 @@ namespace GxPilo.Components.Uifrags
                     if (entity is RubhieDto hie && _draftHie is RubhieDto draftHie)
                     {
                         if (draftHie == null) return;
+                        hie.Rowguid = draftHie.Rowguid;
                         hie.Idorg = draftHie.Idorg; //orga
                         hie.Ipln = draftHie.Ipln; //parent
                         hie.Raison = draftHie.Raison; //designation
@@ -727,6 +914,7 @@ namespace GxPilo.Components.Uifrags
                     if (entity is RubpstDto pst && _draftPst is RubpstDto draftPst)
                     {
                         if (draftPst == null) return;
+                        pst.Rowguid = draftPst.Rowguid;
                         pst.Idorg = draftPst.Idorg; //orga
                         pst.Ihie = draftPst.Ihie; //parent
                         pst.Padres = draftPst.Padres; //adresse
@@ -748,6 +936,7 @@ namespace GxPilo.Components.Uifrags
                     if (entity is ActsaieDto act && _draftAct is ActsaieDto draftAct)
                     {
                         if (draftAct == null) return;
+                        act.Rowguid = draftAct.Rowguid;
                         act.Idorg = draftAct.Idorg; //orga
                         act.Itie = draftAct.Itie; //parent
                         act.Scdrub = draftAct.Scdrub; //code
@@ -767,6 +956,7 @@ namespace GxPilo.Components.Uifrags
                     if (entity is ActdetDto adt && _draftAdt is ActdetDto draftAdt)
                     {
                         if (draftAdt == null) return;
+                        adt.Rowguid = draftAdt.Rowguid;
                         adt.Idorg = draftAdt.Idorg; //orga
                         adt.Iact = draftAdt.Iact; //parent
                         adt.Liba = draftAdt.Liba; //designation
@@ -784,6 +974,7 @@ namespace GxPilo.Components.Uifrags
                     if (entity is ResdonDto res && _draftRes is ResdonDto draftRes)
                     {
                         if (draftRes == null) return;
+                        res.Rowguid = draftRes.Rowguid;
                         res.Idorg = draftRes.Idorg; //orga
                         res.Itie = draftRes.Itie; //parent
                         res.Iact = draftRes.Iact; //parent2
@@ -804,6 +995,7 @@ namespace GxPilo.Components.Uifrags
                     if (entity is ResdetDto rdt && _draftRdt is ResdetDto draftRdt)
                     {
                         if (draftRdt == null) return;
+                        rdt.Rowguid = draftRdt.Rowguid;
                         rdt.Idorg = draftRdt.Idorg; //orga
                         rdt.Ires = draftRdt.Ires; //parent
                         //rdt.Liba = draftRdt.Liba; //designation
@@ -820,6 +1012,7 @@ namespace GxPilo.Components.Uifrags
                     if (entity is ResbroDto bro && _draftBro is ResbroDto draftBro)
                     {
                         if (draftBro == null) return;
+                        bro.Rowguid = draftBro.Rowguid;
                         bro.Idorg = draftBro.Idorg; //orga
                         bro.Itie = draftBro.Itie; //parent
                         bro.Iact = draftBro.Iact; //parent2
@@ -831,8 +1024,50 @@ namespace GxPilo.Components.Uifrags
                         //bro.Ecmount = draftBro.Ecmount;
                         //bro.Ecannu = draftBro.Ecannu;
                         //bro.Nbech = draftBro.Nbech;
-                        bro.Iele = draftBro.Iele; //compteur
+                        //bro.Iele = draftBro.Iele; //compteur
                         bro.Eta = draftBro.Eta; //etat
+                    }
+                    break;
+                case EntityLevel.Gtb:
+                    if (entity is GstablDto gtb && _draftGtb is GstablDto draftGtb)
+                    {
+                        if (draftGtb == null) return;
+                        gtb.Rowguid = draftGtb.Rowguid;
+                        gtb.Idorg = draftGtb.Idorg; //pere Id
+                        gtb.Gtyp = draftGtb.Gtyp; //2optionnel1integre
+                        gtb.Ktyp = draftGtb.Ktyp; //1tiers2matiere
+                        gtb.Tenr = draftGtb.Tenr; //1base2elemt
+                        gtb.Pid = draftGtb.Pid;
+                        gtb.Tcol = draftGtb.Tcol;
+                        gtb.Ftcol = draftGtb.Ftcol;
+                        gtb.Xdpd = draftGtb.Xdpd;
+                        gtb.Ydpd = draftGtb.Ydpd;
+                        gtb.Jacc = draftGtb.Jacc;
+                        gtb.Jenr = draftGtb.Jenr;
+                        gtb.Liba = draftGtb.Liba; // string.Empty, placeholder
+                        gtb.Abg = draftGtb.Abg; // string.Empty, placeholder
+                        gtb.Eta = draftGtb.Eta;
+                    }
+                    break;
+                case EntityLevel.Gt2:
+                    if (entity is GstablDto gt2 && _draftGtb is GstablDto draftGt2)
+                    {
+                        if (draftGt2 == null) return;
+                        gt2.Rowguid = draftGt2.Rowguid;
+                        gt2.Idorg = draftGt2.Idorg; //pere Id
+                        gt2.Gtyp = draftGt2.Gtyp; //2optionnel1integre
+                        gt2.Ktyp = draftGt2.Ktyp; //1tiers2matiere
+                        gt2.Tenr = draftGt2.Tenr; //1base2elemt
+                        gt2.Pid = draftGt2.Pid;
+                        gt2.Tcol = draftGt2.Tcol;
+                        gt2.Ftcol = draftGt2.Ftcol; //rubriq/groupe
+                        gt2.Xdpd = draftGt2.Xdpd;
+                        gt2.Ydpd = draftGt2.Ydpd;
+                        gt2.Jacc = draftGt2.Jacc;
+                        gt2.Jenr = draftGt2.Jenr;
+                        gt2.Liba = draftGt2.Liba; // string.Empty, placeholder
+                        gt2.Abg = draftGt2.Abg; // string.Empty, placeholder
+                        gt2.Eta = draftGt2.Eta;
                     }
                     break;
                 default:
@@ -944,6 +1179,48 @@ namespace GxPilo.Components.Uifrags
                         pst.Eta = originalPst.Eta; //etat
                     }
                     break;
+                case EntityLevel.Gtb:
+                    if (entity is GstablDto gtb &&
+                        _edGtbOriginals.TryGetValue(gtb.Rowguid, out var originalGtb))
+                    {
+                        gtb.Rowguid = originalGtb.Rowguid;
+                        gtb.Idorg = originalGtb.Idorg; //pere Id
+                        gtb.Gtyp = originalGtb.Gtyp; //2optionnel1integre
+                        gtb.Ktyp = originalGtb.Ktyp; //1tiers2matiere
+                        gtb.Tenr = originalGtb.Tenr; //1base2elemt
+                        gtb.Pid = originalGtb.Pid;
+                        gtb.Tcol = originalGtb.Tcol;
+                        gtb.Ftcol = originalGtb.Ftcol;
+                        gtb.Xdpd = originalGtb.Xdpd;
+                        gtb.Ydpd = originalGtb.Ydpd;
+                        gtb.Jacc = originalGtb.Jacc;
+                        gtb.Jenr = originalGtb.Jenr;
+                        gtb.Liba = originalGtb.Liba; // string.Empty, placeholder
+                        gtb.Abg = originalGtb.Abg; // string.Empty, placeholder
+                        gtb.Eta = originalGtb.Eta;
+                    }
+                    break;
+                case EntityLevel.Gt2:
+                    if (entity is GstablDto gt2 &&
+                        _edGt2Originals.TryGetValue(gt2.Rowguid, out var originalGt2))
+                    {
+                        gt2.Rowguid = originalGt2.Rowguid;
+                        gt2.Idorg = originalGt2.Idorg; //pere Id
+                        gt2.Gtyp = originalGt2.Gtyp; //2optine1integ
+                        gt2.Ktyp = originalGt2.Ktyp; //1tiers2matiere
+                        gt2.Tenr = originalGt2.Tenr; //1base2elemt
+                        gt2.Pid = originalGt2.Pid;
+                        gt2.Tcol = originalGt2.Tcol;
+                        gt2.Ftcol = originalGt2.Ftcol; //rubr/groupe
+                        gt2.Xdpd = originalGt2.Xdpd;
+                        gt2.Ydpd = originalGt2.Ydpd;
+                        gt2.Jacc = originalGt2.Jacc;
+                        gt2.Jenr = originalGt2.Jenr;
+                        gt2.Liba = originalGt2.Liba; // string.Empty, placeholder
+                        gt2.Abg = originalGt2.Abg; // string.Empty, placeholder
+                        gt2.Eta = originalGt2.Eta;
+                    }
+                    break;
             }
         }
         //committing drafts
@@ -1052,15 +1329,44 @@ namespace GxPilo.Components.Uifrags
 
         protected void CommitGtbDraft(GstablDto target, GstablDto source)
         {
-            target.Idorg = source.Idorg;
+            target.Idorg = source.Idorg; //pere Id
             target.Rowguid = source.Rowguid;
+            target.Gtyp = source.Gtyp; //2optionnel1integre
+            target.Ktyp = source.Ktyp; //1tiers2matiere
+            target.Tenr = source.Tenr; //1base2elemt
+            target.Pid = source.Pid;
+            target.Tcol = source.Tcol;
+            target.Ftcol = source.Ftcol;
             target.Iui = source.Iui;
+            target.Xdpd = source.Xdpd;
+            target.Ydpd = source.Ydpd;
             target.Scdrub = source.Scdrub;
-            //target.Rtyp = source.Rtyp;
-            //target.Toatr = source.Toatr;
-            target.Liba = source.Liba;
-            target.Abg = source.Abg;
-
+            target.Jacc = source.Jacc;
+            target.Jenr = source.Jenr;
+            target.Liba = source.Liba; // string.Empty, placeholder
+            target.Abg = source.Abg; // string.Empty, placeholder
+            target.Eta = source.Eta;
+            target.Xadd1 = source.Xadd1;
+            target.Xedt1 = source.Xedt1;
+        }
+        protected void CommitGt2Draft(GstablDto target, GstablDto source)
+        {
+            target.Idorg = source.Idorg; //pere Id
+            target.Rowguid = source.Rowguid;
+            target.Gtyp = source.Gtyp; //2optionnel1integre
+            target.Ktyp = source.Ktyp; //1tiers2matiere
+            target.Tenr = source.Tenr; //1base2elemt
+            target.Pid = source.Pid;
+            target.Tcol = source.Tcol;
+            target.Ftcol = source.Ftcol; //rubriq/groupe
+            target.Iui = source.Iui;
+            target.Xdpd = source.Xdpd;
+            target.Ydpd = source.Ydpd;
+            target.Scdrub = source.Scdrub;
+            target.Jacc = source.Jacc;
+            target.Jenr = source.Jenr;
+            target.Liba = source.Liba; // string.Empty, placeholder
+            target.Abg = source.Abg; // string.Empty, placeholder
             target.Eta = source.Eta;
             target.Xadd1 = source.Xadd1;
             target.Xedt1 = source.Xedt1;
@@ -1081,6 +1387,8 @@ namespace GxPilo.Components.Uifrags
                 EntityLevel.Res => _draftRes,
                 EntityLevel.Rdt => _draftRdt,
                 EntityLevel.Bro => _draftBro,
+                EntityLevel.Gtb => _draftGtb,
+                EntityLevel.Gt2 => _draftGt2,
                 _ => throw new ArgumentOutOfRangeException(nameof(level))
             };
         }
@@ -1120,6 +1428,12 @@ namespace GxPilo.Components.Uifrags
                     break;
                 case EntityLevel.Bro:
                     _draftBro = draft;
+                    break;
+                case EntityLevel.Gtb:
+                    _draftGtb = draft;
+                    break;
+                case EntityLevel.Gt2:
+                    _draftGt2 = draft;
                     break;
                 default:
                     throw new ArgumentOutOfRangeException(nameof(level));

@@ -15,21 +15,10 @@ namespace GxPilo.Components.PRubs
         protected override void SubscribeToGuard()
         {
         }
-
         protected override string GetEntitySetName(EntityLevel level)
         {
             return base.GetEntitySetName(level);
         }
-        //protected override void ConfirmAdd(EntityLevel level, object entity)
-        //{ }
-        //protected override void ConfirmEdit(EntityLevel level, object entity)
-        //{ }
-        //protected override void ConfirmCancel(EntityLevel level, object entity)
-        //{ }
-        //protected override void ConfirmDelete(EntityLevel level, object entity)
-        //{ }
-        //protected override void RemoveFromLocalCollection(EntityLevel level, object entity)
-        //{ }
         protected override void OnEntitySaved(EntityLevel level, object entity)
         {
             switch (level)

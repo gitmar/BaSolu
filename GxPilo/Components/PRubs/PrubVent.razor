@@ -371,7 +371,7 @@ else
                                                 <div class="row">
                                                     <div class="col-12">
                                                         <Grid TItem="RubvarDto"
-                                                              Data="@MyDaRubs"
+                                                              Data="selectedPln.Rubvars.ToList()"
                                                               @key="GetRenderKey(EntityLevel.Rub)"
                                                               AllowRowClick="true"
                                                               OnRowClick="OnRubRowClick"
@@ -639,7 +639,7 @@ else
                                                                             </div>
                                                                         </div>
                                                                         <Grid TItem="RubfmtDto"
-                                                                              Data="@MyDaFmts"
+                                                                              Data="selectedRub.Rubfmts.ToList()"
                                                                               @key="GetRenderKey(EntityLevel.Fmt)"
                                                                               OnRowClick="OnFmtRowClick"
                                                                               AllowPaging="true"
@@ -1190,7 +1190,7 @@ else
         Console.WriteLine($"OnPlnRowClick Triggered : {args.Item.Id}");
         curPlan = args.Item;
 
-        if (curPlan == null || curPlan.Id == 0)
+        if (curPlan == null)
         {
             return;
         }
@@ -1207,7 +1207,7 @@ else
         Console.WriteLine($"OnRubRowClick Triggered : {args.Item.Id}");
         curRubr = args.Item;
 
-        if (curRubr == null || curRubr.Id == 0)
+        if (curRubr == null)
         {
             Console.WriteLine("OnRubRowClick: invalid selection");
             return;
@@ -1226,7 +1226,7 @@ else
     {
         Console.WriteLine($"OnFmtRowClick Triggered : {args.Item.Id}");
         curFmat = args.Item; //get gRubsMap
-        if (curFmat == null || curFmat.Id == 0)
+        if (curFmat == null)
         {
             return;
         }
@@ -1237,7 +1237,7 @@ else
     }
     public async Task StartPlnNew()
     {
-        if (IsAnyRowEditing)
+        if (curOrga == null)
         {
             Imessage = "prog cannot be added when any row is editing";
             return;
@@ -1278,14 +1278,14 @@ else
     }
     public async Task StartRubNew(PlngenDto mypln)
     {
-        if (mypln.Id <= 0)
-        {
-            Imessage = "🚫 Cannot add Rubrique: Plan must be saved first.";
-            await InvokeAsync(StateHasChanged);
-            return;
-        }
+        // if (mypln.Id <= 0)
+        // {
+        //     Imessage = "🚫 Cannot add Rubrique: Plan must be saved first.";
+        //     await InvokeAsync(StateHasChanged);
+        //     return;
+        // }
 
-        if (IsAnyRowEditing)
+        if (mypln == null)
         {
             Imessage = "rub cannot be added when any row is editing";
             await InvokeAsync(StateHasChanged);
@@ -1336,14 +1336,14 @@ else
     }
     public async Task StartFmtNew(RubvarDto myrub)
     {
-        if (myrub.Id <= 0)
-        {
-            Imessage = "🚫 Cannot add Format: Rubrique must be saved first.";
-            await InvokeAsync(StateHasChanged);
-            return;
-        }
+        // if (myrub.Id <= 0)
+        // {
+        //     Imessage = "🚫 Cannot add Format: Rubrique must be saved first.";
+        //     await InvokeAsync(StateHasChanged);
+        //     return;
+        // }
 
-        if (IsAnyRowEditing)
+        if (myrub == null)
         {
             Imessage = "fmt cannot be added when any row is editing";
             await InvokeAsync(StateHasChanged);
@@ -1479,24 +1479,45 @@ else
     // Update method -call this when source data changes
     private void InitializeMyDaPlans()
     {
-        PlanItems = orgPlns?.Where(pl => pl.Ptyp == IMyGpln && pl.Todom == IMyDom && pl.Toatr == 0 && pl.Tovue == IMyVue).ToList()
+        curPlan = new();
+        PlanItems = orgPlns?.Where(pl => pl.Ptyp == IMyGpln).ToList() // && pl.Todom == IMyDom && pl.Toatr == 0 && pl.Tovue == IMyVue).ToList()
             ?? new List<PlngenDto>();
+        if (PlanItems.Any()) curPlan = PlanItems.FirstOrDefault();
     }
     private void InitializeMyDaRubs()
     {
-        RubItems = curPlan.Rubvars.ToList()
+        curRubr = new();
+        if (curPlan != null)
+        {
+            RubItems = curPlan.Rubvars.ToList()
             ?? new List<RubvarDto>();
+            curRubr = RubItems.FirstOrDefault();
+        }
+        else
+        {
+            RubItems = new List<RubvarDto>();
+        }
     }
     private void InitializeMyDaFmts()
     {
-        FmtItems = curRubr.Rubfmts.ToList()
+        //curFmat = new();
+        if (curRubr != null)
+        {
+            FmtItems = curRubr.Rubfmts.ToList()
             ?? new List<RubfmtDto>();
+            //curFmt = FmtItems.FirstOrDefault();
+        }
+        else
+        {
+            FmtItems = new List<RubfmtDto>();
+        }
     }
     private Task UpdateMyDaPlans()
     {
-        PlanItems = orgPlns?
+        //PlanItems = orgPlns.ToList();
+        PlanItems = orgPlns
             .Where(pl => pl.Ptyp == IMyGpln && pl.Todom == IMyDom && pl.Toatr == 0 && pl.Tovue == IMyVue)
-            .ToList() ?? new List<PlngenDto>();
+            .ToList(); // ?? new List<PlngenDto>();
         return Task.CompletedTask;
     }
     private Task UpdateMyDaRubs()

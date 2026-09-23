@@ -44,7 +44,6 @@ namespace GxTie.Services.Calculation
 
             return lines;
         }
-
         private ProgramLine? ParseProgramLine(string raw)
         {
             var line = raw.Trim();
@@ -61,10 +60,30 @@ namespace GxTie.Services.Calculation
             if (colonIndex <= 0)
                 return null;
 
-            if (!int.TryParse(line[..colonIndex].Trim(), out var lineNumber))
-                return null;
-
+            var labelPart = line[..colonIndex].Trim();
             var exprPart = line[(colonIndex + 1)..].Trim();
+
+            int lineNumber;
+            int? parentLineNumber = null;
+            string? detailCode = null;
+            var isDetail = false;
+
+            var hashIdx = labelPart.IndexOf('#');
+            if (hashIdx > 0)
+            {
+                if (!int.TryParse(labelPart[..hashIdx], out var parent))
+                    return null;
+
+                parentLineNumber = parent;
+                detailCode = labelPart[(hashIdx + 1)..].Trim();
+                isDetail = true;
+                lineNumber = parent;
+            }
+            else
+            {
+                if (!int.TryParse(labelPart, out lineNumber))
+                    return null;
+            }
 
             string? meta = null;
             var metaStart = exprPart.LastIndexOf('[');
@@ -86,10 +105,12 @@ namespace GxTie.Services.Calculation
             {
                 LineNumber = lineNumber,
                 Formula = exprPart,
-                Meta = meta
+                Meta = meta,
+                IsDetail = isDetail,
+                ParentLineNumber = parentLineNumber,
+                DetailCode = detailCode
             };
         }
-
         private List<ProgramLine> EnrichProgramLines(
             List<ProgramLine> lines,
             IReadOnlyCollection<ProgramLineContext> contexts)
@@ -112,106 +133,6 @@ namespace GxTie.Services.Calculation
             return lines;
         }
     }
-    /// <summary>
-    /// 
-    /// </summary>
-
-    //public sealed class ProgramLineParser
-    //{
-    //    public List<ProgramLine> Parse(IProgramLineSource source)
-    //    {
-    //        var lines = ParseProgramLines(source.GetSourceText());
-    //        return EnrichProgramLines(lines, source.GetContexts());
-    //    }
-
-    //    public List<ProgramLine> ParseProgramLines(string? sourceText)
-    //    {
-    //        var lines = new List<ProgramLine>();
-
-    //        if (string.IsNullOrWhiteSpace(sourceText))
-    //            return lines;
-
-    //        var rawLines = sourceText
-    //            .Replace("\r\n", "\n")
-    //            .Replace('\r', '\n')
-    //            .Split('\n', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
-
-    //        foreach (var raw in rawLines)
-    //        {
-    //            var parsed = ParseProgramLine(raw);
-    //            if (parsed != null)
-    //                lines.Add(parsed);
-    //        }
-
-    //        return lines;
-    //    }
-
-    //    private ProgramLine? ParseProgramLine(string raw)
-    //    {
-    //        var line = raw.Trim();
-    //        if (string.IsNullOrWhiteSpace(line))
-    //            return null;
-
-    //        var atIndex = line.IndexOf('@');
-    //        if (atIndex < 0)
-    //            return null;
-
-    //        line = line[(atIndex + 1)..].Trim();
-
-    //        var colonIndex = line.IndexOf(':');
-    //        if (colonIndex <= 0)
-    //            return null;
-
-    //        if (!int.TryParse(line[..colonIndex].Trim(), out var lineNumber))
-    //            return null;
-
-    //        var exprPart = line[(colonIndex + 1)..].Trim();
-
-    //        string? meta = null;
-    //        var metaStart = exprPart.LastIndexOf('[');
-    //        var metaEnd = exprPart.LastIndexOf(']');
-
-    //        if (metaStart >= 0 && metaEnd > metaStart)
-    //        {
-    //            meta = exprPart[(metaStart + 1)..metaEnd].Trim();
-    //            exprPart = exprPart[..metaStart].Trim();
-    //        }
-
-    //        if (exprPart.EndsWith(";"))
-    //            exprPart = exprPart[..^1].TrimEnd();
-
-    //        if (string.IsNullOrWhiteSpace(exprPart))
-    //            return null;
-
-    //        return new ProgramLine
-    //        {
-    //            LineNumber = lineNumber,
-    //            Formula = exprPart,
-    //            Meta = meta
-    //        };
-    //    }
-    //    private List<ProgramLine> EnrichProgramLines(
-    //        List<ProgramLine> lines,
-    //        IReadOnlyCollection<ProgramLineContext> contexts)
-    //    {
-    //        var byLine = contexts
-    //            .Where(x => x.LineNumber.HasValue)
-    //            .GroupBy(x => x.LineNumber!.Value)
-    //            .ToDictionary(g => g.Key, g => g.First());
-
-    //        foreach (var line in lines)
-    //        {
-    //            byLine.TryGetValue(line.LineNumber ?? 0, out var ctx);
-    //            line.Irub = ctx?.Irub;
-    //            line.Ifmt = ctx?.Ifmt;
-    //            line.Liba = ctx?.Liba;
-    //            line.Type = ProgramLineTypeMapper.MapType(line.Meta, ctx?.Rubvar, ctx?.Rubfmt);
-    //            line.SaveDetail = ProgramLineTypeMapper.ShouldSaveDetail(line.Meta, ctx?.Rubvar, ctx?.Rubfmt);
-    //        }
-
-    //        return lines;
-    //    }
-    //}
     public sealed class PlngenLineSource : IProgramLineSource
     {
         private readonly PlngenDto _program;
@@ -360,6 +281,152 @@ namespace GxTie.Services.Calculation
             return rubfmt != null || rubvar != null;
         }
     }
+
+    //private ProgramLine? ParseProgramLine(string raw)
+    //{
+    //    var line = raw.Trim();
+    //    if (string.IsNullOrWhiteSpace(line))
+    //        return null;
+
+    //    var atIndex = line.IndexOf('@');
+    //    if (atIndex < 0)
+    //        return null;
+
+    //    line = line[(atIndex + 1)..].Trim();
+
+    //    var colonIndex = line.IndexOf(':');
+    //    if (colonIndex <= 0)
+    //        return null;
+
+    //    if (!int.TryParse(line[..colonIndex].Trim(), out var lineNumber))
+    //        return null;
+
+    //    var exprPart = line[(colonIndex + 1)..].Trim();
+
+    //    string? meta = null;
+    //    var metaStart = exprPart.LastIndexOf('[');
+    //    var metaEnd = exprPart.LastIndexOf(']');
+
+    //    if (metaStart >= 0 && metaEnd > metaStart)
+    //    {
+    //        meta = exprPart[(metaStart + 1)..metaEnd].Trim();
+    //        exprPart = exprPart[..metaStart].Trim();
+    //    }
+
+    //    if (exprPart.EndsWith(";"))
+    //        exprPart = exprPart[..^1].TrimEnd();
+
+    //    if (string.IsNullOrWhiteSpace(exprPart))
+    //        return null;
+
+    //    return new ProgramLine
+    //    {
+    //        LineNumber = lineNumber,
+    //        Formula = exprPart,
+    //        Meta = meta
+    //    };
+    //}
+
+    /// <summary>
+    /// 
+    /// </summary>
+
+    //public sealed class ProgramLineParser
+    //{
+    //    public List<ProgramLine> Parse(IProgramLineSource source)
+    //    {
+    //        var lines = ParseProgramLines(source.GetSourceText());
+    //        return EnrichProgramLines(lines, source.GetContexts());
+    //    }
+
+    //    public List<ProgramLine> ParseProgramLines(string? sourceText)
+    //    {
+    //        var lines = new List<ProgramLine>();
+
+    //        if (string.IsNullOrWhiteSpace(sourceText))
+    //            return lines;
+
+    //        var rawLines = sourceText
+    //            .Replace("\r\n", "\n")
+    //            .Replace('\r', '\n')
+    //            .Split('\n', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+
+    //        foreach (var raw in rawLines)
+    //        {
+    //            var parsed = ParseProgramLine(raw);
+    //            if (parsed != null)
+    //                lines.Add(parsed);
+    //        }
+
+    //        return lines;
+    //    }
+
+    //    private ProgramLine? ParseProgramLine(string raw)
+    //    {
+    //        var line = raw.Trim();
+    //        if (string.IsNullOrWhiteSpace(line))
+    //            return null;
+
+    //        var atIndex = line.IndexOf('@');
+    //        if (atIndex < 0)
+    //            return null;
+
+    //        line = line[(atIndex + 1)..].Trim();
+
+    //        var colonIndex = line.IndexOf(':');
+    //        if (colonIndex <= 0)
+    //            return null;
+
+    //        if (!int.TryParse(line[..colonIndex].Trim(), out var lineNumber))
+    //            return null;
+
+    //        var exprPart = line[(colonIndex + 1)..].Trim();
+
+    //        string? meta = null;
+    //        var metaStart = exprPart.LastIndexOf('[');
+    //        var metaEnd = exprPart.LastIndexOf(']');
+
+    //        if (metaStart >= 0 && metaEnd > metaStart)
+    //        {
+    //            meta = exprPart[(metaStart + 1)..metaEnd].Trim();
+    //            exprPart = exprPart[..metaStart].Trim();
+    //        }
+
+    //        if (exprPart.EndsWith(";"))
+    //            exprPart = exprPart[..^1].TrimEnd();
+
+    //        if (string.IsNullOrWhiteSpace(exprPart))
+    //            return null;
+
+    //        return new ProgramLine
+    //        {
+    //            LineNumber = lineNumber,
+    //            Formula = exprPart,
+    //            Meta = meta
+    //        };
+    //    }
+    //    private List<ProgramLine> EnrichProgramLines(
+    //        List<ProgramLine> lines,
+    //        IReadOnlyCollection<ProgramLineContext> contexts)
+    //    {
+    //        var byLine = contexts
+    //            .Where(x => x.LineNumber.HasValue)
+    //            .GroupBy(x => x.LineNumber!.Value)
+    //            .ToDictionary(g => g.Key, g => g.First());
+
+    //        foreach (var line in lines)
+    //        {
+    //            byLine.TryGetValue(line.LineNumber ?? 0, out var ctx);
+    //            line.Irub = ctx?.Irub;
+    //            line.Ifmt = ctx?.Ifmt;
+    //            line.Liba = ctx?.Liba;
+    //            line.Type = ProgramLineTypeMapper.MapType(line.Meta, ctx?.Rubvar, ctx?.Rubfmt);
+    //            line.SaveDetail = ProgramLineTypeMapper.ShouldSaveDetail(line.Meta, ctx?.Rubvar, ctx?.Rubfmt);
+    //        }
+
+    //        return lines;
+    //    }
+    //}
     //public static class ProgramLineTypeMapper
     //{
     //    public static LineType MapType(string? meta, RubvarDto? rubvar, RubfmtDto? rubfmt)

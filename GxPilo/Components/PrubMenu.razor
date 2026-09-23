@@ -55,7 +55,7 @@ else
                 <!-- Main Content -->
                 @if (this != null)
                 {
-                    @if (_chxMenu != 0 && toChild != null && curOrga != null && orgPlns.Any())
+                    @if (_chxMenu != 0 && toChild != null && curOrga != null)
                     {
                         @if (_chxMenu == 1)
                         { //DURABLES
@@ -79,6 +79,7 @@ else
                                       _guard="_guard"
                                       curOrga="@curOrga"
                                       toChild="@toChild"
+                                      orgPlns="@orgPlns"
                                       _InODaClient="@_MyODaClient">
                                 <ChildContent>
                                 </ChildContent>
@@ -92,13 +93,13 @@ else
                                      _guard="_guard"
                                      curOrga="@curOrga"
                                      toChild="@toChild"
+                                     orgPlns="@orgPlns"
                                      _InODaClient="@_MyODaClient">
                                 <ChildContent>
-                                    <h2 class="child-box">Hello GRILLES</h2>
                                 </ChildContent>
                             </RubFact> 
                         }
-                        else if (_chxMenu == 3)
+                        else if (_chxMenu == 4)
                         { //VENTILATIONS
                             <PrubVent @ref="mygvnt"
                                       toMenu="@_chxMenu"
@@ -106,12 +107,13 @@ else
                                       _guard="_guard"
                                       curOrga="@curOrga"
                                       toChild="@toChild"
+                                      orgPlns="@orgPlns"
                                       _InODaClient="@_MyODaClient">
                                 <ChildContent>
                                 </ChildContent>
                             </PrubVent>
                         }
-                        else if (_chxMenu == 4)
+                        else if (_chxMenu == 5)
                         { //FACTURES
                             @* <RubFact @ref="mygfac"
                                      toMenu="@_chxMenu"
@@ -248,7 +250,7 @@ else
         {
             isLoading = false;
         }
-        Console.WriteLine($"isLoading value {isLoading}");
+        Console.WriteLine($"Menu isLoading value {isLoading}");
     }
     private async Task LoadOrgaAsync(int key)
     {
@@ -335,7 +337,7 @@ else
         if (_chxMenu == 2) strComp = "CALCULS";
         if (_chxMenu == 3) strComp = "BULLETINS";
         if (_chxMenu == 4) strComp = "VENTILATION";
-        //if (_chxMenu == 4) strComp = "FACTURES";
+        //if (_chxMenu == 5) strComp = "FACTURES";
 
         //if (_chxMenu == 6) strComp = $"TEST ECHEANCIER";
         //if (_chxMenu == 5) strComp = "Colonnes";

@@ -53,8 +53,7 @@
         // -session a ouvrir : clcaaaammxxx
         <div class="mt-3">
             <InputText @bind-Value="draftSes.Liba" placeholder="Label" />        
-            <InputDate @bind-Value="draftSes.Ddat" placeholder="Debut" />
-            <InputDate @bind-Value="draftSes.Fdat" placeholder="Fin" />
+            <InputDate @bind-Value="draftSes.Dsess" placeholder="Date" />
             
             <Button Color="ButtonColor.Success" @onclick="() => SessAddNew()">Add</Button>
             <Button Color="ButtonColor.Secondary" @onclick="() => CancelAdd()">Cancel</Button>
@@ -106,19 +105,19 @@
                         @* } *@
                     </ChildContent>
                 </GridColumn>
-                <GridColumn TItem="GsesioDto" HeaderText="Depart" Class="xcol1">
+                <GridColumn TItem="GsesioDto" HeaderText="Date" Class="xcol1">
                     <ChildContent Context="item">
                         @if (editRowguid == item.Rowguid)
                         {
-                            <InputDate @bind-Value="draftSes.Ddat" />
+                            <InputDate @bind-Value="draftSes.Dsess" />
                         }
                         else
                         {
-                            @item.Ddat?.ToShortDateString()
+                            @item.Dsess?.ToShortDateString()
                         }
                     </ChildContent>
                 </GridColumn>
-                <GridColumn TItem="GsesioDto" HeaderText="Fin" Class="xcol1">
+                @* <GridColumn TItem="GsesioDto" HeaderText="Fin" Class="xcol1">
                     <ChildContent Context="item">
                         @if (editRowguid == item.Rowguid)
                         {
@@ -129,7 +128,7 @@
                             @item.Fdat?.ToShortDateString()
                         }
                     </ChildContent>
-                </GridColumn>
+                </GridColumn> *@
                 <GridColumn TItem="GsesioDto" HeaderText="Actions">
                     <ChildContent Context="item">
                         @if (editRowguid == item.Rowguid)
@@ -331,8 +330,7 @@
         atr.Liba = draftSes.Liba;
         atr.Igpe = draftSes.Igpe;
         atr.Refa = draftSes.Refa;
-        atr.Ddat = draftSes.Ddat;
-        atr.Fdat = draftSes.Fdat;
+        atr.Dsess = draftSes.Dsess;
         atr.Eta = draftSes.Eta;
         // Register update with OData context
         var key = GetEntityKey(atr); // helper to extract PK

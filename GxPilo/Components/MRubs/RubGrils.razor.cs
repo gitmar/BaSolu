@@ -121,18 +121,5 @@ namespace GxPilo.Components.MRubs
                     break;
             }
         }
-        //private void curPlanVue(int xvue)
-        //{
-
-        //}
-        //private void curPlanFor(int xvue)
-        //{
-
-        //}
-        //private void curPlanTier(int xtie)
-        //{
-        //    if (IMyDom != 0 && IMyAtr != 0 && IMyVue != 0)
-        //        InvokeAsync(StateHasChanged);
-        //}
     }
 }

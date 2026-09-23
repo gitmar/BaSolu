@@ -31,20 +31,6 @@ namespace GxPilo.Components.MRubs
                         if (target != null) CommitPlnDraft(target, src);
                         break;
                     }
-                //case EntityLevel.Rub:
-                //    {
-                //        var src = (RubvarDto)entity;
-                //        var target = MyDaRubrs.FirstOrDefault(x => x.Rowguid == src.Rowguid);
-                //        if (target != null) CommitRubDraft(target, src);t
-                //        break;
-                //    }
-                //case EntityLevel.Fmt:
-                //    {
-                //        var src = (RubfmtDto)entity;
-                //        var target = MyDaFmts.FirstOrDefault(x => x.Rowguid == src.Rowguid);
-                //        if (target != null) CommitRubDraft(target, src);
-                //        break;
-                //    }
                 case EntityLevel.Hie:
                     {
                         var src = (RubhieDto)entity;

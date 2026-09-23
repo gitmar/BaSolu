@@ -1,4 +1,5 @@
-﻿@page "/saiepart"
+﻿
+@page "/z4saiepart"
 @layout SaieMenu
 
 @using System.Net.Http.Headers
@@ -38,7 +39,9 @@
 <PageTitle>Saisie Offline</PageTitle>
 @if (!string.IsNullOrEmpty(Imessage))
 {
-    <div>@Imessage</div>
+    <div>
+        @Imessage
+    </div>
 }
 
 <div class="my-container">
@@ -56,38 +59,7 @@ else
 {
     if (CanSaie)
     {
-        <div class="d-flex align-items-center gap-3 mb-2 ms-2">
-    <!-- Label -->
-    <label class="me-2">Personne :</label>
-
-    <!-- AutoComplete -->
-    <AutoComplete TItem="TierspDto"
-                  @bind-Value="InTSaie"
-                  DataProvider="LoadPreTiers"
-                  PropertyName="@(displayMode == DisplayMode.Matricule ? "Xmatri" : "Nom")"
-                  Placeholder="@(displayMode == DisplayMode.Matricule ? "Enter matricule..." : "Enter name...")"
-                  OnChanged="OnChanged">
-    </AutoComplete>
-
-    <!-- Radio toggle -->
-    <InputRadioGroup @bind-Value="displayMode" Orientation="Horizontal" class="d-flex flex-row gap-2">
-        <InputRadio Value="DisplayMode.Matricule">Matricule</InputRadio>
-        <InputRadio Value="DisplayMode.Name">Nom/Prenom</InputRadio>
-    </InputRadioGroup>
-
-    <!-- Dropdown -->
-    <InputSelect @bind-Value="ImyTie" @bind-Value:after="OnTierChanged">
-        <option value="0">-- Sélectionner --</option>
-        @foreach (var tie in PreTiers)
-        {
-            <option value="@tie.Id">@GetTierLabel(tie)</option>
-        }
-    </InputSelect>
-
-    @* <InputDate @bind-Value="SessionDate" @bind-Value:after="OnSessionDateChanged" /> *@
-</div>
-
-        @* <div class="d-flex align-items-center gap-2 mb-2">
+        <div class="d-flex align-items-center gap-2 mb-2">
             <div class="col-auto">
                 <label>Personne :</label>
             </div>
@@ -107,37 +79,34 @@ else
                 </InputRadioGroup>
             </div>
             <div class="col-auto">
-                <InputSelect @bind-Value="ImyTie" @bind-Value:after="OnTierChanged">
+                <InputSelect @bind-Value="ImyTie"
+                             @bind-Value:after="OnTierChanged">
                     <option value="0">-- Sélectionner --</option>
                     @foreach (var tie in PreTiers)
                     {
-                        <option value="@tie.Id">@GetTierLabel(tie)</option>
+                        <option value="@tie.Id">
+                            @GetTierLabel(tie)
+                        </option>
                     }
                 </InputSelect>
             </div>
-            <div class="col-auto">
-                <label>Session :</label>
-            </div>
-            <div class="col-auto">
-                <InputDate @bind-Value="SessionDate" @bind-Value:after="OnSessionDateChanged" />
-            </div>
-        </div> *@
+        </div>        
     }
 
     @if (isFicheVisible)
     {
         <RtS11Fic @ref="myfsaie"
-            curOrga="@curOrga"
-            toChild="@toChild"
-            _curTier="@_curTier"
-            _EdtODaClient="@_MyODaClient">
+                  curOrga="@curOrga"
+                  toChild="@toChild"
+                  _curTier="@_curTier"
+                  _EdtODaClient="@_MyODaClient">
             <ChildContent>
                 <h2 class="child-box">Fiche de @curProg.Liba</h2>
             </ChildContent>
         </RtS11Fic>
     }
 
-    <Grid TItem="RubVarRow" Data="@WorkSession.RubVarRows" AllowPaging="true" Responsive="true">
+    <Grid TItem="RubVarRow" Data="@Session.RubVarRows" AllowPaging="true" Responsive="true">
         <GridColumns>
             <GridColumn TItem="RubVarRow" HeaderText="Code">
                 <ChildContent Context="r">@r.Scdrub</ChildContent>
@@ -186,7 +155,7 @@ else
                         <Button Color="ButtonColor.Success" Size="ButtonSize.Small"
                                 disabled="@(!CanSave)"
                                 @onclick="OnSaveAsync">
-                            Accepter
+                            Confirmer
                         </Button>
                     </div>
                 </HeaderContent>
@@ -238,50 +207,48 @@ else
 }
 
 @code {
-    [Parameter] public RenderFragment? ChildContent { get; set; }
-    [Parameter] public GxorgaDto curOrga { get; set; } = new();
-    [Parameter] public ChildVars toChild { get; set; } = new();
-    [Parameter] public int ImyDiv { get; set; }
-    [Parameter] public int ChxGpe { get; set; }
-    [Parameter] public List<TierspDto> PreTiers { get; set; } = new();
-    [Parameter] public bool SessOpen { get; set; }
+        [Parameter] public RenderFragment? ChildContent { get; set; }
+        [Parameter] public GxorgaDto curOrga { get; set; } = new();
+        [Parameter] public ChildVars toChild { get; set; } = new();
+        [Parameter] public int ImyDiv { get; set; }
+        [Parameter] public int ChxGpe { get; set; }
+        [Parameter] public List<Gtabl> EnsVgps { get; set; } = new(); // ASSUMPTION: passed down as a parameter like EnsTbls, loaded once by a parent/shell component
+        [Parameter] public List<TierspDto> PreTiers { get; set; } = new();
+        // REMOVED: PreActs — unused, superseded by the workflow service's own data loading.
+        [Parameter] public bool SessOpen { get; set; }
 
-    [Parameter] public IPendingChangesGuard _guard { get; set; }
-    [Parameter] public PendingSaveMode inSaveMode { get; set; }
-    [Parameter] public SaieSession? _saieSession { get; set; }
-    [Parameter] public DateTime? _sessionDate { get; set; }
-    [Parameter] public CalcContext? _calcContext { get; set; }
-    [Parameter] public IODataClient _MyODaClient { get; set; }
-    [Parameter] public PlngenDto curProg { get; set; }
+        [Parameter] public IPendingChangesGuard _guard { get; set; }
+        [Parameter] public PendingSaveMode inSaveMode { get; set; }
+        [Parameter] public SaieSession? _saieSession { get; set; }
+        [Parameter] public CalcContext? _calcContext { get; set; }
+        [Parameter] public IODataClient _MyODaClient { get; set; }
+        [Parameter] public PlngenDto curProg { get; set; }
 
-    // Parent-owned group filtering — Saiepart just consumes the result.
-    [Parameter] public List<RubvarDto> SelectedRubvars { get; set; } = new();
-    [Parameter] public List<Gpgrid> InsGpdata { get; set; } = new();
-
-    [Parameter] public int NbChanges { get; set; }
-    [Parameter] public EventCallback<int> NbChangesChanged { get; set; }
+        [Parameter] public int NbChanges { get; set; }
+        [Parameter] public EventCallback<int> NbChangesChanged { get; set; }
+        [Parameter] public DateTime SessionDate { get; set; }
+        [Parameter] public DateTime DayDate { get; set; }
+        [Parameter] public List<RubvarDto> SelectedRubvars { get; set; } = new();
 
     private RtS11Fic myfsaie;
     private TierspDto? _curTier;
     private int ImyTie = 0;
+    private int gVaria = 0;
     private string InTSaie = "";
-
-    private SaieSession WorkSession { get; set; } = new();
+    private List<Gpgrid> _ingData = new();
+    private SaieSession Session { get; set; } = new();
     private DisplayMode displayMode = DisplayMode.Matricule;
     public enum DisplayMode
     {
         Matricule = 1,
         Name = 2
     }
-
-    ///private DateTime SessionDate = DateTime.Today;
-
-    private List<RubvarDto>? _lastSelectedRubvars;
-
+    // New state in Saiepart.razor @code
+    
     private bool Yatier => ImyTie != 0;
     private bool CanSaie => SessOpen && ImyDiv != 0;
     private bool CanLoad => CanSaie && Yatier && !isBusy;
-    private bool CanInput => WorkSession is not null && WorkSession.RubVarRows.Any();
+    private bool CanInput => Session is not null && Session.RubVarRows.Any();
     private bool CanCalc => CanInput && _hasUserInput && !isBusy;
     private bool CanSave => CanInput && _hasCalculated && !isBusy;
 
@@ -301,39 +268,38 @@ else
     protected override async Task OnInitializedAsync()
     {
         isLoading = false;
+        int igril = curProg.Plsgri ?? 0;
+        _ingData = igril != 0
+            ? await _rendAgres.LoadOrgaGdata(igril)
+            : new List<Gpgrid>();
     }
 
     protected override Task OnParametersSetAsync()
     {
         if (_saieSession is not null)
         {
-            WorkSession = _saieSession;
-            BindLocalStateFromSession(WorkSession);
+            Session = _saieSession;
+            BindLocalStateFromSession(Session);
         }
-
-        // Detect a change in the parent-selected group and rebuild rows accordingly.
-        if (WorkSession is not null && !ReferenceEquals(SelectedRubvars, _lastSelectedRubvars))
-        {
-            _lastSelectedRubvars = SelectedRubvars;
-            EnsureRubVarRowsAndDetails(WorkSession, forceRebuild: true);
-        }
-
         return Task.CompletedTask;
     }
 
-    // private void OnSessionDateChanged()
-    // {
-    //     if (_curTier is not null)
-    //         BindLocalStateFromSession(WorkSession);
-    // }
+    private void OnSessionDateChanged()
+    {
+        // Session date changed after a tier is already loaded — rebuild the context
+        // so subsequent Calculate/Save use the new date. Does NOT reload existing
+        // inputs; if that's desired, call OnLoadResetAsync() here instead.
+        if (_curTier is not null)
+            BindLocalStateFromSession(Session);
+    }
 
     private async Task RendsTier(int idtie)
     {
         if (idtie == 0)
         {
             _curTier = new TierspDto();
-            if (WorkSession is not null)
-                WorkSession.RubVarRows = new List<RubVarRow>();
+            if (Session is not null)
+                Session.RubVarRows = new List<RubVarRow>();
         }
         else
         {
@@ -341,88 +307,58 @@ else
             await OnLoadResetAsync();
         }
     }
+
     private async Task OnLoadResetAsync()
-{
-    if (!CanLoad)
-        return;
-
-    isBusy = true;
-    try
     {
-        var ctx = BuildSingleContext();
-        if (ctx is null || ctx.Program is null || ctx.Tier is null)
-            return;
-
-        WorkSession = await _workflowService.CreateSaieSessionAsync(
-            ctx.Program,
-            ctx.Tier,
-            ctx.EnsTbls ?? new List<Gtabl>(),
-            ctx.EnsGpdata ?? new List<Gpgrid>() 
-        );
-
-        _saieSession = WorkSession;
-
-        // forceRebuild: true — CreateSaieSessionAsync populates RubVarRows from the
-        // full template, with no knowledge of the operator's selected group. Force
-        // a rebuild here so the current SelectedRubvars filter is reapplied.
-        EnsureRubVarRowsAndDetails(WorkSession, forceRebuild: true);
-        BindLocalStateFromSession(WorkSession);
-
-        _hasUserInput = false;
-        _hasCalculated = false;
-    }
-    finally
-    {
-        isBusy = false;
-    }
-}
-    // private async Task OnLoadResetAsync()
-    // {
-    //     if (!CanLoad)
-    //         return;
-
-    //     isBusy = true;
-    //     try
-    //     {
-    //         var ctx = BuildSingleContext();
-    //         if (ctx is null || ctx.Program is null || ctx.Tier is null)
-    //             return;
-
-    //         WorkSession = await _workflowService.CreateSaieSessionAsync(
-    //             ctx.Program,
-    //             ctx.Tier,
-    //             ctx.EnsTbls ?? new List<Gtabl>()
-    //         );
-
-    //         _saieSession = WorkSession;
-
-    //         EnsureRubVarRowsAndDetails(WorkSession, forceRebuild: false);
-    //         BindLocalStateFromSession(WorkSession);
-
-    //         _hasUserInput = false;
-    //         _hasCalculated = false;
-    //     }
-    //     finally
-    //     {
-    //         isBusy = false;
-    //     }
-    // }
-
-    private async Task OnCalculateAsync(bool isRecompute = false)
-    {
-        if (!CanCalc || _calcContext is null || WorkSession is null)
+        if (!CanLoad)
             return;
 
         isBusy = true;
         try
         {
-            WorkSession = await _workflowService.CalculateSaieAsync(_calcContext, WorkSession);
-            _saieSession = WorkSession;
+            var ctx = BuildSingleContext();
+            if (ctx is null || ctx.Program is null || ctx.Tier is null)
+                return;
 
-            BindLocalStateFromSession(WorkSession);
-            SyncSessionToGrid(WorkSession);
+            Session = await _workflowService.CreateSaieSessionAsync(
+                ctx.Program,
+                ctx.Tier,
+                ctx.EnsTbls ?? new List<Gtabl>(),
+                ctx.EnsGpdata ?? new List<Gpgrid>()
+            );
+
+            _saieSession = Session;
+
+            EnsureRubVarRowsAndDetails(Session, forceRebuild: false);
+            BindLocalStateFromSession(Session);
+
+            _hasUserInput = false;
+            _hasCalculated = false;
+        }
+        finally
+        {
+            isBusy = false;
+        }
+    }
+
+    private async Task OnCalculateAsync(bool isRecompute = false)
+    {
+        if (!CanCalc || _calcContext is null || Session is null)
+            return;
+
+        isBusy = true;
+        try
+        {
+            Session = await _workflowService.CalculateSaieAsync(_calcContext, Session);
+            _saieSession = Session;
+
+            BindLocalStateFromSession(Session);
+            SyncSessionToGrid(Session);
 
             _hasCalculated = true;
+
+            //if (!isRecompute)
+            //Imessage = "Passe3";
         }
         finally
         {
@@ -477,13 +413,13 @@ else
 
     private async Task OnSaveAsync()
     {
-        if (!CanSave || _calcContext is null || WorkSession is null)
+        if (!CanSave || _calcContext is null || Session is null)
             return;
 
         isBusy = true;
         try
         {
-            await _calcPersistence.SaveSaieAsync(_calcContext, WorkSession, inSaveMode);
+            await _calcPersistence.SaveSaieAsync(_calcContext, Session, inSaveMode);
         }
         finally
         {
@@ -491,95 +427,183 @@ else
         }
     }
 
+    // private void EnsureRubVarRowsAndDetails(SaieSession session)
+    // {
+    //     session.RubVarRows ??= new List<RubVarRow>();
+
+    //     var actByRub = session.Actsaies
+    //         .Where(x => x.Irub.HasValue)
+    //         .GroupBy(x => x.Irub!.Value)
+    //         .ToDictionary(g => g.Key, g => g.First());
+
+    //     var detByRubFmt = session.Actdets
+    //         .Where(x => x.Irub.HasValue && x.Ifmt.HasValue)
+    //         .GroupBy(x => (x.Irub!.Value, x.Ifmt!.Value))
+    //         .ToDictionary(g => g.Key, g => g.First());
+
+    //     if (session.RubVarRows.Count == 0)
+    //     {
+    //         session.RubVarRows = session.Program.Rubvars
+    //             .Where(IsInSelectedGroup)
+    //             .Select(rubvar =>
+    //             {
+    //                 actByRub.TryGetValue(rubvar.Id, out var act);
+
+    //                 var details = rubvar.Rubfmts
+    //                     .Select(rubfmt =>
+    //                     {
+    //                         detByRubFmt.TryGetValue((rubvar.Id, rubfmt.Id), out var det);
+
+    //                         return new RubFmtRow
+    //                         {
+    //                             Id = rubfmt.Id,
+    //                             Irub = rubvar.Id,
+    //                             Vgpe = rubfmt.Vgpe,
+    //                             Atyp = rubfmt.Ztyp ?? 0,          // FIX: was missing — needed for the InputValue/Aval switch
+    //                             Ifmt = rubfmt.Id,
+    //                             Scdfmt = rubfmt.Zcdrub,
+    //                             Liba = rubfmt.Liba,
+    //                             Ftsrc = rubfmt.Ftsrc,
+    //                             InputValue = det?.Inptvalue ?? string.Empty,
+    //                             Aval = det?.Aval,
+    //                             Iraw = det?.Iraw?.ToString() ?? string.Empty
+    //                         };
+    //                     })
+    //                     .ToList();
+
+    //                 return new RubVarRow
+    //                 {
+    //                     Id = rubvar.Id,
+    //                     Irub = rubvar.Id,
+    //                     Vgpe = rubvar.Vgpe,
+    //                     Atyp = rubvar.Atyp ?? 0,                  // FIX: was missing
+    //                     Scdrub = rubvar.Scdrub,
+    //                     Liba = rubvar.Liba,
+    //                     Abg = rubvar.Liba,
+    //                     InputValue = act?.Inptvalue ?? string.Empty,
+    //                     Aval = act?.Aval,
+    //                     Iraw = act?.Iraw?.ToString() ?? string.Empty,
+    //                     Details = details
+    //                 };
+    //             })
+    //             .ToList();
+    //     }
+    //     else
+    //     {
+    //         foreach (var row in session.RubVarRows)
+    //         {
+    //             if (row.Irub.HasValue && actByRub.TryGetValue(row.Irub.Value, out var act))
+    //             {
+    //                 row.InputValue = act?.Inptvalue ?? row.InputValue;
+    //                 row.Aval = act?.Aval ?? row.Aval;
+    //                 row.Iraw = act?.Iraw?.ToString() ?? row.Iraw;
+    //             }
+
+    //             row.Details ??= new List<RubFmtRow>();
+
+    //             foreach (var detRow in row.Details)
+    //             {
+    //                 if (!detRow.Irub.HasValue || !detRow.Ifmt.HasValue)
+    //                     continue;
+
+    //                 if (detByRubFmt.TryGetValue((detRow.Irub.Value, detRow.Ifmt.Value), out var det))
+    //                 {
+    //                     detRow.InputValue = det?.Inptvalue ?? detRow.InputValue;
+    //                     detRow.Aval = det?.Aval ?? detRow.Aval;
+    //                     detRow.Iraw = det?.Iraw?.ToString() ?? detRow.Iraw;
+    //                 }
+    //             }
+    //         }
+    //     }
+    // }
     private void EnsureRubVarRowsAndDetails(SaieSession session, bool forceRebuild = false)
+{
+    session.RubVarRows ??= new List<RubVarRow>();
+
+    var actByRub = session.Actsaies
+        .Where(x => x.Irub.HasValue)
+        .GroupBy(x => x.Irub!.Value)
+        .ToDictionary(g => g.Key, g => g.First());
+
+    var detByRubFmt = session.Actdets
+        .Where(x => x.Irub.HasValue && x.Ifmt.HasValue)
+        .GroupBy(x => (x.Irub!.Value, x.Ifmt!.Value))
+        .ToDictionary(g => g.Key, g => g.First());
+
+    if (forceRebuild || session.RubVarRows.Count == 0)
     {
-        session.RubVarRows ??= new List<RubVarRow>();
-
-        var actByRub = session.Actsaies
-            .Where(x => x.Irub.HasValue)
-            .GroupBy(x => x.Irub!.Value)
-            .ToDictionary(g => g.Key, g => g.First());
-
-        var detByRubFmt = session.Actdets
-            .Where(x => x.Irub.HasValue && x.Ifmt.HasValue)
-            .GroupBy(x => (x.Irub!.Value, x.Ifmt!.Value))
-            .ToDictionary(g => g.Key, g => g.First());
-
-        if (forceRebuild || session.RubVarRows.Count == 0)
-        {
-            session.RubVarRows = SelectedRubvars
-                .Select(rubvar =>
-                {
-                    actByRub.TryGetValue(rubvar.Id, out var act);
-
-                    var details = rubvar.Rubfmts
-                        .Select(rubfmt =>
-                        {
-                            detByRubFmt.TryGetValue((rubvar.Id, rubfmt.Id), out var det);
-
-                            return new RubFmtRow
-                            {
-                                Id = rubfmt.Id,
-                                Irub = rubvar.Id,
-                                Vgpe = rubfmt.Vgpe,
-                                Atyp = rubfmt.Ztyp ?? 0,
-                                Ifmt = rubfmt.Id,
-                                Scdfmt = rubfmt.Zcdrub,
-                                Liba = rubfmt.Liba,
-                                Ftsrc = rubfmt.Ftsrc,
-                                InputValue = det?.Inptvalue ?? string.Empty,
-                                Aval = det?.Aval,
-                                Iraw = det?.Iraw?.ToString() ?? string.Empty
-                            };
-                        })
-                        .ToList();
-
-                    return new RubVarRow
-                    {
-                        Id = rubvar.Id,
-                        Irub = rubvar.Id,
-                        Vgpe = rubvar.Vgpe,
-                        Atyp = rubvar.Atyp ?? 0,
-                        Scdrub = rubvar.Scdrub,
-                        Liba = rubvar.Liba,
-                        Abg = rubvar.Liba,
-                        InputValue = act?.Inptvalue ?? string.Empty,
-                        Aval = act?.Aval,
-                        Iraw = act?.Iraw?.ToString() ?? string.Empty,
-                        Details = details
-                    };
-                })
-                .ToList();
-        }
-        else
-        {
-            foreach (var row in session.RubVarRows)
+        session.RubVarRows = SelectedRubvars
+            .Select(rubvar =>
             {
-                if (row.Irub.HasValue && actByRub.TryGetValue(row.Irub.Value, out var act))
-                {
-                    row.InputValue = act?.Inptvalue ?? row.InputValue;
-                    row.Aval = act?.Aval ?? row.Aval;
-                    row.Iraw = act?.Iraw?.ToString() ?? row.Iraw;
-                }
+                actByRub.TryGetValue(rubvar.Id, out var act);
 
-                row.Details ??= new List<RubFmtRow>();
-
-                foreach (var detRow in row.Details)
-                {
-                    if (!detRow.Irub.HasValue || !detRow.Ifmt.HasValue)
-                        continue;
-
-                    if (detByRubFmt.TryGetValue((detRow.Irub.Value, detRow.Ifmt.Value), out var det))
+                var details = rubvar.Rubfmts
+                    .Select(rubfmt =>
                     {
-                        detRow.InputValue = det?.Inptvalue ?? detRow.InputValue;
-                        detRow.Aval = det?.Aval ?? detRow.Aval;
-                        detRow.Iraw = det?.Iraw?.ToString() ?? detRow.Iraw;
-                    }
+                        detByRubFmt.TryGetValue((rubvar.Id, rubfmt.Id), out var det);
+
+                        return new RubFmtRow
+                        {
+                            Id = rubfmt.Id,
+                            Irub = rubvar.Id,
+                            Vgpe = rubfmt.Vgpe,
+                            Atyp = rubfmt.Ztyp ?? 0,
+                            Ifmt = rubfmt.Id,
+                            Scdfmt = rubfmt.Zcdrub,
+                            Liba = rubfmt.Liba,
+                            Ftsrc = rubfmt.Ftsrc,
+                            InputValue = det?.Inptvalue ?? string.Empty,
+                            Aval = det?.Aval,
+                            Iraw = det?.Iraw?.ToString() ?? string.Empty
+                        };
+                    })
+                    .ToList();
+
+                return new RubVarRow
+                {
+                    Id = rubvar.Id,
+                    Irub = rubvar.Id,
+                    Vgpe = rubvar.Vgpe,
+                    Atyp = rubvar.Atyp ?? 0,
+                    Scdrub = rubvar.Scdrub,
+                    Liba = rubvar.Liba,
+                    Abg = rubvar.Liba,
+                    InputValue = act?.Inptvalue ?? string.Empty,
+                    Aval = act?.Aval,
+                    Iraw = act?.Iraw?.ToString() ?? string.Empty,
+                    Details = details
+                };
+            })
+            .ToList();
+    }
+    else
+    {
+        foreach (var row in session.RubVarRows)
+        {
+            if (row.Irub.HasValue && actByRub.TryGetValue(row.Irub.Value, out var act))
+            {
+                row.InputValue = act?.Inptvalue ?? row.InputValue;
+                row.Aval = act?.Aval ?? row.Aval;
+                row.Iraw = act?.Iraw?.ToString() ?? row.Iraw;
+            }
+
+            row.Details ??= new List<RubFmtRow>();
+
+            foreach (var detRow in row.Details)
+            {
+                if (!detRow.Irub.HasValue || !detRow.Ifmt.HasValue)
+                    continue;
+
+                if (detByRubFmt.TryGetValue((detRow.Irub.Value, detRow.Ifmt.Value), out var det))
+                {
+                    detRow.InputValue = det?.Inptvalue ?? detRow.InputValue;
+                    detRow.Aval = det?.Aval ?? detRow.Aval;
+                    detRow.Iraw = det?.Iraw?.ToString() ?? detRow.Iraw;
                 }
             }
         }
     }
-
+}
     private void BindLocalStateFromSession(SaieSession session)
     {
         _calcContext = new CalcContext
@@ -587,8 +611,7 @@ else
             Program = session.Program,
             Tier = session.Tier,
             EnsTbls = session.EnsTbls,
-            EnsGpdata = InsGpdata ?? new List<Gpgrid>(),
-            SessionDate = _sessionDate,
+            SessionDate = SessionDate,
             IsTestMode = false
         };
 
@@ -610,8 +633,7 @@ else
             Program = prog,
             Tier = tier,
             EnsTbls = _saieSession?.EnsTbls ?? new List<Gtabl>(),
-            SessionDate = _sessionDate,
-            EnsGpdata = InsGpdata ?? new List<Gpgrid>(),
+            SessionDate = SessionDate,
             IsTestMode = false
         };
     }
@@ -666,12 +688,10 @@ else
 
         await RendsTier(ImyTie);
     }
-
     private async Task OnTierChanged()
     {
         await RendsTier(ImyTie);
     }
-
     private string GetTierLabel(TierspDto tie)
     {
         if (displayMode == DisplayMode.Matricule)
@@ -679,7 +699,6 @@ else
 
         return $"{tie.Nom} - {tie.Pnom} - {tie.Xmatri}";
     }
-
     private async Task HandleLostFocus(FocusEventArgs args)
     {
         if (string.IsNullOrWhiteSpace(InTSaie))
@@ -708,4 +727,23 @@ else
             }
         }
     }
+// private void OnGroupSelected(int groupId)
+// {
+//     SelectedGroupId = groupId;
+
+//     if (Session?.Program is not null)
+//     {
+//         EnsureRubVarRowsAndDetails(Session, forceRebuild: true);  // <-- forceRebuild: true is essential
+//         BindLocalStateFromSession(Session);
+//     }
+// }
+// private bool IsInSelectedGroup(RubvarDto rubvar)
+// {
+//     var group = SelectedGroup;
+//     if (group is null || group.TbItems is null || group.TbItems.Count == 0)
+//         return true;
+
+//     return group.TbItems.Any(m =>
+//         string.Equals(m.Ftcol, rubvar.Scdrub, StringComparison.Ordinal));
+// }
 }

@@ -61,6 +61,8 @@
                         <InputText @bind-Value="strExo" disabled />
                         <label>Session:</label>
                         <InputText @bind-Value="strSes" disabled />
+                        <label>/</label>
+                        <InputDate @bind-Value="SessionDate" /> @* bind-Value:after="OnDayDateChanged" /> *@
                     </div>
                 </div>
 
@@ -77,13 +79,6 @@
                                     <option value="@pgr.Id">@pgr.Liba</option>
                                 }
                             </InputSelect>
-                            @* <InputSelect id="pgrId" @bind-Value="ImyProg">
-                                <option value=0></option>
-                                @foreach (var pgr in LsProgs)
-                                {
-                                    <option value=@pgr.Id @onchange="() => GetSelectedProg(pgr)">@pgr.Liba</option>
-                                }
-                            </InputSelect> *@
                         </div>
 
                         <label for="TypDiv">Service :</label>
@@ -98,17 +93,21 @@
                                     <option value="@divo.Ihie">@divo.Abg-@divo.Liba</option>
                                 }
                                 </InputSelect>
-
-                            @* <InputSelect id="TypDiv" @bind-Value="ImyDiv" @onchange="@trierTiers()">
-                                <option value=0></option>
-                                <option value=-1>Tous</option>
-                                @foreach (var divo in LsDivs)
-                                {
-                                    <option value=@divo.Ihie>@divo.Abg-@divo.Liba</option>
-                                }
-                            </InputSelect> *@
                         </div>
-
+                        <div class="d-flex align-items-center gap-2 mb-2">
+    <div class="col-auto"><label>Rubriques :</label></div>
+    <div class="col-auto">
+        <InputSelect Value="@SelectedGroupId"
+                     ValueChanged="@((int v) => OnGroupSelected(v))"
+                     ValueExpression="@(() => SelectedGroupId)">
+            <option value="0">Tous</option>
+            @foreach (var g in AvailableGroups)
+            {
+                <option value="@g.Id">@g.Liba</option>
+            }
+        </InputSelect>
+    </div>
+</div>
                     </div>
                         @if (!string.IsNullOrEmpty(Imessage))
                         {
@@ -122,26 +121,28 @@
                 <div class="flex-fill overflow-auto">
                     @if (_chxMenu != 0 && curOrga?.Idorg != 0 && curProg?.Id != 0 && toChild != null)
                     {
-                        @switch (_chxMenu)
+                        @if (_chxMenu == 1 && CanOpenSaiepart)
                         {
-                            case 1:
                                 <Saiepart @ref="myfsaie"
                                           CurOrga="@curOrga"
                                           @bind-NbChanges="_nbChanges"
                                           ToChild="@toChild"
                                           ImyDiv="@ImyDiv"
                                           curProg="@curProg"
-                                          ChxGpe="@Ugpe"
+                                          ChxGpe="@Ugpe" 
                                           _guard="@_guard"
                                           PreTiers="@PreTiers"
-                                          SessOpen="@SessOpen"
-                                          _saieSession="@CurrentSaieSession"
+                                          InsGpdata="_inGldata"
+                                          SessOpen="@CanOpenSaiepart"
+                                          _sessionDate="@SessionDate"
+                                          _saieSession="@_saieSession"
+                                          SelectedRubvars="@SelectedRubvars"
                                           _MyODaClient="_MyODaClient">
                                     <ChildContent></ChildContent>
                                 </Saiepart>
-                                break;
-
-                            case 2:
+                            }
+                            else if (_chxMenu == 2)
+                            {
                                 @* 
                                 <OrdaLoad>
                                     <ChildContent>
@@ -149,10 +150,9 @@
                                     </ChildContent>
                                 </OrdaLoad> 
                                 *@
-                                break;
-
-                            case 5 when EnsTiers.Any():
-                                @* EdtSaie11 component placeholder *@
+                            }
+                            else if (_chxMenu == 5)
+                            {
                                 @*
                                 <EdtSaie11 @ref="gedt11"
                                            curOrga="@curOrga"
@@ -164,7 +164,7 @@
                                     </ChildContent>
                                 </EdtSaie11>
                                 *@
-                                break;
+                            }
                         }
                     }
                 </div>
@@ -214,8 +214,27 @@
     public List<Gplan> LsProgs = new();
 
     //Formula service
-    private SaieSession? CurrentSaieSession;
+    private SaieSession? _saieSession;
+    private SaieSession WorkSession { get; set; } = new();
+    private CalcContext? _calcContext;
+    
     private CalcSession? CurrentCalcSession;
+    // ASSUMPTION: session date defaults to today; user can change it via the date picker above.
+    public DateTime SessionDate = DateTime.Today;
+    public DateTime DayDate = DateTime.Today;
+    //groupes rubriques
+    private List<Gtabl> EnsVgps = new();
+    private List<RubvarDto>? _lastSelectedRubvars;
+    private int SelectedGroupId = 0;
+    private bool _hasUserInput;
+    private bool _hasCalculated;
+    private List<Gtabl> AvailableGroups =>
+        EnsVgps.Where(g => g.Pid == curProg.Id).ToList();
+
+    private Gtabl? SelectedGroup =>
+        SelectedGroupId == 0 ? null : AvailableGroups.FirstOrDefault(g => g.Id == SelectedGroupId);
+
+    private List<RubvarDto> SelectedRubvars = new();
     //private CalcContext? CurrentCalcContext;
     //private FormulaEvalService _formulaEvalService;
     public List<FormulaLine> FormulaLines { get; set; } = new();
@@ -278,11 +297,11 @@
 
     // }
 
-    public void RefreshStream()
-    {
-        EvalStream = FormulaLines
-            .Select(f => new InDataLineStream
-            {
+    //public void RefreshStream()
+    //{
+    //    EvalStream = FormulaLines
+    //        .Select(f => new InDataLineStream
+    //        {
                 // Etyp = (int)f.Etyp,
                 // Scdrub = f.Scdrub,
                 // Vtyp = (int)f.Vtyp,
@@ -292,9 +311,9 @@
                 // LngValue = f.LngValue,
                 // BolValue = f.BolValue,
                 // DatValue = f.DatValue
-            })
-            .ToList();
-    }
+    //        })
+    //        .ToList();
+    //}
 
     //menus
     public List<GxMenuItem> MenuItems = new()
@@ -326,6 +345,7 @@
     //public List<Rubhie> LsDivs = new List<Rubhie>();
     //gpe choix
     private List<Grole> _invRoles = new();
+    public List<Gpgrid> _inGldata = new();
     //Navigation
     private int _gIdTie = 0, _chxMenu = 1;
     private string strComp = "Saisies(sursite)";
@@ -336,8 +356,13 @@
     private bool isLoading = true;
     private bool isAuthenticated = false;
     private bool _isInitialized;
-    private bool IsOpen => Ugpe != 0;
-    public bool SessOpen => Ugpe != 0 && ImyProg != 0 && ImyDiv != 0; //toChild.inExo != null && toChild.inSes != null;
+    //public bool SessOpen => Ugpe != 0 && ImyProg != 0 && ImyDiv != 0; //toChild.inExo != null && toChild.inSes != null;
+    private bool CanOpenSaiepart =>
+        PreTiers is not null &&
+        PreTiers.Count > 0 &&
+        Ugpe != 0 &&
+        ImyProg != 0 &&
+        ImyDiv != 0;
     private bool FirstLoadCompleted = false;
     private bool ContentLoaded = false;
     private bool isFilteringEnabled = false;
@@ -421,6 +446,10 @@
                     Liba = gr.Liba
                 });
             }
+            //Groupe rubriques
+            EnsVgps = await _rendAgres.LoadOrgaVgroups();
+            RebuildFilteredRubvars();
+            Console.WriteLine($"✅ LoadOrgaVgroups done: {EnsVgps.Count}");
 
             _invRoles = await _rendAgres.LoadOrgaRoles();
             Console.WriteLine($"inv roles : {_invRoles?.Count() ?? 0}");
@@ -446,17 +475,17 @@
             var lsSes = await _rendAgres.LoadOrgaSessios();
             curSes = lsSes?.FirstOrDefault(su => su.Eta == 1 && su.Igpe == 3);
 
-            if (curSes?.Ddat == null)
+            if (curSes == null)
             {
                 Console.WriteLine("No active session or Ddat is null");
                 return;
             }
-
+            SessionDate = curSes?.Dsess ?? DateTime.Now;
             strSes = curSes.Liba;
             if (toChild != null)
                 toChild.inSes = curSes;
 
-            await LoadSaieOrgaAsync(_usrBag.Idorg, curSes.Ddat.Value.Year, curSes.Ddat.Value.Month);
+            await LoadSaieOrgaAsync(_usrBag.Idorg, curSes.Dsess.Year, curSes.Dsess.Month);
         }
         catch (Exception ex)
         {
@@ -466,6 +495,24 @@
         {
             isLoading = false;
         }
+    }
+
+    protected override Task OnParametersSetAsync()
+    {
+        if (_saieSession is not null)
+        {
+            WorkSession = _saieSession;
+            BindLocalStateFromSession(WorkSession);
+        }
+
+        // Detect a change in the parent-selected group and rebuild rows accordingly.
+        if (WorkSession is not null && !ReferenceEquals(SelectedRubvars, _lastSelectedRubvars))
+        {
+            _lastSelectedRubvars = SelectedRubvars;
+            EnsureRubVarRowsAndDetails(WorkSession, forceRebuild: true);
+        }
+
+        return Task.CompletedTask;
     }
     //CRUD
     private async Task LoadSaieOrgaAsync(int key, int year, int month)
@@ -555,7 +602,10 @@
             curProg = curOrga.Plngens.FirstOrDefault(x => x.Id == ImyProg);
             if (curProg != null)
             {
-                //Console.WriteLine($"ICI prog Id : {curProg.Idorg}");
+                int igril = curProg.Plsgri ?? 0;
+                _inGldata = igril != 0
+                    ? await _rendAgres.LoadOrgaGdata(igril)
+                    : new List<Gpgrid>();
                 toChild.curProg = curProg;
                 PreRubs = curProg.Rubvars.ToList();
                 //_rubvarResolver = new RubvarResolver(curProg.Rubvars.ToList());
@@ -574,6 +624,79 @@
             }
         }
         //Console.WriteLine($"Ens. Progs : {EnsProgs.Count()}");
+    }
+    private void BindLocalStateFromSession(SaieSession session)
+    {
+        _calcContext = new CalcContext
+        {
+            Program = session.Program,
+            Tier = session.Tier,
+            EnsTbls = session.EnsTbls,
+            SessionDate = SessionDate,
+            IsTestMode = false
+        };
+
+        _hasUserInput = false;
+        _hasCalculated = false;
+    }
+    private void EnsureRubVarRowsAndDetails(SaieSession session, bool forceRebuild = false)
+    {
+        session.RubVarRows ??= new List<RubVarRow>();
+
+        var actByRub = session.Actsaies
+            .Where(x => x.Irub.HasValue)
+            .GroupBy(x => x.Irub!.Value)
+            .ToDictionary(g => g.Key, g => g.First());
+
+        var detByRubFmt = session.Actdets
+            .Where(x => x.Irub.HasValue && x.Ifmt.HasValue)
+            .GroupBy(x => (x.Irub!.Value, x.Ifmt!.Value))
+            .ToDictionary(g => g.Key, g => g.First());
+
+        // Rebuild the row list itself whenever it's empty (first load) OR the caller
+        // explicitly asks for it (e.g. the group selection changed) — group filtering
+        // only ever applies during a rebuild, never during the value-sync branch below.
+        if (forceRebuild || session.RubVarRows.Count == 0)
+        {
+            session.RubVarRows = SelectedRubvars   // <-- was session.Program.Rubvars.Where(IsInSelectedGroup)
+                .Select(rubvar =>
+                {
+                    return new RubVarRow
+                    {
+                        Irub = rubvar.Id,
+                        Liba = rubvar.Liba
+                    };
+                })
+                .ToList();
+        }
+        else
+        {
+            // Value-sync only — row set (and group filter) is unchanged.
+            foreach (var row in session.RubVarRows)
+            {
+                if (row.Irub.HasValue && actByRub.TryGetValue(row.Irub.Value, out var act))
+                {
+                    row.InputValue = act?.Inptvalue ?? row.InputValue;
+                    row.Aval = act?.Aval ?? row.Aval;
+                    row.Iraw = act?.Iraw?.ToString() ?? row.Iraw;
+                }
+
+                row.Details ??= new List<RubFmtRow>();
+
+                foreach (var detRow in row.Details)
+                {
+                    if (!detRow.Irub.HasValue || !detRow.Ifmt.HasValue)
+                        continue;
+
+                    if (detByRubFmt.TryGetValue((detRow.Irub.Value, detRow.Ifmt.Value), out var det))
+                    {
+                        detRow.InputValue = det?.Inptvalue ?? detRow.InputValue;
+                        detRow.Aval = det?.Aval ?? detRow.Aval;
+                        detRow.Iraw = det?.Iraw?.ToString() ?? detRow.Iraw;
+                    }
+                }
+            }
+        }
     }
     private async Task OnDivChanged()
     {
@@ -620,7 +743,23 @@
             EnsTiers = new();
         }
     }
+    private void OnGroupSelected(int groupId)
+    {
+        SelectedGroupId = groupId;
+        RebuildFilteredRubvars();
+    }
 
+    private void RebuildFilteredRubvars()
+    {
+        var group = SelectedGroup;
+
+        SelectedRubvars = (group is null || group.TbItems is null || group.TbItems.Count == 0)
+            ? curProg.Rubvars.ToList()                    // no group selected -> everything, new list instance
+            : curProg.Rubvars
+                .Where(rv => group.TbItems.Any(m =>
+                    string.Equals(m.Ftcol, rv.Scdrub, StringComparison.Ordinal)))
+                .ToList();
+    }
     void GetSelectedSesio(string mysesio)
     {
         toChild.MainOptsOk = false;
@@ -655,6 +794,14 @@
         StateHasChanged();
         Console.WriteLine("PAS 2");
         await Task.Delay(1);
+    }
+    private void OnDayDateChanged()
+    {
+        // Session date changed after a tier is already loaded — rebuild the context
+        // so subsequent Calculate/Save use the new date. Does NOT reload existing
+        // inputs; if that's desired, call OnLoadResetAsync() here instead.
+        //if (_curTier is not null)
+        //    BindLocalStateFromSession(Session);
     }
     void NavigateBack()
     {

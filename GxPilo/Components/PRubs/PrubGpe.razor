@@ -1,6 +1,6 @@
-﻿@page "/gtables"
+﻿@page "/prubgpe"
 @inherits CompUICrudBase
-@layout AtblMenu
+@layout PrubMenu
 
 @using System
 @using System.Collections.ObjectModel
@@ -70,48 +70,15 @@ else
                     }
                 </div>
             </div>
-            <div class="form-group">
-                <div class="btn btn-group">
-                    <label class="mb-0 me-2">Groupe :</label>
-                    @* <InputSelect @bind-Value="IMyGtbl" class="me-3" style="width:auto">
-                        <option value=0>?choisir</option>
-                        @foreach (var utb in LsFixes.Where(u => u.Gvars == 35 && u.Itb == 1 && u.Elea != 0))
-                        {
-                            <option value=@utb.Elea>@utb.Liba</option>
-                        }
-                    </InputSelect> *@
-                    <InputSelect @bind-Value="IMyGtbl"
-                                 @bind-Value:after="OuvreMGrid"
-                                 class="me-3"
-                                 style="width:auto">
-                        <option value=0>?chosir</option>
-                        @foreach (var tob in LsFixes.Where(u => u.Gvars == 35 && u.Itb == 1 && u.Elea != 0))
-                        {
-                            <option value=@tob.Elea>@tob.Liba</option>
-                        }
-                    </InputSelect>
-                    <label> Base : </label>
-                    <InputSelect @bind-Value="IMyBas"
-                                 @bind-Value:after="OuvreMGrid"
-                                 class="me-3"
-                                 style="width:auto">
-                        <option value=0>?base</option>
-                        @foreach (var utb in LsDoms)
-                        {
-                            <option value=@utb.Gp2>@utb.Liba</option>
-                        }
-                    </InputSelect>
-
-                </div>
-            </div>
+            <span>@curPlan.Liba</span>
             <div class="container-fluid-fixed-top">
-                @if (curOrga == null)
+                @if (gIdorg == 0)
                 {
-                    <p style="color:red;">Warning: curOrga is unexpectedly null.</p>
+                    <p style="color:red;">Warning: current Institution is unexpectedly null.</p>
                 }
                 else
                 {
-                    <EditForm Context="invform" Model="@curOrga">
+                    <EditForm Context="invform" Model="@curPlan">
                         <DataAnnotationsValidator />
                         <ValidationSummary />
                         <div class="row">
@@ -121,13 +88,10 @@ else
                             }
                         </div>
                         <div class="row">
-                            @if (IMyGtbl != 0 && IMyBas != 0)
-                            {
-                                //Gvars = 4, Itb = 4, Gtyp = IMyGtbl, //2optionnel1integre
-                                //.Where(ti => ti.Gtyp == IMyGtbl && ti.Ktyp == IMyBas)"
+                                @*//Gvars = 4, Itb = 4, Gtyp = IMyGtbl, //2optionnel1integre
+                                //.Where(ti => ti.Gtyp == IMyGtbl && ti.Ktyp == IMyBas)" *@
                                 <!--Contenu des tables-->
-                                if (CanOpenMGrid)
-                                {
+
                                 <Grid TItem="GstablDto"
                                       Data="@MyDaGtbs"
                                       @key="GetRenderKey(EntityLevel.Gtb)"
@@ -176,70 +140,15 @@ else
                                                 }
                                             </ChildContent>
                                         </GridColumn>
-                                        <GridColumn TItem="GstablDto" HeaderText="Atyp" Class="xcol1">
-                                            <ChildContent Context="item">
-                                                @if (GetRowState(EntityLevel.Gtb, item.Rowguid) is RowState.AddPending or RowState.EditPending)
-                                                    {
-                                                        <InputSelect @bind-Value="draftGtb.Atyp" class="me-3" style="width:auto">
-                                                            <option value=0>?choisir</option>
-                                                            @foreach (var fx in LsFixes.Where(u => u.Gvars == 32 && u.Itb == 2 && u.Gp1 == 1 && u.Elea != 0))
-                                                            {
-                                                                <option value=@fx.Elea>@fx.Liba</option>
-                                                            }
-                                                        </InputSelect>
-                                                    }
-                                                    else
-                                                    {
-                                                        <InputSelect @bind-Value="item.Atyp" class="me-3" style="width:auto" disabled>
-                                                            <option value=0>aucun</option>
-                                                            @foreach (var fx in LsFixes.Where(u => u.Gvars == 32 && u.Itb == 2 && u.Gp1 ==1 && u.Elea != 0))
-                                                            {
-                                                                <option value=@fx.Elea>@fx.Liba</option>
-                                                            }
-                                                        </InputSelect>
-                                                    }
-                                            </ChildContent>
-                                        </GridColumn>
-                                        <GridColumn TItem="GstablDto" HeaderText="Dpdce" Class="xcol2">
-                                            <ChildContent Context="item">
-                                                @if (GetRowState(EntityLevel.Gtb, item.Rowguid) is RowState.AddPending or RowState.EditPending)
-                                                {
-                                                    <InputSelect @bind-Value="draftGtb.Ydpd">
-                                                        <option class="jchx" value=0>?choisir</option>
-                                                        @foreach (var utb in MyDaGtbs.Where(uv => uv.Id != item.Id))
-                                                        {
-                                                            <option value=@utb.Id>@utb.Liba</option>
-                                                        }
-                                                    </InputSelect>
-                                                }
-                                                else
-                                                {
-                                                    <InputSelect @bind-Value="item.Ydpd" disabled="true">
-                                                        <option class="jchx" value=0>aucun</option>
-                                                        @foreach (var utb in MyDaGtbs.Where(uv => uv.Id != item.Id))
-                                                        {
-                                                            <option value=@utb.Id>@utb.Liba</option>
-                                                        }
-                                                    </InputSelect>
-                                                }
-                                            </ChildContent>
-                                        </GridColumn>
                                         <GridColumn TItem="GstablDto" HeaderText="Eta" Class="xcol1">
                                             <HeaderContent>
-                                                @if (IMyGtbl != 1)
-                                                {
-                                                    <button class="btn btn-primary btn-sm @(IsLevelBusy(EntityLevel.Gtb) ? "disabled-action" : "")"
-                                                            @onclick="() => StartGtbNew()">
-                                                        <span style="display:inline-flex; align-items:center; gap:2px;">
-                                                            <span>➕</span>
-                                                            <span>Add</span>
-                                                        </span>
-                                                    </button>
-                                                }
-                                                else
-                                                {
-                                                    <span>Eta</span>
-                                                }
+                                                <button class="btn btn-primary btn-sm @(IsLevelBusy(EntityLevel.Gtb) ? "disabled-action" : "")"
+                                                       @onclick="() => StartGtbNew()">
+                                                   <span style="display:inline-flex; align-items:center; gap:2px;">
+                                                        <span>➕</span>
+                                                        <span>Add</span>
+                                                    </span>
+                                                </button>
                                             </HeaderContent>
                                             <ChildContent Context="item">
                                                 @if (GetRowState(EntityLevel.Gtb, item.Rowguid) is RowState.AddPending or RowState.EditPending)
@@ -262,7 +171,7 @@ else
                                                         }
                                                     </InputSelect>
                                                 }
-                                            </ChildContent>
+                                            </ChildContent> 
                                         </GridColumn>
                                         <GridColumn TItem="GstablDto" HeaderText="Actions" Filterable="false" Class="xcol2 actions-col">
                                             <ChildContent Context="item">
@@ -271,7 +180,6 @@ else
                                                     case RowState.Locked:
                                                         <span class="text-muted">—</span>
                                                         break;
-                                                    
                                                     case RowState.AddPending:
                                                         <Button Color="ButtonColor.Success" Size="ButtonSize.Small"
                                                                 @onclick="() => ConfirmAdd(EntityLevel.Gtb, draftGtb, true)">
@@ -325,7 +233,7 @@ else
                                     </GridColumns>
                                     <GridDetailView TItem="GstablDto" Context="selectedGtb">
                                         <Grid TItem="GstablDto"
-                                              Data="@MyDaGt2s.Where(el => el.Pid == selectedGtb.Id).ToList()"
+                                              Data="@MyDaGt2s.ToList()"
                                               
                                               AllowPaging="true"
                                               Responsive="true">
@@ -344,55 +252,55 @@ else
                                                         }
                                                     </ChildContent>
                                                 </GridColumn>
-                                                @* <GridColumn TItem="GstablDto" HeaderText="Atyp" Class="xcol1">
-                                                    <ChildContent Context="item">
-                                                        @if (EdGt2Rowguid == item.Rowguid)
-                                                        {
-                                                            <InputText @bind-Value="draftGt2.Satyp" />
-                                                        }
-                                                        else
-                                                        {
-                                                            @item.Satyp
-                                                        }
-                                                    </ChildContent>
-                                                </GridColumn> *@
-                                                <GridColumn TItem="GstablDto" HeaderText="Valeur" Class="xcol2">
-                                                    <ChildContent Context="item">
-                                                       @if (GetRowState(EntityLevel.Gt2, item.Rowguid) is RowState.AddPending or RowState.EditPending)
-                                                        {
-                                                            <InputText @bind-Value="draftGt2.Aval" />
-                                                        }
-                                                        else
-                                                        {
-                                                            @item.Aval
-                                                        }
-                                                    </ChildContent>
-                                                </GridColumn>
                                                 <GridColumn TItem="GstablDto" HeaderText="Designation" Class="xcol2">
                                                     <ChildContent Context="item">
                                                         @if (GetRowState(EntityLevel.Gt2, item.Rowguid) is RowState.AddPending or RowState.EditPending)
-                                                        {
-                                                            <InputText @bind-Value="draftGt2.Liba" />
-                                                        }
-                                                        else
-                                                        {
-                                                            @item.Liba
-                                                        }
+                                                    {
+                                                        <InputSelect @bind-Value="draftGt2.Ftcol" class="me-3" style="width:auto">
+                                                            <option value="">?choisir</option>
+                                                            @foreach (var ur in curPlan.Rubvars)
+                                                            {
+                                                                <option value="@ur.Scdrub">@ur.Liba</option>
+                                                            }
+                                                        </InputSelect>
+                                                    }
+                                                    else
+                                                    {
+                                                        <InputSelect @bind-Value="item.Ftcol" class="me-3" style="width:auto" disabled>
+                                                            <option value="">?choisir</option>
+                                                            @foreach (var ur in curPlan.Rubvars)
+                                                            {
+                                                                <option value="@ur.Scdrub">@ur.Liba</option>
+                                                            }
+                                                        </InputSelect>
+                                                    }
                                                     </ChildContent>
                                                 </GridColumn>
-                                                <GridColumn TItem="GstablDto" HeaderText="Abrege" Class="xcol1">
+                                                <GridColumn TItem="GstablDto" HeaderText="Code" Class="xcol1">
                                                     <ChildContent Context="item">
                                                         @if (GetRowState(EntityLevel.Gt2, item.Rowguid) is RowState.AddPending or RowState.EditPending)
-                                                        {
-                                                            <InputText @bind-Value="draftGt2.Abg" />
-                                                        }
-                                                        else
-                                                        {
-                                                            @item.Abg
-                                                        }
+                                                    {
+                                                        <InputSelect @bind-Value="draftGt2.Ftcol" class="me-3" style="width:auto">
+                                                            <option value="">?choisir</option>
+                                                            @foreach (var ur in curPlan.Rubvars)
+                                                            {
+                                                                <option value="@ur.Scdrub">@ur.Scdrub</option>
+                                                            }
+                                                        </InputSelect>
+                                                    }
+                                                    else
+                                                    {
+                                                        <InputSelect @bind-Value="item.Ftcol" class="me-3" style="width:auto" disabled>
+                                                            <option value="">?choisir</option>
+                                                            @foreach (var ur in curPlan.Rubvars)
+                                                            {
+                                                                <option value="@ur.Scdrub">@ur.Scdrub</option>
+                                                            }
+                                                        </InputSelect>
+                                                    }
                                                     </ChildContent>
                                                 </GridColumn>
-                                                <GridColumn TItem="GstablDto" HeaderText="Eta" Class="xcol1">
+                                                <GridColumn TItem="GstablDto" HeaderText="Eta" Class="xcol2">
                                                     <HeaderContent>
                                                         @if (selectedGtb != null)
                                                         {
@@ -491,8 +399,6 @@ else
                                         </Grid>
                                     </GridDetailView>
                                 </Grid>
-                                }
-                            }
                         </div>
                     </EditForm>
                 }
@@ -650,7 +556,11 @@ else
     [Parameter]
     public IODataClient _InODaClient { get; set; }
     [Parameter]
-    public GxorgaDto curOrga { get; set; } = new();
+    public int gIdorg { get; set; } = new();
+    [Parameter]
+    public PlngenDto curPlan { get; set; } = new();
+    [Parameter]
+    public List<RubvarDto> ensRubs { get; set; } = new();
     [Parameter]
     public ChildVars toChild { get; set; }
     [Parameter]
@@ -671,6 +581,8 @@ else
     private Userbag _usrBag = new Userbag();
     private string _UserId = "";
     private int _UorgId = 0;
+    //data
+    private List<GstablDto> orgTbls = new();
 
     private Dictionary<int, bool> EdState = new Dictionary<int, bool>();
     private Dictionary<Guid, RowState> _rowStates = new();
@@ -718,7 +630,6 @@ else
 
     //Global
     private int _lgcdu = 0;
-    private int IMyDom = 1; //Otyp1tiers2Matiere
     //private int IMyGtbl = 0, IMyBas = 0;
     private int _myGtbl = 0;
     public int IMyGtbl
@@ -788,7 +699,7 @@ else
         isLoading = true;
         try
         {
-            if (toChild == null || curOrga == null)
+            if (toChild == null)
             {
                 Console.WriteLine("Missing parent data");
                 return;
@@ -809,10 +720,10 @@ else
             //var noslims = LsVars.Where(uv => uv.Idhie == 0 && uv.Gvars == 21 && uv.Itb == 1 && uv.Elea == 1);
             //if (noslims.Any()) _lgcdu = noslims.FirstOrDefault().Ivala;
             //ChargeParentData;
-            Console.WriteLine($"Child init: Gstabls={curOrga.Gstabls?.Count ?? 0}");
-
+            //Console.WriteLine($"Child init: Gstabls={curOrga.Gstabls?.Count ?? 0}");
+            await LoadOrgaAsync(gIdorg);
             // 🔥 SAFE - Only initialize if Gstabls EXISTS
-            if (curOrga.Gstabls != null && curOrga.Gstabls.Any())
+            if (orgTbls.Any())
             {
                 // Parent collection: Rubrics - otyp1tables - tenr1base
                 InitializeMyDaGtbs();
@@ -862,6 +773,25 @@ else
     {
         SubscribeToGuard();
     }
+    private async Task LoadOrgaAsync(int key2)
+    {
+        try
+        {
+            var mesgtbls = await _InODaClient
+                .For<GstablDto>("Gstabls")
+                .Filter(f => f.Idorg == key2 && f.Otyp == 7)
+                .FindEntriesAsync();
+            orgTbls = mesgtbls.ToList();
+            //orgPlns = msgsie.ToList();
+            //Console.WriteLine($"loadOrgaAsync completed :{curOrga?.Raison}");
+            //Console.WriteLine($"loadOrgaAsync completed :{curOrga?.Raison}");
+            //Console.WriteLine($"lien plngen :{curOrga?.Plngens?.Count}");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Load error: {ex.Message}");
+        }
+    }
     // Register guards and handlers ONCE when the component is initialized
     protected override void OnAfterRender(bool firstRender)
     {
@@ -871,19 +801,19 @@ else
             _locationHandler = _navManager.RegisterLocationChangingHandler(OnLocationChangingAsync);
         }
     }
-    private async Task OuvreMGrid()
-    {
-        if (IMyGtbl != 0 && IMyBas != 0)
-        {
-            await UpdateMyDaGtbs();
-            //PlnRenderKey = Guid.NewGuid();
-            CanOpenMGrid = true;
-        }
-        else
-        {
-            CanOpenMGrid = false;
-        }
-    }
+    // private async Task OuvreMGrid()
+    // {
+    //     if (IMyGtbl != 0 && IMyBas != 0)
+    //     {
+    //         await UpdateMyDaGtbs();
+    //         //PlnRenderKey = Guid.NewGuid();
+    //         CanOpenMGrid = true;
+    //     }
+    //     else
+    //     {
+    //         CanOpenMGrid = false;
+    //     }
+    // }
     private async Task OnGtbRowClick(GridRowEventArgs<GstablDto> args)
     {
         Console.WriteLine($"OnGtbRowClick Triggered : {args.Item.Id}");
@@ -917,13 +847,13 @@ else
         var newGtb = new GstablDto
         {
             Rowguid = Guid.NewGuid(),
-            Idorg = curOrga.Idorg, //pere Id
-            Otyp = IMyDom, //1tiers2Matiere tables
+            Idorg = gIdorg, //pere Id
+            Otyp = 7, //groupage rubr saisie
+            Pid = curPlan.Id, //plan refer
             Gtyp = IMyGtbl, //2optionnel1integre
             Ktyp = IMyBas, //1tiers2matiere
             Tenr = 1, //1base2elemt
             Iui = lsnb,
-            Pid = 0,
             Iele = 0,
             Xdpd = 0,
             Ydpd = 0,
@@ -938,7 +868,7 @@ else
         }; //session pas creation
      
         //prise order
-        curOrga.Gstabls?.Add(newGtb);
+        orgTbls?.Add(newGtb);
         draftGtb = DeepClone(newGtb);
         SetRowState(EntityLevel.Gtb, newGtb.Rowguid, RowState.AddPending);
         BeginAdd(EntityLevel.Gtb, newGtb.Rowguid, draftGtb);
@@ -956,18 +886,19 @@ else
             return;
         }
         Console.WriteLine("🚨 StartGt2New");
-        var lsnb = NextSeq(MyDaGt2s.Where(uv => uv.Pref == mytabl.Tref), p => p.Iui);
+        var lsnb = NextSeq(MyDaGt2s.Where(uv => uv.Pid == mytabl.Id), p => p.Iui);
         var newRub = new GstablDto
         { /* init */
             Rowguid = Guid.NewGuid(),
             //Prowguid = mytabl.Rowguid,
-            Idorg = curOrga.Idorg, //pere Id
-            Otyp = IMyDom, //dom1tiers2matiere tables
+            Idorg = gIdorg, //pere Id
+            Otyp = 7, //groupage rubr saisie
+            Pid = mytabl.Id,
             Gtyp = IMyGtbl, //2optionnel1integre
             Ktyp = IMyBas, //1tiers2matiere
             Tenr = 2, //1base2elemt
             Iui = lsnb,
-            Pid = mytabl.Id,
+            
             Iele = 0,
             Xdpd = 0,
             Ydpd = 0,
@@ -980,7 +911,7 @@ else
             Xedt1 = 0,
             Xdel1 = 0
         };
-        curOrga.Gstabls.Add(newRub);
+        orgTbls.Add(newRub);
         draftGt2 = (GstablDto)DeepClone(newRub);
         SetRowState(EntityLevel.Gt2, newRub.Rowguid, RowState.AddPending);
         BeginAdd(EntityLevel.Gt2, newRub.Rowguid, draftGt2);
@@ -988,7 +919,6 @@ else
         await UpdateMyDaGt2s();     // now state is already correct when this renders
         //PlnRenderKey = newPln.Rowguid;
         await InvokeAsync(StateHasChanged);
-
     }
     
     public async Task StartGtbEdit(GstablDto item)
@@ -997,7 +927,7 @@ else
         if (item.Id == default) return;
         if (rowguid == Guid.Empty) return;
         if (IsAnyRowEditing && !IsRowEditing(rowguid)) return;
-
+        if (item.Iele != 0) item.Iui = (int)item.Iele;
         SetRowState(EntityLevel.Gtb, item.Rowguid, RowState.EditPending);
         _edGtbOriginals[rowguid] = DeepClone(item);
         draftGtb = DeepClone(item);
@@ -1062,12 +992,12 @@ else
         {
             case EntityLevel.Gtb:
                 await CancelAdd(level, entity);
-                curOrga.Gstabls.RemoveAll(x => x.Rowguid == rowguid);
+                orgTbls.RemoveAll(x => x.Rowguid == rowguid);
                 //PlnRenderKey = Guid.Empty;
                 break;
             case EntityLevel.Gt2:
                 await CancelAdd(level, entity);
-                curOrga.Gstabls.RemoveAll(x => x.Rowguid == rowguid);
+                orgTbls.RemoveAll(x => x.Rowguid == rowguid);
                 //RubRenderKey = Guid.Empty;
                 break;
         }
@@ -1077,10 +1007,10 @@ else
     private void InitializeMyDaGtbs()
     {
         curGtb = new();
-        if (curOrga != null)
+        if (orgTbls.Any())
         {
-            GtbItems = curOrga.Gstabls
-                        .Where(uv => uv.Otyp == IMyDom && uv.Tenr == 1)
+            GtbItems = orgTbls
+                        .Where(uv => uv.Otyp == 7 && uv.Tenr == 1 && uv.Pid == curPlan.Id)
                         .ToList() ?? new List<GstablDto>();
             curGtb = GtbItems.FirstOrDefault();
         }
@@ -1094,8 +1024,8 @@ else
         curGt2 = new();
         if (curGtb != null)
         {
-            Gt2Items = curOrga.Gstabls
-                        .Where(ln => ln.Otyp == IMyDom && ln.Tenr == 2)
+            Gt2Items = orgTbls
+                        .Where(ln => ln.Otyp == 7 && ln.Tenr == 2 && ln.Pid == curGtb.Id)
                         .ToList() ?? new List<GstablDto>();
             curGt2 = Gt2Items.FirstOrDefault();
         }
@@ -1106,16 +1036,16 @@ else
     }
     private Task UpdateMyDaGtbs()
     {
-        GtbItems = curOrga.Gstabls
-                        .Where(uv => uv.Otyp == IMyDom && uv.Tenr == 1 && uv.Gtyp == IMyGtbl && uv.Ktyp == IMyBas)
+        GtbItems = orgTbls
+                        .Where(uv => uv.Otyp == 7 && uv.Tenr == 1 && uv.Pid == curPlan.Id)
                         .ToList() ?? new List<GstablDto>();
         return Task.CompletedTask;
     }
     private Task UpdateMyDaGt2s()
     {
-        Gt2Items = curOrga.Gstabls
-                        .Where(uv => uv.Otyp == IMyDom && uv.Tenr == 2 && uv.Pid == curGtb.Id)
-                        .ToList() ?? new List<GstablDto>();
+        Gt2Items = orgTbls
+                 .Where(uv => uv.Otyp == 7 && uv.Tenr == 2 && uv.Pid == curGtb.Id)
+                 .ToList() ?? new List<GstablDto>();
         return Task.CompletedTask;
     }
      private void SelDomTabl(int orig)
@@ -1197,10 +1127,10 @@ else
         switch (level)
         {
             case EntityLevel.Gtb when entity is GstablDto gtb:
-                SyncList(curOrga.Gstabls, gtb, mutation);
+                SyncList(orgTbls, gtb, mutation);
                 break;
             case EntityLevel.Gt2 when entity is GstablDto gt2 && curGtb is not null:
-                SyncList(curOrga.Gstabls, gt2, mutation);
+                SyncList(orgTbls, gt2, mutation);
                 break;
         }
     }
