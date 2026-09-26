@@ -323,7 +323,7 @@ else
             SessionDate = _sessionDate,
             Actsaies = actsaies,
             Actdets = actdets,
-            EnsGpdata = InsGpdata ?? new List<Gpgrid>(),   // <-- same list, reused for every tier
+            EnsGrls = InsGpdata ?? new List<Gpgrid>(),   // <-- same list, reused for every tier
             IsTestMode = IsTestMode
         };
     }
@@ -384,18 +384,6 @@ else
     private List<CalcContext> _lastContexts = new();
     private Dictionary<int, CalcSession> _lastSessionsByTier = new();
 
-    // private void LoadAvailableScdrubs(PlngenDto prog)
-    // {
-    //     // ASSUMPTION: IProgramLineParser exposes parsed labels via ProgramLine.Scdrub
-    //     // (mirrors how ProgramCalculator already parses Fpsrc). Adjust the property name
-    //     // if the real parsed-line type names it differently.
-    //     var lines = _myLineParser.Parse(new PlngenLineSource(prog));
-    //     AvailableScdrubs = lines
-    //         .Select(l => l.Scdrub)
-    //         .Where(s => !string.IsNullOrWhiteSpace(s))
-    //         .Distinct()
-    //         .ToList();
-    // }
     private void LoadAvailableScdrubs(PlngenDto prog)
     {
         var lines = _myLineParser.ParseProgramLines(prog.Fpsrc);
@@ -453,7 +441,7 @@ else
             {
                 if (_lastSessionsByTier.TryGetValue(ctx.Itie ?? 0, out var incalcSession))
                 {
-                    await _calcPersistence.SaveCalcAsync(ctx, incalcSession);
+                    await _calcPersistence.TrackCalcChangesAsync(ctx, incalcSession);
                 }
             }
             Imessage = "Results saved.";

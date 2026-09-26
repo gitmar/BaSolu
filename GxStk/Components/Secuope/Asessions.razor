@@ -53,8 +53,8 @@
         // -session a ouvrir : clcaaaammxxx
         <div class="mt-3">
             <InputText @bind-Value="draftSes.Liba" placeholder="Label" />        
-            <InputDate @bind-Value="draftSes.Ddat" placeholder="Debut" />
-            <InputDate @bind-Value="draftSes.Fdat" placeholder="Fin" />
+            <InputDate @bind-Value="draftSes.Dddat" placeholder="Debut" />
+            <InputDate @bind-Value="draftSes.Dfdat" placeholder="Fin" />
             
             <Button Color="ButtonColor.Success" @onclick="() => SaveAdd()">Add</Button>
             <Button Color="ButtonColor.Secondary" @onclick="() => CancelAdd()">Cancel</Button>
@@ -110,11 +110,11 @@
                     <ChildContent Context="item">
                         @if (editRowguid == item.Rowguid)
                         {
-                            <InputDate @bind-Value="draftSes.Ddat" />
+                            <InputDate @bind-Value="draftSes.Dddat" />
                         }
                         else
                         {
-                            @item.Ddat?.ToShortDateString()
+                            @item.Dddat?.ToShortDateString()
                         }
                     </ChildContent>
                 </GridColumn>
@@ -122,11 +122,11 @@
                     <ChildContent Context="item">
                         @if (editRowguid == item.Rowguid)
                         {
-                            <InputDate @bind-Value="draftSes.Fdat" />
+                            <InputDate @bind-Value="draftSes.Dfdat" />
                         }
                         else
                         {
-                            @item.Fdat?.ToShortDateString()
+                            @item.Dfdat?.ToShortDateString()
                         }
                     </ChildContent>
                 </GridColumn>
@@ -305,7 +305,7 @@
     private void StartEdit(GsesioDto atr)
     {
         editRowguid = atr.Rowguid;
-        draftSes = new GsesioDto { Id = atr.Id, Liba = atr.Liba, Igpe = atr.Igpe, Rowguid = atr.Rowguid };
+        draftSes = new GsesioDto { Id = atr.Id, Liba = atr.Liba, Igpe = atr.Igpe, Rowguid = atr.Rowguid, Dddat = atr.Dddat, Dfdat = atr.Dfdat };
     }
 
     private async Task SaveEdit(GsesioDto atr)
@@ -313,8 +313,8 @@
         atr.Liba = draftSes.Liba;
         atr.Igpe = draftSes.Igpe;
         atr.Refa = draftSes.Refa;
-        atr.Ddat = draftSes.Ddat;
-        atr.Fdat = draftSes.Fdat;
+        atr.Dddat = draftSes.Dddat;
+        atr.Dfdat = draftSes.Dfdat;
         // Register update with OData context
         var key = GetEntityKey(atr); // helper to extract PK
         _guard.TrackUpdate("Gsesios", key, atr);

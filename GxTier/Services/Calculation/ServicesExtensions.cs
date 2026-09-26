@@ -26,7 +26,6 @@ namespace GxTie.Services.Calculation
             services.AddScoped<ICalculationService, CalculationService>();
             // Workflow and higher-level services (orchestration + persistence)
             services.AddScoped<ICalculationWorkflow, CalculationWorkflow>();
-            services.AddScoped<ISaieWorkflowService, SaieWorkflowService>();
 
             return services;
         }

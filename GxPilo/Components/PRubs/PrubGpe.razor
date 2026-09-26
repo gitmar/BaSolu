@@ -140,6 +140,30 @@ else
                                                 }
                                             </ChildContent>
                                         </GridColumn>
+                                        <GridColumn TItem="GstablDto" HeaderText="Periodicite" Class="xcol2">
+                                            <ChildContent Context="item">
+                                                @if (GetRowState(EntityLevel.Gtb, item.Rowguid) is RowState.AddPending or RowState.EditPending)
+                                                {
+                                                    <InputSelect @bind-Value="draftGtb.Tcol">
+                                                        <option value=0>?choisir</option>
+                                                        @foreach (var tob in LsFixes.Where(ut => ut.Gvars == 41 && ut.Itb == 5 && ut.Elea != 0))
+                                                        {
+                                                            <option value=@tob.Elea>@tob.Liba</option>
+                                                        }
+                                                    </InputSelect>
+                                                }
+                                                else
+                                                {
+                                                    <InputSelect @bind-Value="item.Tcol" disabled="true">
+                                                        <option value=0>?choisir</option>
+                                                        @foreach (var tob in LsFixes.Where(ut => ut.Gvars == 41 && ut.Itb == 5 && ut.Elea != 0))
+                                                        {
+                                                            <option value=@tob.Elea>@tob.Liba</option>
+                                                        }
+                                                    </InputSelect>
+                                                }
+                                            </ChildContent> 
+                                        </GridColumn>
                                         <GridColumn TItem="GstablDto" HeaderText="Eta" Class="xcol1">
                                             <HeaderContent>
                                                 <button class="btn btn-primary btn-sm @(IsLevelBusy(EntityLevel.Gtb) ? "disabled-action" : "")"
@@ -801,19 +825,6 @@ else
             _locationHandler = _navManager.RegisterLocationChangingHandler(OnLocationChangingAsync);
         }
     }
-    // private async Task OuvreMGrid()
-    // {
-    //     if (IMyGtbl != 0 && IMyBas != 0)
-    //     {
-    //         await UpdateMyDaGtbs();
-    //         //PlnRenderKey = Guid.NewGuid();
-    //         CanOpenMGrid = true;
-    //     }
-    //     else
-    //     {
-    //         CanOpenMGrid = false;
-    //     }
-    // }
     private async Task OnGtbRowClick(GridRowEventArgs<GstablDto> args)
     {
         Console.WriteLine($"OnGtbRowClick Triggered : {args.Item.Id}");
@@ -830,16 +841,6 @@ else
         Console.WriteLine($"Id {curGtb.Id}");
         StateHasChanged();
     }
-    // set up subscription locally
-    // private void SubscribeToGuard()
-    // {
-    //     _guard.OnChanges += async () =>
-    //     {
-    //         NbChanges = _guard.GetPendingChangesCount();
-    //         await NbChangesChanged.InvokeAsync(NbChanges);
-    //         StateHasChanged();
-    //     };
-    // }
     private async Task StartGtbNew()
     {
         Console.WriteLine("🚨 StartGtbNew");
@@ -853,6 +854,7 @@ else
             Gtyp = IMyGtbl, //2optionnel1integre
             Ktyp = IMyBas, //1tiers2matiere
             Tenr = 1, //1base2elemt
+            Tcol = 5, //periode : 1an(exo)2an(cal)3semestre4trim5mois6quinz
             Iui = lsnb,
             Iele = 0,
             Xdpd = 0,

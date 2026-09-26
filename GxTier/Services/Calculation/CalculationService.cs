@@ -38,6 +38,7 @@ namespace GxTie.Services.Calculation
                 Itie = ctx.Itie,
                 Ipln = ctx.Ipln,
                 Irub = line.Irub ?? 0,
+                Scdrub = line.LineNumber?.ToString(),
                 Atyp = result.Type.HasValue ? (int)result.Type.Value : 0,
                 Inptvalue = result.Value?.ToString(),
                 Aval = result.Raw?.ToString(),
@@ -50,6 +51,7 @@ namespace GxTie.Services.Calculation
                 Itie = ctx.Itie,
                 Ipln = ctx.Ipln ?? 0,
                 Irub = line.Irub ?? 0,
+                Scdrub = line.LineNumber?.ToString(),
                 Atyp = result.Type.HasValue ? (int)result.Type.Value : 0,
                 Inptvalue = result.Value?.ToString(),
                 Aval = result.Raw?.ToString(),
@@ -62,6 +64,7 @@ namespace GxTie.Services.Calculation
                 Itie = ctx.Itie,
                 Ipln = ctx.Ipln ?? 0,
                 Irub = line.Irub ?? 0,
+                Scdrub = line.LineNumber?.ToString(),
                 Atyp = result.Type.HasValue ? (int)result.Type.Value : 0,
                 Inptvalue = result.Value?.ToString(),
                 Aval = result.Raw?.ToString(),
@@ -76,11 +79,14 @@ namespace GxTie.Services.Calculation
                 Ipln = ctx.Ipln ?? 0,
                 Irub = line.Irub ?? 0,
                 Ifmt = line.Ifmt ?? 0,
+                Scdrub = line.LineNumber?.ToString() ?? string.Empty, // ResdetDto.Scdrub is [Required] non-null string
+                Zcdrub = line.DetailCode,                              // was never set — needed to identify which detail this is
                 Atyp = result.Type.HasValue ? (int)result.Type.Value : 0,
                 Inptvalue = result.Value?.ToString(),
                 Aval = result.Raw?.ToString(),
                 Iraw = MyConverters.Trunc1000(result.Raw)?.ToString() ?? string.Empty
             };
+
         public static ResbdetDto MapToResbdet(CalcContext ctx, ProgramLine line, FormulaResult result)
             => new()
             {
@@ -89,6 +95,8 @@ namespace GxTie.Services.Calculation
                 Ipln = ctx.Ipln ?? 0,
                 Irub = line.Irub ?? 0,
                 Ifmt = line.Ifmt ?? 0,
+                Scdrub = line.LineNumber?.ToString() ?? string.Empty,
+                Zcdrub = line.DetailCode,
                 Atyp = result.Type.HasValue ? (int)result.Type.Value : 0,
                 Inptvalue = result.Value?.ToString(),
                 Aval = result.Raw?.ToString(),

@@ -1,4 +1,6 @@
-﻿using GxFormula.Forasource;
+﻿using BlazorBootstrap;
+
+using GxFormula.Forasource;
 
 using GxShared.GxGuards;
 using GxShared.Interfaces;
@@ -9,20 +11,22 @@ namespace GxTie.Services.Calculation
 {
     public interface ICalculationPersistence
     {
-        Task SaveSaieAsync(CalcContext ctx, SaieSession session, PendingSaveMode inSaveMode);
-        Task SaveCalcAsync(CalcContext ctx, CalcSession session);
+        Task TrackSaieChangesAsync(CalcContext ctx, SaieSession session);
+        Task TrackCalcChangesAsync(CalcContext ctx, CalcSession session);
     }
 
     public sealed class CalculationPersistence : ICalculationPersistence
     {
         private readonly IPendingChangesGuard _guard;
+        private readonly IMessageService _messageService;
 
-        public CalculationPersistence(IPendingChangesGuard guard)
+        public CalculationPersistence(IPendingChangesGuard guard, IMessageService messageService)
         {
             _guard = guard;
+            _messageService = messageService;
         }
 
-        public async Task SaveSaieAsync(CalcContext ctx, SaieSession session, PendingSaveMode inSaveMode)
+        public async Task TrackSaieChangesAsync(CalcContext ctx, SaieSession session)
         {
             SyncGridToSaieSession(session);
 
@@ -36,17 +40,16 @@ namespace GxTie.Services.Calculation
             foreach (var det in session.Actdets)
                 det.Iraw = MyConverters.Trunc1000(det.Iraw).ToString();
 
-            // Track only. TrackInsert already inserts immediately when the guard's save
-            // mode is Immediate; otherwise it stays pending until the parent's
-            // Save All (guard.FlushAsync()) / Cancel All (guard.CancelChanges()).
             foreach (var act in session.Actsaies)
                 await _guard.TrackInsert("Actsaies", act);
 
             foreach (var det in session.Actdets)
                 await _guard.TrackInsert("Actdets", det);
+
+            NotifyPending();
         }
 
-        public async Task SaveCalcAsync(CalcContext ctx, CalcSession session)
+        public async Task TrackCalcChangesAsync(CalcContext ctx, CalcSession session)
         {
             foreach (var don in session.Resdons)
             {
@@ -70,16 +73,31 @@ namespace GxTie.Services.Calculation
                 det.Iord = ctx.Iord;
                 det.Iraw = MyConverters.Trunc1000(det.Iraw).ToString();
             }
+
             foreach (var bdet in session.Resbdets)
             {
                 bdet.Csess = ctx.Csess;
                 bdet.Iord = ctx.Iord;
                 bdet.Iraw = MyConverters.Trunc1000(bdet.Iraw).ToString();
             }
+
             await TrackAllAsync("Resdons", session.Resdons);
             await TrackAllAsync("Resbros", session.Resbros);
             await TrackAllAsync("Resdets", session.Resdets);
             await TrackAllAsync("Resbdets", session.Resbdets);
+
+            NotifyPending();
+        }
+
+        private void NotifyPending()
+        {
+            var count = _guard.GetPendingChangesCount();
+            if (count > 0)
+            {
+                _messageService.Show(
+                    $"⚠️ {count} change(s) pending — remember to Save All.",
+                    ToastType.Warning);
+            }
         }
 
         private void SyncGridToSaieSession(SaieSession session)
@@ -107,36 +125,6 @@ namespace GxTie.Services.Calculation
                         det.Iraw = detail.Iraw;
                         det.Vgpe = detail.Vgpe;
                     }
-                }
-            }
-        }
-
-        private void SyncSessionSaieToGrid(SaieSession session)
-        {
-            foreach (var act in session.Actsaies)
-            {
-                var row = session.RubVarRows.FirstOrDefault(r => r.Irub == act.Irub);
-                if (row != null)
-                {
-                    row.InputValue = act.Inptvalue ?? row.InputValue;
-                    row.Aval = act.Aval ?? row.Aval;
-                    row.Iraw = act.Iraw ?? row.Iraw;
-                    row.Vgpe = act.Vgpe;
-                }
-            }
-
-            foreach (var det in session.Actdets)
-            {
-                var master = session.RubVarRows.FirstOrDefault(r => r.Irub == det.Irub);
-                if (master == null) continue;
-
-                var detail = master.Details.FirstOrDefault(d => d.Irub == det.Irub && d.Ifmt == det.Ifmt);
-                if (detail != null)
-                {
-                    detail.InputValue = det.Inptvalue ?? detail.InputValue;
-                    detail.Aval = det.Aval ?? detail.Aval;
-                    detail.Iraw = det.Iraw ?? detail.Iraw;
-                    detail.Vgpe = det.Vgpe;
                 }
             }
         }

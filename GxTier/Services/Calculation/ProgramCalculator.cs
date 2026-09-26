@@ -20,26 +20,40 @@ namespace GxTie.Services.Calculation
             _engine = engine;
             _parser = parser;
         }
-
         public Task<CalcSession> RunCalcAsync(CalcContext ctx, CalcSession session)
         {
             if (ctx.Program is null)
                 throw new ArgumentNullException(nameof(ctx.Program));
 
-            var evalCtx = BuildEvalContext(ctx);
-            var lines = _parser.Parse(new PlngenLineSource(ctx.Program));
+            var parsedLines = _parser.Parse(new PlngenLineSource(ctx.Program));
+
+            var previousLines = new List<FormulaLine>();
+            var evalCtx = BuildEvalContext(ctx, previousLines);
 
             var resdonByLineNumber = new Dictionary<int, ResdonDto>();
             var resbroByLineNumber = new Dictionary<int, ResbroDto>();
 
-            foreach (var line in lines)
+            foreach (var line in parsedLines)
             {
                 if (IsCommentLine(line.Formula))
                     continue;
 
-                var result = _engine.Evaluate(line.Formula, evalCtx);
+                var result = _engine.Evaluate(line.Formula, evalCtx); // FormulaResult
                 if (result is null)
                     continue;
+
+                var formulaLine = new FormulaLine
+                {
+                    Source = "Calcpart",
+                    LineNumber = line.LineNumber,
+                    Identifier = line.Alias,
+                    Alias = line.Alias,
+                    Formula = line.Formula,
+                    Result = new EvaluationResult { Value = result.Value, Type = result.Type },
+                    Aval = result.Raw,
+                    Type = result.Type ?? LineType.Decimal
+                };
+                previousLines.Add(formulaLine);
 
                 if (line.IsDetail && line.ParentLineNumber.HasValue)
                 {
@@ -51,7 +65,7 @@ namespace GxTie.Services.Calculation
 
                         var bdet = ResultMapper.MapToResbdet(ctx, line, result);
                         bdet.Prowguid = parentResbro.Rowguid;
-                        bdet.Zcdrub = line.DetailCode;
+                        //bdet.Zcdrub = line.DetailCode;
                         session.Resbdets.Add(bdet);
                     }
                     else
@@ -62,33 +76,122 @@ namespace GxTie.Services.Calculation
 
                         var det = ResultMapper.MapToResdet(ctx, line, result);
                         det.Prowguid = parentResdon.Rowguid;
-                        det.Zcdrub = line.DetailCode;
+                        //det.Zcdrub = line.DetailCode;
                         session.Resdets.Add(det);
                     }
                 }
-                else
+                else if (line.LineNumber.HasValue)
                 {
-                    session.Outputs[line.LineNumber ?? 0] = ResultMapper.MapToOutputStream(ctx, line, result);
+                    session.Outputs[line.LineNumber.Value] = ResultMapper.MapToOutputStream(ctx, line, result);
 
                     if (ctx.IsTestMode)
                     {
                         var bro = ResultMapper.MapToResbro(ctx, line, result);
                         bro.Rowguid = Guid.NewGuid();
                         session.Resbros.Add(bro);
-                        resbroByLineNumber[line.LineNumber ?? 0] = bro;
+                        resbroByLineNumber[line.LineNumber.Value] = bro;
                     }
                     else
                     {
                         var don = ResultMapper.MapToResdon(ctx, line, result);
                         don.Rowguid = Guid.NewGuid();
                         session.Resdons.Add(don);
-                        resdonByLineNumber[line.LineNumber ?? 0] = don;
+                        resdonByLineNumber[line.LineNumber.Value] = don;
                     }
                 }
+                // else: alias line — tracked in previousLines only, no Resdon/Resbro/Resdet row.
             }
 
             return Task.FromResult(session);
         }
+
+        private FormulaEvaluationContext BuildEvalContext(CalcContext ctx, List<FormulaLine> previousLines)
+            => new()
+            {
+                Idorg = ctx.Idorg,
+                Ipln = ctx.Ipln,
+                Itie = ctx.Itie,
+                SessionDate = ctx.SessionDate ?? DateTime.Today,
+                Tier = ctx.Tier,
+                Actsaies = ctx.Actsaies,
+                Actdets = ctx.Actdets,
+                Resdons = ctx.Resdons,
+                Resbros = ctx.Resbros,
+                Resdets = ctx.Resdets,
+                EnsGrls = ctx.EnsGrls,
+                EnsTbls = ctx.EnsTbls,
+                Csess = ctx.Csess,
+                Iord = ctx.Iord,
+                PreviousLines = previousLines
+            };
+        //public Task<CalcSession> RunCalcAsync(CalcContext ctx, CalcSession session)
+        //{
+        //    if (ctx.Program is null)
+        //        throw new ArgumentNullException(nameof(ctx.Program));
+
+        //    var evalCtx = BuildEvalContext(ctx);
+        //    var lines = _parser.Parse(new PlngenLineSource(ctx.Program));
+
+        //    var resdonByLineNumber = new Dictionary<int, ResdonDto>();
+        //    var resbroByLineNumber = new Dictionary<int, ResbroDto>();
+
+        //    foreach (var line in lines)
+        //    {
+        //        if (IsCommentLine(line.Formula))
+        //            continue;
+
+        //        var result = _engine.Evaluate(line.Formula, evalCtx);
+        //        if (result is null)
+        //            continue;
+
+        //        if (line.IsDetail && line.ParentLineNumber.HasValue)
+        //        {
+        //            if (ctx.IsTestMode)
+        //            {
+        //                if (!resbroByLineNumber.TryGetValue(line.ParentLineNumber.Value, out var parentResbro))
+        //                    throw new InvalidOperationException(
+        //                        $"Detail line @{line.ParentLineNumber}#{line.DetailCode} has no parent line @{line.ParentLineNumber} evaluated in this program.");
+
+        //                var bdet = ResultMapper.MapToResbdet(ctx, line, result);
+        //                bdet.Prowguid = parentResbro.Rowguid;
+        //                bdet.Zcdrub = line.DetailCode;
+        //                session.Resbdets.Add(bdet);
+        //            }
+        //            else
+        //            {
+        //                if (!resdonByLineNumber.TryGetValue(line.ParentLineNumber.Value, out var parentResdon))
+        //                    throw new InvalidOperationException(
+        //                        $"Detail line @{line.ParentLineNumber}#{line.DetailCode} has no parent line @{line.ParentLineNumber} evaluated in this program.");
+
+        //                var det = ResultMapper.MapToResdet(ctx, line, result);
+        //                det.Prowguid = parentResdon.Rowguid;
+        //                det.Zcdrub = line.DetailCode;
+        //                session.Resdets.Add(det);
+        //            }
+        //        }
+        //        else
+        //        {
+        //            session.Outputs[line.LineNumber ?? 0] = ResultMapper.MapToOutputStream(ctx, line, result);
+
+        //            if (ctx.IsTestMode)
+        //            {
+        //                var bro = ResultMapper.MapToResbro(ctx, line, result);
+        //                bro.Rowguid = Guid.NewGuid();
+        //                session.Resbros.Add(bro);
+        //                resbroByLineNumber[line.LineNumber ?? 0] = bro;
+        //            }
+        //            else
+        //            {
+        //                var don = ResultMapper.MapToResdon(ctx, line, result);
+        //                don.Rowguid = Guid.NewGuid();
+        //                session.Resdons.Add(don);
+        //                resdonByLineNumber[line.LineNumber ?? 0] = don;
+        //            }
+        //        }
+        //    }
+
+        //    return Task.FromResult(session);
+        //}
         //public Task<CalcSession> RunCalcAsync(CalcContext ctx, CalcSession session)
         //{
         //    if (ctx.Program is null)

@@ -94,20 +94,24 @@
                                 }
                                 </InputSelect>
                         </div>
+
                         <div class="d-flex align-items-center gap-2 mb-2">
-    <div class="col-auto"><label>Rubriques :</label></div>
-    <div class="col-auto">
-        <InputSelect Value="@SelectedGroupId"
-                     ValueChanged="@((int v) => OnGroupSelected(v))"
-                     ValueExpression="@(() => SelectedGroupId)">
-            <option value="0">Tous</option>
-            @foreach (var g in AvailableGroups)
-            {
-                <option value="@g.Id">@g.Liba</option>
-            }
-        </InputSelect>
-    </div>
-</div>
+                            <div class="col-auto">
+                                <label>Rubriques :</label>
+                             </div>
+                             <div class="col-auto">
+                                <InputSelect Value="@SelectedGroupId"
+                                    ValueChanged="@((int v) => OnGroupSelected(v))"
+                                    ValueExpression="@(() => SelectedGroupId)">
+                                    <option value=0>Tous</option>
+                                    @foreach (var g in AvailableGroups)
+                                    {
+                                        <option value="@g.Id">@g.Liba</option>
+                                    }
+                                    <option value=-1>?choisir</option>
+                                </InputSelect>
+                            </div>
+                        </div>
                     </div>
                         @if (!string.IsNullOrEmpty(Imessage))
                         {
@@ -136,6 +140,8 @@
                                           SessOpen="@CanOpenSaiepart"
                                           _sessionDate="@SessionDate"
                                           _saieSession="@_saieSession"
+                                          GroupOverrideEddat="@GroupOverrideEddat"
+                                          GroupOverrideEfdat="@GroupOverrideEfdat"
                                           SelectedRubvars="@SelectedRubvars"
                                           _MyODaClient="_MyODaClient">
                                     <ChildContent></ChildContent>
@@ -222,10 +228,12 @@
     // ASSUMPTION: session date defaults to today; user can change it via the date picker above.
     public DateTime SessionDate = DateTime.Today;
     public DateTime DayDate = DateTime.Today;
+    public DateTime? GroupOverrideEddat = DateTime.Today;
+    public DateTime? GroupOverrideEfdat = DateTime.Today;
+    public int SelectedGroupId = 0;
     //groupes rubriques
     private List<Gtabl> EnsVgps = new();
     private List<RubvarDto>? _lastSelectedRubvars;
-    private int SelectedGroupId = 0;
     private bool _hasUserInput;
     private bool _hasCalculated;
     private List<Gtabl> AvailableGroups =>
@@ -250,7 +258,7 @@
     public List<TierspDto> PreTiers { get; set; } = new();
 
     public List<TierspDto> orgTiers = new();
-    public List<ActsaieDto> orgActs = new();
+    //public List<ActsaieDto> orgActs = new();
 
     public int _GIdTie = 0;
     public string _strOrga = "", _curSigle = "", strmeta = "", strmeta2 = "";
@@ -258,62 +266,6 @@
     private string gpeLiba = "";
     private int ImyProg = 0;
     private int ImyDiv = 0;
-
-    // private int _imyProg = 0;
-    // public int ImyProg
-    // {
-    //     get => _imyProg;
-    //     set
-    //     {
-    //         _imyProg = value;
-    //         var selected = LsProgs.FirstOrDefault(p => p.Id == value);
-    //         if (selected != null)
-    //         {   // fire-and-forget
-    //             _ = HandleSelectedProgAsync(selected);
-    //         }
-    //     }
-    // }
-    // private int _imyDiv = 0;
-    // public int ImyDiv
-    // {
-    //     get => _imyDiv;
-    //     set
-    //     {
-    //         _imyDiv = value;
-    //         trierTiers(); // your existing method, adjust if it needs the selected Id
-    //     }
-    // }
-    // private async Task HandleSelectedProgAsync(Gplan selected)
-    // {
-    //     await GetSelectedProg(selected);
-    // }
-    // Optional: shared methods for parsing, evaluating, persisting
-    // public void EvaluateAll()
-    // {
-    //     // foreach(var line in FormulaLines)
-    //     // {
-    //     //     line.Result = _formulaService.EvaluateFormula(line.Formula, line).ToString();
-    //     // });
-
-    // }
-
-    //public void RefreshStream()
-    //{
-    //    EvalStream = FormulaLines
-    //        .Select(f => new InDataLineStream
-    //        {
-                // Etyp = (int)f.Etyp,
-                // Scdrub = f.Scdrub,
-                // Vtyp = (int)f.Vtyp,
-                // StrValue = f.StrValue,
-                // DecValue = f.DecValue,
-                // IntValue = f.IntValue,
-                // LngValue = f.LngValue,
-                // BolValue = f.BolValue,
-                // DatValue = f.DatValue
-    //        })
-    //        .ToList();
-    //}
 
     //menus
     public List<GxMenuItem> MenuItems = new()
@@ -471,6 +423,7 @@
             }
 
             strExo = toChild?.inExo?.Liba ?? string.Empty;
+            //eYear = toChild?.inExo?. ?? DateTime.Now.Year;
 
             var lsSes = await _rendAgres.LoadOrgaSessios();
             curSes = lsSes?.FirstOrDefault(su => su.Eta == 1 && su.Igpe == 3);
@@ -535,7 +488,7 @@
                 .Expand("Tiegcats")
                 .FindEntriesAsync();
             orgTiers = msgsie.ToList();
-
+            /*
             var msgact = await _MyODaClient
                 .For<ActsaieDto>("Actsaies")
                 .Filter(a => a.Idorg == key &&
@@ -548,6 +501,7 @@
                 .Expand(a => a.Actdets)
                 .FindEntriesAsync();
             orgActs = msgact.ToList();
+            */
             Console.WriteLine($"loadOrgaAsync completed : {curOrga?.Raison}");
         }
         catch (Exception ex)
@@ -568,7 +522,7 @@
         if (mytier != null)
         {
             Console.WriteLine($"nom selected tiers : {mytier.Nom} et {mytier.Pnom}");
-            Console.WriteLine($"selected actsaies : {orgActs.Count()}");
+            //Console.WriteLine($"selected actsaies : {orgActs.Count()}");
         }
         else
         {
@@ -748,7 +702,18 @@
         SelectedGroupId = groupId;
         RebuildFilteredRubvars();
     }
+    private (DateTime Eddat, DateTime Efdat) ResolveRangeForCurrentGroup()
+    {
+        if (GroupOverrideEddat.HasValue && GroupOverrideEfdat.HasValue)
+            return (GroupOverrideEddat.Value, GroupOverrideEfdat.Value);
 
+        var group = SelectedGroup;
+        var periodType = group?.Tcol ?? 5;
+
+        var today = DateTime.Today;
+        var eyear = SessionDate.Year;
+        return ComputeGroupDefaultPeriod(periodType, eyear, today.Month, today.Day);
+    }
     private void RebuildFilteredRubvars()
     {
         var group = SelectedGroup;
@@ -759,6 +724,14 @@
                 .Where(rv => group.TbItems.Any(m =>
                     string.Equals(m.Ftcol, rv.Scdrub, StringComparison.Ordinal)))
                 .ToList();
+        var eyear = SessionDate.Year;
+        var currentMonth = SessionDate.Month;
+        var currentDay = SessionDate.Day;
+        var periodType = group?.Tcol ?? 0;
+        var datcalc = ComputeGroupDefaultPeriod
+            (periodType, eyear, currentMonth, currentDay);
+        GroupOverrideEddat = datcalc.Eddat;
+        GroupOverrideEfdat = datcalc.Efdat; 
     }
     void GetSelectedSesio(string mysesio)
     {
@@ -803,64 +776,67 @@
         //if (_curTier is not null)
         //    BindLocalStateFromSession(Session);
     }
+    private (DateTime Eddat, DateTime Efdat) ComputeGroupDefaultPeriod(int periodType, int eyear, int currentMonth, int currentDay)
+    {
+        switch (periodType)
+        {
+            case 1: // exercice year
+            case 2: // année
+                return (new DateTime(eyear, 1, 1), new DateTime(eyear, 12, 31));
+
+            case 3: // semestre
+                return currentMonth < 7
+                    ? (new DateTime(eyear, 1, 1), new DateTime(eyear, 6, 30))
+                    : (new DateTime(eyear, 6, 1), new DateTime(eyear, 12, 31));
+
+            case 4: // trimestre
+                {
+                    var q = (currentMonth - 1) / 3;
+                    var startMonth = q * 3 + 1;
+                    var endMonth = startMonth + 2;
+                    return (new DateTime(eyear, startMonth, 1),
+                            new DateTime(eyear, endMonth, DateTime.DaysInMonth(eyear, endMonth)));
+                }
+
+            case 5: // mensuel — default
+                return (new DateTime(eyear, currentMonth, 1),
+                        new DateTime(eyear, currentMonth, DateTime.DaysInMonth(eyear, currentMonth)));
+
+            case 6: // quinzaine (15 jours)
+                return currentDay <= 15
+                    ? (new DateTime(eyear, currentMonth, 1), new DateTime(eyear, currentMonth, 15))
+                    : (new DateTime(eyear, currentMonth, 16), new DateTime(eyear, currentMonth, DateTime.DaysInMonth(eyear, currentMonth)));
+
+            case 7: // dizaine (10 jours)
+                {
+                    var daysInMonth = DateTime.DaysInMonth(eyear, currentMonth);
+                    if (currentDay <= 10)
+                        return (new DateTime(eyear, currentMonth, 1), new DateTime(eyear, currentMonth, 10));
+                    if (currentDay <= 20)
+                        return (new DateTime(eyear, currentMonth, 11), new DateTime(eyear, currentMonth, 20));
+                    return (new DateTime(eyear, currentMonth, 21), new DateTime(eyear, currentMonth, daysInMonth));
+                }
+
+            case 8: // semaine — ASSUMPTION: Monday-start week containing the current date
+                {
+                    var today = new DateTime(eyear, currentMonth, currentDay);
+                    var diff = (7 + (today.DayOfWeek - DayOfWeek.Monday)) % 7;
+                    var weekStart = today.AddDays(-diff);
+                    return (weekStart, weekStart.AddDays(6));
+                }
+
+            case 9: // jour
+                var day = Math.Min(currentDay, DateTime.DaysInMonth(eyear, currentMonth));
+                var d = new DateTime(eyear, currentMonth, day);
+                return (d, d);
+      
+            default: // fallback -> mensuel
+                return (new DateTime(eyear, currentMonth, 1),
+                        new DateTime(eyear, currentMonth, DateTime.DaysInMonth(eyear, currentMonth)));
+        }
+    }
     void NavigateBack()
     {
         _navmanager.NavigateTo("/");
     }
-    // public List<FormulaLine> PrepOpeSaie(int opt, TierspDto curTier, RubvarDto curRub, List<TierspDto> saieTiers, PlngenDto curProg, int imyDiv)
-    // {
-    //     var calcLines = new List<FormulaLine>();
-
-    //     if (opt == 1)
-    //     {
-    //         foreach (var uru in curProg.Rubvars)
-    //         {
-    //             //var saielines = FormulaParser.ParseFormulaBlock(uru.Frsource); //, rubvarResolver);
-    //             //var parsedLine = saielines.FirstOrDefault(l => l.LineNumber == Convert.ToInt32(uru.Scdrub));
-    //             //var rubvar = rubvarResolver.ResolveByScdrub(Convert.ToInt32(uru.Scdrub));
-
-    //             calcLines.Add(new FormulaLine
-    //             {
-    //                 //Idrub = rubvar?.Idrub ?? 0,
-    //                 // Scdrub = rubvar?.Scdrub ?? uru.Scdrub,
-    //                 // Idtie = curTier.Idtie,
-    //                 // Liba = rubvar?.Liba ?? "",
-    //                 // Abg = rubvar?.Abg ?? "",
-    //                 // Nom = curTier.Nom,
-    //                 // Pnom = curTier.Pnom,
-    //                 //Formula = parsedLine?.Formula ?? "",
-    //                 // Result = "",
-    //                 // Resaie = ""
-    //             });
-    //         }
-    //     }
-    //     else if (opt == 2)
-    //     {
-    //         // var saielines = FormulaParser.ParseFormulaBlock(curRub.Frsource);
-
-    //         // foreach (var tie in saieTiers.Where(t => t.Idhie == imyDiv))
-    //         // {
-    //         //     foreach (var line in saielines)
-    //         //     {
-    //         //         var rubvar = rubvarResolver.ResolveByScdrub(line.LineNumber);
-
-    //         //         calcLines.Add(new FormulaLine
-    //         //         {
-    //         //             Idrub = rubvar?.Idrub ?? 0,
-    //         //             // Scdrub = rubvar?.Scdrub ?? line.LineNumber.ToString(),
-    //         //             // Idtie = tie.Idtie,
-    //         //             // Liba = rubvar?.Liba ?? "",
-    //         //             // Abg = rubvar?.Abg ?? "",
-    //         //             // Nom = tie.Nom,
-    //         //             // Pnom = tie.Pnom,
-    //         //             // Formula = line.Formula,
-    //         //             //Result = "",
-    //         //             // Resaie = ""
-    //         //         });
-    //         //     }
-    //         // }
-    //     }
-
-    //     return calcLines;
-    // }
 }

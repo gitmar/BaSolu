@@ -8,9 +8,9 @@ namespace GxTie.Services.Calculation
     public interface ISaieWorkflowService
     {
         Task<SaieSession> LoadSaieAsync(PlngenDto program, TierspDto tier);
-        Task<SaieSession> CalculateSaieAsync(CalcContext ctx, SaieSession session);
-        Task<SaieSession> CalculateAndSaveSaieAsync(CalcContext ctx, SaieSession session, PendingSaveMode inSaveMode);
-        Task SaveSaieAsync(CalcContext ctx, SaieSession session, PendingSaveMode inSaveMode);
+        Task<SaieSession> CalculateTrackAsync(CalcContext ctx, SaieSession session);
+        Task<SaieSession> CalculateAndTrackSaieAsync(CalcContext ctx, SaieSession session, PendingSaveMode inSaveMode);
+        Task SaveTrackAsync(CalcContext ctx, SaieSession session);
     }
     public sealed class SaieWorkflowService : ISaieWorkflowService
     {
@@ -31,18 +31,18 @@ namespace GxTie.Services.Calculation
         public Task<SaieSession> LoadSaieAsync(PlngenDto program, TierspDto tier)
             => Task.FromResult(_sessionFactory.Create(program, tier));
 
-        public Task<SaieSession> CalculateSaieAsync(CalcContext ctx, SaieSession session)
-            => _calcService.CalculateSaieAsync(ctx, session);
+        public Task<SaieSession> CalculateTrackAsync(CalcContext ctx, SaieSession session)
+            => _calcService.CalculateTrackAsync(ctx, session);
 
-        public async Task<SaieSession> CalculateAndSaveSaieAsync(CalcContext ctx, SaieSession session, PendingSaveMode inSaveMode)
+        public async Task<SaieSession> CalculateAndTrackSaieAsync(CalcContext ctx, SaieSession session, PendingSaveMode inSaveMode)
         {
-            session = await _calcService.CalculateSaieAsync(ctx, session);
-            await _calcPersistence.SaveSaieAsync(ctx, session, inSaveMode);
+            session = await _calcService.CalculateTrackAsync(ctx, session);
+            await _calcPersistence.TrackSaieChangesAsync(ctx, session);
             return session;
         }
 
-        public Task SaveSaieAsync(CalcContext ctx, SaieSession session, PendingSaveMode inSaveMode)
-            => _calcPersistence.SaveSaieAsync(ctx, session, inSaveMode);
+        public Task SaveTrackAsync(CalcContext ctx, SaieSession session)
+            => _calcPersistence.TrackSaieChangesAsync(ctx, session);
     }
     public interface ISaieSessionFactory
     {

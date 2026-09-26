@@ -57,71 +57,58 @@ else
     if (CanSaie)
     {
         <div class="d-flex align-items-center gap-3 mb-2 ms-2">
-    <!-- Label -->
-    <label class="me-2">Personne :</label>
-
-    <!-- AutoComplete -->
-    <AutoComplete TItem="TierspDto"
-                  @bind-Value="InTSaie"
-                  DataProvider="LoadPreTiers"
-                  PropertyName="@(displayMode == DisplayMode.Matricule ? "Xmatri" : "Nom")"
-                  Placeholder="@(displayMode == DisplayMode.Matricule ? "Enter matricule..." : "Enter name...")"
-                  OnChanged="OnChanged">
-    </AutoComplete>
-
-    <!-- Radio toggle -->
-    <InputRadioGroup @bind-Value="displayMode" Orientation="Horizontal" class="d-flex flex-row gap-2">
-        <InputRadio Value="DisplayMode.Matricule">Matricule</InputRadio>
-        <InputRadio Value="DisplayMode.Name">Nom/Prenom</InputRadio>
-    </InputRadioGroup>
-
-    <!-- Dropdown -->
-    <InputSelect @bind-Value="ImyTie" @bind-Value:after="OnTierChanged">
-        <option value="0">-- Sélectionner --</option>
-        @foreach (var tie in PreTiers)
-        {
-            <option value="@tie.Id">@GetTierLabel(tie)</option>
-        }
-    </InputSelect>
-
-    @* <InputDate @bind-Value="SessionDate" @bind-Value:after="OnSessionDateChanged" /> *@
-</div>
-
-        @* <div class="d-flex align-items-center gap-2 mb-2">
+            <div class="col-auto"><label>Période :</label></div>
             <div class="col-auto">
-                <label>Personne :</label>
-            </div>
-            <div class="col-auto">
-                <AutoComplete TItem="TierspDto"
-                              @bind-Value="InTSaie"
-                              DataProvider="LoadPreTiers"
-                              PropertyName="@(displayMode == DisplayMode.Matricule ? "Xmatri" : "Nom")"
-                              Placeholder="@(displayMode == DisplayMode.Matricule ? "Enter matricule..." : "Enter name...")"
-                              OnChanged="OnChanged">
-                </AutoComplete>
-            </div>
-            <div class="col-auto">
-                <InputRadioGroup @bind-Value="displayMode" Orientation="Horizontal">
-                    <InputRadio Value="DisplayMode.Matricule">Matricule</InputRadio>
-                    <InputRadio Value="DisplayMode.Name">Nom/Prenom</InputRadio>
-                </InputRadioGroup>
-            </div>
-            <div class="col-auto">
-                <InputSelect @bind-Value="ImyTie" @bind-Value:after="OnTierChanged">
-                    <option value="0">-- Sélectionner --</option>
-                    @foreach (var tie in PreTiers)
+                <InputSelect @bind-Value="SessionMonth" @bind-Value:after="OnSessionDateChanged">
+                    @for (int m = 1; m <= 12; m++)
                     {
-                        <option value="@tie.Id">@GetTierLabel(tie)</option>
+                        <option value="@m">@m</option>
                     }
                 </InputSelect>
             </div>
             <div class="col-auto">
-                <label>Session :</label>
+                <InputSelect @bind-Value="SessionYear" @bind-Value:after="OnSessionDateChanged">
+                    @for (int y = DateTime.Today.Year - 3; y <= DateTime.Today.Year + 1; y++)
+                    {
+                        <option value="@y">@y</option>
+                    }
+                </InputSelect>
             </div>
+            <div class="col-auto"><label>Override :</label></div>
+            <div class="col-auto"><InputDate @bind-Value="GroupOverrideEddat" /></div>
+            <div class="col-auto"><InputDate @bind-Value="GroupOverrideEfdat" /></div>
             <div class="col-auto">
-                <InputDate @bind-Value="SessionDate" @bind-Value:after="OnSessionDateChanged" />
+                <Button Size="ButtonSize.Small"
+                    @onclick="() => { GroupOverrideEddat = null; GroupOverrideEfdat = null; }">
+                        Réinitialiser
+                </Button>
             </div>
-        </div> *@
+        </div>
+        <div class="d-flex align-items-center gap-3 mb-2 ms-2">
+            <!-- Label -->
+            <label class="me-2">Personne :</label>
+            <!-- AutoComplete -->
+            <AutoComplete TItem="TierspDto"
+                  @bind-Value="InTSaie"
+                  DataProvider="LoadPreTiers"
+                  PropertyName="@(displayMode == DisplayMode.Matricule ? "Xmatri" : "Nom")"
+                  Placeholder="@(displayMode == DisplayMode.Matricule ? "Enter matricule..." : "Enter name...")"
+                  OnChanged="OnMatriChhanged">
+            </AutoComplete>
+            <!-- Radio toggle -->
+            <InputRadioGroup @bind-Value="displayMode" Orientation="Horizontal" class="d-flex flex-row gap-2">
+                <InputRadio Value="DisplayMode.Matricule">Matricule</InputRadio>
+                <InputRadio Value="DisplayMode.Name">Nom/Prenom</InputRadio>
+            </InputRadioGroup>
+            <!-- Dropdown -->
+            <InputSelect @bind-Value="ImyTie" @bind-Value:after="OnTierChanged">
+                <option value="0">-- Sélectionner --</option>
+                @foreach (var tie in PreTiers)
+                {
+                    <option value="@tie.Id">@GetTierLabel(tie)</option>
+                }
+            </InputSelect>
+        </div>
     }
 
     @if (isFicheVisible)
@@ -136,7 +123,8 @@ else
             </ChildContent>
         </RtS11Fic>
     }
-
+    @if (CanSaie)
+    {
     <Grid TItem="RubVarRow" Data="@WorkSession.RubVarRows" AllowPaging="true" Responsive="true">
         <GridColumns>
             <GridColumn TItem="RubVarRow" HeaderText="Code">
@@ -235,6 +223,7 @@ else
             </Grid>
         </GridDetailView>
     </Grid>
+    }
 }
 
 @code {
@@ -257,15 +246,27 @@ else
     // Parent-owned group filtering — Saiepart just consumes the result.
     [Parameter] public List<RubvarDto> SelectedRubvars { get; set; } = new();
     [Parameter] public List<Gpgrid> InsGpdata { get; set; } = new();
+    //[Parameter] public int? SelectedGroupId { get; set;} = new();
+    [Parameter] public DateTime? GroupOverrideEddat { get; set; } = new();
+    [Parameter] public DateTime? GroupOverrideEfdat { get; set; } = new();
 
     [Parameter] public int NbChanges { get; set; }
     [Parameter] public EventCallback<int> NbChangesChanged { get; set; }
+
+    [Inject] public IActsaieDataService _actsaieData { get; set; }  // new injection needed in Saiepart
 
     private RtS11Fic myfsaie;
     private TierspDto? _curTier;
     private int ImyTie = 0;
     private string InTSaie = "";
 
+    // Period selection (org-decided granularity assumed monthly for now — see note below)
+    private int SessionYear = DateTime.Today.Year;
+    private int SessionMonth = DateTime.Today.Month;
+    private DateTime SessionDate => new DateTime(SessionYear, SessionMonth, 1);
+
+    // Group-level override — persists across tier changes until explicitly reset
+    // or the selected group changes.
     private SaieSession WorkSession { get; set; } = new();
     private DisplayMode displayMode = DisplayMode.Matricule;
     public enum DisplayMode
@@ -279,7 +280,7 @@ else
     private List<RubvarDto>? _lastSelectedRubvars;
 
     private bool Yatier => ImyTie != 0;
-    private bool CanSaie => SessOpen && ImyDiv != 0;
+    private bool CanSaie => SessOpen && ImyDiv != 0 && GroupOverrideEddat != null && GroupOverrideEfdat != null;
     private bool CanLoad => CanSaie && Yatier && !isBusy;
     private bool CanInput => WorkSession is not null && WorkSession.RubVarRows.Any();
     private bool CanCalc => CanInput && _hasUserInput && !isBusy;
@@ -300,7 +301,7 @@ else
 
     protected override async Task OnInitializedAsync()
     {
-        isLoading = false;
+        isLoading = false; 
     }
 
     protected override Task OnParametersSetAsync()
@@ -320,13 +321,6 @@ else
 
         return Task.CompletedTask;
     }
-
-    // private void OnSessionDateChanged()
-    // {
-    //     if (_curTier is not null)
-    //         BindLocalStateFromSession(WorkSession);
-    // }
-
     private async Task RendsTier(int idtie)
     {
         if (idtie == 0)
@@ -341,73 +335,56 @@ else
             await OnLoadResetAsync();
         }
     }
+    
     private async Task OnLoadResetAsync()
-{
-    if (!CanLoad)
-        return;
-
-    isBusy = true;
-    try
     {
-        var ctx = BuildSingleContext();
-        if (ctx is null || ctx.Program is null || ctx.Tier is null)
+        if (!CanLoad)
             return;
 
-        WorkSession = await _workflowService.CreateSaieSessionAsync(
-            ctx.Program,
-            ctx.Tier,
-            ctx.EnsTbls ?? new List<Gtabl>(),
-            ctx.EnsGpdata ?? new List<Gpgrid>() 
-        );
+        isBusy = true;
+        try
+        {
+            var ctx = BuildSingleContext();
+            if (ctx is null || ctx.Program is null || ctx.Tier is null)
+                return;
 
-        _saieSession = WorkSession;
+            // Per-tier fetch, replacing the old org-wide orgActs.
+            var rubvarIds = ctx.Program.Rubvars.Select(r => r.Id).ToList();
+            var (actsaies, actdets) = await _actsaieData.LoadForTierAsync(
+                ctx.Tier.Id, curOrga.Idorg, SessionDate, rubvarIds);
 
-        // forceRebuild: true — CreateSaieSessionAsync populates RubVarRows from the
-        // full template, with no knowledge of the operator's selected group. Force
-        // a rebuild here so the current SelectedRubvars filter is reapplied.
-        EnsureRubVarRowsAndDetails(WorkSession, forceRebuild: true);
-        BindLocalStateFromSession(WorkSession);
+            ctx.Actsaies = actsaies;
+            ctx.Actdets = actdets;
 
-        _hasUserInput = false;
-        _hasCalculated = false;
+            WorkSession = await _workflowService.CreateSaieSessionAsync(
+                ctx.Program, ctx.Tier, ctx.EnsTbls ?? new List<Gtabl>(), InsGpdata ?? new List<Gpgrid>()
+            );
+
+            WorkSession.Actsaies = actsaies;
+            WorkSession.Actdets = actdets;
+
+            _saieSession = WorkSession;
+
+            EnsureRubVarRowsAndDetails(WorkSession, forceRebuild: true); // forceRebuild since Actsaies/Actdets just changed
+            BindLocalStateFromSession(WorkSession);
+
+            _hasUserInput = false;
+            _hasCalculated = false;
+        }
+        finally
+        {
+            isBusy = false;
+        }
     }
-    finally
-    {
-        isBusy = false;
-    }
-}
-    // private async Task OnLoadResetAsync()
-    // {
-    //     if (!CanLoad)
-    //         return;
+    //private (DateTime Eddat, DateTime Efdat) ResolveRangeForCurrentGroup()
+    //{
+    //    if (GroupOverrideEddat.HasValue && GroupOverrideEfdat.HasValue)
+    //        return (GroupOverrideEddat.Value, GroupOverrideEfdat.Value);
 
-    //     isBusy = true;
-    //     try
-    //     {
-    //         var ctx = BuildSingleContext();
-    //         if (ctx is null || ctx.Program is null || ctx.Tier is null)
-    //             return;
-
-    //         WorkSession = await _workflowService.CreateSaieSessionAsync(
-    //             ctx.Program,
-    //             ctx.Tier,
-    //             ctx.EnsTbls ?? new List<Gtabl>()
-    //         );
-
-    //         _saieSession = WorkSession;
-
-    //         EnsureRubVarRowsAndDetails(WorkSession, forceRebuild: false);
-    //         BindLocalStateFromSession(WorkSession);
-
-    //         _hasUserInput = false;
-    //         _hasCalculated = false;
-    //     }
-    //     finally
-    //     {
-    //         isBusy = false;
-    //     }
-    // }
-
+    //    var eddat = new DateTime(SessionYear, SessionMonth, 1);
+    //    var efdat = new DateTime(SessionYear, SessionMonth, DateTime.DaysInMonth(SessionYear, SessionMonth));
+    //    return (eddat, efdat);
+    //}
     private async Task OnCalculateAsync(bool isRecompute = false)
     {
         if (!CanCalc || _calcContext is null || WorkSession is null)
@@ -429,7 +406,20 @@ else
             isBusy = false;
         }
     }
+    
 
+    private void OnSessionDateChanged()
+    {
+        // Period changed — re-fetch this tier's data for the new period, same as a group change.
+        if (_curTier is not null && _curTier.Id != 0)
+            _ = OnLoadResetAsync();
+    }
+    //private void OnPerioReInit()
+    //{
+    //    var curGpe = SelectedGroupId;
+    //    SelectedGroupId = -1;
+    //    SelectedGroupId = curGpe;
+    //}
     private void SyncSessionToGrid(SaieSession session)
     {
         foreach (var act in session.Actsaies)
@@ -483,7 +473,7 @@ else
         isBusy = true;
         try
         {
-            await _calcPersistence.SaveSaieAsync(_calcContext, WorkSession, inSaveMode);
+            await _calcPersistence.TrackSaieChangesAsync(_calcContext, WorkSession);
         }
         finally
         {
@@ -581,20 +571,24 @@ else
     }
 
     private void BindLocalStateFromSession(SaieSession session)
-    {
-        _calcContext = new CalcContext
-        {
-            Program = session.Program,
-            Tier = session.Tier,
-            EnsTbls = session.EnsTbls,
-            EnsGpdata = InsGpdata ?? new List<Gpgrid>(),
-            SessionDate = _sessionDate,
-            IsTestMode = false
-        };
+{
+    //var (eddat, efdat) = ResolveRangeForCurrentGroup();
 
-        _hasUserInput = false;
-        _hasCalculated = false;
-    }
+    _calcContext = new CalcContext
+    {
+        Program = session.Program,
+        Tier = session.Tier,
+        EnsTbls = session.EnsTbls,
+        EnsGrls = InsGpdata,
+        SessionDate = SessionDate,
+        GroupEddat = GroupOverrideEddat,
+        GroupEfdat = GroupOverrideEfdat,
+        IsTestMode = false
+    };
+
+    _hasUserInput = false;
+    _hasCalculated = false;
+}
 
     private CalcContext? BuildSingleContext()
     {
@@ -611,7 +605,7 @@ else
             Tier = tier,
             EnsTbls = _saieSession?.EnsTbls ?? new List<Gtabl>(),
             SessionDate = _sessionDate,
-            EnsGpdata = InsGpdata ?? new List<Gpgrid>(),
+            EnsGrls = InsGpdata ?? new List<Gpgrid>(),
             IsTestMode = false
         };
     }
@@ -653,8 +647,8 @@ else
             TotalCount = items.Count()
         });
     }
-
-    private async Task OnChanged(TierspDto selected)
+    
+    private async Task OnMatriChhanged(TierspDto selected)
     {
         if (selected is null)
             return;
@@ -679,7 +673,35 @@ else
 
         return $"{tie.Nom} - {tie.Pnom} - {tie.Xmatri}";
     }
+    private void SyncSessionSaieToGrid(SaieSession session)
+    {
+        foreach (var act in session.Actsaies)
+        {
+            var row = session.RubVarRows.FirstOrDefault(r => r.Irub == act.Irub);
+            if (row != null)
+            {
+                row.InputValue = act.Inptvalue ?? row.InputValue;
+                row.Aval = act.Aval ?? row.Aval;
+                row.Iraw = act.Iraw ?? row.Iraw;
+                row.Vgpe = act.Vgpe;
+            }
+        }
 
+        foreach (var det in session.Actdets)
+        {
+            var master = session.RubVarRows.FirstOrDefault(r => r.Irub == det.Irub);
+            if (master == null) continue;
+
+            var detail = master.Details.FirstOrDefault(d => d.Irub == det.Irub && d.Ifmt == det.Ifmt);
+            if (detail != null)
+            {
+                detail.InputValue = det.Inptvalue ?? detail.InputValue;
+                detail.Aval = det.Aval ?? detail.Aval;
+                detail.Iraw = det.Iraw ?? detail.Iraw;
+                detail.Vgpe = det.Vgpe;
+            }
+        }
+    }
     private async Task HandleLostFocus(FocusEventArgs args)
     {
         if (string.IsNullOrWhiteSpace(InTSaie))

@@ -63,7 +63,8 @@ namespace GxTie.Services.Calculation
             var labelPart = line[..colonIndex].Trim();
             var exprPart = line[(colonIndex + 1)..].Trim();
 
-            int lineNumber;
+            int? lineNumber = null;
+            string? alias = null;
             int? parentLineNumber = null;
             string? detailCode = null;
             var isDetail = false;
@@ -79,10 +80,17 @@ namespace GxTie.Services.Calculation
                 isDetail = true;
                 lineNumber = parent;
             }
+            else if (int.TryParse(labelPart, out var num))
+            {
+                lineNumber = num;
+            }
+            else if (!string.IsNullOrWhiteSpace(labelPart))
+            {
+                alias = labelPart; // e.g. "bonus" — simple named line, no detail children
+            }
             else
             {
-                if (!int.TryParse(labelPart, out lineNumber))
-                    return null;
+                return null;
             }
 
             string? meta = null;
@@ -104,6 +112,7 @@ namespace GxTie.Services.Calculation
             return new ProgramLine
             {
                 LineNumber = lineNumber,
+                Alias = alias,
                 Formula = exprPart,
                 Meta = meta,
                 IsDetail = isDetail,
@@ -122,7 +131,10 @@ namespace GxTie.Services.Calculation
 
             foreach (var line in lines)
             {
-                byLine.TryGetValue(line.LineNumber ?? 0, out var ctx);
+                if (!line.LineNumber.HasValue)
+                    continue; // alias lines have no template context to enrich
+
+                byLine.TryGetValue(line.LineNumber.Value, out var ctx);
                 line.Irub = ctx?.Irub;
                 line.Ifmt = ctx?.Ifmt;
                 line.Liba = ctx?.Liba;

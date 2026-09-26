@@ -54,6 +54,30 @@ else
             </div>
             <div class="form-group">
                 <div class="btn-toolbar" role="toolbar">
+                    <label class="me-2">G.Tiers :</label>
+                    <InputSelect @bind-Value="IMyGtie"
+                                 @bind-Value:after="OuvreMGrid"
+                                 @key="RubRenderKey"
+                                 class="me-3"
+                                 style="width:auto">
+                        <option value=0>?gtiers</option>
+                        @foreach (var tob in LsGties)
+                        {
+                            <option value=@tob.Elea>@tob.Liba</option>
+                        }
+                    </InputSelect>
+                    <label class="me-2">Statut :</label>
+                    <InputSelect @bind-Value="IMyStat"
+                                 @bind-Value:after="OuvreMGrid"
+                                 @key="RubRenderKey"
+                                 class="me-3"
+                                 style="width:auto">
+                        <option value=0>?statut</option>
+                        @foreach (var tbi in StatItems?.ToList())
+                        {
+                            <option value=@tbi.Tref>@tbi.Liba</option>
+                        }
+                    </InputSelect>
                     <label class="me-2">Base :</label>
                     <InputSelect @bind-Value="IMyVue"
                                  @bind-Value:after="OuvreMGrid"
@@ -1092,6 +1116,8 @@ else
     public List<PlngenDto> orgPlns { get; set; } = new();
     [Parameter]
     public IODataClient _InODaClient { get; set; }
+    [Parameter] 
+    public List<Gtabl> ensTbls { get; set; } = new();
     [Parameter]
     public ChildVars toChild { get; set; }
     [Parameter]
@@ -1107,8 +1133,9 @@ else
     public EventCallback<int> NbChangesChanged { get; set; }  // 🔥 CRITICAL
 
     private IDisposable? _locationHandler;
-    
+
     private int IMyGtie = 1; //1Cible/2Operat...
+    private int IMyStat = 0; //11Perm12Occasio
 
     //Global
     private int _lgcdu = 0;
@@ -1146,6 +1173,7 @@ else
     private List<Gpfixe> LsAtrs = new();
     private List<Gpfixe> LsVues = new();
     private List<Gpfixe> LsGties = new();
+    private List<Gtvar> StatItems = new();
 
     private bool isPlnFilteringEnabled = false;
     private bool isRubFilteringEnabled = false;
@@ -1169,7 +1197,7 @@ else
     private List<PlngenDto> LsPlsActs => orgPlns?.Where(pl => pl.Ptyp == 1).ToList();
     private List<PlngenDto> LsPlsEchs => orgPlns?.Where(pl => pl.Ptyp == 2).ToList();
     private List<PlngenDto> LsPlsGris => orgPlns?.Where(pl => pl.Ptyp == 3).ToList();
-    
+
     //add/edit options
     private bool AllowMultipleEdits { get; set; } = false;
     private bool isFiltre { get; set; } = false;
@@ -1221,6 +1249,8 @@ else
             LsAtrs = LsFixes.Where(ut => ut.Gvars == 36 && ut.Itb == 1 && ut.Gp1 == 3 && ut.Elea != 0).ToList();
             LsVues = LsFixes.Where(ut => ut.Gvars == 36 && ut.Itb == 4 && ut.Gp1 == 4 && ut.Elea != 0).ToList();
             LsGties = LsFixes.Where(ut => ut.Gvars == 36 && ut.Itb == 6 && ut.Elea != 0 && ut.Elea != 9).ToList();
+            StatItems = ensTbls?.Where(tb => tb.Pref == 11 && tb.Tenr == 1)
+                .FirstOrDefault().TbItems?.ToList(); 
             LsPlans = toChild.LsPlans;
             _lgcdu = 3;
             var noslims = LsVars.Where(uv => uv.Idhie == 0 && uv.Gvars == 21 && uv.Itb == 1 && uv.Elea == 1);
@@ -1264,7 +1294,7 @@ else
     }
     private async Task OuvreMGrid()
     {
-        if (IMyDom != 0 && IMyVue != 0)
+        if (IMyGtie != 0 && IMyStat != 0 && IMyDom != 0 && IMyVue != 0)
         {
             await UpdateMyDaPlans();
             PlnRenderKey = Guid.NewGuid();
@@ -1343,7 +1373,8 @@ else
             Ptyp = IMyGpln,
             Todom = IMyDom, //5Calculs
             //Ogtyp = 0,
-            Totyp = IMyGtie,
+            Totyp = IMyGtie, //cibleoperat
+            Tostyp = IMyStat, //statut
             Toatr = 0,
             Tovue = IMyVue,
             Liba = "",
@@ -1574,7 +1605,7 @@ else
     // Update method -call this when source data changes
     private void InitializeMyDaPlans()
     {
-        PlanItems = orgPlns?.Where(pl => pl.Ptyp == IMyGpln).ToList() // && pl.Todom == IMyDom && pl.Toatr == 0 && pl.Tovue == IMyVue).ToList()
+        PlanItems = orgPlns?.Where(pl => pl.Ptyp == IMyGpln && pl.Todom == IMyDom && pl.Totyp == IMyGtie && pl.Tostyp == IMyStat  && pl.Tovue == IMyVue).ToList() // && pl.Todom == IMyDom && pl.Toatr == 0 && pl.Tovue == IMyVue).ToList()
             ?? new List<PlngenDto>();
         if (PlanItems.Any()) curPlan = PlanItems.FirstOrDefault();
     }
@@ -1608,8 +1639,9 @@ else
     }
     private Task UpdateMyDaPlans()
     {
+        //pl.Todom == IMyDom && pl.Toatr == 0 &&
         PlanItems = orgPlns?
-            .Where(pl => pl.Ptyp == IMyGpln && pl.Todom == IMyDom && pl.Toatr == 0 && pl.Tovue == IMyVue)
+            .Where(pl => pl.Ptyp == IMyGpln && pl.Todom == IMyDom && pl.Totyp == IMyGtie && pl.Tostyp == IMyStat && pl.Tovue == IMyVue)
             .ToList() ?? new List<PlngenDto>();
         return Task.CompletedTask;
     }

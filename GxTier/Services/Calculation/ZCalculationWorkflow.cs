@@ -6,16 +6,18 @@ using GxShared.Sess;
 
 namespace GxTie.Services.Calculation
 {
-    public interface ICalculationWorkflow
+    public interface ZICalculationWorkflow
     {
         Task<SaieSession> CreateSaieSessionAsync(PlngenDto program, TierspDto tier, List<Gtabl> ensTbls, List<Gpgrid> ensGpdata);
-        Task<SaieSession> CalculateSaieAsync(CalcContext ctx, SaieSession session);
-        Task<SaieSession> CalculateAndTrackSaieAsync(
-            CalcContext ctx, SaieSession session, PendingSaveMode inSaveMode);
         Task<List<CalcSession>> CalculateCalcAsync(IEnumerable<CalcContext> contexts);
+        Task<List<SaieSession>> CalculateSaieAsync(IEnumerable<CalcContext> contexts);
+        Task<CalcSession> CalculateTrackAsync(CalcContext ctx, CalcSession session);
+        Task<CalcSession> CalculateAndTrackSaieAsync(
+            CalcContext ctx, CalcSession session, PendingSaveMode inSaveMode);
+        
         Task<List<CalcSession>> CalculateAndTrackCalcAsync(IEnumerable<CalcContext> contexts);
     }
-    public sealed class CalculationWorkflow : ICalculationWorkflow
+    public sealed class CalculationWorkflow : ZICalculationWorkflow
     {
         private readonly ICalculationService _calcService;
         private readonly ICalculationPersistence _persistence;
@@ -35,13 +37,14 @@ namespace GxTie.Services.Calculation
             PlngenDto program, TierspDto tier, List<Gtabl> ensTbls, List<Gpgrid> ensGpdata)
             => _saieCalculator.InitializeAsync(program, tier, ensTbls, ensGpdata);
 
-        public Task<SaieSession> CalculateSaieAsync(CalcContext ctx, SaieSession session)
-            => _calcService.CalculateSaieAsync(ctx, session);
+        public Task<CalcSession> CalculateTrackAsync(CalcContext ctx, CalcSession session)
+    => _calcService.CalculateTrackAsync(ctx, session);
 
-        public async Task<SaieSession> CalculateAndTrackSaieAsync(
-            CalcContext ctx, SaieSession session, PendingSaveMode inSaveMode)
+
+        public async Task<CalcSession> CalculateAndTrackSaieAsync(
+            CalcContext ctx, CalcSession session, PendingSaveMode inSaveMode)
         {
-            session = await _calcService.CalculateSaieAsync(ctx, session);
+            session = await _calcService.CalculateTrackAsync(ctx, session);
             await _persistence.TrackSaieChangesAsync(ctx, session);
             return session;
         }
@@ -64,7 +67,24 @@ namespace GxTie.Services.Calculation
 
             return results;
         }
+        public async Task<List<SaieSession>> CalculateSaieAsync(IEnumerable<CalcContext> contexts)
+        {
+            var results = new List<SaieSession>();
 
+            foreach (var ctx in contexts)
+            {
+                var session = new SaieSession
+                {
+                    Program = ctx.Program,
+                    Tier = ctx.Tier
+                };
+
+                session = await _calcService.RunCalcAsync(ctx, session);
+                results.Add(session);
+            }
+
+            return results;
+        }
         public async Task<List<CalcSession>> CalculateAndTrackCalcAsync(IEnumerable<CalcContext> contexts)
         {
             var results = new List<CalcSession>();
