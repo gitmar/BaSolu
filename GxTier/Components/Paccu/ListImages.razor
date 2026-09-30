@@ -1,0 +1,53 @@
+﻿@page "/listimages"
+
+@inject NavigationManager _navManager
+
+<h3>Uploaded Images</h3>
+
+@if (images == null)
+{
+    <p>Loading...</p>
+}
+else if (!images.Any())
+{
+    <p>No images found.</p>
+}
+else
+{
+    <div class="image-grid">
+        @foreach (var img in images)
+        {
+            <div class="image-item">
+                <!-- Preview thumbnail -->
+                <img src="@($"{_navManager.BaseUri}api/lgfileup/get/{img.Id}")"
+                     alt="@img.FileName"
+                     style="max-width:200px; max-height:200px;" />
+
+                <!-- Filename -->
+                <p>@img.FileName</p>
+
+                <!-- Download link -->
+                <a href="@($"{_navManager.BaseUri}api/lgfileup/get/{img.Id}")"
+                   download="@img.FileName">Download</a>
+            </div>
+        }
+    </div>
+}
+
+@code {
+    private List<ImageInfo>? images;
+    [Parameter] public HttpClient _apiClient { get; set; }
+    //[Parameter] public NavigationManager _navManager { get; set; }
+    public class ImageInfo
+    {
+        public int Id { get; set; }
+        public string FileName { get; set; }
+        public string ContentType { get; set; }
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        //_apiClient = _httpfacClient.CreateClient("LocalClient");
+        images = await _apiClient.GetFromJsonAsync<List<ImageInfo>>("Lgfileup/list");
+    }
+}

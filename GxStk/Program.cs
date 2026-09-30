@@ -15,6 +15,8 @@ using GxShared.Sess;
 using GxStk;
 using GxStk.Services;
 
+using GxDicto.Services;
+
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
@@ -50,6 +52,7 @@ builder.Services.AddCascadingAuthenticationState();
 // ----------------------------
 // Auth
 // ----------------------------
+builder.Services.AddScoped<ILocalizationService, LocalizationService>();
 builder.Services.AddTransient<AuthDelegatingHandler>();
 builder.Services.AddScoped<MyAuthStateProvider>();
 builder.Services.AddScoped<AuthenticationStateProvider>(sp => sp.GetRequiredService<MyAuthStateProvider>());
@@ -153,7 +156,8 @@ builder.Services.AddSingleton<LoadingService>();
 // Startup
 // ----------------------------
 var host = builder.Build();
-
+var loc = host.Services.GetRequiredService<ILocalizationService>();
+await loc.SetLanguageAsync("en");
 using (var scope = host.Services.CreateScope())
 {
     var localStorage = scope.ServiceProvider.GetRequiredService<ILocalStorageService>();

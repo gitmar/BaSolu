@@ -25,6 +25,7 @@
 @inject ILocalStorageService _localStorage
 @inject HttpClientService _clieManager
 @inject IODataClient _MyODaClient
+@inject OrgDocService _orgDocService
 @inject IMapper Mapper
 @inject SessionContextService _sessionContext
 @inject MyAuthStateProvider _authProvider
@@ -214,7 +215,6 @@ else
     private IEnumerable<GxorgaDto> _lsOrgas = new List<GxorgaDto>();
     public List<TiewelDto> orgTwels = new();
     public List<TierspDto> orgTiers = new();
-    private IQueryable<GsaplDto> InApls = Enumerable.Empty<GsaplDto>().AsQueryable();
     public IEnumerable<TiewelDto> ResTiw;
     public IEnumerable<TierspDto> ResTie;
     public TiewelDto opTwel = new();
@@ -278,6 +278,7 @@ else
             {
                 authUser = authState.User,
                 isAuthenticated = true,
+                InUser = _usrBag.Usprof,
                 LsDivs = LsDivs.ToList(),
                 LsVars = LsVars.ToList(),
                 LsFixes = LsFixes.ToList(),
@@ -426,7 +427,7 @@ else
                 .FindEntriesAsync();
 
             orgTiers = msgsie.ToList();
-
+            
             Console.WriteLine($"loadOrgaAsync completed :{curOrga?.Raison}");
             Console.WriteLine($"Nb. Tiersps {orgTiers.Count} Nb. Tiewels : {orgTiers.Count}");
         }

@@ -96,6 +96,12 @@ builder.Services.AddHttpClient("ODataClient", client =>
     client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
 })
 .AddHttpMessageHandler<AuthDelegatingHandler>();
+builder.Services.AddHttpClient("ODataDocuClient", client =>
+{
+    client.BaseAddress = new Uri($"{backendUrl}odata3/");
+    client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+})
+.AddHttpMessageHandler<AuthDelegatingHandler>();
 builder.Services.AddHttpClient("LocalClient", client =>
 {
     client.BaseAddress = new Uri($"{backendUrl}api/");
@@ -142,6 +148,7 @@ builder.Services.AddScoped<HttpClientService>();
 builder.Services.AddScoped<TokenAwareClientManager>();
 builder.Services.AddScoped<TblJsonRender>();
 builder.Services.AddScoped<LinkSerialiser>();
+builder.Services.AddScoped<OrgDocService>();
 //builder.Services.AddScoped<PouchDbService>();
 builder.Services.AddSingleton<IMessageService, MessageService>();
 builder.Services.AddSingleton<LoadingService>();

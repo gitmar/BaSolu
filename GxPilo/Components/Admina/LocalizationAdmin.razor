@@ -1,0 +1,423 @@
+﻿@page "/localizadmin"
+@layout FreeLayout
+
+@using System.Net.Http.Json
+@using GxDicto.DModels
+@using GxDicto.Components
+
+@inject IHttpClientFactory HttpFac
+
+<h3>Localization Admin</h3>
+
+<div class="row mb-3 align-items-end">
+    <div class="col-auto">
+        <label class="form-label me-2">Language</label>
+    </div>
+    <div class="col-auto">
+        <InputSelect class="form-select" @bind-Value="selectedLanguage">
+    @foreach (var lang in languages)
+    {
+        <option value="@lang">@lang</option>
+    }
+</InputSelect>
+    </div>
+</div>
+
+<div class="mb-3">
+    <button class="btn btn-primary" @onclick="AddNewRow">Add Row</button>
+    <button class="btn btn-success" @onclick="SaveAll" disabled="@(changedRows.Count == 0)">
+        Save Changes
+    </button>
+    <button class="btn btn-secondary" @onclick="LoadEntries">Refresh</button>
+</div>
+
+@if (Entries == null)
+{
+    <p>Loading...</p>
+}
+else if (!Entries.Any())
+{
+    <p>No entries found.</p>
+}
+else
+{
+    <Grid TItem="LocalizationEntry"
+          Data="@filteredEntries"
+          AllowPaging="true"
+          AllowSorting="true"
+          Responsive="true">
+        <GridColumns>
+            <GridColumn TItem="LocalizationEntry" HeaderText="Key" Class="xcol1">
+                <ChildContent Context="item">
+                    @if (changedRows.Contains(item))
+                    {
+                        <InputText class="form-control" @bind-Value="item.Key" />
+                    }
+                    else
+                    {
+                        @item.Key
+                    }
+                </ChildContent>
+            </GridColumn>
+            @* <GridColumn TItem="LocalizationEntry" HeaderText="Language" Class="xcol1">
+                <ChildContent Context="item">
+                    @if (changedRows.Contains(item))
+                    {
+                        <InputText class="form-control" @bind-Value="item.Language" />
+                    }
+                    else
+                    {
+                        @item.Language
+                    }
+                </ChildContent>
+            </GridColumn> *@
+            <GridColumn TItem="LocalizationEntry" HeaderText="Value" Class="xcol1">
+                <ChildContent Context="item">
+                    @if (changedRows.Contains(item))
+                    {
+                        <InputText class="form-control" @bind-Value="item.Value" />
+                    }
+                    else
+                    {
+                        @item.Value
+                    }
+                </ChildContent>
+            </GridColumn>
+            <GridColumn TItem="LocalizationEntry" HeaderText="Actions" Class="xcol1">
+    <ChildContent Context="item">
+        @* 1. Pending delete mode *@
+        @if (pendingDeletes.Contains(item))
+        {
+            <button class="btn btn-sm btn-outline-secondary me-1" @onclick="() => CancelDelete(item)">Cancel</button>
+            <button class="btn btn-sm btn-outline-danger ms-1" @onclick="() => ConfirmDelete(item)">Confirm</button>
+        }
+        else if (changedRows.Contains(item))
+        {
+            @* 2. Row in edit mode *@
+            @if (item.Id == 0 && pendingNewRows.Contains(item))
+            {
+                @* Newly added row, not yet confirmed: Remove / Confirm *@
+                <button class="btn btn-sm btn-outline-secondary me-1" @onclick="() => RemoveNewRow(item)">Remove</button>
+                <button class="btn btn-sm btn-outline-success ms-1" @onclick="() => ConfirmNewRow(item)">Confirm</button>
+            }
+            else
+            {
+                @* Existing row in edit mode: Cancel / Update *@
+                <button class="btn btn-sm btn-outline-secondary me-1" @onclick="() => CancelEdit(item)">Cancel</button>
+                <button class="btn btn-sm btn-outline-success ms-1" @onclick="() => UpdateRow(item)">Update</button>
+            }
+        }
+        else
+        {
+            @* 3. Standard read-only row: Edit / Delete *@
+            <button class="btn btn-sm btn-outline-primary me-1" @onclick="() => BeginEdit(item)">Edit</button>
+            <button class="btn btn-sm btn-outline-danger ms-1" @onclick="() => MarkForDelete(item)">Delete</button>
+        }
+    </ChildContent>
+</GridColumn>
+        </GridColumns>
+    </Grid>
+}
+
+@code {
+    private List<LocalizationEntry> Entries = new();
+    private List<LocalizationEntry> filteredEntries = new();
+
+    private HashSet<LocalizationEntry> changedRows = new();        // in edit mode
+    private HashSet<LocalizationEntry> pendingDeletes = new();     // rows marked for deletion
+    private HashSet<LocalizationEntry> pendingNewRows = new();     // newly added, not yet confirmed
+
+    private Dictionary<int, LocalizationEntry> originalValues = new();
+
+    private HttpClient _apiClient = default!;
+
+    private List<string> languages = new();
+ 
+    private string _selectedLanguage = "en";
+
+    private string selectedLanguage
+    {
+        get => _selectedLanguage;
+        set
+        {
+            if (_selectedLanguage == value)
+                return;
+
+            _selectedLanguage = value;
+            OnLanguageChanged();
+        }
+    }
+    protected override async Task OnInitializedAsync()
+    {
+        _apiClient = HttpFac.CreateClient("LocalClient");
+        //test
+        languages.Add("en");
+        languages.Add("fr");
+        //end test
+        //await LoadLanguages();
+        await LoadEntries();
+    }
+
+    private async Task LoadLanguages()
+    {
+        // Option A: from a dedicated endpoint, e.g. GET localization/admin/languages
+        // Option B: derive from existing entries (simpler if you don't have a dedicated endpoint)
+        var all = await _apiClient.GetFromJsonAsync<List<LocalizationEntry>>("localization/admin/entries")
+                   ?? new List<LocalizationEntry>();
+
+        languages = all
+            .Select(e => e.Language)
+            .Distinct()
+            .OrderBy(l => l)
+            .ToList();
+
+        if (!languages.Contains(selectedLanguage) && languages.Any())
+            selectedLanguage = languages.First();
+    }
+
+    private async Task LoadEntries()
+    {
+        changedRows.Clear();
+        pendingDeletes.Clear();
+        pendingNewRows.Clear();
+        originalValues.Clear();
+
+        Entries = await _apiClient.GetFromJsonAsync<List<LocalizationEntry>>("localization/admin/entries")
+                   ?? new List<LocalizationEntry>();
+
+        ApplyFilter();
+
+        Entries = Entries.ToList();
+        StateHasChanged();
+    }
+
+    private void ApplyFilter()
+    {
+        filteredEntries = Entries
+            .Where(e => e.Language == selectedLanguage)
+            .ToList();
+
+        Console.WriteLine(
+            $"ApplyFilter: selectedLanguage={selectedLanguage}, " +
+            $"Entries.Count={Entries.Count}, filteredEntries.Count={filteredEntries.Count}");
+    }
+
+    private void OnLanguageChanged()
+    {
+        ApplyFilter();
+        StateHasChanged();
+    }
+
+    private void AddNewRow()
+{
+    var newEntry = new LocalizationEntry
+    {
+        Language = selectedLanguage
+    };
+
+    Entries.Add(newEntry);
+    Entries = Entries.ToList();
+
+    changedRows.Add(newEntry);
+    pendingNewRows.Add(newEntry);
+
+    ApplyFilter(); // recompute filteredEntries
+    StateHasChanged();
+}
+
+    private void BeginEdit(LocalizationEntry entry)
+    {
+        if (changedRows.Contains(entry) || pendingDeletes.Contains(entry))
+            return;
+
+        changedRows.Add(entry);
+
+        if (entry.Id != 0)
+        {
+            originalValues[entry.Id] = new LocalizationEntry
+            {
+                Id = entry.Id,
+                Key = entry.Key,
+                Language = entry.Language,
+                Value = entry.Value
+            };
+        }
+
+        StateHasChanged();
+    }
+
+    private void CancelEdit(LocalizationEntry entry)
+{
+    Console.WriteLine($"CancelEdit called for Id={entry.Id}, Key={entry.Key}");
+
+    if (pendingDeletes.Contains(entry))
+    {
+        Console.WriteLine("CancelEdit: exiting because row is in pendingDeletes");
+        return;
+    }
+
+    if (!changedRows.Contains(entry))
+    {
+        Console.WriteLine("CancelEdit: exiting because row is NOT in changedRows");
+        return;
+    }
+
+    if (entry.Id == 0)
+    {
+        // New row: just remove it (same as RemoveNewRow)
+        Console.WriteLine("CancelEdit: removing new row (Id=0)");
+
+        Entries.Remove(entry);
+        pendingNewRows.Remove(entry);
+        changedRows.Remove(entry);
+        originalValues.Remove(entry.Id);
+
+        Entries = Entries.ToList();
+        StateHasChanged();
+        return;
+    }
+
+    // Existing row: restore original values
+    if (originalValues.TryGetValue(entry.Id, out var original))
+    {
+        Console.WriteLine($"CancelEdit: restoring original -> Key={original.Key}, Language={original.Language}, Value={original.Value}");
+
+        entry.Key = original.Key;
+        entry.Language = original.Language;
+        entry.Value = original.Value;
+    }
+    else
+    {
+        Console.WriteLine($"CancelEdit: no original stored (Id={entry.Id})");
+    }
+
+    changedRows.Remove(entry);
+    originalValues.Remove(entry.Id);
+
+    Entries = Entries.ToList();
+    StateHasChanged();
+
+    Console.WriteLine("CancelEdit: finished");
+}
+
+    private void UpdateRow(LocalizationEntry entry)
+    {
+        // Just exit edit mode; actual save is done by SaveAll.
+        changedRows.Remove(entry);
+        originalValues.Remove(entry.Id);
+
+        StateHasChanged();
+    }
+
+    private void MarkForDelete(LocalizationEntry entry)
+    {
+        if (pendingDeletes.Contains(entry))
+            return;
+
+        pendingDeletes.Add(entry);
+
+        // If it was in edit mode, leave edit mode
+        changedRows.Remove(entry);
+        originalValues.Remove(entry.Id);
+
+        StateHasChanged();
+    }
+
+    private void CancelDelete(LocalizationEntry entry)
+    {
+        if (!pendingDeletes.Contains(entry))
+            return;
+
+        pendingDeletes.Remove(entry);
+
+        StateHasChanged();
+    }
+
+    private async Task ConfirmDelete(LocalizationEntry entry)
+    {
+        if (entry.Id == 0)
+        {
+            // New row: just remove from list
+            Entries.Remove(entry);
+            pendingNewRows.Remove(entry);
+            changedRows.Remove(entry);
+
+            Entries = Entries.ToList();
+            StateHasChanged();
+            return;
+        }
+
+        var response = await _apiClient.DeleteAsync($"localization/admin/entries/{entry.Id}");
+        response.EnsureSuccessStatusCode();
+
+        Entries.Remove(entry);
+        pendingDeletes.Remove(entry);
+        originalValues.Remove(entry.Id);
+
+        Entries = Entries.ToList();
+        StateHasChanged();
+    }
+
+    private void RemoveNewRow(LocalizationEntry entry)
+    {
+        if (entry.Id != 0 || !pendingNewRows.Contains(entry))
+            return;
+
+        Entries.Remove(entry);
+        pendingNewRows.Remove(entry);
+        changedRows.Remove(entry);
+
+        Entries = Entries.ToList();
+        StateHasChanged();
+    }
+
+    private void ConfirmNewRow(LocalizationEntry entry)
+    {
+        if (entry.Id != 0 || !pendingNewRows.Contains(entry))
+            return;
+
+        // Row becomes a normal (unsaved) row: leave edit mode and pending-new state
+        pendingNewRows.Remove(entry);
+        changedRows.Remove(entry);
+        originalValues.Remove(entry.Id);
+
+        Entries = Entries.ToList();
+        StateHasChanged();
+    }
+
+    private async Task SaveAll()
+    {
+        if (changedRows.Count == 0)
+            return;
+
+        // Insert new rows (Id == 0 and in changedRows)
+        var toInsert = changedRows.Where(e => e.Id == 0).ToList();
+
+        // Update existing edited rows (Id != 0 and in changedRows)
+        var toUpdate = changedRows.Where(e => e.Id != 0).ToList();
+
+        foreach (var entry in toInsert)
+        {
+            var response = await _apiClient.PostAsJsonAsync("localization/admin/entries", entry);
+            response.EnsureSuccessStatusCode();
+
+            var saved = await response.Content.ReadFromJsonAsync<LocalizationEntry>();
+            if (saved != null && saved.Id != 0)
+            {
+                entry.Id = saved.Id;
+            }
+        }
+
+        foreach (var entry in toUpdate)
+        {
+            var response = await _apiClient.PutAsJsonAsync($"localization/admin/entries/{entry.Id}", entry);
+            response.EnsureSuccessStatusCode();
+        }
+
+        changedRows.Clear();
+        originalValues.Clear();
+        pendingNewRows.Clear();
+
+        await LoadEntries();
+    }
+}

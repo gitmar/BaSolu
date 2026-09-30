@@ -8,10 +8,14 @@
 @using Simple.OData.Client
 @using Simple.OData.Client.Extensions
 @using Microsoft.EntityFrameworkCore;
+@using GxDicto.Services
+@using GxDicto.Components
+
+@inherits GxDicto.Components.LocalizedComponentBase
 
 <h3>Items Entry</h3>
 
-<Button Color="ButtonColor.Success" @onclick="() => StartAdd()">Add New Item</Button>
+<Button Color="ButtonColor.Success" @onclick="() => StartAdd()">@T("Add New Item","Ajt Nouveau Article")</Button>
 
 <Grid TItem="StkituDto" Data="@curOrga?.Stkitus" AllowPaging="true" Responsive="true">
     <GridColumns>
@@ -30,45 +34,6 @@
                 }
             </ChildContent>
         </GridColumn>
-        @* <GridColumn TItem="Stkitu" HeaderText="Label" Class="xcol3">
-            <ChildContent Context="item">
-                @if (editRowguid == item.Rowguid)
-                {
-                    <InputText @bind-Value="draftItem.Liba" />
-                }
-                else
-                {
-
-                    @item.Liba
-                }
-            </ChildContent>
-        </GridColumn>
-        <GridColumn TItem="Stkitu" HeaderText="Quantity" Class="xcol2">
-            <ChildContent Context="item">
-                @if (editRowguid == item.Rowguid)
-                {
-                    <InputNumber @bind-Value="draftItem.Quantity" />
-                }
-                else
-                {
-
-                    @item.Quantity
-                }
-            </ChildContent>
-        </GridColumn>
-        <GridColumn TItem="Stkitu" HeaderText="Unit Cost" Class="xcol2">
-            <ChildContent Context="item">
-                @if (editRowguid == item.Rowguid)
-                {
-                    <InputNumber @bind-Value="draftItem.UnitCost" />
-                }
-                else
-                {
-
-                    @item.UnitCost
-                }
-            </ChildContent>
-        </GridColumn> *@
         <GridColumn TItem="StkituDto" HeaderText="Actions">
             <ChildContent Context="item">
                 @if (editRowguid == item.Rowguid)

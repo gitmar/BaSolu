@@ -9,8 +9,8 @@
 @using GxTie.Services
 @using GxTie.StaticHelpers
 @using GxTie.Components.FrmHelper
-@using GxShared.Others
 @using GxShared.Sess
+@using GxShared.Others
 @* @using Microsoft.EntityFrameworkCore *@
 @using Simple.OData.Client
 @using Simple.OData.Client.Extensions
@@ -47,6 +47,8 @@
     <GlobModal IsVisible="@isModalVisible"
                IsVisibleChanged="@OnModalVisibilityChanged"
                Title="Chargement des documents"
+               UploadCtx="@uploadCtx"
+               Idorg="@curOrga.Idorg"
                EntyTiw="null"
                EntyTie="@curTie"
                LsmVars="@LsVars"
@@ -768,6 +770,7 @@
     private bool isAuthenticated = false;
 
     private EditContext? edTiwContext;
+    public UplCxtDto uploadCtx { get; set; } = new();
     //private EditContext? edAflContext;
     //usrbag
     private Userbag _usrBag = new Userbag();
@@ -2379,6 +2382,11 @@
         // Optionally, set the current entity to edit
         //currentEntity = new YourEntityType { Name = "Sample Name", Description = "Sample Description" }; // Example initialization
         //_mdcTiwel = curTieel;
+        uploadCtx.Idorg = curTie.Idorg;
+        uploadCtx.Tovers = 1;
+        uploadCtx.Itie = curTie.Id;
+        uploadCtx.Ioper = toChild.InUser?.Userid;
+        uploadCtx.Xmatri = curTie.Xmatri;
         Console.WriteLine($"ShowModal appele");
         isModalVisible = true;
     }

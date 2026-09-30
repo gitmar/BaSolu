@@ -5,6 +5,7 @@
 @using System.Linq.Expressions
 @using GxShared.GxDtos
 @using GxShared.Sess
+@using GxShared.Others
 @using GxShared.Helpers
 @using GxShared.Helpers.CrudHelpers
 @using GxShared.Interfaces
@@ -24,12 +25,13 @@
         <p>Saisie.Enrollement Loading...</p>
     </div>
 }
-
-@if (curTiw != null && isModalVisible)
+<p> curOrga en cours : @curOrga?.Idorg </p>
+@if (curTiw != null && curOrga != null && isModalVisible)
 {
     <GlobModal IsVisible="@isModalVisible"
                IsVisibleChanged="@OnModalVisibilityChanged"
                Title="Chargement des documents"
+               UploadCtx="@uploadCtx"
                EntyTiw="@curTiw"
                EntyTie="null"
                LsmVars="@LsVars"
@@ -282,12 +284,14 @@
     private int refTab = 1;
 
     public AdrContext Actx { get; set; }
+    public UplCxtDto uploadCtx { get; set; } = new();
     private TiewelDto curTiw = new();
     private int _nbChanges = 0;
 
     private List<TiewelDto> WaitingTiewels => TiwItems.Where(tw => tw.Xadd1 != -1).ToList();
     private bool canbeVerified => WaitingTiewels.Any();
     private List<TiwaflDto> WflItems => curTiw.Tiwafls.ToList();
+
     protected override async Task OnInitializedAsync()
     {
         isLoading = false;

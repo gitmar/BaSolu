@@ -4,6 +4,8 @@ using BlazorDownloadFile;
 
 using Blazored.LocalStorage;
 
+using GxDicto.Services;
+
 using GxPilo;
 using GxPilo.Services;
 using GxPilo.Services.Cols;
@@ -48,7 +50,6 @@ builder.Services.AddAuthorizationCore();
 builder.Services.AddCascadingAuthenticationState();
 builder.Services.AddScoped<MyAuthStateProvider>();
 builder.Services.AddScoped<AuthenticationStateProvider>(sp => sp.GetRequiredService<MyAuthStateProvider>());
-
 // 1. Consolidated HttpClient Registrations (3)
 // --------------------------------------------
 builder.Services.AddHttpClient("AuthClient", client =>
@@ -64,6 +65,14 @@ builder.Services.AddHttpClient("LocalClient", client =>
 {
     client.BaseAddress = new Uri($"{backendUrl}api/");
     client.DefaultRequestHeaders.Add("X-Requested-With", "Fetch");
+});
+builder.Services.AddScoped<ILocalizationService>(sp =>
+{
+    var http = sp.GetRequiredService<IHttpClientFactory>()
+           .CreateClient("LocalClient");
+
+    var logger = sp.GetRequiredService<ILogger<LocalizationService>>();
+    return new LocalizationService(http, logger);
 });
 // ------------------------------------------------
 // 2. Register Custom OData Client Factory
@@ -101,8 +110,8 @@ builder.Services.AddScoped<SessionContextClient>();
 // ----------------------------
 // Authentication & Sync Services
 // ----------------------------
-builder.Services.AddScoped<MyAuthStateProvider>();
-builder.Services.AddScoped<AuthenticationStateProvider>(sp => sp.GetRequiredService<MyAuthStateProvider>());
+//builder.Services.AddScoped<MyAuthStateProvider>();
+//builder.Services.AddScoped<AuthenticationStateProvider>(sp => sp.GetRequiredService<MyAuthStateProvider>());
 builder.Services.AddScoped<IPuzzleSyncService, PuzzleSyncService>();
 
 // ----------------------------
@@ -132,7 +141,9 @@ builder.Services.AddSingleton<IMessageService, MessageService>();
 // Startup
 // ----------------------------
 var host = builder.Build();
-
+// Optionally load default language at startup
+var loc = host.Services.GetRequiredService<ILocalizationService>();
+await loc.SetLanguageAsync("en");
 var localStorage = host.Services.GetRequiredService<ILocalStorageService>();
 var authProvider = host.Services.GetRequiredService<MyAuthStateProvider>();
 
