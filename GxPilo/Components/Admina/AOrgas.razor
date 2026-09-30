@@ -1044,6 +1044,11 @@ else if (edOrgContext != null && curOrga != null)
                                 <OrgColumnSelector Idorg="@curOrga.Idorg" EnsTbls="@EnsTbls" />
                             </Content>
                         </Tab>
+                        <Tab Title="Dictionnaire">
+                            <Content>
+                                <LocalizationAdmin IdcOrg="@curOrga.Idorg" LsVars="@LsVars" />
+                            </Content>
+                        </Tab>
                     </Tabs>
                     <!-- GLOBAL Save/Cancel - ONE button saves ALL tabs -->
                     <div class="alert alert-warning d-flex justify-content-between align-items-center py-1 px-2 position-fixed bottom-0 end-0"
@@ -1326,6 +1331,7 @@ else if (edOrgContext != null && curOrga != null)
     private List<Gpfixe> LsDoms = new();
     private List<Gpdivh> LsDivs = new();
     private List<Gplan> LsPlans = new();
+    public List<Gpvar> LsVars = new();
     private List<Gpfixe> LsOcols = new();
     private List<Gpcol> LsPcols = new();
     private List<Gpcol> LsFcols = new();
@@ -1474,6 +1480,7 @@ else if (edOrgContext != null && curOrga != null)
         ClGties = _usrBag.Ufixes
             .Where(ut => ut.Gvars == 36 && ut.Itb == 6 && (ut.Gp1 == 1 || ut.Gp1 == 4))
             .ToList();
+        LsVars = _usrBag.Usorga.Uvars.ToList();
         //dom tiers zfro=1
         LsOcols = LsFixes.Where(uv => uv.Gvars == 65 && uv.Itb == 1).ToList();
         var postesTask = _rendAgres.LoadOrgaPostes();

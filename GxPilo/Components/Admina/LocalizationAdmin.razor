@@ -4,6 +4,8 @@
 @using System.Net.Http.Json
 @using GxDicto.DModels
 @using GxDicto.Components
+@using GxShared.GxDtos
+@using GxShared.Sess
 
 @inject IHttpClientFactory HttpFac
 
@@ -15,11 +17,11 @@
     </div>
     <div class="col-auto">
         <InputSelect class="form-select" @bind-Value="selectedLanguage">
-    @foreach (var lang in languages)
-    {
-        <option value="@lang">@lang</option>
-    }
-</InputSelect>
+            @foreach (var lang in LsVars.Where(gv => gv.Gvars == 3 && gv.Itb == 11 && gv.Elea != 0).ToList())
+            {
+                <option value="@lang.Abg">@lang.Liba</option>
+            }
+        </InputSelect>
     </div>
 </div>
 
@@ -41,13 +43,14 @@ else if (!Entries.Any())
 }
 else
 {
+    <div class="row align-items-center">
     <Grid TItem="LocalizationEntry"
           Data="@filteredEntries"
           AllowPaging="true"
           AllowSorting="true"
           Responsive="true">
         <GridColumns>
-            <GridColumn TItem="LocalizationEntry" HeaderText="Key" Class="xcol1">
+            <GridColumn TItem="LocalizationEntry" HeaderText="Key" Class="xcol4">
                 <ChildContent Context="item">
                     @if (changedRows.Contains(item))
                     {
@@ -59,19 +62,7 @@ else
                     }
                 </ChildContent>
             </GridColumn>
-            @* <GridColumn TItem="LocalizationEntry" HeaderText="Language" Class="xcol1">
-                <ChildContent Context="item">
-                    @if (changedRows.Contains(item))
-                    {
-                        <InputText class="form-control" @bind-Value="item.Language" />
-                    }
-                    else
-                    {
-                        @item.Language
-                    }
-                </ChildContent>
-            </GridColumn> *@
-            <GridColumn TItem="LocalizationEntry" HeaderText="Value" Class="xcol1">
+            <GridColumn TItem="LocalizationEntry" HeaderText="Value" Class="xcol4">
                 <ChildContent Context="item">
                     @if (changedRows.Contains(item))
                     {
@@ -83,43 +74,74 @@ else
                     }
                 </ChildContent>
             </GridColumn>
-            <GridColumn TItem="LocalizationEntry" HeaderText="Actions" Class="xcol1">
-    <ChildContent Context="item">
-        @* 1. Pending delete mode *@
-        @if (pendingDeletes.Contains(item))
-        {
-            <button class="btn btn-sm btn-outline-secondary me-1" @onclick="() => CancelDelete(item)">Cancel</button>
-            <button class="btn btn-sm btn-outline-danger ms-1" @onclick="() => ConfirmDelete(item)">Confirm</button>
-        }
-        else if (changedRows.Contains(item))
-        {
-            @* 2. Row in edit mode *@
-            @if (item.Id == 0 && pendingNewRows.Contains(item))
-            {
-                @* Newly added row, not yet confirmed: Remove / Confirm *@
-                <button class="btn btn-sm btn-outline-secondary me-1" @onclick="() => RemoveNewRow(item)">Remove</button>
-                <button class="btn btn-sm btn-outline-success ms-1" @onclick="() => ConfirmNewRow(item)">Confirm</button>
-            }
-            else
-            {
-                @* Existing row in edit mode: Cancel / Update *@
-                <button class="btn btn-sm btn-outline-secondary me-1" @onclick="() => CancelEdit(item)">Cancel</button>
-                <button class="btn btn-sm btn-outline-success ms-1" @onclick="() => UpdateRow(item)">Update</button>
-            }
-        }
-        else
-        {
-            @* 3. Standard read-only row: Edit / Delete *@
-            <button class="btn btn-sm btn-outline-primary me-1" @onclick="() => BeginEdit(item)">Edit</button>
-            <button class="btn btn-sm btn-outline-danger ms-1" @onclick="() => MarkForDelete(item)">Delete</button>
-        }
-    </ChildContent>
-</GridColumn>
+            <GridColumn TItem="LocalizationEntry" HeaderText="Actions" Class="xcol3">
+                <ChildContent Context="item">
+                    @* 1. Pending delete mode *@
+                    @if (pendingDeletes.Contains(item))
+                    {
+                        <button class="btn btn-sm btn-outline-secondary me-1" @onclick="() => CancelDelete(item)">Cancel</button>
+                        <button class="btn btn-sm btn-outline-danger ms-1" @onclick="() => ConfirmDelete(item)">Confirm</button>
+                    }
+                    else if (changedRows.Contains(item))
+                    {
+                        @* 2. Row in edit mode *@
+                        @if (item.Id == 0 && pendingNewRows.Contains(item))
+                        {
+                            @* Newly added row, not yet confirmed: Remove / Confirm *@
+                            <button class="btn btn-sm btn-outline-secondary me-1" @onclick="() => RemoveNewRow(item)">Remove</button>
+                            <button class="btn btn-sm btn-outline-success ms-1" @onclick="() => ConfirmNewRow(item)">Confirm</button>
+                        }
+                        else
+                        {
+                            @* Existing row in edit mode: Cancel / Update *@
+                            <button class="btn btn-sm btn-outline-secondary me-1" @onclick="() => CancelEdit(item)">Cancel</button>
+                            <button class="btn btn-sm btn-outline-success ms-1" @onclick="() => UpdateRow(item)">Update</button>
+                        }
+                    }
+                    else
+                    {
+                        @* 3. Standard read-only row: Edit / Delete *@
+                        <button class="btn btn-sm btn-outline-primary me-1" @onclick="() => BeginEdit(item)">Edit</button>
+                        <button class="btn btn-sm btn-outline-danger ms-1" @onclick="() => MarkForDelete(item)">Delete</button>
+                    }
+                </ChildContent>
+            </GridColumn>
         </GridColumns>
     </Grid>
+    </div>
 }
+<style>
+    .xcolx {
+        width: 40px !important;
+    }
 
+    .xcol1 {
+        width: 60px;
+    }
+
+    .xcol2 {
+        width: 120px;
+    }
+
+    .xcol3 {
+        width: 180px;
+    }
+
+    .xcol4 {
+        width: 240px;
+    }
+        /* Ensure inputs inside these columns fill the width */
+        .xcol1 input,
+        .xcol2 input,
+        .xcol3 input,
+        .xcol4 input {
+            width: 100%;
+            box-sizing: border-box; /* prevents overflow due to padding/border */
+        }
+</style>
 @code {
+    [Parameter] public int IdcOrg { get; set; } = 0;
+    [Parameter] public List<Gpvar> LsVars { get; set; } = new();
     private List<LocalizationEntry> Entries = new();
     private List<LocalizationEntry> filteredEntries = new();
 
@@ -132,7 +154,7 @@ else
     private HttpClient _apiClient = default!;
 
     private List<string> languages = new();
- 
+
     private string _selectedLanguage = "en";
 
     private string selectedLanguage
@@ -160,10 +182,9 @@ else
 
     private async Task LoadLanguages()
     {
-        // Option A: from a dedicated endpoint, e.g. GET localization/admin/languages
-        // Option B: derive from existing entries (simpler if you don't have a dedicated endpoint)
-        var all = await _apiClient.GetFromJsonAsync<List<LocalizationEntry>>("localization/admin/entries")
-                   ?? new List<LocalizationEntry>();
+        var all = await _apiClient.GetFromJsonAsync<List<LocalizationEntry>>(
+            $"localization/{IdcOrg}/admin/entries")
+            ?? new List<LocalizationEntry>();
 
         languages = all
             .Select(e => e.Language)
@@ -182,8 +203,9 @@ else
         pendingNewRows.Clear();
         originalValues.Clear();
 
-        Entries = await _apiClient.GetFromJsonAsync<List<LocalizationEntry>>("localization/admin/entries")
-                   ?? new List<LocalizationEntry>();
+        Entries = await _apiClient.GetFromJsonAsync<List<LocalizationEntry>>(
+              $"localization/{IdcOrg}/admin/entries")
+          ?? new List<LocalizationEntry>();
 
         ApplyFilter();
 
@@ -209,21 +231,22 @@ else
     }
 
     private void AddNewRow()
-{
-    var newEntry = new LocalizationEntry
     {
-        Language = selectedLanguage
+        var newEntry = new LocalizationEntry
+    {
+        Language = selectedLanguage,
+        Idorg = IdcOrg
     };
 
-    Entries.Add(newEntry);
-    Entries = Entries.ToList();
+        Entries.Add(newEntry);
+        Entries = Entries.ToList();
 
-    changedRows.Add(newEntry);
-    pendingNewRows.Add(newEntry);
+        changedRows.Add(newEntry);
+        pendingNewRows.Add(newEntry);
 
-    ApplyFilter(); // recompute filteredEntries
-    StateHasChanged();
-}
+        ApplyFilter(); // recompute filteredEntries
+        StateHasChanged();
+    }
 
     private void BeginEdit(LocalizationEntry entry)
     {
@@ -237,9 +260,11 @@ else
             originalValues[entry.Id] = new LocalizationEntry
             {
                 Id = entry.Id,
+                Idorg = entry.Idorg,
                 Key = entry.Key,
                 Language = entry.Language,
-                Value = entry.Value
+                Value = entry.Value,
+                BaseValue = entry.BaseValue
             };
         }
 
@@ -247,45 +272,47 @@ else
     }
 
     private void CancelEdit(LocalizationEntry entry)
-{
-    Console.WriteLine($"CancelEdit called for Id={entry.Id}, Key={entry.Key}");
-
-    if (pendingDeletes.Contains(entry))
     {
-        Console.WriteLine("CancelEdit: exiting because row is in pendingDeletes");
-        return;
-    }
+        Console.WriteLine($"CancelEdit called for Id={entry.Id}, Key={entry.Key}");
 
-    if (!changedRows.Contains(entry))
-    {
-        Console.WriteLine("CancelEdit: exiting because row is NOT in changedRows");
-        return;
-    }
+        if (pendingDeletes.Contains(entry))
+        {
+            Console.WriteLine("CancelEdit: exiting because row is in pendingDeletes");
+            return;
+        }
 
-    if (entry.Id == 0)
-    {
-        // New row: just remove it (same as RemoveNewRow)
-        Console.WriteLine("CancelEdit: removing new row (Id=0)");
+        if (!changedRows.Contains(entry))
+        {
+            Console.WriteLine("CancelEdit: exiting because row is NOT in changedRows");
+            return;
+        }
 
-        Entries.Remove(entry);
-        pendingNewRows.Remove(entry);
-        changedRows.Remove(entry);
-        originalValues.Remove(entry.Id);
+        if (entry.Id == 0)
+        {
+            // New row: just remove it (same as RemoveNewRow)
+            Console.WriteLine("CancelEdit: removing new row (Id=0)");
 
-        Entries = Entries.ToList();
-        StateHasChanged();
-        return;
-    }
+            Entries.Remove(entry);
+            pendingNewRows.Remove(entry);
+            changedRows.Remove(entry);
+            originalValues.Remove(entry.Id);
 
-    // Existing row: restore original values
-    if (originalValues.TryGetValue(entry.Id, out var original))
-    {
-        Console.WriteLine($"CancelEdit: restoring original -> Key={original.Key}, Language={original.Language}, Value={original.Value}");
+            Entries = Entries.ToList();
+            StateHasChanged();
+            return;
+        }
 
-        entry.Key = original.Key;
-        entry.Language = original.Language;
-        entry.Value = original.Value;
-    }
+        // Existing row: restore original values
+        if (originalValues.TryGetValue(entry.Id, out var original))
+        {
+            Console.WriteLine($"CancelEdit: restoring original -> Key={original.Key}, Language={original.Language}, Value={original.Value}");
+
+            entry.Key = original.Key;
+            entry.Idorg = original.Idorg;
+            entry.Language = original.Language;
+            entry.Value = original.Value;
+            entry.BaseValue = original.BaseValue;
+        }
     else
     {
         Console.WriteLine($"CancelEdit: no original stored (Id={entry.Id})");
@@ -346,8 +373,9 @@ else
             StateHasChanged();
             return;
         }
-
-        var response = await _apiClient.DeleteAsync($"localization/admin/entries/{entry.Id}");
+        
+        var response = await _apiClient.DeleteAsync(
+            $"localization/{IdcOrg}/admin/entries/{entry.Id}");
         response.EnsureSuccessStatusCode();
 
         Entries.Remove(entry);
@@ -398,7 +426,8 @@ else
 
         foreach (var entry in toInsert)
         {
-            var response = await _apiClient.PostAsJsonAsync("localization/admin/entries", entry);
+            var response = await _apiClient.PostAsJsonAsync(
+                $"localization/{IdcOrg}/admin/entries", entry);
             response.EnsureSuccessStatusCode();
 
             var saved = await response.Content.ReadFromJsonAsync<LocalizationEntry>();
@@ -410,7 +439,8 @@ else
 
         foreach (var entry in toUpdate)
         {
-            var response = await _apiClient.PutAsJsonAsync($"localization/admin/entries/{entry.Id}", entry);
+            var response = await _apiClient.PutAsJsonAsync(
+                $"localization/{IdcOrg}/admin/entries/{entry.Id}", entry);
             response.EnsureSuccessStatusCode();
         }
 

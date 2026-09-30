@@ -78,20 +78,6 @@ else
                         <option value=@tob.Key>@tob.Value</option>
                     }
                 </InputSelect>
-                @* <InputSelect @bind-Value="ITyDoc" class="me-3" style="width:auto" @onchange="OnDocChanged">
-                    <option value=0>?gpdoc</option>
-                    @foreach (var tob in LsDocs)
-                    {
-                        <option value=@tob.Key>@tob.Value</option>
-                    }
-                </InputSelect> *@
-                @* <InputSelect @bind-Value="ITyDoc" class="me-3" style="width:auto">
-                    <option class="jchx" value=0>?gpdoc</option>
-                    @foreach (var tob in LsDocs) //LsFixes.Where(ut => ut.Gvars == 61 && ut.Itb == 1 & ut.Elea != 0))
-                    {
-                        <option value=@tob.Key @onclick="() => SelTypDoc(tob.Key)">@tob.Value</option>
-                    }
-                </InputSelect> *@
             </div>
             <div class="container-fluid-fixed-top">
                 @if (curOrga == null)
@@ -143,7 +129,19 @@ else
                                                 }
                                             </ChildContent>
                                         </GridColumn>
-                                        <GridColumn TItem="GsgfixDto" HeaderText="Taille" class="xcol1" >
+                                        <GridColumn TItem="GsgfixDto" HeaderText="Abrege" IsVisible="ITyDoc == 7" Class="xcol1">
+                                            <ChildContent Context="item">
+                                                @if (EdFixRowguid == item?.Rowguid)
+                                                { // show draftPln inputs
+                                                  <InputText @bind-Value="draftFix.Abg" />
+                                                }
+                                                else
+                                                { // show item as read-only
+                                                  @item?.Abg
+                                                }
+                                            </ChildContent>
+                                        </GridColumn>
+                                        <GridColumn TItem="GsgfixDto" HeaderText="Taille" IsVisible="ITyDoc != 3" class="xcol1" >
                                             <ChildContent Context="item">
                                                 @if (EdFixRowguid == item?.Rowguid)
                                                 { // show draftPln inputs
@@ -156,7 +154,7 @@ else
                                                 }
                                             </ChildContent>
                                         </GridColumn>
-                                        <GridColumn TItem="GsgfixDto" HeaderText="Methode" IsVisible="ITyDoc == 3" Class="xcol1">
+                                        <GridColumn TItem="GsgfixDto" HeaderText="Methode" IsVisible="ITyDoc == 4" Class="xcol1">
                                             <ChildContent Context="item">
                                                 <InputSelect @bind-Value="item.Ityp" disabled>
                                                     @foreach (var tob in LsFixes.Where(ut => ut.Gvars == 33 && ut.Itb == 8 && ut.Gp1 == 1 && ut.Elea != 0))
@@ -166,7 +164,7 @@ else
                                                 </InputSelect>
                                             </ChildContent>
                                         </GridColumn>
-                                        <GridColumn TItem="GsgfixDto" HeaderText="Frequence" IsVisible="ITyDoc == 3" Class="xcol1">
+                                        <GridColumn TItem="GsgfixDto" HeaderText="Frequence" IsVisible="ITyDoc == 4" Class="xcol1">
                                             <ChildContent Context="item">
                                                 <InputSelect @bind-Value="item.Jtyp" disabled>
                                                     @foreach (var tob in LsFixes.Where(ut => ut.Gvars == 33 && ut.Itb == 8 && ut.Gp1 == 2 && ut.Elea != 0))
@@ -176,7 +174,7 @@ else
                                                 </InputSelect>
                                             </ChildContent>
                                         </GridColumn>
-                                        <GridColumn TItem="GsgfixDto" HeaderText="jeton" IsVisible="ITyDoc == 3" Class="xcol1">
+                                        <GridColumn TItem="GsgfixDto" HeaderText="jeton" IsVisible="ITyDoc == 4" Class="xcol1">
                                             <ChildContent Context="item">
                                                 <InputSelect @bind-Value="item.Ktyp" disabled>
                                                     <option value=0>sans</option>
@@ -187,7 +185,7 @@ else
                                         </GridColumn>
                                         <GridColumn TItem="GsgfixDto" HeaderText="Eta" Class="xcol1">
                                             <HeaderContent>
-                                                @if (ITyDoc == 1 || ITyDoc == 2)
+                                                @if (ITyDoc == 1 || ITyDoc == 2 || ITyDoc == 7)
                                                 {
                                                     <button class="btn btn-primary btn-sm @(isAddFix || isEdtFix ? "disabled-action" : "")"
                                                     @onclick="() => StartDocuNew(ITyDoc)">
@@ -502,6 +500,7 @@ else
     {
         [1] = "Actes",
         [2] = "Pieces",
+        [7] = "Langues",
         //[3] = "Sessions"
     };
 
@@ -656,7 +655,28 @@ else
                 Xedt1 = 0,
                 Xdel1 = 0
             };
-        } //session pas creation
+        }else if (tydoc == 7)
+        {//docP
+            newDoc = new GsgfixDto
+            {
+                //Rowguid = Guid.NewGuid(),
+                Rowguid = Guid.NewGuid(),
+                Idorg = curOrga.Idorg, //pere Id
+                Iui = lsnb,
+                Gvars = 3,
+                Itb = 11,
+                Gtyp = 1,
+                Etyp = 1,
+                Totyp = 0,
+                Tstyp = 0,
+                Ivala = 0,
+                Eta = 1,
+                Xadd1 = -1, //newly added
+                Xedt1 = 0,
+                Xdel1 = 0
+            };
+        }  
+        //session pas creation
         else
         {
             return;
@@ -1165,6 +1185,20 @@ else
             return false;
         }
         //abrege
+        if (ITyDoc == 7)
+        {
+            if (string.IsNullOrEmpty(mypln.Abg)
+                || mypln.Abg.Length != 2)
+            {
+                Imessage = "abrege obligatoire,longueur(2)";
+                return false;
+            } 
+            if (mypln.Abg.Any(char.IsDigit))
+            {
+                Imessage = "doit etre en lettres";
+                return false;
+            }
+        }
         // if (string.IsNullOrEmpty(mypln.Abg)
         //     || mypln.Abg.Length < 4)
         // {
@@ -1246,10 +1280,10 @@ else
             MyDaDocus = orgFixes
               .Where(uv => uv.Gvars == 3 && uv.Itb == xdom && uv.Elea >= 1)
               .ToList();
-        } else if (xdom == 3)
+        } else if (xdom == 7)
         {
             MyDaDocus = orgFixes
-              .Where(uv => uv.Gvars == 41 && uv.Itb == 1 && uv.Elea != 0)
+              .Where(uv => uv.Gvars == 3 && uv.Itb == 11 && uv.Elea != 0)
               .ToList();
         } else
         {
