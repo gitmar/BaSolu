@@ -7,7 +7,7 @@
 @using GxShared.GxDtos
 @using GxShared.Sess
 
-@inject IHttpClientFactory HttpFac
+@inject IHttpClientFactory _httpClientFactory
 
 <h3>Localization Admin</h3>
 
@@ -54,7 +54,14 @@ else
                 <ChildContent Context="item">
                     @if (changedRows.Contains(item))
                     {
-                        <InputText class="form-control" @bind-Value="item.Key" />
+                            if (item.Id == 0)
+                            { //new row
+                              <InputText class="form-control" @bind-Value="item.Key" />
+                            }
+                            else
+                            {
+                                @item.Key
+                            }
                     }
                     else
                     {
@@ -77,6 +84,7 @@ else
             <GridColumn TItem="LocalizationEntry" HeaderText="Actions" Class="xcol3">
                 <ChildContent Context="item">
                     @* 1. Pending delete mode *@
+                        <div class="d-flex align-items-center gap-1">
                     @if (pendingDeletes.Contains(item))
                     {
                         <button class="btn btn-sm btn-outline-secondary me-1" @onclick="() => CancelDelete(item)">Cancel</button>
@@ -104,6 +112,7 @@ else
                         <button class="btn btn-sm btn-outline-primary me-1" @onclick="() => BeginEdit(item)">Edit</button>
                         <button class="btn btn-sm btn-outline-danger ms-1" @onclick="() => MarkForDelete(item)">Delete</button>
                     }
+                    </div>
                 </ChildContent>
             </GridColumn>
         </GridColumns>
@@ -171,7 +180,7 @@ else
     }
     protected override async Task OnInitializedAsync()
     {
-        _apiClient = HttpFac.CreateClient("LocalClient");
+        _apiClient = _httpClientFactory.CreateClient("LocalClient");
         //test
         languages.Add("en");
         languages.Add("fr");
@@ -233,20 +242,38 @@ else
     private void AddNewRow()
     {
         var newEntry = new LocalizationEntry
-    {
-        Language = selectedLanguage,
-        Idorg = IdcOrg
-    };
+        {
+            ClientRowId = Guid.NewGuid(),
+            Language = selectedLanguage,
+            Idorg = IdcOrg
+        };
 
-        Entries.Add(newEntry);
-        Entries = Entries.ToList();
+        Entries.Insert(0, newEntry);
 
         changedRows.Add(newEntry);
         pendingNewRows.Add(newEntry);
 
-        ApplyFilter(); // recompute filteredEntries
+        ApplyFilter();
+
         StateHasChanged();
     }
+    // private void AddNewRow()
+    // {
+    //     var newEntry = new LocalizationEntry
+    //     {
+    //         Language = selectedLanguage,
+    //         Idorg = IdcOrg
+    //     };
+    //     Entries.Insert(0, newEntry);
+    //     //Entries.Add(newEntry);
+    //     //Entries = Entries.ToList();
+
+    //     changedRows.Add(newEntry);
+    //     pendingNewRows.Add(newEntry);
+
+    //     ApplyFilter(); // recompute filteredEntries
+    //     StateHasChanged();
+    // }
 
     private void BeginEdit(LocalizationEntry entry)
     {
@@ -313,19 +340,19 @@ else
             entry.Value = original.Value;
             entry.BaseValue = original.BaseValue;
         }
-    else
-    {
-        Console.WriteLine($"CancelEdit: no original stored (Id={entry.Id})");
+        else
+        {
+            Console.WriteLine($"CancelEdit: no original stored (Id={entry.Id})");
+        }
+
+        changedRows.Remove(entry);
+        originalValues.Remove(entry.Id);
+
+        Entries = Entries.ToList();
+        StateHasChanged();
+
+        Console.WriteLine("CancelEdit: finished");
     }
-
-    changedRows.Remove(entry);
-    originalValues.Remove(entry.Id);
-
-    Entries = Entries.ToList();
-    StateHasChanged();
-
-    Console.WriteLine("CancelEdit: finished");
-}
 
     private void UpdateRow(LocalizationEntry entry)
     {
@@ -373,7 +400,7 @@ else
             StateHasChanged();
             return;
         }
-        
+
         var response = await _apiClient.DeleteAsync(
             $"localization/{IdcOrg}/admin/entries/{entry.Id}");
         response.EnsureSuccessStatusCode();
@@ -388,16 +415,42 @@ else
 
     private void RemoveNewRow(LocalizationEntry entry)
     {
-        if (entry.Id != 0 || !pendingNewRows.Contains(entry))
+        if (entry is null || entry.Id != 0)
             return;
 
-        Entries.Remove(entry);
-        pendingNewRows.Remove(entry);
-        changedRows.Remove(entry);
+        var clientRowId = entry.ClientRowId;
 
-        Entries = Entries.ToList();
+        var isPending = pendingNewRows.Any(x =>
+            x.ClientRowId == clientRowId);
+
+        if (!isPending)
+            return;
+
+        Entries.RemoveAll(x =>
+            x.ClientRowId == clientRowId);
+
+        pendingNewRows.RemoveWhere(x =>
+            x.ClientRowId == clientRowId);
+
+        changedRows.RemoveWhere(x =>
+            x.ClientRowId == clientRowId);
+
+        ApplyFilter();
+
         StateHasChanged();
     }
+    // private void RemoveNewRow(LocalizationEntry entry)
+    // {
+    //     if (entry.Id != 0 || !pendingNewRows.Contains(entry))
+    //         return;
+
+    //     Entries.Remove(entry);
+    //     pendingNewRows.Remove(entry);
+    //     changedRows.Remove(entry);
+        
+    //     Entries = Entries.ToList();
+    //     StateHasChanged();
+    // }
 
     private void ConfirmNewRow(LocalizationEntry entry)
     {

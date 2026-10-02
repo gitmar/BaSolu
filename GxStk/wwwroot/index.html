@@ -1,26 +1,29 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <!-- 🛡️ Dynamic Manifest + Service Worker Fix -->
+    <!-- 🛡️ Shared base path -->
     <script>
-        (function () {
-            const pathSegments = window.location.pathname.split('/');
-            const subsite = pathSegments.length > 1 && pathSegments[1] ? pathSegments[1] : '';
-            const basePath = subsite ? `/${subsite}/` : '/';
+window.appBasePath = (function () {
+                    const base = document.querySelector('base')?.getAttribute('href') || '/';
+                    return base.endsWith('/') ? base : base + '/';
+                })();</script>
 
-            let manifestLink = document.querySelector('link[rel="manifest"]');
-            if (!manifestLink) {
-                manifestLink = document.createElement('link');
-                manifestLink.setAttribute('rel', 'manifest');
-                document.head.appendChild(manifestLink);
-            }
-            manifestLink.setAttribute('href', `${basePath}manifest.webmanifest`);
+    <!-- 🛡️ Dynamic Manifest -->
+    <script>
+(function () {
+                    const basePath = window.appBasePath;
 
-            console.log("Manifest URL set to:", manifestLink.href);
-        })();
-    </script>
+                    let manifestLink = document.querySelector('link[rel="manifest"]');
+                    if (!manifestLink) {
+                        manifestLink = document.createElement('link');
+                        manifestLink.setAttribute('rel', 'manifest');
+                        document.head.appendChild(manifestLink);
+                    }
 
-    <!-- other <link> tags follow -->
+                    manifestLink.setAttribute('href', `${basePath}manifest.webmanifest`);
+                    console.log("Manifest URL set to:", manifestLink.href);
+                })();</script>
+
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>GxStk</title>
@@ -30,9 +33,6 @@
     <link rel="stylesheet" href="css/app.css" />
     <link rel="icon" type="image/png" href="favicon.png" />
     <link href="GxStk.styles.css" rel="stylesheet" />
-    <!-- Manifest will be dynamically adjusted -->
-    <!--<link rel="manifest" id="dynamic-manifest" />-->
-    <!--<link rel="manifest" href="manifest.webmanifest" />-->
     <link href="lib/bootstrap/css/bootstrap.min.css" rel="stylesheet" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
     <link href="_content/Blazor.Bootstrap/blazor.bootstrap.css" rel="stylesheet" />
@@ -59,106 +59,136 @@
         <span class="dismiss">🗙</span>
     </div>
 
-    <!-- 🔄 Version Check and Cache Clear -->
+    <!-- 🔄 Version Check and Cache/Cookie Clear -->
     <script>
-        (async function () {
-            try {
-                const basePath = window.appBasePath || '/';
-                const response = await fetch(`${basePath}version.json`, { cache: 'no-store' });
-                console.log('enter version script');
-                if (!response.ok) {
-                    console.log("echec");
-                    console.error('version.json not found');
-                    return;
-                }
+(async function () {
+                    // Deletes every cookie visible to JS (HttpOnly cookies can only be removed by the server).
+                    // Tries several domain/path combinations because a cookie is only deleted
+                    // when path and domain match the ones it was created with.
+                    function clearAllCookies() {
+                        const names = document.cookie
+                            .split(';')
+                            .map(c => c.split('=')[0].trim())
+                            .filter(Boolean);
 
-                const versionData = await response.json();
-                const appVersion = versionData.appVersion ?? '';
-                const schemaVersion = String(versionData.schemaVersion ?? '');
+                        if (names.length === 0) return;
 
-                const storedAppVersion = localStorage.getItem('appVersion');
-                const storedSchemaVersion = localStorage.getItem('schemaVersion');
+                        const host = location.hostname;
+                        const hostParts = host.split('.');
 
-                console.log('appVersion:', appVersion);
-                console.log('storedAppVersion:', storedAppVersion);
-                console.log('schemaVersion:', schemaVersion);
-                console.log('storedSchemaVersion:', storedSchemaVersion);
+                        // Domain candidates: host-only, host, .host, .parent.domain ...
+                        const domains = ['', host];
+                        for (let i = 0; i < hostParts.length - 1; i++) {
+                            domains.push('.' + hostParts.slice(i).join('.'));
+                        }
 
-                const appChanged = storedAppVersion !== appVersion;
-                const schemaChanged = storedSchemaVersion !== schemaVersion;
+                        // Path candidates: /, base path, and each segment of the current path
+                        const paths = new Set(['/', window.appBasePath || '/']);
+                        let p = '';
+                        for (const seg of location.pathname.split('/').filter(Boolean)) {
+                            p += '/' + seg;
+                            paths.add(p);
+                        }
 
-                if (appChanged) {
-                    const keys = await caches.keys();
-                    await Promise.all(keys.map(key => caches.delete(key)));
-
-                    localStorage.removeItem('appVersion');
-                    sessionStorage.clear();
-                    console.log('cache cleared');
-                }
-
-                if (schemaChanged) {
-                    if (indexedDB.databases) {
-                        const dbs = await indexedDB.databases();
-                        await Promise.all(dbs.map(db => new Promise(resolve => {
-                            if (!db.name) return resolve();
-                            const req = indexedDB.deleteDatabase(db.name);
-                            req.onsuccess = req.onerror = req.onblocked = () => resolve();
-                        })));
-                        console.log('indexDB cleared');
+                        for (const name of names) {
+                            for (const domain of domains) {
+                                for (const path of paths) {
+                                    document.cookie =
+                                        `${name}=; expires=Thu, 01 Jan 1970 00:00:00 GMT; max-age=0; path=${path}` +
+                                        (domain ? `; domain=${domain}` : '');
+                                }
+                            }
+                        }
+                        console.log('cookies cleared:', names);
                     }
-                    localStorage.setItem('schemaVersion', schemaVersion);
-                }
 
-                localStorage.setItem('appVersion', appVersion);
-                console.log('new version ' + appVersion + ' stored in localStorage');
-                if (appChanged || schemaChanged) {
-                    location.reload();
-                }
-            } catch (err) {
-                console.error('Version check failed:', err);
-            }
-        })();
-    </script>
+                    try {
+                        const basePath = window.appBasePath || '/';
+                        const response = await fetch(`${basePath}version.json`, { cache: 'no-store' });
+                        console.log('enter version script');
+                        if (!response.ok) {
+                            console.log("echec");
+                            console.error('version.json not found');
+                            return;
+                        }
+
+                        const versionData = await response.json();
+                        const appVersion = versionData.appVersion ?? '';
+                        const schemaVersion = String(versionData.schemaVersion ?? '');
+
+                        const storedAppVersion = localStorage.getItem('appVersion');
+                        const storedSchemaVersion = localStorage.getItem('schemaVersion');
+
+                        console.log('appVersion:', appVersion);
+                        console.log('storedAppVersion:', storedAppVersion);
+                        console.log('schemaVersion:', schemaVersion);
+                        console.log('storedSchemaVersion:', storedSchemaVersion);
+
+                        const appChanged = storedAppVersion !== appVersion;
+                        const schemaChanged = storedSchemaVersion !== schemaVersion;
+
+                        if (appChanged) {
+                            const keys = await caches.keys();
+                            await Promise.all(keys.map(key => caches.delete(key)));
+
+                            clearAllCookies();
+
+                            // Optional: unregister old service workers too
+                            // const regs = await navigator.serviceWorker.getRegistrations();
+                            // await Promise.all(regs.map(r => r.unregister()));
+
+                            localStorage.removeItem('appVersion');
+                            sessionStorage.clear();
+                            console.log('cache cleared');
+                        }
+
+                        if (schemaChanged) {
+                            if (indexedDB.databases) {
+                                const dbs = await indexedDB.databases();
+                                await Promise.all(dbs.map(db => new Promise(resolve => {
+                                    if (!db.name) return resolve();
+                                    const req = indexedDB.deleteDatabase(db.name);
+                                    req.onsuccess = req.onerror = req.onblocked = () => resolve();
+                                })));
+                                console.log('indexDB cleared');
+                            }
+                            localStorage.setItem('schemaVersion', schemaVersion);
+                        }
+
+                        localStorage.setItem('appVersion', appVersion);
+                        console.log('new version ' + appVersion + ' stored in localStorage');
+                        if (appChanged || schemaChanged) {
+                            location.reload();
+                        }
+                    } catch (err) {
+                        console.error('Version check failed:', err);
+                    }
+                })();</script>
 
     <!-- Blazor & Dependencies -->
     <script src="_content/Microsoft.AspNetCore.Components.WebAssembly.Authentication/AuthenticationService.js"></script>
     <script src="_framework/blazor.webassembly.js"></script>
-    <script src="_content/TG.Blazor.IndexedDB/indexedDb.Blazor.js"></script>
     <script src="lib/bootstrap/js/bootstrap.bundle.min.js"></script>
     <script src="_content/Blazor.Bootstrap/blazor.bootstrap.js"></script>
-    <script>
-        (function () {
-            const pathSegments = window.location.pathname.split('/');
-            const subsite = pathSegments.length > 1 && pathSegments[1] ? pathSegments[1] : '';
-            const basePath = subsite ? `/${subsite}/` : '/';
 
-            if ('serviceWorker' in navigator) {
-                window.addEventListener('load', () => {
-                    navigator.serviceWorker.register(`${basePath}service-worker.js`, { scope: basePath })
-                        .then(reg => console.log('Service worker registered with scope:', reg.scope))
-                        .catch(err => console.error('Service worker registration failed:', err));
-                });
-            }
-        })();
-    </script>
     <!-- Service Worker -->
     <script>
-        (function () {
-            const basePath = window.appBasePath || '/';
+(function () {
+                    const basePath = window.appBasePath || '/';
 
-            if ('serviceWorker' in navigator) {
-                window.addEventListener('load', () => {
-                    navigator.serviceWorker.register(`${basePath}service-worker.js`, { scope: basePath })
-                        .then(reg => console.log('Service worker registered with scope:', reg.scope))
-                        .catch(err => console.error('Service worker registration failed:', err));
-                });
-            }
-        })();
-    </script>
+                    if ('serviceWorker' in navigator) {
+                        window.addEventListener('load', () => {
+                            navigator.serviceWorker.register(`${basePath}service-worker.js`, { scope: basePath })
+                                .then(reg => console.log('Service worker registered with scope:', reg.scope))
+                                .catch(err => console.error('Service worker registration failed:', err));
+                        });
+                    }
+                })();</script>
+
     <script src="interop.js"></script>
     <script src="js/grid.js"></script>
     <script src="js/confirm.js"></script>
-    <!--<script src="js/pouchblazor.js"></script>-->
+    <script src="js/pouchblazor.js"></script>
     <script src="js/printHelper.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>

@@ -3,6 +3,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.ComponentModel.DataAnnotations;
+using System.Text.Json;
+using System.ComponentModel.DataAnnotations.Schema;
+
 
 // GxDicto/DModels/LocalizationEntry.cs
 namespace GxDicto.DModels
@@ -16,5 +20,7 @@ namespace GxDicto.DModels
         public string Value { get; set; } = "";
         // Optional: default/base language value
         public string? BaseValue { get; set; }
+        [NotMapped]
+        public Guid ClientRowId { get; set; } = Guid.NewGuid();
     }
 }

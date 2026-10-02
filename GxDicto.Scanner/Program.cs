@@ -15,12 +15,13 @@ var apiBaseAddress = "https://localhost:7095"; // adjust if different
 var defaultLanguage = "en";
 var baseOrgId = -1;
 
-// Roots to scan (for now only GxStk)
+// Roots to scan (for App)
 var razorRoots = new[]
 {
-    @"C:\AACurDEV\BaSolu\GxStk"
+    @"C:\AACurDEV\BaSolu\GxStk",
+    @"C:\AACurDEV\BaSolu\GxPilo",
+    @"C:\AACurDEV\BaSolu\GxTie"
 };
-
 Console.WriteLine($"Scanning Razor files and syncing keys with API at {apiBaseAddress}");
 Console.WriteLine($"Default language: {defaultLanguage}, Base organization: {baseOrgId}");
 Console.WriteLine();
