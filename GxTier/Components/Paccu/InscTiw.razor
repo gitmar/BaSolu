@@ -4,8 +4,8 @@
 
 @using System.Linq.Expressions
 @using GxShared.GxDtos
-@using GxShared.Sess
 @using GxShared.Others
+@using GxShared.Sess
 @using GxShared.Helpers
 @using GxShared.Helpers.CrudHelpers
 @using GxShared.Interfaces
@@ -69,6 +69,10 @@
                             <EditForm Context="invform" Model="curTiw">
                                 <DataAnnotationsValidator />
                                 <ValidationSummary />
+                                <!-- Explicit immatriculation fields first -->
+                                <ImmatriculationField Pattern="@patterns["Xmatri"]"
+                                    UserInputs="@xmatriInputs"
+                                    OnValueChanged="@(v => curTiw.Xmatri = v)" />
                                 <PTiwGdHelper Idorg="@curOrga.Idorg" Entity="@curTiw"
                                               Draft="@(GetDraft(EntityLevel.Tiw) as TiewelDto)"
                                               IsEditing="@IsTiwEditing(curTiw)"
@@ -283,6 +287,10 @@
     private int IMyGAfl = 0;
     private int refTab = 1;
 
+    //immatriculation patterns /Load patterns from EF Core Gsgfix
+    private Dictionary<string,string> xmatriInputs = new();
+    private Dictionary<string,ImmatriculationPatternDto> patterns;
+    
     public AdrContext Actx { get; set; }
     public UplCxtDto uploadCtx { get; set; } = new();
     private TiewelDto curTiw = new();
@@ -349,53 +357,6 @@
         isLoading = false;
         //Imessage = "InscTiw charged";
     }
-    // protected override Task OnParametersSetAsync()
-    // {
-    //     isLoading = true;
-    //     Imessage = "";
-
-    //     try
-    //     {
-    //         if (toChild is null)
-    //         {
-    //             Imessage = "toChild was not received.";
-    //             return Task.CompletedTask;
-    //         }
-
-    //         LsVars = toChild.LsVars ?? new List<Gpvar>();
-    //         LsFixes = toChild.LsFixes ?? new List<Gpfixe>();
-    //         LsPlans = toChild.LsPlans ?? new List<Gplan>();
-
-    //         LsGAfls = LsVars
-    //             .Where(uv => uv.Gvars == 3 && uv.Itb == 6 && uv.Ityp == 1 && uv.Elea != 0)
-    //             .ToList();
-
-    //         TiwItems.Clear();
-    //         WflItems.Clear();
-
-    //         if (orgTwels?.Any() == true)
-    //         {
-    //             TiwItems.AddRange(orgTwels);
-    //             curTiw = TiwItems.First();
-
-    //             WflItems.AddRange(
-    //                 TiwItems.SelectMany(t => t.Tiwafls ?? Enumerable.Empty<TiwaflDto>()));
-    //         }
-
-    //         _nbChanges = Guard.GetPendingChangesCount();
-    //     }
-    //     catch (Exception ex)
-    //     {
-    //         Imessage = $"Erreur chargement: {ex.Message}";
-    //         Console.Error.WriteLine(ex);
-    //     }
-    //     finally
-    //     {
-    //         isLoading = false;
-    //     }
-
-    //     return Task.CompletedTask;
-    // }
     protected override void SubscribeToGuard() { }
 
     private void OnTabChanged(int tabIndex) => refTab = tabIndex;

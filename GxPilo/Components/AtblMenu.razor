@@ -266,9 +266,10 @@ else
                 .Expand(o => o.Gstabls)
                 .FindEntryAsync();
             // Second query: load fixes only when needed
+            //3-1(documents) 3-2(pieces) 3-4_6(Ugpe) 3-11(langues) 9-1(immatriculation) 41???
             var msgs = await _MyODaClient
                 .For<GsgfixDto>("Gsgfixes")
-                .Filter(f => f.Idorg == key && (f.Gvars == 3 || f.Gvars == 41))
+                .Filter(f => f.Idorg == key && (f.Gvars == 3 || f.Gvars == 9 || f.Gvars == 41))
                 //.Select("Idorg, Xseq, Elea,Gp1")
                 .FindEntriesAsync();
             orgFixes = msgs.ToList();

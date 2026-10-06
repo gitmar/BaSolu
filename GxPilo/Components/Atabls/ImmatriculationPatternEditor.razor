@@ -1,0 +1,48 @@
+﻿@using GxShared.GxDtos  <!-- where GsgfixDto lives -->
+
+<div class="card p-3">
+    <h5>Configure Pattern for @PatternName</h5>
+
+    @if (Segments != null && Segments.Any())
+    {
+        @foreach (var seg in Segments)
+        {
+            <div class="row mb-2">
+                <div class="col">
+                    <span>@seg.Itb</span>
+                </div>
+                <div class="col">
+                    <InputText @bind-Value="seg.Ftl1" class="form-control" placeholder="Code" />
+                </div>
+                <div class="col">
+                    <InputText @bind-Value="seg.Ftl2" class="form-control" placeholder="Label" />
+                </div>
+                <div class="col">
+                    <InputText @bind-Value="seg.Ftl3" class="form-control" placeholder="Regex" />
+                </div>
+                <div class="col">
+                    <InputCheckbox @bind-Value="seg.IsUserInput" /> User Input
+                </div>
+                <div class="col">
+                    <InputText @bind-Value="seg.Ftl4" class="form-control" placeholder="Predefined Value" />
+                </div>
+            </div>
+        }
+
+        <hr />
+        <h6>Preview:</h6>
+        <div class="alert alert-secondary">
+            @string.Join("-", Segments.Select(s => s.IsUserInput ? $"[{s.Ftl2}]" : s.Ftl4))
+        </div>
+    }
+    else
+    {
+        <p><em>No segments defined.</em></p>
+    }
+</div>
+
+@code {
+    [Parameter] public string PatternName { get; set; } = "";
+    [Parameter] public List<GsgfixDto> Segments { get; set; } = new();
+}
+

@@ -1,0 +1,67 @@
+﻿@using GxShared.GxDtos
+@using GxShared.Others
+
+<div class="card p-3">
+    <h5>Configure Pattern for @ColumnName</h5>
+
+    @foreach (var segment in Segments)
+    {
+        <div class="row mb-2">
+            <div class="col">
+                <InputText @bind-Value="segment.Code" class="form-control" placeholder="Code (e.g. xx)" />
+            </div>
+            <div class="col">
+                <InputText @bind-Value="segment.Label" class="form-control" placeholder="Label (e.g. Department)" />
+            </div>
+            <div class="col">
+                <InputText @bind-Value="segment.Regex" class="form-control" placeholder="Regex (e.g. \\d{2})" />
+            </div>
+            <div class="col">
+                <InputCheckbox @bind-Value="segment.IsUserInput" /> User Input
+            </div>
+            <div class="col">
+                <InputText @bind-Value="segment.PredefinedValue" class="form-control" placeholder="Predefined Value" />
+            </div>
+            <div class="col-auto">
+                <button class="btn btn-sm btn-danger" @onclick="() => RemoveSegment(segment)">Remove</button>
+            </div>
+        </div>
+    }
+
+    <button class="btn btn-sm btn-primary" @onclick="AddSegment">Add Segment</button>
+
+    <hr />
+    <h6>Preview:</h6>
+    <div class="alert alert-secondary">
+        @string.Join("-", Segments.Select(s => s.IsUserInput ? $"[{s.Label}]" : s.PredefinedValue))
+    </div>
+
+    <button class="btn btn-success" @onclick="SavePattern">Save Pattern</button>
+</div>
+
+@code {
+    [Parameter] public GxorgaDto curOrga { get; set; }
+    [Parameter] public string ColumnName { get; set; }
+    [Parameter] public List<ImmatriculationSegmentDto> Segments { get; set; } = new();
+
+    private void AddSegment() => Segments.Add(new ImmatriculationSegmentDto { IsUserInput = true });
+
+    private void RemoveSegment(ImmatriculationSegmentDto segment) => Segments.Remove(segment);
+
+    private void SavePattern()
+    {
+        // Persist to EF Core Gsgfix
+        var gsgfix = new GsgfixDto
+        {
+            Idorg = curOrga.Idorg,
+            ////Itb = MapColumnNameToItb(ColumnName), // e.g. Smatri=1, Zcdrub=2, etc.
+            Lgft = string.Join("-", Segments.Select(s => s.Code)), // store format string
+            Elea = 0
+            //Elea = NextSequentialNumber()
+        };
+
+        ////DbContext.Gsgfixes.Add(gsgfix);
+        ////DbContext.SaveChanges();
+    }
+}
+

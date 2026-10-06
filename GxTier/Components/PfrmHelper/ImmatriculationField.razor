@@ -1,0 +1,51 @@
+﻿@using System.Text.RegularExpressions
+@using GxTie.Components.PfrmHelper
+@using GxShared.Others
+
+<div class="row g-2">
+    @foreach (var segment in Pattern.Segments)
+    {
+        if (segment.IsUserInput)
+        {
+            <div class="col-auto">
+                <InputText @bind-Value="UserInputs[segment.Code]"
+                           class="form-control"
+                           placeholder="@segment.Label"
+                           @onblur="() => ValidateSegment(segment)" />
+                @if (Errors.ContainsKey(segment.Code))
+                {
+                    <div class="text-danger">@Errors[segment.Code]</div>
+                }
+            </div>
+        }
+        else
+        {
+            <div class="col-auto">
+                <span class="form-control-plaintext">@segment.PredefinedValue</span>
+            </div>
+        }
+    }
+</div>
+
+@code {
+    [Parameter] public ImmatriculationPatternDto Pattern { get; set; }
+    [Parameter] public Dictionary<string, string> UserInputs { get; set; } = new();
+    [Parameter] public EventCallback<string> OnValueChanged { get; set; }
+
+    private Dictionary<string, string> Errors { get; set; } = new();
+
+    private void ValidateSegment(ImmatriculationSegmentDto segment)
+    {
+        var value = UserInputs.GetValueOrDefault(segment.Code, "");
+        if (!Regex.IsMatch(value ?? "", segment.Regex))
+            Errors[segment.Code] = $"Invalid {segment.Label}";
+        else
+            Errors.Remove(segment.Code);
+
+        var fullValue = string.Join("-", Pattern.Segments.Select(seg =>
+            seg.IsUserInput ? UserInputs.GetValueOrDefault(seg.Code, "") : seg.PredefinedValue));
+
+        OnValueChanged.InvokeAsync(fullValue);
+    }
+}
+

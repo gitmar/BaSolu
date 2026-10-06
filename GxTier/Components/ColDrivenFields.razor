@@ -13,7 +13,8 @@
 }
 else
 {
-    @foreach (var col in _columns)
+    <!-- Then loop through the rest -->
+    @foreach (var col in _columns.Where(c => !_reservedCols.Contains(c.ColName)))
     {
         <FormField Label="@(string.IsNullOrWhiteSpace(col.Ulabel) ? col.ColName : col.Ulabel)"
                    IsVisible="@col.IsVisible">
@@ -91,13 +92,15 @@ else
 
 @code {
     [Parameter, EditorRequired] public int Idorg { get; set; } = 0;
-    [Parameter, EditorRequired] public WelcContext TiwCtx { get; set; } = default!;
+    //[Parameter, EditorRequired] public WelcContext TiwCtx { get; set; } = default!;
     [Parameter, EditorRequired] public ColPrefContext PColCtx { get; set; } = default!;
     [Parameter, EditorRequired] public object Model { get; set; } = default!;
     [Parameter, EditorRequired] public List<Gtabl> EnsTbls { get; set; } = new();
     [Parameter] public bool IsEditing { get; set; }
 
     private List<LSelCol> _columns = new();
+    private readonly HashSet<string> _reservedCols = new() { "Xmatri", "Smatri" };
+
     private bool _isLoading;
     private string _dummy = ""; // satisfies ValueExpression requirement for InputSelect binding
 

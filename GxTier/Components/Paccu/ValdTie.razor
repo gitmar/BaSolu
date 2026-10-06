@@ -1,24 +1,28 @@
 ﻿@page "/valdtie"
 @layout EnrolMenu
+@inherits CompUICrudBase
 
 @using System.Security.Claims
 @using BlazorBootstrap
 @using Blazored.LocalStorage
 @using GxShared.Helpers
+@using GxTie.Components.Uifrags
 @using GxTie.Components.Pcarri
 @using GxTie.Services
 @using GxTie.StaticHelpers
-@using GxTie.Components.FrmHelper
+@using GxTie.Components.PfrmHelper
 @using GxShared.Sess
-@using GxShared.Others
+@* @using GxShared.Others *@
 @* @using Microsoft.EntityFrameworkCore *@
 @using Simple.OData.Client
 @using Simple.OData.Client.Extensions
 @using GxShared.GxDtos
+@using GxShared.Others
 @using GxShared.Interfaces
 @using GxShared.Helpers.CrudHelpers
 @using Newtonsoft.Json
 @using System.Linq.Expressions
+@using GxTie.Components.Apcomp
 
 @implements IDisposable
 
@@ -131,14 +135,36 @@
                                     <div>
                                         @if (draftTiw != null)
                                         {
-                                            <PTieGdHelper Draft="@draftTiw"
+                                            <ImmatriculationField Pattern="@patterns["Xmatri"]"
+                                                UserInputs="@smatriInputs"
+                                                OnValueChanged="@(v => curTie.Xmatri = v)" />
+                                            <PTieGdHelper Idorg="@curOrga.Idorg" Entity="@curTie"
+                                                          Draft="@(GetDraft(EntityLevel.Tie) as TierspDto)"
+                                                          IsEditing="@IsTieEditing(curTie)"
+                                                          EnsTbls="@EnsTbls"
+                                                          OnConfirm="@(e => ConfirmEdit(EntityLevel.Tie, e, true))"
+                                                          OnCancel="@(e => CancelEdit(EntityLevel.Tie, e))"
+                                                          AflItems="@AflItems"
+                                                          IsAflViewing="@isAflViewing"
+                                                          IsAnyEditing="@IsAnyRowEditing"
+                                                          IsEditingFn="@(a => IsAflEditing(a))"
+                                                          GetDraftFn="@(() => GetDraft(EntityLevel.Afl) as TieaflDto)"
+                                                          OnStartEditAfl="@StartEditAfl"
+                                                          OnConfirmAfl="@ConfirmAfl"
+                                                          OnCancelAfl="@CancelAfl"
+                                                          OnDeleteAfl="@(a => StartRowDelete(EntityLevel.Afl, a.Rowguid))"
+                                                          GroupOptions="@LsGAfls.Where(af => af.Atyp == Ugpe).ToList()"
+                                                          SelectedGroup="@IMyGAfl"
+                                                          SelectedGroupChanged="@(v => IMyGAfl = v)"
+                                                          OnAddChild="@AddChild" />
+                                            @* <PTieGdHelper Draft="@draftTiw"
                                                           RenderKey="parent-grid"
                                                           GMode="@GtieMode"
                                                           IsEditing="@isTieEditing"
                                                           IsViewing="@isTieViewing"
                                                           Visibility="@Visibility"
                                                           EnsTbls="@EnsTbls"
-                                                          EdRowguid="@EdTiwRowguid" />
+                                                          EdRowguid="@EdTiwRowguid" /> *@
                                         }
                                     </div>
                                     <!-- Additional dynamic attributes -->
@@ -318,7 +344,7 @@
                                         @if (draftAfl != null)
                                         {
                                             <!-- Cascade stable reference -->
-                                            <CTieGdHelper SubAfls="@curTie.Tieafls.ToList()"
+                                            @* <CTieGdHelper SubAfls="@curTie.Tieafls.ToList()"
                                                           RenderKey="child-grid"
                                                           GMode="@GaflMode"
                                                           IsEditing="@isAflEditing"
@@ -332,7 +358,7 @@
                                                           ConfirmDelete="@(p => ConfirmDelete(p, EntityLevel.Rub))"
                                                           CancelDelete="@(p => CancelDelete(p, EntityLevel.Rub))"
                                                           StartRubEdit="@(p => StartRubEdit(p, p.Rowguid))"
-                                                          StartRowDelete="@(id => StartRowDelete(id, EntityLevel.Rub))" />
+                                                          StartRowDelete="@(id => StartRowDelete(id, EntityLevel.Rub))" /> *@
                                             <div class="d-flex align-items-center gap-2 mb-2">
                                                 <label>Group:</label>
                                                 <InputSelect id="gpId" @bind-Value="@IMyGAfl">
@@ -727,6 +753,8 @@
 </style>
 
 @code {
+    public ValdTie(IPendingChangesGuard guard) : base(guard) { }
+    
     private bool isLoading = true;
     private string Imessage = "", Jmessage = "", Kmessage = "";
     private bool yaPgLink = false;
@@ -820,6 +848,10 @@
     private int IMyVue = 1; //1Reel2Virtuel
     private int IMyGAfl = 0; //1cn2par3enf4pai5flh
     //.private int _previousIMyGAfl = 0;
+    //immatriculation patterns /Load patterns from EF Core Gsgfix
+    private Dictionary<string,string> smatriInputs = new();
+    private Dictionary<string,ImmatriculationPatternDto> patterns;
+
     private string atrTitle = "";
     private string atrDest = "Programmes de Saisie";
     private int refTab = 1; //1Candidat2Affilie3Validation
@@ -1094,6 +1126,7 @@
     //     //@curTie.Tieafls.Add(curAfl);
     //     StateHasChanged();
     // }
+    protected override void SubscribeToGuard() { }
     private void OnTabChanged(int tabIndex)
     {
       refTab = tabIndex;
@@ -1158,6 +1191,41 @@
 
         // 5. Schedule UI refresh safely
         await InvokeAsync(StateHasChanged);
+    }
+    private async Task StartEditTie(TierspDto item)
+        => await StartRowEdit(EntityLevel.Tie, item, _edTieOriginals, d => SetDraft(EntityLevel.Tie, d));
+
+    private async Task StartEditAfl(TieaflDto item)
+        => await StartRowEdit(EntityLevel.Afl, item, _edAflOriginals, d => SetDraft(EntityLevel.Afl, d));
+
+    private async Task AddChild(int selectedGroup)
+    {
+        if (curTie.Id <= 0) { Imessage = "🚫 Save the main record first."; return; }
+
+        var newAfl = new TieaflDto
+        {
+            Rowguid = Guid.NewGuid(),
+            Prowguid = curTie.Rowguid,
+            Itie = curTie.Id,
+            Tyafl = selectedGroup,
+            Irang = NextSeq(AflItems.Where(a => a.Itie == curTie.Id), p => p.Iui),
+            Nom = "", Pnom = "", Datc = DateTime.Now, Eta = 1
+        };
+        await StartRowAdd(EntityLevel.Afl, newAfl, AflItems, d => SetDraft(EntityLevel.Afl, d));
+    }
+
+    private async Task ConfirmAfl(TieaflDto item)
+    {
+        var es = GetEditState(EntityLevel.Afl);
+        if (es.IsAdd) await ConfirmAdd(EntityLevel.Afl, item, true);
+        else await ConfirmEdit(EntityLevel.Afl, item, true);
+    }
+
+    private async Task CancelAfl(TieaflDto item)
+    {
+        var es = GetEditState(EntityLevel.Afl);
+        if (es.IsAdd) await CancelAdd(EntityLevel.Afl, item);
+        else await CancelEdit(EntityLevel.Afl, item);
     }
 
     private async Task StartRubNew(TierspDto parentTiw, int rubType)
