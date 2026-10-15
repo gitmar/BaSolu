@@ -1,0 +1,41 @@
+﻿@page "/registration"
+
+<hr />
+
+<p>Smatri: @Smatri</p>
+<p>Xmatri: @Xmatri</p>
+
+@code {
+    [Parameter]
+    public string Sorga { get; set; } = "";
+    [Parameter]
+    public int Ugpe { get; set; } = 0;
+    [Parameter]
+    public string Sgpe { get; set; } = "";
+    [Parameter]
+    public bool IsProvisional { get; set; } = true;
+    [Parameter]
+    public string Saffilia { get; set; } = "T";
+    [Parameter]
+    public string? Value { get; set; } = "";
+    [Parameter]
+    public EventCallback<string> ValueChanged { get; set; }
+
+    private string Smatri { get; set; } = "";
+    private string Xmatri { get; set; } = "";  
+
+    //public override async Task OnInitializedAsync()
+    //{
+        
+        // Initialization logic here
+    //}
+    private void GenerateCardNumber()
+    {
+        // Generate through the API or another shared service.
+    }
+
+    private void GenerateProvisionalNumber()
+    {
+        // Generate through the API or another shared service.
+    }
+}

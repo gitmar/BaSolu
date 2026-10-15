@@ -11,6 +11,354 @@
 {
     <p><em>Chargement...</em></p>
 }
+else if (_columns.Count == 0)
+{
+    <p><em>Aucune colonne configurée pour ce formulaire.</em></p>
+}
+else
+{
+    @foreach (var col in _columns.Where(c => !_reservedCols.Contains(c.ColName)))
+    {
+        <FormField Label="@GetLabel(col)"
+                   IsVisible="@col.IsVisible">
+            @if (IsDropdown(col))
+{
+    @if (IsEditing)
+    {
+        <InputSelect TValue="string"
+                     Value="@GetDropdownValue(col)"
+                     ValueChanged="@(value => SetDropdownValue(col, value))"
+                     ValueExpression="@(() => _dropdownValue)"
+                     class="form-select">
+            <option value="">Choix...</option>
+
+            @foreach (var option in GetLookupItems(col))
+            {
+                <option value="@GetOptionValue(option)">
+                    @option.Liba
+                </option>
+            }
+        </InputSelect>
+    }
+    else
+    {
+        <span class="form-control-plaintext">
+            @GetDropdownDisplayText(col)
+        </span>
+    }
+            }
+            else
+            {
+                @switch (col.Atyp)
+                {
+                    case 1: // Text
+                        @if (IsEditing)
+                        {
+                            <InputText TValue="string"
+                                       Value="@GetTextValue(col)"
+                                       ValueChanged="@(value => SetConvertedValue(col, value))"
+                                       ValueExpression="@(() => _textValue)"
+                                       class="form-control" />
+                        }
+                        else
+                        {
+                            <span class="form-control-plaintext">
+                                @GetDisplayValue(col)
+                            </span>
+                        }
+                        break;
+
+                    case 2: // Number
+                        @if (IsEditing)
+                        {
+                            <input type="number"
+                                   class="form-control"
+                                   value="@GetDisplayValue(col)"
+                                   @onchange="@(e => SetConvertedValue(col, e.Value))" />
+                        }
+                        else
+                        {
+                            <span class="form-control-plaintext">
+                                @GetDisplayValue(col)
+                            </span>
+                        }
+                        break;
+
+                    case 3: // Date
+                        @if (IsEditing)
+                        {
+                            <input type="date"
+                                   class="form-control"
+                                   value="@GetDateInputValue(col)"
+                                   @onchange="@(e => SetConvertedValue(col, e.Value))" />
+                        }
+                        else
+                        {
+                            <span class="form-control-plaintext">
+                                @GetDisplayValue(col)
+                            </span>
+                        }
+                        break;
+
+                    case 4: // Checkbox
+                        <input type="checkbox"
+                               checked="@GetBoolValue(col)"
+                               disabled="@(!IsEditing)"
+                               @onchange="@(e => SetConvertedValue(col, e.Value))" />
+                        break;
+                }
+            }
+        </FormField>
+    }
+}
+
+@code {
+    [Parameter, EditorRequired] public int Idorg { get; set; }
+
+    [Parameter, EditorRequired] public ColPrefContext PColCtx { get; set; } = default!;
+
+    [Parameter, EditorRequired] public object Model { get; set; } = default!;
+
+    [Parameter, EditorRequired] public List<Gtabl> EnsTbls { get; set; } = new();
+
+    [Parameter] public bool IsEditing { get; set; }
+
+    private List<LSelCol> _columns = new();
+
+    private readonly HashSet<string> _reservedCols = new(StringComparer.OrdinalIgnoreCase)
+    {
+        "Xmatri",
+        "Smatri"
+    };
+
+    private bool _isLoading;
+
+    private string _lastLoadedContextKey = string.Empty;
+
+    // Required expression placeholders for dynamic input components.
+    private string _dropdownValue = string.Empty;
+    private string _textValue = string.Empty;
+
+    private static readonly
+        Dictionary<(Type ModelType, string PropertyName), PropertyInfo> PropertyCache = new();
+
+    protected override async Task OnParametersSetAsync()
+    {
+        var contextKey = GetContextKey();
+
+        if (contextKey == _lastLoadedContextKey)
+        {
+            return;
+        }
+
+        _lastLoadedContextKey = contextKey;
+
+        await LoadColumnsAsync();
+    }
+
+    private string GetContextKey()
+        => $"{Idorg}|{PColCtx.Totyp}|{PColCtx.Efrm}|{PColCtx.Styp}";
+
+    private async Task LoadColumnsAsync()
+    {
+        if (Idorg <= 0)
+        {
+            _columns = [];
+            return;
+        }
+
+        _isLoading = true;
+
+        try
+        {
+            _columns = await PrefClient.LoadAsync(Idorg, PColCtx);
+        }
+        catch (Exception ex)
+        {
+            _columns = [];
+
+            Console.Error.WriteLine(
+                $"Unable to load column configuration for {GetContextKey()}: {ex}");
+        }
+        finally
+        {
+            _isLoading = false;
+        }
+    }
+
+    private string GetLabel(LSelCol column)
+        => string.IsNullOrWhiteSpace(column.Ulabel)
+            ? (string.IsNullOrWhiteSpace(column.Olabel)
+                ? column.ColName
+                : column.Olabel)
+            : column.Ulabel;
+
+    private static bool CanHaveLookup(LSelCol column)
+        => column.Atyp is 1 or 2;
+
+    private static bool IsDropdown(LSelCol column)
+        => CanHaveLookup(column)
+           && column.Tref.HasValue
+           && column.Tref.Value > 0;
+
+    private Gtabl? GetLookupTable(LSelCol column)
+        => EnsTbls.FirstOrDefault(t =>
+            t.Tenr == 1
+            && column.Tref.HasValue
+            && t.Tref == column.Tref.Value);
+
+    private List<Gtvar> GetLookupItems(LSelCol column)
+        => GetLookupTable(column)?.TbItems ?? [];
+
+    private static string GetOptionValue(Gtvar option)
+        => option.Aval ?? string.Empty;
+
+    private string GetDropdownValue(LSelCol column)
+    {
+        var value = GetPropertyValue(column.ColName);
+
+        return value?.ToString() ?? string.Empty;
+    }
+
+    private void SetDropdownValue(LSelCol column, string value)
+    {
+        SetPropertyValue(
+            column.ColName,
+            string.IsNullOrWhiteSpace(value) ? null : value);
+    }
+
+    private string GetDropdownDisplayText(LSelCol column)
+    {
+        var currentValue = GetDropdownValue(column);
+
+        var matchingItem = GetLookupItems(column)
+            .FirstOrDefault(item =>
+                string.Equals(
+                    GetOptionValue(item),
+                    currentValue,
+                    StringComparison.OrdinalIgnoreCase));
+
+        return matchingItem?.Liba ?? currentValue;
+    }
+
+    private string GetTextValue(LSelCol column)
+        => GetPropertyValue(column.ColName)?.ToString() ?? string.Empty;
+
+    private string GetDisplayValue(LSelCol column)
+        => GetPropertyValue(column.ColName)?.ToString() ?? string.Empty;
+
+    private string GetDateInputValue(LSelCol column)
+    {
+        var value = GetPropertyValue(column.ColName);
+
+        return value is DateTime date
+            ? date.ToString("yyyy-MM-dd")
+            : string.Empty;
+    }
+
+    private bool GetBoolValue(LSelCol column)
+        => GetPropertyValue(column.ColName) is true;
+
+    private void SetConvertedValue(LSelCol column, object? rawValue)
+    {
+        SetPropertyValue(column.ColName, rawValue);
+    }
+
+    private object? GetPropertyValue(string propertyName)
+    {
+        var property = GetProperty(Model, propertyName);
+
+        return property.GetValue(Model);
+    }
+
+    private void SetPropertyValue(
+        string propertyName,
+        object? rawValue)
+    {
+        var property = GetProperty(Model, propertyName);
+
+        var convertedValue = ConvertValue(rawValue, property.PropertyType);
+
+        property.SetValue(Model, convertedValue);
+    }
+
+    private static PropertyInfo GetProperty(object model, string propertyName)
+    {
+        var modelType = model.GetType();
+        var cacheKey = (modelType, propertyName);
+
+        if (PropertyCache.TryGetValue(cacheKey, out var cachedProperty))
+        {
+            return cachedProperty;
+        }
+
+        var property = modelType.GetProperty(
+            propertyName,
+            BindingFlags.Public | BindingFlags.Instance);
+
+        if (property is null || !property.CanRead || !property.CanWrite)
+        {
+            throw new InvalidOperationException(
+                $"Property '{propertyName}' was not found or is not readable/writable on '{modelType.Name}'.");
+        }
+
+        PropertyCache[cacheKey] = property;
+
+        return property;
+    }
+
+    private static object? ConvertValue(object? rawValue, Type targetType)
+    {
+        var isNullableTarget =
+            Nullable.GetUnderlyingType(targetType) is not null;
+
+        if (rawValue is null
+            || rawValue is string textValue && string.IsNullOrWhiteSpace(textValue))
+        {
+            return isNullableTarget ? null : GetDefault(targetType);
+        }
+
+        var underlyingType =
+            Nullable.GetUnderlyingType(targetType) ?? targetType;
+
+        if (underlyingType.IsInstanceOfType(rawValue))
+        {
+            return rawValue;
+        }
+
+        if (underlyingType == typeof(DateTime)
+            && rawValue is string dateString
+            && DateTime.TryParse(dateString, out var parsedDate))
+        {
+            return parsedDate;
+        }
+
+        if (underlyingType == typeof(bool)
+            && rawValue is bool boolValue)
+        {
+            return boolValue;
+        }
+
+        return Convert.ChangeType(rawValue, underlyingType);
+    }
+
+    private static object? GetDefault(Type type)
+    {
+        return type.IsValueType ? Activator.CreateInstance(type) : null;
+    }
+}
+@* @using System.Reflection
+@using GxShared.Cols.Models
+@using GxShared.Sess
+@using GxTie.Components.FrmHelper
+@using GxTie.Components.Cols
+
+@inject ColumnPreferencesClient PrefClient
+
+@if (_isLoading)
+{
+    <p><em>Chargement...</em></p>
+}
 else
 {
     <!-- Then loop through the rest -->
@@ -27,10 +375,17 @@ else
                                  ValueChanged="@(v => SetValue(col.ColName, v))"
                                  ValueExpression="@(() => _dummy)"
                                  class="form-select">
-                        <option value="0">Choisir...</option>
+                        <option value="0">Choix...</option>
                         @foreach (var opt in EnsTbls.FirstOrDefault(t => t.Tenr == 1 && t.Tref == col.Tref)?.TbItems ?? new())
                         {
-                            <option value="@opt.Aval">@opt.Liba</option>
+                            if (opt.Tref >= 31 && opt.Tref <= 35)
+                            {
+                                <option value="@opt.Abg">@opt.Liba</option>
+                            }
+                            else
+                            {
+                                <option value="@opt.Aval">@opt.Liba</option>
+                            }
                         }
                     </InputSelect>
                 }
@@ -140,4 +495,4 @@ else
             : Convert.ChangeType(rawValue.ToString(), targetType);
         pi.SetValue(Model, converted);
     }
-}
+} *@

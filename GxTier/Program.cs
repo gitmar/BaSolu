@@ -149,6 +149,7 @@ builder.Services.AddScoped<TokenAwareClientManager>();
 builder.Services.AddScoped<TblJsonRender>();
 builder.Services.AddScoped<LinkSerialiser>();
 builder.Services.AddScoped<OrgDocService>();
+builder.Services.AddScoped<IClientMatriculeOrdreService, ClientMatriculeOrdreService>();
 //builder.Services.AddScoped<PouchDbService>();
 builder.Services.AddSingleton<IMessageService, MessageService>();
 builder.Services.AddSingleton<LoadingService>();

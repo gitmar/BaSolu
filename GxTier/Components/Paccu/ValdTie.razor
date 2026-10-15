@@ -71,18 +71,18 @@
 {
     <AuthorizeView>
         <Authorized Context="authtiwcontext">
-            @if (!isTieViewing)
+            @if (!isTieAdding && !isTieEditing)
             {
                 <div class="d-flex align-items-center gap-2">
                     <Button Color="ButtonColor.Primary"
                     Size="ButtonSize.Small"
                     Class="px-2 py-1 small-btn"
-                    Disabled="@(!AllowMultipleEdits && isAddTiw)"
+                    Disabled="@(!AllowMultipleEdits && isTieAdding)"
                     @onclick="StartTiwNew">
                         ➕ Add
                     </Button>
 
-                    @if (isAddTiw)
+                    @if (isTieAdding)
                     {
                         <Button Color="ButtonColor.Info"
                         Size="ButtonSize.Small"
@@ -93,36 +93,36 @@
                         <Button Color="ButtonColor.Success"
                         Size="ButtonSize.Small"
                         Class="px-2 py-1 small-btn"
-                        @onclick="() => ConfirmAdd(EntityLevel.Tie, draftTiw)">
+                        @onclick="() => InConfirmAdd(EntityLevel.Tie, draftTiw, true)">
                             ✅ Confirm
                         </Button>
 
                         <Button Color="ButtonColor.Secondary"
                         Size="ButtonSize.Small"
                         Class="px-2 py-1 small-btn"
-                        @onclick="() => CancelAdd(EntityLevel.Tie, draftTiw)">
+                        @onclick="() => InCancelAdd(EntityLevel.Tie, draftTiw)">
                             ❌ Cancel
                         </Button>
                     }
-                    else if (isEdtTiw)
+                    else if (isTieEditing)
                     {
                         <Button Color="ButtonColor.Success"
                         Size="ButtonSize.Small"
                         Class="px-2 py-1 small-btn"
-                        @onclick="() => ConfirmEdit(EntityLevel.Tie, curTie)">
+                        @onclick="() => InConfirmEdit(EntityLevel.Tie, curTie, true)">
                             ✅ Confirm
                         </Button>
 
                         <Button Color="ButtonColor.Secondary"
                         Size="ButtonSize.Small"
                         Class="px-2 py-1 small-btn"
-                        @onclick="() => CancelEdit(EntityLevel.Tie, curTie)">
+                        @onclick="() => InCancelEdit(EntityLevel.Tie, curTie)">
                             ❌ Cancel
                         </Button>
                     }
                 </div>
             }
-            @if (isAddTiw || isEdtTiw)
+            @if (isTieAdding || isTieEditing)
             {
                 <div class="container">
                     <Tabs>
@@ -135,17 +135,25 @@
                                     <div>
                                         @if (draftTiw != null)
                                         {
-                                            <ImmatriculationField Pattern="@patterns["Xmatri"]"
-                                                UserInputs="@smatriInputs"
-                                                OnValueChanged="@(v => curTie.Xmatri = v)" />
+                                            <!-- Explicit immatriculation fields first -->
+                                            <RegistrationInput Sorga="@Sorga"
+                                                Ugpe="@Ugpe"
+                                                Sgpe="@Sgpe"
+                                                Saffilia="@Saffilia"
+                                                IsProvisional="false"
+                                                InAddingMode="@InAddingMode"
+                                                GenerationMode="MatriculeGenerationMode.Api"
+                                                @bind-Value="curTie.Smatri"
+                                                IsBusy="@IsBusy"
+                                                ValidChanged="OnSmatriValidChanged" />
                                             <PTieGdHelper Idorg="@curOrga.Idorg" Entity="@curTie"
                                                           Draft="@(GetDraft(EntityLevel.Tie) as TierspDto)"
                                                           IsEditing="@IsTieEditing(curTie)"
                                                           EnsTbls="@EnsTbls"
-                                                          OnConfirm="@(e => ConfirmEdit(EntityLevel.Tie, e, true))"
-                                                          OnCancel="@(e => CancelEdit(EntityLevel.Tie, e))"
+                                                          OnConfirm="@(e => InConfirmEdit(EntityLevel.Tie, e, true))"
+                                                          OnCancel="@(e => InCancelEdit(EntityLevel.Tie, e))"
                                                           AflItems="@AflItems"
-                                                          IsAflViewing="@isAflViewing"
+                                                          IsAflViewing="@isAflAdding"
                                                           IsAnyEditing="@IsAnyRowEditing"
                                                           IsEditingFn="@(a => IsAflEditing(a))"
                                                           GetDraftFn="@(() => GetDraft(EntityLevel.Afl) as TieaflDto)"
@@ -197,7 +205,7 @@
                                                         <strong>@ua.Liba</strong>
                                                     </label>
                                                    <div class="col-sm-9">
-                                                    @if ((isEdtTiw || isAddTiw) && ua.Eta == 1)
+                                                    @if ((isTieEditing || isTieAdding) && ua.Eta == 1)
                                                     {
                                                         @* Dropdown from reference table *@
                                                         if (ua.Zfro == 2)
@@ -252,56 +260,59 @@
                                         @RenderCategories(EnsCats.Where(c => c.Pid == null))
                                     </div>
                                 </EditForm>
-                                @if (!isTieViewing)
+                                @if (!isTieAdding && !isTieEditing)
                                 {
                                 <div class="d-flex align-items-center gap-2">
                                     <Button Color="ButtonColor.Primary"
                                             Size="ButtonSize.Small"
                                             Class="px-2 py-1 small-btn"
-                                            Disabled="@(!AllowMultipleEdits && isAddTiw)"
+                                            Disabled="@(!AllowMultipleEdits && isTieAdding)"
                                             @onclick="StartTiwNew">
                                         ➕ Add
                                     </Button>
 
-                                    @if (isAddTiw)
+                                    @if (isTieAdding)
                                     {
-                                        <Button Color="ButtonColor.Info"
-                                                Size="ButtonSize.Small"
-                                                Class="px-2 py-1 small-btn"
-                                                @onclick="ShowModal">
-                                            piece(s)
-                                        </Button>
                                         <Button Color="ButtonColor.Success"
                                                 Size="ButtonSize.Small"
                                                 Class="px-2 py-1 small-btn"
-                                                @onclick="() => ConfirmAdd(EntityLevel.Tie, draftTiw)">
+                                                @onclick="() => InConfirmAdd(EntityLevel.Tie, draftTiw, true)">
                                             ✅ Confirm
                                         </Button>
 
                                         <Button Color="ButtonColor.Secondary"
                                                 Size="ButtonSize.Small"
                                                 Class="px-2 py-1 small-btn"
-                                                @onclick="() => CancelAdd(EntityLevel.Tie, draftTiw)">
+                                                @onclick="() => InCancelAdd(EntityLevel.Tie, draftTiw)">
                                             ❌ Cancel
                                         </Button>
                                     }
-                                    else if (isEdtTiw)
+                                    else if (isTieEditing)
                                     {
                                         <Button Color="ButtonColor.Success"
                                                 Size="ButtonSize.Small"
                                                 Class="px-2 py-1 small-btn"
-                                                @onclick="() => ConfirmEdit(EntityLevel.Tie, curTie)">
+                                                @onclick="() => InConfirmEdit(EntityLevel.Tie, curTie, true)">
                                             ✅ Confirm
                                         </Button>
 
                                         <Button Color="ButtonColor.Secondary"
                                                 Size="ButtonSize.Small"
                                                 Class="px-2 py-1 small-btn"
-                                                @onclick="() => CancelEdit(EntityLevel.Tie, curTie)">
+                                                @onclick="() => InCancelEdit(EntityLevel.Tie, curTie)">
                                             ❌ Cancel
                                         </Button>
                                     }
                                 </div>
+                                }
+                                else
+                                {
+                                    <Button Color="ButtonColor.Info"
+                                          Size="ButtonSize.Small"
+                                          Class="px-2 py-1 small-btn"
+                                          @onclick="ShowModal">
+                                          piece(s)
+                                     </Button>
                                 }
                             </Content>
                         </Tab>
@@ -401,7 +412,7 @@
                                 }
                             </Content>
                         </Tab>
-                        @if (!isTieViewing)
+                        @if (!isTieAdding)
                         {
                             <Tab Title="Validation" Name="TiwTab" onClick="() => OnTabChanged(3)">
                                 <Content>
@@ -520,7 +531,7 @@
                                     </InputSelect>
                                 </ChildContent>
                             </GridColumn>
-                            <GridColumn TItem="TierspDto" HeaderText="Actions" Filterable="false" IsVisible="!isTieViewing" Class="xcol2 actions-col">
+                            <GridColumn TItem="TierspDto" HeaderText="Actions" Filterable="false" IsVisible="!isTieAdding" Class="xcol2 actions-col">
                                 <ChildContent Context="item">
                                     @switch (GetRowState(item.Rowguid))
                                     {
@@ -754,7 +765,7 @@
 
 @code {
     public ValdTie(IPendingChangesGuard guard) : base(guard) { }
-    
+
     private bool isLoading = true;
     private string Imessage = "", Jmessage = "", Kmessage = "";
     private bool yaPgLink = false;
@@ -814,9 +825,6 @@
     private EntityLevel? _activeEditLevel = null;
     private bool IsAnyRowEditing => _activeEditRowguid != null;
 
-    public GridMode GtieMode = GridMode.None; 
-    public GridMode GaflMode = GridMode.None;
-
     private List<Gplan> LsPlans = new();
     private List<Gpfixe> LsFixes = new();
     private List<Gpvar> LsGAfls = new();
@@ -830,16 +838,22 @@
 
     //private IEnumerable<SelectOption> SelectOptions = Enumerable.Empty<SelectOption>();
 
-    //provisoire
+
+    //editing workflow
+    public GridMode GtieMode = GridMode.None; 
+    public GridMode GaflMode = GridMode.None;
     private bool CanEditChildren => 
         GtieMode != GridMode.TiersAdding && curTie.Xadd1 != -1;
     private bool isTieEditing => GtieMode == GridMode.TiersAdding
             || GtieMode == GridMode.TiersEditing;
     private bool isAflEditing => GaflMode == GridMode.AflsAdding
             || GaflMode == GridMode.AflsEditing;
+    private bool isTieAdding = false;
+    private bool isAflAdding = false;
 
-    private bool isTieViewing = false;
-    private bool isAflViewing = false;
+    private bool isOpenAdres = false;
+    private bool IsBusy = false;
+    private bool isModalVisible = false;
 
     //Global
     private int _lgcdu = 0;
@@ -849,8 +863,20 @@
     private int IMyGAfl = 0; //1cn2par3enf4pai5flh
     //.private int _previousIMyGAfl = 0;
     //immatriculation patterns /Load patterns from EF Core Gsgfix
-    private Dictionary<string,string> smatriInputs = new();
-    private Dictionary<string,ImmatriculationPatternDto> patterns;
+    //private Dictionary<string,string> smatriInputs = new();
+    //private Dictionary<string,ImmatriculationPatternDto> patterns;
+    //private List<ImmatriculationPatternDto> MyDaImats = new();
+    private bool IsProvisional = true;
+    private string Sorga = "";
+    private string Sgpe = "";
+    private string Saffilia = "T";
+    private bool InAddingMode = false;
+
+    private bool XmatriValid;
+    private void OnSmatriValidChanged(bool isValid)
+    {
+        XmatriValid = isValid;
+    }
 
     private string atrTitle = "";
     private string atrDest = "Programmes de Saisie";
@@ -868,9 +894,6 @@
     private List<TierspDto> MyDaTies { get; set; } = new();
     private List<TieaflDto> MyDaAfls { get; set; } = new();  
 
-    // Workflow flags
-    private bool isTieAdd;
-    private bool isAflAdd;
     //private Guid EdAflRowguid;
 
     // Visibility dictionaries
@@ -886,7 +909,6 @@
     private readonly Dictionary<Guid, PendingOpType> _rowPendingOpTypeByRow = new();
     private readonly Dictionary<Guid, Guid> _pendingOpIdsByRow = new();
     //modals
-    private bool isModalVisible = false;
     private List<TierspDto> WaitingTiersps => MyDaTies.Where(tw => tw.Xadd1 != -1).ToList();
     private bool canbeVerified => WaitingTiersps.Any();
     private HashSet<TierspDto> selectedTiersps = new();
@@ -899,7 +921,6 @@
     private Guid? TiwRenderKey = null;
     private Dictionary<Guid, TierspDto> _edPlnOriginals = new();
     private TierspDto? draftTiw = null;
-    private bool isAddTiw = false;
     private bool isEdtTiw = false;
     private Guid? AdTiwRowguid = null;
     private Guid? EdTiwRowguid = null;// Currently editing row ID
@@ -1055,7 +1076,7 @@
     //     Console.WriteLine($"etape 2 : {newTiw.Id}");
     //     EdTiwRowguid = draftTiw.Rowguid;
     //     GtieMode = GridMode.TiersAdding;
-    //     isEdtTiw = false;
+    //     isTieEditing = false;
     //     isAddTiw = true; // keep add separate from edit
     //     // 4. Set row states clearly (avoid double states)
     //     SetRowState(newTiw.Rowguid, RowState.AddPending);
@@ -1126,11 +1147,26 @@
     //     //@curTie.Tieafls.Add(curAfl);
     //     StateHasChanged();
     // }
+    protected override void OnParametersSet()
+    {
+        Sorga = curOrga?.Idorg.ToString() ?? "";
+        Saffilia = "T";
+
+        Sgpe = Ugpe switch
+        {
+            1 => "1CB",
+            2 => "2OP",
+            3 => "3CL",
+            4 => "4FN",
+            5 => "5PA",
+            _ => "1CB"
+        };
+    }
     protected override void SubscribeToGuard() { }
     private void OnTabChanged(int tabIndex)
     {
-      refTab = tabIndex;
-      switch (tabIndex)
+        refTab = tabIndex;
+        switch (tabIndex)
         {
             case 1:
                 ActiveTab = "Candidat";
@@ -1179,19 +1215,40 @@
         draftTiw = (TierspDto)DeepClone(newTiw);
         Console.WriteLine($"etape 2 : {newTiw.Id}");
         EdTiwRowguid = draftTiw.Rowguid;
-        GtieMode = GridMode.TiersAdding;
-        isEdtTiw = false;
-        isAddTiw = true; // keep add separate from edit
+        //isTieEditing = false;
+        isTieAdding = true; // keep add separate from edit
         // 4. Set row states clearly (avoid double states)
         SetRowState(newTiw.Rowguid, RowState.AddPending);
         TiwRenderKey = draftTiw.Rowguid;
         SetLightBackground(newTiw.Rowguid, true);
 
         Console.WriteLine($"✅ New row added - Count: {MyDaTies.Count}");
-
+        InAddingMode = true;
+        GtieMode = GridMode.TiersAdding;
         // 5. Schedule UI refresh safely
         await InvokeAsync(StateHasChanged);
     }
+    private async Task InConfirmAdd(EntityLevel level, object draft, bool isConfirm)
+    {
+        await ConfirmAdd(level, draft, isConfirm);
+        GtieMode = GridMode.None;
+    }
+    private async Task InCancelAdd(EntityLevel level, object draft)
+    {
+        await CancelAdd(level, draft);
+        GtieMode = GridMode.None;
+    }
+    private async Task InConfirmEdit(EntityLevel level, object draft, bool isConfirm)
+    {
+        await ConfirmEdit(level, draft, isConfirm);
+        GtieMode = GridMode.None;
+    }
+    private async Task InCancelEdit(EntityLevel level, object draft)
+    {
+        await CancelEdit(level, draft);
+        GtieMode = GridMode.None;
+    }
+
     private async Task StartEditTie(TierspDto item)
         => await StartRowEdit(EntityLevel.Tie, item, _edTieOriginals, d => SetDraft(EntityLevel.Tie, d));
 
@@ -1311,8 +1368,8 @@
         EdTiwRowguid = AllowMultipleEdits ? null : rowguid;
         draftTiw = (TierspDto)DeepClone(item);
         GtieMode = GridMode.TiersEditing;
-        isAddTiw = false;
-        isEdtTiw = true;
+        isTieAdding = false;
+        //isTieEditing = true;
         StartRowEdit(rowguid, EntityLevel.Tie);
         StateHasChanged();
     }
@@ -1387,12 +1444,12 @@
         {
             case EntityLevel.Tie :
                 var itpln = (TierspDto)entity;
-                isTieViewing = true;
+                //isTieViewing = true;
                 await StartTiwEdit(itpln, rowguid);
                 break;
             case EntityLevel.Rub :
                 var itrub = (TieaflDto)entity;  
-                isAflViewing = true;
+                //isAflViewing = true;
                 await StartRubEdit(itrub, rowguid);
                 break;
             default:
@@ -2015,8 +2072,8 @@
         Console.WriteLine("🔄 ResetPlnUI");
 
         // 🔥 CLEAR ALL MODES
-        isEdtTiw = false;
-        isAddTiw = false;  // ← CRITICAL - Exits add mode
+        //isTieEditing = false;
+        isTieAdding = false;  // ← CRITICAL - Exits add mode
 
         draftTiw = null;
         EdTiwRowguid = null;
@@ -2095,7 +2152,7 @@
         if (GtieMode == GridMode.TiersAdding)
         { //Adding
             curTie.Xadd1 = 0;
-            isAddTiw = false;
+            isTieAdding = false;
         }
         if (GaflMode == GridMode.AflsAdding)
         { //Adding

@@ -4,10 +4,10 @@
 <h3>ColumnCatalog</h3>
 
 @page "/columncatalog"
-@inject ColumnPreferencesClient PrefClient
+@* @inject ColumnPreferencesClient PrefClient *@
 @* @attribute [Authorize(Roles = "Admin")]
  *@
-<h3>Catalogue des colonnes</h3>
+@* <h3>Catalogue des colonnes</h3>
 <p class="text-muted">
     Régénère le catalogue de colonnes à partir des DTOs actuels — opération globale,
     sans lien avec une organisation en particulier. Sans danger à relancer.
@@ -35,9 +35,9 @@
             <text>Échec de la génération.</text>
         }
     </div>
-}
+} *@
 
-@code {
+@* @code {
     private bool isSeeding;
     private int? lastResult;
 
@@ -49,4 +49,4 @@
         catch { lastResult = -1; }
         finally { isSeeding = false; }
     }
-}
+} *@

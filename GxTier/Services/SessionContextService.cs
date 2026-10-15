@@ -14,6 +14,7 @@ using Microsoft.JSInterop;
 using Newtonsoft.Json;
 
 using static GxTie.Services.PuzzleSyncService;
+
 namespace GxTie.Services
 {
     public class SessionContextService

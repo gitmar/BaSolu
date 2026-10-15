@@ -7,6 +7,607 @@
 <div class="d-flex align-items-end gap-3 flex-wrap mb-3">
     <div>
         <label class="fw-bold">Catégorie :</label>
+        <InputSelect @bind-Value="selTotyp"
+                     @bind-Value:after="OnSelectionChanged">
+            <option value="1">Cible</option>
+            <option value="2">Opérateur</option>
+            <option value="3">Client</option>
+            <option value="4">Fournisseur</option>
+            <option value="5">Partenaire</option>
+            <option value="6">Produit</option>
+        </InputSelect>
+    </div>
+
+    @if (selTotyp == 1)
+    {
+        <div>
+            <label class="fw-bold">Formulaire :</label>
+            <InputSelect @bind-Value="selEfrm"
+                         @bind-Value:after="OnSelectionChanged">
+                <option value="1">Tiersp (normal)</option>
+                <option value="2">Tiewel (accueil)</option>
+            </InputSelect>
+        </div>
+
+        <div>
+            <label class="fw-bold">Affilié :</label>
+            <InputSelect @bind-Value="selStyp"
+                         @bind-Value:after="OnSelectionChanged">
+                <option value="1">Lui-même</option>
+                <option value="2">Conjoint</option>
+                <option value="3">Parent</option>
+                <option value="4">Enfant</option>
+                <option value="5">Parrain</option>
+                <option value="6">Filleul</option>
+            </InputSelect>
+        </div>
+    }
+    else if (selTotyp == 6)
+    {
+        <div>
+            <label class="fw-bold">Formulaire :</label>
+            <InputSelect @bind-Value="selEfrm"
+                         @bind-Value:after="OnSelectionChanged">
+                <option value="1">Entrée</option>
+                <option value="2">Validation</option>
+            </InputSelect>
+        </div>
+    }
+</div>
+
+<div class="d-flex align-items-end gap-3 flex-wrap mb-3">
+    <button type="button"
+            class="btn btn-outline-primary btn-sm"
+            @onclick="PreviewSynchronization"
+            disabled="@isBusy">
+        Vérifier les colonnes
+    </button>
+
+    <button type="button"
+            class="btn btn-primary btn-sm"
+            @onclick="SaveSelection"
+            disabled="@isBusy">
+        @(isSaving ? "..." : "Enregistrer")
+    </button>
+
+    <button type="button"
+            class="btn btn-secondary btn-sm"
+            @onclick="CancelChanges"
+            disabled="@isBusy">
+        Annuler
+    </button>
+
+    @*<button type="button"
+            class="btn btn-outline-danger btn-sm"
+            @onclick="AskResetConfirmation"
+            disabled="@isBusy">
+        Réinitialiser
+    </button>*@
+</div>
+
+@if (awaitingResetConfirmation)
+{
+    <div class="alert alert-warning d-flex align-items-center gap-3">
+        <span>
+            Réinitialiser la configuration des colonnes pour ce formulaire ?
+        </span>
+
+        <button type="button"
+                class="btn btn-danger btn-sm"
+                @onclick="ConfirmReset"
+                disabled="@isBusy">
+            Confirmer
+        </button>
+
+        <button type="button"
+                class="btn btn-secondary btn-sm"
+                @onclick="CancelReset"
+                disabled="@isBusy">
+            Annuler
+        </button>
+    </div>
+}
+
+@if (statusMessage is not null)
+{
+    <div class="alert @(statusOk ? "alert-success" : "alert-danger") py-2">
+        @statusMessage
+    </div>
+}
+
+@if (syncPreview is not null)
+{
+    <div class="alert alert-info">
+        <strong>Synchronisation :</strong>
+        @syncPreview.MissingColumns.Count colonne(s) à ajouter,
+        @syncPreview.StaleColumns.Count colonne(s) obsolète(s).
+
+        @if (syncPreview.MissingColumns.Count > 0
+             || syncPreview.StaleColumns.Count > 0)
+        {
+            <div class="mt-2 d-flex gap-2">
+                <button type="button"
+                        class="btn btn-sm btn-primary"
+                        @onclick="ApplySynchronization"
+                        disabled="@isBusy">
+                    Appliquer la synchronisation
+                </button>
+
+                <button type="button"
+                        class="btn btn-sm btn-secondary"
+                        @onclick="CloseSyncPreview"
+                        disabled="@isBusy">
+                    Fermer
+                </button>
+            </div>
+        }
+    </div>
+}
+
+<div class="row mb-3">
+    @if (isLoading)
+    {
+        <p><em>Chargement...</em></p>
+    }
+    else if (_workingCols.Count == 0)
+    {
+        <p><em>Aucune colonne configurée pour ce formulaire.</em></p>
+    }
+    else
+    {
+        <Grid TItem="LSelCol"
+              Data="@_workingCols"
+              Class="table table-sm table-striped"
+              AllowPaging="true">
+            <GridColumns>
+                <GridColumn TItem="LSelCol"
+                            HeaderText="Rang"
+                            Class="xcol1">
+                    <InputNumber @bind-Value="@context.ColNo"
+                                 style="width:80px;"
+                                 placeholder="Rang" />
+                </GridColumn>
+
+                <GridColumn TItem="LSelCol"
+                            HeaderText="Original"
+                            Class="xcol2">
+                    @context.ColName
+                </GridColumn>
+
+                <GridColumn TItem="LSelCol"
+                            HeaderText="Personnalisé"
+                            Class="xcol3">
+                    <InputText @bind-Value="@context.Ulabel"
+                               placeholder="Libellé" />
+                </GridColumn>
+
+                <GridColumn TItem="LSelCol"
+                            HeaderText="Visible"
+                            Class="xcol1">
+                    <input type="checkbox"
+                           checked="@context.IsVisible"
+                           @onchange="@(e => context.IsVisible = (bool)e.Value!)" />
+                </GridColumn>
+
+                <GridColumn TItem="LSelCol"
+                            HeaderText="Type"
+                            Class="xcol2">
+                    <InputSelect @bind-Value="@context.Atyp"
+                                 @bind-Value:after="@(async () => await OnAtypChangedAsync(context))">
+                        <option value="">--</option>
+                        <option value="1">Texte</option>
+                        <option value="2">Nombre</option>
+                        <option value="3">Date</option>
+                        <option value="4">Case à cocher</option>
+                    </InputSelect>
+                </GridColumn>
+
+                <GridColumn TItem="LSelCol"
+                            HeaderText="Liste"
+                            Class="xcol3">
+                    @if (CanHaveLookup(context))
+                    {
+                        <InputSelect @bind-Value="@context.Tref"
+                                     @bind-Value:after="@(async () => await OnLookupChangedAsync(context))">
+                            <option value="">Aucune (saisie normale)</option>
+
+                            @foreach (var table in EnsTbls.Where(t => t.Tenr == 1))
+                            {
+                                <option value="@table.Tref">
+                                    @table.Liba
+                                </option>
+                            }
+                        </InputSelect>
+                    }
+                    else
+                    {
+                        <span class="text-muted">N/A</span>
+                    }
+                </GridColumn>
+
+                <GridColumn TItem="LSelCol"
+                            HeaderText="Parent"
+                            Class="xcol3">
+                    @if (CanHaveLookup(context) && context.Tref > 0)
+                    {
+                        <InputSelect @bind-Value="@context.Pref">
+                            <option value="">Aucun (racine)</option>
+
+                            @foreach (var table in EnsTbls
+                                .Where(t => t.Tenr == 1
+                                         && t.Tref != context.Tref))
+                            {
+                                <option value="@table.Tref">
+                                    @table.Liba
+                                </option>
+                            }
+                        </InputSelect>
+                    }
+                    else
+                    {
+                        <span class="text-muted">N/A</span>
+                    }
+                </GridColumn>
+            </GridColumns>
+        </Grid>
+    }
+</div>
+
+<style>
+    .xcol1 {
+        width: 70px;
+    }
+
+    .xcol2 {
+        width: 130px;
+    }
+
+    .xcol3 {
+        width: 190px;
+    }
+
+    .xcol1 input,
+    .xcol2 input,
+    .xcol3 input,
+    .xcol2 select,
+    .xcol3 select {
+        width: 100%;
+        box-sizing: border-box;
+    }
+</style>
+
+@code {
+    [Parameter] public int Idorg { get; set; }
+
+    [Parameter] public List<Gtabl> EnsTbls { get; set; } = new();
+
+    private int selTotyp = 1;
+    private int selEfrm = 1;
+    private int selStyp = 1;
+
+    private List<LSelCol> _workingCols = new();
+
+    private ColumnSyncPreviewDto? syncPreview;
+
+    private bool awaitingResetConfirmation;
+
+    private bool isLoading;
+    private bool isSaving;
+    private bool isResetting;
+    private bool isSynchronizing;
+
+    private bool isBusy =>
+        isLoading || isSaving || isResetting || isSynchronizing;
+
+    private string? statusMessage;
+    private bool statusOk;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadColumnsAsync();
+    }
+
+    private ColPrefContext BuildContext() => new()
+    {
+        Totyp = selTotyp,
+        Efrm = selTotyp is 1 or 6 ? selEfrm : 1,
+        Styp = selTotyp == 1 ? selStyp : 1
+    };
+
+    private async Task LoadColumnsAsync()
+    {
+        isLoading = true;
+        statusMessage = null;
+        syncPreview = null;
+
+        try
+        {
+            _workingCols = await PrefClient.LoadAsync(
+                Idorg,
+                BuildContext());
+        }
+        catch (Exception ex)
+        {
+            statusOk = false;
+            statusMessage = "Impossible de charger les colonnes.";
+
+            Console.Error.WriteLine(ex);
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private async Task OnSelectionChanged()
+    {
+        if (selTotyp != 1 && selTotyp != 6)
+        {
+            selEfrm = 1;
+        }
+
+        if (selTotyp != 1)
+        {
+            selStyp = 1;
+        }
+
+        await LoadColumnsAsync();
+    }
+
+    private static bool CanHaveLookup(LSelCol column)
+        => column.Atyp is 1 or 2;
+
+    private static bool HasLookup(LSelCol column)
+        => column.Tref.HasValue && column.Tref.Value > 0;
+
+    private async Task OnAtypChangedAsync(LSelCol column)
+    {
+        if (!CanHaveLookup(column))
+        {
+            column.Tref = null;
+            column.Pref = null;
+        }
+
+        await Task.CompletedTask;
+    }
+
+    private async Task OnLookupChangedAsync(LSelCol column)
+    {
+        if (!CanHaveLookup(column) || !HasLookup(column))
+        {
+            column.Pref = null;
+        }
+
+        await Task.CompletedTask;
+    }
+
+    private async Task SaveSelection()
+    {
+        if (!ValidateBeforeSave(out var errorMessage))
+        {
+            statusOk = false;
+            statusMessage = errorMessage;
+            return;
+        }
+
+        isSaving = true;
+        statusMessage = null;
+
+        try
+        {
+            // The API derives the final order from the submitted list order.
+            for (var i = 0; i < _workingCols.Count; i++)
+            {
+                _workingCols[i].ColNo = i + 1;
+            }
+
+            var saved = await PrefClient.SaveAsync(
+                Idorg,
+                BuildContext(),
+                _workingCols);
+
+            statusOk = saved;
+            statusMessage = saved
+                ? "Colonnes enregistrées."
+                : "Échec de l'enregistrement.";
+
+            if (saved)
+            {
+                await LoadColumnsAsync();
+            }
+        }
+        catch (Exception ex)
+        {
+            statusOk = false;
+            statusMessage = "Erreur lors de l'enregistrement.";
+
+            Console.Error.WriteLine(ex);
+        }
+        finally
+        {
+            isSaving = false;
+        }
+    }
+
+    private bool ValidateBeforeSave(out string errorMessage)
+    {
+        var duplicateNames = _workingCols
+            .GroupBy(c => c.ColName, StringComparer.OrdinalIgnoreCase)
+            .Where(g => g.Count() > 1)
+            .Select(g => g.Key)
+            .ToList();
+
+        if (duplicateNames.Count > 0)
+        {
+            errorMessage =
+                "Colonne dupliquée : " +
+                string.Join(", ", duplicateNames) + ".";
+
+            return false;
+        }
+
+        var invalidLookupColumns = _workingCols
+            .Where(c => !CanHaveLookup(c) && c.Tref is not null)
+            .Select(c => c.ColName)
+            .ToList();
+
+        if (invalidLookupColumns.Count > 0)
+        {
+            errorMessage =
+                "Une table de liste ne peut être définie que pour une " +
+                "colonne de type Texte ou Nombre : " +
+                string.Join(", ", invalidLookupColumns) + ".";
+
+            return false;
+        }
+
+        var missingLookupTables = _workingCols
+            .Where(c => CanHaveLookup(c)
+                     && c.Tref is not null
+                     && c.Tref <= 0)
+            .Select(c => c.ColName)
+            .ToList();
+
+        if (missingLookupTables.Count > 0)
+        {
+            errorMessage =
+                "Choisissez une table valide pour les colonnes de liste : " +
+                string.Join(", ", missingLookupTables) + ".";
+
+            return false;
+        }
+
+        errorMessage = string.Empty;
+        return true;
+    }
+
+    private async Task CancelChanges()
+    {
+        statusMessage = null;
+        syncPreview = null;
+
+        await LoadColumnsAsync();
+    }
+
+    // private void AskResetConfirmation()
+    // {
+    //     awaitingResetConfirmation = true;
+    //     statusMessage = null;
+    //     syncPreview = null;
+    // }
+
+    private void CancelReset()
+    {
+        awaitingResetConfirmation = false;
+    }
+
+    private async Task ConfirmReset()
+    {
+        isResetting = true;
+        statusMessage = null;
+
+        try
+        {
+            await PrefClient.ResetAsync(Idorg, BuildContext());
+
+            statusOk = true;
+            statusMessage = "Configuration réinitialisée.";
+            awaitingResetConfirmation = false;
+
+            await LoadColumnsAsync();
+        }
+        catch (Exception ex)
+        {
+            statusOk = false;
+            statusMessage = "Échec de la réinitialisation.";
+
+            Console.Error.WriteLine(ex);
+        }
+        finally
+        {
+            isResetting = false;
+        }
+    }
+
+    private async Task PreviewSynchronization()
+    {
+        isSynchronizing = true;
+        statusMessage = null;
+
+        try
+        {
+            syncPreview = await PrefClient.PreviewSynchronizationAsync(
+                Idorg,
+                BuildContext());
+
+            if (syncPreview.MissingColumns.Count == 0
+                && syncPreview.StaleColumns.Count == 0)
+            {
+                statusOk = true;
+                statusMessage = "La configuration est déjà synchronisée.";
+                syncPreview = null;
+            }
+        }
+        catch (Exception ex)
+        {
+            statusOk = false;
+            statusMessage = "Impossible de vérifier la synchronisation.";
+
+            Console.Error.WriteLine(ex);
+        }
+        finally
+        {
+            isSynchronizing = false;
+        }
+    }
+
+    private async Task ApplySynchronization()
+    {
+        isSynchronizing = true;
+        statusMessage = null;
+
+        try
+        {
+            var result = await PrefClient.SynchronizeAsync(
+                Idorg,
+                BuildContext());
+
+            statusOk = true;
+            statusMessage =
+                $"{result.AddedCount} colonne(s) ajoutée(s), " +
+                $"{result.MarkedStaleCount} colonne(s) obsolète(s).";
+
+            syncPreview = null;
+
+            await LoadColumnsAsync();
+        }
+        catch (Exception ex)
+        {
+            statusOk = false;
+            statusMessage = "Échec de la synchronisation.";
+
+            Console.Error.WriteLine(ex);
+        }
+        finally
+        {
+            isSynchronizing = false;
+        }
+    }
+
+    private void CloseSyncPreview()
+    {
+        syncPreview = null;
+    }
+}
+@* @using GxPilo.Services.Cols
+@using GxShared.Cols.Models
+@using GxShared.Sess
+
+@inject ColumnPreferencesClient PrefClient
+
+<div class="d-flex align-items-end gap-3 flex-wrap mb-3">
+    <div>
+        <label class="fw-bold">Catégorie :</label>
         <InputSelect @bind-Value="selTotyp" @bind-Value:after="OnSelectionChanged">
             <option value="1">Cible</option>
             <option value="2">Opérateur</option>
@@ -197,8 +798,6 @@
         Styp = selTotyp == 1 ? selStyp : 1
     };
 
-    //private async Task OnSelectionChanged() => await LoadColumns();
-
     private async Task LoadColumns()
     {
         isLoading = true;
@@ -278,4 +877,4 @@
         awaitingRegenerateConfirm = false;
         statusMessage = null;
     }
-}
+} *@

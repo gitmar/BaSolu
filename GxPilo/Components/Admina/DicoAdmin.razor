@@ -1,4 +1,4 @@
-﻿@page "/localizadmin"
+﻿@page "/dicoadmin"
 @layout FreeLayout
 
 @using System.Net.Http.Json
@@ -9,7 +9,7 @@
 
 @inject IHttpClientFactory _httpClientFactory
 
-<h3>Localization Admin</h3>
+@* <h3>Localization Admin</h3> *@
 
 <div class="row mb-3 align-items-end">
     <div class="col-auto">
@@ -43,6 +43,7 @@ else if (!Entries.Any())
 }
 else
 {
+    <span class="text-muted">Showing @filteredEntries.Count of @Entries.Count entries for language '@selectedLanguage'</span>
     <div class="row align-items-center">
     <Grid TItem="LocalizationEntry"
           Data="@filteredEntries"
@@ -151,6 +152,7 @@ else
 @code {
     [Parameter] public int IdcOrg { get; set; } = 0;
     [Parameter] public List<Gpvar> LsVars { get; set; } = new();
+    
     private List<LocalizationEntry> Entries = new();
     private List<LocalizationEntry> filteredEntries = new();
 
@@ -159,13 +161,9 @@ else
     private HashSet<LocalizationEntry> pendingNewRows = new();     // newly added, not yet confirmed
 
     private Dictionary<int, LocalizationEntry> originalValues = new();
-
     private HttpClient _apiClient = default!;
-
     private List<string> languages = new();
-
     private string _selectedLanguage = "en";
-
     private string selectedLanguage
     {
         get => _selectedLanguage;
@@ -257,24 +255,7 @@ else
 
         StateHasChanged();
     }
-    // private void AddNewRow()
-    // {
-    //     var newEntry = new LocalizationEntry
-    //     {
-    //         Language = selectedLanguage,
-    //         Idorg = IdcOrg
-    //     };
-    //     Entries.Insert(0, newEntry);
-    //     //Entries.Add(newEntry);
-    //     //Entries = Entries.ToList();
-
-    //     changedRows.Add(newEntry);
-    //     pendingNewRows.Add(newEntry);
-
-    //     ApplyFilter(); // recompute filteredEntries
-    //     StateHasChanged();
-    // }
-
+  
     private void BeginEdit(LocalizationEntry entry)
     {
         if (changedRows.Contains(entry) || pendingDeletes.Contains(entry))

@@ -1,0 +1,242 @@
+﻿@using GxShared.GxDtos  <!-- where GsgfixDto lives -->
+@using GxShared.Interfaces
+@using GxShared.Helpers
+@using GxShared.Helpers.CrudHelpers
+@using GxPilo.Services
+@using Newtonsoft.Json
+
+<div class="card p-3">
+    <h5>Configure Pattern for @PatternName</h5>
+    @if (Segments != null && Segments.Any())
+    {
+        <Grid TItem="GsgfixDto"
+        Data="@Segments"
+        @key="@SegRenderKey"
+        Responsive="true">
+            <GridColumns>
+                <GridColumn TItem="GsgfixDto" HeaderText="Code" Class="xcol1">
+                    <ChildContent Context="item">
+                        @item.Itb
+                    </ChildContent>
+                </GridColumn>
+                <GridColumn TItem="GsgfixDto" HeaderText="Code" Class="xcol1">
+                    <ChildContent Context="item">
+                        @if (isSegEditing)
+                        {
+                            <InputText @bind-Value="draftSeg.Ftl1" class="form-control" />
+                        }
+                        else
+                        {
+                            @item.Ftl1
+                        }
+                    </ChildContent>
+                </GridColumn>
+                <GridColumn TItem="GsgfixDto" HeaderText="Label" Class="xcol2">
+                    <ChildContent Context="item">
+                        @if (isSegEditing)
+                        {
+                            <InputText @bind-Value="draftSeg.Ftl2" class="form-control"  />
+                        }
+                        else
+                        {
+                            @item.Ftl2
+                        }
+                    </ChildContent>
+                </GridColumn>
+                <GridColumn TItem="GsgfixDto" HeaderText="Regex" Class="xcol2">
+                    <ChildContent Context="item">
+                        @if (isSegEditing)
+                        {
+                            <InputText @bind-Value="draftSeg.Ftl3" class="form-control"  />
+                        }
+                        else
+                        {
+                            @item.Ftl3
+                        }
+                    </ChildContent>
+                </GridColumn>
+                <GridColumn TItem="GsgfixDto" HeaderText="Input" Class="xcol1">
+                    <ChildContent Context="item">
+                        @if (isSegEditing)
+                        {
+                            <InputCheckbox @bind-Value="draftSeg.IsUserInput" class="form-check-input" />
+                        }
+                        else
+                        {
+                            <InputCheckbox @bind-Value="item.IsUserInput" class="form-check-input" disabled="true" />
+                        }
+                    </ChildContent>
+                </GridColumn>
+                <GridColumn TItem="GsgfixDto" HeaderText="Predefined" Class="xcol1">
+                    <ChildContent Context="item">
+                        @if (isSegEditing)
+                        {
+                            <InputText @bind-Value="draftSeg.Ftl4" class="form-control" />
+                        }
+                        else
+                        {
+                            @item.Ftl4
+                        }
+                    </ChildContent>
+                </GridColumn>
+                <GridColumn TItem="GsgfixDto" HeaderText="Niveau" Class="xcol1">
+                    <ChildContent Context="item">
+                        @if (isSegEditing)
+                        {
+                            <InputSelect @bind-Value="draftSeg.Jtyp" style="font-weight:bold">
+                                <option value=0>?niveau.</option>
+                                <option value=1>ferme</option>
+                                <option value=5>non modifiable</option>
+                                <option value=9>modifiable</option>
+                            </InputSelect>
+                        }
+                        else
+                        {
+                            <InputSelect @bind-Value="item.Jtyp" style="font-weight:bold" disabled>
+                                <option value=0>?niveau.</option>
+                                <option value=1>ferme</option>
+                                <option value=5>non modifiable</option>
+                                <option value=9>modifiable</option>
+                            </InputSelect>
+                        }
+                    </ChildContent>
+                </GridColumn>
+                <GridColumn TItem="GsgfixDto" HeaderText="Actions" Class="xcol2">
+                    <ChildContent Context="item">
+                        @if (isSegEditing)
+                        {
+                            <button class="btn btn-warning btn-sm" @onclick="() => CancEditSeg(item)">Cancel</button>
+                            <button class="btn btn-danger btn-sm" @onclick="() => ConfEditSeg(draftSeg)">Confirm</button>
+                        }
+                        else
+                        {
+                            <Button Color="ButtonColor.Warning" Size="ButtonSize.Small"
+                                @onclick="() => StartEditSeg(draftSeg)">
+                                ✏️ Edit
+                            </Button>
+                        }
+                    </ChildContent>
+                </GridColumn>
+            </GridColumns>
+        </Grid>
+    }
+    else
+    {
+        <p><em>No segments defined.</em></p>
+    }
+    <hr />
+    <h6>Preview:</h6>
+    <div class="alert alert-secondary">
+        @string.Join("-", Segments.Select(s => s.IsUserInput ? $"[{s.Ftl2}]" : s.Ftl4))
+    </div>
+</div>
+<style>
+    .xcolx {
+        width: 40px !important;
+    }
+
+    .xcol1 {
+        width: 60px;
+    }
+
+    .xcol2 {
+        width: 120px;
+    }
+
+    .xcol3 {
+        width: 180px;
+    }
+
+    .xcol4 {
+        width: 240px;
+    }
+        /* Ensure inputs inside these columns fill the width */
+        .xcol1 input,
+        .xcol2 input,
+        .xcol3 input,
+        .xcol4 input {
+            width: 100%;
+            box-sizing: border-box; /* prevents overflow due to padding/border */
+        }
+    /* Base style: all checkboxes */
+.form-check-input {
+    opacity: 1;                /* prevent fading */
+    border: 1px solid #000;    /* solid black border */
+    background-color: #fff;    /* white background */
+    width: 1em;              /* adjust size if needed */
+    height: 1.2em;
+    border-radius: 0.25em;     /* keep square-ish look */
+}
+
+/* Disabled style: same border, distinct background */
+.form-check-input:disabled {
+    background-color: #e9ecef; /* light gray background */
+}
+</style>
+@code {
+    [Parameter] public string PatternName { get; set; } = "";
+    [Parameter] public List<GsgfixDto> Segments { get; set; } = new();
+    [Parameter] public IPendingChangesGuard _guard { get; set; } = default;
+    [Parameter] public EventCallback<PendingState> OnPendingStateChanged { get; set; }
+    [Parameter] public int NbChanges { get; set; }
+    [Parameter] public EventCallback<int> NbChangesChanged { get; set; }
+    
+    private bool isSegEditing = false;
+    private GsgfixDto draftSeg = new();
+    public Guid? SegRenderKey = null;
+
+    protected override async Task OnInitializedAsync()
+    {
+        //Addresses = curOrga.Gsadrs.ToList();
+    }
+
+    protected override void OnParametersSet()
+    {
+        SubscribeToGuard();
+    }
+
+    private void SubscribeToGuard()
+    {
+        _guard.OnChanges += async () =>
+        {
+            NbChanges = _guard.GetPendingChangesCount();
+            await NbChangesChanged.InvokeAsync(NbChanges);
+            StateHasChanged();
+        };
+    }
+
+    private void StartEditSeg(GsgfixDto inSeg)
+    {
+        var rowguid = MLEntityKeyHelper.GetRowguidAsGuid(inSeg);
+        //save original
+        draftSeg = (GsgfixDto)DeepClone(inSeg);
+        SegRenderKey = rowguid;
+        isSegEditing = true;
+    }
+    private void CancEditSeg(GsgfixDto inSeg)
+    {
+        //inSeg = (GsgfixDto)DeepClone(draftSeg);
+        isSegEditing = false;
+        draftSeg = new();
+        SegRenderKey = Guid.NewGuid();
+    }
+    private async Task ConfEditSeg(GsgfixDto inseg)
+    {
+        var key = inseg.Xseq; // helper to extract PK
+        await _guard.TrackUpdate("gsgfixes", key, inseg);
+        isSegEditing = false;
+        draftSeg = new();
+        SegRenderKey = Guid.NewGuid();
+        //await InvokeAsync(StateHasChanged);
+    }
+    private object DeepClone(object entity)
+    {
+        var settings = new JsonSerializerSettings
+        {
+            ReferenceLoopHandling = ReferenceLoopHandling.Ignore
+        };
+
+        var json = JsonConvert.SerializeObject(entity, settings);
+        return JsonConvert.DeserializeObject(json, entity.GetType(), settings)!;
+    }
+}

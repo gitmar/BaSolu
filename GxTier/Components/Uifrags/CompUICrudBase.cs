@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+﻿ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Reflection;
 using System.Security.Cryptography;
@@ -604,10 +604,28 @@ protected void CopyPropertiesWithRules<T>(T target, T source)
     {
         switch (level)
         {
+            case EntityLevel.Tiw:
+                if (entity is TiewelDto tiw && _draftTiw is TiewelDto draftTiw)
+                {
+                    CopyPropertiesWithRules(tiw, draftTiw);
+                }
+                break;
             case EntityLevel.Tie:
-                if (entity is TiewelDto tie && _draftTie is TiewelDto draftTie)
+                if (entity is TierspDto tie && _draftTie is TierspDto draftTie)
                 {
                     CopyPropertiesWithRules(tie, draftTie);
+                }
+                break;
+            case EntityLevel.Wfl:
+                if (entity is TiwaflDto wfl && _draftWfl is TiwaflDto draftWfl)
+                {
+                    CopyPropertiesWithRules(wfl, draftWfl);
+                }
+                break;
+            case EntityLevel.Afl:
+                if (entity is TieaflDto afl && _draftAfl is TieaflDto draftAfl)
+                {
+                   CopyPropertiesWithRules(afl, draftAfl);
                 }
                 break;
             default:

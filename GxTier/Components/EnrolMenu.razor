@@ -10,6 +10,7 @@
 
 @using GxTie.Services
 @using GxTie.StaticHelpers
+@using GxTie.Components.PfrmHelper
 @using GxShared.Sess
 @using GxShared.Others
 @using Simple.OData.Client
@@ -379,7 +380,7 @@ else
     //     Console.WriteLine("Authentication ENTREE");
     //     EnsTbls = await _rendAgres.LoadOrgaTables();
     //     Console.WriteLine($"nb. tables : {EnsTbls.Count}");
-  
+
     //     _nbChanges = _guard.GetPendingChangesCount();  // Initial value
     //     await LoadTieAplAsync(_usrBag.Idorg);
     //     EnsAtrs = await _rendAgres.LoadOrgaAtribs();
@@ -406,6 +407,7 @@ else
             Console.WriteLine($"key : {key}");
             curOrga = await _MyODaClient
                 .For<GxorgaDto>("Gxorgas")
+                .Expand("Gsgfixes($filter=Gvars eq 9 and Itb eq 1)")
                 .Key(key)
                 .FindEntryAsync();
             var msgsiw = await _MyODaClient
@@ -427,7 +429,8 @@ else
                 .FindEntriesAsync();
 
             orgTiers = msgsie.ToList();
-            
+            var matgsg = curOrga.Gsgfixes.Where(g => g.Gvars == 9 && g.Itb == 1).ToList();
+            ImmatHelper.MapFromConfig(matgsg);
             Console.WriteLine($"loadOrgaAsync completed :{curOrga?.Raison}");
             Console.WriteLine($"Nb. Tiersps {orgTiers.Count} Nb. Tiewels : {orgTiers.Count}");
         }

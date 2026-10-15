@@ -292,119 +292,6 @@ else
                                         </div>
                                     </Content>
                                 </Tab>
-                                <Tab Title="Immatriculation">
-                                    <Content>
-                                        <div class="row">
-                                            @* <div class="input-group">
-                                                <label class="fw-bold">Gpe immatriculation :</label>
-                                                <InputSelect @bind-Value="SelectedImat" class="me-3" style="width:auto">
-                                                    <option value=0>?gpimat</option>
-                                                    @foreach (var mat in MyDaImats)
-                                                    {
-                                                        <option value=@mat.Xseq>@mat.Liba</option>
-                                                    }
-                                                </InputSelect>
-                                            </div> *@
-                                            <InputSelect @bind-Value="SelectedPattern" class="me-3" style="width:auto">
-                                                <option value="">?gpimat</option>
-                                                @foreach (var pat in MyDaImats.Select(m => m.Ftl2).Distinct())
-                                                {
-                                                    <option value="@pat">@pat</option>
-                                                }
-                                            </InputSelect>
-                                        </div>
-                                        <div class="row">
-                                            <div class="card p-3">
-                                                <h5>Configure Pattern for @ColumnName</h5>
-                                                @if (!string.IsNullOrEmpty(SelectedPattern))
-                                                {
-                                                    <h5>Configure Pattern for @SelectedPattern</h5>
-                                                    @foreach (var seg in CurrentSegments)
-                                                    {
-                                                        <div class="row mb-2">
-                                                            <div class="col">
-                                                                <span>@seg.Itb</span>
-                                                            </div>
-                                                            <div class="col">
-                                                                <InputText @bind-Value="seg.Ftl1" class="form-control" placeholder="Code" />
-                                                            </div>
-                                                            <div class="col">
-                                                                <InputText @bind-Value="seg.Ftl2" class="form-control" placeholder="Label" />
-                                                            </div>
-                                                            <div class="col">
-                                                                <InputText @bind-Value="seg.Ftl3" class="form-control" placeholder="Regex" />
-                                                            </div>
-                                                            <div class="col">
-                                                                <InputCheckbox @bind-Value="seg.IsUserInput" /> User Input
-                                                            </div>
-                                                            <div class="col">
-                                                                <InputText @bind-Value="seg.Ftl4" class="form-control" placeholder="Predefined Value" />
-                                                            </div>
-                                                        </div>
-                                                    }
-                                                    <hr />
-                                                    <h6>Preview:</h6>
-                                                    <div class="alert alert-secondary">
-                                                        @string.Join("-", CurrentSegments.Select(s => s.IsUserInput ? $"[{s.Ftl2}]" : s.Ftl4))
-                                                    </div>
-                                                }
-                                                @* @if (IcurMat != null)
-                                                {   
-                                                    <div class="row mb-2">
-                                                        <div class="col">
-                                                            <span>@IcurMat.Itb</span>
-                                                        </div>
-                                                        <div class="col">
-                                                            <!--code-->
-                                                            <InputText @bind-Value="IcurMat.Ftl1" class="form-control" placeholder="Code (e.g. xx)" />
-                                                        </div>
-                                                        <div class="col">
-                                                            <!--label-->
-                                                            <InputText @bind-Value="IcurMat.Ftl2" class="form-control" placeholder="Label (e.g. Department)" />
-                                                        </div>
-                                                        <div class="col">
-                                                            <!--regex-->
-                                                            <InputText @bind-Value="IcurMat.Ftl3" class="form-control" placeholder="Regex (e.g. \\d{2})" />
-                                                        </div>
-                                                        <div class="col">
-                                                            <!--isuser input-->
-                                                            <InputCheckbox @bind-Value="IcurMat.IsUserInput" /> User Input
-                                                        </div>
-                                                        <div class="col">
-                                                            <!--predefined value-->
-                                                            <InputText @bind-Value="IcurMat.Ftl4" class="form-control" placeholder="Predefined Value" />
-                                                        </div>
-                                                        <div class="col-auto">
-                                                            <button class="btn btn-sm btn-danger" @onclick="() => StartImmatEdit(IcurMat)">Edit</button>
-                                                        </div>
-                                                        <div class="col-auto">
-                                                            <button class="btn btn-sm btn-danger" @onclick="() => RemoveSegment(IcurMat)">Remove</button>
-                                                        </div>
-                                                    </div>
-                                                } *@
-
-                                                @*<button class="btn btn-sm btn-primary" @onclick="() => StartImmatEdit(segment)">Edit Segment</button>*@
-
-                                                <hr />
-                                                <h6>Preview:</h6>
-                                                <div class="alert alert-secondary">
-                                                    @string.Join("-", Segments.Select(s => s.IsUserInput ? $"[{s.Ftl2}]" : s.Ftl4))
-                                                    @* @string.Join("-", Segments.Select(s => s.IsUserInput ? $"[{s.Liba}]" : s.PredefinedValue)) *@
-                                                </div>
-                                                @* <InputSelect @bind-Value="SelectedPattern" class="me-3" style="width:auto">
-                                                    <option value="">?gpimat</option>
-                                                    @foreach (var pat in MyDaImats.Select(m => m.Ftl2).Distinct())
-                                                    {
-                                                        <option value="@pat">@pat</option>
-                                                    }
-                                                </InputSelect> *@
-                                                <ImmatriculationPatternEditor PatternName="@SelectedPattern"
-                                                    Segments="@MyDaImats.Where(m => m.Ftl2 == SelectedPattern).ToList()" />
-                                                @*<button class="btn btn-success" @onclick="SavePattern">Save Pattern</button>*@
-                                            </div>
-                                        </div>
-                                    </Content>
-                                </Tab>
                             </Tabs>
                         </div>
                     </EditForm>
@@ -625,10 +512,7 @@ else
         [7] = "Langues",
         //[3] = "Sessions"
     };
-    //immatriculation
-    public string ColumnName { get; set; } = "";
-    public List<GsgfixDto> Segments { get; set; } = new();
-
+    
     private bool isFixFilteringEnabled = false;
 
     //Global
@@ -648,13 +532,7 @@ else
 
     //data
     private List<GsgfixDto> MyDaDocus { get; set; } = new();
-    private List<GsgfixDto> MyDaImats { get; set; } = new();
-    private string SelectedPattern { get; set; } = "";
-    private IEnumerable<GsgfixDto> CurrentSegments =>
-                MyDaImats.Where(m => m.Ftl2 == SelectedPattern);
-
-    private int SelectedImat { get; set; }
-    private GsgfixDto? IcurMat => MyDaImats.FirstOrDefault(m => m.Xseq == SelectedImat);
+    
     //add/edit options
     private bool AllowMultipleEdits { get; set; } = false;
     private bool isFiltre { get; set; } = false;
@@ -708,19 +586,14 @@ else
                 MyDaDocus = orgFixes
                     .Where(uv => uv.Gvars == 3 && uv.Itb == 1 && uv.Elea >= 1)
                     .ToList();
-                MyDaImats = orgFixes
-                    .Where(uv => uv.Gvars == 9 && uv.Elea != 0)
-                    .ToList();
                 Console.WriteLine($"Gsgfixes loaded: {orgFixes.Count}");
             }
             else
             {
                 Console.WriteLine("Gsgfixes null/empty - initializing empty collections");
                 MyDaDocus = new();
-                MyDaImats = new();
             }
-            Segments = MyDaImats;
-
+            
             atrTitle = "Saisie";
         }
         catch (Exception ex)
@@ -888,7 +761,6 @@ else
         StartRowEdit(rowguid, EntityLevel.Plan);
         StateHasChanged();
     }
-    private void RemoveSegment(GsgfixDto segment) => Segments.Remove(segment);
     
     // ✅ 2.1 CONFIRM OPERATIONS
     private async Task ConfirmAdd<T>(EntityLevel level, T item) where T : class

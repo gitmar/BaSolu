@@ -32,6 +32,7 @@
                IsVisibleChanged="@OnModalVisibilityChanged"
                Title="Chargement des documents"
                UploadCtx="@uploadCtx"
+               Idorg="@curOrga.Idorg"
                EntyTiw="@curTiw"
                EntyTie="null"
                LsmVars="@LsVars"
@@ -51,59 +52,104 @@
 {
     <AuthorizeView>
         <Authorized Context="authtiwcontext">
-            @* @if (!isTieViewing)
-            { *@
+            @if (!isTieAdding && !isTieEditing)
+            {
                 <div class="d-flex align-items-center gap-2">
                     <Button Color="ButtonColor.Primary" Size="ButtonSize.Small" Class="px-2 py-1 small-btn"
                             Disabled="@(!AllowMultipleEdits && IsAnyRowEditing)"
                             @onclick="StartTiwNew">
                         ➕ Add
                     </Button>
+                     @if (isTieAdding)
+                    {
+                        <Button Color="ButtonColor.Info"
+                        Size="ButtonSize.Small"
+                        Class="px-2 py-1 small-btn"
+                        @onclick="ShowModal">
+                            piece(s)
+                        </Button>
+                        <Button Color="ButtonColor.Success"
+                        Size="ButtonSize.Small"
+                        Class="px-2 py-1 small-btn"
+                        @onclick="() => InConfirmAdd(EntityLevel.Tiw, curTiw, true)">
+                            ✅ Confirm
+                        </Button>
+
+                        <Button Color="ButtonColor.Secondary"
+                        Size="ButtonSize.Small"
+                        Class="px-2 py-1 small-btn"
+                        @onclick="() => InCancelAdd(EntityLevel.Tiw, curTiw)">
+                            ❌ Cancel
+                        </Button>
+                    }
+                    else if (isTieEditing)
+                    {
+                        <Button Color="ButtonColor.Success"
+                        Size="ButtonSize.Small"
+                        Class="px-2 py-1 small-btn"
+                        @onclick="() => InConfirmEdit(EntityLevel.Tiw, curTiw, true)">
+                            ✅ Confirm
+                        </Button>
+
+                        <Button Color="ButtonColor.Secondary"
+                        Size="ButtonSize.Small"
+                        Class="px-2 py-1 small-btn"
+                        @onclick="() => InCancelEdit(EntityLevel.Tiw, curTiw)">
+                            ❌ Cancel
+                        </Button>
+                    }
                 </div>
-            @* } *@
+            }
 
             <div class="container">
                 <Tabs>
                     <Tab Title="Membres" Name="TiwTab" onClick="() => OnTabChanged(1)">
                         <Content>
-                            <EditForm Context="invform" Model="curTiw">
-                                <DataAnnotationsValidator />
-                                <ValidationSummary />
-                                <!-- Explicit immatriculation fields first -->
-                                <ImmatriculationField Pattern="@patterns["Xmatri"]"
-                                    UserInputs="@xmatriInputs"
-                                    OnValueChanged="@(v => curTiw.Xmatri = v)" />
-                                <PTiwGdHelper Idorg="@curOrga.Idorg" Entity="@curTiw"
-                                              Draft="@(GetDraft(EntityLevel.Tiw) as TiewelDto)"
-                                              IsEditing="@IsTiwEditing(curTiw)"
-                                              EnsTbls="@EnsTbls"
-                                              OnConfirm="@(e => ConfirmEdit(EntityLevel.Tiw, e, true))"
-                                              OnCancel="@(e => CancelEdit(EntityLevel.Tiw, e))"
-                                              WflItems="@WflItems"
-                                              IsAflViewing="@isAflViewing"
-                                              IsAnyEditing="@IsAnyRowEditing"
-                                              IsEditingFn="@(a => IsWflEditing(a))"
-                                              GetDraftFn="@(() => GetDraft(EntityLevel.Wfl) as TiwaflDto)"
-                                              OnStartEditAfl="@StartEditWfl"
-                                              OnConfirmAfl="@ConfirmWfl"
-                                              OnCancelAfl="@CancelWfl"
-                                              OnDeleteAfl="@(a => StartRowDelete(EntityLevel.Wfl, a.Rowguid))"
-                                              GroupOptions="@LsGAfls.Where(af => af.Atyp == Ugpe).ToList()"
-                                              SelectedGroup="@IMyGAfl"
-                                              SelectedGroupChanged="@(v => IMyGAfl = v)"
-                                              OnAddChild="@AddChild" />
+                                <EditForm Context="invform" Model="curTiw">
+                                    <DataAnnotationsValidator />
+                                    <ValidationSummary />
+                                    <!-- Explicit immatriculation fields first -->
+                                    <RegistrationInput Sorga="@Sorga"
+                                        Ugpe="@Ugpe"
+                                        Sgpe="@Sgpe"
+                                        Saffilia="@Saffilia"
+                                        IsProvisional="true"
+                                        InAddingMode="@InAddingMode"
+                                        GenerationMode="MatriculeGenerationMode.Local"
+                                        @bind-Value="curTiw.Xmatri"
+                                        IsBusy="@IsBusy"
+                                        ValidChanged="OnXmatriValidChanged" />
+                                    <PTiwGdHelper Idorg="@curOrga.Idorg" Entity="@curTiw"
+                                        Draft="@(GetDraft(EntityLevel.Tiw) as TiewelDto)"
+                                        IsEditing="@IsTiwEditing(curTiw)"
+                                        EnsTbls="@EnsTbls"
+                                        OnConfirm="@(e => InConfirmEdit(EntityLevel.Tiw, e, true))"
+                                        OnCancel="@(e => InCancelEdit(EntityLevel.Tiw, e))"
+                                        WflItems="@WflItems"
+                                        IsAflViewing="@isAflAdding"
+                                        IsAnyEditing="@IsAnyRowEditing"
+                                        IsEditingFn="@(a => IsWflEditing(a))"
+                                        GetDraftFn="@(() => GetDraft(EntityLevel.Wfl) as TiwaflDto)"
+                                        OnStartEditAfl="@StartEditWfl"
+                                        OnConfirmAfl="@ConfirmWfl"
+                                        OnCancelAfl="@CancelWfl"
+                                        OnDeleteAfl="@(a => StartRowDelete(EntityLevel.Wfl, a.Rowguid))"
+                                        GroupOptions="@LsGAfls.Where(af => af.Atyp == Ugpe).ToList()"
+                                        SelectedGroup="@IMyGAfl"
+                                        SelectedGroupChanged="@(v => IMyGAfl = v)"
+                                        OnAddChild="@AddChild" />
 
-                                @if (!IsTiwEditing(curTiw))
-                                {
-                                    <div class="mt-2">
-                                        <Button Color="ButtonColor.Warning" Size="ButtonSize.Small"
-                                                Disabled="@IsAnyRowEditing"
-                                                @onclick="() => StartEditTiw(curTiw)">
-                                            ✏️ Edit
-                                        </Button>
-                                    </div>
-                                }
-                            </EditForm>
+                                    @if (!IsTiwEditing(curTiw))
+                                    {
+                                        <div class="mt-2">
+                                            <Button Color="ButtonColor.Warning" Size="ButtonSize.Small"
+                                            Disabled="@IsAnyRowEditing"
+                                            @onclick="() => StartEditTiw(curTiw)">
+                                                ✏️ Edit
+                                            </Button>
+                                        </div>
+                                    }
+                                </EditForm>
                         </Content>
                     </Tab>
                     <Tab Title="Plus..." Name="TiwTab" onClick="() => OnTabChanged(2)">
@@ -189,7 +235,7 @@
                             </div>
                         </Content>
                     </Tab>
-                    @if (!isTieViewing)
+                    @if (!isTieEditing && !isTieAdding)
                     {
                         <Tab Title="Verification" Name="TiwTab" onClick="() => OnTabChanged(3)">
                             <Content>
@@ -262,7 +308,7 @@
     [Parameter] public List<TiewelDto> orgTwels { get; set; } = new();
     [Parameter] public ChildVars toChild { get; set; }
     [Parameter] public int? Tgpe { get; set; }
-    [Parameter] public int? Ugpe { get; set; }
+    [Parameter] public int? Ugpe { get; set; } = 0;
     [Parameter] public int toMenu { get; set; }
     [Parameter] public List<Gtabl> EnsTbls { get; set; }
     [Parameter] public List<Gpatr> EnsAtrs { get; set; } = new();
@@ -272,25 +318,48 @@
     [Parameter] public int NbChanges { get; set; }
     [Parameter] public EventCallback<int> NbChangesChanged { get; set; }
 
+    //format code rubriques
     private int _lgcdu = 3;
+    private string _lgfmt = "";
+
     private List<Gplan> LsPlans = new();
     private List<Gpfixe> LsFixes = new();
     private List<Gpvar> LsGAfls = new();
     private List<Gpvar> LsVars = new();
 
-    private bool isTieViewing = false;
-    private bool isAflViewing = false;
+    //editing workflow
+    public GridMode GtieMode = GridMode.None; 
+    public GridMode GaflMode = GridMode.None;
+    private bool CanEditChildren => 
+        GtieMode != GridMode.TiersAdding && curTiw.Xadd1 != -1;
+    private bool isTieEditing => GtieMode == GridMode.TiersAdding
+            || GtieMode == GridMode.TiersEditing;
+    private bool isAflEditing => GaflMode == GridMode.AflsAdding
+            || GaflMode == GridMode.AflsEditing;
+
+    private bool isTieAdding = false;
+    private bool isAflAdding = false;
+
     private bool isOpenAdres = false;
+    private bool IsBusy = false;
     private bool isModalVisible = false;
     private bool AllowMultipleEdits { get; set; } = false;
 
     private int IMyGAfl = 0;
     private int refTab = 1;
 
-    //immatriculation patterns /Load patterns from EF Core Gsgfix
-    private Dictionary<string,string> xmatriInputs = new();
-    private Dictionary<string,ImmatriculationPatternDto> patterns;
-    
+    private bool IsProvisional = true;
+    private string Sorga = "";
+    private string Sgpe = "";
+    private string Saffilia = "T";
+    private bool InAddingMode = false;
+
+    private bool XmatriValid;
+    private void OnXmatriValidChanged(bool isValid)
+    {
+        XmatriValid = isValid;
+    }
+
     public AdrContext Actx { get; set; }
     public UplCxtDto uploadCtx { get; set; } = new();
     private TiewelDto curTiw = new();
@@ -305,13 +374,6 @@
         isLoading = false;
         try
         {
-            //authUser = AuthState?.Result?.User ?? null;
-            //isAuthenticated = authUser?.Identity?.IsAuthenticated ?? false;
-            //if (!isAuthenticated)
-            //{
-            //    Imessage = "CONNEXION, Utilisateur non authentifie";
-            //    return;
-            //}
             if (toChild == null || curOrga == null)
             {
                 Console.WriteLine("Missing parent data");
@@ -319,15 +381,10 @@
             }
             LsFixes = toChild.LsFixes;
             LsVars = toChild.LsVars;
-            //LsDoms = LsFixes.Where(ut => ut.Gvars == 36 && ut.Itb == 2 && ut.Gp1 == 1 && ut.Elea != 0).ToList();
-            //LsAtrs = LsFixes.Where(ut => ut.Gvars == 36 && ut.Itb == 1 && ut.Gp1 == 3 && ut.Elea != 0).ToList();
-            //LsVues = LsFixes.Where(ut => ut.Gvars == 36 && ut.Itb == 4 && ut.Gp1 == 4 && ut.Elea != 0).ToList();
-            //LsGties = LsFixes.Where(ut => ut.Gvars == 36 && ut.Itb == 6 && ut.Elea != 0 && ut.Elea != 9).ToList();
             LsPlans = toChild.LsPlans;
-            _lgcdu = 3;
-            var noslims = LsVars.Where(uv => uv.Idhie == 0 && uv.Gvars == 21 && uv.Itb == 1 && uv.Elea == 1);
-            if (noslims.Any()) _lgcdu = noslims.FirstOrDefault().Ivala;
-
+            //limites
+            _lgcdu = curOrga.Lftrub ?? 3;
+            _lgfmt = curOrga.Ftrub ?? "";
             Console.WriteLine($"lsplans {LsPlans.Count} IS NULL");
 
             //InitializeMyDaPlans();
@@ -357,6 +414,22 @@
         isLoading = false;
         //Imessage = "InscTiw charged";
     }
+    protected override void OnParametersSet()
+    {
+        Sorga = curOrga?.Idorg.ToString() ?? "";
+        Saffilia = "T";
+
+        Sgpe = Ugpe switch
+        {
+            1 => "1CB",
+            2 => "2OP",
+            3 => "3CL",
+            4 => "4FN",
+            5 => "5PA",
+            _ => "1CB"
+        };
+    }
+
     protected override void SubscribeToGuard() { }
 
     private void OnTabChanged(int tabIndex) => refTab = tabIndex;
@@ -372,6 +445,29 @@
         };
         await StartRowAdd(EntityLevel.Tiw, newTiw, TiwItems, d => SetDraft(EntityLevel.Tiw, d));
         curTiw = newTiw;
+
+        InAddingMode = true;
+    }
+
+    private async Task InConfirmAdd(EntityLevel level, object draft, bool isConfirm)
+    {
+        await ConfirmAdd(level, draft, isConfirm);
+        GtieMode = GridMode.None;
+    }
+    private async Task InCancelAdd(EntityLevel level, object draft)
+    {
+        await CancelAdd(level, draft);
+        GtieMode = GridMode.None;
+    }
+    private async Task InConfirmEdit(EntityLevel level, object draft, bool isConfirm)
+    {
+        await ConfirmEdit(level, draft, isConfirm);
+        GtieMode = GridMode.None;
+    }
+    private async Task InCancelEdit(EntityLevel level, object draft)
+    {
+        await CancelEdit(level, draft);
+        GtieMode = GridMode.None;
     }
 
     private async Task StartEditTiw(TiewelDto item)
@@ -416,7 +512,7 @@
         if (level == EntityLevel.Tiw)
         {
             curTiw = (TiewelDto)entity;
-            isTieViewing = true;
+            //isTieViewing = true;
             await StartEditTiw(curTiw);
         }
     }
