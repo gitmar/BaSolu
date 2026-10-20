@@ -87,8 +87,8 @@ else
                             </PrubCalc>
                         }
                         else if (_chxMenu == 3)
-                        { //VENTILATIONS
-                            <PrubVent @ref="mygvnt"
+                        { //FACTURES
+                            <PrubFact @ref="mygfac"
                                       toMenu="@_chxMenu"
                                       @bind-NbChanges="_nbChanges"
                                       _guard="_guard"
@@ -98,22 +98,7 @@ else
                                       _InODaClient="@_MyODaClient">
                                 <ChildContent>
                                 </ChildContent>
-                            </PrubVent>
-                        }
-                        else if (_chxMenu == 5)
-                        { //FACTURES
-                            @* <RubFact @ref="mygfac"
-                                     toMenu="@_chxMenu"
-                                     @bind-NbChanges="_nbChanges"
-                                     _guard="_guard"
-                                     curOrga="@curOrga"
-                                     toChild="@toChild"
-                                     _InODaClient="@_MyODaClient">
-                                <ChildContent>
-                                    <h2 class="child-box">Hello GRILLES</h2>
-                                </ChildContent>
-                            </RubFact> *@
-                             
+                            </PrubFact>
                         }
                     }
                 }
@@ -143,9 +128,8 @@ else
 
     private PrubSaie mygsai;
     private PrubCalc mygclc;
-    private PrubVent mygvnt; //no 'new'
     private PTestEchs? mygtest; // no 'new'
-    private RubFact mygfac;
+    private PrubFact mygfac;
     //private CrudUIDemo mycdemo;
     public List<PlngenDto> orgPlns = new();
     //[CascadingParameter]
@@ -180,8 +164,8 @@ else
     {
         new GxMenuItem { Id = 1, Text = "VARIABLES", Icon = "bi bi-box-arrow-in-down" },
         new GxMenuItem { Id = 2, Text = "CALCULS", Icon = "bi bi-house-door" },
-        new GxMenuItem { Id = 3, Text = "FINANCES", Icon = "bi bi-house-door" },
-        new GxMenuItem { Id = 4, Text = "VENTILATION", Icon = "bi bi-house-door" },
+        new GxMenuItem { Id = 3, Text = "FACTURES", Icon = "bi bi-house-door" },
+        //new GxMenuItem { Id = 4, Text = "VENTILATION", Icon = "bi bi-house-door" },
         //new GxMenuItem { Id = 5, Text = "FACTURES", Icon = "bi bi-house-door" },
         // new GxMenuItem { Id = 1, Text = "Prog.SAISIE", Icon = "bi bi-box-arrow-in-down" },
         // new GxMenuItem { Id = 2, Text = "Prog.CALCUL", Icon = "bi bi-house-door" },
@@ -325,7 +309,7 @@ else
 
         if (_chxMenu == 1) strComp = "VARIABLES";
         if (_chxMenu == 2) strComp = "CALCULS";
-        if (_chxMenu == 3) strComp = "VENTILATION";
+        if (_chxMenu == 3) strComp = "FACTURES";
         //if (_chxMenu == 5) strComp = "FACTURES";
 
         //if (_chxMenu == 6) strComp = $"TEST ECHEANCIER";

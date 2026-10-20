@@ -9,6 +9,7 @@
 @using BlazorBootstrap
 @using Blazored.LocalStorage
 @using GxPilo.Services
+@using GxPilo.Components.Paccu
 @using GxShared.Sess
 @using GxShared.Others
 @using GxShared.Identity
@@ -445,24 +446,15 @@ else
                                 </Tab>
                             }
                             <Tab Title="Re-EmailConfirm" Name="RenvTab">
-                            <Content>
-                                <!-- Email -->
-                                <div class="col-md-8">
-                                    <label>Email:</label>
-                                    <InputText type="email" @bind-Value="_invModel.Email" class="form-control" />
-                                </div>
-                                <div class="col-md-8">
-                                    <label>Téléphone:</label>
-                                    <InputText @bind-Value="_invModel.PhoneNumber" class="form-control" />
-                                </div>
-                                <div class="col-md-8">
-                                    <button class="btn btn-outline-danger btn-sm d-flex align-items-center" @onclick="() => ReConfirmEmail()">
-                                        <i class="bi bi-envelope-check me-1"></i>
-                                        Re-confirm EMAIL
-                                    </button>
-                                </div>
-                            </Content>
-                        </Tab>
+                                <Content>
+                                    <!-- Email -->
+                                    <div class="row">
+                                        <ResendConfMail @ref="myrmail"
+                                            _usrBag ="@_usrBag"    
+                                        ></ResendConfMail>
+                                    </div>
+                                </Content>
+                            </Tab>
                         </Tabs>
                     }
                 </EditForm>
@@ -530,6 +522,8 @@ else
     private bool isAuthenticated = false;
     [Parameter]
     public RenderFragment ChildContent { get; set; }
+
+    private ResendConfMail myrmail = new();
 
     private GxorgaDto curOrga = new GxorgaDto();
     private InviteRequest _invModel = new();
@@ -837,42 +831,7 @@ else
         }
         return emails;
     }
-    private async Task<bool> ReConfirmEmail()
-    {
-        //OrgaCreateDto dto = new();
-        //dto.Idorg = curOrga.Idorg;
-        //dto.Email = _invModel.Email;
-        //dto.SiPhone = _invModel.SiPhone;
-     
-        //dto.Ivrole = 2; //owner
-        //dto.Srole = "Owner";
-        // Dynamic client per-customer
-        var clieUrl = _invModel.Weburl;
-        await _clieManager.SetAuthorizationHeaderAsync("AuthClient");
-        var response = await _clieManager.SendRequestRawAsync(
-                "AuthClient",
-                HttpMethod.Post,
-                "regis/resendconfirm", _invModel);
-        if (response == null)
-        {
-            Imessage = "Unable to contact the server.";
-            isSuccess = false;
-            return false;
-        }
-
-        if (!response.IsSuccessStatusCode)
-        {
-            Imessage = await response.Content.ReadAsStringAsync();
-            isSuccess = false;
-        }
-        else
-        {
-            Imessage = $"Invite re-envoye... {_invModel.FirstName} - {_invModel.LastName}";
-            isSuccess = true;
-        }
-        StateHasChanged();
-        return true;
-    }
+    
     private async Task<bool> ReVoquerUser()
     {
         //OrgaCreateDto dto = new();

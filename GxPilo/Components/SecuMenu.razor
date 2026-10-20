@@ -104,19 +104,6 @@
                             </ChildContent>
                         </Jetons>
                     }
-                    else if (_chxMenu == 4)
-                    { //Exos
-                        <Gexos @ref="mygexo"
-                                curOrga="@curOrga"
-                                @bind-NbChanges="_nbChanges"
-                                _guard="_guard"
-                                toChild="@toChild"
-                                _InODaClient="@_MyODaClient">
-                            <ChildContent>
-                                @* <h2 class="child-box">Hello ATTRIBUTS</h2> *@
-                            </ChildContent>
-                        </Gexos>
-                    }
                 }
             </div>
         </div>
@@ -162,7 +149,7 @@
     private Sessions mygses = new();
     private Authoris mygaut = new();
     private Jetons mygjet = new();
-    private Gexos mygexo = new();
+    //private Gexos mygexo = new();
 
     //[CascadingParameter]
     //private Task<AuthenticationState>? AuthState { get; set; }
@@ -218,7 +205,7 @@
         new GxMenuItem { Id = 1, Text = "Sessions", Icon = "bi bi-box-arrow-in-down" },
         new GxMenuItem { Id = 2, Text = "Autorisations", Icon = "bi bi-house-door" },
         new GxMenuItem { Id = 3, Text = "Jetons", Icon = "bi bi-arrow-repeat" },
-        new GxMenuItem { Id = 4, Text = "Exercices", Icon = "bi bi-arrow-repeat" },
+        //new GxMenuItem { Id = 4, Text = "Exercices", Icon = "bi bi-arrow-repeat" },
     };
     public List<GxGroupe> Groupes = new();
 
@@ -358,7 +345,7 @@
         if (_chxMenu == 1) strComp = $"Sessions";
         if (_chxMenu == 2) strComp = $"Autorisations";
         if (_chxMenu == 3) strComp = $"Jetons";
-        if (_chxMenu == 4) strComp = $"Exercices";
+        //if (_chxMenu == 4) strComp = $"Exercices";
 
         StateHasChanged();
         await Task.Delay(1);

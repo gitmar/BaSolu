@@ -5,6 +5,7 @@
 @using GxTie.Services
 @using GxShared.Identity
 @using GxShared.Helpers
+@using GxShared.Others
 @using System.Security.Claims
 @using Microsoft.AspNetCore.Components.Authorization
 
@@ -13,6 +14,7 @@
 @inject NavigationManager _navManager
 @inject SessionContextService _sessionContext
 @inject MyAuthStateProvider _authProvider
+@inject IHttpClientFactory  _httpClientFactory
 @inject ClieAppState _appState
 @inject IJSRuntime _JsRun
 
@@ -189,16 +191,19 @@ else
     private bool isHelpLogin = false;
     private ClaimsPrincipal authUser = new ClaimsPrincipal();
     private bool isAuthenticated = false;
+    private HttpClient _apiClient = new HttpClient(); // Initialize the HttpClient
 
     private bool _sidebarCollapsed = true;
 
     //private AuthenticationStateChangedEventHandler? _authStateChangedHandler;
     private AuthenticationStateChangedHandler? _authStateChangedHandler;
+
     protected override async Task OnInitializedAsync()
     {
         canAdminLog = false;
         isLoading = false;
 
+        _apiClient = _httpClientFactory.CreateClient("AuthClient");
         _appState.OnChange += StateHasChanged;
 
         var token = await _localStorage.GetItemAsync<string>("blazToken");
@@ -247,25 +252,25 @@ else
         _sidebarCollapsed = !_sidebarCollapsed;
     }
 
-    private async Task NavigateToIdentityPage()
-    {
-        var token = await _localStorage.GetItemAsync<string>("blazToken");
-        if (string.IsNullOrWhiteSpace(token))
-        {
-            Console.WriteLine("No token found — skipping session sync.");
-            return;
-        }
-
-        var backendUrl = _iconfig["backendUrl"];
-        var targetUrl = $"{backendUrl}/Identity/Account/JwtLandingPage?access_token={token}";
-
-        _navManager.NavigateTo(targetUrl, forceLoad: true);
-    }
-   
-    // protected override async Task OnInitializedAsync()
+    // private async Task NavigateToIdentityPage()
     // {
-        
+    //     var token = await _localStorage.GetItemAsync<string>("blazToken");
+    //     if (string.IsNullOrWhiteSpace(token))
+    //     {
+    //         Console.WriteLine("No token found — skipping session sync.");
+    //         return;
+    //     }
+
+    //     var backendUrl = _iconfig["backendUrl"];
+    //     var targetUrl = $"{backendUrl}/Identity/Account/JwtLandingPage?access_token={token}";
+
+    //     _navManager.NavigateTo(targetUrl, forceLoad: true);
     // }
+   
+    // // protected override async Task OnInitializedAsync()
+    // // {
+        
+    // // }
 
     private async Task HandleAuthStateChangedAsync(Task<AuthenticationState> task)
     {
@@ -274,6 +279,60 @@ else
         isAuthenticated = authUser.Identity?.IsAuthenticated ?? false;
         await InvokeAsync(StateHasChanged);
     }
+    private async Task NavigateToIdentityPage()
+    {
+        var currentUri = new Uri(_navManager.Uri);
+
+        // Identity returnUrl (local path, safe for Identity redirect)
+        var returnUrl = currentUri.PathAndQuery;
+
+        // Full WASM origin (used later in Manage page "Return" button)
+        var clientReturnUrl = currentUri.GetLeftPart(UriPartial.Authority);
+
+        var request = new BridgeRequest
+        {
+            ReturnUrl = currentUri.PathAndQuery,              // local path for Identity
+            ClientReturnUrl = currentUri.GetLeftPart(UriPartial.Authority) // full WASM origin
+        };
+
+        var resp = await _apiClient.PostAsJsonAsync("Authbridge/ticket", request);
+        resp.EnsureSuccessStatusCode();
+
+        var result = await resp.Content.ReadFromJsonAsync<TicketResult>();
+
+        // Navigate to the ticket URL (signin endpoint)
+        _navManager.NavigateTo(result!.Url, forceLoad: true);
+    }
+
+    // private async Task NavigateToIdentityPage()
+    // {
+    //     var currentUri = new Uri(_navManager.Uri);
+
+    //     // Identity returnUrl (local path, safe for Identity redirect)
+    //     var returnUrl = currentUri.PathAndQuery;
+
+    //     // Full WASM origin (used later in Manage page "Return" button)
+    //     var clientReturnUrl = currentUri.GetLeftPart(UriPartial.Authority);
+
+    //     // var request = new BridgeRequest
+    //     // {
+    //     //     ReturnUrl = returnUrl,
+    //     //     ClientReturnUrl = clientReturnUrl
+    //     // };
+    //     var request = new BridgeRequest
+    //     {
+    //         ReturnUrl = currentUri.PathAndQuery,              // local path for Identity
+    //         ClientReturnUrl = currentUri.GetLeftPart(UriPartial.Authority) // full WASM origin
+    //     };
+
+    //     var resp = await _apiClient.PostAsJsonAsync("Authbridge/ticket", request);
+    //     resp.EnsureSuccessStatusCode();
+
+    //     var result = await resp.Content.ReadFromJsonAsync<TicketResult>();
+
+    //     // Navigate to the ticket URL (signin endpoint)
+    //     _navManager.NavigateTo(result!.Url, forceLoad: true);
+    // }
 
     public void Dispose()
     {

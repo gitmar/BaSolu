@@ -5,15 +5,15 @@
 @using System.Text
 @using Blazored.LocalStorage
 @using GxShared.Sess
-@using GxShared.Helpers;
+@using GxShared.Helpers
 @using GxShared.Identity
 @using GxTie.Services
 @using Newtonsoft.Json
 
 @inject ILocalStorageService _localStorage  
+@inject IConfiguration _iconfig
 @inject NavigationManager _navManager
 @inject IServiceProvider _serviceProvider
-@* @inject HttpClientService _apiClient *@
 @inject IHttpClientFactory _httpClientFactory
 @inject SessionContextService _sessionContext
 @inject HttpClientService _clieManager
@@ -29,7 +29,7 @@
 {
     <div class="text-center">
         <Spinner Color="SpinnerColor.Primary" Size="SpinnerSize.Large" />
-        <p>Personne Loading...</p>
+        <p>Pilotage Loading...</p>
     </div>
 }
 else
@@ -39,32 +39,69 @@ else
         <ValidationSummary />
         @if (_yaconn)
         {
-            <div class="mb-3">
-                <label>Email or Username</label>
-                <InputText class="form-control" @bind-Value="loginModel.UsernameOrEmail" />
-            </div>
+            @if (!canSupportLoad && !inAccepting)
+            {
+                <div class="mb-3">
+                    <label>Email or Username :</label>
+                    <InputText class="form-control" @bind-Value="loginModel.UsernameOrEmail" />
+                </div>
+                <div class="mb-3">
+                    <label>Password :</label>
+                    <InputText class="form-control" @bind-Value="loginModel.Password" type="password" />
+                </div>
+                <button class="btn btn-primary w-100" type="submit" disabled="@isBusy">
+                    @if (isBusy)
+                    {
+                        <span>Connecting...</span>
+                    }
+                    else
+                    {
+                        <span>Login</span>
+                    }
+                </button>
 
-            <div class="mb-3">
-                <label>Password</label>
-                <InputText class="form-control" @bind-Value="loginModel.Password" type="password" />
-            </div>
-            <button class="btn btn-primary w-100" type="submit" disabled="@isBusy">
-                @if (isBusy)
+                <div class="text-end mt-2">
+                    <a href="@ForgotPasswordUrl" class="small">Mot de passe oublié ?</a>
+                </div>
+
+                @if (!string.IsNullOrEmpty(Error))
                 {
-                    <span>Connecting...</span>
+                    <div class="alert alert-danger mt-3">
+                        @Error
+                        @if (_credentialsRejected)
+                        {
+                            <div class="mt-2">
+                                Vous avez oublié votre mot de passe ?
+                                <a href="@ForgotPasswordUrl" class="alert-link">Le réinitialiser</a>
+                            </div>
+                        }
+                    </div>
+                }
+            }
+            else
+            {
+                @if (!inAccepting)
+                {
+                    <div class="alert alert-info">
+                        <strong>Info:</strong> Vous etes du Support, Veuillez choisir ou accepter @_logresult.OgRaison
+                    </div>
+                    <div class="mb-3">
+                        <label>Institution :</label>
+                        <InputSelect @bind-Value="loginModel.Idorg">
+                            @foreach (var orga in _orgas)
+                            {
+                                <option value=@orga.Idorg>@orga.Raison</option>
+                            }
+                        </InputSelect>
+                    </div>
+                    <button class="btn btn-primary me-2" type="button" @onclick="() => AccepterLoginAsync()">Accepter @_logresult.OgSigle</button>
+                    <button class="btn btn-primary me-2" type="button" @onclick="() => ReloadOrgaAsync()">Re_Charger Institution Choisie</button>
                 }
                 else
                 {
-                    <span>Login</span>
+                    <p>Admin Loading...</p>
                 }
-            </button>
-
-            @if (!string.IsNullOrEmpty(Error))
-            {
-                <div class="alert alert-danger mt-3">@Error</div>
             }
-
-            @* <button class="btn btn-primary" type="submit">Login</button> *@
         }
         else
         {
@@ -75,19 +112,32 @@ else
     </EditForm>
 }
 @code {
+    private bool isLoading = false;
     [Inject]
     private MyAuthStateProvider _authProvider { get; set; }
 
     private LoginModel loginModel = new();
+    private LoginResult _logresult = new();
     private string Jmessage = "";
 
     private bool isBusy = false;
     private string? Error;
+    private bool _credentialsRejected = false;
 
+    private bool canSupportLoad = false;
+    private bool inAccepting = false;
     private bool _yaconn = false;
+    private bool _yacors = false;
 
-    private bool isLoading = false;
     private HttpClient _dftClient;
+
+    private Userbag _usrBag = new();
+    private List<AdmOrga> _orgas = new();
+    private string? _selectedOrgaId;
+
+    private string ForgotPasswordUrl =>
+        $"{_iconfig["backendUrl"]?.TrimEnd('/')}/Identity/Account/ForgotPassword" +
+        $"?clientReturnUrl={Uri.EscapeDataString(_navManager.BaseUri)}";
 
     protected override async Task OnInitializedAsync()
     {
@@ -100,31 +150,33 @@ else
             var response = await _dftClient.GetAsync("lgauth/health");
             _yaconn = response.IsSuccessStatusCode;
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            Console.WriteLine($"Client creating failed: {ex.Message}");
             isLoading = false;
             return;
         }
         if (!_yaconn)
         {
-            Console.WriteLine("Server fetch failed.");
             isLoading = false;
             return;
         }
+        await AtestCors();
         isLoading = false;
     }
+
     private async Task HandleLoginAsync()
     {
         isLoading = true;
         Error = null;
+        _credentialsRejected = false;
         isBusy = true;
         Jmessage = "";
 
         // Basic validation
         if (string.IsNullOrEmpty(loginModel.UsernameOrEmail) || string.IsNullOrEmpty(loginModel.Password))
         {
-            Jmessage = "Email/UserName et Mot de passe obligatoires";
+            Error = "Email/UserName et Mot de passe obligatoires";
+            Jmessage = Error;
             isBusy = false;
             isLoading = false;
             return;
@@ -144,8 +196,9 @@ else
 
             if (response.StatusCode == HttpStatusCode.Unauthorized)
             {
-                Error = "Login failed: Unauthorized (401).";
-                Jmessage = "Identifiants invalides.";
+                Error = "Identifiants invalides.";
+                Jmessage = Error;
+                _credentialsRejected = true;
                 isBusy = false;
                 isLoading = false;
                 return;
@@ -153,71 +206,49 @@ else
 
             if (!response.IsSuccessStatusCode)
             {
-                Error = $"Login failed: {(int)response.StatusCode} {response.ReasonPhrase}";
-                Jmessage = "Erreur serveur.";
+                Error = $"Erreur serveur ({(int)response.StatusCode}).";
+                Jmessage = Error;
                 isBusy = false;
                 isLoading = false;
                 return;
             }
 
             var responseContent = await response.Content.ReadAsStringAsync();
-            var result = JsonConvert.DeserializeObject<LoginResult>(responseContent);
+            _logresult = JsonConvert.DeserializeObject<LoginResult>(responseContent);
 
-            isBusy = false;
-            if (result == null || string.IsNullOrEmpty(result.Atoken))
+            if (_logresult == null || string.IsNullOrEmpty(_logresult.Atoken))
             {
                 Error = "Login failed. Check credentials.";
                 Jmessage = "Réponse de login invalide.";
+                _credentialsRejected = true;
+                isBusy = false;
                 isLoading = false;
                 return;
             }
 
-            Console.WriteLine("Tokens received.");
-
-            if (_authProvider is MyAuthStateProvider provider)
+            // Handle support role
+            if (_logresult.SiSupport)
             {
-                Console.WriteLine("Refresh token stored.");
-
-                var claims = _authProvider.ParseClaimsFromJwt(result.Atoken);
-
-                // ✅ Store tokens
-                await _localStorage.SetItemAsync("blazToken", result.Atoken);
-                await _localStorage.SetItemAsync("blazRtoken", result.Rtoken);
-                await _localStorage.SetItemAsync("authToken", result.Atoken);
-
-                // ✅ Update client headers
-                await _clieManager.SetAuthorizationHeaderAsync("AuthClient");
-
-                // Load user context
-                var userbagResponse = await _clieManager.SendRequestAsync("AuthClient", HttpMethod.Get, "usercontext/userbag");
-                var userbag = JsonConvert.DeserializeObject<Userbag>(userbagResponse);
-                if (userbag == null || !userbag.Succeeded)
-                {
-                    Error = "Login failed. Check credentials.";
-                    Jmessage = "Failed to load user context.";
-                    isLoading = false;
-                    return;
-                }
-
-                var identity = new ClaimsIdentity(claims, "jwt");
-                var user = new ClaimsPrincipal(identity);
-                provider.NotifyUserAuthentication(user);
-
-                await _sessionContext.PersistSessionAsync(result, userbag);
-
-                _appState.UpdateDisplvalue(userbag.Graison, userbag.Usprof.Ufulnom);
-
-                // ✅ Kick off refresh workflow
-                var puzzleSyncService = _serviceProvider.GetService<IPuzzleSyncService>();
-                if (puzzleSyncService != null)
-                {
-                    await puzzleSyncService.EnsureSessionIsFreshAsync();
-                    await puzzleSyncService.SyncPuzzleStateAsync();
-                }
-
-                _navManager.NavigateTo("/");
-                StateHasChanged();
+                _orgas = _logresult.AllOrgas?.ToList() ?? new List<AdmOrga>();
+                canSupportLoad = true;
+                isBusy = false;
+                isLoading = false;
+                return;
             }
+
+            // Handle admin role
+            var isDeveloper = _logresult.Roles != null && _logresult.Roles.Contains("Developer");
+            if (!_logresult.SiAdmin && !_logresult.SiSupport && !isDeveloper)
+            {
+                Error = "Accès refusé.";
+                Jmessage = "Vous n'êtes pas autorisé.";
+                isBusy = false;
+                isLoading = false;
+                return;
+            }
+
+            // Accept login
+            await AccepterLoginAsync();
         }
         catch (Exception ex)
         {
@@ -231,105 +262,127 @@ else
         }
     }
 
-    // private async Task HandleLoginAsync()
-    // {
-    //     isLoading = true;
-    //     Error = null;
-    //     isBusy = true;
-    //     bool yaErrors = false;
-    //     Jmessage = "";
-    //     if (string.IsNullOrEmpty(loginModel.UsernameOrEmail))
-    //     {
-    //         Jmessage = "Email ou UserName obligatoire";
-    //         yaErrors = true;
-    //     }
-    //     if (string.IsNullOrEmpty(loginModel.Password))
-    //     {
-    //         Jmessage = Jmessage + " /Mot de passe obligatoire";
-    //         yaErrors = true;
-    //     }
-    //     if (yaErrors)
-    //     {
-    //         isBusy = false;
-    //         isLoading = false;
-    //         return;
-    //     }
-    //     try
-    //     {
-    //         //_appState.IsTieLoggedIn = false;
-    //         loginModel.IsHelpLogin = false; //necessaire pour le login not admin
-    //         //.UsernameOrEmail = loginModel.Username;
-    //         //Console.WriteLine($"uname : {loginModel.Username} et {loginModel.Email}");
-    //         var json = JsonConvert.SerializeObject(loginModel);
-    //         var request = new HttpRequestMessage(HttpMethod.Post, "lgauth/login")
-    //             {
-    //                 Content = new StringContent(json, Encoding.UTF8, "application/json")
-    //             };
+    private async Task ReloadOrgaAsync()
+    {
+        isLoading = true;
+        Error = null;
+        _credentialsRejected = false;
+        isBusy = true;
+        Jmessage = "";
+        if (loginModel.Idorg == 0)
+        {
+            isBusy = false;
+            Jmessage = Jmessage + " Organisation Mot de passe obligatoire";
+            isLoading = false;
+            return;
+        }
+        try
+        {
+            loginModel.IsHelpLogin = true;
+            var json = JsonConvert.SerializeObject(loginModel);
+            var request = new HttpRequestMessage(HttpMethod.Post, "lgauth/hlprelogin")
+            {
+                Content = new StringContent(json, Encoding.UTF8, "application/json")
+            };
+            var response = await _dftClient.SendAsync(request);
+            response.EnsureSuccessStatusCode();
+            var responseContent = await response.Content.ReadAsStringAsync();
+            _logresult = JsonConvert.DeserializeObject<LoginResult>(responseContent);
+            isBusy = false;
+            if (_logresult == null || string.IsNullOrEmpty(_logresult.Atoken))
+            {
+                isBusy = false;
+                Error = "Login failed. Check credentials.";
+                Jmessage = Jmessage + " Invalid login response.";
+                isLoading = false;
+                return;
+            }
+            await AccepterLoginAsync();
+        }
+        catch (Exception ex)
+        {
+            Error = "Login failed. Check credentials.";
+            isBusy = false;
+            Jmessage = $"Login failed: {ex.Message}";
+        }
+        isLoading = false;
+    }
 
-    //         var response = await _dftClient.SendAsync(request);
-    //         response.EnsureSuccessStatusCode();
-    //         var responseContent = await response.Content.ReadAsStringAsync();
-    //         var result = JsonConvert.DeserializeObject<LoginResult>(responseContent);
-    //         isBusy = false;
-    //         if (result == null || string.IsNullOrEmpty(result.Atoken))
-    //         {
-    //             isBusy = false;
-    //             Error = "Login failed. Check credentials.";
-    //             Jmessage = Jmessage + " Invalid login response.";
-    //             isLoading = false;
-    //             return;
-    //         }
+    private async Task AccepterLoginAsync()
+    {
+        inAccepting = true;
+        canSupportLoad = false;
+        Console.WriteLine("Tokens received.");
 
-    //         Console.WriteLine("Tokens received.");
-    //         if (_authProvider is MyAuthStateProvider provider)
-    //         {
-    //             Console.WriteLine("Refresh token stored.");
+        if (_authProvider is MyAuthStateProvider provider)
+        {
+            Console.WriteLine("Refresh token stored.");
 
-    //             var claims = _authProvider.ParseClaimsFromJwt(result.Atoken);
+            var claims = _authProvider.ParseClaimsFromJwt(_logresult.Atoken);
 
-    //             await _localStorage.SetItemAsync("blazToken", result.Atoken);
-    //             await _localStorage.SetItemAsync("blazRtoken", result.Rtoken);
-    //             await _localStorage.SetItemAsync("authToken", result.Atoken);
+            // Store all tokens and expiry
+            await _localStorage.SetItemAsync("blazToken", _logresult.Atoken);
+            await _localStorage.SetItemAsync("blazRtoken", _logresult.Rtoken);
+            await _localStorage.SetItemAsync("authToken", _logresult.Atoken);
+            await _localStorage.SetItemAsync("blazExp", _logresult.Adexp);
+            await _localStorage.SetItemAsync("blazUserid", _logresult.Userid);
+            await _localStorage.SetItemAsync("blazOrgid", _logresult.LgOrgid);
 
-    //             await _clieManager.SetAuthorizationHeaderAsync("AuthClient");
-    //             var userbagResponse = await _clieManager.SendRequestAsync("AuthClient", HttpMethod.Get, $"usercontext/userbag");
-    //             var userbag = JsonConvert.DeserializeObject<Userbag>(userbagResponse);
-    //             if (userbag == null || !userbag.Succeeded)
-    //             {
-    //                 isBusy = false;
-    //                 Error = "Login failed. Check credentials.";
-    //                 isLoading = false;
-    //                 Jmessage = Jmessage + " /Failed to load user context.";
-    //                 return;
-    //             }
-    //             var identity = new ClaimsIdentity(claims, "jwt");
-    //             var user = new ClaimsPrincipal(identity);
-    //             provider.NotifyUserAuthentication(user);
-    //             await _sessionContext.PersistSessionAsync(result, userbag); // ✅ handles everything
+            // Update client headers
+            await _clieManager.SetAuthorizationHeaderAsync("AuthClient");
 
-    //             _appState.UpdateDisplvalue(userbag.Graison, userbag.Usprof.Ufulnom);
+            // Load user context
+            var userbagResponse = await _clieManager.SendRequestAsync("AuthClient", HttpMethod.Get, "usercontext/userbag");
+            _usrBag = JsonConvert.DeserializeObject<Userbag>(userbagResponse);
+            if (_usrBag == null || !_usrBag.Succeeded)
+            {
+                Jmessage += " Failed to load user context.";
+                Error = "Impossible de charger le contexte utilisateur.";
+                inAccepting = false;   // otherwise the page stays on "Admin Loading..."
+                return;
+            }
 
-    //             var puzzleSyncService = _serviceProvider.GetService<IPuzzleSyncService>();
-    //             if (puzzleSyncService != null)
-    //             {
-    //                 await puzzleSyncService.EnsureSessionIsFreshAsync();
-    //                 await puzzleSyncService.SyncPuzzleStateAsync();
-    //             }
-    //             else
-    //             {
-    //                 Console.WriteLine("PuzzleSyncService could not be resolved.");
-    //             }
-    //             _navManager.NavigateTo("/");
-    //             StateHasChanged();
-    //         }
-    //         Console.WriteLine("12.");
-    //     }
-    //     catch (Exception ex)
-    //     {
-    //         Error = "Login failed. Check credentials.";
-    //         isBusy = false;
-    //         Jmessage = $"Login failed: {ex.Message}";
-    //     }
-    //     isLoading = false;
-    // }
+            var identity = new ClaimsIdentity(claims, "jwt");
+            var user = new ClaimsPrincipal(identity);
+            provider.NotifyUserAuthentication(user);
+
+            await _sessionContext.PersistSessionAsync(_logresult, _usrBag);
+
+            loginModel.IsHelpLogin = _logresult.SiSupport;
+
+            _appState.UpdateDisplvalue(_usrBag.Graison, _usrBag.Usprof.Ufulnom);
+
+            var puzzleSyncService = _serviceProvider.GetService<IPuzzleSyncService>();
+            if (puzzleSyncService != null)
+            {
+                await puzzleSyncService.EnsureSessionIsFreshAsync();
+                await puzzleSyncService.SyncPuzzleStateAsync();
+            }
+            else
+            {
+                Console.WriteLine("PuzzleSyncService could not be resolved.");
+            }
+
+            inAccepting = false;
+            _navManager.NavigateTo("/");
+        }
+    }
+
+    private async Task AtestCors()
+    {
+        //verified connection
+        try
+        {
+            var response = await _dftClient.GetAsync("atest/cors");
+            _yacors = response.IsSuccessStatusCode;
+        }
+        catch (Exception)
+        {
+            isLoading = false;
+        }
+        if (!_yacors)
+        {
+            isLoading = false;
+        }
+    }
 }

@@ -101,24 +101,6 @@ else
                                 </ChildContent>
                             </RubEchs>
                         }
-                    else if (_chxMenu == 4)
-                        { //FACTURES
-                            @* <RubFact @ref="mygfac"
-                                     toMenu="@_chxMenu"
-                                     @bind-NbChanges="_nbChanges"
-                                     _guard="_guard"
-                                     curOrga="@curOrga"
-                                     toChild="@toChild"
-                                     orgPlns="@orgPlns"
-                                     _InODaClient="@_MyODaClient">
-                                <ChildContent>
-                                </ChildContent>
-                            </RubFact> *@
-                        }
-                    else if (_chxMenu == 5)
-                    { //ASTREINTES
-                          //ref="myastr"
-                    }
                 }
             }
             </div>
@@ -148,7 +130,7 @@ else
     private RubGrils myrgrd;
     private RubPosts myrpst;
     private RubEchs myrech;
-    private RubFact mygfac;
+    private ZZZRubFact mygfac;
 
     //[CascadingParameter]
     //private Task<AuthenticationState>? AuthState { get; set; }
@@ -184,7 +166,6 @@ else
         new GxMenuItem { Id = 1, Text = "GRILLE", Icon = "bi bi-box-arrow-in-down" },
         new GxMenuItem { Id = 2, Text = "ORGANIGRAMME", Icon = "bi bi-house-door" },
         new GxMenuItem { Id = 3, Text = "ECHEANCIER", Icon = "bi bi-house-door" },
-        //new GxMenuItem { Id = 4, Text = "FACTURE", Icon = "bi bi-house-door" },
         new GxMenuItem { Id = 4, Text = "Saisies", Icon = "bi bi-house-door" },
         //new MenuItem { Id = 4, Text = "Mutation", Icon = "bi bi-arrow-repeat" },
     };
@@ -316,7 +297,6 @@ else
         if (_chxMenu == 1) strComp = $"GRILLE";
         if (_chxMenu == 2) strComp = $"ORGANIGRAMME";
         if (_chxMenu == 3) strComp = $"ECHEANCIER";
-        //if (_chxMenu == 4) strComp = $"FACTURE";
         if (_chxMenu == 4)
         {
             _navManager.NavigateTo("/ictamenu", replace: true);

@@ -2,14 +2,15 @@
 @layout FreeLayout
 
 @using System.Net.Http.Json
-@using GxDicto.DModels
-@using GxDicto.Components
+@* @using GxDicto.DModels
+@using GxDicto.Components *@
 @using GxShared.GxDtos
+@using GxShared.InDtos
 @using GxShared.Sess
 
 @inject IHttpClientFactory _httpClientFactory
 
-@* <h3>Localization Admin</h3> *@
+@* <h3>Localized Admin</h3> *@
 
 <div class="row mb-3 align-items-end">
     <div class="col-auto">
@@ -45,13 +46,13 @@ else
 {
     <span class="text-muted">Showing @filteredEntries.Count of @Entries.Count entries for language '@selectedLanguage'</span>
     <div class="row align-items-center">
-    <Grid TItem="LocalizationEntry"
+    <Grid TItem="LocalizedDto"
           Data="@filteredEntries"
           AllowPaging="true"
           AllowSorting="true"
           Responsive="true">
         <GridColumns>
-            <GridColumn TItem="LocalizationEntry" HeaderText="Key" Class="xcol4">
+            <GridColumn TItem="LocalizedDto" HeaderText="Key" Class="xcol4">
                 <ChildContent Context="item">
                     @if (changedRows.Contains(item))
                     {
@@ -70,7 +71,7 @@ else
                     }
                 </ChildContent>
             </GridColumn>
-            <GridColumn TItem="LocalizationEntry" HeaderText="Value" Class="xcol4">
+            <GridColumn TItem="LocalizedDto" HeaderText="Value" Class="xcol4">
                 <ChildContent Context="item">
                     @if (changedRows.Contains(item))
                     {
@@ -82,7 +83,7 @@ else
                     }
                 </ChildContent>
             </GridColumn>
-            <GridColumn TItem="LocalizationEntry" HeaderText="Actions" Class="xcol3">
+            <GridColumn TItem="LocalizedDto" HeaderText="Actions" Class="xcol3">
                 <ChildContent Context="item">
                     @* 1. Pending delete mode *@
                         <div class="d-flex align-items-center gap-1">
@@ -153,14 +154,14 @@ else
     [Parameter] public int IdcOrg { get; set; } = 0;
     [Parameter] public List<Gpvar> LsVars { get; set; } = new();
     
-    private List<LocalizationEntry> Entries = new();
-    private List<LocalizationEntry> filteredEntries = new();
+    private List<LocalizedDto> Entries = new();
+    private List<LocalizedDto> filteredEntries = new();
 
-    private HashSet<LocalizationEntry> changedRows = new();        // in edit mode
-    private HashSet<LocalizationEntry> pendingDeletes = new();     // rows marked for deletion
-    private HashSet<LocalizationEntry> pendingNewRows = new();     // newly added, not yet confirmed
+    private HashSet<LocalizedDto> changedRows = new();        // in edit mode
+    private HashSet<LocalizedDto> pendingDeletes = new();     // rows marked for deletion
+    private HashSet<LocalizedDto> pendingNewRows = new();     // newly added, not yet confirmed
 
-    private Dictionary<int, LocalizationEntry> originalValues = new();
+    private Dictionary<int, LocalizedDto> originalValues = new();
     private HttpClient _apiClient = default!;
     private List<string> languages = new();
     private string _selectedLanguage = "en";
@@ -189,9 +190,9 @@ else
 
     private async Task LoadLanguages()
     {
-        var all = await _apiClient.GetFromJsonAsync<List<LocalizationEntry>>(
-            $"localization/{IdcOrg}/admin/entries")
-            ?? new List<LocalizationEntry>();
+        var all = await _apiClient.GetFromJsonAsync<List<LocalizedDto>>(
+            $"localized/{IdcOrg}/admin/entries")
+            ?? new List<LocalizedDto>();
 
         languages = all
             .Select(e => e.Language)
@@ -210,9 +211,9 @@ else
         pendingNewRows.Clear();
         originalValues.Clear();
 
-        Entries = await _apiClient.GetFromJsonAsync<List<LocalizationEntry>>(
-              $"localization/{IdcOrg}/admin/entries")
-          ?? new List<LocalizationEntry>();
+        Entries = await _apiClient.GetFromJsonAsync<List<LocalizedDto>>(
+              $"localized/{IdcOrg}/admin/entries")
+          ?? new List<LocalizedDto>();
 
         ApplyFilter();
 
@@ -239,7 +240,7 @@ else
 
     private void AddNewRow()
     {
-        var newEntry = new LocalizationEntry
+        var newEntry = new LocalizedDto
         {
             ClientRowId = Guid.NewGuid(),
             Language = selectedLanguage,
@@ -256,7 +257,7 @@ else
         StateHasChanged();
     }
   
-    private void BeginEdit(LocalizationEntry entry)
+    private void BeginEdit(LocalizedDto entry)
     {
         if (changedRows.Contains(entry) || pendingDeletes.Contains(entry))
             return;
@@ -265,7 +266,7 @@ else
 
         if (entry.Id != 0)
         {
-            originalValues[entry.Id] = new LocalizationEntry
+            originalValues[entry.Id] = new LocalizedDto
             {
                 Id = entry.Id,
                 Idorg = entry.Idorg,
@@ -279,7 +280,7 @@ else
         StateHasChanged();
     }
 
-    private void CancelEdit(LocalizationEntry entry)
+    private void CancelEdit(LocalizedDto entry)
     {
         Console.WriteLine($"CancelEdit called for Id={entry.Id}, Key={entry.Key}");
 
@@ -335,7 +336,7 @@ else
         Console.WriteLine("CancelEdit: finished");
     }
 
-    private void UpdateRow(LocalizationEntry entry)
+    private void UpdateRow(LocalizedDto entry)
     {
         // Just exit edit mode; actual save is done by SaveAll.
         changedRows.Remove(entry);
@@ -344,7 +345,7 @@ else
         StateHasChanged();
     }
 
-    private void MarkForDelete(LocalizationEntry entry)
+    private void MarkForDelete(LocalizedDto entry)
     {
         if (pendingDeletes.Contains(entry))
             return;
@@ -358,7 +359,7 @@ else
         StateHasChanged();
     }
 
-    private void CancelDelete(LocalizationEntry entry)
+    private void CancelDelete(LocalizedDto entry)
     {
         if (!pendingDeletes.Contains(entry))
             return;
@@ -368,7 +369,7 @@ else
         StateHasChanged();
     }
 
-    private async Task ConfirmDelete(LocalizationEntry entry)
+    private async Task ConfirmDelete(LocalizedDto entry)
     {
         if (entry.Id == 0)
         {
@@ -383,7 +384,7 @@ else
         }
 
         var response = await _apiClient.DeleteAsync(
-            $"localization/{IdcOrg}/admin/entries/{entry.Id}");
+            $"localized/{IdcOrg}/admin/entries/{entry.Id}");
         response.EnsureSuccessStatusCode();
 
         Entries.Remove(entry);
@@ -394,7 +395,7 @@ else
         StateHasChanged();
     }
 
-    private void RemoveNewRow(LocalizationEntry entry)
+    private void RemoveNewRow(LocalizedDto entry)
     {
         if (entry is null || entry.Id != 0)
             return;
@@ -432,8 +433,8 @@ else
     //     Entries = Entries.ToList();
     //     StateHasChanged();
     // }
-
-    private void ConfirmNewRow(LocalizationEntry entry)
+        
+    private void ConfirmNewRow(LocalizedDto entry)
     {
         if (entry.Id != 0 || !pendingNewRows.Contains(entry))
             return;
@@ -461,10 +462,10 @@ else
         foreach (var entry in toInsert)
         {
             var response = await _apiClient.PostAsJsonAsync(
-                $"localization/{IdcOrg}/admin/entries", entry);
+                $"localized/{IdcOrg}/admin/entries", entry);
             response.EnsureSuccessStatusCode();
 
-            var saved = await response.Content.ReadFromJsonAsync<LocalizationEntry>();
+            var saved = await response.Content.ReadFromJsonAsync<LocalizedDto>();
             if (saved != null && saved.Id != 0)
             {
                 entry.Id = saved.Id;
@@ -474,7 +475,7 @@ else
         foreach (var entry in toUpdate)
         {
             var response = await _apiClient.PutAsJsonAsync(
-                $"localization/{IdcOrg}/admin/entries/{entry.Id}", entry);
+                $"localized/{IdcOrg}/admin/entries/{entry.Id}", entry);
             response.EnsureSuccessStatusCode();
         }
 

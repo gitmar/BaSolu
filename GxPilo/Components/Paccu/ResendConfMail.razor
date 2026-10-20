@@ -1,0 +1,136 @@
+﻿@page "/resendconfmail"
+
+@using System.ComponentModel.DataAnnotations
+@using GxPilo.Services
+@using GxShared.ShdServices
+@using GxShared.Sess
+
+@inject NavigationManager _navManager
+@inject HttpClientService _clieManager
+@inject SessionContextService _sessionContext
+
+<h3>Resend Confirmation Email</h3>
+<EditForm Model="@model" OnValidSubmit="HandleResend">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+
+    <div class="row mb-3">
+        <label>Email address:</label>
+        <InputText type="email" @bind-Value="model.Email" class="form-control" />
+    </div>
+    <div class="row">
+        <label>Téléphone:</label>
+        <InputText @bind-Value="model.PhoneNumber" class="form-control" />
+    </div>
+    <div class="row">
+        <button class="btn btn-outline-danger btn-sm d-flex align-items-center" @onclick="() => HandleResend()">
+            @if (isLoading)
+            {
+                <span>Sending...</span>
+            }
+            else
+            {
+                <span>
+                    <i class="bi bi-envelope-check me-1"></i>
+                    Re-confirm EMAIL
+                </span>
+            }
+        </button>
+    </div>
+</EditForm>
+
+@if (!string.IsNullOrEmpty(Imessage))
+{
+    <div class="alert alert-info mt-3">
+        @Imessage
+    </div>
+}
+
+@code {
+    [Parameter] public Userbag? _usrBag { get; set; }
+
+    private InviteRequest model = new();
+    private bool isLoading = false;
+    private string? Imessage;
+
+    protected override async void OnInitialized()
+    {
+        // 2. Load user context
+        //_usrBag = await _sessionContext.GetUserbagAsync();
+        if (_usrBag == null)
+        {
+            Imessage = "❌ Session utilisateur invalide";
+            return;
+        }
+        model.Idorg = _usrBag.Idorg;
+    }
+    private async Task<bool> HandleResend()
+    {
+        isLoading = true;
+        try
+        {
+            //non applicable;
+            model.Ivrole = 2; //owner
+            model.Srole = "Owner";
+            // ✅ Update client headers
+            await _clieManager.SetAuthorizationHeaderAsync("AuthClient");
+            // Load user context
+            var response = await _clieManager.SendRequestAsync("AuthClient", HttpMethod.Post, "regis/resendconfirm", model);
+            // if (!response.IsSuccessStatusCode)
+            // {
+            //     var errorContent = await response.Content.ReadAsStringAsync();
+            //     Imessage = $"Failed: {response.StatusCode} - {errorContent}";
+            //     return false;
+            // }
+            Imessage = "Resend SUCCES";
+        }
+        catch
+        {
+            Imessage = "An error occurred. Please try again later.";
+            return false;
+        }
+        finally
+        {
+            isLoading = false;
+        }
+        return true;
+    }
+/*
+    private async Task<bool> ReConfirmEmail()
+    {
+        //OrgaCreateDto dto = new();
+        //dto.Idorg = curOrga.Idorg;
+        //dto.Email = _invModel.Email;
+        //dto.SiPhone = _invModel.SiPhone;
+     
+        //dto.Ivrole = 2; //owner
+        //dto.Srole = "Owner";
+        // Dynamic client per-customer
+        var clieUrl = _invModel.Weburl;
+        await _clieManager.SetAuthorizationHeaderAsync("AuthClient");
+        var response = await _clieManager.SendRequestRawAsync(
+                "AuthClient",
+                HttpMethod.Post,
+                "regis/resendconfirm", _invModel);
+        if (response == null)
+        {
+            Imessage = "Unable to contact the server.";
+            isSuccess = false;
+            return false;
+        }
+
+        if (!response.IsSuccessStatusCode)
+        {
+            Imessage = await response.Content.ReadAsStringAsync();
+            isSuccess = false;
+        }
+        else
+        {
+            Imessage = $"Invite re-envoye... {_invModel.FirstName} - {_invModel.LastName}";
+            isSuccess = true;
+        }
+        StateHasChanged();
+        return true;
+    }
+*/
+}

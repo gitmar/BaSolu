@@ -1,0 +1,264 @@
+﻿@page "/gxadm"
+@layout ExadMenu
+
+@using BlazorBootstrap
+@using Blazored.LocalStorage
+@using GxShared.Helpers
+@using GxPilo.Services
+@using Simple.OData.Client
+@using AutoMapper
+@using GxShared.GxDtos
+@using GxShared.Interfaces
+@using GxShared.Sess
+@using Newtonsoft.Json
+@using GxShared.AdminDtos.AdModels
+@using GxPilo.Services.Adspec
+@using System.Security.Claims
+@using GxPilo.Components.Identity
+@using Microsoft.AspNetCore.Authorization
+
+@attribute [Authorize(Roles = "Admin")]
+
+@inject ISystemAdminClient AdminClient
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject ILocalStorageService _localStorage
+@inject NavigationManager _navManager
+@inject HttpClientService _clieManager
+@inject IMapper Mapper
+@inject IJSRuntime _jsRun
+
+<h3>System Administration</h3>
+
+@if (_currentIdorg == 0)
+{
+    <div class="alert alert-warning">
+        No organization is selected.
+    </div>
+}
+else
+{
+    <div class="card mb-3">
+        <div class="card-header">
+            Organization: @_currentIdorg
+        </div>
+        <div class="card-body">
+            <div class="row g-2">
+                <div class="col-md-4">
+                    <Button Color="ButtonColor.Primary"
+                            Size="ButtonSize.Small"
+                            Disabled="@_isBusy"
+                            @onclick="@(() => InitializeColumnsAsync(false))">
+                        Initialize current context
+                    </Button>
+                </div>
+
+                <div class="col-md-4">
+                    <Button Color="ButtonColor.Warning"
+                            Size="ButtonSize.Small"
+                            Disabled="@_isBusy"
+                            @onclick="@(() => InitializeColumnsAsync(true))">
+                        Initialize all contexts
+                    </Button>
+                </div>
+
+                <div class="col-md-4">
+                    <Button Color="ButtonColor.Secondary"
+                            Size="ButtonSize.Small"
+                            Disabled="@_isBusy"
+                            @onclick="SynchronizeDictionaryAsync">
+                        Synchronize dictionary
+                    </Button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card mb-3">
+        <div class="card-header">
+            Reset lost password
+        </div>
+        <div class="card-body">
+            <div class="row g-2 align-items-end">
+                <div class="col-md-4">
+                    <label class="form-label">User</label>
+                    <select class="form-select"
+                            @bind="_selectedUserEmail">
+                        <option value="">Select user...</option>
+                        @foreach (var user in _users)
+                        {
+                            <option value="@user.Email">
+                                @user.Email
+                            </option>
+                        }
+                    </select>
+                </div>
+
+                <div class="col-md-4">
+                    <label class="form-label">New password</label>
+                    <input type="password"
+                           class="form-control"
+                           @bind="_newPassword" />
+                </div>
+
+                <div class="col-md-4">
+                    <Button Color="ButtonColor.Danger"
+                            Size="ButtonSize.Small"
+                            Disabled="@(_isBusy || string.IsNullOrWhiteSpace(_selectedUserEmail))"
+                            @onclick="ResetPasswordAsync">
+                        Reset password
+                    </Button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@if (!string.IsNullOrWhiteSpace(_statusMessage))
+{
+    <div class="alert @(_isSuccess ? "alert-success" : "alert-danger")">
+        @_statusMessage
+    </div>
+}
+
+@code {
+    private int _currentIdorg;
+    private bool _isBusy;
+    private bool _isSuccess;
+    private bool isLoading = true;
+
+    [Parameter]
+    public IODataClient _InODaClient { get; set; }
+    [Parameter]
+    public GxorgaDto curOrga { get; set; }
+    [Parameter]
+    public List<GsgfixDto> orgFixes { get; set; }
+    [Parameter]
+    public List<Gxuser> orgUsers { get; set; }
+    [Parameter]
+    public int Orig { get; set; }
+    [Parameter]
+    public ChildVars toChild { get; set; }
+    [Parameter]
+    public int toMenu { get; set; }
+    [Parameter]
+    public RenderFragment ChildContent { get; set; }
+    [Parameter]
+    public List<Gpdivh> LsDivs { get; set; }
+
+    // Guard
+    [Parameter]
+    public IPendingChangesGuard _guard { get; set; }
+    [Parameter]
+    public EventCallback<PendingState> OnPendingStateChanged { get; set; }
+    [Parameter]
+    public int NbChanges { get; set; }
+    [Parameter]
+    public EventCallback<int> NbChangesChanged { get; set; }
+
+    private string _statusMessage = string.Empty;
+    private string _selectedUserEmail = string.Empty;
+    private string _newPassword = string.Empty;
+
+    private List<AdminUserDto> _users = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        _currentIdorg = curOrga.Idorg;
+
+
+        if (_currentIdorg != 0)
+        {
+            await LoadUsersAsync();
+        }
+    }
+
+    // private async Task LoadUsersAsync()
+    // {
+    //     _isBusy = true;
+
+    //     try
+    //     {
+    //         _users = orgUsers;
+    //     }
+    //     finally
+    //     {
+    //         _isBusy = false;
+    //     }
+    // }
+    private async Task LoadUsersAsync()
+    {
+        _isBusy = true;
+
+        try
+        {
+            _users = await AdminClient.GetUsersAsync(_currentIdorg);
+        }
+        finally
+        {
+            _isBusy = false;
+        }
+    }
+    private async Task InitializeColumnsAsync(bool allContexts)
+    {
+        await RunAdminOperationAsync(
+            () => AdminClient.InitializeColumnsAsync(
+                _currentIdorg,
+                allContexts));
+    }
+
+    private async Task SynchronizeDictionaryAsync()
+    {
+        await RunAdminOperationAsync(
+            () => AdminClient.SynchronizeDictionaryAsync(
+                _currentIdorg,
+                null));
+    }
+
+    private async Task ResetPasswordAsync()
+    {
+        if (string.IsNullOrWhiteSpace(_selectedUserEmail) ||
+            string.IsNullOrWhiteSpace(_newPassword))
+        {
+            ShowResult(false, "Select a user and enter a new password.");
+            return;
+        }
+
+        await RunAdminOperationAsync(
+            () => AdminClient.ResetPasswordAsync(
+                _selectedUserEmail,
+                _newPassword));
+
+        if (_isSuccess)
+        {
+            _newPassword = string.Empty;
+        }
+    }
+
+    private async Task RunAdminOperationAsync(
+        Func<Task<AdminOperationResultDto>> operation)
+    {
+        _isBusy = true;
+        _statusMessage = string.Empty;
+
+        try
+        {
+            var result = await operation();
+
+            ShowResult(result.Success, result.Message);
+        }
+        catch (Exception ex)
+        {
+            ShowResult(false, ex.Message);
+        }
+        finally
+        {
+            _isBusy = false;
+        }
+    }
+
+    private void ShowResult(bool success, string message)
+    {
+        _isSuccess = success;
+        _statusMessage = message;
+    }
+}

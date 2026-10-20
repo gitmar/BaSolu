@@ -4,7 +4,7 @@ using GxShared.Interfaces;
 
 using GxPilo.Components.Uifrags;
 
-namespace GxPilo.Components.PRubs
+namespace GxPilo.Components.PVents
 {
     public partial class PrubVent : CompUICrudBase
     {

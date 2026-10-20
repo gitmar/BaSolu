@@ -12,7 +12,7 @@ namespace GxDicto.Components
 {
     public class LocalizedComponentBase : ComponentBase
     {
-        [Inject] protected ILocalizationService L { get; set; } = default!;
+        [Inject] protected LocalizationService L { get; set; } = default!;
 
         protected string T(string key, string? defaultText = null)
         => L.T(key, defaultText);

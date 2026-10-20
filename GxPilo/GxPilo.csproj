@@ -3,7 +3,7 @@
     <TargetFramework>net9.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
-    <Version>1.2.22</Version>
+    <Version>1.2.35</Version>
     <SchemaVersion>1</SchemaVersion>
     <ServiceWorkerAssetsManifest>service-worker-assets.js</ServiceWorkerAssetsManifest>
   </PropertyGroup>
@@ -75,6 +75,7 @@
     <Compile Remove="Services\AdautService.cs" />
     <Compile Remove="Services\AppStateServices.cs" />
     <Compile Remove="Services\DaLibaResolver.cs" />
+    <Compile Remove="Services\Dicos\LocalizationEntry.cs" />
     <Compile Remove="Services\JtwHelpers.cs" />
     <Compile Remove="Services\LocalizationAdminService.cs" />
     <Compile Remove="Services\MyODataContext.cs" />
@@ -192,7 +193,6 @@
   <ItemGroup>
     <ProjectReference Include="..\..\GxShared\GxShared.csproj" />
     <ProjectReference Include="..\..\GxSmenu\Gx.Components.csproj" />
-    <ProjectReference Include="..\DicTools\Gxdictio\GxDicto.csproj" />
   </ItemGroup>
 
   <ProjectExtensions><VisualStudio><UserProperties properties_4launchsettings_1json__JsonSchema="" /></VisualStudio></ProjectExtensions>

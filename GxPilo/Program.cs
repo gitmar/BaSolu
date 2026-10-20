@@ -4,10 +4,11 @@ using BlazorDownloadFile;
 
 using Blazored.LocalStorage;
 
-using GxDicto.Services;
-
 using GxPilo;
+//using GxDicto.Services;
+using GxPilo.Dicos;
 using GxPilo.Services;
+using GxPilo.Services.Adspec;
 using GxPilo.Services.Cols;
 
 using GxShared.GxGuards;
@@ -66,14 +67,15 @@ builder.Services.AddHttpClient("LocalClient", client =>
     client.BaseAddress = new Uri($"{backendUrl}api/");
     client.DefaultRequestHeaders.Add("X-Requested-With", "Fetch");
 });
-builder.Services.AddScoped<ILocalizationService>(sp =>
-{
-    var http = sp.GetRequiredService<IHttpClientFactory>()
-           .CreateClient("LocalClient");
+builder.Services.AddScoped<ILocalizationService, LocalizationService>();
+//builder.Services.AddScoped<LocalizationService>(sp =>
+//{
+//    var http = sp.GetRequiredService<IHttpClientFactory>()
+//           .CreateClient("AuthClient");
 
-    var logger = sp.GetRequiredService<ILogger<LocalizationService>>();
-    return new LocalizationService(http, logger);
-});
+//    var logger = sp.GetRequiredService<ILogger<LocalizationService>>();
+//    return new LocalizationService(http, logger);
+//});
 // ------------------------------------------------
 // 2. Register Custom OData Client Factory
 // ------------------------------------------------
@@ -106,6 +108,7 @@ builder.Services.AddScoped<RendAgres>();
 builder.Services.AddScoped<ClieAppState>();
 builder.Services.AddScoped<SessionContextService>();
 builder.Services.AddScoped<SessionContextClient>();
+builder.Services.AddScoped<ISystemAdminClient, SystemAdminClient>();
 
 // ----------------------------
 // Authentication & Sync Services
@@ -142,8 +145,8 @@ builder.Services.AddSingleton<IMessageService, MessageService>();
 // ----------------------------
 var host = builder.Build();
 // Optionally load default language at startup
-var loc = host.Services.GetRequiredService<ILocalizationService>();
-await loc.SetLanguageAsync("en");
+//var loc = host.Services.GetRequiredService<LocalizationService>();
+//await loc.SetLanguageAsync("en");
 var localStorage = host.Services.GetRequiredService<ILocalStorageService>();
 var authProvider = host.Services.GetRequiredService<MyAuthStateProvider>();
 

@@ -80,22 +80,6 @@ else
                                      EnsCats="@EnsCats"
                                      EnsTbls="@EnsTbls">
                             </InscTiw>
-                            @* <InscTiw @ref="myetiw"
-                                     Ugpe="@Ugpe"
-                                     Tgpe="@Tgpe"
-                                     curOrga="@curOrga"
-                                     orgTwels="@orgTwels"
-                                     @bind-NbChanges="_nbChanges"
-                                     _guard="_guard"
-                                     EnsAtrs="@EnsAtrs"
-                                     EnsCats="@EnsCats"
-                                     EnsTbls="@EnsTbls"
-                                     toChild="@toChild"
-                                     _InODaClient="@_MyODaClient">
-                                <ChildContent>
-                                    <h2 class="child-box">Hello ACCUEIL</h2>
-                                </ChildContent>
-                            </InscTiw> *@
                        }
                         else if (_chxMenu == 2 && Ugpe != 0) // && Tgpe != 0 && ParentOK)
                         {
@@ -201,8 +185,9 @@ else
     //menus
     public List<GxMenuItem> MenuItems = new()
     {
-        new GxMenuItem { Id = 1, Text = "Accueil/Site", Icon = "bi bi-box-arrow-in-down" },
+        new GxMenuItem { Id = 1, Text = "Accueil/SITE", Icon = "bi bi-box-arrow-in-down" },
         new GxMenuItem { Id = 2, Text = "Integration", Icon = "bi bi-house-door" },
+        new GxMenuItem { Id = 2, Text = "Accueil/Online", Icon = "bi bi-house-door" },
         //new GxMenuItem { Id = 3, Text = "Invite/Online", Icon = "bi bi-envelope-paper" },
         //new GxMenuItem { Id = 4, Text = "ATest", Icon = "bi bi-envelope-paper" }
         //new MenuItem { Id = 4, Text = "Mutation", Icon = "bi bi-arrow-repeat" },
@@ -235,7 +220,7 @@ else
     private List<Gpcat> EnsCats = new();
     //Navigation
     private int _gIdTie = 0, _chxGpe = 0, _chxMenu = 1;
-    private string strComp = $"Accueil/Site";
+    private string strComp = $"Accueil/SITE";
     string gpeLiba = "";
     public int Ugpe = 0, Tgpe = 0; //gpe ref1..6/tiers type6..7
     //modal management
@@ -516,12 +501,17 @@ else
         if (_chxMenu == 1) 
         {
             //_guardVisible = true;
-            strComp = $"Accueil/Site {gpeLiba}";
+            strComp = $"Accueil/SITE {gpeLiba}";
         }
         if (_chxMenu == 2)
         {
             //_guardVisible = true;
             strComp = $"Integration  {gpeLiba}";
+        }
+        if (_chxMenu == 3)
+        {
+            //_guardVisible = true;
+            strComp = $"Accueil/Online  {gpeLiba}";
         }
         StateHasChanged();
         await Task.Delay(1);

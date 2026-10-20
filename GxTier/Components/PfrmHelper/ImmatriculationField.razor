@@ -28,13 +28,13 @@
 </div>
 
 @code {
-    [Parameter] public ImmatriculationPatternDto Pattern { get; set; }
+    [Parameter] public ImmatPatternDto Pattern { get; set; }
     [Parameter] public Dictionary<string, string> UserInputs { get; set; } = new();
     [Parameter] public EventCallback<string> OnValueChanged { get; set; }
 
     private Dictionary<string, string> Errors { get; set; } = new();
 
-    private void ValidateSegment(ImmatriculationSegmentDto segment)
+    private void ValidateSegment(ImmatGlobDto segment)
     {
         var value = UserInputs.GetValueOrDefault(segment.Code, "");
         if (!Regex.IsMatch(value ?? "", segment.Regex))

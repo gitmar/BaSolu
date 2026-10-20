@@ -48,7 +48,7 @@ namespace GxDicto.Services
             {
                 // Expected API: GET api/localization/{language} -> { "Key1": "Value1", "Key2": "Value2", ... }
                 var response = await _http.GetFromJsonAsync<Dictionary<string, string>>(
-                    $"api/localization/{language}");
+                    $"localized/{language}");
 
                 _translations = response ?? new Dictionary<string, string>();
             }

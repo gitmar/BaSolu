@@ -11,14 +11,18 @@
     <div class="card-body p-3">
         <ColDrivenFields Idorg="@Idorg" PColCtx="@Ctx" Model="@(IsEditing ? (Draft ?? Entity) : Entity)"
                           EnsTbls="@EnsTbls" IsEditing="@IsEditing" />
-
-        @if (IsEditing)
-        {
-            <div class="d-flex gap-2 mt-2">
+        <div class="d-flex align-items-center gap-2 mt-2">
+            @if (IsEditing)
+            {
+                <span>ICICICICI</span>
                 <Button Color="ButtonColor.Success" @onclick="() => OnConfirm.InvokeAsync(Entity)">✅ Confirm</Button>
                 <Button Color="ButtonColor.Secondary" @onclick="() => OnCancel.InvokeAsync(Entity)">✖ Cancel</Button>
-            </div>
-        }
+            }
+            @if (IsAdding)
+            {
+            
+            }
+        </div>
     </div>
 </div>
 
@@ -68,6 +72,7 @@ else
     [Parameter] public TiewelDto? Draft { get; set; }
     [Parameter, EditorRequired] public List<Gtabl> EnsTbls { get; set; } = new();
     [Parameter] public bool IsEditing { get; set; }
+    [Parameter] public bool IsAdding { get; set; }
     [Parameter] public EventCallback<TiewelDto> OnConfirm { get; set; }
     [Parameter] public EventCallback<TiewelDto> OnCancel { get; set; }
 

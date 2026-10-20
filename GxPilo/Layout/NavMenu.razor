@@ -91,9 +91,9 @@
                             <i class="bi bi-diagram-3 nav-icon"></i>
                             <span class="nav-text">Traitements</span>
                         </NavLink>
-                        <NavLink class="nav-link nav-sub text-light small d-flex align-items-center gap-2" href="factmenu">
+                        <NavLink class="nav-link nav-sub text-light small d-flex align-items-center gap-2" href="pventmenu">
                             <i class="bi bi-cash-stack nav-icon"></i>
-                            <span class="nav-text">Finances</span>
+                            <span class="nav-text">Ventilation</span>
                         </NavLink>
                         <NavLink class="nav-link nav-sub text-light small d-flex align-items-center gap-2" href="edtmenu">
                             <i class="bi bi-file-earmark-text nav-icon"></i>
@@ -110,31 +110,22 @@
                     <i class="bi @(isSubSecuVisible ? "bi-chevron-up" : "bi-chevron-down") nav-chevron"></i>
                 </NavLink>
                 <div class="submenu @(isSubSecuVisible ? "open" : "")">
-    <nav class="nav flex-column">
-        <NavLink class="nav-link nav-sub text-light small d-flex align-items-center gap-2" href="secumenu">
-            <i class="bi bi-key nav-icon"></i>
-            <span class="nav-text">Autorisations</span>
-        </NavLink>
-        <NavLink class="nav-link nav-sub text-light small d-flex align-items-center gap-2" href="donamenu">
-            <i class="bi bi-database nav-icon"></i>
-            <span class="nav-text">Données</span>
-        </NavLink>
-        <NavLink class="nav-link nav-sub text-light small d-flex align-items-center gap-2" href="toolsmenu">
-            <i class="bi bi-tools nav-icon"></i>
-            <span class="nav-text">Outils</span>
-        </NavLink>
-        <NavLink class="nav-link nav-sub text-light small d-flex align-items-center gap-2" href="exomenu">
-            <i class="bi bi-calendar-range nav-icon"></i>
-            <span class="nav-text">Exercice</span>
-        </NavLink>
-        <NavLink class="nav-link nav-sub text-light small d-flex align-items-center gap-2" href="ownerpage">
-            <i class="bi bi-person-badge nav-icon"></i>
-            <span class="nav-text">Owner Page</span>
-        </NavLink>
-    </nav>
-</div>
-
-
+                    <nav class="nav flex-column">
+                        <NavLink class="nav-link nav-sub text-light small d-flex align-items-center gap-2" href="secumenu">
+                            <i class="bi bi-key nav-icon"></i>
+                            <span class="nav-text">Autorisations</span>
+                        </NavLink>
+                        <NavLink class="nav-link nav-sub text-light small d-flex align-items-center gap-2" href="donamenu">
+                            <i class="bi bi-database nav-icon"></i>
+                            <span class="nav-text">Données</span>
+                        </NavLink>
+                        <NavLink class="nav-link nav-sub text-light small d-flex align-items-center gap-2" href="exadmenu">
+                            <i class="bi bi-calendar-range nav-icon"></i>
+                                <span class="nav-text">AdminSystem</span>
+                        </NavLink>
+                    </nav>
+                </div>
+                           
                 <!-- SUPPORT DOMAINE -->
                 @if (authUser.IsInRole("Support") || authUser.IsInRole("Owner") || authUser.IsInRole("Admin"))
                 {
@@ -146,20 +137,21 @@
                     </NavLink>
                     <div class="submenu @(isSubSuppVisible ? "open" : "")">
                         <nav class="nav flex-column">
-                            @if (authUser.IsInRole("Support"))
-                            {
-                                <NavLink class="nav-link nav-sub text-light small d-flex align-items-center gap-2" href="support">
-                                    <i class="bi bi-question-circle nav-icon"></i>
-                                    <span class="nav-text">Aide?</span>
-                                </NavLink>
-                            }
-                            <NavLink class="nav-link nav-sub text-light small d-flex align-items-center gap-2" href="resendconfmail">
-                                <i class="bi bi-envelope-check nav-icon"></i>
-                                <span class="nav-text">Re-Confirm Email</span>
+                            <NavLink class="nav-link nav-sub text-light small d-flex align-items-center gap-2" href="toolsmenu">
+                                <i class="bi bi-tools nav-icon"></i>
+                                <span class="nav-text">Outils</span>
                             </NavLink>
                         </nav>
                     </div>
-                }
+                } 
+                <div class="submenu @(isSubSuppVisible ? "open" : "")">
+                   <nav class="nav flex-column">
+                       <NavLink class="nav-link nav-sub text-light small d-flex align-items-center gap-2" href="support">
+                            <i class="bi bi-question-circle nav-icon"></i>
+                            <span class="nav-text">Aide?</span>
+                       </NavLink>
+                  </nav> 
+                </div>
             </Authorized>
         </AuthorizeView>
 
@@ -169,7 +161,6 @@
             <span class="nav-text">About</span>
         </NavLink>
     </nav>
-
 </div>
 
 <style>

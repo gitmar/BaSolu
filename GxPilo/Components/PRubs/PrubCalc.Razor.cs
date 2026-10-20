@@ -6,9 +6,9 @@ using GxPilo.Components.Uifrags;
 
 namespace GxPilo.Components.MRubs
 {
-    public partial class RubFact : CompUICrudBase
+    public partial class ZZZRubFact : CompUICrudBase
     {
-        public RubFact(IPendingChangesGuard guard) : base(guard)
+        public ZZZRubFact(IPendingChangesGuard guard) : base(guard)
         {
         }
 

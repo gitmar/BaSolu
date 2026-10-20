@@ -1,5 +1,8 @@
 ﻿@inherits LayoutComponentBase
 
+@using System.Net
+@using System.Net.Http
+@using System.Net.Http.Json
 @using System.Text.RegularExpressions
 @using Blazored.LocalStorage
 @using GxPilo.Services
@@ -15,6 +18,7 @@
 @inject SessionContextService _sessionContext
 @inject MyAuthStateProvider _authProvider
 @inject IHttpClientFactory  _httpClientFactory
+@inject HttpClientService _clieManager
 @inject IConfiguration _iconfig
 @inject ClieAppState _appState
 @inject IJSRuntime _JsRun
@@ -36,11 +40,6 @@
                 <div class="d-flex align-items-center px-3 py-2 flex-nowrap" style="min-width: 0;">
 
                     <!-- SIDEBAR TOGGLE -->
-                    @* <button class="btn btn-sm btn-outline-secondary me-2 flex-shrink-0"
-                            @onclick="ToggleSidebar"
-                            title="Toggle sidebar">
-                        <span class="bi @(_sidebarCollapsed ? "bi-chevron-right" : "bi-chevron-left")"></span>
-                    </button> *@
                     <button class="sidebar-toggle btn btn-sm p-1 m-0 border-0 shadow-none"
                             type="button"
                             @onclick="ToggleSidebar"
@@ -55,8 +54,8 @@
                             <Authorized>
                                 <span>&nbsp;&nbsp;&nbsp;</span>
                                 <button class="btn btn-sm fw-bold text-dark m-0 p-0 flex-shrink-0"
-                                    @onclick="() => OpenManage()">
-                                        PrivateRoom
+                                        @onclick="() => NavigateToIdentityPage()">
+                                    PrivateRoom
                                 </button>
                                 <div class="d-flex align-items-center gap-2 flex-nowrap" style="min-width: 0;">
                                     <div class="truncated-text">
@@ -81,14 +80,6 @@
                                     <span class="bi bi-door-closed-fill" style="vertical-align:middle"></span>
                                     Logout
                                 </a>
-                                @* <button type="button" @onclick="() => NavigateToIdentityPage()">
-                                    Open profile
-                                </button>
-
-                                @if (!string.IsNullOrEmpty(DebugMessage))
-                                {
-                                    <p>@DebugMessage</p>
-                                } *@
                             </Authorized>
                             <NotAuthorized>
                                 <a href="login">
@@ -214,7 +205,8 @@ else
     {
         canAdminLog = false;
         isLoading = false;
-         _apiClient = _httpClientFactory.CreateClient("AuthClient");
+
+        _apiClient = _httpClientFactory.CreateClient("AuthClient");
         _appState.OnChange += StateHasChanged;
 
         var token = await _localStorage.GetItemAsync<string>("blazToken");
@@ -263,7 +255,6 @@ else
         _sidebarCollapsed = !_sidebarCollapsed;
     }
 
-    
     private async Task HandleAuthStateChangedAsync(Task<AuthenticationState> task)
     {
         var authState = await task;
@@ -271,121 +262,32 @@ else
         isAuthenticated = authUser.Identity?.IsAuthenticated ?? false;
         await InvokeAsync(StateHasChanged);
     }
-    
-    private async Task OpenManage()
-    {
-        try
-        {
-            Message = "Calling bridge...";
 
-            using var request = new HttpRequestMessage(
-                HttpMethod.Post,
-                "Authbridge/bgident");
-
-            request.SetBrowserRequestCredentials(
-                BrowserRequestCredentials.Include);
-
-            Message = "Sending bridge request...";
-
-            using var response =
-                await _apiClient.SendAsync(request);
-
-            var responseBody =
-                await response.Content.ReadAsStringAsync();
-
-            Message =
-                $"Bridge returned {(int)response.StatusCode}: {responseBody}";
-
-            if (!response.IsSuccessStatusCode)
-            {
-                return;
-            }
-
-            var result =
-                System.Text.Json.JsonSerializer.Deserialize<BridgeResult>(
-                    responseBody,
-                    new System.Text.Json.JsonSerializerOptions
-                    {
-                        PropertyNameCaseInsensitive = true
-                    });
-
-            if (result == null ||
-                string.IsNullOrWhiteSpace(result.RedirectUrl))
-            {
-                Message = "No redirect URL returned.";
-                return;
-            }
-
-            var backendUrl =
-                _iconfig["backendUrl"]?.TrimEnd('/');
-
-            if (string.IsNullOrWhiteSpace(backendUrl))
-            {
-                Message = "backendUrl is missing.";
-                return;
-            }
-
-            _navManager.NavigateTo(
-                $"{backendUrl}{result.RedirectUrl}",
-                forceLoad: true);
-        }
-        catch (Exception ex)
-        {
-            Message = $"{ex.GetType().Name}: {ex.Message}";
-            Console.Error.WriteLine(ex);
-        }
-    }
     private async Task NavigateToIdentityPage()
     {
-        try
+        var currentUri = new Uri(_navManager.Uri);
+
+        // Identity returnUrl (local path, safe for Identity redirect)
+        var returnUrl = currentUri.PathAndQuery;
+
+        // Full WASM origin (used later in Manage page "Return" button)
+        var clientReturnUrl = currentUri.GetLeftPart(UriPartial.Authority);
+
+        var request = new BridgeRequest
         {
-            Message = "Calling bridge...";
+            ReturnUrl = currentUri.PathAndQuery,              // local path for Identity
+            ClientReturnUrl = currentUri.GetLeftPart(UriPartial.Authority) // full WASM origin
+        };
 
-            var response = await _apiClient.PostAsync(
-                "Authbridge/bgident",
-                content: null);
+        var resp = await _apiClient.PostAsJsonAsync("Authbridge/ticket", request);
+        resp.EnsureSuccessStatusCode();
 
-            if (!response.IsSuccessStatusCode)
-            {
-                Message =
-                    $"Bridge failed: {(int)response.StatusCode} " +
-                    await response.Content.ReadAsStringAsync();
+        var result = await resp.Content.ReadFromJsonAsync<TicketResult>();
 
-                return;
-            }
-
-            var result =
-                await response.Content.ReadFromJsonAsync<BridgeResult>();
-
-            if (result == null ||
-                string.IsNullOrWhiteSpace(result.RedirectUrl))
-            {
-                Message = "Bridge returned no redirect URL.";
-                return;
-            }
-
-            var backendUrl = _iconfig["backendUrl"]?.TrimEnd('/');
-
-            if (string.IsNullOrWhiteSpace(backendUrl))
-            {
-                Message = "backendUrl is missing.";
-                return;
-            }
-
-            _navManager.NavigateTo(
-                $"{backendUrl}{result.RedirectUrl}",
-                forceLoad: true);
-        }
-        catch (Exception ex)
-        {
-            Message = $"Navigation error: {ex.Message}";
-            Console.Error.WriteLine(ex);
-        }
+        // Navigate to the ticket URL (signin endpoint)
+        _navManager.NavigateTo(result!.Url, forceLoad: true);
     }
-    public class BridgeResult
-    {
-        public string RedirectUrl { get; set; } = "";
-    }
+
     public void Dispose()
     {
         _appState.OnChange -= StateHasChanged;
