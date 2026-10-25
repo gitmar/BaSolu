@@ -46,7 +46,10 @@
         </Button>
     </div>
 
-    <CTieGdHelper Idorg="@Idorg" CurTie="@Entity" AflItems="@AflItems" EnsTbls="@EnsTbls"
+    <CTieGdHelper Idorg="@Idorg" CurTie="@Entity" 
+                  AflItems="@AflItems" 
+                  EnsTbls="@EnsTbls"
+                  Ugpe="@Ugpe"
                   IsViewing="@IsAflViewing"
                   IsAnyEditing="@IsAnyEditing"
                   IsEditingFn="@IsEditingFn"
@@ -67,6 +70,7 @@ else
     [Parameter, EditorRequired] public TierspDto Entity { get; set; } = default!;
     [Parameter] public TierspDto? Draft { get; set; }
     [Parameter, EditorRequired] public List<Gtabl> EnsTbls { get; set; } = new();
+    [Parameter] public int Ugpe { get; set; }
     [Parameter] public bool IsEditing { get; set; }
     [Parameter] public EventCallback<TierspDto> OnConfirm { get; set; }
     [Parameter] public EventCallback<TierspDto> OnCancel { get; set; }
@@ -91,6 +95,6 @@ else
 
     private bool CanEditChildren => Entity.Id > 0;
 
-    private ColPrefContext Ctx => new() { Totyp = 1, Efrm = 2, Styp = 1 };
+    private ColPrefContext Ctx => new() { Totyp = Ugpe, Efrm = 2, Styp = 1 };
     private async Task OnGroupChanged(int value) => await SelectedGroupChanged.InvokeAsync(value);
 }

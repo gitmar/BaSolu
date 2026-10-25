@@ -125,6 +125,7 @@
                                         Draft="@(GetDraft(EntityLevel.Tiw) as TiewelDto)"
                                         IsEditing="@IsTiwEditing(curTiw)"
                                         EnsTbls="@EnsTbls"
+                                        Ugpe="@Ugpe"
                                         OnConfirm="@(e => InConfirmEdit(EntityLevel.Tiw, e, true))"
                                         OnCancel="@(e => InCancelEdit(EntityLevel.Tiw, e))"
                                         WflItems="@WflItems"
@@ -292,6 +293,7 @@
                                       Draft="@(GetDraft(EntityLevel.Tiw) as TiewelDto)"
                                       IsEditing="@IsTiwEditing(curTiw)"
                                       EnsTbls="@EnsTbls"
+                                      Ugpe="@Ugpe"
                                       OnConfirm="@(e => InConfirmEdit(EntityLevel.Tiw, e, true))"
                                       OnCancel="@(e => InCancelEdit(EntityLevel.Tiw, e))"
                                       WflItems="@WflItems"
@@ -333,13 +335,13 @@
     [Parameter] public GxorgaDto curOrga { get; set; } = new();
     [Parameter] public List<TiewelDto> orgTwels { get; set; } = new();
     [Parameter] public ChildVars toChild { get; set; }
-    [Parameter] public int? Tgpe { get; set; }
-    [Parameter] public int? Ugpe { get; set; } = 0;
+    [Parameter] public int Tgpe { get; set; }
+    [Parameter] public int Ugpe { get; set; } = 0;
     [Parameter] public int toMenu { get; set; }
     [Parameter] public List<Gtabl> EnsTbls { get; set; }
     [Parameter] public List<Gpatr> EnsAtrs { get; set; } = new();
     [Parameter] public List<Gpcat> EnsCats { get; set; } = new();
-    //[Parameter] public IPendingChangesGuard _guard { get; set; }
+    [Parameter] public IPendingChangesGuard _guard { get; set; }
     [Parameter] public EventCallback<PendingState> OnPendingStateChanged { get; set; }
     [Parameter] public int NbChanges { get; set; }
     [Parameter] public EventCallback<int> NbChangesChanged { get; set; }

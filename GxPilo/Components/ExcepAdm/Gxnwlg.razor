@@ -1,0 +1,241 @@
+﻿@page "/gxnwlg"
+@layout ExadMenu
+
+@using BlazorBootstrap
+@using Blazored.LocalStorage
+@using GxShared.Helpers
+@using GxPilo.Services
+@using Simple.OData.Client
+@using AutoMapper
+@using GxShared.GxDtos
+@using GxShared.Interfaces
+@using GxShared.Sess
+@using GxShared.Others
+@using Newtonsoft.Json
+@using GxShared.AdminDtos.AdModels
+@using GxPilo.Services.Adspec
+@using System.Security.Claims
+@using GxPilo.Components.Identity
+@using Microsoft.AspNetCore.Authorization
+
+@attribute [Authorize(Roles = "Admin")]
+
+@inject ISystemAdminClient AdminClient
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject ILocalStorageService _localStorage
+@inject NavigationManager _navManager
+@inject HttpClientService _clieManager
+@inject IMapper Mapper
+@inject IJSRuntime _jsRun
+
+<h3>Gxnwlg</h3>
+@if (_currentIdorg == 0)
+{
+    <div class="alert alert-warning">
+        No organization is selected.
+    </div>
+}
+else
+{
+    <div class="card mb-3">
+        <div class="card-header">
+            Organization: @_currentIdorg
+        </div>
+        <div class="card-body">
+            <div class="row g-2">
+                <div class="col-md-4">
+                    <div class="col-md-8">
+                        <Button Color="ButtonColor.Warning"
+                            Size="ButtonSize.Small"
+                            Disabled="@_isBusy"
+                            @onclick="SynchronizeDictionaryAsync">
+                                Synchronize dictionary
+                        </Button>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">New language code</label>
+                    <input class="form-control" @bind="_newLanguage" />
+
+                    <label class="form-label">Display name</label>
+                    <input class="form-control" @bind="_newLanguageDisplay" />
+
+                    <label class="form-label">Order (Elea)</label>
+                    <input type="number" class="form-control" @bind="_newLanguageOrder" disabled />
+
+                    <Button Color="ButtonColor.Primary"
+                        Size="ButtonSize.Small"
+                        Disabled="@(_isBusy)"
+                        @onclick="AddNewLanguageAsync">
+                            Add New Language
+                    </Button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+@if (!string.IsNullOrWhiteSpace(_statusMessage))
+{
+    <div class="alert @(_isSuccess ? "alert-success" : "alert-danger")">
+        @_statusMessage
+    </div>
+}
+@code {
+    private int _currentIdorg;
+    private bool _isBusy;
+    private bool _isSuccess;
+    private bool isLoading = true;
+
+    [Parameter]
+    public IODataClient _InODaClient { get; set; }
+    [Parameter]
+    public GxorgaDto curOrga { get; set; }
+    [Parameter]
+    public List<GsgfixDto> orgFixes { get; set; }
+    [Parameter]
+    public List<Gxuser> orgUsers { get; set; }
+    [Parameter]
+    public int Orig { get; set; }
+    [Parameter]
+    public ChildVars toChild { get; set; }
+    [Parameter]
+    public int toMenu { get; set; }
+    [Parameter]
+    public RenderFragment ChildContent { get; set; }
+    [Parameter]
+    public List<Gpdivh> LsDivs { get; set; }
+
+    // Guard
+    [Parameter]
+    public IPendingChangesGuard _guard { get; set; }
+    [Parameter]
+    public EventCallback<PendingState> OnPendingStateChanged { get; set; }
+    [Parameter]
+    public int NbChanges { get; set; }
+    [Parameter]
+    public EventCallback<int> NbChangesChanged { get; set; }
+
+    private string _statusMessage = string.Empty;
+    private string _newLanguage = string.Empty;
+    private string _newLanguageDisplay = string.Empty;
+    private int _newLanguageOrder = 0;
+    private List<Gpvar> LsVars = new();
+    private List<Gpvar> languages = new();
+    private List<AdminUserDto> _users = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        _currentIdorg = curOrga.Idorg;
+
+
+        if (_currentIdorg != 0)
+        {
+            //await LoadUsersAsync();
+        }
+        LsVars = toChild.LsVars;
+        languages = LsVars.Where(uv => uv.Gvars == 3 && uv.Itb == 11).ToList();
+        _newLanguageOrder = await GetNextEleaAsync(_currentIdorg);
+    }
+    
+//     private async Task AddNewLanguageAsync()
+// {
+//     if (string.IsNullOrWhiteSpace(_newLanguage) || _newLanguage.Length != 2 || !_newLanguage.All(char.IsAsciiLetter))
+//     {
+//         ShowResult(false, "Language code must contain exactly two letters (e.g., en, fr, es).");
+//         return;
+//     }
+
+//     _newLanguage = _newLanguage.ToLowerInvariant();
+
+//     var request = new AddLanguageRequest
+//     {
+//         Abg = _newLanguage,
+//         Liba = _newLanguageDisplay,
+//         Elea = _newLanguageOrder
+//     };
+
+//     await RunAdminOperationAsync(() => AdminClient.AddNewLanguageAsync(_currentIdorg, request));
+
+//     if (_isSuccess)
+//     {
+//         _newLanguage = string.Empty;
+//         _newLanguageDisplay = string.Empty;
+//         _newLanguageOrder = 0;
+//     }
+// }
+
+private async Task AddNewLanguageAsync()
+{
+    if (string.IsNullOrWhiteSpace(_newLanguage) || _newLanguage.Length != 2 || !_newLanguage.All(char.IsAsciiLetter))
+    {
+        ShowResult(false, "Language code must contain exactly two letters (e.g., en, fr, es).");
+        return;
+    }
+
+    _newLanguage = _newLanguage.ToLowerInvariant();
+
+    var nextElea = await GetNextEleaAsync(_currentIdorg);
+
+    var request = new AddLanguageRequest
+    {
+        Abg = _newLanguage,
+        Liba = _newLanguageDisplay,
+        Elea = nextElea
+    };
+
+    await RunAdminOperationAsync(() => AdminClient.AddNewLanguageAsync(_currentIdorg, request));
+
+    if (_isSuccess)
+    {
+        _newLanguage = string.Empty;
+        _newLanguageDisplay = string.Empty;
+    }
+}
+
+
+    private async Task SynchronizeDictionaryAsync()
+    {
+        await RunAdminOperationAsync(
+            () => AdminClient.SynchronizeDictionaryAsync(
+                _currentIdorg,
+                null));
+    }
+    private async Task RunAdminOperationAsync(
+        Func<Task<AdminOperationResultDto>> operation)
+    {
+        _isBusy = true;
+        _statusMessage = string.Empty;
+
+        try
+        {
+            var result = await operation();
+
+            ShowResult(result.Success, result.Message);
+        }
+        catch (Exception ex)
+        {
+            ShowResult(false, ex.Message);
+        }
+        finally
+        {
+            _isBusy = false;
+        }
+    }
+
+    private async Task<int> GetNextEleaAsync(int idorg)
+{
+    // If none exist, start at 1
+    if (languages == null || !languages.Any())
+        return 1;
+
+    // Otherwise, take max Elea + 1
+    return languages.Max(l => l.Elea) + 1;
+}
+
+
+    private void ShowResult(bool success, string message)
+    {
+        _isSuccess = success;
+        _statusMessage = message;
+    }
+}

@@ -5,6 +5,9 @@
 @using Blazored.LocalStorage
 @using System.Security.Claims
 @using GxPilo.Components.Identity
+@using GxDicto.Services
+
+@inherits GxDicto.Components.LocalizedComponentBase
 
 @inject NavigationManager _navManager
 @inject ILocalStorageService _localStorage
@@ -38,7 +41,7 @@
                 <NavLink class="nav-link nav-main text-light small d-flex align-items-center gap-2"
                          @onclick="ToggleSubOrga">
                     <i class="bi bi-building nav-icon"></i>
-                    <span class="nav-text">Organisation</span>
+                    <span class="nav-text">@T("Organisation", "Organisation")</span>
                     <i class="bi @(isSubOrgaVisible ? "bi-chevron-up" : "bi-chevron-down") nav-chevron"></i>
                 </NavLink>
                 <div class="submenu @(isSubOrgaVisible ? "open" : "")">

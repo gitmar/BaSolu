@@ -2,9 +2,13 @@
 using System.Net.Http.Json;
 
 using GxShared.AdminDtos.AdModels;
+using GxShared.Helpers;
+using GxShared.Others;
 using GxShared.Sess;
 
 using Newtonsoft.Json;
+
+using static System.Net.WebRequestMethods;
 
 namespace GxPilo.Services.Adspec
 {
@@ -14,16 +18,16 @@ namespace GxPilo.Services.Adspec
             int idorg,
             bool allContexts,
             CancellationToken cancellationToken = default);
-
         Task<AdminOperationResultDto> SynchronizeDictionaryAsync(
             int idorg,
             string? language,
             CancellationToken cancellationToken = default);
-
+        Task<AdminOperationResultDto> AddNewLanguageAsync(
+            int idorg,
+            AddLanguageRequest request);
         Task<List<AdminUserDto>> GetUsersAsync(
             int idorg,
             CancellationToken cancellationToken = default);
-
         Task<AdminOperationResultDto> ResetPasswordAsync(
             string email,
             string newPassword,
@@ -137,6 +141,19 @@ namespace GxPilo.Services.Adspec
 
             return JsonConvert.DeserializeObject<AdminOperationResultDto>(jsonrpass) ?? new AdminOperationResultDto();
         }
+
+        public async Task<AdminOperationResultDto> AddNewLanguageAsync(int idorg, AddLanguageRequest request)
+        {
+            var jsonResponse = await _clieManager.SendRequestAsync(
+                "AuthClient",
+                HttpMethod.Post,
+                $"localized/{idorg}/admin/add-language",   // route matches controller
+                request); // send full request object as JSON
+
+            return JsonConvert.DeserializeObject<AdminOperationResultDto>(jsonResponse)
+                   ?? new AdminOperationResultDto { Success = false, Message = "No response from server." };
+        }
+
 
         private static async Task<AdminOperationResultDto> ReadResultAsync(
             HttpResponseMessage response,

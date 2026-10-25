@@ -91,6 +91,20 @@
                             </ChildContent>
                         </Gxadm>
                     }
+                    else if (_chxMenu == 3)
+                    { 
+                        <Gxnwlg @ref="mynwlg"
+                                curOrga="@curOrga"
+                                @bind-NbChanges="_nbChanges"
+                                _guard="_guard"
+                                toChild="@toChild"
+                                orgUsers="@orgUsers"
+                                _InODaClient="@_MyODaClient">
+                            <ChildContent>
+                                @* <h2 class="child-box">Hello ATTRIBUTS</h2> *@
+                            </ChildContent>
+                        </Gxnwlg>
+                    }
                 }
             </div>
         </div>
@@ -138,6 +152,7 @@
     //private Jetons mygjet = new();
     private Gexos mygexo = new();
     private Gxadm mygadm = new();
+    private Gxnwlg mynwlg = new();
 
     //[CascadingParameter]
     //private Task<AuthenticationState>? AuthState { get; set; }
@@ -193,6 +208,7 @@
     {
         new GxMenuItem { Id = 1, Text = "Exercices", Icon = "bi bi-box-arrow-in-down" },
         new GxMenuItem { Id = 2, Text = "Maintenance", Icon = "bi bi-box-arrow-in-down" },
+        new GxMenuItem { Id = 3, Text = "Ajtlangue", Icon = "bi bi-box-arrow-in-down" },
     };
     public List<GxGroupe> Groupes = new();
 
@@ -332,6 +348,7 @@
         _chxMenu = noM;
         if (_chxMenu == 1) strComp = $"Exercices";
         if (_chxMenu == 2) strComp = $"Maintenance";
+        if (_chxMenu == 3) strComp = $"Ajtlangue";
 
         StateHasChanged();
         await Task.Delay(1);

@@ -76,13 +76,6 @@
             disabled="@isBusy">
         Annuler
     </button>
-
-    @*<button type="button"
-            class="btn btn-outline-danger btn-sm"
-            @onclick="AskResetConfirmation"
-            disabled="@isBusy">
-        Réinitialiser
-    </button>*@
 </div>
 
 @if (awaitingResetConfirmation)
@@ -155,102 +148,66 @@
     }
     else
     {
-        <Grid TItem="LSelCol"
-              Data="@_workingCols"
-              Class="table table-sm table-striped"
-              AllowPaging="true">
-            <GridColumns>
-                <GridColumn TItem="LSelCol"
-                            HeaderText="Rang"
-                            Class="xcol1">
-                    <InputNumber @bind-Value="@context.ColNo"
-                                 style="width:80px;"
-                                 placeholder="Rang" />
-                </GridColumn>
+        <Tabs>
+    <Tab Title="Configuration (ordre naturel)" IsActive="true">
+        <Content>
+            <Grid TItem="LSelCol" Data="@_workingCols" Class="table table-sm table-striped" AllowPaging="true">
+                <GridColumns>
+                    <GridColumn TItem="LSelCol" HeaderText="No" Class="xcol1">@context.ColNo</GridColumn>
+                    <GridColumn TItem="LSelCol" HeaderText="Original" Class="xcol2">@context.ColName</GridColumn>
+                    <GridColumn TItem="LSelCol" HeaderText="Rang" Class="xcol1">
+                        <InputNumber @bind-Value="@context.CustNo" min="1" style="width:80px;" />
+                    </GridColumn>
+                    <GridColumn TItem="LSelCol" HeaderText="Personnalisé" Class="xcol3">
+                        <InputText @bind-Value="@context.Ulabel" placeholder="Libellé" />
+                    </GridColumn>
+                    <GridColumn TItem="LSelCol" HeaderText="Visible" Class="xcol1">
+                        <input type="checkbox" checked="@context.IsVisible"
+                               @onchange="@(e => context.IsVisible = (bool)e.Value!)" />
+                    </GridColumn>
+                    <GridColumn TItem="LSelCol" HeaderText="Type" Class="xcol2">
+                        <span class="text-muted">@AtypLabel(context.Atyp)</span>
+                    </GridColumn>
+                    @* "Liste" and "Parent" columns: unchanged from your version *@
+                </GridColumns>
+            </Grid>
+        </Content>
+    </Tab>
 
-                <GridColumn TItem="LSelCol"
-                            HeaderText="Original"
-                            Class="xcol2">
-                    @context.ColName
-                </GridColumn>
+    <Tab Title="Aperçu du formulaire">
+        <Content>
+            <p class="text-muted">
+                Ordre des champs dans les formulaires (lecture seule, inclut les modifications non enregistrées).
+            </p>
 
-                <GridColumn TItem="LSelCol"
-                            HeaderText="Personnalisé"
-                            Class="xcol3">
-                    <InputText @bind-Value="@context.Ulabel"
-                               placeholder="Libellé" />
-                </GridColumn>
+            @if (DuplicateRanks.Any())
+            {
+                <div class="alert alert-warning py-1">
+                    Rangs en double (@string.Join(", ", DuplicateRanks)) : l'ordre naturel (No) les départage.
+                </div>
+            }
 
-                <GridColumn TItem="LSelCol"
-                            HeaderText="Visible"
-                            Class="xcol1">
-                    <input type="checkbox"
-                           checked="@context.IsVisible"
-                           @onchange="@(e => context.IsVisible = (bool)e.Value!)" />
-                </GridColumn>
-
-                <GridColumn TItem="LSelCol"
-                            HeaderText="Type"
-                            Class="xcol2">
-                    <InputSelect @bind-Value="@context.Atyp"
-                                 @bind-Value:after="@(async () => await OnAtypChangedAsync(context))">
-                        <option value="">--</option>
-                        <option value="1">Texte</option>
-                        <option value="2">Nombre</option>
-                        <option value="3">Date</option>
-                        <option value="4">Case à cocher</option>
-                    </InputSelect>
-                </GridColumn>
-
-                <GridColumn TItem="LSelCol"
-                            HeaderText="Liste"
-                            Class="xcol3">
-                    @if (CanHaveLookup(context))
+            <table class="table table-sm table-striped">
+                <thead>
+                    <tr><th>#</th><th>Libellé</th><th>Champ</th><th>Rang</th><th>No</th></tr>
+                </thead>
+                <tbody>
+                    @foreach (var (col, pos) in PreviewColumns.Select((c, i) => (c, i + 1)))
                     {
-                        <InputSelect @bind-Value="@context.Tref"
-                                     @bind-Value:after="@(async () => await OnLookupChangedAsync(context))">
-                            <option value="">Aucune (saisie normale)</option>
-
-                            @foreach (var table in EnsTbls.Where(t => t.Tenr == 1))
-                            {
-                                <option value="@table.Tref">
-                                    @table.Liba
-                                </option>
-                            }
-                        </InputSelect>
+                        <tr>
+                            <td>@pos</td>
+                            <td>@(string.IsNullOrWhiteSpace(col.Ulabel) ? col.ColName : col.Ulabel)</td>
+                            <td class="text-muted">@col.ColName</td>
+                            <td>@col.CustNo</td>
+                            <td>@col.ColNo</td>
+                        </tr>
                     }
-                    else
-                    {
-                        <span class="text-muted">N/A</span>
-                    }
-                </GridColumn>
-
-                <GridColumn TItem="LSelCol"
-                            HeaderText="Parent"
-                            Class="xcol3">
-                    @if (CanHaveLookup(context) && context.Tref > 0)
-                    {
-                        <InputSelect @bind-Value="@context.Pref">
-                            <option value="">Aucun (racine)</option>
-
-                            @foreach (var table in EnsTbls
-                                .Where(t => t.Tenr == 1
-                                         && t.Tref != context.Tref))
-                            {
-                                <option value="@table.Tref">
-                                    @table.Liba
-                                </option>
-                            }
-                        </InputSelect>
-                    }
-                    else
-                    {
-                        <span class="text-muted">N/A</span>
-                    }
-                </GridColumn>
-            </GridColumns>
-        </Grid>
-    }
+                </tbody>
+            </table>
+        </Content>
+    </Tab>
+</Tabs>
+}
 </div>
 
 <style>
@@ -284,6 +241,8 @@
     private int selTotyp = 1;
     private int selEfrm = 1;
     private int selStyp = 1;
+    private string? statusMessage;
+    private bool statusOk;
 
     private List<LSelCol> _workingCols = new();
 
@@ -299,9 +258,25 @@
     private bool isBusy =>
         isLoading || isSaving || isResetting || isSynchronizing;
 
-    private string? statusMessage;
-    private bool statusOk;
+    // Only visible columns appear in forms, in custom order
+private IEnumerable<LSelCol> PreviewColumns =>
+    _workingCols.Where(c => c.IsVisible).InDisplayOrder();
 
+private IEnumerable<int?> DuplicateRanks =>
+    _workingCols.Where(c => c.IsVisible && c.CustNo is > 0)
+                .GroupBy(c => c.CustNo)
+                .Where(g => g.Count() > 1)
+                .Select(g => g.Key);
+
+private static string AtypLabel(ColAtyp atyp) => atyp switch
+{
+    ColAtyp.Text     => "Texte",
+    ColAtyp.Number   => "Nombre",
+    ColAtyp.Date     => "Date",
+    ColAtyp.Checkbox => "Case à cocher",
+    ColAtyp.Dropdown => "Liste",
+    _                => "—"
+};
     protected override async Task OnInitializedAsync()
     {
         await LoadColumnsAsync();
@@ -314,31 +289,52 @@
         Styp = selTotyp == 1 ? selStyp : 1
     };
 
+    // private async Task LoadColumnsAsync()
+    // {
+    //     isLoading = true;
+    //     statusMessage = null;
+    //     syncPreview = null;
+
+    //     try
+    //     {
+    //         _workingCols = await PrefClient.LoadAsync(
+    //             Idorg,
+    //             BuildContext());
+    //     }
+    //     catch (Exception ex)
+    //     {
+    //         statusOk = false;
+    //         statusMessage = "Impossible de charger les colonnes.";
+
+    //         Console.Error.WriteLine(ex);
+    //     }
+    //     finally
+    //     {
+    //         isLoading = false;
+    //     }
+    // }
     private async Task LoadColumnsAsync()
+{
+    isLoading = true;
+    statusMessage = null;
+    try
     {
-        isLoading = true;
-        statusMessage = null;
-        syncPreview = null;
-
-        try
-        {
-            _workingCols = await PrefClient.LoadAsync(
-                Idorg,
-                BuildContext());
-        }
-        catch (Exception ex)
-        {
-            statusOk = false;
-            statusMessage = "Impossible de charger les colonnes.";
-
-            Console.Error.WriteLine(ex);
-        }
-        finally
-        {
-            isLoading = false;
-        }
+        // Server returns custom order; Tab 1 shows the natural order.
+        _workingCols = (await PrefClient.LoadAsync(Idorg, BuildContext()))
+            .OrderBy(c => c.ColNo)
+            .ToList();
     }
-
+    catch (HttpRequestException ex)
+    {
+        _workingCols = new();
+        statusOk = false;
+        statusMessage = $"Chargement impossible ({(int?)ex.StatusCode}).";
+    }
+    finally
+    {
+        isLoading = false;
+    }
+}
     private async Task OnSelectionChanged()
     {
         if (selTotyp != 1 && selTotyp != 6)
@@ -355,21 +351,21 @@
     }
 
     private static bool CanHaveLookup(LSelCol column)
-        => column.Atyp is 1 or 2;
+        => column.Atyp is ColAtyp.Text or ColAtyp.Number;
 
     private static bool HasLookup(LSelCol column)
         => column.Tref.HasValue && column.Tref.Value > 0;
 
-    private async Task OnAtypChangedAsync(LSelCol column)
-    {
-        if (!CanHaveLookup(column))
-        {
-            column.Tref = null;
-            column.Pref = null;
-        }
+    // private async Task OnAtypChangedAsync(LSelCol column)
+    // {
+    //     if (!CanHaveLookup(column))
+    //     {
+    //         column.Tref = null;
+    //         column.Pref = null;
+    //     }
 
-        await Task.CompletedTask;
-    }
+    //     await Task.CompletedTask;
+    // }
 
     private async Task OnLookupChangedAsync(LSelCol column)
     {
@@ -562,42 +558,79 @@
     }
 
     private async Task ApplySynchronization()
+{
+    isSynchronizing = true;
+    statusMessage = null;
+
+    var synchronized = false;
+
+    try
     {
-        isSynchronizing = true;
-        statusMessage = null;
+        var result = await PrefClient.SynchronizeAsync(Idorg, BuildContext());
 
-        try
-        {
-            var result = await PrefClient.SynchronizeAsync(
-                Idorg,
-                BuildContext());
-
-            statusOk = true;
-            statusMessage =
-                $"{result.AddedCount} colonne(s) ajoutée(s), " +
-                $"{result.MarkedStaleCount} colonne(s) obsolète(s).";
-
-            syncPreview = null;
-
-            await LoadColumnsAsync();
-        }
-        catch (Exception ex)
-        {
-            statusOk = false;
-            statusMessage = "Échec de la synchronisation.";
-
-            Console.Error.WriteLine(ex);
-        }
-        finally
-        {
-            isSynchronizing = false;
-        }
+        synchronized = true;
+        statusOk = true;
+        statusMessage =
+            $"{result.AddedCount} colonne(s) ajoutée(s), " +
+            $"{result.MarkedStaleCount} colonne(s) obsolète(s).";
+        syncPreview = null;
+    }
+    catch (HttpRequestException ex)
+    {
+        statusOk = false;
+        statusMessage = $"Échec de la synchronisation ({(int?)ex.StatusCode}).";
+        Console.Error.WriteLine(ex);
+    }
+    catch (Exception ex)
+    {
+        statusOk = false;
+        statusMessage = "Échec de la synchronisation.";
+        Console.Error.WriteLine(ex);
+    }
+    finally
+    {
+        isSynchronizing = false;
     }
 
+    // Reload outside the try: a reload problem must not hide a successful sync.
+    if (synchronized)
+        await LoadColumnsAsync();
+}
     private void CloseSyncPreview()
     {
         syncPreview = null;
     }
+
+    // for ordered display
+// private async Task LoadColumns()
+// {
+//     isLoading = true;
+//     statusMessage = null;
+//     try
+//     {
+//         // Server returns custom order; Tab 1 shows the natural order.
+//         _workingCols = (await PrefClient.LoadAsync(Idorg, BuildCtx()))
+//             .OrderBy(c => c.ColNo)
+//             .ToList();
+//     }
+//     catch (HttpRequestException ex)
+//     {
+//         _workingCols = new();
+//         statusOk = false;
+//         statusMessage = $"Chargement impossible ({(int?)ex.StatusCode}).";
+//     }
+//     finally
+//     {
+//         isLoading = false;
+//     }
+// }
+
+// Restore the natural order
+private void ClearCustomOrder()
+{
+    foreach (var c in _workingCols) c.CustNo = c.ColNo;
+}
+
 }
 @* @using GxPilo.Services.Cols
 @using GxShared.Cols.Models

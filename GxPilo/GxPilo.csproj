@@ -3,7 +3,7 @@
     <TargetFramework>net9.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
-    <Version>1.2.35</Version>
+    <Version>1.2.37</Version>
     <SchemaVersion>1</SchemaVersion>
     <ServiceWorkerAssetsManifest>service-worker-assets.js</ServiceWorkerAssetsManifest>
   </PropertyGroup>
@@ -41,21 +41,25 @@
     <Compile Remove="Components\Plans\**" />
     <Compile Remove="Connected Services\**" />
     <Compile Remove="Formulas\**" />
+    <Compile Remove="Services\Dicos\**" />
     <Compile Remove="Services\Mform\**" />
     <Compile Remove="YYYFormulas\**" />
     <Content Remove="Components\Plans\**" />
     <Content Remove="Connected Services\**" />
     <Content Remove="Formulas\**" />
+    <Content Remove="Services\Dicos\**" />
     <Content Remove="Services\Mform\**" />
     <Content Remove="YYYFormulas\**" />
     <EmbeddedResource Remove="Components\Plans\**" />
     <EmbeddedResource Remove="Connected Services\**" />
     <EmbeddedResource Remove="Formulas\**" />
+    <EmbeddedResource Remove="Services\Dicos\**" />
     <EmbeddedResource Remove="Services\Mform\**" />
     <EmbeddedResource Remove="YYYFormulas\**" />
     <None Remove="Components\Plans\**" />
     <None Remove="Connected Services\**" />
     <None Remove="Formulas\**" />
+    <None Remove="Services\Dicos\**" />
     <None Remove="Services\Mform\**" />
     <None Remove="YYYFormulas\**" />
   </ItemGroup>
@@ -75,7 +79,6 @@
     <Compile Remove="Services\AdautService.cs" />
     <Compile Remove="Services\AppStateServices.cs" />
     <Compile Remove="Services\DaLibaResolver.cs" />
-    <Compile Remove="Services\Dicos\LocalizationEntry.cs" />
     <Compile Remove="Services\JtwHelpers.cs" />
     <Compile Remove="Services\LocalizationAdminService.cs" />
     <Compile Remove="Services\MyODataContext.cs" />
@@ -109,6 +112,7 @@
     <Content Remove="Components\Atabls\Z3Gtables.razor" />
     <Content Remove="Components\Atabls\Z4Gdocus.razor" />
     <Content Remove="Components\Atabls\Z4Gtables.razor" />
+    <Content Remove="Components\ColumnCatalog.razor" />
     <Content Remove="Components\ColumnPickerModal.razor" />
     <Content Remove="Components\Ictvars\Z2IctGrils.razor" />
     <Content Remove="Components\Ictvars\Z2IctPosts.razor" />
@@ -193,6 +197,7 @@
   <ItemGroup>
     <ProjectReference Include="..\..\GxShared\GxShared.csproj" />
     <ProjectReference Include="..\..\GxSmenu\Gx.Components.csproj" />
+    <ProjectReference Include="..\DicTools\Gxdictio\GxDicto.csproj" />
   </ItemGroup>
 
   <ProjectExtensions><VisualStudio><UserProperties properties_4launchsettings_1json__JsonSchema="" /></VisualStudio></ProjectExtensions>

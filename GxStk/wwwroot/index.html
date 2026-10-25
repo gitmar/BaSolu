@@ -4,27 +4,28 @@
     <!-- 🛡️ Shared base path -->
     <script>
 window.appBasePath = (function () {
-                    const base = document.querySelector('base')?.getAttribute('href') || '/';
-                    return base.endsWith('/') ? base : base + '/';
-                })();</script>
+                            const base = document.querySelector('base')?.getAttribute('href') || '/';
+                            return base.endsWith('/') ? base : base + '/';
+                        })();</script>
 
     <!-- 🛡️ Dynamic Manifest -->
     <script>
 (function () {
-                    const basePath = window.appBasePath;
+                            const basePath = window.appBasePath;
 
-                    let manifestLink = document.querySelector('link[rel="manifest"]');
-                    if (!manifestLink) {
-                        manifestLink = document.createElement('link');
-                        manifestLink.setAttribute('rel', 'manifest');
-                        document.head.appendChild(manifestLink);
-                    }
+                            let manifestLink = document.querySelector('link[rel="manifest"]');
+                            if (!manifestLink) {
+                                manifestLink = document.createElement('link');
+                                manifestLink.setAttribute('rel', 'manifest');
+                                document.head.appendChild(manifestLink);
+                            }
 
-                    manifestLink.setAttribute('href', `${basePath}manifest.webmanifest`);
-                    console.log("Manifest URL set to:", manifestLink.href);
-                })();</script>
+                            manifestLink.setAttribute('href', `${basePath}manifest.webmanifest`);
+                            console.log("Manifest URL set to:", manifestLink.href);
+                        })();</script>
 
     <meta charset="utf-8" />
+    <meta name="google" content="notranslate" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>GxStk</title>
     <base href="/" />

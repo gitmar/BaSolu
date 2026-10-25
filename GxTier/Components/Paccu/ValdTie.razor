@@ -243,6 +243,7 @@
                                       Draft="@(GetDraft(EntityLevel.Tie) as TierspDto)"
                                       IsEditing="@IsTieEditing(curTie)"
                                       EnsTbls="@EnsTbls"
+                                      Ugpe="@Ugpe"
                                       OnConfirm="@(e => InConfirmEdit(EntityLevel.Tie, e, true))"
                                       OnCancel="@(e => InCancelEdit(EntityLevel.Tie, e))"
                                       AflItems="@AflItems"
@@ -378,9 +379,9 @@
     [Parameter]
     public ChildVars toChild { get; set; }
     [Parameter]
-    public int? Tgpe { get; set; }
+    public int Tgpe { get; set; }
     [Parameter]
-    public int? Ugpe { get; set; }
+    public int Ugpe { get; set; }
     [Parameter]
     public int toMenu { get; set; }
     [Parameter]

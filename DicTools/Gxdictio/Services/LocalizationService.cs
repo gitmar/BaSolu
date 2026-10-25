@@ -26,7 +26,7 @@ namespace GxDicto.Services
         private readonly HttpClient _http;
         private readonly ILogger<LocalizationService> _logger;
 
-        private string _currentLanguage = "en";
+        private string _currentLanguage = "fr";
         private Dictionary<string, string> _translations = new();
 
         public LocalizationService(HttpClient http, ILogger<LocalizationService> logger)
@@ -48,7 +48,7 @@ namespace GxDicto.Services
             {
                 // Expected API: GET api/localization/{language} -> { "Key1": "Value1", "Key2": "Value2", ... }
                 var response = await _http.GetFromJsonAsync<Dictionary<string, string>>(
-                    $"localized/{language}");
+                    $"localization/{language}");
 
                 _translations = response ?? new Dictionary<string, string>();
             }
@@ -58,7 +58,6 @@ namespace GxDicto.Services
                 _translations = new Dictionary<string, string>();
             }
         }
-
         public string T(string key, string? defaultText = null)
         {
             if (_translations.TryGetValue(key, out var value))

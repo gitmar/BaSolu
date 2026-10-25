@@ -509,7 +509,7 @@ else
     {
         [1] = "Actes",
         [2] = "Pieces",
-        [7] = "Langues",
+        //[7] = "Langues",
         //[3] = "Sessions"
     };
     
@@ -666,27 +666,28 @@ else
                 Xedt1 = 0,
                 Xdel1 = 0
             };
-        }else if (tydoc == 7)
-        {//docP
-            newDoc = new GsgfixDto
-            {
-                //Rowguid = Guid.NewGuid(),
-                Rowguid = Guid.NewGuid(),
-                Idorg = curOrga.Idorg, //pere Id
-                Iui = lsnb,
-                Gvars = 3,
-                Itb = 11,
-                Gtyp = 1,
-                Etyp = 1,
-                Totyp = 0,
-                Tstyp = 0,
-                Ivala = 0,
-                Eta = 1,
-                Xadd1 = -1, //newly added
-                Xedt1 = 0,
-                Xdel1 = 0
-            };
-        }  
+        }
+        // else if (tydoc == 7)
+        // {//langues
+        //     newDoc = new GsgfixDto
+        //     {
+        //         //Rowguid = Guid.NewGuid(),
+        //         Rowguid = Guid.NewGuid(),
+        //         Idorg = curOrga.Idorg, //pere Id
+        //         Iui = lsnb,
+        //         Gvars = 3,
+        //         Itb = 11,
+        //         Gtyp = 1,
+        //         Etyp = 1,
+        //         Totyp = 0,
+        //         Tstyp = 0,
+        //         Ivala = 0,
+        //         Eta = 1,
+        //         Xadd1 = -1, //newly added
+        //         Xedt1 = 0,
+        //         Xdel1 = 0
+        //     };
+        // }  
         //session pas creation
         else
         {
@@ -1225,20 +1226,20 @@ else
             return false;
         }
         //abrege
-        if (ITyDoc == 7)
-        {
-            if (string.IsNullOrEmpty(mypln.Abg)
-                || mypln.Abg.Length != 2)
-            {
-                Imessage = "abrege obligatoire,longueur(2)";
-                return false;
-            } 
-            if (mypln.Abg.Any(char.IsDigit))
-            {
-                Imessage = "doit etre en lettres";
-                return false;
-            }
-        }
+        // if (ITyDoc == 7)
+        // {
+        //     if (string.IsNullOrEmpty(mypln.Abg)
+        //         || mypln.Abg.Length != 2)
+        //     {
+        //         Imessage = "abrege obligatoire,longueur(2)";
+        //         return false;
+        //     } 
+        //     if (mypln.Abg.Any(char.IsDigit))
+        //     {
+        //         Imessage = "doit etre en lettres";
+        //         return false;
+        //     }
+        // }
         // if (string.IsNullOrEmpty(mypln.Abg)
         //     || mypln.Abg.Length < 4)
         // {

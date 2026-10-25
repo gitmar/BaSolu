@@ -50,6 +50,64 @@ else
             else
             {
                 @switch (col.Atyp)
+{
+    case ColAtyp.Text:
+        @if (IsEditing)
+        {
+            <InputText TValue="string"
+                       Value="@GetTextValue(col)"
+                       ValueChanged="@(value => SetConvertedValue(col, value))"
+                       ValueExpression="@(() => _textValue)"
+                       class="form-control" />
+        }
+        else
+        {
+            <span class="form-control-plaintext">@GetDisplayValue(col)</span>
+        }
+        break;
+
+    case ColAtyp.Number:
+        @if (IsEditing)
+        {
+            <input type="number" class="form-control"
+                   value="@GetTextValue(col)"
+                   @onchange="@(e => SetConvertedValue(col, e.Value?.ToString()))" />
+        }
+        else
+        {
+            <span class="form-control-plaintext">@GetDisplayValue(col)</span>
+        }
+        break;
+
+    case ColAtyp.Date:
+        @if (IsEditing)
+        {
+            <input type="date" class="form-control"
+                   value="@GetDateInputValue(col)"
+                   @onchange="@(e => SetConvertedValue(col, e.Value?.ToString()))" />
+        }
+        else
+        {
+            <span class="form-control-plaintext">@GetDisplayValue(col)</span>
+        }
+        break;
+
+    case ColAtyp.Checkbox:
+        <input type="checkbox"
+               checked="@GetBoolValue(col)"
+               disabled="@(!IsEditing)"
+               @onchange="@(e => SetConvertedValue(col, e.Value?.ToString()))" />
+        break;
+
+    case ColAtyp.Dropdown:
+        @* same lookup rendering as the Text/Number lookup branch *@
+        break;
+
+    default:
+        <span class="text-danger small">Type non pris en charge : @col.Atyp</span>
+        break;
+}
+               @*  @switch (col.Atyp)
                 {
                     case 1: // Text
                         @if (IsEditing)
@@ -106,7 +164,7 @@ else
                                disabled="@(!IsEditing)"
                                @onchange="@(e => SetConvertedValue(col, e.Value))" />
                         break;
-                }
+                } *@
             }
         </FormField>
     }
@@ -114,13 +172,9 @@ else
 
 @code {
     [Parameter, EditorRequired] public int Idorg { get; set; }
-
     [Parameter, EditorRequired] public ColPrefContext PColCtx { get; set; } = default!;
-
     [Parameter, EditorRequired] public object Model { get; set; } = default!;
-
     [Parameter, EditorRequired] public List<Gtabl> EnsTbls { get; set; } = new();
-
     [Parameter] public bool IsEditing { get; set; }
 
     private List<LSelCol> _columns = new();
@@ -192,9 +246,9 @@ else
                 ? column.ColName
                 : column.Olabel)
             : column.Ulabel;
-
+  
     private static bool CanHaveLookup(LSelCol column)
-        => column.Atyp is 1 or 2;
+        => column.Atyp is ColAtyp.Text or ColAtyp.Number;
 
     private static bool IsDropdown(LSelCol column)
         => CanHaveLookup(column)

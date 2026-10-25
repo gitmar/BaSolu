@@ -5,8 +5,7 @@ using BlazorDownloadFile;
 using Blazored.LocalStorage;
 
 using GxPilo;
-//using GxDicto.Services;
-using GxPilo.Dicos;
+//using GxPilo.Dicos;
 using GxPilo.Services;
 using GxPilo.Services.Adspec;
 using GxPilo.Services.Cols;
@@ -16,6 +15,8 @@ using GxShared.Helpers;
 using GxShared.Interfaces;
 using GxShared.Mapping;
 using GxShared.Sess;
+
+using GxDicto.Services;
 
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Web;
@@ -46,6 +47,8 @@ builder.Logging.SetMinimumLevel(LogLevel.Information);
 // ----------------------------
 // Auth & Security
 // ----------------------------
+// OR if you want to use the interface everywhere:
+builder.Services.AddScoped<ILocalizationService, LocalizationService>();
 builder.Services.AddTransient<AuthDelegatingHandler>();
 builder.Services.AddAuthorizationCore();
 builder.Services.AddCascadingAuthenticationState();

@@ -7,11 +7,12 @@ namespace GxPilo.Services.Cols
 {
     public class ColumnPreferencesClient
     {
-        private readonly HttpClient _http;
+        private readonly HttpClient _dftClient;
+
 
         public ColumnPreferencesClient(IHttpClientFactory httpClientFactory)
         {
-            _http = httpClientFactory.CreateClient("AuthClient");
+            _dftClient = httpClientFactory.CreateClient("AuthClient");
         }
 
         public async Task<List<LSelCol>> LoadAsync(
@@ -21,7 +22,7 @@ namespace GxPilo.Services.Cols
         {
             var url = BuildContextUrl(idorg, context);
 
-            return await _http.GetFromJsonAsync<List<LSelCol>>(
+            return await _dftClient.GetFromJsonAsync<List<LSelCol>>(
                        url,
                        cancellationToken)
                    ?? [];
@@ -35,7 +36,7 @@ namespace GxPilo.Services.Cols
         {
             var url = BuildContextUrl(idorg, context);
 
-            using var response = await _http.PutAsJsonAsync(
+            using var response = await _dftClient.PutAsJsonAsync(
                 url,
                 selection,
                 cancellationToken);
@@ -50,7 +51,7 @@ namespace GxPilo.Services.Cols
         {
             var url = $"{BuildPath(idorg)}/reset{BuildQueryString(context)}";
 
-            using var response = await _http.PostAsync(
+            using var response = await _dftClient.PostAsync(
                 url,
                 content: null,
                 cancellationToken);
@@ -67,7 +68,7 @@ namespace GxPilo.Services.Cols
                 $"{BuildPath(idorg)}/synchronize/preview" +
                 BuildQueryString(context);
 
-            using var response = await _http.PostAsync(
+            using var response = await _dftClient.PostAsync(
                 url,
                 content: null,
                 cancellationToken);
@@ -88,7 +89,7 @@ namespace GxPilo.Services.Cols
                 $"{BuildPath(idorg)}/synchronize" +
                 BuildQueryString(context);
 
-            using var response = await _http.PostAsync(
+            using var response = await _dftClient.PostAsync(
                 url,
                 content: null,
                 cancellationToken);
@@ -106,7 +107,7 @@ namespace GxPilo.Services.Cols
         {
             var url = $"{BuildPath(idorg)}/synchronize-all";
 
-            using var response = await _http.PostAsync(
+            using var response = await _dftClient.PostAsync(
                 url,
                 content: null,
                 cancellationToken);

@@ -45,30 +45,30 @@ else
             <div class="row g-2">
                 <div class="col-md-4">
                     <Button Color="ButtonColor.Primary"
-                            Size="ButtonSize.Small"
-                            Disabled="@_isBusy"
-                            @onclick="@(() => InitializeColumnsAsync(false))">
+                    Size="ButtonSize.Small"
+                    Disabled="@_isBusy"
+                    @onclick="@(() => InitializeColumnsAsync(false))">
                         Initialize current context
                     </Button>
                 </div>
 
                 <div class="col-md-4">
                     <Button Color="ButtonColor.Warning"
-                            Size="ButtonSize.Small"
-                            Disabled="@_isBusy"
-                            @onclick="@(() => InitializeColumnsAsync(true))">
+                    Size="ButtonSize.Small"
+                    Disabled="@_isBusy"
+                    @onclick="@(() => InitializeColumnsAsync(true))">
                         Initialize all contexts
                     </Button>
                 </div>
-
-                <div class="col-md-4">
+                <div class="col-md-4"></div>
+                @* <div class="col-md-4">
                     <Button Color="ButtonColor.Secondary"
-                            Size="ButtonSize.Small"
-                            Disabled="@_isBusy"
-                            @onclick="SynchronizeDictionaryAsync">
+                    Size="ButtonSize.Small"
+                    Disabled="@_isBusy"
+                    @onclick="SynchronizeDictionaryAsync">
                         Synchronize dictionary
                     </Button>
-                </div>
+                </div> *@
             </div>
         </div>
     </div>
@@ -82,7 +82,7 @@ else
                 <div class="col-md-4">
                     <label class="form-label">User</label>
                     <select class="form-select"
-                            @bind="_selectedUserEmail">
+                    @bind="_selectedUserEmail">
                         <option value="">Select user...</option>
                         @foreach (var user in _users)
                         {
@@ -96,15 +96,15 @@ else
                 <div class="col-md-4">
                     <label class="form-label">New password</label>
                     <input type="password"
-                           class="form-control"
-                           @bind="_newPassword" />
+                    class="form-control"
+                    @bind="_newPassword" />
                 </div>
 
                 <div class="col-md-4">
                     <Button Color="ButtonColor.Danger"
-                            Size="ButtonSize.Small"
-                            Disabled="@(_isBusy || string.IsNullOrWhiteSpace(_selectedUserEmail))"
-                            @onclick="ResetPasswordAsync">
+                    Size="ButtonSize.Small"
+                    Disabled="@(_isBusy || string.IsNullOrWhiteSpace(_selectedUserEmail))"
+                    @onclick="ResetPasswordAsync">
                         Reset password
                     </Button>
                 </div>
@@ -158,6 +158,7 @@ else
     private string _statusMessage = string.Empty;
     private string _selectedUserEmail = string.Empty;
     private string _newPassword = string.Empty;
+    private string _newLanguage = string.Empty;
 
     private List<AdminUserDto> _users = new();
 
@@ -172,19 +173,6 @@ else
         }
     }
 
-    // private async Task LoadUsersAsync()
-    // {
-    //     _isBusy = true;
-
-    //     try
-    //     {
-    //         _users = orgUsers;
-    //     }
-    //     finally
-    //     {
-    //         _isBusy = false;
-    //     }
-    // }
     private async Task LoadUsersAsync()
     {
         _isBusy = true;
@@ -206,14 +194,14 @@ else
                 allContexts));
     }
 
-    private async Task SynchronizeDictionaryAsync()
-    {
-        await RunAdminOperationAsync(
-            () => AdminClient.SynchronizeDictionaryAsync(
-                _currentIdorg,
-                null));
-    }
-
+    // private async Task SynchronizeDictionaryAsync()
+    // {
+    //     await RunAdminOperationAsync(
+    //         () => AdminClient.SynchronizeDictionaryAsync(
+    //             _currentIdorg,
+    //             null));
+    // }
+    
     private async Task ResetPasswordAsync()
     {
         if (string.IsNullOrWhiteSpace(_selectedUserEmail) ||

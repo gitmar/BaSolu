@@ -1,4 +1,6 @@
-﻿@using GxStk.Services
+﻿@inherits GxDicto.Components.LocalizedComponentBase
+
+@using GxStk.Services
 @using GxShared.Sess
 @using System.Security.Claims
 @using BlazorBootstrap
@@ -36,7 +38,7 @@
                 <NavLink class="nav-link nav-main text-light small d-flex align-items-center gap-2"
                          @onclick="ToggleSubPara">
                     <i class="bi bi-sliders nav-icon d-inline-flex align-items-center"></i>
-                    <span class="nav-text">Paramétrage</span>
+                    <span class="nav-text">@T("Paramétrage", "Paramétrage")</span>
                     <i class="bi @(isSubParaVisible ? "bi-chevron-up" : "bi-chevron-down") nav-chevron"></i>
                 </NavLink>
                 <div class="submenu @(isSubParaVisible ? "open" : "")">

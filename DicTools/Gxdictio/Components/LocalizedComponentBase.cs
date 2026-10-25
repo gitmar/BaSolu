@@ -4,17 +4,17 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-using global::GxDicto.Services;
 using Microsoft.AspNetCore.Components;
 
-// Localization/Components/LocalizedComponentBase.cs
+using GxDicto.Services;
+
 namespace GxDicto.Components
 {
     public class LocalizedComponentBase : ComponentBase
     {
-        [Inject] protected LocalizationService L { get; set; } = default!;
+        [Inject] protected ILocalizationService L { get; set; } = default!;
 
         protected string T(string key, string? defaultText = null)
-        => L.T(key, defaultText);
+            => L.T(key, defaultText);
     }
 }
