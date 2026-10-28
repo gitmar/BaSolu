@@ -197,54 +197,80 @@ else
 
     //private AuthenticationStateChangedEventHandler? _authStateChangedHandler;
     private AuthenticationStateChangedHandler? _authStateChangedHandler;
-
     protected override async Task OnInitializedAsync()
     {
+        Console.WriteLine("[MainLayout] 1. Initialization started");
+
         canAdminLog = false;
         isLoading = false;
 
-        _apiClient = _httpClientFactory.CreateClient("AuthClient");
+        _apiClient = _httpClientFactory.CreateClient("AUTHClient");
         _appState.OnChange += StateHasChanged;
 
-        var token = await _localStorage.GetItemAsync<string>("blazToken");
-        if (string.IsNullOrWhiteSpace(token))
-        {
-            Console.WriteLine("No token found — skipping session sync.");
-            _layoutReady = true;
-            return;
-        }
+        Console.WriteLine("[MainLayout] 2. Before reading local storage");
 
-        await _sessionContext.InitializeAsync();
-
-        var authState = await _authProvider.GetAuthenticationStateAsync();
-        authUser = authState.User;
-        isAuthenticated = authUser.Identity?.IsAuthenticated ?? false;
-
-        if (!isAuthenticated)
+        try
         {
-            Console.WriteLine("Authentication in Main Layout ECHEC");
-            await _authProvider.NotifyUserLogout();
-        }
-        else
-        {
-            if (authUser.IsInRole("Support") ||
-                authUser.IsInRole("Admin") ||
-                authUser.IsInRole("Developper"))
+            var token = await _localStorage.GetItemAsync<string>("blazToken");
+
+            Console.WriteLine(
+                $"[MainLayout] 3. Local storage returned. Token exists: {!string.IsNullOrWhiteSpace(token)}");
+
+            if (string.IsNullOrWhiteSpace(token))
             {
-                canAdminLog = true;
+                Console.WriteLine("[MainLayout] No token found — skipping session sync.");
+                _layoutReady = true;
+                return;
             }
 
-            Console.WriteLine("Authentication in Main Layout SUCCESS");
-        }
-        _authStateChangedHandler = task =>
+            Console.WriteLine("[MainLayout] 4. Before SessionContext.InitializeAsync");
+
+            await _sessionContext.InitializeAsync();
+
+            Console.WriteLine("[MainLayout] 5. SessionContext initialized");
+
+            var authState = await _authProvider.GetAuthenticationStateAsync();
+
+            Console.WriteLine("[MainLayout] 6. Authentication state retrieved");
+
+            authUser = authState.User;
+            isAuthenticated = authUser.Identity?.IsAuthenticated ?? false;
+
+            if (!isAuthenticated)
+            {
+                Console.WriteLine("[MainLayout] Authentication failed");
+                await _authProvider.NotifyUserLogout();
+            }
+            else
+            {
+                canAdminLog =
+                    authUser.IsInRole("Support") ||
+                    authUser.IsInRole("Admin") ||
+                    authUser.IsInRole("Developper");
+
+                Console.WriteLine("[MainLayout] Authentication succeeded");
+            }
+
+            _authStateChangedHandler = task =>
             {
                 _ = HandleAuthStateChangedAsync(task);
             };
 
-        _authProvider.AuthenticationStateChanged += _authStateChangedHandler;
-     
-        _layoutReady = true;
-        isLoading = true;
+            _authProvider.AuthenticationStateChanged += _authStateChangedHandler;
+
+            Console.WriteLine("[MainLayout] 7. Initialization completed");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"[MainLayout] Initialization error: {ex}");
+        }
+        finally
+        {
+            _layoutReady = true;
+            isLoading = false;
+
+            Console.WriteLine("[MainLayout] Initialization finished");
+        }
     }
 
     private void ToggleSidebar()
@@ -252,26 +278,7 @@ else
         _sidebarCollapsed = !_sidebarCollapsed;
     }
 
-    // private async Task NavigateToIdentityPage()
-    // {
-    //     var token = await _localStorage.GetItemAsync<string>("blazToken");
-    //     if (string.IsNullOrWhiteSpace(token))
-    //     {
-    //         Console.WriteLine("No token found — skipping session sync.");
-    //         return;
-    //     }
-
-    //     var backendUrl = _iconfig["backendUrl"];
-    //     var targetUrl = $"{backendUrl}/Identity/Account/JwtLandingPage?access_token={token}";
-
-    //     _navManager.NavigateTo(targetUrl, forceLoad: true);
-    // }
-   
-    // // protected override async Task OnInitializedAsync()
-    // // {
-        
-    // // }
-
+    
     private async Task HandleAuthStateChangedAsync(Task<AuthenticationState> task)
     {
         var authState = await task;
@@ -304,36 +311,7 @@ else
         _navManager.NavigateTo(result!.Url, forceLoad: true);
     }
 
-    // private async Task NavigateToIdentityPage()
-    // {
-    //     var currentUri = new Uri(_navManager.Uri);
-
-    //     // Identity returnUrl (local path, safe for Identity redirect)
-    //     var returnUrl = currentUri.PathAndQuery;
-
-    //     // Full WASM origin (used later in Manage page "Return" button)
-    //     var clientReturnUrl = currentUri.GetLeftPart(UriPartial.Authority);
-
-    //     // var request = new BridgeRequest
-    //     // {
-    //     //     ReturnUrl = returnUrl,
-    //     //     ClientReturnUrl = clientReturnUrl
-    //     // };
-    //     var request = new BridgeRequest
-    //     {
-    //         ReturnUrl = currentUri.PathAndQuery,              // local path for Identity
-    //         ClientReturnUrl = currentUri.GetLeftPart(UriPartial.Authority) // full WASM origin
-    //     };
-
-    //     var resp = await _apiClient.PostAsJsonAsync("Authbridge/ticket", request);
-    //     resp.EnsureSuccessStatusCode();
-
-    //     var result = await resp.Content.ReadFromJsonAsync<TicketResult>();
-
-    //     // Navigate to the ticket URL (signin endpoint)
-    //     _navManager.NavigateTo(result!.Url, forceLoad: true);
-    // }
-
+    
     public void Dispose()
     {
         _appState.OnChange -= StateHasChanged;

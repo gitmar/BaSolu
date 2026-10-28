@@ -212,7 +212,7 @@
 
         content.Add(fileContent, "file", selectedFile.Name);
         //pour le load des images et photos
-        var strcall = await _httpClie.SendRequestAsync("AuthClient", HttpMethod.Post, "lgfileup/upload");//, logModel);
+        var strcall = await _httpClie.SendRequestAsync("AUTHClient", HttpMethod.Post, "lgfileup/upload");//, logModel);
         //Console.WriteLine($"21RECU DE LOGIN {strcall}");
         var response = JsonConvert.DeserializeObject<LoginResult>(strcall);
         Console.WriteLine($"22RECU DE LOGIN {response}");

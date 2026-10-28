@@ -56,7 +56,6 @@
                EntyTiw="null"
                EntyTie="@curTie"
                LsmVars="@LsVars"
-               LsmFixes="@LsFixes"
                Oparent="2">
     </GlobModal>
     @* OnTieSave = "@HandleTieSave" *@
@@ -127,17 +126,6 @@
                                                     </GridColumn>
                                                     <GridColumn TItem="TierspDto" HeaderText="etat" IsVisible="true">
                                                         <HeaderContent>
-                                                            @* @if (siyaItem)
-                                                                    {
-                                                                        <button class="btn btn-primary btn-sm"
-                                                                                @onclick="() => ValiderSelection()">
-                                                                            ➕ Valider?
-                                                                        </button>
-                                                                    }
-                                                                    else
-                                                                    {
-                                                                        <span>Eta</span>
-                                                                    } *@
                                                         </HeaderContent>
                                                         <ChildContent Context="item">
                                                             <InputSelect @bind-Value="item.Eta" disabled="true">
@@ -566,6 +554,7 @@
             Console.WriteLine("ValdTie Initializing...");
             LsVars = toChild.LsVars;
             LsFixes = toChild.LsFixes;
+            //Ityp:options Oui/Non
             LsGAfls = LsVars.Where(uv => uv.Gvars == 3 && uv.Itb == 6 && uv.Ityp == 1 && uv.Elea != 0).ToList();
             Console.WriteLine($"nb afil {LsGAfls.Count} et {Ugpe}");
             //LsGAfls = toChild.LsFixes.Where(ua => ua.Gvars == 53 && ua.Itb == 6 && ua.Elea != 0).ToList();
@@ -615,10 +604,10 @@
     {
         Console.WriteLine("Visibility loaded 1");
         // ✅ Fix 1: Await authorization (no .Wait())
-        await _clieManager.SetAuthorizationHeaderAsync("AuthClient");
+        await _clieManager.SetAuthorizationHeaderAsync("AUTHClient");
 
         var urlPrinc = $"regis/colsvisibility/{curOrga.Idorg}/1/2/{Ugpe}/1";
-        var jsonPrinc = await _clieManager.SendRequestAsync("AuthClient", HttpMethod.Get, urlPrinc);
+        var jsonPrinc = await _clieManager.SendRequestAsync("AUTHClient", HttpMethod.Get, urlPrinc);
 
         Visibility = System.Text.Json.JsonSerializer.Deserialize<Dictionary<string, bool>>(jsonPrinc) ?? new();
         Console.WriteLine("Visibility loaded 2");
@@ -633,10 +622,10 @@
     {
         Console.WriteLine("AflVisibility loaded 1");
         // ✅ Fix 2: Same await pattern
-        await _clieManager.SetAuthorizationHeaderAsync("AuthClient");
+        await _clieManager.SetAuthorizationHeaderAsync("AUTHClient");
 
         var url = $"regis/colsvisibility/{curOrga.Idorg}/1/2/{IMyGAfl}/2";
-        var json = await _clieManager.SendRequestAsync("AuthClient", HttpMethod.Get, url);
+        var json = await _clieManager.SendRequestAsync("AUTHClient", HttpMethod.Get, url);
 
         AflVisibility = System.Text.Json.JsonSerializer.Deserialize<Dictionary<string, bool>>(json) ?? new();
         Console.WriteLine("AflVisibility loaded 2");

@@ -142,7 +142,7 @@ else
     protected override async Task OnInitializedAsync()
     {
         isLoading = true;
-        _dftClient = _httpClientFactory.CreateClient("AuthClient");
+        _dftClient = _httpClientFactory.CreateClient("AUTHClient");
         //verified connection
         try
         {
@@ -329,10 +329,10 @@ else
             await _localStorage.SetItemAsync("blazOrgid", _logresult.LgOrgid);
 
             // Update client headers
-            await _clieManager.SetAuthorizationHeaderAsync("AuthClient");
+            await _clieManager.SetAuthorizationHeaderAsync("AUTHClient");
 
             // Load user context
-            var userbagResponse = await _clieManager.SendRequestAsync("AuthClient", HttpMethod.Get, "usercontext/userbag");
+            var userbagResponse = await _clieManager.SendRequestAsync("AUTHClient", HttpMethod.Get, "usercontext/userbag");
             _usrBag = JsonConvert.DeserializeObject<Userbag>(userbagResponse);
             if (_usrBag == null || !_usrBag.Succeeded)
             {

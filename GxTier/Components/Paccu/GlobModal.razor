@@ -96,8 +96,8 @@
     public UplCxtDto UploadCtx { get; set; } = new();
     [Parameter]
     public List<Gpvar> LsmVars { get; set; }
-    [Parameter]
-    public List<Gpfixe> LsmFixes { get; set; }
+    //[Parameter]
+    //public List<Gpfixe> LsmFixes { get; set; }
     [Parameter]
     public int Oparent { get; set; }
     [Parameter]
@@ -116,7 +116,7 @@
     }
     protected override async Task OnInitializedAsync()
     {
-        _apiClient = _httpfacClient.CreateClient("LocalClient");
+        _apiClient = _httpfacClient.CreateClient("LOCALClient");
         //UploadCtx.Idorg = Idorg;
         //UploadCtx.Itie = EntyTie?.Id ?? 0;
         //UploadCtx.Itiw = EntyTiw?.Id ?? 0;
@@ -175,7 +175,7 @@
             content.Add(new StringContent(UploadCtx.Ioper.ToString()), "Ioper");
             content.Add(new StringContent(UploadCtx.Xmatri ?? ""), "Xmatri");
 
-            //_apiClient = _httpfacClient.CreateClient("LocalClient");
+            //_apiClient = _httpfacClient.CreateClient("LOCALClient");
             var response = await _apiClient.PostAsync("Lgfileup/upload", content);
 
             if (response.IsSuccessStatusCode)
@@ -237,7 +237,7 @@
 //         content.Add(fileContent, "file", selectedFile.Name);
 
 //         // Create client and call endpoint
-//         _apiClient = _httpfacClient.CreateClient("LocalClient");
+//         _apiClient = _httpfacClient.CreateClient("LOCALClient");
 //         var response = await _apiClient.PostAsync($"lgfileup/upload/{Idorg}", content);
 
 //         if (response.IsSuccessStatusCode)

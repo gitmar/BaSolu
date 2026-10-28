@@ -10,7 +10,7 @@ namespace GxTie.Components.Cols
         private readonly HttpClient _dftClient;
         public ColumnPreferencesClient(IHttpClientFactory httpClientFactory)
         {
-            _dftClient = httpClientFactory.CreateClient("AuthClient");
+            _dftClient = httpClientFactory.CreateClient("AUTHClient");
         }
 
         private static string Qs(ColPrefContext ctx) => $"?Totyp={ctx.Totyp}&Efrm={ctx.Efrm}&Styp={ctx.Styp}";

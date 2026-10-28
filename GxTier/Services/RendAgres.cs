@@ -17,7 +17,7 @@ namespace GxTie.Services
         public async Task<List<Gsedat>> LoadOrgaSessios()
         {
             //FmtPsts
-            var json = await _clieManager.SendRequestAsync("AuthClient", HttpMethod.Get, "lgauth/allsesios");
+            var json = await _clieManager.SendRequestAsync("AUTHClient", HttpMethod.Get, "lgauth/allsesios");
             var result = JsonConvert.DeserializeObject<List<Gsedat>>(json);
             if (result.Any())
             {
@@ -33,7 +33,7 @@ namespace GxTie.Services
         public async Task<List<Gpdivh>> LoadOrgaPostes()
         {
             //FmtPsts
-            var json = await _clieManager.SendRequestAsync("AuthClient", HttpMethod.Get, "lgauth/allpostes");
+            var json = await _clieManager.SendRequestAsync("AUTHClient", HttpMethod.Get, "lgauth/allpostes");
             var result = JsonConvert.DeserializeObject<List<Gpdivh>>(json);
             if (result.Any())
             {
@@ -51,7 +51,7 @@ namespace GxTie.Services
         public async Task<List<Grole>> LoadOrgaRoles()
         {
             //FmtPsts
-            var json = await _clieManager.SendRequestAsync("AuthClient", HttpMethod.Get, "lgauth/allroles");
+            var json = await _clieManager.SendRequestAsync("AUTHClient", HttpMethod.Get, "lgauth/allroles");
             var result = JsonConvert.DeserializeObject<List<Grole>>(json);
             if (result.Any())
             {
@@ -67,7 +67,7 @@ namespace GxTie.Services
         public async Task<List<Gtabl>> LoadOrgaTables()
         {
             var json = await _clieManager.SendRequestAsync(
-                "AuthClient",
+                "AUTHClient",
                 HttpMethod.Get,
                 "lgauth/alltables");
 
@@ -78,7 +78,7 @@ namespace GxTie.Services
         public async Task<List<Gtabl>> LoadOrgaVgroups()
         {
             var json = await _clieManager.SendRequestAsync(
-                "AuthClient",
+                "AUTHClient",
                 HttpMethod.Get,
                 "lgauth/allvgroups");
 
@@ -89,7 +89,7 @@ namespace GxTie.Services
         public async Task<List<Gpatr>> LoadOrgaAtribs()
         {
             var json = await _clieManager.SendRequestAsync(
-                "AuthClient",
+                "AUTHClient",
                 HttpMethod.Get,
                 "lgauth/allatribs");
 
@@ -100,7 +100,7 @@ namespace GxTie.Services
         public async Task<List<Gpcat>> LoadOrgaCategs()
         {
             var json = await _clieManager.SendRequestAsync(
-                "AuthClient",
+                "AUTHClient",
                 HttpMethod.Get,
                 "lgauth/allcategs");
 
@@ -108,26 +108,29 @@ namespace GxTie.Services
 
             return result ?? new List<Gpcat>();
         }
-        public async Task<List<Gpcol>> LoadOrgaColons()
-        {
-            //FmtPsts
-            var json = await _clieManager.SendRequestAsync("AuthClient", HttpMethod.Get, "lgauth/allcolons");
-            var result = JsonConvert.DeserializeObject<List<Gpcol>>(json);
-            if (result.Any())
-            {
-                Console.WriteLine($"Nb colonnes : {result.Count}");
-                return result.ToList();
-            }
-            else
-            {
-                Console.WriteLine("Nb colonnes : null");
-                return new();
-            }
-        }
+        //public async Task<List<Gpcol>> LoadOrgaColons()
+        //{
+        //    //FmtPsts
+        //    var json = await _clieManager.SendRequestAsync(
+        //        "AUTHClient", 
+        //        HttpMethod.Get, 
+        //        "lgauth/allcolons");
+        //    var result = JsonConvert.DeserializeObject<List<Gpcol>>(json);
+        //    if (result.Any())
+        //    {
+        //        Console.WriteLine($"Nb colonnes : {result.Count}");
+        //        return result.ToList();
+        //    }
+        //    else
+        //    {
+        //        Console.WriteLine("Nb colonnes : null");
+        //        return new();
+        //    }
+        //}
         public async Task<List<Gpgrid>> LoadOrgaGdata(int ipl)
         {
             var json = await _clieManager.SendRequestAsync(
-                "AuthClient",
+                "AUTHClient",
                 HttpMethod.Get,
                 $"lgauth/allgrids/{ipl}");
 
@@ -138,7 +141,7 @@ namespace GxTie.Services
         public async Task<List<Gxuser>> LoadOrgaUsers()
         {
             //FmtPsts
-            var json = await _clieManager.SendRequestAsync("AuthClient", HttpMethod.Get, "lgauth/allusers");
+            var json = await _clieManager.SendRequestAsync("AUTHClient", HttpMethod.Get, "lgauth/allusers");
             var result = JsonConvert.DeserializeObject<List<Gxuser>>(json);
             if (result.Any())
             {

@@ -24,7 +24,7 @@ namespace GxTie.Services
 
         public ClientMatriculeOrdreService(IHttpClientFactory authClient)
         {
-            _authClient = authClient.CreateClient("AuthClient");
+            _authClient = authClient.CreateClient("AUTHClient");
         }
 
         public async Task<string> GenerateOrdreAsync(

@@ -22,94 +22,36 @@ else
         <FormField Label="@GetLabel(col)"
                    IsVisible="@col.IsVisible">
             @if (IsDropdown(col))
-{
-    @if (IsEditing)
-    {
-        <InputSelect TValue="string"
-                     Value="@GetDropdownValue(col)"
-                     ValueChanged="@(value => SetDropdownValue(col, value))"
-                     ValueExpression="@(() => _dropdownValue)"
-                     class="form-select">
-            <option value="">Choix...</option>
-
-            @foreach (var option in GetLookupItems(col))
             {
-                <option value="@GetOptionValue(option)">
-                    @option.Liba
-                </option>
-            }
-        </InputSelect>
-    }
-    else
-    {
-        <span class="form-control-plaintext">
-            @GetDropdownDisplayText(col)
-        </span>
-    }
+                @if (IsEditing)
+                {
+                    <InputSelect TValue="string"
+                                 Value="@GetDropdownValue(col)"
+                                 ValueChanged="@(value => SetDropdownValue(col, value))"
+                                 ValueExpression="@(() => _dropdownValue)"
+                                 class="form-select">
+                        <option value="">Choix...</option>
+
+                        @foreach (var option in GetLookupItems(col))
+                        {
+                            <option value="@GetOptionValue(option)">
+                                @option.Liba
+                            </option>
+                        }
+                    </InputSelect>
+                }
+                else
+                {
+                    <span class="form-control-plaintext">
+                        @GetDropdownDisplayText(col)
+                    </span>
+                }
             }
             else
             {
                 @switch (col.Atyp)
-{
-    case ColAtyp.Text:
-        @if (IsEditing)
-        {
-            <InputText TValue="string"
-                       Value="@GetTextValue(col)"
-                       ValueChanged="@(value => SetConvertedValue(col, value))"
-                       ValueExpression="@(() => _textValue)"
-                       class="form-control" />
-        }
-        else
-        {
-            <span class="form-control-plaintext">@GetDisplayValue(col)</span>
-        }
-        break;
-
-    case ColAtyp.Number:
-        @if (IsEditing)
-        {
-            <input type="number" class="form-control"
-                   value="@GetTextValue(col)"
-                   @onchange="@(e => SetConvertedValue(col, e.Value?.ToString()))" />
-        }
-        else
-        {
-            <span class="form-control-plaintext">@GetDisplayValue(col)</span>
-        }
-        break;
-
-    case ColAtyp.Date:
-        @if (IsEditing)
-        {
-            <input type="date" class="form-control"
-                   value="@GetDateInputValue(col)"
-                   @onchange="@(e => SetConvertedValue(col, e.Value?.ToString()))" />
-        }
-        else
-        {
-            <span class="form-control-plaintext">@GetDisplayValue(col)</span>
-        }
-        break;
-
-    case ColAtyp.Checkbox:
-        <input type="checkbox"
-               checked="@GetBoolValue(col)"
-               disabled="@(!IsEditing)"
-               @onchange="@(e => SetConvertedValue(col, e.Value?.ToString()))" />
-        break;
-
-    case ColAtyp.Dropdown:
-        @* same lookup rendering as the Text/Number lookup branch *@
-        break;
-
-    default:
-        <span class="text-danger small">Type non pris en charge : @col.Atyp</span>
-        break;
-}
-               @*  @switch (col.Atyp)
                 {
-                    case 1: // Text
+                    case ColAtyp.Text:
                         @if (IsEditing)
                         {
                             <InputText TValue="string"
@@ -120,51 +62,52 @@ else
                         }
                         else
                         {
-                            <span class="form-control-plaintext">
-                                @GetDisplayValue(col)
-                            </span>
+                            <span class="form-control-plaintext">@GetDisplayValue(col)</span>
                         }
                         break;
 
-                    case 2: // Number
+                    case ColAtyp.Number:
                         @if (IsEditing)
                         {
-                            <input type="number"
-                                   class="form-control"
-                                   value="@GetDisplayValue(col)"
-                                   @onchange="@(e => SetConvertedValue(col, e.Value))" />
+                            <input type="number" class="form-control"
+                                   value="@GetTextValue(col)"
+                                   @onchange="@(e => SetConvertedValue(col, e.Value?.ToString()))" />
                         }
                         else
                         {
-                            <span class="form-control-plaintext">
-                                @GetDisplayValue(col)
-                            </span>
+                            <span class="form-control-plaintext">@GetDisplayValue(col)</span>
                         }
                         break;
 
-                    case 3: // Date
+                    case ColAtyp.Date:
                         @if (IsEditing)
                         {
-                            <input type="date"
-                                   class="form-control"
+                            <input type="date" class="form-control"
                                    value="@GetDateInputValue(col)"
-                                   @onchange="@(e => SetConvertedValue(col, e.Value))" />
+                                   @onchange="@(e => SetConvertedValue(col, e.Value?.ToString()))" />
                         }
                         else
                         {
-                            <span class="form-control-plaintext">
-                                @GetDisplayValue(col)
-                            </span>
+                            <span class="form-control-plaintext">@GetDisplayValue(col)</span>
                         }
                         break;
 
-                    case 4: // Checkbox
+                    case ColAtyp.Checkbox:
                         <input type="checkbox"
                                checked="@GetBoolValue(col)"
                                disabled="@(!IsEditing)"
-                               @onchange="@(e => SetConvertedValue(col, e.Value))" />
+                               @onchange="@(e => SetConvertedValue(col, e.Value?.ToString()))" />
                         break;
-                } *@
+
+                    case ColAtyp.Dropdown:
+                        @* same lookup rendering as the Text/Number lookup branch *@
+                        break;
+
+                    default:
+                        <span class="text-danger small">Type non pris en charge : @col.Atyp</span>
+                        break;
+                }
+
             }
         </FormField>
     }

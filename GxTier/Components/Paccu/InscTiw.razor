@@ -16,6 +16,8 @@
 @using Simple.OData.Client
 @using GxTie.Components.Apcomp
 
+@inject RendAOlne _rendAOlne
+
 <PageTitle>Saisie.Enrollement</PageTitle>
 <div>@Imessage</div>
 
@@ -36,8 +38,7 @@
                Idorg="@curOrga.Idorg"
                EntyTiw="@curTiw"
                EntyTie="null"
-               LsmVars="@LsVars"
-               LsmFixes="@LsFixes"
+               LsmVars="@LsEnrVars"
                Oparent="2">
     </GlobModal>
 }
@@ -184,6 +185,7 @@
                                                         }
                                                         else if (ua.Satyp == "int")
                                                         {
+
                                                             <InputNumber TValue="int?" @bind-Value="icatr.AvalAsInt" class="form-control" />
                                                         }
                                                         else if (ua.Satyp == "date")
@@ -352,9 +354,11 @@
 
     private List<Gplan> LsPlans = new();
     private List<Gpfixe> LsFixes = new();
-    private List<Gpvar> LsGAfls = new();
     private List<Gpvar> LsVars = new();
 
+
+    private List<Gpvar> LsGAfls = new();
+    private List<Gpvar> LsEnrVars = new();
     //editing workflow
     public GridMode GtieMode = GridMode.None; 
     public GridMode GaflMode = GridMode.None;
@@ -391,6 +395,7 @@
     private void OnXmatriValidChanged(bool isValid)
     {
         XmatriValid = isValid;
+        //curTiw.Xmatri = XmatriValid;
     }
 
     public AdrContext Actx { get; set; }
@@ -415,6 +420,10 @@
             LsFixes = toChild.LsFixes;
             LsVars = toChild.LsVars;
             LsPlans = toChild.LsPlans;
+            //Ityp:options Oui/Non
+            LsEnrVars = await _rendAOlne.LoadOrgaVariabs(curOrga.Idorg);
+            Console.WriteLine("✅ LoadOrgaVariabs done");
+            LsGAfls = LsEnrVars.Where(uv => uv.Gvars == 3 && uv.Itb == 6 && uv.Ityp == 1 && uv.Elea != 0).ToList();
             //limites
             _lgcdu = curOrga.Lftrub ?? 3;
             _lgfmt = curOrga.Ftrub ?? "";
@@ -474,6 +483,7 @@
             Rowguid = Guid.NewGuid(),
             Idorg = curOrga.Idorg,
             Utyp = Ugpe,
+            Xmatri = "",
             Nom = "", Pnom = "", Datc = DateTime.Now, Eta = 1
         };
         await StartRowAdd(EntityLevel.Tiw, newTiw, TiwItems, d => SetDraft(EntityLevel.Tiw, d));

@@ -51,7 +51,7 @@ namespace GxTie.Services
         //            return false;
         //        }
 
-        //        var client = _httpClientFactory.CreateClient("AuthClient");
+        //        var client = _httpClientFactory.CreateClient("AUTHClient");
         //        var response = await client.PostAsJsonAsync("lgauth/refresh", new { RefreshToken = refreshToken });
 
         //        if (!response.IsSuccessStatusCode)
@@ -99,7 +99,7 @@ namespace GxTie.Services
                     return false;
                 }
 
-                var client = _httpClientFactory.CreateClient("AuthClient");
+                var client = _httpClientFactory.CreateClient("AUTHClient");
                 var response = await client.PostAsJsonAsync("lgauth/refresh", new RefreshRequest
                 {
                     RefreshToken = refreshToken
@@ -205,7 +205,7 @@ namespace GxTie.Services
             try
             {
                 Console.WriteLine("Checking backend health...");
-                var _dftClient = _httpClientFactory.CreateClient("AuthClient");
+                var _dftClient = _httpClientFactory.CreateClient("AUTHClient");
                 _dftClient.Timeout = TimeSpan.FromSeconds(3); // Optional: prevent long hangs
                 var response = await _dftClient.GetAsync("lgauth/health");
                 return response.IsSuccessStatusCode;
@@ -392,7 +392,7 @@ namespace GxTie.Services
 //            try
 //            {
 //                Console.WriteLine("Checking backend health...");
-//                var _dftClient = _httpClientFactory.CreateClient("AuthClient");
+//                var _dftClient = _httpClientFactory.CreateClient("AUTHClient");
 //                _dftClient.Timeout = TimeSpan.FromSeconds(3); // Optional: prevent long hangs
 //                var response = await _dftClient.GetAsync("lgauth/health");
 //                return response.IsSuccessStatusCode;

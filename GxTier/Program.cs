@@ -61,7 +61,7 @@ builder.Services.AddTransient<AuthDelegatingHandler>();
 //// ------------------------------------------------
 //// Consolidated HttpClients (3) Configured for Auth
 //// ------------------------------------------------
-//builder.Services.AddHttpClient("AuthClient", client =>
+//builder.Services.AddHttpClient("AUTHClient", client =>
 //    client.BaseAddress = new Uri($"{backendUrl}api/"))
 //    .AddHttpMessageHandler<AuthDelegatingHandler>();
 
@@ -72,7 +72,7 @@ builder.Services.AddTransient<AuthDelegatingHandler>();
 //})
 //.AddHttpMessageHandler<AuthDelegatingHandler>();
 //// Register a dedicated OData HttpClient
-//builder.Services.AddHttpClient("LocalClient", client =>
+//builder.Services.AddHttpClient("LOCALClient", client =>
 //{
 //    client.BaseAddress = new Uri($"{backendUrl}api/");
 //    client.DefaultRequestHeaders.Add("X-Requested-With", "Fetch");
@@ -87,9 +87,10 @@ builder.Services.AddTransient<AuthDelegatingHandler>();
 // --------------------------------------------
 // 1. Consolidated HttpClient Registrations (3)
 // --------------------------------------------
-builder.Services.AddHttpClient("AuthClient", client =>
+builder.Services.AddHttpClient("AUTHClient", client =>
     client.BaseAddress = new Uri($"{backendUrl}api/"))
     .AddHttpMessageHandler<AuthDelegatingHandler>();
+
 builder.Services.AddHttpClient("ODataClient", client =>
 {
     client.BaseAddress = new Uri($"{backendUrl}odata/");
@@ -102,10 +103,16 @@ builder.Services.AddHttpClient("ODataDocuClient", client =>
     client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
 })
 .AddHttpMessageHandler<AuthDelegatingHandler>();
-builder.Services.AddHttpClient("LocalClient", client =>
+
+builder.Services.AddHttpClient("LOCALClient", client =>
 {
     client.BaseAddress = new Uri($"{backendUrl}api/");
     client.DefaultRequestHeaders.Add("X-Requested-With", "Fetch");
+});
+builder.Services.AddHttpClient("DefaultClient", client =>
+{
+    client.BaseAddress = new Uri(builder.HostEnvironment.BaseAddress);
+    client.DefaultRequestHeaders.Add("Accept", "application/json");
 });
 // ------------------------------------------------
 // 2. Register Custom OData Client Factory
@@ -140,6 +147,7 @@ builder.Services.AddScoped<Userbag>();
 builder.Services.AddScoped<IPuzzleSyncService, PuzzleSyncService>();
 builder.Services.AddScoped<ChildVars>();
 builder.Services.AddScoped<RendAgres>();
+builder.Services.AddScoped<RendAOlne>();
 builder.Services.AddScoped<ColumnPreferencesClient>();
 builder.Services.AddScoped<ClieAppState>();
 builder.Services.AddScoped<SessionContextService>();
@@ -252,8 +260,8 @@ public class ApiSettings
 //    client.BaseAddress = new Uri(apiUrl);
 //}).AddHttpMessageHandler<AuthDelegatingHandler>();
 
-////AuthClient
-//builder.Services.AddHttpClient("AuthClient", client =>
+////AUTHClient
+//builder.Services.AddHttpClient("AUTHClient", client =>
 //{
 //    client.BaseAddress = new Uri($"{builder.Configuration["BackendUrl"]}/api/");
 //    // Optional: add default headers like Accept if needed

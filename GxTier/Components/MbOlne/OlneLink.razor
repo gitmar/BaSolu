@@ -1,0 +1,152 @@
+﻿@page "/olnelink"
+@layout OlneLayout
+
+@using BlazorBootstrap
+@using Blazored.LocalStorage
+@using GxShared.Helpers
+@using GxTie.Services
+@using Simple.OData.Client
+@using AutoMapper
+@using GxShared.GxDtos
+@using GxShared.Interfaces
+@using GxShared.Sess
+@using GxShared.Others
+@using GxShared.ShdServices
+@using Newtonsoft.Json
+@using GxShared.AdminDtos.AdModels
+@using System.Security.Claims
+@using Microsoft.AspNetCore.Authorization
+
+@attribute [Authorize(Roles = "Admin, Pilote, Support")]
+
+@* @inject ISystemAdminClient AdminClient *@
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject ILocalStorageService _localStorage
+@inject IHttpClientFactory _httpClientFactory
+@inject NavigationManager _navManager
+@inject HttpClientService _clieManager
+@inject IODataClient _MyODaClient
+@inject LinkSerialiser _linkSerialiser
+@inject SessionContextService _sessionContext
+@inject IMapper Mapper
+@inject IJSRuntime _jsRun
+
+<h3>OlneLink</h3>
+
+<div class="card mb-3">
+   @*  <div class="card-header">
+        Create LINKS
+        <a class="navbar-brand gx-navbar-brand"
+           @onclick:stopPropagation="true"
+           @onclick="() => NavigateBack()">
+            <i class="bi bi-grid-3x3-gap-fill me-2"></i>
+            <span class="brand-text">Gx-Solutions</span>
+        </a>
+    </div> *@
+    <div class="card-header d-flex justify-content-between align-items-center py-2">
+        <button type="button"
+                class="btn btn-outline-secondary btn-sm"
+                @onclick:stopPropagation="true"
+                @onclick="NavigateBack">
+            <i class="bi bi-grid-3x3-gap-fill me-1"></i>
+            Gx-Solutions
+        </button>
+    </div>
+    <div class="card-body">
+        <div class="row g-2 align-items-end">
+            <div class="col-md-4">
+                <select class="form-select" @bind="_inUgpe">
+                    <option value="">Select groupe...</option>
+                    @foreach (var ugp in _groupes)
+                    {
+                        <option value="@ugp.Elea">
+                            @ugp.Liba
+                        </option>
+                    }
+                </select>
+                <button class="btn btn-primary" @onclick="CreateInviteLink" disabled="@(_inUgpe == 0)">
+                    Generate invitation link
+                </button>
+            </div>
+        </div>
+        <div class="row g-2 align-items">
+            <div>
+                @if (!string.IsNullOrEmpty(_cdlink))
+                {
+                    <div class="input-group mt-2">
+                        <input class="form-control" value="@_cdlink" readonly />
+                    </div>
+                }
+            </div>
+        </div>
+        <div class="row g-2 align-items">
+            <div>
+                <button class="btn btn-outline-secondary"
+                        @onclick="CopyInviteLink" disabled="@(string.IsNullOrEmpty(_cdlink) || _inUgpe == 0)">
+                    Copy invitation link
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    private string Imessage = "";
+    //public GxorgaDto curOrga { get; set; }
+
+    //GlobModels
+    public Userbag _usrBag = new Userbag();
+
+    public string _cdlink = "";
+    private int _inUgpe = 0;
+    private List<LkGroupe> _groupes = new();
+    public List<Gpfixe> LsGties = new();
+
+    private HttpClient _apiClient = default!;
+
+    private bool isSuccess = false;
+    
+
+     protected override async Task OnInitializedAsync()
+    {
+        _apiClient = _httpClientFactory.CreateClient("DefaultClient");
+        _usrBag = await _sessionContext.GetUserbagAsync();
+        if (_usrBag?.Usorga == null)
+        {
+            Console.WriteLine("User bag or Usorga is null");
+            return;
+        }
+        LsGties = _usrBag.Ufixes
+                .Where(ut => ut.Gvars == 36 && ut.Elea != 0 && ut.Elea != 9)
+                .ToList();
+        _groupes.Clear();
+        //foreach(var gr in LsGties.Where(gr => gr.Gp1 == 1 && gr.Itb == 6))
+        foreach (var gr in LsGties.Where(gr => gr.Itb == 6))
+        {
+            _groupes.Add(new LkGroupe { Itb = gr.Itb, Elea = gr.Elea, Liba = gr.Liba });
+        }
+        ;
+    }
+    public async Task CreateInviteLink()
+    {
+        //await _clieManager.SetAuthorizationHeaderAsync("AUTHClient");
+        var myDto = new InviteLinkData
+        {
+            Idorg = _usrBag.Idorg,
+            Utyp = _inUgpe, //1cible2soutien3client4fournis5parter
+            ChxOlne = _inUgpe
+        };
+        string baseUrl = _apiClient.BaseAddress?.ToString().TrimEnd('/');
+        //encode et generate link
+        _cdlink = _linkSerialiser.GenerateLink<InviteLinkData>(myDto, baseUrl, "olneinsc");
+    }
+    private async Task CopyInviteLink()
+    {
+        await _jsRun.InvokeVoidAsync("navigator.clipboard.writeText", _cdlink);
+    }
+
+    void NavigateBack()
+    {
+        _navManager.NavigateTo("/");
+    }
+}

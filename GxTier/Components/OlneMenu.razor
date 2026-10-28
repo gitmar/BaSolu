@@ -1,0 +1,585 @@
+﻿@page "/olnemenu"
+@inherits LayoutComponentBase
+@layout OlneLayout
+
+@using System.Security.Claims
+@using BlazorBootstrap
+@using Blazored.LocalStorage
+@using GxShared.Helpers
+@using GxTie.Components.MbOlne
+
+@using GxTie.Services
+@using GxTie.StaticHelpers
+@using GxTie.Components.PfrmHelper
+@using GxShared.Sess
+@using GxShared.Others
+@using GxShared.ShdServices
+@using Simple.OData.Client
+@using GxShared.GxDtos
+@using GxShared.Interfaces
+@using AutoMapper
+@using Newtonsoft.Json
+@using Gx.Components.Navigation
+
+@implements IDisposable
+
+@inject NavigationManager _navManager
+@inject ILocalStorageService _localStorage
+@inject HttpClientService _clieManager
+@inject IHttpClientFactory _httpClientFactory
+@inject IODataClient _MyODaClient
+@inject OrgDocService _orgDocService
+@inject IMapper Mapper
+@inject SessionContextService _sessionContext
+@inject MyAuthStateProvider _authProvider
+@inject LinkSerialiser _linkSerialiser
+@inject RendAgres _rendAgres
+@inject IPendingChangesGuard _guard
+@inject IJSRuntime _JsRUN
+@inject IMessageService _messageService
+
+<h3>OlneMenu</h3>
+
+@if (isLoading)
+{
+    <div class="text-center">
+        <Spinner Color="SpinnerColor.Primary" Size="SpinnerSize.Large" />
+        <p>@LoadLabel</p>
+    </div>
+}
+else
+{
+    <div class="gx-screen-layout">
+        <div class="container gx-parent-container" style="height: 100vh;">
+            <div class="d-flex flex-column" style="height: 100%;">
+                @* <GxNavMenu BrandText="A24soft Gx-Solutions"
+                           MenuItems="@MenuItems"
+                           YaGroup="true"
+                           Groups="@Groupes"
+                           MenuSelected="@_chxMenu"
+                           MenuSelectedChanged="@SelMenu"
+                           GroupSelected="@Ugpe"
+                           GroupSelectedChanged="@SelGpe"
+                           OnBack="@NavigateBack" /> *@
+                <div class="row">
+                    <div class="col-md-12 input-group align-middle">
+                        <span class="text-uppercase text- text-success"><b>@strComp</b></span>
+                        @if (!String.IsNullOrEmpty(Jmessage))
+                        {
+                            <span class="bg-info bg-opacity-10" style="font-style:italic;color:red">&nbsp;--> @Jmessage</span>
+                        }
+                    </div>
+                </div>
+                <!-- Main Content -->
+                <div class="row">
+                    @if (_chxOlne != 0 && LsFixes.Any() && curOrga != null)
+                    {
+                        if (_chxOlne == 1 && Ugpe != 0)
+                        {
+                            <OlneInsc @ref="oletiw"
+                                     curOrga="@curOrga"
+                                     Ugpe="@Ugpe"
+                                     Tgpe="@Tgpe"
+                                     @bind-NbChanges="_nbChanges"
+                                     toChild="@toChild"
+                                     orgTwels="@orgTwels"
+                                     _guard="@_guard"
+                                     EnsAtrs="@EnsAtrs"
+                                     EnsCats="@EnsCats"
+                                     EnsTbls="@EnsTbls"
+                                     _InODaClient="@_MyODaClient">
+                                     <ChildContent>
+                                        @* <h2 class="child-box">Hello INTEGRATION</h2> *@
+                                    </ChildContent>
+                            </OlneInsc>
+                       }
+                        else if (_chxOlne == 2 && Ugpe != 0) // && Tgpe != 0 && ParentOK)
+                        {
+                            @* <OlnePay @ref="olepay"
+                                     curOrga="@curOrga"
+                                     Ugpe="@Ugpe"
+                                     Tgpe="@Tgpe"
+                                     @bind-NbChanges="_nbChanges"
+                                     toChild="@toChild"
+                                     orgTiers="@orgTiers"
+                                     _guard="@_guard"
+                                     EnsAtrs="@EnsAtrs"
+                                     EnsCats="@EnsCats"
+                                     EnsTbls="@EnsTbls"
+                                     _InODaClient="@_MyODaClient">
+                                <ChildContent>
+                                    <h2 class="child-box">Hello ONLINE SUBCRIPTION</h2>
+                                </ChildContent>
+                            </OlnePay> *@
+                        }
+                        else if (_chxOlne == 3)
+                        {
+                            @* <InvOper @ref="myginv"
+                                     curOrga="@curOrga"
+                                     allEnable="@allEnable"
+                                     _InODaClient="@ODataClient">
+                                <ChildContent>
+                                    <h2 class="child-box">Hello ACCUEIL</h2>
+                                </ChildContent>
+                            </InvOper> *@
+                        }
+                    }
+                 }
+            </div>
+        </div>
+    </div>
+</div>
+    <div class="row mt-3">
+        <div class="alert alert-warning d-flex justify-content-between align-items-center py-1 px-2 position-fixed bottom-0 end-0"
+             style="background-color: transparent; z-index: 1050; max-width: 400px;">
+            <div class="d-flex gap-2 align-items-center">
+                <Button class="w-auto flex-grow-0 flex-shrink-0" Color="ButtonColor.Info" @onclick="SaveAllChanges"
+                        Enabled="@_guard.HasPendingChanges()">
+                    Save All (@_guard.GetPendingChangesCount() changes)
+                </Button>
+                <Button class="w-auto flex-grow-0 flex-shrink-0" Color="ButtonColor.Secondary" @onclick="CancelAllChanges"
+                        Enabled="@_guard.HasPendingChanges()">
+                    Cancel All
+                </Button>
+            </div>
+        </div>
+
+    </div>
+}
+@code {
+    [Parameter]
+    [SupplyParameterFromQuery(Name = "cdlink")]
+    public string? cdLink { get; set; }
+
+    private HttpClient _apiClient;
+    private RegisterDto MyRegisDto = new();
+    private InviteLinkData? _InviteData;
+
+    private bool isLoading = true;
+    public GxorgaDto curOrga = new();
+    public ChildVars toChild = new();
+
+    private OlnePay olepay;
+    private OlneInsc oletiw;
+    //private InvOper myginv = new();
+
+    //private MyAuthStateProvider _authProvider { get; set; }
+    private bool isAuthenticated = false;
+    private ClaimsPrincipal authUser;
+    public Userbag _usrBag = new();
+
+    [Parameter]
+    public RenderFragment ValdTie { get; set; }
+    [Parameter]
+    public RenderFragment EnrolTiw { get; set; }
+    [Parameter]
+    public RenderFragment InviTiw { get; set; }
+
+    public int _chxOlne = 0;
+    // [CascadingParameter]
+    // private Task<AuthenticationState>? AuthState { get; set; }
+
+    // private ClaimsPrincipal authUser;
+    // private bool isAuthenticated = false;
+
+    //Guard
+    private int _nbChanges = 0;
+    private IDisposable? _locationHandler;
+    private int pendingCount => _guard.GetPendingChangesCount();
+    private int insertCount => _guard.GetInsertCount();
+    private int updateCount => _guard.GetUpdateCount();
+    private int deleteCount => _guard.GetDeleteCount();
+
+    private async Task CancelAllChanges()
+    {
+        Console.WriteLine("🗑️ CancelAllChanges START");
+        await _guard.CancelChanges();  // 🔥 AWAIT - blocks until done
+        _messageService.Show("✅ CancelAllChanges successfully", ToastType.Success);
+        StateHasChanged();
+        Console.WriteLine($"✅ CancelAllChanges END - Pending: {_guard.GetPendingChangesCount()}");
+    }
+    private async Task SaveAllChanges()
+    {
+        await _guard.FlushAsync();  // 🔥 AWAIT - blocks until done
+        _messageService.Show("✅ Saved successfully", ToastType.Success);
+        StateHasChanged();
+    }
+    //menus
+    // public List<GxMenuItem> MenuItems = new()
+    // {
+    //     new GxMenuItem { Id = 1, Text = "Accueil/SITE", Icon = "bi bi-box-arrow-in-down" },
+    //     new GxMenuItem { Id = 2, Text = "Integration", Icon = "bi bi-house-door" },
+    //     new GxMenuItem { Id = 2, Text = "Accueil/Online", Icon = "bi bi-house-door" },
+    //     //new GxMenuItem { Id = 3, Text = "Invite/Online", Icon = "bi bi-envelope-paper" },
+    //     //new GxMenuItem { Id = 4, Text = "ATest", Icon = "bi bi-envelope-paper" }
+    //     //new MenuItem { Id = 4, Text = "Mutation", Icon = "bi bi-arrow-repeat" },
+    // };
+    // public List<GxGroupe> Groupes = new();
+
+    //public int _UorgId = 0;
+    public string _strOrga = "", _curSigle = "", LoadLabel = "", strmeta = "", strmeta2 = "";
+    private string Jmessage = "";
+    //entities load
+    private IEnumerable<GxorgaDto> _lsOrgas = new List<GxorgaDto>();
+    public List<TiewelDto> orgTwels = new();
+    public List<TierspDto> orgTiers = new();
+    public IEnumerable<TiewelDto> ResTiw;
+    public IEnumerable<TierspDto> ResTie;
+    public TiewelDto opTwel = new();
+    public TierspDto opTier = new();
+
+    public List<Gpfixe> LsFixes = new();
+    public List<Gpfixe> LsGties = new();
+    public List<Gpdivh> LsDivs = new();
+    //public List<Rubpst> LsPsts = new();
+    public List<Gpvar> LsVars = new();
+    public List<Gplan> LsPlans = new();
+    public List<Grole> Uroles = new();
+
+    private List<Grole> LsRoles = new();
+    private List<Gtabl> EnsTbls = new();
+    private List<Gpatr> EnsAtrs = new();
+    private List<Gpcat> EnsCats = new();
+    //Navigation
+    private int _gIdTie = 0, _chxGpe = 0;
+    private string strComp = $"Accueil/SITE";
+    string gpeLiba = "";
+    public int Ugpe = 0, Tgpe = 0; //gpe ref1..6/tiers type6..7
+    //modal management
+    private string SidebarStyle = "width: 200px;";
+    private bool IsOpen = true;
+    private bool FirstLoadCompleted = false;
+    private bool ContentLoaded = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        isLoading = true;
+        LoadLabel = "data is loading";
+
+        _apiClient = _httpClientFactory.CreateClient("AUTHClient");
+        //LoadLabel = "RH/ENROLLEMENT Loading...";
+        try
+        {
+            //await SetLoadingState();
+            Console.WriteLine("✅ SetLoadingState done");
+
+            var authState = await _authProvider.GetAuthenticationStateAsync();
+            Console.WriteLine("✅ GetAuthenticationStateAsync done");
+
+            isAuthenticated = authState.User.Identity?.IsAuthenticated ?? false;
+            authUser = authState.User;
+            if (!isAuthenticated)
+            {
+                Console.WriteLine("Authentication FAILED");
+                return; // ⚠️ see note below
+            }
+
+            _usrBag = await _sessionContext.GetUserbagAsync();
+            Console.WriteLine("✅ GetUserbagAsync done");
+
+            LsFixes = _usrBag.Ufixes.ToList();
+            LsVars = _usrBag.Usorga.Uvars.ToList();
+            Uroles = _usrBag.Uroles.ToList();
+            LsPlans = _usrBag.Usorga.Uplns.ToList();
+
+            LsDivs = await _rendAgres.LoadOrgaPostes();
+            Console.WriteLine("✅ LoadOrgaPostes done");
+
+            toChild = new ChildVars
+            {
+                authUser = authState.User,
+                isAuthenticated = true,
+                InUser = _usrBag.Usprof,
+                LsDivs = LsDivs.ToList(),
+                LsVars = LsVars.ToList(),
+                LsFixes = LsFixes.ToList(),
+                LsPlans = LsPlans.ToList(),
+            };
+            LsGties = _usrBag.Ufixes
+                .Where(ut => ut.Gvars == 36 && ut.Elea != 0 && ut.Elea != 9)
+                .ToList();
+            LsRoles = await _rendAgres.LoadOrgaRoles();
+            Console.WriteLine("✅ LoadOrgaRoles done");
+
+            // ... etc, one log line after every await ...
+
+            EnsTbls = await _rendAgres.LoadOrgaTables();
+            Console.WriteLine($"✅ LoadOrgaTables done: {EnsTbls.Count}");
+
+            await LoadTieAplAsync(_usrBag.Idorg);
+            Console.WriteLine("✅ LoadTieAplAsync done");
+
+            EnsAtrs = await _rendAgres.LoadOrgaAtribs();
+            Console.WriteLine("✅ LoadOrgaAtribs done");
+
+            EnsCats = await _rendAgres.LoadOrgaCategs();
+            Console.WriteLine("✅ LoadOrgaCategs done");
+
+            BuildHierarchy();
+            strComp = $"Accueil/Onlne";
+
+            Jmessage = $"charged : {curOrga.Idorg}";
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"❌ EnrolMenu init failed: {ex.Message}\n{ex.StackTrace}");
+            Jmessage = $"Erreur de chargement: {ex.Message}";
+        }
+        finally
+        {
+            isLoading = false; // ⚠️ moved into finally — see note below
+            StateHasChanged();
+        }
+        isLoading = false;
+    }
+    protected override void OnParametersSet()
+    {
+        //prise origine
+        if (string.IsNullOrEmpty(cdLink))
+        {
+            Jmessage = "parametres vides";
+            return;
+        }
+        _InviteData = _linkSerialiser.DecodeAndDeserialize<InviteLinkData>(cdLink);
+        if (_InviteData == null)
+        {
+            return; //silently
+        }
+        _chxOlne = _InviteData.ChxOlne;
+        Ugpe = _InviteData.Utyp;
+    }
+
+    // protected override async Task OnInitializedAsync()
+    // {
+    //     //prise valeurs parent
+    //     isLoading = true;
+    //     LoadLabel = "data is loading";
+    //     await SetLoadingState(); // 75, "Fetching data...");
+    //     var authState = await _authProvider.GetAuthenticationStateAsync();
+    //     isAuthenticated = authState.User.Identity?.IsAuthenticated ?? false;
+    //     authUser = authState.User;
+    //     if (!isAuthenticated)
+    //     {
+    //         Console.WriteLine("Authentication in Enrol Utilisateur ECHEC");
+    //         return;
+    //     }
+    //     else
+    //     {
+    //         Console.WriteLine("Authentication in Enrol SUCCESS");
+    //     }
+    //     _usrBag = await _sessionContext.GetUserbagAsync();
+
+    //     LsVars = _usrBag.Usorga.Uvars.ToList();
+    //     Uroles = _usrBag.Uroles.ToList();
+    //     LsPlans = _usrBag.Usorga.Uplns.ToList();
+    //     LsDivs = await _rendAgres.LoadOrgaPostes();
+    //     LsRoles = await _rendAgres.LoadOrgaRoles();
+    //     LsFixes = _usrBag.Ufixes.ToList();
+    //     toChild = new ChildVars
+    //     {
+    //         authUser = authState.User,
+    //         isAuthenticated = true,
+    //         LsDivs = LsDivs.ToList(),
+    //         LsVars = LsVars.ToList(),
+    //         LsFixes = LsFixes.ToList(),
+    //         LsPlans = LsPlans.ToList(),
+    //     };
+    //     Console.WriteLine($"nb. fixes {LsFixes.Count}");
+    //     LsGties = _usrBag.Ufixes
+    //         .Where(ut => ut.Gvars == 36 && ut.Elea != 0 && ut.Elea != 9)
+    //         .ToList();
+    //     Groupes.Clear();
+    //     //foreach(var gr in LsGties.Where(gr => gr.Gp1 == 1 && gr.Itb == 6))
+    //     foreach (var gr in LsGties.Where(gr => gr.Itb == 6))
+    //     {
+    //         Groupes.Add(new GxGroupe { Itb = gr.Itb, Elea = gr.Elea, Liba = gr.Liba });
+    //     };
+    //     //var lscols = await _rendAgres.LoadOrgaColons();
+    //     //LsPcols = lscols.Where(tc => tc.Otyp == 1 && tc.Totyp == Ugpe && tc.Zfro == 1).ToList();
+    //     //LsFcols = lscols.Where(tc => tc.Otyp == 2 && tc.Totyp == Ugpe && tc.Zfro == 1).ToList();
+    //     Console.WriteLine("Authentication ENTREE");
+    //     EnsTbls = await _rendAgres.LoadOrgaTables();
+    //     Console.WriteLine($"nb. tables : {EnsTbls.Count}");
+
+    //     _nbChanges = _guard.GetPendingChangesCount();  // Initial value
+    //     await LoadTieAplAsync(_usrBag.Idorg);
+    //     EnsAtrs = await _rendAgres.LoadOrgaAtribs();
+    //     Console.WriteLine($"nb. attributs : {EnsAtrs.Count}");
+    //     EnsCats = await _rendAgres.LoadOrgaCategs();
+    //     Console.WriteLine($"nb. categories : {EnsCats.Count}");
+    //     // Build hierarchy once
+    //     BuildHierarchy();
+    //     //option initiale
+    //     strComp = $"Accueil/Site {gpeLiba}";
+    //     //isLoading = false;
+    //     //ParentOK = false;
+    //     //await _loadingService.Hide();
+    //     StateHasChanged();
+    //     isLoading = false;
+    // }
+    private async Task LoadTieAplAsync(int key)
+    {
+        // Create context
+        // curODContext = await _contextFactory.CreateAsync();
+        // _guard.AttachContext(curODContext);
+        try
+        {
+            // Console.WriteLine($"key : {key}");
+            // curOrga = await _MyODaClient
+            //     .For<GxorgaDto>("Gxorgas")
+            //     .Expand("Gsgfixes($filter=Gvars eq 9 and Itb eq 1)")
+            //     .Key(key)
+            //     .FindEntryAsync();
+            // var msgsiw = await _MyODaClient
+            // .For<TiewelDto>("Tiewels")
+            // .Filter(f => f.Idorg == key)
+            // .Expand("Tiwafls")
+            // .Expand("Tiejatrs")
+            // .Expand("Tiegcats")
+            // .FindEntriesAsync();
+
+            // orgTwels = msgsiw.ToList();
+
+            // var msgsie = await _MyODaClient
+            //     .For<TierspDto>("Tiersps")
+            //     .Filter(f => f.Idorg == key)
+            //     .Expand("Tieafls")
+            //     .Expand("Tiejatrs")
+            //     .Expand("Tiegcats")
+            //     .FindEntriesAsync();
+
+            // orgTiers = msgsie.ToList();
+            // var matgsg = curOrga.Gsgfixes.Where(g => g.Gvars == 9 && g.Itb == 1).ToList();
+            // ImmatHelper.MapFromConfig(matgsg);
+            // Console.WriteLine($"loadOrgaAsync completed :{curOrga?.Raison}");
+            // Console.WriteLine($"Nb. Tiersps {orgTiers.Count} Nb. Tiewels : {orgTiers.Count}");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Load error: {ex.Message} et trace : {ex.StackTrace}");
+        }
+        ////Ugpe = 1; //cible
+        Tgpe = 6; //tiers 7matiere
+        Console.WriteLine($"✅ COMPLETE: Tiersps={orgTiers?.Count ?? 0}");
+    }
+    protected override void OnAfterRender(bool firstRender)
+    {
+        if (firstRender)
+        {
+            _locationHandler = _navManager.RegisterLocationChangingHandler(OnLocationChangingAsync);
+            _guard.OnChanges += StateHasChanged;
+        }
+    }
+    private async ValueTask OnLocationChangingAsync(LocationChangingContext context)
+    {
+        Console.WriteLine($"🌐 Intercepted: {context.TargetLocation}");
+
+        if (!_guard.HasPendingChanges())
+        {
+            Console.WriteLine("✅ Clean - allowing navigation");
+            return;
+        }
+
+        context.PreventNavigation();  // BLOCK navigation
+        Console.WriteLine($"🚫 Showing confirm dialog {context.TargetLocation}");
+
+        try
+        {
+            var save = await _JsRUN.InvokeAsync<bool>("confirm", "Save changes before leaving?");
+
+            if (save)
+            {
+                // 🔥 YES: SaveAllChanges() → Navigate away
+                await SaveAllChanges();
+                Console.WriteLine("💾 Saved - navigating away");
+                _navManager.NavigateTo(context.TargetLocation, forceLoad: false);
+            }
+            else
+            {
+                // 🔥 NO: STAY on page - NO CancelAllChanges()
+                Console.WriteLine("❌ User chose NO - staying on page");
+                // User stays - sees SaveAllChanges() / CancelAllChanges() buttons ENABLED
+                // They can now manually: SaveAllChanges() OR CancelAllChanges()
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"❌ Error: {ex.Message}");
+            // Safety: stay on page
+        }
+    }
+    //build hierarchy
+    private void BuildHierarchy()
+    {
+        var lookup = EnsCats.ToDictionary(c => c.Id);
+
+        foreach (var cat in EnsCats)
+        {
+            if (cat.Pid != null && lookup.TryGetValue(cat.Pid.Value, out var parent))
+            {
+                cat.Parent = parent;
+                parent.Children.Add(cat);
+            }
+        }
+    }
+    //changes des selections
+    void ChxGpeTiers(Gpfixe mygpe)
+    {
+        gpeLiba = "";
+        //colonnes parent et elements
+
+    }
+    private async Task RendLiba()
+    {
+        //_chxOlne = noM;
+        if (_chxOlne == 1) 
+        {
+            //_guardVisible = true;
+            strComp = $"Accueil/SITE {gpeLiba}";
+        }
+        if (_chxOlne == 2)
+        {
+            //_guardVisible = true;
+            strComp = $"Integration  {gpeLiba}";
+        }
+        if (_chxOlne == 3)
+        {
+            //_guardVisible = true;
+            strComp = $"Accueil/Online  {gpeLiba}";
+        }
+        StateHasChanged();
+        await Task.Delay(1);
+    }
+    // private async Task SelGpe(int noG)
+    // {
+    //     gpeLiba = "";
+    //     if (noG == 0) return;
+    //     var mygpe = LsGties.Where(gt => gt.Itb == 6 && gt.Elea == noG).FirstOrDefault();
+    //     Ugpe = noG;
+    //     Tgpe = mygpe.Gp2;
+    //     gpeLiba = mygpe.Liba.ToUpperInvariant(); //LsGties.Where(ut => ut.Elea == mygpe.Elea).FirstOrDefault().Liba.ToUpperInvariant();
+    //     StateHasChanged();
+    //     Console.WriteLine("PAS 2");
+    //     await Task.Delay(1);
+    // }
+    async void InitChildData()
+    {
+        StateHasChanged();
+    }
+    public void Dispose()
+    {
+        _locationHandler?.Dispose();
+    }
+
+    void NavigateBack()
+    {
+        _navManager.NavigateTo("/");
+    }
+    
+    private async Task SetLoadingState()
+    {
+        await _JsRUN.InvokeVoidAsync("eval",
+        "document.documentElement.style.setProperty('--blazor-load-percentage', '100');" +
+        "document.documentElement.style.setProperty('--blazor-load-percentage-text', '\"Loading data...\"');");
+    }
+}

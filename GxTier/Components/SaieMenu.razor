@@ -10,7 +10,7 @@
 @using GxShared.GxDtos
 @using GxShared.Interfaces
 @using GxShared.Helpers
-@using GxTie.Components.Onlne
+@using GxTie.Components.MbOlne
 @using GxTie.Services
 @using GxTie.Services.Calculation
 @using GxTie.StaticHelpers
@@ -208,7 +208,7 @@
     [Parameter] public CalcContext? CalcContext { get; set; }
     private ClaimsPrincipal authUser;
 
-    public GxorgaDto curOrga = new GxorgaDto();
+    public GxorgaDto curOrga = new();
     public ChildVars toChild = new();
     public MyMenuVars froMenu = new();
     //private bool allEnable = false;

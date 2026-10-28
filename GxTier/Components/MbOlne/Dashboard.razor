@@ -1,0 +1,111 @@
+﻿@page "/dashboard"
+@layout FreeLayout
+
+@using System.Net
+@using System.Text
+@using System.Security.Claims
+@using GxTie.Services
+@using Newtonsoft.Json
+
+@inject HttpClientService _clieManager
+@inject IHttpClientFactory _httpClientFactory
+
+<h3>Member Dashboard</h3>
+
+<div class="row">
+    <!-- Password Change -->
+    <div class="col-md-6">
+        <h5>Change Password</h5>
+        <EditForm Model="@passwordModel" OnValidSubmit="ChangePassword">
+            <DataAnnotationsValidator />
+            <ValidationSummary />
+
+            <div class="mb-2">
+                <label>Current Password</label>
+                <InputText @bind-Value="passwordModel.CurrentPassword" type="password" class="form-control" />
+            </div>
+            <div class="mb-2">
+                <label>New Password</label>
+                <InputText @bind-Value="passwordModel.NewPassword" type="password" class="form-control" />
+            </div>
+            <div class="mb-2">
+                <label>Confirm Password</label>
+                <InputText @bind-Value="passwordModel.ConfirmPassword" type="password" class="form-control" />
+            </div>
+            <button type="submit" class="btn btn-primary">Update</button>
+        </EditForm>
+    </div>
+
+    <!-- Financial State -->
+    <div class="col-md-6">
+        <h5>Financial State</h5>
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Subscription</th>
+                    <th>Status</th>
+                    <th>Balance</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (subscriptions != null)
+                {
+                    foreach (var sub in subscriptions)
+                    {
+                        <tr>
+                            <td>@sub.PlanName</td>
+                            <td>@sub.Status</td>
+                            <td>@sub.Balance.ToString("C")</td>
+                        </tr>
+                    }
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+@code {
+    private PasswordChangeDto passwordModel = new();
+    private List<SubscriptionDto> subscriptions;
+    private HttpClient _apiClient;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _apiClient = _httpClientFactory.CreateClient("AUTHClient");
+        // Load subscriptions from API
+        subscriptions = await _apiClient.GetFromJsonAsync<List<SubscriptionDto>>("subscriptions/mine");
+    }
+
+    private async Task ChangePassword()
+    {
+        var json = JsonConvert.SerializeObject(subscriptions);
+        var request = new HttpRequestMessage(HttpMethod.Post, "subscriptions")
+        {
+            Content = new StringContent(json, Encoding.UTF8, "application/json")
+        };
+
+        var response = await _apiClient.SendAsync(request);
+        if (response.IsSuccessStatusCode)
+        {
+            // Show success message
+        }
+        else
+        {
+            // Handle error
+        }
+    }
+
+    public class PasswordChangeDto
+    {
+        public string CurrentPassword { get; set; }
+        public string NewPassword { get; set; }
+        public string ConfirmPassword { get; set; }
+    }
+
+    public class SubscriptionDto
+    {
+        public string PlanName { get; set; }
+        public string Status { get; set; }
+        public decimal Balance { get; set; }
+    }
+}

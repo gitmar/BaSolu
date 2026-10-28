@@ -24,6 +24,7 @@
 @inject ILocalStorageService _localStorage
 @inject NavigationManager _navManager
 @inject HttpClientService _clieManager
+@inject LinkSerialiser _linkSerialiser
 @inject IMapper Mapper
 @inject IJSRuntime _jsRun
 
@@ -61,14 +62,6 @@ else
                     </Button>
                 </div>
                 <div class="col-md-4"></div>
-                @* <div class="col-md-4">
-                    <Button Color="ButtonColor.Secondary"
-                    Size="ButtonSize.Small"
-                    Disabled="@_isBusy"
-                    @onclick="SynchronizeDictionaryAsync">
-                        Synchronize dictionary
-                    </Button>
-                </div> *@
             </div>
         </div>
     </div>
@@ -194,14 +187,6 @@ else
                 allContexts));
     }
 
-    // private async Task SynchronizeDictionaryAsync()
-    // {
-    //     await RunAdminOperationAsync(
-    //         () => AdminClient.SynchronizeDictionaryAsync(
-    //             _currentIdorg,
-    //             null));
-    // }
-    
     private async Task ResetPasswordAsync()
     {
         if (string.IsNullOrWhiteSpace(_selectedUserEmail) ||
@@ -243,7 +228,7 @@ else
             _isBusy = false;
         }
     }
-
+    
     private void ShowResult(bool success, string message)
     {
         _isSuccess = success;
