@@ -15,11 +15,12 @@
             var itemCtx = BuildCtx(model.Tyafl);
 
             <div class="border-bottom pb-2 mb-2">
-                <ColDrivenFields Idorg="@Idorg" PColCtx="@itemCtx" Model="@model"
-                                  EnsTbls="@EnsTbls" IsEditing="@editing" />
+                @* <ColDrivenFields Idorg="@Idorg" PColCtx="@itemCtx" Model="@model"
+                                  EnsTbls="@EnsTbls" IsEditing="@editing" /> *@
 
                 @if (editing)
                 {
+                    <ColDrivenFields @ref="_editingFields" Idorg="@Idorg" PColCtx="@itemCtx" Model="@model" EnsTbls="@EnsTbls" IsEditing="true" />
                     <div class="d-flex gap-2 mt-1">
                         <Button Color="ButtonColor.Success" Size="ButtonSize.Small"
                                 @onclick="() => OnConfirm.InvokeAsync(afl)">✅</Button>
@@ -29,6 +30,7 @@
                 }
                 else if (!IsViewing)
                 {
+                    <ColDrivenFields Idorg="@Idorg" PColCtx="@itemCtx" Model="@model" EnsTbls="@EnsTbls" IsEditing="false" />
                     <div class="d-flex gap-2 mt-1">
                         <Button Color="ButtonColor.Warning" Size="ButtonSize.Small"
                                 Disabled="@IsAnyEditing" @onclick="() => OnStartEdit.InvokeAsync(afl)">✏️ Edit</Button>
@@ -62,5 +64,19 @@
 
     //private List<TiwaflDto> SubAfls => CurTiw?.Tiwafls?.Where(w => w.Itiw == CurTiw.Id).ToList();
 
+    private ColDrivenFields? _editingFields;
+    private string? _error;
+
     private ColPrefContext BuildCtx(int? tyafl) => new() { Totyp = Ugpe, Efrm = 1, Styp = tyafl ?? 0 };
+    
+    private async Task ConfirmAsync(TiwaflDto afl)
+    {
+        if (_editingFields is not null && !_editingFields.Validate())
+        {
+            _error = "Champs obligatoires : " + string.Join(", ", _editingFields.MissingLabels);
+            return;
+        }
+        _error = null;
+        await OnConfirm.InvokeAsync(afl);
+    }
 }

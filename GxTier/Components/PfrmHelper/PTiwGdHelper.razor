@@ -4,6 +4,7 @@
 @using GxShared.Sess
 @using GxShared.Cols.Models
 @using GxTie.Components
+@using GxTie.Components.Cols
 @using Newtonsoft.Json
 
 <!-- Person fields -->
@@ -14,8 +15,12 @@
         <p> Draft : @Draft.Xmatri</p>
         <p> isEditing : @IsEditing</p>
         <p> ensTbl : @EnsTbls.Count</p> *@
-        <ColDrivenFields Idorg="@Idorg" PColCtx="@Ctx" Model="@(IsEditing ? (Draft ?? Entity) : Entity)"
-                          EnsTbls="@EnsTbls" IsEditing="@IsEditing" />
+        <ColDrivenFields @ref="_fields" PrefReader="@P2refReader" Idorg="@Idorg" PColCtx="@Ctx" Model="@(IsEditing ? (Draft ?? Entity) : Entity)"
+                         EnsTbls="@EnsTbls" IsEditing="@IsEditing" />
+        @if (_error is not null)
+        {
+            <div class="alert alert-danger py-1">@_error</div>
+        }
         <div class="d-flex align-items-center gap-2 mt-2">
             @if (IsEditing)
             {
@@ -31,6 +36,9 @@
 </div>
 
 <!-- Affiliates — folded in, no separate tab -->
+<p>matricule arrive : @Entity?.Zmatri</p>
+<p>groupes options : @GroupOptions.Count</p>
+
 @if (CanEditChildren)
 {
     <label class="fw-bold">Affiliés</label>
@@ -48,9 +56,9 @@
         </InputSelect>
 
         <Button Color="ButtonColor.Primary" Size="ButtonSize.Small"
-                Disabled="@(SelectedGroup < 1 || IsAnyEditing)"
+                Disabled="@(SelectedGroup < 1 || !IsAnyEditing)"
                 @onclick="() => OnAddChild.InvokeAsync(SelectedGroup)">
-            ➕ Add Child
+            ➕ Ajt Affilie
         </Button>
     </div>
 
@@ -77,10 +85,13 @@ else
     [Parameter, EditorRequired] public int Idorg { get; set; }
     [Parameter, EditorRequired] public TiewelDto Entity { get; set; } = default!;
     [Parameter] public TiewelDto? Draft { get; set; }
+    [Parameter] public IColumnPreferencesReader? P2refReader { get; set; }
+
     [Parameter, EditorRequired] public List<Gtabl> EnsTbls { get; set; } = new();
     [Parameter] public int Ugpe { get; set; }
     [Parameter] public bool IsEditing { get; set; }
     [Parameter] public bool IsAdding { get; set; }
+    [Parameter] public PublicColumnFormValidator L1PrefReader { get; set; } = default!;
     [Parameter] public EventCallback<TiewelDto> OnConfirm { get; set; }
     [Parameter] public EventCallback<TiewelDto> OnCancel { get; set; }
 
@@ -102,7 +113,11 @@ else
     [Parameter] public EventCallback<int> OnAddChild { get; set; }
 
 
-    private bool CanEditChildren => !string.IsNullOrEmpty(Entity.Xmatri) && GroupOptions.Any();
+    private bool CanEditChildren => !string.IsNullOrEmpty(Entity?.Zmatri)
+        && GroupOptions.Any();
+    
+    private ColDrivenFields _fields = default!;
+    private string? _error;
 
     private ColPrefContext Ctx => new() { Totyp = Ugpe, Efrm = 1, Styp = 1 };
     private async Task OnGroupChanged(int value) => await SelectedGroupChanged.InvokeAsync(value);

@@ -460,7 +460,7 @@
     private bool InAddingMode = false;
 
     private bool XmatriValid;
-    private void OnSmatriValidChanged(bool isValid)
+    private void OnXmatriValidChanged(bool isValid)
     {
         XmatriValid = isValid;
     }
@@ -1506,7 +1506,7 @@
             case nameof(TierspDto):
                 if (draftTiw == null) return;
                 var pln = (TierspDto)(object)gridItem;
-                pln.Smatri = draftTiw.Smatri; //designation
+                pln.Zmatri = draftTiw.Zmatri; //designation
                 pln.Xmatri = draftTiw.Xmatri; //abrege
                 pln.Nom = draftTiw.Nom; //formule-non valider
                 pln.Pnom = draftTiw.Pnom;
@@ -1519,7 +1519,7 @@
                 if (draftAfl == null) return;
                 var rub = (TieaflDto)(object)gridItem;
                 rub.Irang = draftAfl.Irang;
-                rub.Smatri = draftAfl.Smatri; //designation
+                rub.Zmatri = draftAfl.Zmatri; //designation
                 rub.Xmatri = draftAfl.Xmatri; //abrege
                 rub.Nom = draftAfl.Nom; //formule-non valider
                 rub.Pnom = draftAfl.Pnom;

@@ -12,12 +12,14 @@
 @using GxShared.Sess
 @using GxShared.Helpers
 @using GxShared.Helpers.CrudHelpers
+@using GxShared.Cols.Models
 @using GxShared.Interfaces
 @using GxShared.ShdServices
 @using GxTie.Components.Paccu
 @using GxTie.Components.Paccu.RtPer
 @using GxTie.Components.Uifrags
 @using GxTie.Components.PfrmHelper
+@using GxTie.Components.Cols
 @using GxTie.Services
 @using Simple.OData.Client
 @using GxTie.Components.Apcomp
@@ -26,9 +28,12 @@
 @inject IODataClient _MyODaClient
 @inject IClientMatriculeOrdreService OrdreService
 @inject LinkSerialiser _linkSerialiser
-@* @inject RendAgres _rendAgres *@
+@*@inject RendAgres _rendAgres *@
 @inject RendAOlne _rendAOlne
-
+@inject IPendingChangesGuard _guard
+@inject IMessageService _messageService
+@inject PublicColumnFormValidator _colValidator
+@inject PublicColumnPreferencesClient PublicPrefs
 
 <PageTitle>Online.Inscription</PageTitle>
 <h3>OlneInsc</h3>
@@ -42,7 +47,7 @@
     </div>
 } *@
 <p> WELCOME TO : @curOrga?.Idorg : @curOrga.Sigle : @curOrga.Raison </p>
-@* <p>matri : @curTiw?.Xmatri</p>
+@* <p>matri : @curTiw?.Zmatri</p>
 <p>no OrigId : @InIdorg</p>
 <p>mod.visible : @isModalVisible</p> *@
 
@@ -59,14 +64,6 @@
                Oparent="2">
     </GlobModal>
 }
-
-@* LsmFixes="@LsFixes" *@
-@* <div class="my-container">
-    @if (toChild != null)
-    {
-        @ChildContent
-    }
-</div> *@
 @if (!isTiwLoaded)
 {
     <div class="text-center">
@@ -79,28 +76,21 @@ else
     @* <AuthorizeView>
         <Authorized Context="authtiwcontext"> *@
              <!-- Brand with Back -->
+              @* (@_guard.GetPendingChangesCount() changes) *@
             <div class="d-flex align-items-center gap-2">
-                @* @if (!isTieEditing)
-                {
-                    <Button Color="ButtonColor.Primary" Size="ButtonSize.Small" Class="px-2 py-1 small-btn"
-                            Disabled="@(AllowMultipleEdits || isTieAdding)"
-                            @onclick="StartTiwNew">
-                        ➕ Ajt
-                    </Button>
-                } *@
                 @if (isTieAdding)
                 {
                     <Button Color="ButtonColor.Success"
                         Size="ButtonSize.Small"
                         Class="px-2 py-1 small-btn"
                         @onclick="() => InConfirmAdd(EntityLevel.Tiw, curTiw, true)">
-                            ✅ Confirm
+                            ✅ Enregistrer
                     </Button>
                     <Button Color="ButtonColor.Secondary"
                         Size="ButtonSize.Small"
                         Class="px-2 py-1 small-btn"
                         @onclick="() => InCancelAdd(EntityLevel.Tiw, curTiw)">
-                            ❌ Cancel
+                            ❌ Abandonner
                     </Button>
                 }
                 @* @if (isTieEditing)
@@ -133,16 +123,6 @@ else
                 <Tabs>
                     <Tab Title="Candidat" Name="TiwTab" onClick="() => OnTabChanged(1)">
                         <Content>
-                            @* <p>@curTiw?.Xmatri</p>
-                            ICI-LA
-                            @if (isTiwLoaded)
-                            {
-                                <p>@curTiw?.Xmatri</p>
-                            }
-                            else
-                            {
-                                <p><em>Chargement du brouillon...</em></p>
-                            } *@
                     @if (isTiwLoaded)
                     {
                         <EditForm Context="invform" Model="curTiw">
@@ -155,12 +135,14 @@ else
                                         Saffilia="@Saffilia"
                                         IsProvisional="true"
                                         InAddingMode="@isTieAdding"
+                                        VientDe="2"
                                         GenerationMode="MatriculeGenerationMode.Local"
-                                        @bind-Value="curTiw.Xmatri"
+                                        @bind-Value="curTiw.Zmatri"
                                         IsBusy="@IsBusy"
-                                        ValidChanged="OnXmatriValidChanged" />
+                                        ValidChanged="OnZmatriValidChanged" />
                             <PTiwGdHelper Idorg="@InIdorg" Entity="@curTiw"
                             Draft="@(GetDraft(EntityLevel.Tiw) as TiewelDto)"
+                            P2refReader="@PublicPrefs"
                             IsEditing="@IsTiwEditing(curTiw)"
                             EnsTbls="@EnsTbls"
                             Ugpe="@Ugpe"
@@ -283,7 +265,7 @@ else
                 <BodyTemplate>
                     <div class="mb-3">
                         <PTiwGdHelper Idorg="@curOrga.Idorg" Entity="@curTiw"
-                                      Draft="@brouDraft"
+                                      Draft="@curDraft"
                                       IsEditing="@IsTiwEditing(curTiw)"
                                       EnsTbls="@EnsTbls"
                                       Ugpe="@Ugpe"
@@ -341,25 +323,6 @@ else
     //private List<Gpvar> LsVars = new();
     public int Ugpe = 0;
 
-    //[Parameter] public RenderFragment ChildContent { get; set; }
-    //[Parameter] public IODataClient _InODaClient { get; set; }
-    //[Parameter] public GxorgaDto curOrga { get; set; } = new();
-
-    //[Parameter] public List<TiewelDto> orgTwels { get; set; } = new();
-    //[Parameter] public ChildVars toChild { get; set; }
-    //[Parameter] public int Tgpe { get; set; }
-
-    //[Parameter] public int Ugpe { get; set; } = 0;
-    //[Parameter] public int toMenu { get; set; }
-    //[Parameter] public List<Gtabl> EnsTbls { get; set; }
-    //[Parameter] public List<Gpatr> EnsAtrs { get; set; } = new();
-    //[Parameter] public List<Gpcat> EnsCats { get; set; } = new();
-
-    //[Parameter] public IPendingChangesGuard _guard { get; set; }
-    //[Parameter] public EventCallback<PendingState> OnPendingStateChanged { get; set; }
-    //[Parameter] public int NbChanges { get; set; }
-    //[Parameter] public EventCallback<int> NbChangesChanged { get; set; }
-
     //format code rubriques
     private int _lgcdu = 3;
     private string _lgfmt = "";
@@ -403,12 +366,12 @@ else
     private string Saffilia = "T";
     private bool InAddingMode = false;
 
-    private bool XmatriValid;
-    private TiewelDto brouDraft = new();
+    private bool ZmatriValid;
+    private TiewelDto curDraft = new();
 
-    private void OnXmatriValidChanged(bool isValid)
+    private void OnZmatriValidChanged(bool isValid)
     {
-        XmatriValid = isValid;
+        ZmatriValid = isValid;
     }
 
     public AdrContext Actx { get; set; }
@@ -479,6 +442,14 @@ else
         RendsEnsData(InIdorg);
     }
 
+    // protected override async Task OnAfterRenderAsync(bool FirstRender)
+    // {
+    //     if (FirstRender) //Onlne
+    //     {
+    //         await GenerateAsync();
+    //     }
+    // }
+
     protected override void SubscribeToGuard() { }
 
     private void OnTabChanged(int tabIndex) => refTab = tabIndex;
@@ -487,19 +458,27 @@ else
     {
         try{
             //curOrga:
-            await GetCurOrga();
+            var inOrga = await GetCurOrga();
+            if (inOrga == null)
+            {
+                return;
+            }
             //Console.WriteLine("✅ LoadTieAplAsync done");
-
-            EnsTbls = await _rendAOlne.LoadOrgaTables(agid);
+            var jIdorg = inOrga.Idorg;
+            if (agid == 0) 
+            { 
+                return;
+            }
+            EnsTbls = await _rendAOlne.LoadOrgaTables(jIdorg);
             Console.WriteLine("✅ LoadOrgaAtribs done");
 
-            EnsAtrs = await _rendAOlne.LoadOrgaAtribs(agid);
+            EnsAtrs = await _rendAOlne.LoadOrgaAtribs(jIdorg);
             Console.WriteLine("✅ LoadOrgaAtribs done");
 
-            EnsCats = await _rendAOlne.LoadOrgaCategs(agid);
+            EnsCats = await _rendAOlne.LoadOrgaCategs(jIdorg);
             Console.WriteLine("✅ LoadOrgaCategs done");
 
-            LsEnrVars = await _rendAOlne.LoadOrgaVariabs(agid);
+            LsEnrVars = await _rendAOlne.LoadOrgaVariabs(jIdorg);
             Console.WriteLine("✅ LoadOrgaVariabs done");
             //Ityp:options Oui/Non
             LsGAfls = LsEnrVars.Where(uv => uv.Gvars == 3 && uv.Itb == 6 && uv.Ityp == 1 && uv.Elea != 0).ToList();
@@ -511,7 +490,7 @@ else
             Console.WriteLine(ex.Message);
         }
         isTiwLoaded = true;
-        Console.WriteLine($"FINAL {curTiw.Xmatri}");
+        Console.WriteLine($"FINAL {curTiw.Zmatri}");
         StateHasChanged();
     }
     public async Task StartTiwNew()
@@ -523,13 +502,13 @@ else
             Rowguid = Guid.NewGuid(),
             Idorg = curOrga.Idorg,
             Utyp = Ugpe,
-            Xmatri = genmatri,
+            Zmatri = genmatri,
             Nom = "", Pnom = "", Datc = DateTime.Now, Eta = 1
         };
         curTiw = newTiw;
         await StartRowAdd(EntityLevel.Tiw, newTiw, TiwItems, d => SetDraft(EntityLevel.Tiw, d));
         //SetDraft(EntityLevel.Tiw, curTiw);
-        brouDraft = (TiewelDto)GetDraft(EntityLevel.Tiw);
+        curDraft = (TiewelDto)GetDraft(EntityLevel.Tiw);
         isTieAdding = true; // keep add separate from edit
         // 4. Set row states clearly (avoid double states)
         SetRowState(EntityLevel.Tiw, newTiw.Rowguid, RowState.AddPending);
@@ -543,6 +522,8 @@ else
         //validation
 
         await ConfirmAdd(level, draft, isConfirm);
+        //immediate save
+        await _guard.FlushAsync();
         isTieAdding = false;
         //GtieMode = GridMode.None;
     }
@@ -553,48 +534,81 @@ else
         //GtieMode = GridMode.None;
     }
 
-    private async Task<bool> GetCurOrga()
-    {
-        var resp = await _dftClient.GetAsync($"olines/{InIdorg}");
+    private async Task<GxorgaDto?> GetCurOrga()
+{
+    var resp = await _dftClient.GetAsync($"olines/{InIdorg}");
 
+    if (resp.IsSuccessStatusCode)
+    {
+        curOrga = await resp.Content.ReadFromJsonAsync<GxorgaDto>();
+
+        if (curOrga != null)
+        {
+            Sorga = curOrga.Idorg.ToString();
+            return curOrga;
+        }
+
+        Sorga = "";
+        return null;
+    }
+
+    var error = await resp.Content.ReadAsStringAsync();
+
+    Console.WriteLine($"Error {(int)resp.StatusCode}: {error}");
+
+    curOrga = new();
+    Sorga = "";
+
+    return null;
+}
+
+        // var resp = await _dftClient.GetAsync($"olines/{InIdorg}");
+
+        // // if (resp.IsSuccessStatusCode)
+        // // {
+        // //     var message = await resp.Content.ReadAsStringAsync();
+        // //     return true;
+        // // }
         // if (resp.IsSuccessStatusCode)
         // {
-        //     var message = await resp.Content.ReadAsStringAsync();
-        //     return true;
+        //     curOrga = await resp.Content.ReadFromJsonAsync<GxorgaDto>();
+        //     if (curOrga == null)
+        //     {
+        //         Sorga = curOrga?.Idorg.ToString() ?? "";
+        //         return null;
+        //     }
+        //     return curOrga;
         // }
-        if (resp.IsSuccessStatusCode)
-        {
-            curOrga = await resp.Content.ReadFromJsonAsync<GxorgaDto>();
-            Sorga = curOrga?.Idorg.ToString() ?? "";
-            return curOrga != null;
-        }
-        else
-        {
-            curOrga = new();
-        }
+        // else
+        // {
+        //     curOrga = new();
+        // }
 
 
-        var error = await resp.Content.ReadAsStringAsync();
-        Console.WriteLine($"Error {(int)resp.StatusCode}: {error}");
+        // var error = await resp.Content.ReadAsStringAsync();
+        // Console.WriteLine($"Error {(int)resp.StatusCode}: {error}");
 
-        return false;
-    }
+        // return null;
+    //}
 
-    private async Task<bool> ConfirmTiewelCreated(TiewelDto myTiw)
-    {
-        var resp = await _dftClient.PostAsJsonAsync("olines/create-tiewel", myTiw);
+    // private async Task<bool> ConfirmTiewelCreated(TiewelDto myTiw)
+    // {
 
-        if (resp.IsSuccessStatusCode)
-        {
-            var message = await resp.Content.ReadAsStringAsync();
-            return true;
-        }
+    //     var resp = await _dftClient.PostAsJsonAsync("olines/create-tiewel", myTiw);
 
-        var error = await resp.Content.ReadAsStringAsync();
-        Console.WriteLine($"Error {(int)resp.StatusCode}: {error}");
+    //     if (resp.IsSuccessStatusCode)
+    //     {
+    //         var message = await resp.Content.ReadAsStringAsync();
+    //         //enregistrer les childs
 
-        return false;
-    }
+    //         return true;
+    //     }
+
+    //     var error = await resp.Content.ReadAsStringAsync();
+    //     Console.WriteLine($"Error {(int)resp.StatusCode}: {error}");
+
+    //     return false;
+    // }
 
     private async Task InConfirmEdit(EntityLevel level, object draft, bool isConfirm)
     {
@@ -629,6 +643,35 @@ else
         await StartRowAdd(EntityLevel.Wfl, newWfl, WflItems, d => SetDraft(EntityLevel.Wfl, d));
     }
 
+    public async Task<List<string>> ValidateForSaveAsync()
+    {
+        static string Who(string? nom, string? pnom, string fallback)
+            => string.IsNullOrWhiteSpace($"{nom} {pnom}") ? fallback : $"{nom} {pnom}".Trim();
+
+        // Only inserts and updates need checking; a pending delete must not be blocked.
+        bool NeedsCheck(EntityLevel level, Guid rowguid)
+            => GetOpInfo(level, rowguid)?.OpType is PendingOpType.Insert or PendingOpType.Update;
+
+        var items = new List<(EntityLevel Level, ColPrefContext Ctx, object Model, string Title)>();
+
+        foreach (var tiw in TiwItems.Where(t => NeedsCheck(EntityLevel.Tiw, t.Rowguid)))
+            items.Add((EntityLevel.Tiw, new ColPrefContext { Totyp = 1, Efrm = 2, Styp = 1 }, tiw,
+                       Who(tiw.Nom, tiw.Pnom, "Personne")));
+
+        foreach (var wfl in WflItems.Where(w => NeedsCheck(EntityLevel.Wfl, w.Rowguid)))
+            items.Add((EntityLevel.Wfl, new ColPrefContext { Totyp = 1, Efrm = 2, Styp = wfl.Tyafl ?? 0 }, wfl,
+                       "Affilié " + Who(wfl.Nom, wfl.Pnom, "")));
+
+        var problems = await _colValidator.ValidateManyAsync(
+            curOrga.Idorg, items.Select(i => (i.Ctx, i.Model, i.Title)));
+
+        // Business rules (minimum lengths...). Skipped if you don't override Validate(level, entity).
+        foreach (var (level, _, model, title) in items)
+            if (!Validate(level, model))
+                problems.Add($"{title} : {Imessage}");
+
+        return problems;
+    }
     private async Task ConfirmWfl(TiwaflDto item)
     {
         var es = GetEditState(EntityLevel.Wfl);
@@ -652,7 +695,7 @@ else
             curTiw = (TiewelDto)entity;
             if (curTiw != null)
             {
-                mstrTiw = curTiw.Xmatri + "/" + curTiw.Nom + " " + curTiw.Pnom;
+                mstrTiw = curTiw.Zmatri + "/" + curTiw.Nom + " " + curTiw.Pnom;
             }
 
             if (gTiwModal != null)
@@ -711,6 +754,35 @@ else
             parent.IsSelected = false;
             CascadeUp(parent.Parent, false);
         }
+    }
+
+    private async Task<bool> TrySaveAllAsync()
+    {
+        if (curTiw is not null)
+        {
+            var problems = await ValidateForSaveAsync();
+            if (problems.Count > 0)
+            {
+                _messageService.Show("Enregistrement refusé — " + string.Join(" ; ", problems), ToastType.Warning);
+                return false;
+            }
+        }
+
+        await _guard.FlushAsync();
+        _messageService.Show("✅ Saved successfully", ToastType.Success);
+        StateHasChanged();
+        return true;
+    }
+
+    private async Task SaveAllChanges() => await TrySaveAllAsync();   // for the button
+    
+    private async Task CancelAllChanges()
+    {
+        Console.WriteLine("🗑️ CancelAllChanges START");
+        await _guard.CancelChanges();  // 🔥 AWAIT - blocks until done
+        _messageService.Show("✅ CancelAllChanges successfully", ToastType.Success);
+        StateHasChanged();
+        Console.WriteLine($"✅ CancelAllChanges END - Pending: {_guard.GetPendingChangesCount()}");
     }
 
     private void ShowModal() => isModalVisible = true;

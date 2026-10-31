@@ -28,7 +28,8 @@
     <label class="fw-bold">Affiliés</label>
     <div class="d-flex align-items-center gap-2 mb-2">
         <label>Groupe :</label>
-        <InputSelect TValue="int" 
+        @* TValue="int" *@
+        <InputSelect  
              Value="SelectedGroup" 
              ValueChanged="EventCallback.Factory.Create<int>(this, OnGroupChanged)" 
              ValueExpression="@(() => SelectedGroup)">

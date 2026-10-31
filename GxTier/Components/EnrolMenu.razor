@@ -174,20 +174,12 @@ else
     private int updateCount => _guard.GetUpdateCount();
     private int deleteCount => _guard.GetDeleteCount();
 
-    private async Task CancelAllChanges()
-    {
-        Console.WriteLine("🗑️ CancelAllChanges START");
-        await _guard.CancelChanges();  // 🔥 AWAIT - blocks until done
-        _messageService.Show("✅ CancelAllChanges successfully", ToastType.Success);
-        StateHasChanged();
-        Console.WriteLine($"✅ CancelAllChanges END - Pending: {_guard.GetPendingChangesCount()}");
-    }
-    private async Task SaveAllChanges()
-    {
-        await _guard.FlushAsync();  // 🔥 AWAIT - blocks until done
-        _messageService.Show("✅ Saved successfully", ToastType.Success);
-        StateHasChanged();
-    }
+    // private async Task SaveAllChanges()
+    // {
+    //     await _guard.FlushAsync();  // 🔥 AWAIT - blocks until done
+    //     _messageService.Show("✅ Saved successfully", ToastType.Success);
+    //     StateHasChanged();
+    // }
     //menus
     public List<GxMenuItem> MenuItems = new()
     {
@@ -320,75 +312,6 @@ else
         }
         isLoading = false;
     }
-
-    // protected override async Task OnInitializedAsync()
-    // {
-    //     //prise valeurs parent
-    //     isLoading = true;
-    //     LoadLabel = "data is loading";
-    //     await SetLoadingState(); // 75, "Fetching data...");
-    //     var authState = await _authProvider.GetAuthenticationStateAsync();
-    //     isAuthenticated = authState.User.Identity?.IsAuthenticated ?? false;
-    //     authUser = authState.User;
-    //     if (!isAuthenticated)
-    //     {
-    //         Console.WriteLine("Authentication in Enrol Utilisateur ECHEC");
-    //         return;
-    //     }
-    //     else
-    //     {
-    //         Console.WriteLine("Authentication in Enrol SUCCESS");
-    //     }
-    //     _usrBag = await _sessionContext.GetUserbagAsync();
-
-    //     LsVars = _usrBag.Usorga.Uvars.ToList();
-    //     Uroles = _usrBag.Uroles.ToList();
-    //     LsPlans = _usrBag.Usorga.Uplns.ToList();
-    //     LsDivs = await _rendAgres.LoadOrgaPostes();
-    //     LsRoles = await _rendAgres.LoadOrgaRoles();
-    //     LsFixes = _usrBag.Ufixes.ToList();
-    //     toChild = new ChildVars
-    //     {
-    //         authUser = authState.User,
-    //         isAuthenticated = true,
-    //         LsDivs = LsDivs.ToList(),
-    //         LsVars = LsVars.ToList(),
-    //         LsFixes = LsFixes.ToList(),
-    //         LsPlans = LsPlans.ToList(),
-    //     };
-    //     Console.WriteLine($"nb. fixes {LsFixes.Count}");
-    //     LsGties = _usrBag.Ufixes
-    //         .Where(ut => ut.Gvars == 36 && ut.Elea != 0 && ut.Elea != 9)
-    //         .ToList();
-    //     Groupes.Clear();
-    //     //foreach(var gr in LsGties.Where(gr => gr.Gp1 == 1 && gr.Itb == 6))
-    //     foreach (var gr in LsGties.Where(gr => gr.Itb == 6))
-    //     {
-    //         Groupes.Add(new GxGroupe { Itb = gr.Itb, Elea = gr.Elea, Liba = gr.Liba });
-    //     };
-    //     //var lscols = await _rendAgres.LoadOrgaColons();
-    //     //LsPcols = lscols.Where(tc => tc.Otyp == 1 && tc.Totyp == Ugpe && tc.Zfro == 1).ToList();
-    //     //LsFcols = lscols.Where(tc => tc.Otyp == 2 && tc.Totyp == Ugpe && tc.Zfro == 1).ToList();
-    //     Console.WriteLine("Authentication ENTREE");
-    //     EnsTbls = await _rendAgres.LoadOrgaTables();
-    //     Console.WriteLine($"nb. tables : {EnsTbls.Count}");
-
-    //     _nbChanges = _guard.GetPendingChangesCount();  // Initial value
-    //     await LoadTieAplAsync(_usrBag.Idorg);
-    //     EnsAtrs = await _rendAgres.LoadOrgaAtribs();
-    //     Console.WriteLine($"nb. attributs : {EnsAtrs.Count}");
-    //     EnsCats = await _rendAgres.LoadOrgaCategs();
-    //     Console.WriteLine($"nb. categories : {EnsCats.Count}");
-    //     // Build hierarchy once
-    //     BuildHierarchy();
-    //     //option initiale
-    //     strComp = $"Accueil/Site {gpeLiba}";
-    //     //isLoading = false;
-    //     //ParentOK = false;
-    //     //await _loadingService.Hide();
-    //     StateHasChanged();
-    //     isLoading = false;
-    // }
     private async Task LoadTieAplAsync(int key)
     {
         // Create context
@@ -460,12 +383,18 @@ else
         {
             var save = await _JsRUN.InvokeAsync<bool>("confirm", "Save changes before leaving?");
 
+            // if (save)
+            // {
+            //     // 🔥 YES: SaveAllChanges() → Navigate away
+            //     await SaveAllChanges();
+            //     Console.WriteLine("💾 Saved - navigating away");
+            //     _navManager.NavigateTo(context.TargetLocation, forceLoad: false);
+            // }
             if (save)
             {
-                // 🔥 YES: SaveAllChanges() → Navigate away
-                await SaveAllChanges();
-                Console.WriteLine("💾 Saved - navigating away");
-                _navManager.NavigateTo(context.TargetLocation, forceLoad: false);
+                if (await TrySaveAllAsync())
+                    _navManager.NavigateTo(context.TargetLocation, forceLoad: false);
+                // otherwise stay: the toast says what's missing
             }
             else
             {
@@ -535,10 +464,40 @@ else
         Console.WriteLine("PAS 2");
         await Task.Delay(1);
     }
-    async void InitChildData()
+    
+    // async void InitChildData()
+    // {
+    //     StateHasChanged();
+    // }
+    private async Task<bool> TrySaveAllAsync()
     {
+        if (_chxMenu == 1 && myetiw is not null)
+        {
+            var problems = await myetiw.ValidateForSaveAsync();
+            if (problems.Count > 0)
+            {
+                _messageService.Show("Enregistrement refusé — " + string.Join(" ; ", problems), ToastType.Warning);
+                return false;
+            }
+        }
+
+        await _guard.FlushAsync();
+        _messageService.Show("✅ Saved successfully", ToastType.Success);
         StateHasChanged();
+        return true;
     }
+
+    private async Task SaveAllChanges() => await TrySaveAllAsync();   // for the button
+    
+    private async Task CancelAllChanges()
+    {
+        Console.WriteLine("🗑️ CancelAllChanges START");
+        await _guard.CancelChanges();  // 🔥 AWAIT - blocks until done
+        _messageService.Show("✅ CancelAllChanges successfully", ToastType.Success);
+        StateHasChanged();
+        Console.WriteLine($"✅ CancelAllChanges END - Pending: {_guard.GetPendingChangesCount()}");
+    }
+
     public void Dispose()
     {
         _locationHandler?.Dispose();

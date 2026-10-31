@@ -5,7 +5,7 @@
 @using GxTie.Components.FrmHelper
 @using GxTie.Components.Cols
 
-@inject ColumnPreferencesClient PrefClient
+@inject ColumnPreferencesClient _prefClient
 
 @if (_isLoading)
 {
@@ -19,8 +19,16 @@ else
 {
     @foreach (var col in _columns.Where(c => !_reservedCols.Contains(c.ColName)))
     {
-        <FormField Label="@GetLabel(col)"
-                   IsVisible="@col.IsVisible">
+        @* <FormField Label="@GetLabel(col)"
+                   IsVisible="@col.IsVisible"> *@
+        <FormField Label="@(LabelOf(col) + (col.IsRequired ? " *" : ""))" IsVisible="@col.IsVisible">
+            <div class="@(Invalid(col) ? "border border-danger rounded p-1" : null)">
+                @* existing lookup / switch rendering, unchanged *@
+            </div>
+            @if (Invalid(col))
+            {
+                <div class="text-danger small">Champ obligatoire</div>
+            }
             @if (IsDropdown(col))
             {
                 @if (IsEditing)
@@ -120,16 +128,29 @@ else
     [Parameter, EditorRequired] public List<Gtabl> EnsTbls { get; set; } = new();
     [Parameter] public bool IsEditing { get; set; }
 
+    [Parameter] public IColumnPreferencesReader? PrefReader { get; set; }
+
+    private bool _isLoading;
+
     private List<LSelCol> _columns = new();
 
+
+    private readonly HashSet<string> _missing = new(StringComparer.OrdinalIgnoreCase);
+    public IReadOnlyList<string> MissingLabels =>
+        _columns.Where(c => _missing.Contains(c.ColName)).Select(LabelOf).ToList();
     private readonly HashSet<string> _reservedCols = new(StringComparer.OrdinalIgnoreCase)
     {
         "Xmatri",
         "Smatri"
     };
+    
+    private static string LabelOf(LSelCol c)
+        => string.IsNullOrWhiteSpace(c.Ulabel) ? c.ColName : c.Ulabel;
 
-    private bool _isLoading;
-
+    private bool Invalid(LSelCol c) => _missing.Contains(c.ColName);
+    private object? GetValue(object target, string colName)
+        => GetProperty(target, colName)?.GetValue(target);
+    
     private string _lastLoadedContextKey = string.Empty;
 
     // Required expression placeholders for dynamic input components.
@@ -163,12 +184,17 @@ else
             _columns = [];
             return;
         }
-
+        if (PrefReader is null)
+        {
+            // Show a message, skip loading, or throw a clear development error.
+            return;
+        }
         _isLoading = true;
 
         try
         {
-            _columns = await PrefClient.LoadAsync(Idorg, PColCtx);
+            _columns = await PrefReader.LoadAsync(Idorg, PColCtx);
+            //_columns = await _prefClient.LoadAsync(Idorg, PColCtx);
         }
         catch (Exception ex)
         {
@@ -343,153 +369,34 @@ else
     {
         return type.IsValueType ? Activator.CreateInstance(type) : null;
     }
-}
-@* @using System.Reflection
-@using GxShared.Cols.Models
-@using GxShared.Sess
-@using GxTie.Components.FrmHelper
-@using GxTie.Components.Cols
-
-@inject ColumnPreferencesClient PrefClient
-
-@if (_isLoading)
+    public bool Validate()
 {
-    <p><em>Chargement...</em></p>
-}
-else
-{
-    <!-- Then loop through the rest -->
-    @foreach (var col in _columns.Where(c => !_reservedCols.Contains(c.ColName)))
-    {
-        <FormField Label="@(string.IsNullOrWhiteSpace(col.Ulabel) ? col.ColName : col.Ulabel)"
-                   IsVisible="@col.IsVisible">
-            @if (col.Tref is > 0 && (col.Atyp == ColAtyp.Text || col.Atyp == ColAtyp.Number))
-            {
-                @if (IsEditing)
-                {
-                    <InputSelect TValue="string"
-                                 Value="@(GetValue(Model, col.ColName)?.ToString() ?? "0")"
-                                 ValueChanged="@(v => SetValue(col.ColName, v))"
-                                 ValueExpression="@(() => _dummy)"
-                                 class="form-select">
-                        <option value="0">Choix...</option>
-                        @foreach (var opt in EnsTbls.FirstOrDefault(t => t.Tenr == 1 && t.Tref == col.Tref)?.TbItems ?? new())
-                        {
-                            if (opt.Tref >= 31 && opt.Tref <= 35)
-                            {
-                                <option value="@opt.Abg">@opt.Liba</option>
-                            }
-                            else
-                            {
-                                <option value="@opt.Aval">@opt.Liba</option>
-                            }
-                        }
-                    </InputSelect>
-                }
-                else
-                {
-                    <span class="form-control-plaintext">@GetValue(Model, col.ColName)</span>
-                }
-            }
-            else
-            {
-                @switch (col.Atyp)
-                {
-                    case ColAtyp.Text:
-                        @if (IsEditing)
-                        {
-                            <input class="form-control" value="@GetValue(Model, col.ColName)"
-                                   @onchange="@(e => SetValue(col.ColName, e.Value))" />
-                        }
-                        else
-                        {
-                            <span class="form-control-plaintext">@GetValue(Model, col.ColName)</span>
-                        }
-                        break;
+    _missing.Clear();
+    foreach (var c in ColumnRules.GetMissing(Model, _columns))
+        _missing.Add(c.ColName);
 
-                    case ColAtyp.Number:
-                        @if (IsEditing)
-                        {
-                            <input type="number" class="form-control" value="@GetValue(Model, col.ColName)"
-                                   @onchange="@(e => SetValue(col.ColName, e.Value))" />
-                        }
-                        else
-                        {
-                            <span class="form-control-plaintext">@GetValue(Model, col.ColName)</span>
-                        }
-                        break;
-
-                    case ColAtyp.Date:
-                        @if (IsEditing)
-                        {
-                            <input type="date" class="form-control" value="@GetValue(Model, col.ColName)"
-                                   @onchange="@(e => SetValue(col.ColName, e.Value))" />
-                        }
-                        else
-                        {
-                            <span class="form-control-plaintext">@GetValue(Model, col.ColName)</span>
-                        }
-                        break;
-
-                    case ColAtyp.Checkbox:
-                        <input type="checkbox" checked="@((bool?)GetValue(Model, col.ColName) ?? false)"
-                               disabled="@(!IsEditing)"
-                               @onchange="@(e => SetValue(col.ColName, e.Value))" />
-                        break;
-                }
-            }
-        </FormField>
-    }
+    StateHasChanged();
+    return _missing.Count == 0;
 }
 
-@code {
-    [Parameter, EditorRequired] public int Idorg { get; set; } = 0;
-    //[Parameter, EditorRequired] public WelcContext TiwCtx { get; set; } = default!;
-    [Parameter, EditorRequired] public ColPrefContext PColCtx { get; set; } = default!;
-    [Parameter, EditorRequired] public object Model { get; set; } = default!;
-    [Parameter, EditorRequired] public List<Gtabl> EnsTbls { get; set; } = new();
-    [Parameter] public bool IsEditing { get; set; }
-
-    private List<LSelCol> _columns = new();
-    private readonly HashSet<string> _reservedCols = new() { "Xmatri", "Smatri" };
-
-    private bool _isLoading;
-    private string _dummy = ""; // satisfies ValueExpression requirement for InputSelect binding
-
-    // protected override async Task OnInitializedAsync()
-    // {
-    //     Console.WriteLine($"Idorg : {Idorg} PColCtx : {PColCtx.Totyp} TiwContext Idorg : {TiwCtx.Idorg} draftTiw : {Model.ToString()} EnsTbls : {EnsTbls.Count} isEditing : {IsEditing}");
-    // }
-    protected override async Task OnParametersSetAsync()
+    private bool IsEmpty(LSelCol col)
     {
-        _isLoading = true;
-        _columns = await PrefClient.LoadAsync(Idorg, PColCtx);
-        _isLoading = false;
-    }
+        var value = GetValue(Model, col.ColName);
 
-    private static readonly Dictionary<(Type, string), PropertyInfo> _propCache = new();
+        if (col.Tref is > 0 && col.CanHaveLookup())
+            return value is null || value.ToString() is "" or "0";   // "0" = "Choisir..."
 
-    private static PropertyInfo GetProp(object target, string name)
-    {
-        var key = (target.GetType(), name);
-        if (!_propCache.TryGetValue(key, out var pi))
+        return col.Atyp switch
         {
-            pi = target.GetType().GetProperty(name)
-                 ?? throw new InvalidOperationException($"Propriété '{name}' introuvable sur {target.GetType().Name}");
-            _propCache[key] = pi;
-        }
-        return pi;
+            ColAtyp.Text => string.IsNullOrWhiteSpace(value?.ToString()),
+            ColAtyp.Date => value is null || value is DateTime d && d == default,
+            ColAtyp.Checkbox => value is not true,                   // required = must be ticked
+            _ => value is null                        // 0 is a legitimate number
+        };
     }
 
-    private object? GetValue(object target, string colName) => GetProp(target, colName).GetValue(target);
+    // private static string LabelOf(LSelCol c)
+    //     => string.IsNullOrWhiteSpace(c.Ulabel) ? c.ColName : c.Ulabel;
 
-    private void SetValue(string colName, object? rawValue)
-    {
-        var pi = GetProp(Model, colName);
-        var targetType = Nullable.GetUnderlyingType(pi.PropertyType) ?? pi.PropertyType;
-        object? converted = rawValue is null || rawValue as string == ""
-            ? null
-            : Convert.ChangeType(rawValue.ToString(), targetType);
-        pi.SetValue(Model, converted);
-    }
-} *@
+    // private bool Invalid(LSelCol c) => _missing.Contains(c.ColName);
+}

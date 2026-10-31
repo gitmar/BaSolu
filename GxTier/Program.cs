@@ -148,7 +148,12 @@ builder.Services.AddScoped<IPuzzleSyncService, PuzzleSyncService>();
 builder.Services.AddScoped<ChildVars>();
 builder.Services.AddScoped<RendAgres>();
 builder.Services.AddScoped<RendAOlne>();
+//columns preferences and using
 builder.Services.AddScoped<ColumnPreferencesClient>();
+builder.Services.AddScoped<ColumnFormValidator>();
+builder.Services.AddScoped<PublicColumnPreferencesClient>();
+builder.Services.AddScoped<PublicColumnFormValidator>();
+
 builder.Services.AddScoped<ClieAppState>();
 builder.Services.AddScoped<SessionContextService>();
 builder.Services.AddScoped<SessionContextClient>();

@@ -3,7 +3,7 @@
     <TargetFramework>net9.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
-    <Version>1.1.38</Version>
+    <Version>1.1.42</Version>
     <SchemaVersion>1</SchemaVersion>
     <ServiceWorkerAssetsManifest>service-worker-assets.js</ServiceWorkerAssetsManifest>
   </PropertyGroup>
@@ -19,6 +19,7 @@
   
   <ItemGroup>
     <Compile Remove="ClieModels\**" />
+    <Compile Remove="Components\ABrou\**" />
     <Compile Remove="Components\Paccu\Invita\**" />
     <Compile Remove="Components\Secuope\Authoriz\**" />
     <Compile Remove="Components\Secuope\Sessions\**" />
@@ -29,6 +30,7 @@
     <Compile Remove="wwwroot\lib\wrbootstrap\**" />
     <Compile Remove="YYYFormulas\**" />
     <Content Remove="ClieModels\**" />
+    <Content Remove="Components\ABrou\**" />
     <Content Remove="Components\Paccu\Invita\**" />
     <Content Remove="Components\Secuope\Authoriz\**" />
     <Content Remove="Components\Secuope\Sessions\**" />
@@ -39,6 +41,7 @@
     <Content Remove="wwwroot\lib\wrbootstrap\**" />
     <Content Remove="YYYFormulas\**" />
     <EmbeddedResource Remove="ClieModels\**" />
+    <EmbeddedResource Remove="Components\ABrou\**" />
     <EmbeddedResource Remove="Components\Paccu\Invita\**" />
     <EmbeddedResource Remove="Components\Secuope\Authoriz\**" />
     <EmbeddedResource Remove="Components\Secuope\Sessions\**" />
@@ -49,6 +52,7 @@
     <EmbeddedResource Remove="wwwroot\lib\wrbootstrap\**" />
     <EmbeddedResource Remove="YYYFormulas\**" />
     <None Remove="ClieModels\**" />
+    <None Remove="Components\ABrou\**" />
     <None Remove="Components\Paccu\Invita\**" />
     <None Remove="Components\Secuope\Authoriz\**" />
     <None Remove="Components\Secuope\Sessions\**" />
@@ -61,7 +65,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Remove="Components\ABrou\Z3EnrolFormBase.cs" />
     <Compile Remove="Components\Opera\CalcWorkflow.cs" />
     <Compile Remove="Components\Paccu\InscTiw.razor.cs" />
     <Compile Remove="Components\Paccu\Valdtie.razor.cs" />
@@ -95,19 +98,16 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Content Remove="Components\ABrou\MgrTest.razor" />
-    <Content Remove="Components\ABrou\Z2Carri6Menu.razor" />
-    <Content Remove="Components\ABrou\Z2SaieActLnes.razor" />
-    <Content Remove="Components\ABrou\Z3CarriMenu5.razor" />
-    <Content Remove="Components\ABrou\Z3TieGridForm.razor" />
-    <Content Remove="Components\ABrou\Z4InscTiw.razor" />
-    <Content Remove="Components\ABrou\ZzzAffectation.razor" />
     <Content Remove="Components\FrmHelper\BoolComponent.razor" />
     <Content Remove="Components\FrmHelper\CheckComponent.razor" />
     <Content Remove="Components\FrmHelper\ChildGridHelper.razor" />
     <Content Remove="Components\FrmHelper\ChildGridHelper8.razor" />
+    <Content Remove="Components\FrmHelper\CTieGdHelper.razor" />
+    <Content Remove="Components\FrmHelper\CTiwGdHelper.razor" />
     <Content Remove="Components\FrmHelper\MainGridHelper.razor" />
     <Content Remove="Components\FrmHelper\MainGridHelper8.razor" />
+    <Content Remove="Components\FrmHelper\PTieGdHelper.razor" />
+    <Content Remove="Components\FrmHelper\PTiwGdHelper.razor" />
     <Content Remove="Components\FrmHelper\StringComponent.razor" />
     <Content Remove="Components\FrmHelper\TabhieComponent.razor" />
     <Content Remove="Components\FrmHelper\TabselComponent.razor" />
@@ -189,7 +189,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Components\ABrou\" />
     <Folder Include="Components\Opera\Calculs\" />
     <Folder Include="Components\Opera\Etats\" />
     <Folder Include="Components\Opera\Saisies\" />

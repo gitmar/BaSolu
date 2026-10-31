@@ -8,15 +8,20 @@
 @using GxShared.Sess
 @using GxShared.Helpers
 @using GxShared.Helpers.CrudHelpers
+@using GxShared.Cols.Models
 @using GxShared.Interfaces
 @using GxTie.Components.Paccu.RtPer
 @using GxTie.Components.Uifrags
 @using GxTie.Components.PfrmHelper
+@using GxTie.Components.Cols
 @using GxTie.Services
 @using Simple.OData.Client
 @using GxTie.Components.Apcomp
 
 @inject RendAOlne _rendAOlne
+@inject ColumnPreferencesClient _prefClient
+@inject ColumnFormValidator _colValidator
+@inject ColumnPreferencesClient AuthPrefs
 
 <PageTitle>Saisie.Enrollement</PageTitle>
 <div>@Imessage</div>
@@ -60,7 +65,7 @@
                     <Button Color="ButtonColor.Primary" Size="ButtonSize.Small" Class="px-2 py-1 small-btn"
                             Disabled="@(AllowMultipleEdits || isTieAdding)"
                             @onclick="StartTiwNew">
-                        ➕ Add
+                        ➕ Ajt
                     </Button>
                 }
                 @if (isTieAdding)
@@ -118,12 +123,14 @@
                                         Saffilia="@Saffilia"
                                         IsProvisional="true"
                                         InAddingMode="@isTieAdding"
+                                        VientDe="1"
                                         GenerationMode="MatriculeGenerationMode.Local"
-                                        @bind-Value="curTiw.Xmatri"
+                                        @bind-Value="curTiw.Zmatri"
                                         IsBusy="@IsBusy"
-                                        ValidChanged="OnXmatriValidChanged" />
+                                        ValidChanged="OnZmatriValidChanged" />
                                     <PTiwGdHelper Idorg="@curOrga.Idorg" Entity="@curTiw"
                                         Draft="@(GetDraft(EntityLevel.Tiw) as TiewelDto)"
+                                        P2refReader="@AuthPrefs"
                                         IsEditing="@IsTiwEditing(curTiw)"
                                         EnsTbls="@EnsTbls"
                                         Ugpe="@Ugpe"
@@ -242,7 +249,7 @@
                                                 </ChildContent>
                                             </GridColumn>
                                             <GridColumn TItem="TiewelDto" HeaderText="Dossier">
-                                                <ChildContent Context="item">@item.Xmatri</ChildContent>
+                                                <ChildContent Context="item">@item.Zmatri</ChildContent>
                                             </GridColumn>
                                             <GridColumn TItem="TiewelDto" HeaderText="Nom">
                                                 <ChildContent Context="item">@item.Nom</ChildContent>
@@ -391,11 +398,12 @@
     private string Saffilia = "T";
     private bool InAddingMode = false;
 
-    private bool XmatriValid;
-    private void OnXmatriValidChanged(bool isValid)
+    private bool ZmatriValid;
+    private void OnZmatriValidChanged(bool isValid)
     {
-        XmatriValid = isValid;
-        //curTiw.Xmatri = XmatriValid;
+        ZmatriValid = isValid;
+        //curTiw.Zmatri = curTiw.Zmatri.ToString();
+        //curTiw.Zmatri = ZmatriValid;
     }
 
     public AdrContext Actx { get; set; }
@@ -483,12 +491,14 @@
             Rowguid = Guid.NewGuid(),
             Idorg = curOrga.Idorg,
             Utyp = Ugpe,
+            Zmatri = "",
             Xmatri = "",
             Nom = "", Pnom = "", Datc = DateTime.Now, Eta = 1
         };
         await StartRowAdd(EntityLevel.Tiw, newTiw, TiwItems, d => SetDraft(EntityLevel.Tiw, d));
         curTiw = newTiw;
         isTieAdding = true; // keep add separate from edit
+
         // 4. Set row states clearly (avoid double states)
         SetRowState(EntityLevel.Tiw, newTiw.Rowguid, RowState.AddPending);
         //TiwRenderKey = draftTiw.Rowguid;
@@ -543,6 +553,35 @@
         await StartRowAdd(EntityLevel.Wfl, newWfl, WflItems, d => SetDraft(EntityLevel.Wfl, d));
     }
 
+    public async Task<List<string>> ValidateForSaveAsync()
+    {
+        static string Who(string? nom, string? pnom, string fallback)
+            => string.IsNullOrWhiteSpace($"{nom} {pnom}") ? fallback : $"{nom} {pnom}".Trim();
+
+        // Only inserts and updates need checking; a pending delete must not be blocked.
+        bool NeedsCheck(EntityLevel level, Guid rowguid)
+            => GetOpInfo(level, rowguid)?.OpType is PendingOpType.Insert or PendingOpType.Update;
+
+        var items = new List<(EntityLevel Level, ColPrefContext Ctx, object Model, string Title)>();
+
+        foreach (var tiw in TiwItems.Where(t => NeedsCheck(EntityLevel.Tiw, t.Rowguid)))
+            items.Add((EntityLevel.Tiw, new ColPrefContext { Totyp = 1, Efrm = 2, Styp = 1 }, tiw,
+                       Who(tiw.Nom, tiw.Pnom, "Personne")));
+
+        foreach (var wfl in WflItems.Where(w => NeedsCheck(EntityLevel.Wfl, w.Rowguid)))
+            items.Add((EntityLevel.Wfl, new ColPrefContext { Totyp = 1, Efrm = 2, Styp = wfl.Tyafl ?? 0 }, wfl,
+                       "Affilié " + Who(wfl.Nom, wfl.Pnom, "")));
+
+        var problems = await _colValidator.ValidateManyAsync(
+            curOrga.Idorg, items.Select(i => (i.Ctx, i.Model, i.Title)));
+
+        // Business rules (minimum lengths...). Skipped if you don't override Validate(level, entity).
+        foreach (var (level, _, model, title) in items)
+            if (!Validate(level, model))
+                problems.Add($"{title} : {Imessage}");
+
+        return problems;
+    }
     private async Task ConfirmWfl(TiwaflDto item)
     {
         var es = GetEditState(EntityLevel.Wfl);
@@ -566,7 +605,7 @@
             curTiw = (TiewelDto)entity;
             if (curTiw != null)
             {
-                mstrTiw = curTiw.Xmatri + "/" + curTiw.Nom + " " + curTiw.Pnom;
+                mstrTiw = curTiw.Zmatri + "/" + curTiw.Nom + " " + curTiw.Pnom;
             }
 
             if (gTiwModal != null)

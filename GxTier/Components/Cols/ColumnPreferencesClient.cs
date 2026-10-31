@@ -5,20 +5,25 @@ using GxShared.Cols.Models;
 namespace GxTie.Components.Cols
 {
     // Client/Services/ColumnPreferencesClient.cs
-    public class ColumnPreferencesClient
+    public sealed class ColumnPreferencesClient : IColumnPreferencesReader
     {
         private readonly HttpClient _dftClient;
+
         public ColumnPreferencesClient(IHttpClientFactory httpClientFactory)
         {
             _dftClient = httpClientFactory.CreateClient("AUTHClient");
         }
 
+        //public async Task<List<LSelCol>> LoadAsync(int idorg, ColPrefContext ctx)
+        //    => await _dftClient.GetFromJsonAsync<List<LSelCol>>($"Colprefs/{idorg}{Qs(ctx)}")
+        //       ?? new List<LSelCol>();
+
+        public async Task<List<LSelCol>?> LoadAsync(int idorg, ColPrefContext ctx)
+        {
+            return await _dftClient.GetFromJsonAsync<List<LSelCol>>(
+                $"Colprefs/{idorg}{Qs(ctx)}") ?? new List<LSelCol>();
+        }
         private static string Qs(ColPrefContext ctx) => $"?Totyp={ctx.Totyp}&Efrm={ctx.Efrm}&Styp={ctx.Styp}";
-
-        public async Task<List<LSelCol>> LoadAsync(int idorg, ColPrefContext ctx)
-            => await _dftClient.GetFromJsonAsync<List<LSelCol>>($"Colprefs/{idorg}{Qs(ctx)}")
-               ?? new List<LSelCol>();
-
         public async Task<bool> SaveAsync(int idorg, ColPrefContext ctx, List<LSelCol> selection)
         {
             var resp = await _dftClient.PostAsJsonAsync($"Colprefs/{idorg}{Qs(ctx)}", selection);

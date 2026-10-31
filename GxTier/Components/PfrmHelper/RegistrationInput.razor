@@ -10,42 +10,53 @@
     IsGenerating: @IsGenerating | 
     InAddingMode: @InAddingMode
 </div> *@
+
+
 <div class="registration-input">
     <div class="row g-2 align-items-center">
-    <!-- Prefix -->
-    <div class="col-auto">
-        <span class="form-control-plaintext fw-bold">
-            @(IsProvisional ? "PV-" : "")@Sorga-@Sgpe-
-        </span>
-    </div>
-
-    <!-- Input -->
-    <div class="col-md-2">
-        <div class="input-group">
-            <input class="form-control"
-                   value="@Ordre"
-                   @oninput="OnOrdreInput"
-                   maxlength="10"
-                   inputmode="numeric"
-                   pattern="[0-9]{10}"
-                   placeholder="10 digits"
-                   disabled="@IsReadOnly || IsBusy" />
-            <span class="input-group-text fw-bold">@Saffilia</span>
+        <!-- Prefix -->
+        <div class="col-auto">
+            <span class="form-control-plaintext fw-bold">
+                @(IsProvisional ? "PV-" : "")@Sorga-@Sgpe-
+            </span>
         </div>
+
+        <!-- Input -->
+         <div class="col-md-3">
+            @if (VientDe == 1)
+            {
+                <div class="input-group">
+                    <input class="form-control"
+                    value="@_ordre"
+                    @oninput="OnOrdreInput"
+                    maxlength="10"
+                    inputmode="numeric"
+                    pattern="[0-9]{10}"
+                    placeholder="10 digits"
+                    disabled="@IsReadOnly || IsBusy" />
+                    <span class="fw-bold">@Saffilia</span>
+                </div>
+            } else
+            {
+                <div class="md-col-2">
+                    @_ordre
+                </div>
+            }
+        </div>
+        }
+        <!-- Button -->
+        @if (VientDe == 1)
+        {
+            <div class="col-auto">
+                <Button Color="ButtonColor.Primary"
+                        Size="ButtonSize.Small"
+                        Disabled="@(!PeutGenerer)"
+                        @onclick="GenerateAsync">
+                    @(IsGenerating ? "..." : "Generate")
+                </Button>
+            </div>
+        }
     </div>
-
-    <!-- Button -->
-    <div class="col-auto">
-        <Button Color="ButtonColor.Primary"
-                Size="ButtonSize.Small"
-                Disabled="@(!PeutGenerer)"
-                @onclick="GenerateAsync">
-            @(IsGenerating ? "..." : "Generate")
-        </Button>
-    </div>
-</div>
-
-
     @if (!string.IsNullOrWhiteSpace(_errorMessage))
     {
         <div class="text-danger small mt-1">
@@ -60,10 +71,11 @@
 
 </style>
 @code {
-    private string _ordre = string.Empty;
     private bool _isValid;
     private bool _isGenerating;
     private string _errorMessage = string.Empty;
+
+    [Parameter] public int VientDe { get; set; } = 0;
 
     [Parameter] public string Sorga { get; set; } = string.Empty;
     [Parameter] public int? Ugpe { get; set; } = 0;
@@ -90,7 +102,8 @@
     }
 
     private bool PeutGenerer => InAddingMode;
-    private string Ordre => _ordre;
+    private string _ordre = string.Empty;
+    //private string SiOrdre => _ordre;
 
     private int IvGroup => Ugpe ?? 0;
 
@@ -98,10 +111,17 @@
     {
         if (!string.IsNullOrWhiteSpace(Value))
         {
-             ExtractOrdreFromValue();
+            ExtractOrdreFromValue();
         }
-        
+
         Validate();
+    }
+    protected override async Task OnAfterRenderAsync(bool FirstRender)
+    {
+        if (FirstRender && VientDe == 2) //Onlne
+        {
+            await GenerateAsync();
+        }
     }
     // protected override async Task OnAfterRenderAsync(bool firstRender)
     // {
@@ -194,14 +214,14 @@
 
     private string BuildMatricule()
     {
-        if (string.IsNullOrWhiteSpace(Ordre))
+        if (string.IsNullOrWhiteSpace(_ordre))
         {
             return string.Empty;
         }
 
         return IsProvisional
-            ? $"PV-{Sorga}-{Sgpe}-{Ordre}{Saffilia}"
-            : $"{Sorga}-{Sgpe}-{Ordre}{Saffilia}";
+            ? $"PV-{Sorga}-{Sgpe}-{_ordre}{Saffilia}"
+            : $"{Sorga}-{Sgpe}-{_ordre}{Saffilia}";
     }
 
     private async Task ValidateAsync()
@@ -233,13 +253,13 @@
     {
         _errorMessage = string.Empty;
 
-        if (string.IsNullOrWhiteSpace(Ordre))
+        if (string.IsNullOrWhiteSpace(_ordre))
         {
             _errorMessage = "Ordre is required.";
             return false;
         }
 
-        if (!Regex.IsMatch(Ordre, @"^\d{10}$"))
+        if (!Regex.IsMatch(_ordre, @"^\d{10}$"))
         {
             _errorMessage = "Ordre must contain exactly 10 digits.";
             return false;
