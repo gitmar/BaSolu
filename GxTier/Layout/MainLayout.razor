@@ -197,6 +197,7 @@ else
 
     //private AuthenticationStateChangedEventHandler? _authStateChangedHandler;
     private AuthenticationStateChangedHandler? _authStateChangedHandler;
+
     protected override async Task OnInitializedAsync()
     {
         Console.WriteLine("[MainLayout] 1. Initialization started");
@@ -271,6 +272,12 @@ else
 
             Console.WriteLine("[MainLayout] Initialization finished");
         }
+    }
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        if (firstRender)
+            Console.WriteLine("[MainLayout] FIRST RENDER");
     }
 
     private void ToggleSidebar()

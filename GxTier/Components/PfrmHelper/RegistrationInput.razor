@@ -25,25 +25,24 @@
          <div class="col-md-3">
             @if (VientDe == 1)
             {
-                <div class="input-group">
+                <div class="d-flex align-items-center gap-1">
                     <input class="form-control"
-                    value="@_ordre"
-                    @oninput="OnOrdreInput"
-                    maxlength="10"
-                    inputmode="numeric"
-                    pattern="[0-9]{10}"
-                    placeholder="10 digits"
-                    disabled="@IsReadOnly || IsBusy" />
+                           value="@_ordre"
+                           @oninput="OnOrdreInput"
+                           maxlength="10"
+                           inputmode="numeric"
+                           pattern="[0-9]{10}"
+                           placeholder="10 digits"
+                           disabled="@IsReadOnly || IsBusy" />
                     <span class="fw-bold">@Saffilia</span>
                 </div>
             } else
-            {
+            { //online
                 <div class="md-col-2">
                     @_ordre
                 </div>
             }
         </div>
-        }
         <!-- Button -->
         @if (VientDe == 1)
         {
@@ -123,18 +122,6 @@
             await GenerateAsync();
         }
     }
-    // protected override async Task OnAfterRenderAsync(bool firstRender)
-    // {
-    //     if (firstRender &&
-    //         !IsReadOnly &&
-    //         !IsBusy &&
-    //         string.IsNullOrWhiteSpace(Value) &&
-    //         !string.IsNullOrWhiteSpace(Sorga) &&
-    //         !string.IsNullOrWhiteSpace(Sgpe))
-    //     {
-    //         await GenerateAsync();
-    //     }
-    // }
     private void ExtractOrdreFromValue()
     {
         var parts = Value!.Split('-', StringSplitOptions.RemoveEmptyEntries);

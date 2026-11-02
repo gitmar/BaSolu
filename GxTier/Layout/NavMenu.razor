@@ -54,11 +54,13 @@
                         <i class="bi bi-wifi-off nav-icon"></i>
                         <span class="nav-text">On/Off(line)</span>
                     </NavLink>
-                        @if (authUser.IsInRole("Admin") || authUser.IsInRole("{Pilote}") || authUser.IsInRole("Support"))
+                        @if (authUser.IsInRole("Support") || authUser.IsInRole("Pilote") 
+                            || authUser.IsInRole("{Owner}") || authUser.IsInRole("Admin")
+                            || authUser.IsInRole("Developer"))
                         {
                             <NavLink class="nav-link nav-sub text-light small d-flex align-items-center gap-2" href="olnelink">
                                 <i class="bi bi-clock-history nav-icon"></i>
-                                <span class="nav-text">Liens</span>
+                                <span class="nav-text">AppelCandidats</span>
                             </NavLink>
                         }
                 </nav>

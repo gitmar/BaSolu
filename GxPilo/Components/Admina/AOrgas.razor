@@ -85,7 +85,7 @@ else if (edOrgContext != null && curOrga != null)
                     </div>
                 <div class="row">
                     <Tabs>
-                        <Tab Title="Structure">
+                        <Tab Title="Structure" Name="StrucTab" OnClick="@(() => OnTabChanged(0))">
                             <Content>
                                 <EditForm EditContext="edOrgContext">
                                     <DataAnnotationsValidator />
@@ -486,7 +486,7 @@ else if (edOrgContext != null && curOrga != null)
                                 </EditForm>
                             </Content>
                         </Tab>
-                        <Tab Title="Filiations">
+                        <Tab Title="Filiations" Name="FiliaTab" OnClick="@(() => OnTabChanged(1))">
                             <Content>
                                 <EditForm EditContext="edFixContext">
                                     <DataAnnotationsValidator />
@@ -815,6 +815,16 @@ else if (edOrgContext != null && curOrga != null)
                                 </EditForm>
                             </Content>
                         </Tab>
+                        <Tab Title="Colonnes" Name="ColonTab" OnClick="@(() => OnTabChanged(2))">
+                            <Content>
+                                <OrgColumnSelector Idorg="@curOrga.Idorg" EnsTbls="@EnsTbls" EnsVars="@LsVars"/>
+                            </Content>
+                        </Tab>
+                        <Tab Title="Dictionnaire" Name="DicoTab" OnClick="@(() => OnTabChanged(3))">
+                            <Content>
+                                <DicoAdmin IdcOrg="@curOrga.Idorg" LsVars="@LsVars" />
+                            </Content>
+                        </Tab>
                         @* <Tab Title="Enrollement">
                             <Content>
                                 <EditForm EditContext="edFixContext">
@@ -837,31 +847,24 @@ else if (edOrgContext != null && curOrga != null)
                                 </EditForm>
                             </Content>
                         </Tab> *@
-                        <Tab Title="Colonnes">
-                            <Content>
-                                <OrgColumnSelector Idorg="@curOrga.Idorg" EnsTbls="@EnsTbls" />
-                            </Content>
-                        </Tab>
-                        <Tab Title="Dictionnaire">
-                            <Content>
-                                <DicoAdmin IdcOrg="@curOrga.Idorg" LsVars="@LsVars" />
-                            </Content>
-                        </Tab>
                     </Tabs>
                     <!-- GLOBAL Save/Cancel - ONE button saves ALL tabs -->
-                    <div class="alert alert-warning d-flex justify-content-between align-items-center py-1 px-2 position-fixed bottom-0 end-0"
-                         style="background-color: transparent; z-index: 1050; max-width: 400px;">
-                        <div class="d-flex gap-2 align-items-center">
-                            <Button class="w-auto flex-grow-0 flex-shrink-0" Color="ButtonColor.Info" @onclick="SaveAllChanges"
-                                    Enabled="@_guard.HasPendingChanges()">
-                                Save All (@_guard.GetPendingChangesCount() changes)
-                            </Button>
-                            <Button class="w-auto flex-grow-0 flex-shrink-0" Color="ButtonColor.Secondary" @onclick="CancelAllChanges"
-                                    Enabled="@_guard.HasPendingChanges()">
-                                Cancel All
-                            </Button>
+                    @if (!inColTab)
+                    {
+                        <div class="alert alert-warning d-flex justify-content-between align-items-center py-1 px-2 position-fixed bottom-0 end-0"
+                        style="background-color: transparent; z-index: 1050; max-width: 400px;">
+                            <div class="d-flex gap-2 align-items-center">
+                                <Button class="w-auto flex-grow-0 flex-shrink-0" Color="ButtonColor.Info" @onclick="SaveAllChanges"
+                                Enabled="@_guard.HasPendingChanges()">
+                                    Save All (@_guard.GetPendingChangesCount() changes)
+                                </Button>
+                                <Button class="w-auto flex-grow-0 flex-shrink-0" Color="ButtonColor.Secondary" @onclick="CancelAllChanges"
+                                Enabled="@_guard.HasPendingChanges()">
+                                    Cancel All
+                                </Button>
+                            </div>
                         </div>
-                    </div>
+                    }
                 </div>
             </div>
     </Authorized>
@@ -993,6 +996,8 @@ else if (edOrgContext != null && curOrga != null)
 
     //private Aogadrs mygadr;
     //private Aogcols myicols;
+    private bool inColTab = false;
+    private int curTabIdx = 0;
 
     //column management
 
@@ -1652,7 +1657,7 @@ else if (edOrgContext != null && curOrga != null)
     {
         switch (groupe)
         {
-             case EntityOgpe.Org:
+            case EntityOgpe.Org:
                 {
                     var src = (GxorgaDto)entity;
                     var target = curOrga; //MyDaOrgs.FirstOrDefault(x => x.Rowguid == src.Rowguid);
@@ -1977,7 +1982,7 @@ else if (edOrgContext != null && curOrga != null)
 
     private async Task SaveAdr()
     {
-        
+
         //await UnifiedEditAction(entity, true, level);
         await InvokeAsync(StateHasChanged);
         //EndRowEdit();
@@ -2046,6 +2051,30 @@ else if (edOrgContext != null && curOrga != null)
             //_guard.MarkDirty();
         }
     }
+    
+    private async Task OnTabChanged(int tabIndex)
+    {
+        curTabIdx = tabIndex;
+        inColTab = false;
+
+        switch (curTabIdx)
+        {
+            case 0:
+                // Structure
+                break;
+            case 1:
+                // Filiation
+                break;
+            case 2:
+                // Colonne
+                inColTab = true;
+                break;
+            case 3:
+                // Dictionnaire 
+                inColTab = true;
+                break;
+    }
+}
     
     public enum EntityOgpe
     {

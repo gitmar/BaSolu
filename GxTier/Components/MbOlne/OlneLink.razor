@@ -64,6 +64,16 @@
                         </option>
                     }
                 </select>
+            </div>
+        </div>
+       <div class="row g-2 align-items-end">
+            <div class="col-md-4">
+                <label>Date Expiration </label>
+                <InputDate TValue="DateTime" @bind-Value="_expDate" class="form-control" />
+            </div>
+        </div>
+        <div class="row g-2 align-items-end">
+            <div class="col-md-4">
                 <button class="btn btn-primary" @onclick="CreateInviteLink" disabled="@(_inUgpe == 0)">
                     Generate invitation link
                 </button>
@@ -91,14 +101,19 @@
 </div>
 
 @code {
+    [CascadingParameter]
+    private Task<AuthenticationState>? AuthState { get; set; }
+
     private string Imessage = "";
     //public GxorgaDto curOrga { get; set; }
 
+    private string _userID = "";
     //GlobModels
     public Userbag _usrBag = new Userbag();
 
     public string _cdlink = "";
     private int _inUgpe = 0;
+    private DateTime _expDate = DateTime.Today.AddDays(7);
     private List<LkGroupe> _groupes = new();
     public List<Gpfixe> LsGties = new();
 
@@ -109,6 +124,18 @@
 
      protected override async Task OnInitializedAsync()
     {
+        if (AuthState == null)
+            return;
+
+        var authState = await AuthState;
+        var user = authState.User;
+       
+        if (user.Identity?.IsAuthenticated == true)
+        {
+            int.TryParse(user.FindFirst("Gx.Orgid")?.Value, out int inIdorg);
+
+            _userID = user.FindFirst("Gx.Userid")?.Value;
+        }
         _apiClient = _httpClientFactory.CreateClient("DefaultClient");
         _usrBag = await _sessionContext.GetUserbagAsync();
         if (_usrBag?.Usorga == null)
@@ -134,7 +161,8 @@
         {
             Idorg = _usrBag.Idorg,
             Utyp = _inUgpe, //1cible2soutien3client4fournis5parter
-            ChxOlne = _inUgpe
+            ChxOlne = _inUgpe,
+            Expires = _expDate
         };
         string baseUrl = _apiClient.BaseAddress?.ToString().TrimEnd('/');
         //encode et generate link

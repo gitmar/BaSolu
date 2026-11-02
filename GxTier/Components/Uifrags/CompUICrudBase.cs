@@ -213,6 +213,7 @@ namespace GxTie.Components.Uifrags
             Console.WriteLine($"ROW is removed");
             await InvokeAsync(StateHasChanged);
         }
+
         //protected void BeginAdd(EntityLevel level, Guid rowguid, object draft)
         //{
         //    var s = GetEditState(level);
@@ -234,8 +235,8 @@ namespace GxTie.Components.Uifrags
         {
             var rowguid = EntityKeyHelper.GetRowguid(newItem);
             if (rowguid == Guid.Empty) return;
-            if (IsAnyRowEditing && !IsRowEditing(rowguid)) return;
-
+            //if (IsAnyRowEditing && !IsRowEditing(rowguid)) return;
+            if (IsLevelBusy(level) && !IsRowEditing(rowguid)) return;
             list.Insert(0, newItem);
             var draft = DeepClone(newItem);
             setDraftField(draft);
@@ -252,7 +253,8 @@ namespace GxTie.Components.Uifrags
         {
             var rowguid = EntityKeyHelper.GetRowguid(item);
             if (rowguid == Guid.Empty) return;
-            if (IsAnyRowEditing && !IsRowEditing(rowguid)) return;
+            if (IsLevelBusy(level) && !IsRowEditing(rowguid)) return;
+            //if (IsAnyRowEditing && !IsRowEditing(rowguid)) return;
 
             originalsStore[rowguid] = DeepClone(item);
             var draft = DeepClone(item);
@@ -265,7 +267,8 @@ namespace GxTie.Components.Uifrags
         protected async Task StartRowDelete(EntityLevel level, Guid rowguid)
         {
             if (rowguid == Guid.Empty) return;
-            if (IsAnyRowEditing && !IsRowEditing(rowguid)) return;
+            if (IsLevelBusy(level) && !IsRowEditing(rowguid)) return;
+            //if (IsAnyRowEditing && !IsRowEditing(rowguid)) return;
 
             SetRowState(level, rowguid, RowState.DeletePending);
             BumpRenderKey(level);                 // <-- add this
@@ -312,6 +315,10 @@ namespace GxTie.Components.Uifrags
             var es = GetEditState(level);
             return es.IsAdd || es.IsEdit;
         }
+        protected T EditTarget<T>(EntityLevel level, T current) where T : class
+            => GetDraft(level) is T draft
+                && IsEditing(level, MLEntityKeyHelper.GetRowguidAsGuid(current))
+                    ? draft : current;
         protected async Task SaveAllChanges()
         {
             await Guard.FlushAsync();  // 🔥 AWAIT - blocks until done
@@ -565,11 +572,19 @@ protected void CopyPropertiesWithRules<T>(T target, T source)
                     CopyPropertiesWithRules(tiw, draftTiw);
                 }
                 break;
+            case EntityLevel.Afl:
+                if (entity is TieaflDto afl && _draftAfl is TieaflDto draftAfl)
+                        CopyPropertiesWithRules(afl, draftAfl);
+                break;
+            case EntityLevel.Wfl:
+                if (entity is TiwaflDto wfl && _draftWfl is TiwaflDto draftWfl)
+                        CopyPropertiesWithRules(wfl, draftWfl);
+                break;
             case EntityLevel.Act:
                 if (entity is ActsaieDto act && _draftAct is ActsaieDto draftAct)
-                {
-                    CopyPropertiesWithRules(act, draftAct);
-                }
+                    {
+                        CopyPropertiesWithRules(act, draftAct);
+                    }
                 break;
             case EntityLevel.Adt:
                 if (entity is ActdetDto adt && _draftAdt is ActdetDto draftAdt)
@@ -604,33 +619,59 @@ protected void CopyPropertiesWithRules<T>(T target, T source)
     {
         switch (level)
         {
-            case EntityLevel.Tiw:
-                if (entity is TiewelDto tiw && _draftTiw is TiewelDto draftTiw)
-                {
-                    CopyPropertiesWithRules(tiw, draftTiw);
-                }
-                break;
-            case EntityLevel.Tie:
-                if (entity is TierspDto tie && _draftTie is TierspDto draftTie)
-                {
-                    CopyPropertiesWithRules(tie, draftTie);
-                }
-                break;
-            case EntityLevel.Wfl:
-                if (entity is TiwaflDto wfl && _draftWfl is TiwaflDto draftWfl)
-                {
-                    CopyPropertiesWithRules(wfl, draftWfl);
-                }
-                break;
-            case EntityLevel.Afl:
-                if (entity is TieaflDto afl && _draftAfl is TieaflDto draftAfl)
-                {
-                   CopyPropertiesWithRules(afl, draftAfl);
-                }
-                break;
-            default:
-                throw new ArgumentOutOfRangeException(nameof(level));
-        }
+                case EntityLevel.Tie:
+                    if (entity is TierspDto tie && _draftTie is TierspDto draftTie)
+                    {
+                        CopyPropertiesWithRules(tie, draftTie);
+                    }
+                    break;
+                case EntityLevel.Tiw:
+                    if (entity is TiewelDto tiw && _draftTiw is TiewelDto draftTiw)
+                    {
+                        CopyPropertiesWithRules(tiw, draftTiw);
+                    }
+                    break;
+                case EntityLevel.Afl:
+                    if (entity is TieaflDto afl && _draftAfl is TieaflDto draftAfl)
+                        CopyPropertiesWithRules(afl, draftAfl);
+                    break;
+                case EntityLevel.Wfl:
+                    if (entity is TiwaflDto wfl && _draftWfl is TiwaflDto draftWfl)
+                        CopyPropertiesWithRules(wfl, draftWfl);
+                    break;
+                case EntityLevel.Act:
+                    if (entity is ActsaieDto act && _draftAct is ActsaieDto draftAct)
+                    {
+                        CopyPropertiesWithRules(act, draftAct);
+                    }
+                    break;
+                case EntityLevel.Adt:
+                    if (entity is ActdetDto adt && _draftAdt is ActdetDto draftAdt)
+                    {
+                        CopyPropertiesWithRules(adt, draftAdt);
+                    }
+                    break;
+                case EntityLevel.Res:
+                    if (entity is ResdonDto res && _draftRes is ResdonDto draftRes)
+                    {
+                        CopyPropertiesWithRules(res, draftRes);
+                    }
+                    break;
+                case EntityLevel.Rdt:
+                    if (entity is ResdetDto rdt && _draftRdt is ResdetDto draftRdt)
+                    {
+                        CopyPropertiesWithRules(rdt, draftRdt);
+                    }
+                    break;
+                case EntityLevel.Bro:
+                    if (entity is ResbroDto bro && _draftBro is ResbroDto draftBro)
+                    {
+                        CopyPropertiesWithRules(bro, draftBro);
+                    }
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(level));
+            }
     }
 
     //committing drafts
@@ -912,6 +953,11 @@ protected void CopyPropertiesWithRules<T>(T target, T source)
                 EntityLevel.Tie => _draftTie,
                 EntityLevel.Afl => _draftAfl,
                 EntityLevel.Wfl => _draftWfl,
+                EntityLevel.Act => _draftAct,
+                EntityLevel.Adt => _draftAdt,
+                EntityLevel.Res => _draftRes,
+                EntityLevel.Rdt => _draftRdt,
+                EntityLevel.Bro => _draftBro,
                 _ => throw new ArgumentOutOfRangeException(nameof(level))
             };
         }

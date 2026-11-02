@@ -41,9 +41,9 @@
                Title="Chargement des documents"
                UploadCtx="@uploadCtx"
                Idorg="@curOrga.Idorg"
-               EntyTiw="@curTiw"
+               EntyTiw="@EditTiw"
                EntyTie="null"
-               LsmVars="@LsEnrVars"
+               LsmVars="@LsVars"
                Oparent="2">
     </GlobModal>
 }
@@ -81,6 +81,12 @@
                         Class="px-2 py-1 small-btn"
                         @onclick="() => InCancelAdd(EntityLevel.Tiw, curTiw)">
                             ❌ Cancel
+                    </Button>
+                    <Button Color="ButtonColor.Secondary"
+                            Size="ButtonSize.Small"
+                            Class="px-2 py-1 small-btn"
+                            @onclick="() => VueDetails(EntityLevel.Tiw, curTiw)">
+                        Editer
                     </Button>
                 }
                 @if (isTieEditing)
@@ -125,27 +131,27 @@
                                         InAddingMode="@isTieAdding"
                                         VientDe="1"
                                         GenerationMode="MatriculeGenerationMode.Local"
-                                        @bind-Value="curTiw.Zmatri"
+                                        @bind-Value="Zmatri"
                                         IsBusy="@IsBusy"
                                         ValidChanged="OnZmatriValidChanged" />
                                     <PTiwGdHelper Idorg="@curOrga.Idorg" Entity="@curTiw"
                                         Draft="@(GetDraft(EntityLevel.Tiw) as TiewelDto)"
-                                        P2refReader="@AuthPrefs"
+                                        PrefReader="@AuthPrefs"
                                         IsEditing="@IsTiwEditing(curTiw)"
                                         EnsTbls="@EnsTbls"
                                         Ugpe="@Ugpe"
                                         OnConfirm="@(e => InConfirmEdit(EntityLevel.Tiw, e, true))"
                                         OnCancel="@(e => InCancelEdit(EntityLevel.Tiw, e))"
                                         WflItems="@WflItems"
-                                        IsAflViewing="@isAflAdding"
-                                        IsAnyEditing="@IsAnyRowEditing"
+                                        ParentEditing="@ParentEditing"
+                                        ChildBusy="@ChildBusy"
                                         IsEditingFn="@(a => IsWflEditing(a))"
                                         GetDraftFn="@(() => GetDraft(EntityLevel.Wfl) as TiwaflDto)"
                                         OnStartEditAfl="@StartEditWfl"
                                         OnConfirmAfl="@ConfirmWfl"
                                         OnCancelAfl="@CancelWfl"
                                         OnDeleteAfl="@(a => StartRowDelete(EntityLevel.Wfl, a.Rowguid))"
-                                        GroupOptions="@LsGAfls.Where(af => af.Atyp == Ugpe).ToList()"
+                                        GroupOptions="@ChldAfls.Where(af => af.Atyp == Ugpe && af.Elea is >= 2 and <= 6).ToList()"
                                         SelectedGroup="@IMyGAfl"
                                         SelectedGroupChanged="@(v => IMyGAfl = v)"
                                         OnAddChild="@AddChild" />
@@ -300,21 +306,22 @@
                     <div class="mb-3">
                         <PTiwGdHelper Idorg="@curOrga.Idorg" Entity="@curTiw"
                                       Draft="@(GetDraft(EntityLevel.Tiw) as TiewelDto)"
+                                      PrefReader="@AuthPrefs"
                                       IsEditing="@IsTiwEditing(curTiw)"
                                       EnsTbls="@EnsTbls"
                                       Ugpe="@Ugpe"
                                       OnConfirm="@(e => InConfirmEdit(EntityLevel.Tiw, e, true))"
                                       OnCancel="@(e => InCancelEdit(EntityLevel.Tiw, e))"
                                       WflItems="@WflItems"
-                                      IsAflViewing="@isAflAdding"
-                                      IsAnyEditing="@IsAnyRowEditing"
+                                      ParentEditing="@ParentEditing"
+                                      ChildBusy="@ChildBusy"
                                       IsEditingFn="@(a => IsWflEditing(a))"
                                       GetDraftFn="@(() => GetDraft(EntityLevel.Wfl) as TiwaflDto)"
                                       OnStartEditAfl="@StartEditWfl"
                                       OnConfirmAfl="@ConfirmWfl"
                                       OnCancelAfl="@CancelWfl"
                                       OnDeleteAfl="@(a => StartRowDelete(EntityLevel.Wfl, a.Rowguid))"
-                                      GroupOptions="@LsGAfls.Where(af => af.Atyp == Ugpe).ToList()"
+                                      GroupOptions="@ChldAfls.Where(af => af.Atyp == Ugpe && af.Elea is >= 2 and <= 6).ToList()"
                                       SelectedGroup="@IMyGAfl"
                                       SelectedGroupChanged="@(v => IMyGAfl = v)"
                                       OnAddChild="@AddChild" />
@@ -363,9 +370,9 @@
     private List<Gpfixe> LsFixes = new();
     private List<Gpvar> LsVars = new();
 
+    private List<Gpvar> GpeAfls = new();
+    private List<Gpvar> ChldAfls = new();
 
-    private List<Gpvar> LsGAfls = new();
-    private List<Gpvar> LsEnrVars = new();
     //editing workflow
     public GridMode GtieMode = GridMode.None; 
     public GridMode GaflMode = GridMode.None;
@@ -376,6 +383,9 @@
             || GtieMode == GridMode.TiersEditing;
     private bool isAflEditing => GaflMode == GridMode.AflsAdding
             || GaflMode == GridMode.AflsEditing;
+
+    private bool ParentEditing => IsTiwEditing(curTiw);          // person being added or edited
+    private bool ChildBusy => IsLevelBusy(EntityLevel.Wfl);   // an affiliate row is being added or edited
 
     private bool isTieAdding = false;
     private bool isAflAdding = false;
@@ -402,10 +412,17 @@
     private void OnZmatriValidChanged(bool isValid)
     {
         ZmatriValid = isValid;
+        curTiw.Zmatri = ZmatriValid ? Zmatri : "";
         //curTiw.Zmatri = curTiw.Zmatri.ToString();
         //curTiw.Zmatri = ZmatriValid;
     }
+    private TiewelDto EditTiw => EditTarget(EntityLevel.Tiw, curTiw);
 
+    private string? Zmatri
+    {
+        get => EditTiw.Zmatri;
+        set => EditTiw.Zmatri = value;
+    }
     public AdrContext Actx { get; set; }
     public UplCxtDto uploadCtx { get; set; } = new();
     private TiewelDto curTiw = new();
@@ -429,9 +446,10 @@
             LsVars = toChild.LsVars;
             LsPlans = toChild.LsPlans;
             //Ityp:options Oui/Non
-            LsEnrVars = await _rendAOlne.LoadOrgaVariabs(curOrga.Idorg);
+            GpeAfls = LsVars.Where(uv => uv.Gvars == 3 && uv.Itb == 5 && uv.Ityp == 1 && uv.Elea != 0).ToList();
+            ChldAfls = LsVars.Where(uv => uv.Gvars == 3 && uv.Itb == 6 && uv.Ityp == 1 && uv.Elea != 0).ToList();
+           
             Console.WriteLine("✅ LoadOrgaVariabs done");
-            LsGAfls = LsEnrVars.Where(uv => uv.Gvars == 3 && uv.Itb == 6 && uv.Ityp == 1 && uv.Elea != 0).ToList();
             //limites
             _lgcdu = curOrga.Lftrub ?? 3;
             _lgfmt = curOrga.Ftrub ?? "";
@@ -537,9 +555,24 @@
     private async Task StartEditWfl(TiwaflDto item)
         => await StartRowEdit(EntityLevel.Wfl, item, _edWflOriginals, d => SetDraft(EntityLevel.Wfl, d));
 
+    // private async Task AddChild(int selectedGroup)
+    // {
+    //     ////if (curTiw.Id <= 0) { Imessage = "🚫 Save the main record first."; return; }
+
+    //     var newWfl = new TiwaflDto
+    //     {
+    //         Rowguid = Guid.NewGuid(),
+    //         Prowguid = curTiw.Rowguid,
+    //         Itiw = curTiw.Id,
+    //         Tyafl = selectedGroup,
+    //         Irang = NextSeq(WflItems.Where(w => w.Itiw == curTiw.Id), p => p.Iui),
+    //         Nom = "", Pnom = "", Datc = DateTime.Now, Eta = 1
+    //     };
+    //     await StartRowAdd(EntityLevel.Wfl, newWfl, WflItems, d => SetDraft(EntityLevel.Wfl, d));
+    // }
     private async Task AddChild(int selectedGroup)
     {
-        if (curTiw.Id <= 0) { Imessage = "🚫 Save the main record first."; return; }
+        ////if (curTiw.Id <= 0) { Imessage = "🚫 Save the main record first."; return; }
 
         var newWfl = new TiwaflDto
         {
@@ -548,11 +581,14 @@
             Itiw = curTiw.Id,
             Tyafl = selectedGroup,
             Irang = NextSeq(WflItems.Where(w => w.Itiw == curTiw.Id), p => p.Iui),
-            Nom = "", Pnom = "", Datc = DateTime.Now, Eta = 1
+            Nom = "",
+            Pnom = "",
+            Datc = DateTime.Now,
+            Eta = 1
         };
+        curTiw.Tiwafls.Add(newWfl); // Add the new child to the parent collection
         await StartRowAdd(EntityLevel.Wfl, newWfl, WflItems, d => SetDraft(EntityLevel.Wfl, d));
     }
-
     public async Task<List<string>> ValidateForSaveAsync()
     {
         static string Who(string? nom, string? pnom, string fallback)
@@ -565,11 +601,11 @@
         var items = new List<(EntityLevel Level, ColPrefContext Ctx, object Model, string Title)>();
 
         foreach (var tiw in TiwItems.Where(t => NeedsCheck(EntityLevel.Tiw, t.Rowguid)))
-            items.Add((EntityLevel.Tiw, new ColPrefContext { Totyp = 1, Efrm = 2, Styp = 1 }, tiw,
+            items.Add((EntityLevel.Tiw, ColumnContexts.Person(Ugpe), tiw,
                        Who(tiw.Nom, tiw.Pnom, "Personne")));
 
         foreach (var wfl in WflItems.Where(w => NeedsCheck(EntityLevel.Wfl, w.Rowguid)))
-            items.Add((EntityLevel.Wfl, new ColPrefContext { Totyp = 1, Efrm = 2, Styp = wfl.Tyafl ?? 0 }, wfl,
+            items.Add((EntityLevel.Wfl, ColumnContexts.Affiliate(wfl.Tyafl), wfl,
                        "Affilié " + Who(wfl.Nom, wfl.Pnom, "")));
 
         var problems = await _colValidator.ValidateManyAsync(

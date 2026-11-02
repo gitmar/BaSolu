@@ -1,0 +1,21 @@
+﻿@page "/z2olneinsc"
+@layout OlneLayout
+@using Microsoft.AspNetCore.Authorization
+@attribute [AllowAnonymous]
+
+<h3>Anonymous Registration</h3>
+
+<p>OlneInsc is rendering correctly.</p>
+
+@if (isLoading)
+{
+    <p>Loading...</p>
+}
+else
+{
+    <p>Loading completed.</p>
+}
+
+@code {
+    private bool isLoading = false;
+}

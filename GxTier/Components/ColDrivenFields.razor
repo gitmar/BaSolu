@@ -7,6 +7,322 @@
 
 @inject ColumnPreferencesClient _prefClient
 
+@using System.Globalization
+@* also needs the Shared namespace(s) of LSelCol, ColAtyp, ModelProps, ColumnRules *@
+
+@if (_isLoading)
+{
+    <p><em>Chargement...</em></p>
+}
+else if (_loadError is not null)
+{
+    <div class="alert alert-danger py-1">@_loadError</div>
+}
+else if (!VisibleColumns.Any())
+{
+    <div class="alert alert-warning py-1">
+        @(_columns.Count == 0 ? "Aucune colonne définie" : "Aucune colonne visible")
+        pour le contexte @PColCtx.Totyp / @PColCtx.Efrm / @PColCtx.Styp.
+        @(_columns.Count == 0 ? "Lancez « Vérifier les colonnes » dans l'écran des colonnes." : "Cochez « Visible » dans l'écran des colonnes.")
+    </div>
+}
+else
+{
+    @if (IgnoredColumns.Any())
+    {
+        <div class="alert alert-warning py-1 small">
+            Colonnes absentes du modèle : @string.Join(", ", IgnoredColumns).
+            Lancez « Vérifier les colonnes » pour ce contexte.
+        </div>
+    }
+
+    @foreach (var col in VisibleColumns)
+    {
+        <FormField Label="@(LabelOf(col) + (col.IsRequired ? " *" : ""))" IsVisible="@col.IsVisible">
+            <div class="@(HasProblem(col) ? "border border-danger rounded p-1" : null)">
+                @if (IsDropdown(col))
+                {
+                    @if (IsEditing)
+                    {
+                        <select class="form-select"
+                                value="@GetText(col)"
+                                @onchange="@(e => SetRaw(col.ColName, e.Value))">
+                            <option value="">Choix...</option>
+                            @foreach (var option in GetLookupItems(col))
+                            {
+                                <option value="@OptionValue(option)">@option.Liba</option>
+                            }
+                        </select>
+                    }
+                    else
+                    {
+                        <span class="form-control-plaintext">@GetDropdownDisplayText(col)</span>
+                    }
+                }
+                else
+                {
+                    @switch (col.Atyp)
+                    {
+                        case ColAtyp.Text:
+                        case ColAtyp.Dropdown:   @* a Dropdown with no list configured falls back to free text *@
+                            @if (IsEditing)
+                            {
+                                <input class="form-control" value="@GetText(col)"
+                                       @onchange="@(e => SetRaw(col.ColName, e.Value))" />
+                            }
+                            else
+                            {
+                                <span class="form-control-plaintext">@GetDisplayValue(col)</span>
+                            }
+                            break;
+
+                        case ColAtyp.Number:
+                            @if (IsEditing)
+                            {
+                                <input type="number" step="any" class="form-control" value="@GetText(col)"
+                                       @onchange="@(e => SetRaw(col.ColName, e.Value))" />
+                            }
+                            else
+                            {
+                                <span class="form-control-plaintext">@GetDisplayValue(col)</span>
+                            }
+                            break;
+
+                        case ColAtyp.Date:
+                            @if (IsEditing)
+                            {
+                                <input type="date" class="form-control" value="@GetDateInputValue(col)"
+                                       @onchange="@(e => SetRaw(col.ColName, e.Value))" />
+                            }
+                            else
+                            {
+                                <span class="form-control-plaintext">@GetDisplayValue(col)</span>
+                            }
+                            break;
+
+                        case ColAtyp.Checkbox:
+                            <input type="checkbox" checked="@GetBoolValue(col)" disabled="@(!IsEditing)"
+                                   @onchange="@(e => SetRaw(col.ColName, e.Value))" />
+                            break;
+
+                        default:
+                            <span class="text-danger small">Type non pris en charge : @col.Atyp</span>
+                            break;
+                    }
+                }
+            </div>
+
+            @if (_missing.Contains(col.ColName))
+            {
+                <div class="text-danger small">Champ obligatoire</div>
+            }
+            @if (_badInput.Contains(col.ColName))
+            {
+                <div class="text-danger small">Valeur invalide</div>
+            }
+        </FormField>
+    }
+}
+
+@code {
+    [Parameter, EditorRequired] public int Idorg { get; set; }
+    [Parameter, EditorRequired] public ColPrefContext PColCtx { get; set; } = default!;
+    [Parameter, EditorRequired] public object Model { get; set; } = default!;
+    [Parameter, EditorRequired] public List<Gtabl> EnsTbls { get; set; } = new();
+    [Parameter] public bool IsEditing { get; set; }
+    [Parameter] public IColumnPreferencesReader? PrefReader { get; set; }
+
+    private List<LSelCol> _columns = new();
+    private bool _isLoading;
+    private string? _loadError;
+    private (int, int, int, int)? _loadedKey;
+    private int _loadTicket;
+
+    private readonly HashSet<string> _missing = new(StringComparer.OrdinalIgnoreCase);
+    private readonly HashSet<string> _badInput = new(StringComparer.OrdinalIgnoreCase);
+
+    // Columns owned by another component (the matricule is handled by RegistrationInput)
+    private readonly HashSet<string> _reservedCols = new(StringComparer.OrdinalIgnoreCase)
+    {
+        "Xmatri", "Smatri"
+    };
+
+    // ---------- Loading ----------
+    protected override async Task OnParametersSetAsync()
+    {
+        var key = (Idorg, PColCtx.Totyp, PColCtx.Efrm, PColCtx.Styp);
+        if (_loadedKey == key) return;      // reload only when the context really changes
+        _loadedKey = key;
+        await LoadColumnsAsync();
+    }
+
+    private async Task LoadColumnsAsync()
+    {
+        var ticket = ++_loadTicket;
+        _loadError = null;
+        _missing.Clear();
+        _badInput.Clear();
+
+        if (Idorg <= 0)
+        {
+            _columns = new();
+            _loadError = "Organisation non définie (Idorg = 0).";
+            _loadedKey = null;              // retry on the next parameter update
+            return;
+        }
+        if (PrefReader is null)
+        {
+            _columns = new();
+            _loadError = "Lecteur de colonnes non fourni (PrefReader).";
+            _loadedKey = null;
+            return;
+        }
+
+        _isLoading = true;
+        try
+        {
+            var loaded = await PrefReader.LoadAsync(Idorg, PColCtx);
+            if (ticket != _loadTicket) return;           // a newer request replaced this one
+            _columns = loaded.InDisplayOrder().ToList();
+        }
+        catch (Exception ex)
+        {
+            if (ticket != _loadTicket) return;
+            _columns = new();
+            var status = (ex as HttpRequestException)?.StatusCode;
+            _loadError = "Colonnes indisponibles" + (status is null ? "." : $" (HTTP {(int)status}).");
+        }
+        finally
+        {
+            if (ticket == _loadTicket) _isLoading = false;
+        }
+    }
+
+    // ---------- Which columns render ----------
+    private IEnumerable<LSelCol> VisibleColumns => _columns.Where(c =>
+        c.IsVisible
+        && !_reservedCols.Contains(c.ColName)
+        && ModelProps.Has(Model, c.ColName));
+
+    private IEnumerable<string> IgnoredColumns => _columns
+        .Where(c => c.IsVisible && !_reservedCols.Contains(c.ColName) && !ModelProps.Has(Model, c.ColName))
+        .Select(c => c.ColName);
+
+    // ---------- Validation (called by PTiwGdHelper / CTiwGdHelper before Confirm) ----------
+    public IReadOnlyList<string> MissingLabels => VisibleColumns
+        .Where(c => _missing.Contains(c.ColName) || _badInput.Contains(c.ColName))
+        .Select(LabelOf)
+        .ToList();
+
+    public bool Validate()
+    {
+        _missing.Clear();
+        foreach (var c in ColumnRules.GetMissing(Model, VisibleColumns))
+            _missing.Add(c.ColName);
+
+        StateHasChanged();
+        return _missing.Count == 0 && _badInput.Count == 0;
+    }
+
+    private bool HasProblem(LSelCol c) => _missing.Contains(c.ColName) || _badInput.Contains(c.ColName);
+
+    // ---------- Labels ----------
+    private static string LabelOf(LSelCol c)
+        => !string.IsNullOrWhiteSpace(c.Ulabel) ? c.Ulabel
+         : !string.IsNullOrWhiteSpace(c.Olabel) ? c.Olabel
+         : c.ColName;
+
+    // ---------- Lookup lists ----------
+    private static bool IsDropdown(LSelCol c) => c.CanHaveLookup() && c.Tref is > 0;
+
+    private List<Gtvar> GetLookupItems(LSelCol c)
+        => EnsTbls.FirstOrDefault(t => t.Tenr == 1 && t.Tref == c.Tref)?.TbItems ?? [];
+
+    private static string OptionValue(Gtvar option) => option.Aval ?? string.Empty;
+
+    private string GetDropdownDisplayText(LSelCol c)
+    {
+        var current = GetText(c);
+        var match = GetLookupItems(c).FirstOrDefault(i =>
+            string.Equals(OptionValue(i), current, StringComparison.OrdinalIgnoreCase));
+        return match?.Liba ?? current;
+    }
+
+    // ---------- Reading values ----------
+    private object? GetRaw(string colName) => ModelProps.Get(Model, colName);
+
+    private string GetText(LSelCol c)
+        => Convert.ToString(GetRaw(c.ColName), CultureInfo.InvariantCulture) ?? string.Empty;
+
+    private string GetDisplayValue(LSelCol c)
+        => GetRaw(c.ColName) switch
+        {
+            DateTime d when d == default => string.Empty,
+            DateTime d => d.ToString("dd/MM/yyyy", CultureInfo.InvariantCulture),
+            var v => Convert.ToString(v, CultureInfo.InvariantCulture) ?? string.Empty
+        };
+
+    private string GetDateInputValue(LSelCol c)
+        => GetRaw(c.ColName) is DateTime d && d != default
+            ? d.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)
+            : string.Empty;
+
+    private bool GetBoolValue(LSelCol c) => GetRaw(c.ColName) is true;
+
+    // ---------- Writing values ----------
+    private void SetRaw(string colName, object? raw)
+    {
+        var pi = ModelProps.Find(Model.GetType(), colName);
+        if (pi is null || !pi.CanWrite) return;      // read-only property: display only
+
+        try
+        {
+            pi.SetValue(Model, ConvertValue(raw, pi.PropertyType));
+            _badInput.Remove(colName);
+            _missing.Remove(colName);
+        }
+        catch (Exception ex) when (ex is FormatException or InvalidCastException
+                                      or OverflowException or ArgumentException)
+        {
+            _badInput.Add(colName);
+        }
+    }
+
+    private static object? ConvertValue(object? raw, Type targetType)
+    {
+        var underlying = Nullable.GetUnderlyingType(targetType) ?? targetType;
+        var acceptsNull = !targetType.IsValueType || Nullable.GetUnderlyingType(targetType) is not null;
+
+        if (raw is null || raw is string s && string.IsNullOrWhiteSpace(s))
+            return acceptsNull ? null : Activator.CreateInstance(targetType);
+
+        if (underlying.IsInstanceOfType(raw))
+            return raw;
+
+        // handles "12" -> int, "2025-01-31" -> DateTime, "True" -> bool, true -> 1 (invariant culture)
+        return Convert.ChangeType(raw, underlying, CultureInfo.InvariantCulture);
+    }
+}
+
+@* @if (_loadError is not null)
+{
+    <div class="alert alert-danger py-1">@_loadError</div>
+}
+else if (!_isLoading && !_columns.Any(c => c.IsVisible))
+{
+    <div class="alert alert-warning py-1">
+        Aucune colonne visible pour le contexte @PColCtx.Totyp / @PColCtx.Efrm / @PColCtx.Styp.
+        Configurez-la dans l'écran des colonnes.
+    </div>
+}
+@if (IgnoredColumns.Any())
+{
+    <div class="alert alert-warning py-1 small">
+        Colonnes absentes du modèle : @string.Join(", ", IgnoredColumns).
+        Lancez « Vérifier les colonnes » pour ce contexte.
+    </div>
+}
+
 @if (_isLoading)
 {
     <p><em>Chargement...</em></p>
@@ -20,10 +336,10 @@ else
     @foreach (var col in _columns.Where(c => !_reservedCols.Contains(c.ColName)))
     {
         @* <FormField Label="@GetLabel(col)"
-                   IsVisible="@col.IsVisible"> *@
+                   IsVisible="@col.IsVisible">
         <FormField Label="@(LabelOf(col) + (col.IsRequired ? " *" : ""))" IsVisible="@col.IsVisible">
             <div class="@(Invalid(col) ? "border border-danger rounded p-1" : null)">
-                @* existing lookup / switch rendering, unchanged *@
+                @* existing lookup / switch rendering, unchanged 
             </div>
             @if (Invalid(col))
             {
@@ -108,7 +424,7 @@ else
                         break;
 
                     case ColAtyp.Dropdown:
-                        @* same lookup rendering as the Text/Number lookup branch *@
+                        @* same lookup rendering as the Text/Number lookup branch
                         break;
 
                     default:
@@ -119,10 +435,8 @@ else
             }
         </FormField>
     }
-}
-
-@code {
-    [Parameter, EditorRequired] public int Idorg { get; set; }
+} *@
+    @* [Parameter, EditorRequired] public int Idorg { get; set; }
     [Parameter, EditorRequired] public ColPrefContext PColCtx { get; set; } = default!;
     [Parameter, EditorRequired] public object Model { get; set; } = default!;
     [Parameter, EditorRequired] public List<Gtabl> EnsTbls { get; set; } = new();
@@ -134,6 +448,7 @@ else
 
     private List<LSelCol> _columns = new();
 
+    private string? _loadError;
 
     private readonly HashSet<string> _missing = new(StringComparer.OrdinalIgnoreCase);
     public IReadOnlyList<string> MissingLabels =>
@@ -148,8 +463,21 @@ else
         => string.IsNullOrWhiteSpace(c.Ulabel) ? c.ColName : c.Ulabel;
 
     private bool Invalid(LSelCol c) => _missing.Contains(c.ColName);
-    private object? GetValue(object target, string colName)
-        => GetProperty(target, colName)?.GetValue(target);
+    // private object? GetValue(object target, string colName)
+    //     => GetProperty(target, colName)?.GetValue(target);
+
+    private object? GetValue(object target, string colName) => ModelProps.Get(target, colName);
+
+    private void SetValue(string colName, object? rawValue)
+    {
+        var pi = ModelProps.Find(Model.GetType(), colName);
+        if (pi is null || !pi.CanWrite) return;   // read-only property: display only
+    ////////////
+        var convertedValue = ConvertValue(rawValue, property.PropertyType);
+        pi.SetValue(Model, convertedValue);
+
+        _missing.Remove(colName);
+    }
     
     private string _lastLoadedContextKey = string.Empty;
 
@@ -159,19 +487,33 @@ else
 
     private static readonly
         Dictionary<(Type ModelType, string PropertyName), PropertyInfo> PropertyCache = new();
+    
+    private (int, int, int, int)? _loadedKey;
+
+    // protected override async Task OnParametersSetAsync()
+    // {
+    //     var contextKey = GetContextKey();
+
+    //     if (contextKey == _lastLoadedContextKey)
+    //     {
+    //         return;
+    //     }
+
+    //     _lastLoadedContextKey = contextKey;
+
+    //     await LoadColumnsAsync();
+    // }
 
     protected override async Task OnParametersSetAsync()
     {
-        var contextKey = GetContextKey();
+        var key = (Idorg, PColCtx.Totyp, PColCtx.Efrm, PColCtx.Styp);
+        if (_loadedKey == key) return;
+        _loadedKey = key;
 
-        if (contextKey == _lastLoadedContextKey)
-        {
-            return;
-        }
-
-        _lastLoadedContextKey = contextKey;
-
-        await LoadColumnsAsync();
+        _isLoading = true;
+        try { /* your existing load call, then .InDisplayOrder().ToList() */ }
+        catch (HttpRequestException) { _columns = new(); }
+        finally { _isLoading = false; }
     }
 
     private string GetContextKey()
@@ -196,12 +538,17 @@ else
             _columns = await PrefReader.LoadAsync(Idorg, PColCtx);
             //_columns = await _prefClient.LoadAsync(Idorg, PColCtx);
         }
-        catch (Exception ex)
-        {
-            _columns = [];
+        // catch (Exception ex)
+        // {
+        //     _columns = [];
 
-            Console.Error.WriteLine(
-                $"Unable to load column configuration for {GetContextKey()}: {ex}");
+        //     Console.Error.WriteLine(
+        //         $"Unable to load column configuration for {GetContextKey()}: {ex}");
+        // }
+        catch (HttpRequestException ex)
+        {
+            _columns = new();
+            _loadError = $"Colonnes indisponibles (HTTP {(int?)ex.StatusCode}).";
         }
         finally
         {
@@ -238,14 +585,14 @@ else
 
     private string GetDropdownValue(LSelCol column)
     {
-        var value = GetPropertyValue(column.ColName);
+        var value = GetValue(column.ColName);
 
         return value?.ToString() ?? string.Empty;
     }
 
     private void SetDropdownValue(LSelCol column, string value)
     {
-        SetPropertyValue(
+        SetValue(
             column.ColName,
             string.IsNullOrWhiteSpace(value) ? null : value);
     }
@@ -287,48 +634,10 @@ else
         SetPropertyValue(column.ColName, rawValue);
     }
 
-    private object? GetPropertyValue(string propertyName)
-    {
-        var property = GetProperty(Model, propertyName);
-
-        return property.GetValue(Model);
-    }
-
-    private void SetPropertyValue(
-        string propertyName,
-        object? rawValue)
-    {
-        var property = GetProperty(Model, propertyName);
-
-        var convertedValue = ConvertValue(rawValue, property.PropertyType);
-
-        property.SetValue(Model, convertedValue);
-    }
-
-    private static PropertyInfo GetProperty(object model, string propertyName)
-    {
-        var modelType = model.GetType();
-        var cacheKey = (modelType, propertyName);
-
-        if (PropertyCache.TryGetValue(cacheKey, out var cachedProperty))
-        {
-            return cachedProperty;
-        }
-
-        var property = modelType.GetProperty(
-            propertyName,
-            BindingFlags.Public | BindingFlags.Instance);
-
-        if (property is null || !property.CanRead || !property.CanWrite)
-        {
-            throw new InvalidOperationException(
-                $"Property '{propertyName}' was not found or is not readable/writable on '{modelType.Name}'.");
-        }
-
-        PropertyCache[cacheKey] = property;
-
-        return property;
-    }
+    private IEnumerable<LSelCol> RenderColumns => _columns.Where(c => ModelProps.Has(Model, c.ColName));
+private IEnumerable<string> IgnoredColumns =>
+    _columns.Where(c => c.IsVisible && !ModelProps.Has(Model, c.ColName)).Select(c => c.ColName);
+   
 
     private static object? ConvertValue(object? rawValue, Type targetType)
     {
@@ -393,10 +702,5 @@ else
             ColAtyp.Checkbox => value is not true,                   // required = must be ticked
             _ => value is null                        // 0 is a legitimate number
         };
-    }
-
-    // private static string LabelOf(LSelCol c)
-    //     => string.IsNullOrWhiteSpace(c.Ulabel) ? c.ColName : c.Ulabel;
-
-    // private bool Invalid(LSelCol c) => _missing.Contains(c.ColName);
-}
+    } 
+}*@

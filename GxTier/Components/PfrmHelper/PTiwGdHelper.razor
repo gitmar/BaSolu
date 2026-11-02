@@ -15,7 +15,7 @@
         <p> Draft : @Draft.Xmatri</p>
         <p> isEditing : @IsEditing</p>
         <p> ensTbl : @EnsTbls.Count</p> *@
-        <ColDrivenFields @ref="_fields" PrefReader="@P2refReader" Idorg="@Idorg" PColCtx="@Ctx" Model="@(IsEditing ? (Draft ?? Entity) : Entity)"
+        <ColDrivenFields @ref="_fields" PrefReader="@PrefReader" Idorg="@Idorg" PColCtx="@Ctx" Model="@(IsEditing ? (Draft ?? Entity) : Entity)"
                          EnsTbls="@EnsTbls" IsEditing="@IsEditing" />
         @if (_error is not null)
         {
@@ -45,9 +45,9 @@
     <div class="d-flex align-items-center gap-2 mb-2">
         <label>Groupe :</label>
         <InputSelect 
-             Value="SelectedGroup" 
-             ValueChanged="EventCallback.Factory.Create<int>(this, OnGroupChanged)" 
-             ValueExpression="@(() => SelectedGroup)">
+        Value="SelectedGroup" 
+        ValueChanged="EventCallback.Factory.Create<int>(this, OnGroupChanged)" 
+        ValueExpression="@(() => SelectedGroup)">
             <option value="0">Sélectionner...</option>
             @foreach (var g in GroupOptions)
             {
@@ -56,28 +56,39 @@
         </InputSelect>
 
         <Button Color="ButtonColor.Primary" Size="ButtonSize.Small"
-                Disabled="@(SelectedGroup < 1 || !IsAnyEditing)"
-                @onclick="() => OnAddChild.InvokeAsync(SelectedGroup)">
+        Disabled="@(SelectedGroup < 1 || !ParentEditing || ChildBusy)"
+        @onclick="() => OnAddChild.InvokeAsync(SelectedGroup)">
             ➕ Ajt Affilie
         </Button>
     </div>
-
+    @* Ugpe="@Ugpe" *@
     <CTiwGdHelper Idorg="@Idorg" CurTiw="@Entity" 
-                  WflItems="@WflItems" 
-                  EnsTbls="@EnsTbls"
-                  Ugpe="@Ugpe"
-                  IsViewing="@IsAflViewing"
-                  IsAnyEditing="@IsAnyEditing"
-                  IsEditingFn="@IsEditingFn"
-                  GetDraftFn="@GetDraftFn"
-                  OnStartEdit="@OnStartEditAfl"
-                  OnConfirm="@OnConfirmAfl"
-                  OnCancel="@OnCancelAfl"
-                  OnDelete="@OnDeleteAfl" />
+        WflItems="@WflItems" 
+        EnsTbls="@EnsTbls"
+        PrefReader="@PrefReader"
+        IsViewing="@(!ParentEditing)"
+        IsAnyEditing="@ChildBusy"
+        IsEditingFn="@IsEditingFn"
+        GetDraftFn="@GetDraftFn"
+        OnStartEdit="@OnStartEditAfl"
+        OnConfirm="@OnConfirmAfl"
+        OnCancel="@OnCancelAfl"
+        OnDelete="@OnDeleteAfl" />
 }
 else
 {
-    @* <div class="alert alert-warning">🚫 Save the main record before adding children.</div> *@
+    <div class="text-muted small">
+        Affiliés non disponibles :
+        @if (string.IsNullOrEmpty((IsEditing ? (Draft ?? Entity) : Entity)?.Zmatri))
+        {
+            <text>saisissez d'abord le matricule.</text>
+        }
+        else if (!GroupOptions.Any())
+        {
+
+            <text>aucun groupe d'affiliés configuré pour cette catégorie.</text>
+        }
+    </div>
 }
 
 @code {
@@ -85,20 +96,21 @@ else
     [Parameter, EditorRequired] public int Idorg { get; set; }
     [Parameter, EditorRequired] public TiewelDto Entity { get; set; } = default!;
     [Parameter] public TiewelDto? Draft { get; set; }
-    [Parameter] public IColumnPreferencesReader? P2refReader { get; set; }
+    [Parameter] public IColumnPreferencesReader? PrefReader { get; set; }
 
     [Parameter, EditorRequired] public List<Gtabl> EnsTbls { get; set; } = new();
     [Parameter] public int Ugpe { get; set; }
     [Parameter] public bool IsEditing { get; set; }
     [Parameter] public bool IsAdding { get; set; }
+    [Parameter] public bool ParentEditing { get; set; }        // person being added or edited
+    [Parameter] public bool ChildBusy { get; set; }    
+
     [Parameter] public PublicColumnFormValidator L1PrefReader { get; set; } = default!;
     [Parameter] public EventCallback<TiewelDto> OnConfirm { get; set; }
     [Parameter] public EventCallback<TiewelDto> OnCancel { get; set; }
 
     // --- Affiliate-level passthrough ---
     [Parameter, EditorRequired] public List<TiwaflDto> WflItems { get; set; } = new();
-    [Parameter] public bool IsAflViewing { get; set; }
-    [Parameter] public bool IsAnyEditing { get; set; }
     [Parameter, EditorRequired] public Func<TiwaflDto, bool> IsEditingFn { get; set; } = default!;
     [Parameter, EditorRequired] public Func<TiwaflDto?> GetDraftFn { get; set; } = default!;
     [Parameter] public EventCallback<TiwaflDto> OnStartEditAfl { get; set; }
@@ -112,13 +124,23 @@ else
     [Parameter] public EventCallback<int> SelectedGroupChanged { get; set; }
     [Parameter] public EventCallback<int> OnAddChild { get; set; }
 
+    // private bool CanEditChildren => !string.IsNullOrEmpty(Entity?.Zmatri)
+    //     && GroupOptions.Any();
+ 
+    // private string Zmatri
+    // {
+    //     get => EditTarget.Zmatri ?? "";
+    //     set => EditTarget.Zmatri = value;
+    // }
 
-    private bool CanEditChildren => !string.IsNullOrEmpty(Entity?.Zmatri)
-        && GroupOptions.Any();
-    
+    private bool CanEditChildren =>
+        !string.IsNullOrEmpty((IsEditing ? (Draft ?? Entity) : Entity).Zmatri) && GroupOptions.Any();
+
     private ColDrivenFields _fields = default!;
     private string? _error;
 
-    private ColPrefContext Ctx => new() { Totyp = Ugpe, Efrm = 1, Styp = 1 };
+    //private ColPrefContext Ctx => new() { Totyp = Ugpe, Efrm = 1, Styp = 1 };
+
+    private ColPrefContext Ctx => ColumnContexts.Person(Ugpe);
     private async Task OnGroupChanged(int value) => await SelectedGroupChanged.InvokeAsync(value);
 }
