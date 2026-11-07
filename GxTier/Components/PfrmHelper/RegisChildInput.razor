@@ -1,0 +1,280 @@
+﻿@using System.Text.RegularExpressions
+@using GxTie.Services
+@using GxShared.Sess
+
+@inject IClientMatriculeOrdreService OrdreService
+
+<div class="matricule-row">
+
+    <span class="fw-bold text-nowrap">
+        @(AIsProvisional ? "PV-" : "")@ASorga-@ASgpe-
+    </span>
+
+    <input class="form-control matricule-input"
+           value="@_ordre"
+           @oninput="OnOrdreInput"
+           maxlength="10"
+           disabled="@IsReadOnly || IsBusy" />
+
+    <span class="fw-bold text-nowrap">
+        @ASaffilia
+    </span>
+
+    <Button Color="ButtonColor.Primary"
+            Size="ButtonSize.Small"
+            Disabled="@AflAjtState"
+            @onclick="AddNewChildAsync">
+        ➕ Ajt
+    </Button>
+
+</div>
+<style>
+    .matricule-row {
+        display: flex;
+        align-items: center;
+        gap: .5rem;
+        flex-wrap: nowrap;
+    }
+
+    .matricule-input {
+        width: 130px;
+        min-width: 130px;
+        max-width: 130px;
+        text-align: center;
+    }
+
+    .matricule-row .btn {
+        width: auto;
+        white-space: nowrap;
+    }
+</style>
+@code {
+    private bool _isValid;
+    private bool _isGenerating;
+    private string _errorMessage = string.Empty;
+
+    [Parameter] public int VientDe { get; set; } = 0;
+    [Parameter] public bool AflAjtState { get; set; } = false;
+
+    [Parameter] public string ASorga { get; set; } = string.Empty;
+    [Parameter] public int? AUgpe { get; set; } = 0;
+    [Parameter] public string ASgpe { get; set; } = string.Empty;
+    [Parameter] public string ASaffilia { get; set; } = "T";
+    [Parameter] public bool AIsProvisional { get; set; } = true;
+
+    [Parameter]
+    public MatriculeGenerationMode GenerationMode { get; set; }
+        = MatriculeGenerationMode.Local;
+
+    [Parameter] public string? Value { get; set; } = string.Empty;
+    [Parameter] public EventCallback<string?> ValueChanged { get; set; }
+    [Parameter] public EventCallback<bool> ValidChanged { get; set; }
+    [Parameter] public EventCallback<int> OnAddNewChld { get; set; }
+
+    [Parameter] public bool IsReadOnly { get; set; }
+    [Parameter] public bool IsBusy { get; set; }
+    [Parameter] public bool InAddingMode { get; set; }
+
+    private bool IsGenerating
+    {
+        get => _isGenerating;
+        set => _isGenerating = value;
+    }
+
+    //private bool PeutGenerer => InAddingMode;
+    private string _ordre = string.Empty;
+
+    private int IvGroup => AUgpe ?? 0;
+
+    protected override void OnParametersSet()
+    {
+        if (!string.IsNullOrWhiteSpace(Value))
+        {
+            ExtractOrdreFromValue();
+        }
+
+        Validate();
+    }
+    protected override async Task OnAfterRenderAsync(bool FirstRender)
+    {
+        if (FirstRender && VientDe == 2) //Onlne
+        {
+            await GenerateAsync();
+        }
+    }
+    private void ExtractOrdreFromValue()
+    {
+        var parts = Value!.Split('-', StringSplitOptions.RemoveEmptyEntries);
+
+        // PV-10001-1CB-1234567890T => index 3
+        // 10001-1CB-1234567890T    => index 2
+        var ordrePart = AIsProvisional
+            ? parts.ElementAtOrDefault(3)
+            : parts.ElementAtOrDefault(2);
+
+        if (string.IsNullOrWhiteSpace(ordrePart) || ordrePart.Length < 2)
+        {
+            _ordre = string.Empty;
+            return;
+        }
+
+        // Remove the final affiliate letter: 1234567890T => 1234567890
+        _ordre = ordrePart[..^1];
+    }
+    private async Task AddNewChildAsync()
+    {
+        // Generate first
+        await GenerateAsync();
+
+        // Then notify parent
+        await OnAddNewChld.InvokeAsync(Value);
+    }
+    private async Task OnOrdreInput(ChangeEventArgs e)
+    {
+        var raw = e.Value?.ToString() ?? string.Empty;
+
+        var digits = new string(raw.Where(char.IsDigit).ToArray());
+
+        if (_ordre == digits)
+        {
+            return;
+        }
+
+        _ordre = digits;
+
+        await UpdateValueAsync();
+    }
+
+    private async Task GenerateAsync()
+    {
+        if (IsReadOnly || IsBusy || IsGenerating)
+        {
+            return;
+        }
+        _isGenerating = true;
+        //IsGenerating = true;
+        _errorMessage = string.Empty;
+
+        try
+        {
+            _ordre = await OrdreService.GenerateOrdreAsync(
+                ASorga,
+                IvGroup,
+                ASgpe,
+                ASaffilia,
+                GenerationMode);
+
+            await UpdateValueAsync();
+        }
+        catch (Exception ex)
+        {
+            _errorMessage = ex.Message;
+        }
+        finally
+        {
+            IsGenerating = false;
+        }
+    }
+
+    private async Task UpdateValueAsync()
+    {
+        Value = BuildMatricule();
+        Console.WriteLine($"[Child] Value='{Value}'");
+
+        await ValueChanged.InvokeAsync(Value);
+
+        await ValidateAsync();
+    }
+    private string BuildMatricule()
+    {
+        if (string.IsNullOrWhiteSpace(_ordre))
+        {
+            return string.Empty;
+        }
+
+        return AIsProvisional
+            ? $"PV-{ASorga}-{ASgpe}-{_ordre}{ASaffilia}"
+            : $"{ASorga}-{ASgpe}-{_ordre}{ASaffilia}";
+    }
+
+    private async Task ValidateAsync()
+    {
+        var isValid = IsValid();
+
+        if (isValid == _isValid)
+        {
+            return;
+        }
+
+        _isValid = isValid;
+
+        await ValidChanged.InvokeAsync(_isValid);
+    }
+
+    private void Validate()
+    {
+        var isValid = IsValid();
+
+        if (isValid != _isValid)
+        {
+            _isValid = isValid;
+            _ = ValidChanged.InvokeAsync(_isValid);
+        }
+    }
+
+    private bool IsValid()
+    {
+        _errorMessage = string.Empty;
+
+        if (string.IsNullOrWhiteSpace(_ordre))
+        {
+            _errorMessage = "Ordre is required.";
+            return false;
+        }
+
+        if (!Regex.IsMatch(_ordre, @"^\d{10}$"))
+        {
+            _errorMessage = "Ordre must contain exactly 10 digits.";
+            return false;
+        }
+
+        if (string.IsNullOrWhiteSpace(Sorga))
+        {
+            _errorMessage = "Organization is required.";
+            return false;
+        }
+
+        if (string.IsNullOrWhiteSpace(Sgpe))
+        {
+            _errorMessage = "UGPE is required.";
+            return false;
+        }
+
+        if (string.IsNullOrWhiteSpace(Saffilia))
+        {
+            _errorMessage = "Affiliate is required.";
+            return false;
+        }
+
+        var expected = AIsProvisional
+            ? $@"^PV-{Regex.Escape(ASorga)}-{Regex.Escape(ASgpe)}-\d{{10}}[A-Z]$"
+            : $@"^{Regex.Escape(ASorga)}-{Regex.Escape(ASgpe)}-\d{{10}}[A-Z]$";
+
+        if (string.IsNullOrWhiteSpace(Value) ||
+            !Regex.IsMatch(Value!, expected))
+        {
+            _errorMessage = "Invalid matricule format.";
+            return false;
+        }
+
+        var affiliate = Value![^1..];
+
+        if (!string.Equals(affiliate, ASaffilia, StringComparison.OrdinalIgnoreCase))
+        {
+            _errorMessage = $"Affiliate must be {ASaffilia}.";
+            return false;
+        }
+
+        return true;
+    }
+}

@@ -38,30 +38,33 @@
 }
 else
 {
+    <div class="card-header">
+        Organization: @_currentIdorg
+    </div> 
     <div class="card mb-3">
         <div class="card-header">
-            Organization: @_currentIdorg
+            Organization columns
         </div>
         <div class="card-body">
-            <div class="row g-2">
-                <div class="col-md-4">
+            <div class="row g-2 align-items-end">
+                <div class="col-md-6">
                     <Button Color="ButtonColor.Primary"
                     Size="ButtonSize.Small"
                     Disabled="@_isBusy"
                     @onclick="@(() => InitializeColumnsAsync(false))">
-                        Initialize current context
+                        Initialize columns context
                     </Button>
                 </div>
 
-                <div class="col-md-4">
+                @* <div class="col-md-4">
                     <Button Color="ButtonColor.Warning"
                     Size="ButtonSize.Small"
                     Disabled="@_isBusy"
                     @onclick="@(() => InitializeColumnsAsync(true))">
                         Initialize all contexts
                     </Button>
-                </div>
-                <div class="col-md-4"></div>
+                </div> *@
+                @* <div class="col-md-6"></div> *@
             </div>
         </div>
     </div>
@@ -85,14 +88,16 @@ else
                         }
                     </select>
                 </div>
-
+            </div>
+            <div class="row g-2 align-items-end">
                 <div class="col-md-4">
                     <label class="form-label">New password</label>
                     <input type="password"
                     class="form-control"
                     @bind="_newPassword" />
                 </div>
-
+            </div>
+            <div class="row g-2 align-items-end">
                 <div class="col-md-4">
                     <Button Color="ButtonColor.Danger"
                     Size="ButtonSize.Small"

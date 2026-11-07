@@ -21,7 +21,7 @@ namespace GxTie.Components.Cols
                 var key = (ctx.Totyp, ctx.Efrm, ctx.Styp);
                 if (!loaded.TryGetValue(key, out var cols))
                 {
-                    try { cols = await _prefs.LoadAsync(idorg, ctx); }
+                    try { cols = await _prefs.LoadAsync(idorg, ctx, CancellationToken.None); }
                     catch (HttpRequestException) { cols = null; }
                     loaded[key] = cols;
                 }

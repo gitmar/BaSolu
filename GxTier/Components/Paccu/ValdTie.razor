@@ -374,10 +374,10 @@
     public int toMenu { get; set; }
     [Parameter]
     public List<Gtabl> EnsTbls { get; set; } // Dropdown options
-    [Parameter]
-    public List<Gpatr> EnsAtrs { get; set; }
-    [Parameter]
-    public List<Gpcat> EnsCats { get; set; }
+    //[Parameter]
+    //public List<Gpatr> EnsAtrs { get; set; }
+    //[Parameter]
+    //public List<Gpcat> EnsCats { get; set; }
     //guard
     [Parameter]
     public IPendingChangesGuard _guard { get; set; }
@@ -411,16 +411,18 @@
 
     private List<Gplan> LsPlans = new();
     private List<Gpfixe> LsFixes = new();
-    private List<Gpvar> LsGAfls = new();
     //public List<Gtabl> TbGpes = new();
     //public List<Gpvar> TbCols = new();
     private List<Gpvar> LsVars = new();
     private List<Gpfixe> LsVues = new();
+    private List<Gpvar> LsGAfls = new();
 
     private bool isPlnFilteringEnabled = false;
     private bool isRubFilteringEnabled = false;
 
     //private IEnumerable<SelectOption> SelectOptions = Enumerable.Empty<SelectOption>();
+    public List<Gpatr> EnsAtrs = new();
+    public List<Gpcat> EnsCats = new();
 
 
     //editing workflow
@@ -586,6 +588,10 @@
                 //MyDaTies = new ObservableCollection<TierspDto>();
                 MyDaTies = new();
             }
+            var lsACat = await _rendAgres.LoadOrgaTieAtrCats(curOrga.Idorg);
+            EnsAtrs = lsACat.Natrs ?? new List<Gpatr>();
+            EnsCats = lsACat.Ncats ?? new List<Gpcat>();
+            BuildHierarchy();
             // Load visibility rules
             await LoadTieVisibilityAsync();
             await LoadAflVisibilityAsync();

@@ -1,0 +1,73 @@
+﻿@using System.Reflection
+@using GxShared.Cols.Models
+@using GxShared.GxDtos
+@using GxShared.Sess
+@using GxTie.Components.FrmHelper
+@using GxTie.Components.Cols
+
+<h7 class="fw-bold fst-italic">Attributs plus...</h7>
+@foreach (var def in Definitions)
+{
+    var row = Values.FirstOrDefault(v => v.Iatr == def.Id);
+
+    <FormField Label="@def.Liba" IsVisible="true">
+        @if (!IsEditing)
+        {
+            <span class="form-control-plaintext">@DisplayOf(def, row)</span>
+        }
+        else if (def.Zfro == 2)    @* list from a reference table, as in the current page *@
+        {
+            <select class="form-select" value="@row?.Aval" @onchange="@(e => Set(def, e.Value?.ToString()))">
+                <option value="">Choisir...</option>
+                @foreach (var tob in EnsTbls.FirstOrDefault(t => t.Tenr == 1 && t.Tref == def.Ztbl)?.TbItems ?? new List<Gtvar>())
+                {
+                    <option value="@tob.Tref">@tob.Liba</option>
+                }
+            </select>
+        }
+        else if (def.Satyp == "int")
+        {
+            <input type="number" class="form-control" value="@row?.Aval" @onchange="@(e => Set(def, e.Value?.ToString()))" />
+        }
+        else if (def.Satyp == "date")
+        {
+            <input type="date" class="form-control" value="@row?.Aval" @onchange="@(e => Set(def, e.Value?.ToString()))" />
+        }
+        else
+        {
+            <input class="form-control" value="@row?.Aval" @onchange="@(e => Set(def, e.Value?.ToString()))" />
+        }
+    </FormField>
+}
+
+@code {
+    [Parameter, EditorRequired] public List<Gpatr> Definitions { get; set; } = new();
+    [Parameter, EditorRequired] public List<TiejatrDto> Values { get; set; } = new();
+    [Parameter, EditorRequired] public List<Gtabl> EnsTbls { get; set; } = new();
+    //[Parameter, EditorRequired] public List<Gpatr> EnsAtrs { get; set; } = new();
+    [Parameter] public bool IsEditing { get; set; }
+
+    private void Set(Gpatr def, string? raw)
+    {
+        var row = Values.FirstOrDefault(v => v.Iatr == def.Id);
+        if (row is null)
+        {
+            row = new TiejatrDto
+            {
+                Rowguid = Guid.NewGuid(), Iatr = def.Id, Atyp = def.Atyp,
+                Satyp = def.Satyp, Elea = def.Elea, Eta = 1, Datc = DateTime.Now
+            };
+            Values.Add(row);
+        }
+        row.Aval = string.IsNullOrWhiteSpace(raw) ? null : raw.Trim();   // dates stay ISO yyyy-MM-dd
+    }
+
+    private string DisplayOf(Gpatr def, TiejatrDto? row)
+    {
+        if (string.IsNullOrWhiteSpace(row?.Aval)) return "";
+        if (def.Zfro == 2)
+            return EnsTbls.FirstOrDefault(t => t.Tenr == 1 && t.Tref == def.Ztbl)?.TbItems
+                       ?.FirstOrDefault(i => i.Tref.ToString() == row.Aval)?.Liba ?? row.Aval;
+        return DateTime.TryParse(row.Aval, out var d) && def.Satyp == "date" ? d.ToString("dd/MM/yyyy") : row.Aval;
+    }
+}

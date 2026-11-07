@@ -34,8 +34,6 @@ namespace GxTie.Components.Uifrags
         {
 
         }
-        //protected abstract void ClearAddRow(EntityLevel level, Guid rowguid);
-        //protected abstract void ClearEditRow(EntityLevel level, Guid rowguid);
         protected override async Task ConfirmAdd(EntityLevel level, object draft, bool isConfirm)
         {
 
@@ -106,22 +104,24 @@ namespace GxTie.Components.Uifrags
             }
             CopyDraftToGridItem(level, entity);
             //CopyDraftTablToGridItem(entity, 1); // Assuming 1 is the tent for the main entity
-
             Guid opId;
-            if (isNew)
+            MergeAttributeValues(entity, GetDraft(level)!);
+            if (TrackOnItsOwn(level, entity))
             {
-                opId = await Guard.TrackInsert(entitySetName, entity);
-                ////SetPendingOpType(level, rowguid, PendingOpType.Insert);
+                if (isNew)
+                {
+                    opId = await Guard.TrackInsert(entitySetName, entity);
+                    ////SetPendingOpType(level, rowguid, PendingOpType.Insert);
+                }
+                else
+                {
+                    var key = EntityKeyHelper.GetKey(entity, level);
+                    opId = await Guard.TrackUpdate(entitySetName, key, entity);
+                    ////SetPendingOpType(level, rowguid, PendingOpType.Update);
+                }
+                await TrackAttributeValuesAsync(entity, isNew);
+                SetOpInfo(level, rowguid, new PendingOpInfo(opId, isNew ? PendingOpType.Insert : PendingOpType.Update));
             }
-            else
-            {
-                var key = EntityKeyHelper.GetKey(entity, level);
-                opId = await Guard.TrackUpdate(entitySetName, key, entity);
-                ////SetPendingOpType(level, rowguid, PendingOpType.Update);
-            }
-
-            SetOpInfo(level, rowguid, new PendingOpInfo(opId, isNew ? PendingOpType.Insert : PendingOpType.Update));
-
             if (isNew)
             {
                 RemoveFromLocalCollection(level, entity);
@@ -145,7 +145,11 @@ namespace GxTie.Components.Uifrags
             CopyDraftToGridItem(level, entity); // Assuming 2 is the tent for the child entity
 
             var key = EntityKeyHelper.GetKey(entity, level);
+            MergeAttributeValues(entity, GetDraft(level)!);
             var opId = await Guard.TrackUpdate(entitySetName, key, entity);
+
+            // ... after the TrackInsert/TrackUpdate branch:
+            await TrackAttributeValuesAsync(entity, false);
             ////SetPendingOpType(level, rowguid, PendingOpType.Update);
             SetOpInfo(level, rowguid, new PendingOpInfo(opId, PendingOpType.Update));
 
@@ -212,20 +216,28 @@ namespace GxTie.Components.Uifrags
             SetDeleteFlags(item);
             Console.WriteLine($"ROW is removed");
             await InvokeAsync(StateHasChanged);
+        }// 1. A page can say "this row is saved inside its parent's payload"
+        protected virtual bool TrackOnItsOwn(EntityLevel level, object entity) => true;
+        protected async Task TrackAttributeValuesAsync(object owner, bool ownerIsNew)
+        {
+            if (ownerIsNew) return;                       // rides inside the owner's insert
+            var values = AttributesOf(owner);
+            if (values is null) return;
+
+            foreach (var v in values.ToList())
+            {
+                SetOwnerKey(v, owner);
+                if (v.Id == 0)
+                    await Guard.TrackInsert("Tiejatrs", v);
+                else if (string.IsNullOrWhiteSpace(v.Aval))
+                {
+                    await Guard.TrackDelete("Tiejatrs", v.Id, v.Rowguid);
+                    values.Remove(v);
+                }
+                else
+                    await Guard.TrackUpdate("Tiejatrs", v.Id, v);
+            }
         }
-
-        //protected void BeginAdd(EntityLevel level, Guid rowguid, object draft)
-        //{
-        //    var s = GetEditState(level);
-        //    s.IsAdd = true;
-        //    s.IsEdit = false;
-        //    s.AddRowguid = rowguid;
-        //    s.EditRowguid = null;
-        //    s.DeleteRowguid = null;
-
-        //    BeginAddRow(level, rowguid, draft);
-        //    SetPendingOpType2(level, rowguid, PendingOpType.Insert);   // <- use the helper, matches GetPendingOpType's key
-        //}
         // --- shared start-edit entry point ---
         protected async Task StartRowAdd<TDto>(
     EntityLevel level,
@@ -243,6 +255,7 @@ namespace GxTie.Components.Uifrags
 
             BeginAdd(level, rowguid, draft);
             BumpRenderKey(level);                 // <-- add this
+
             await InvokeAsync(StateHasChanged);
         }
         protected async Task StartRowEdit<TDto>(
@@ -360,6 +373,36 @@ namespace GxTie.Components.Uifrags
         private bool GetLightBackground(Guid rowguid)
         {
             return _isLightBg.GetValueOrDefault(rowguid, false);
+        }
+        protected static List<TiejatrDto>? AttributesOf(object e) => e switch
+        {
+            TiewelDto t => t.Tiejatrs,
+            TierspDto t => t.Tiejatrs,
+            _ => null
+        };
+
+        protected static void SetOwnerKey(TiejatrDto v, object owner)
+        {
+            switch (owner)
+            {
+                case TiewelDto t: v.Itiw = t.Id; v.Itie = null; break;
+                case TierspDto t: v.Itie = t.Id; v.Itiw = null; break;
+            }
+        }
+        // Copy the draft's values onto the grid item (empty new values are dropped)
+        protected static void MergeAttributeValues(object entity, object draft)
+        {
+            var target = AttributesOf(entity);
+            var source = AttributesOf(draft);
+            if (target is null || source is null) return;
+
+            foreach (var s in source)
+            {
+                var t = target.FirstOrDefault(x => x.Iatr == s.Iatr);
+                if (t is null) target.Add(s);
+                else t.Aval = s.Aval;
+            }
+            target.RemoveAll(x => x.Id == 0 && string.IsNullOrWhiteSpace(x.Aval));
         }
 
         protected override void AddToLocalCollection(EntityLevel level, object entity)
@@ -531,9 +574,12 @@ protected void CopyPropertiesWithRules<T>(T target, T source)
 
         foreach (var prop in props)
         {
+            // Skip Make it scalar-only
+            if (prop.PropertyType != typeof(string) && typeof(System.Collections.IEnumerable).IsAssignableFrom(prop.PropertyType))
+                    continue;
             // Skip if property is blacklisted
             if (blacklist.Contains(prop.Name))
-                continue;
+            continue;
 
             // Skip if property has [Key] attribute
             if (prop.GetCustomAttribute<KeyAttribute>() != null)

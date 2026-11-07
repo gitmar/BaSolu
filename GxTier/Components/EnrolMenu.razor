@@ -78,8 +78,6 @@ else
                                      toChild="@toChild"
                                      orgTwels="@orgTwels"
                                      _guard="@_guard"
-                                     EnsAtrs="@EnsAtrs"
-                                     EnsCats="@EnsCats"
                                      EnsTbls="@EnsTbls"
                                      _InODaClient="@_MyODaClient">
                                      <ChildContent>
@@ -97,8 +95,6 @@ else
                                      toChild="@toChild"
                                      orgTiers="@orgTiers"
                                      _guard="@_guard"
-                                     EnsAtrs="@EnsAtrs"
-                                     EnsCats="@EnsCats"
                                      EnsTbls="@EnsTbls"
                                      _InODaClient="@_MyODaClient">
                                 <ChildContent>
@@ -214,8 +210,8 @@ else
 
     private List<Grole> LsRoles = new();
     private List<Gtabl> EnsTbls = new();
-    private List<Gpatr> EnsAtrs = new();
-    private List<Gpcat> EnsCats = new();
+    //private List<Gpatr> EnsAtrs = new();
+    //private List<Gpcat> EnsCats = new();
     //Navigation
     private int _gIdTie = 0, _chxGpe = 0, _chxMenu = 1;
     private string strComp = $"Accueil/SITE";
@@ -289,13 +285,12 @@ else
             await LoadTieAplAsync(_usrBag.Idorg);
             Console.WriteLine("✅ LoadTieAplAsync done");
 
-            EnsAtrs = await _rendAgres.LoadOrgaAtribs();
-            Console.WriteLine("✅ LoadOrgaAtribs done");
+            //EnsAtrs = await _rendAgres.LoadOrgaAtribs();
+            //Console.WriteLine("✅ LoadOrgaAtribs done");
 
-            EnsCats = await _rendAgres.LoadOrgaCategs();
-            Console.WriteLine("✅ LoadOrgaCategs done");
+            //EnsCats = await _rendAgres.LoadOrgaCategs();
+            //Console.WriteLine("✅ LoadOrgaCategs done");
 
-            BuildHierarchy();
             strComp = $"Accueil/Site {gpeLiba}";
 
             Jmessage = $"charged : {curOrga.Idorg}";
@@ -410,20 +405,7 @@ else
             // Safety: stay on page
         }
     }
-    //build hierarchy
-    private void BuildHierarchy()
-    {
-        var lookup = EnsCats.ToDictionary(c => c.Id);
-
-        foreach (var cat in EnsCats)
-        {
-            if (cat.Pid != null && lookup.TryGetValue(cat.Pid.Value, out var parent))
-            {
-                cat.Parent = parent;
-                parent.Children.Add(cat);
-            }
-        }
-    }
+    
     //changes des selections
     void ChxGpeTiers(Gpfixe mygpe)
     {
@@ -483,6 +465,8 @@ else
 
         await _guard.FlushAsync();
         _messageService.Show("✅ Saved successfully", ToastType.Success);
+        myetiw.GtieMode = GridMode.None;
+        myetiw.GaflMode = GridMode.None;
         StateHasChanged();
         return true;
     }
@@ -494,6 +478,8 @@ else
         Console.WriteLine("🗑️ CancelAllChanges START");
         await _guard.CancelChanges();  // 🔥 AWAIT - blocks until done
         _messageService.Show("✅ CancelAllChanges successfully", ToastType.Success);
+        myetiw.GtieMode = GridMode.None;
+        myetiw.GaflMode = GridMode.None;
         StateHasChanged();
         Console.WriteLine($"✅ CancelAllChanges END - Pending: {_guard.GetPendingChangesCount()}");
     }

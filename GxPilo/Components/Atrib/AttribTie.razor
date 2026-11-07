@@ -22,12 +22,19 @@
 @inject IJSRuntime _jsRun
 
 <div class="container mt-3">
-
+    <label>Groupe :</label>
+    <InputSelect @bind-Value="IMyGtie" class="me-3" style="width:auto">
+        <option value=0>aucun</option>
+        @foreach (var vgp in Groupes)
+        {
+            <option value=@vgp.Elea>@vgp.Liba</option>
+        }
+    </InputSelect>
     <Button Color="ButtonColor.Success" @onclick="() => StartAdd()">Ajt Attribute</Button>
     @if (draftAtr != null)
     {
         <Grid TItem="TieatrDto"
-        Data="@curOrga?.Tieatrs.ToList()"
+        Data="@curOrga?.Tieatrs.Where(t => t.Totyp == IMyGtie).ToList()"
         @key="tieatrkey"
         AllowPaging="true"
         Responsive="true">
@@ -115,6 +122,7 @@
                         }
                     </ChildContent>
                 </GridColumn>
+
                 <GridColumn TItem="TieatrDto" HeaderText="Eta">
                     <ChildContent Context="item">
                         @if (editRowguid == item.Rowguid)
@@ -283,8 +291,11 @@
 
     //[Parameter] public ItemClientService ItemService { get; set; }
     //[Parameter] public StockClientService StockService { get; set; }
+    private int IMyGtie { get; set; } = 0;
     private List<TieatrDto> LsAtrs = new();
     private List<Gpfixe> LsFixes = new();
+    private List<Gpfixe> LsGties = new();
+    public List<GxGroupe> Groupes = new();
     private int inZfro = 0;
     private Guid? editRowguid;
     private string tieatrkey = "";
@@ -316,6 +327,15 @@
             //_lgcdu = 3;
             LsAtrs = curOrga?.Tieatrs.ToList();
             LsFixes = toChild.LsFixes.ToList();
+            LsGties = LsFixes
+                .Where(ut => ut.Gvars == 36 && ut.Elea != 0 && ut.Elea != 9)
+                .ToList();
+            Groupes.Clear();
+            //foreach(var gr in LsGties.Where(gr => gr.Gp1 == 1 && gr.Itb == 6))
+            foreach (var gr in LsGties.Where(gr => gr.Itb == 6))
+            {
+                Groupes.Add(new GxGroupe { Itb = gr.Itb, Elea = gr.Elea, Liba = gr.Liba });
+            }
         }
         catch (Exception ex)
         {
@@ -349,6 +369,7 @@
             Ztbl = atr.Ztbl,
             Liba = atr.Liba,
             Abg = atr.Abg,
+            Totyp = atr.Totyp,
             Atyp = atr.Atyp, 
             Eta = atr.Eta,
             Rowguid = atr.Rowguid 
@@ -460,6 +481,8 @@
         draftAtr.Ztbl = 0;
         draftAtr.Liba = "";
         draftAtr.Abg = "";
+        draftAtr.Totyp = IMyGtie;
+        draftAtr.Atyp = 1; //string
         draftAtr.Eta = 1;
         inZfro = 1;
     }

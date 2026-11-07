@@ -4,70 +4,49 @@
 
 @inject IClientMatriculeOrdreService OrdreService
 
-@* <div class="small text-muted">
-    IsReadOnly: @IsReadOnly |
-    IsBusy: @IsBusy |
-    IsGenerating: @IsGenerating | 
-    InAddingMode: @InAddingMode
-</div> *@
+<div class="matricule-row">
 
+    <span class="fw-bold text-nowrap">
+        @(IsProvisional ? "PV-" : "")@Sorga-@Sgpe-
+    </span>
 
-<div class="registration-input">
-    <div class="row g-2 align-items-center">
-        <!-- Prefix -->
-        <div class="col-auto">
-            <span class="form-control-plaintext fw-bold">
-                @(IsProvisional ? "PV-" : "")@Sorga-@Sgpe-
-            </span>
-        </div>
+    <input class="form-control matricule-input"
+           value="@_ordre"
+           @oninput="OnOrdreInput"
+           maxlength="1"
+           disabled="@IsReadOnly || IsBusy" />
 
-        <!-- Input -->
-         <div class="col-md-3">
-            @if (VientDe == 1)
-            {
-                <div class="d-flex align-items-center gap-1">
-                    <input class="form-control"
-                           value="@_ordre"
-                           @oninput="OnOrdreInput"
-                           maxlength="10"
-                           inputmode="numeric"
-                           pattern="[0-9]{10}"
-                           placeholder="10 digits"
-                           disabled="@IsReadOnly || IsBusy" />
-                    <span class="fw-bold">@Saffilia</span>
-                </div>
-            } else
-            { //online
-                <div class="md-col-2">
-                    @_ordre
-                </div>
-            }
-        </div>
-        <!-- Button -->
-        @if (VientDe == 1)
-        {
-            <div class="col-auto">
-                <Button Color="ButtonColor.Primary"
-                        Size="ButtonSize.Small"
-                        Disabled="@(!PeutGenerer)"
-                        @onclick="GenerateAsync">
-                    @(IsGenerating ? "..." : "Generate")
-                </Button>
-            </div>
-        }
-    </div>
-    @if (!string.IsNullOrWhiteSpace(_errorMessage))
-    {
-        <div class="text-danger small mt-1">
-            @_errorMessage
-        </div>
-    }
+    <span class="fw-bold text-nowrap">
+        @Saffilia
+    </span>
+
+    <Button Color="ButtonColor.Primary"
+            Size="ButtonSize.Small"
+            Disabled="@AjtState"
+            @onclick="AddNewTiwAsync">
+        ➕ Ajt
+    </Button>
+
 </div>
 <style>
-    input.form-control {
-    max-width: 10rem; /* or whatever width fits */
+.matricule-row {
+    display: flex;
+    align-items: center;
+    gap: .5rem;
+    flex-wrap: nowrap;
 }
 
+.matricule-input {
+    width: 130px;
+    min-width: 130px;
+    max-width: 130px;
+    text-align: center;
+}
+
+.matricule-row .btn {
+    width: auto;
+    white-space: nowrap;
+}
 </style>
 @code {
     private bool _isValid;
@@ -75,6 +54,7 @@
     private string _errorMessage = string.Empty;
 
     [Parameter] public int VientDe { get; set; } = 0;
+    [Parameter] public bool AjtState { get; set; } = false;
 
     [Parameter] public string Sorga { get; set; } = string.Empty;
     [Parameter] public int? Ugpe { get; set; } = 0;
@@ -89,10 +69,11 @@
     [Parameter] public string? Value { get; set; } = string.Empty;
     [Parameter] public EventCallback<string?> ValueChanged { get; set; }
     [Parameter] public EventCallback<bool> ValidChanged { get; set; }
+    [Parameter] public EventCallback<string> OnAddNewTiw { get; set; }
 
     [Parameter] public bool IsReadOnly { get; set; }
     [Parameter] public bool IsBusy { get; set; }
-    [Parameter] public bool InAddingMode { get; set; }
+    //[Parameter] public bool InAddingMode { get; set; }
 
     private bool IsGenerating
     {
@@ -100,9 +81,8 @@
         set => _isGenerating = value;
     }
 
-    private bool PeutGenerer => InAddingMode;
+    //private bool PeutGenerer => InAddingMode;
     private string _ordre = string.Empty;
-    //private string SiOrdre => _ordre;
 
     private int IvGroup => Ugpe ?? 0;
 
@@ -141,7 +121,14 @@
         // Remove the final affiliate letter: 1234567890T => 1234567890
         _ordre = ordrePart[..^1];
     }
+    private async Task AddNewTiwAsync()
+    {
+        // Generate first
+        await GenerateAsync();
 
+        // Then notify parent
+        await OnAddNewTiw.InvokeAsync(Value);
+    }
     private async Task OnOrdreInput(ChangeEventArgs e)
     {
         var raw = e.Value?.ToString() ?? string.Empty;
@@ -164,8 +151,8 @@
         {
             return;
         }
-
-        IsGenerating = true;
+        _isGenerating = true;
+        //IsGenerating = true;
         _errorMessage = string.Empty;
 
         try
@@ -178,7 +165,6 @@
                 GenerationMode);
 
             await UpdateValueAsync();
-            //InAddingMode = false;
         }
         catch (Exception ex)
         {
@@ -193,12 +179,12 @@
     private async Task UpdateValueAsync()
     {
         Value = BuildMatricule();
+        Console.WriteLine($"[Child] Value='{Value}'");
 
         await ValueChanged.InvokeAsync(Value);
 
         await ValidateAsync();
     }
-
     private string BuildMatricule()
     {
         if (string.IsNullOrWhiteSpace(_ordre))

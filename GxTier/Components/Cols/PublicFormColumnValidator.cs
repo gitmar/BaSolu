@@ -8,11 +8,14 @@ namespace GxTie.Components.Cols
 
         public PublicColumnFormValidator(PublicColumnPreferencesClient prefs)
             => _prefs = prefs;
-
         public async Task<List<string>> ValidateManyAsync(
-            int idorg,
-            IEnumerable<(ColPrefContext Ctx, object Model, string Title)> items)
+    IColumnPreferencesReader reader, int idorg,
+    IEnumerable<(ColPrefContext Ctx, object Model, string Title)> items)
         {
+        //public async Task<List<string>> ValidateManyAsync(
+        //    int idorg,
+        //    IEnumerable<(ColPrefContext Ctx, object Model, string Title)> items)
+        //{
             var problems = new List<string>();
             var loaded = new Dictionary<(int, int, int), List<LSelCol>?>();
 

@@ -14,14 +14,10 @@ namespace GxTie.Components.Cols
             _dftClient = httpClientFactory.CreateClient("AUTHClient");
         }
 
-        //public async Task<List<LSelCol>> LoadAsync(int idorg, ColPrefContext ctx)
-        //    => await _dftClient.GetFromJsonAsync<List<LSelCol>>($"Colprefs/{idorg}{Qs(ctx)}")
-        //       ?? new List<LSelCol>();
-
-        public async Task<List<LSelCol>?> LoadAsync(int idorg, ColPrefContext ctx)
+        public async Task<List<LSelCol>?> LoadAsync(int idorg, ColPrefContext ctx, CancellationToken cancellationToken)
         {
-            return await _dftClient.GetFromJsonAsync<List<LSelCol>>(
-                $"Colprefs/{idorg}{Qs(ctx)}") ?? new List<LSelCol>();
+            return await  _dftClient.GetFromJsonAsync<List<LSelCol>>(
+                $"Colprefs/{idorg}{Qs(ctx)}", cancellationToken) ?? new List<LSelCol>();
         }
         private static string Qs(ColPrefContext ctx) => $"?Totyp={ctx.Totyp}&Efrm={ctx.Efrm}&Styp={ctx.Styp}";
         public async Task<bool> SaveAsync(int idorg, ColPrefContext ctx, List<LSelCol> selection)

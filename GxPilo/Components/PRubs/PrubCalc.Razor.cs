@@ -4,11 +4,11 @@ using GxShared.Interfaces;
 
 using GxPilo.Components.Uifrags;
 
-namespace GxPilo.Components.MRubs
+namespace GxPilo.Components.PRubs
 {
-    public partial class ZZZRubFact : CompUICrudBase
+    public partial class PrubCalc : CompUICrudBase
     {
-        public ZZZRubFact(IPendingChangesGuard guard) : base(guard)
+        public PrubCalc(IPendingChangesGuard guard) : base(guard)
         {
         }
 

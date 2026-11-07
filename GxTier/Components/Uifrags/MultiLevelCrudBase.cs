@@ -145,6 +145,8 @@ namespace GxTie.Components.Uifrags
                     AflItems.RemoveAll(x => x.Rowguid == rowguid);
                     break;
                 case EntityLevel.Wfl:
+                    if (WflItems.FirstOrDefault(x => x.Rowguid == rowguid) is { } removed)
+                        OnLocalCollectionMutated(level, CollectionMutation.Removed, removed);
                     WflItems.RemoveAll(x => x.Rowguid == rowguid);
                     break;
                 case EntityLevel.Act:

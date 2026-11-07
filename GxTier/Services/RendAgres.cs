@@ -108,6 +108,17 @@ namespace GxTie.Services
 
             return result ?? new List<Gpcat>();
         }
+        
+        public async Task<Acatbag> LoadOrgaTieAtrCats(int inIdorg)
+        {
+            var json = await _clieManager.SendRequestAsync(
+                "LOCALClient",
+                HttpMethod.Get,
+                $"olines/acatbag/{inIdorg}");
+            var result = JsonConvert.DeserializeObject<Acatbag>(json);
+            return result ?? new Acatbag();
+        }
+
         //public async Task<List<Gpcol>> LoadOrgaColons()
         //{
         //    //FmtPsts
