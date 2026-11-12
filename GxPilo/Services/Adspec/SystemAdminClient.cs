@@ -2,6 +2,7 @@
 using System.Net.Http.Json;
 
 using GxShared.AdminDtos.AdModels;
+using GxShared.InDtos;
 using GxShared.Helpers;
 using GxShared.Others;
 using GxShared.Sess;
@@ -19,8 +20,7 @@ namespace GxPilo.Services.Adspec
             bool allContexts,
             CancellationToken cancellationToken = default);
         Task<AdminOperationResultDto> SynchronizeDictionaryAsync(
-            int idorg,
-            string? language,
+            SynchronizeDictionaryRequest rqEntries,
             CancellationToken cancellationToken = default);
         Task<AdminOperationResultDto> AddNewLanguageAsync(
             int idorg,
@@ -50,16 +50,6 @@ namespace GxPilo.Services.Adspec
             bool allContexts,
             CancellationToken cancellationToken = default)
         {
-            //var response = await _apiClient.PostAsJsonAsync(
-            //    "systemadmin/columns/initialize",
-            //    new InitializeColumnsRequest
-            //    {
-            //        Idorg = idorg,
-            //        AllContexts = allContexts
-            //    },
-            //    cancellationToken);
-
-            //return await ReadResultAsync(response, cancellationToken);
             var jsoncol = await _clieManager.SendRequestAsync(
                 "AuthClient",
                 HttpMethod.Post, "systemadmin/columns/initialize",
@@ -70,46 +60,17 @@ namespace GxPilo.Services.Adspec
                 });
 
             return JsonConvert.DeserializeObject<AdminOperationResultDto>(jsoncol) ?? new AdminOperationResultDto();
-
-            //var responsecol = await _apiClient.PostAsJsonAsync(
-            //    "systemadmin/dictionary/synchronize",
-            //    new SynchronizeDictionaryRequest
-            //    {
-            //        Idorg = idorg,
-            //        Language = language
-            //    },
-            //    cancellationToken);
-
-            //return await ReadResultAsync(response, cancellationToken);
         }
 
         public async Task<AdminOperationResultDto> SynchronizeDictionaryAsync(
-            int idorg,
-            string? language,
+            SynchronizeDictionaryRequest vzRequest,
             CancellationToken cancellationToken = default)
         {
-
             var jsonrpass = await _clieManager.SendRequestAsync(
                 "AuthClient",
                 HttpMethod.Post,
-                "systemadmin/dictionary/synchronize",
-                new SynchronizeDictionaryRequest
-                {
-                    Idorg = idorg,
-                    Language = language
-                });
-
+                "systemadmin/dictionary/synchronize", vzRequest);
             return JsonConvert.DeserializeObject<AdminOperationResultDto>(jsonrpass) ?? new AdminOperationResultDto();
-
-            //var response = await _apiClient.PostAsJsonAsync(
-            //    "systemadmin/dictionary/synchronize",
-            //    new SynchronizeDictionaryRequest
-            //    {
-            //        Idorg = idorg,
-            //        Language = language
-            //    });
-
-            //return await ReadResultAsync(response, cancellationToken);
         }
 
         public async Task<List<AdminUserDto>> GetUsersAsync(

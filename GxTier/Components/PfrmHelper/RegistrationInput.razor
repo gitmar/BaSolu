@@ -5,11 +5,18 @@
 @inject IClientMatriculeOrdreService OrdreService
 
 <div class="matricule-row">
-
+    @if (VientDe == 1)
+    {
     <span class="fw-bold text-nowrap">
         @(IsProvisional ? "PV-" : "")@Sorga-@Sgpe-
     </span>
-
+    }
+    else if (VientDe == 2)
+    {
+        <span class="fw-bold text-nowrap">
+            @(IsProvisional ? "PV-" : "")@Sorga-@Sgpe-
+        </span>
+    }
     <input class="form-control matricule-input"
            value="@_ordre"
            @oninput="OnOrdreInput"
@@ -19,14 +26,23 @@
     <span class="fw-bold text-nowrap">
         @Saffilia
     </span>
-
+    @if (VientDe == 1)
+    {
     <Button Color="ButtonColor.Primary"
             Size="ButtonSize.Small"
             Disabled="@AjtState"
             @onclick="AddNewTiwAsync">
         ➕ Ajt
     </Button>
-
+    } else if (VientDe == 2)
+    {
+        <Button Color="ButtonColor.Primary"
+            Size="ButtonSize.Small"
+            Disabled="@AjtState"
+            @onclick="AddNewTieAsync">
+            ➕ Ajt
+        </Button>
+    }
 </div>
 <style>
 .matricule-row {
@@ -70,6 +86,7 @@
     [Parameter] public EventCallback<string?> ValueChanged { get; set; }
     [Parameter] public EventCallback<bool> ValidChanged { get; set; }
     [Parameter] public EventCallback<string> OnAddNewTiw { get; set; }
+    [Parameter] public EventCallback<string> OnAddNewTie { get; set; }
 
     [Parameter] public bool IsReadOnly { get; set; }
     [Parameter] public bool IsBusy { get; set; }
@@ -128,6 +145,14 @@
 
         // Then notify parent
         await OnAddNewTiw.InvokeAsync(Value);
+    }
+    private async Task AddNewTieAsync()
+    {
+        // Generate first
+        await GenerateAsync();
+
+        // Then notify parent
+        await OnAddNewTie.InvokeAsync(Value);
     }
     private async Task OnOrdreInput(ChangeEventArgs e)
     {

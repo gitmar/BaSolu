@@ -3,7 +3,7 @@
     <TargetFramework>net9.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
-    <Version>1.1.50</Version>
+    <Version>1.1.59</Version>
     <SchemaVersion>1</SchemaVersion>
     <ServiceWorkerAssetsManifest>service-worker-assets.js</ServiceWorkerAssetsManifest>
   </PropertyGroup>
@@ -20,9 +20,6 @@
   <ItemGroup>
     <Compile Remove="ClieModels\**" />
     <Compile Remove="Components\ABrou\**" />
-    <Compile Remove="Components\Paccu\Invita\**" />
-    <Compile Remove="Components\Secuope\Authoriz\**" />
-    <Compile Remove="Components\Secuope\Sessions\**" />
     <Compile Remove="Connected Services\OData Service\**" />
     <Compile Remove="Formulas\**" />
     <Compile Remove="MyApp.Tests\**" />
@@ -31,9 +28,6 @@
     <Compile Remove="YYYFormulas\**" />
     <Content Remove="ClieModels\**" />
     <Content Remove="Components\ABrou\**" />
-    <Content Remove="Components\Paccu\Invita\**" />
-    <Content Remove="Components\Secuope\Authoriz\**" />
-    <Content Remove="Components\Secuope\Sessions\**" />
     <Content Remove="Connected Services\OData Service\**" />
     <Content Remove="Formulas\**" />
     <Content Remove="MyApp.Tests\**" />
@@ -42,9 +36,6 @@
     <Content Remove="YYYFormulas\**" />
     <EmbeddedResource Remove="ClieModels\**" />
     <EmbeddedResource Remove="Components\ABrou\**" />
-    <EmbeddedResource Remove="Components\Paccu\Invita\**" />
-    <EmbeddedResource Remove="Components\Secuope\Authoriz\**" />
-    <EmbeddedResource Remove="Components\Secuope\Sessions\**" />
     <EmbeddedResource Remove="Connected Services\OData Service\**" />
     <EmbeddedResource Remove="Formulas\**" />
     <EmbeddedResource Remove="MyApp.Tests\**" />
@@ -53,9 +44,6 @@
     <EmbeddedResource Remove="YYYFormulas\**" />
     <None Remove="ClieModels\**" />
     <None Remove="Components\ABrou\**" />
-    <None Remove="Components\Paccu\Invita\**" />
-    <None Remove="Components\Secuope\Authoriz\**" />
-    <None Remove="Components\Secuope\Sessions\**" />
     <None Remove="Connected Services\OData Service\**" />
     <None Remove="Formulas\**" />
     <None Remove="MyApp.Tests\**" />
@@ -67,7 +55,7 @@
   <ItemGroup>
     <Compile Remove="Components\Opera\CalcWorkflow.cs" />
     <Compile Remove="Components\Paccu\InscTiw.razor.cs" />
-    <Compile Remove="Components\Paccu\Valdtie.razor.cs" />
+    <Compile Remove="Components\Paccu\VldeTie.Razor.cs" />
     <Compile Remove="oldProgram.cs" />
     <Compile Remove="Services\AdautService.cs" />
     <Compile Remove="Services\AppStateServices.cs" />
@@ -99,43 +87,29 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Content Remove="Components\FrmHelper\BoolComponent.razor" />
-    <Content Remove="Components\FrmHelper\CheckComponent.razor" />
     <Content Remove="Components\FrmHelper\ChildGridHelper.razor" />
     <Content Remove="Components\FrmHelper\ChildGridHelper8.razor" />
-    <Content Remove="Components\FrmHelper\CTieGdHelper.razor" />
-    <Content Remove="Components\FrmHelper\CTiwGdHelper.razor" />
     <Content Remove="Components\FrmHelper\MainGridHelper.razor" />
     <Content Remove="Components\FrmHelper\MainGridHelper8.razor" />
-    <Content Remove="Components\FrmHelper\PTieGdHelper.razor" />
-    <Content Remove="Components\FrmHelper\PTiwGdHelper.razor" />
-    <Content Remove="Components\FrmHelper\StringComponent.razor" />
-    <Content Remove="Components\FrmHelper\TabhieComponent.razor" />
     <Content Remove="Components\FrmHelper\TabselComponent.razor" />
     <Content Remove="Components\Identity\AdmLogin.razor" />
     <Content Remove="Components\Identity\BzmailConf.razor" />
     <Content Remove="Components\Identity\OldRegister.razor" />
     <Content Remove="Components\Identity\Register.razor" />
     <Content Remove="Components\Identity\Repareg.razor" />
-    <Content Remove="Components\Identity\Z3Login.razor" />
     <Content Remove="Components\Opera\Atest.razor" />
     <Content Remove="Components\Opera\Calculs\CalcResLnes.razor" />
     <Content Remove="Components\Opera\Etats\EtatMenu.razor" />
     <Content Remove="Components\Opera\Ordres\OrdaLoad.razor" />
+    <Content Remove="Components\Opera\Ordres\TestNav.razor" />
     <Content Remove="Components\Opera\Saisies\SaieActLnes.razor" />
     <Content Remove="Components\Opera\Saisies\Z3SaieActLnes.razor" />
     <Content Remove="Components\Opera\Z4Saiepart.razor" />
     <Content Remove="Components\Paccu\InvOper.razor" />
     <Content Remove="Components\Paccu\Mutatio.razor" />
-    <Content Remove="Components\Paccu\TieGridForm.razor" />
-    <Content Remove="Components\Paccu\Z2Carri6Menu.razor" />
-    <Content Remove="Components\Paccu\Z3CarriMenu5.razor" />
-    <Content Remove="Components\Paccu\Z3InscTiw.razor" />
-    <Content Remove="Components\Pcarri\Affecfonct.razor" />
     <Content Remove="Components\PfrmHelper\ImmatriculationPatternEditor.razor" />
     <Content Remove="Components\PfrmHelper\RegisChildInput.razor" />
-    <Content Remove="Components\PfrmHelper\Registration.razor" />
-    <Content Remove="Components\Secuope\DonaMenu.razor" />
+    <Content Remove="Components\TestMail.razor" />
     <Content Remove="Components\TestNavMenu.razor" />
     <Content Remove="Layout\Index.cshtml" />
     <Content Remove="Layout\Logadm.razor" />
@@ -147,6 +121,10 @@
   <ItemGroup>
     <None Remove="Components\Opera\Etats\EtatMenu.razor.css" />
     <None Remove="Formulas\Connected Services\OData Service\OData ServiceCsdl.xml" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="Components\ABrou\Z3Login.razor" />
   </ItemGroup>
 
   <ItemGroup>
@@ -193,6 +171,7 @@
   <ItemGroup>
     <Folder Include="Components\Opera\Calculs\" />
     <Folder Include="Components\Opera\Etats\" />
+    <Folder Include="Components\Opera\Ordres\" />
     <Folder Include="Components\Opera\Saisies\" />
     <Folder Include="Connected Services\" />
     <Folder Include="wwwroot\_content\Blazor.Bootstrap\" />

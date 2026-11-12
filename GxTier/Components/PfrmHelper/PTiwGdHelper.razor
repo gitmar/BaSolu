@@ -33,15 +33,11 @@
             <div class="alert alert-danger py-1">@_error</div>
         }
 
-        @if (IsEditing)
+        @if (!ChildBusy)
         {
             <div class="d-flex align-items-center gap-2 mt-2">
                 <Button Color="ButtonColor.Success" Disabled="@ChildBusy" Size="ButtonSize.Small" @onclick="ConfirmAsync">✅ Confirm</Button>
                 <Button Color="ButtonColor.Secondary" Size="ButtonSize.Small" @onclick="CancelAsync">✖ Cancel</Button>
-                @if (ChildBusy)
-                {
-                    @* <small class="text-muted">Terminez ou annulez l'affilié en cours.</small> *@
-                }
             </div>
         }
     </div>
@@ -56,28 +52,31 @@
         <span class="fw-bold text-nowrap">
             @ChldMatri
         </span>
+        @* <p>Zmatri-> @(Entity.Zmatri)</p>
+        <p>Confstate -> @ConfState</p>
+        <p>HasMatricule -> @HasMatricule</p>
+        <p>HasAffiliates -> @HasAffiliates</p>
+        <p>ShowAffiliates -> @ShowAffiliates</p> *@
     </div>
-    @if (CanAddEdtChild)
-    {
-        <div class="d-flex align-items-center gap-2 mb-2">
-            <label>Groupe :</label>
-            <InputSelect TValue="int" Value="SelectedGroup"
-                         ValueChanged="EventCallback.Factory.Create<int>(this, OnGroupChanged)"
-                         ValueExpression="@(() => SelectedGroup)">
-                <option value="0">Sélectionner...</option>
-                @foreach (var g in GroupOptions) 
-                {
-                    <option value="@g.Elea">@g.Liba</option>
-                }
-            </InputSelect>
-            <Button Color="ButtonColor.Primary" Size="ButtonSize.Small"
-                    Disabled="@(SelectedGroup < 1 || ChildBusy)"
-                    @onclick="() => OnAddChild.InvokeAsync(SelectedGroup)">
-                ➕ Ajt Affilié
-            </Button>
-        </div>
-    }
-
+        
+    <div class="d-flex align-items-center gap-2 mb-2">
+        <label>Groupe :</label>
+        <InputSelect TValue="int" Value="SelectedGroup"
+                     ValueChanged="EventCallback.Factory.Create<int>(this, OnGroupChanged)"
+                     ValueExpression="@(() => SelectedGroup)">
+            <option value="0">Sélectionner...</option>
+            @foreach (var g in GroupOptions)
+            {
+                <option value="@g.Elea">@g.Liba</option>
+            }
+        </InputSelect>
+        <Button Color="ButtonColor.Primary" Size="ButtonSize.Small"
+                Disabled="@(SelectedGroup < 1 || ChildBusy)"
+                @onclick="() => OnAddChild.InvokeAsync(SelectedGroup)">
+            ➕ Ajt Affilié
+        </Button>
+    </div>
+  
     <CTiwGdHelper Idorg="@Idorg" CurTiw="@Entity" WflItems="@WflItems" EnsTbls="@EnsTbls"
                   SelectedGroup="@SelectedGroup"
                   PrefReader="@PrefReader"
@@ -85,12 +84,12 @@
                   IsEditingFn="@IsEditingFn"
                   GetDraftFn="@GetDraftFn"
                   IsDeletingFn="@IsDeletingFn"
-                  OnStartEdit="@OnStartEditAfl"
-                  OnConfirm="@OnConfirmAfl"
-                  OnCancel="@OnCancelAfl"
-                  OnDelete="@OnDeleteAfl"
-                  OnConfirmDelete="@OnConfirmDeleteAfl"
-                  OnCancelDelete="@OnCancelDeleteAfl" />
+                  OnStartEdit="@OnStartEditWfl"
+                  OnConfirm="@OnConfirmWfl"
+                  OnCancel="@OnCancelWfl"
+                  OnDelete="@OnDeleteWfl"
+                  OnConfirmDelete="@OnConfirmDeleteWfl"
+                  OnCancelDelete="@OnCancelDeleteWfl" />
 }
 else
 {
@@ -100,9 +99,6 @@ else
         else { <text>aucun groupe d'affiliés configuré pour cette catégorie.</text> }
     </div>
 }
-<!-- Affiliates — folded in, no separate tab -->
-@* <p>matricule arrive : @Entity?.Zmatri</p>
-<p>groupes options : @GroupOptions.Count</p> *@
 
 @code {
     // --- Person-level ---
@@ -125,13 +121,13 @@ else
     [Parameter, EditorRequired] public List<TiwaflDto> WflItems { get; set; } = new();
     [Parameter, EditorRequired] public Func<TiwaflDto, bool> IsEditingFn { get; set; } = default!;
     [Parameter, EditorRequired] public Func<TiwaflDto?> GetDraftFn { get; set; } = default!;
-    [Parameter] public EventCallback<TiwaflDto> OnStartEditAfl { get; set; }
-    [Parameter] public EventCallback<TiwaflDto> OnConfirmAfl { get; set; }
-    [Parameter] public EventCallback<TiwaflDto> OnCancelAfl { get; set; }
-    [Parameter] public EventCallback<TiwaflDto> OnDeleteAfl { get; set; }
+    [Parameter] public EventCallback<TiwaflDto> OnStartEditWfl { get; set; }
+    [Parameter] public EventCallback<TiwaflDto> OnConfirmWfl { get; set; }
+    [Parameter] public EventCallback<TiwaflDto> OnCancelWfl { get; set; }
+    [Parameter] public EventCallback<TiwaflDto> OnDeleteWfl { get; set; }
     [Parameter] public Func<TiwaflDto, bool> IsDeletingFn { get; set; } = _ => false;
-    [Parameter] public EventCallback<TiwaflDto> OnConfirmDeleteAfl { get; set; }
-    [Parameter] public EventCallback<TiwaflDto> OnCancelDeleteAfl { get; set; }
+    [Parameter] public EventCallback<TiwaflDto> OnConfirmDeleteWfl { get; set; }
+    [Parameter] public EventCallback<TiwaflDto> OnCancelDeleteWfl { get; set; }
 
     // --- Add-child controls ---
     [Parameter] public List<Gpvar> GroupOptions { get; set; } = new();
@@ -161,7 +157,7 @@ else
                                              || (Entity.Id > 0 && w.Itiw == Entity.Id));
     private bool ShowAffiliates => HasMatricule && (GroupOptions.Any() || HasAffiliates);
     
-    private bool CanAddEdtChild => (ConfState == AddEdtMode.AddPConfirmed || ConfState == AddEdtMode.EdtPConfirmed) 
+    private bool AddEditingAffile => (ConfState == AddEdtMode.AddPConfirmed || ConfState == AddEdtMode.EdtPConfirmed)
           && !string.IsNullOrEmpty((IsEditing? (Draft ?? Entity) : Entity).Zmatri) && GroupOptions.Any();
     
     //private TiwaflDto SelectedAfil = new();

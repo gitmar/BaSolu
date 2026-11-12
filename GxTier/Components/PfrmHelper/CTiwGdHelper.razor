@@ -14,13 +14,13 @@
             <div class="alert alert-danger py-1">@_error</div>
         }
 
-        @foreach (var afl in SubAfls)
+        @foreach (var wfl in SubAfls)
         {
-            var editing = IsEditingFn(afl);
-            var model = editing ? (GetDraftFn() ?? afl) : afl;
+            var editing = IsEditingFn(wfl);
+            var model = editing ? (GetDraftFn() ?? wfl) : wfl;
             var itemCtx = ColumnContexts.Affiliate(model.Tyafl);
 
-            <div class="border-bottom pb-2 mb-2" @key="afl.Rowguid">
+            <div class="border-bottom pb-2 mb-2" @key="wfl.Rowguid">
                 @if (editing)
                 {
                     <ColDrivenFields @ref="_editingFields" Idorg="@Idorg" PColCtx="@itemCtx"
@@ -28,20 +28,20 @@
                                      EnsTbls="@EnsTbls" IsEditing="true" />
                      <div class="d-flex gap-2 mt-1">
                         <Button Color="ButtonColor.Success" Size="ButtonSize.Small"
-                                @onclick="() => ConfirmAsync(afl)">✅Confirm</Button>
+                                @onclick="() => ConfirmAsync(wfl)">✅Confirm</Button>
                         <Button Color="ButtonColor.Secondary" Size="ButtonSize.Small"
-                                @onclick="() => CancelAsync(afl)">✖Cancel</Button>
+                                @onclick="() => CancelAsync(wfl)">✖Cancel</Button>
                     </div>
                 }
-                else if (IsDeletingFn(afl))
+                else if (IsDeletingFn(wfl))
                 {
                     <ColDrivenFields Idorg="@Idorg" PColCtx="@itemCtx" PrefReader="@PrefReader"
                         Model="@model" EnsTbls="@EnsTbls" IsEditing="false" />
                     <div class="d-flex gap-2 mt-1">
                         <Button Color="ButtonColor.Danger" Size="ButtonSize.Small"
-                            @onclick="() => OnConfirmDelete.InvokeAsync(afl)">⚠️ Confirmer la suppression</Button>
+                            @onclick="() => OnConfirmDelete.InvokeAsync(wfl)">⚠️ Confirmer la suppression</Button>
                         <Button Color="ButtonColor.Secondary" Size="ButtonSize.Small"
-                            @onclick="() => OnCancelDelete.InvokeAsync(afl)">❎ Annuler</Button>
+                            @onclick="() => OnCancelDelete.InvokeAsync(wfl)">❎ Annuler</Button>
                     </div>
                 }
             </div>
@@ -80,7 +80,7 @@
         .Where(w => w.Prowguid == CurTiw.Rowguid || (CurTiw.Id > 0 && w.Itiw == CurTiw.Id))
         .ToList();
 
-    private async Task ConfirmAsync(TiwaflDto afl)
+    private async Task ConfirmAsync(TiwaflDto wfl)
     {
         if (_editingFields is not null && !_editingFields.Validate())
         {
@@ -89,12 +89,12 @@
         }
         //a verifier: si ajout d'affilie, il faut ajouter l'affilie à la liste des affiliés du parent (CurTiw)
         _error = null;
-        await OnConfirm.InvokeAsync(afl);
+        await OnConfirm.InvokeAsync(wfl);
     }
 
-    private async Task CancelAsync(TiwaflDto afl)
+    private async Task CancelAsync(TiwaflDto wfl)
     {
         _error = null;
-        await OnCancel.InvokeAsync(afl);
+        await OnCancel.InvokeAsync(wfl);
     }
 }

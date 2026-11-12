@@ -133,11 +133,12 @@
     [Parameter] public List<Gtabl> EnsTbls { get; set; } = new();
 
     private List<GsadrDto> Addresses = new();
-    private GsadrDto? curAdres;
+    private GsadrDto? curAdres = new();
 
     protected override async Task OnInitializedAsync()
     {
-        Addresses = curOrga.Gsadrs.ToList();
+        Addresses = curOrga.Gsadrs.Where(ad => ad.Orig == 9).ToList();
+        curAdres = Addresses?.FirstOrDefault() ?? new();
     }
 
     protected override void OnParametersSet()
@@ -160,6 +161,7 @@
         curAdres = new GsadrDto
         {
             Idorg = curOrga.Idorg,
+            Orig = Actx.Orig,
             Agpe = Actx.Agpe,   // parent-provided group
             Itie = Actx.Itie,
             Itiw = Actx.Itiw,
@@ -170,24 +172,8 @@
 
     private void StartEdit(GsadrDto adr)
     {
-        curAdres = new GsadrDto
-        {
-            Id = adr.Id,
-            Idorg = adr.Idorg,
-            Atyp = adr.Atyp,
-            Agpe = adr.Agpe,
-            Adr = adr.Adr,
-            Itie = adr.Itie,
-            Itiw = adr.Itiw,
-            Iefl = adr.Iefl,
-            Iwfl = adr.Iwfl,
-            Phonenumber = adr.Phonenumber,
-            Npays = adr.Npays,
-            Sregio = adr.Sregio,
-            Sprovi = adr.Sprovi,
-            Scity = adr.Scity
-        };
-    }
+        curAdres = adr;
+   }
 
     private async Task Save()
     {

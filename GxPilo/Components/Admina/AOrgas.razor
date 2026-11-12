@@ -153,7 +153,7 @@ else if (edOrgContext != null && curOrga != null)
                                                         {
                                                             <InputSelect @bind-Value="draftOrg.Jpoint" style="font-weight:bold">
                                                                 <option value=0>?hierarch.</option>
-                                                                @foreach (var pln in LsPlans.Where(p => p.Ptyp == 4 && p.Todom == 1).ToList())
+                                                                @foreach (var pln in LsPlans.Where(p => p.Ptyp == 4 && p.Todom == 1 && p.Styp == 1).ToList())
                                                                 {
                                                                     <option value=@pln.Id>@pln.Liba</option>
                                                                 }
@@ -163,7 +163,7 @@ else if (edOrgContext != null && curOrga != null)
                                                         {
                                                             <InputSelect @bind-Value="curOrga.Jpoint" style="font-weight:bold" disabled>
                                                                 <option value=0>?hierarch.</option>
-                                                                @foreach (var pln in LsPlans.Where(p => p.Ptyp == 4 && p.Todom == 1).ToList())
+                                                                @foreach (var pln in LsPlans.Where(p => p.Ptyp == 4 && p.Todom == 1 && p.Styp == 1).ToList())
                                                                 {
                                                                     <option value=@pln.Id>@pln.Liba</option>
                                                                 }
@@ -171,7 +171,7 @@ else if (edOrgContext != null && curOrga != null)
                                                         }
                                                     </td>
                                                 </tr>
-                                                <tr>
+                                                @* <tr>
                                                     <td>Parrain:</td>
                                                     <td class="text-right">
                                                         @if (isEdingOrg)
@@ -190,7 +190,7 @@ else if (edOrgContext != null && curOrga != null)
 
                                                         }
                                                     </td>
-                                                </tr>
+                                                </tr> *@
                                                 <tr>
                                                     <td>Rubriques:</td>
                                                     <td class="text-right">
@@ -222,6 +222,23 @@ else if (edOrgContext != null && curOrga != null)
                                                         {
                                                             <span style="font-weight:bold;width:60px">@curOrga.Lftref - </span>
                                                             <span style="font-weight:bold">@curOrga.Ftref</span>
+                                                        }
+                                                    </td>
+                                                </tr>
+                                                <tr>
+                                                    <td>Immatriculation:</td>
+                                                    <td class="text-right">
+                                                        @if (isEdingOrg)
+                                                        {
+                                                            <InputNumber class="my-input" @bind-Value="draftOrg.Lftmat"
+                                                                         style="font-weight:bold;width:60px" />
+                                                            <InputText class="my-input" @bind-Value="draftOrg.Ftmat"
+                                                                       style="font-weight:bold" placeholder="Enter format" />
+                                                        }
+                                                        else
+                                                        {
+                                                            <span style="font-weight:bold;width:60px">@curOrga.Lftmat - </span>
+                                                            <span style="font-weight:bold">@curOrga.Ftmat</span>
                                                         }
                                                     </td>
                                                 </tr>
@@ -349,6 +366,7 @@ else if (edOrgContext != null && curOrga != null)
                                                                 curOrga="@curOrga"
                                                                 _guard="@_guard"
                                                                 Actx="@Actx"
+                                                                VientDe="9"
                                                                 EnsTbls="@EnsTbls">
                                                                 @* <ChildContent>
                                                                      <h2 class="child-box">Hello GRILLES</h2>
@@ -825,28 +843,6 @@ else if (edOrgContext != null && curOrga != null)
                                 <DicoAdmin IdcOrg="@curOrga.Idorg" LsVars="@LsVars" />
                             </Content>
                         </Tab>
-                        @* <Tab Title="Enrollement">
-                            <Content>
-                                <EditForm EditContext="edFixContext">
-                                    <DataAnnotationsValidator />
-                                    <div class="row mb-3">
-                                        <InputSelect @bind-Value="SelectedPattern" class="me-3" style="width:auto">
-                                            <option value="">?gpimat</option>
-                                            @foreach (var pat in MyDaImats)  //.Select(m => m.Ftl2).Distinct())
-                                            {
-                                                <option value="@pat.Ftl2">@pat.Liba</option>
-                                            }
-                                        </InputSelect>
-                                    </div>
-                                    <div class="row mb-2">
-                                            <ImmatPatternEditor PatternName="@SelectedPattern"
-                                                                  @bind-NbChanges="_nbChanges"
-                                                                    _guard="@_guard"
-                                                                          Segments="@MyDaImats.Where(m => m.Ftl2 == SelectedPattern).ToList()" />
-                                    </div>
-                                </EditForm>
-                            </Content>
-                        </Tab> *@
                     </Tabs>
                     <!-- GLOBAL Save/Cancel - ONE button saves ALL tabs -->
                     @if (!inColTab)
@@ -1387,7 +1383,8 @@ else if (edOrgContext != null && curOrga != null)
     private async Task VaOpenAdres()
     {
         Actx = new();
-        Actx.Agpe = 1; //orga
+        Actx.Agpe = 9; //orga
+        Actx.Orig = 9;
         Actx.Itie = 0;
         Actx.Itiw = 0;
         Actx.Iefl = 0;

@@ -24,17 +24,17 @@
 @inject IHttpClientFactory _clientFactory
 @inject IClientMatriculeOrdreService _mordService
 
-<PageTitle>Saisie.Enrollement</PageTitle>
+<PageTitle>Saisie Enrollement</PageTitle>
 <div>@Imessage</div>
 
 @if (isLoading)
 {
     <div class="text-center">
         <Spinner Color="SpinnerColor.Primary" Size="SpinnerSize.Medium" />
-        <p>Saisie.Enrollement Loading...</p>
+        <p>Chargement Enrollement...</p>
     </div>
 }
-<p> curOrga en cours : @curOrga?.Idorg </p>
+<p> @curOrga?.Sigle - @curOrga?.Raison </p>
 @if (curTiw != null && curOrga != null && isModalVisible)
 {
     <GlobModal IsVisible="@isModalVisible"
@@ -45,7 +45,7 @@
                EntyTiw="@EditTiw"
                EntyTie="null"
                LsmVars="@LsVars"
-               Oparent="2">
+               Oparent="1">
     </GlobModal>
 }
 
@@ -75,12 +75,6 @@
                         @onclick="() => CancelPerson(curTiw)">
                             ❌ Cancel
                     </Button>
-                    @* <Button Color="ButtonColor.Secondary"
-                            Size="ButtonSize.Small"
-                            Class="px-2 py-1 small-btn"
-                            @onclick="() => VueDetails(EntityLevel.Tiw, curTiw)">
-                        Editer
-                    </Button> *@
                     <Button Color="ButtonColor.Info"
                         Size="ButtonSize.Small"
                         Class="px-2 py-1 small-btn"
@@ -91,7 +85,7 @@
             </div>
             <div class="container">
                 <Tabs>
-                    <Tab Title="Candidat" Name="TiwTab" onClick="() => OnTabChanged(1)">
+                    <Tab Title="Candidature" Name="TiwTab" onClick="() => OnTabChanged(1)">
                         <Content>
                                 <EditForm Context="invform" Model="curTiw">
                                     <DataAnnotationsValidator />
@@ -123,10 +117,10 @@
                                         ChildBusy="@ChildBusy"
                                         IsEditingFn="@(a => IsWflEditing(a))"
                                         GetDraftFn="@(() => GetDraft(EntityLevel.Wfl) as TiwaflDto)"
-                                        OnStartEditAfl="@StartEditWfl"
-                                        OnConfirmAfl="@ConfirmWfl"
-                                        OnCancelAfl="@CancelWfl"
-                                        OnDeleteAfl="@(a => StartRowDelete(EntityLevel.Wfl, a.Rowguid))"
+                                        OnStartEditWfl="@StartEditWfl"
+                                        OnConfirmWfl="@ConfirmWfl"
+                                        OnCancelWfl="@CancelWfl"
+                                        OnDeleteWfl="@(a => StartRowDelete(EntityLevel.Wfl, a.Rowguid))"
                                         GroupOptions="@ChldAfls.Where(af => af.Atyp == Ugpe && af.Elea is >= 2 and <= 6).ToList()"
                                         SelectedGroup="@IMyGAfl"
                                         ChldMatri="@ChldMatri"
@@ -135,30 +129,17 @@
                                 </EditForm>
                         </Content>
                     </Tab>
-                    <Tab Title="Plus..." Name="TiwTab" onClick="() => OnTabChanged(2)">
+                    <Tab Title="Adresses" Name="TiwTab" onClick="() => OnTabChanged(2)">
                         <Content>
-                            <!-- Additional dynamic Categories -->
-                            <label class="fw-bold mt-3 d-block">CATEGORIE++(s)</label>
-                            <div class="card-body p-3">
-                                @RenderCategories(EnsCats.Where(c => c.Pid == null))
-                            </div>
-                            <!-- Addresses -->
-                            <div class="row">
-                                <div class="col-md-6">
-                                    <label class="fw-bold">ADRESSE(++)S</label>
-                                    <button @onclick="VaOpenAdres">Adresses plus</button>
-                                </div>
-                            </div>
-                            <div class="row mb-2">
-                                @if (isOpenAdres)
-                                {
-                                    <Gsdadr @bind-NbChanges="_nbChanges" curOrga="@curOrga" _guard="@Guard"
+                                @if (curOrga != null && canOpenAdres && !string.IsNullOrEmpty(curTiw?.Zmatri))
+                                { 
+                                    <Gstadr @bind-NbChanges="_nbChanges" curOrga="@curOrga" _guard="@Guard"
                                             EnsTbls="@EnsTbls" Actx="@Actx" />
                                 }
-                            </div>
+                            @* </div> *@
                         </Content>
                     </Tab>
-                    <Tab Title="Verifier" Name="TiwTab" onClick="() => OnTabChanged(3)">
+                    <Tab Title="Vérification" Name="TiwTab" onClick="() => OnTabChanged(3)">
                         <Content>
                             @if (canbeVerified)
                             {
@@ -205,7 +186,12 @@
                             }
                         </Content>
                     </Tab>
-                    <Tab Title="Recepisse" Name="TiwTab" onClick="() => OnTabChanged(4)">
+                    <Tab Title="EnAttente" Name="Tietab" onClick="() => OnTabChanged(4)">
+                        <Content>
+                            Tiewel Onlne en attente verification
+                        </Content>
+                    </Tab>
+                    <Tab Title="Récépissé" Name="TiwTab" onClick="() => OnTabChanged(5)">
                         <Content>
                             <span>Recepisse</span>
                             <RtW11Fic curOrga="@curOrga"
@@ -217,37 +203,6 @@
                     </Tab>
                 </Tabs>
             </div>
-            <!-- Modal for TIEWEL -->
-            @* <Modal @ref="gTiwModal" Size="ModalSize.Large" Title="Edit Tiers" ShowCloseButton="false">
-                <BodyTemplate>
-                    <div class="mb-3">
-                        <PTiwGdHelper Idorg="@curOrga.Idorg" Entity="@curTiw"
-                                      Draft="@(GetDraft(EntityLevel.Tiw) as TiewelDto)"
-                                      PrefReader="@_prefReader"
-                                      IsEditing="@IsTiwEditing(curTiw)"
-                                      EnsTbls="@EnsTbls"
-                                      EnsAtrs="@EnsAtrs"
-                                      Ugpe="@Ugpe"
-                                      OnConfirm="@ConfirmPerson"  
-                                      OnCancel="@CancelPerson"
-                                      WflItems="@WflItems"
-                                      ChildBusy="@ChildBusy"
-                                      IsEditingFn="@(a => IsWflEditing(a))"
-                                      GetDraftFn="@(() => GetDraft(EntityLevel.Wfl) as TiwaflDto)"
-                                      OnStartEditAfl="@StartEditWfl"
-                                      OnConfirmAfl="@ConfirmWfl"
-                                      OnCancelAfl="@CancelWfl"
-                                      OnDeleteAfl="@(a => StartRowDelete(EntityLevel.Wfl, a.Rowguid))"
-                                      GroupOptions="@ChldAfls.Where(af => af.Atyp == Ugpe && af.Elea is >= 2 and <= 6).ToList()"
-                                      SelectedGroup="@IMyGAfl"
-                                      SelectedGroupChanged="@(v => IMyGAfl = v)"
-                                      OnAddChild="@AddChild" />
-                    </div>
-                </BodyTemplate>
-                <FooterTemplate>
-                    <Button Color="ButtonColor.Secondary" @onclick="() => gTiwModal.HideAsync()">Fermer</Button>
-                </FooterTemplate>
-            </Modal> *@
         </Authorized>
     </AuthorizeView>
 }
@@ -296,34 +251,18 @@
     public GridMode GaflMode = GridMode.None;
     //public bool AjtState => LocTieAdding || LocTieEditing;
     private AddEdtMode ConfState = AddEdtMode.None;
-    //private bool CanEditChildren =>
-    //    GtieMode != GridMode.TiersAdding && curTiw.Xadd1 != -1;
-    //private bool LocTieAdding => GtieMode == GridMode.TiersAdding;
-    //private bool LocTieEditing => GtieMode == GridMode.TiersAdding
-    //        || GtieMode == GridMode.TiersEditing;
-    //private bool LocAflAdding => GaflMode == GridMode.AflsAdding;
-    //private bool LocAflEditing => GaflMode == GridMode.AflsAdding
-    //        || GaflMode == GridMode.AflsEditing;
 
-    //private bool ParentEditing => IsTiwEditing(curTiw);          
-    //person being added or edited
-
-    //public class ColumnPreferencesClient : IColumnPreferencesReader
-
+    private bool IsBusy => IsLevelBusy(EntityLevel.Tiw);
     private bool ChildBusy => IsLevelBusy(EntityLevel.Wfl);   // an affiliate row is being added or edited
-
-    //private bool LocTieAdding = false;
-    //private bool LocAflAdding = false;
 
     private HttpClient _dftClient = default!;
     private Acatbag _acatBag = new();
     public List<Gpatr> EnsAtrs = new();
     public List<Gpcat> EnsCats = new();
 
-    private bool isOpenAdres = false;
+    //private bool isOpenAdres = false;
     private bool isTiwValidate = false;
 
-    private bool IsBusy = false;
     //private Modal gTiwModal = null;
     private bool isModalVisible = false;
     private bool AllowMultipleEdits { get; set; } = false;
@@ -356,6 +295,7 @@
 
     private List<TiewelDto> WaitingTiewels => TiwItems.Where(tw => tw.Xadd1 != -1).ToList();
     private bool canbeVerified => WaitingTiewels.Any();
+    private bool canOpenAdres = false;
     //private List<TiwaflDto> WflItems => curTiw.Tiwafls.ToList();
 
     protected override async Task OnInitializedAsync()
@@ -458,7 +398,24 @@
         }
     }
 
-    private void OnTabChanged(int tabIndex) => refTab = tabIndex;
+    private void OnTabChanged(int tabIndex)
+    {
+        refTab = tabIndex;
+        canOpenAdres = false;
+        if (refTab == 2 && curOrga != null)
+        {
+            Actx = new() 
+            { 
+                Agpe = Ugpe, //1cble 
+                Orig = 1, //enreg1tw2tie..9orga
+                Itie = 0, 
+                Itiw = curTiw.Id, 
+                Iefl = 0, 
+                Iwfl = 0 
+            };
+            canOpenAdres = true;
+        }
+    }
 
     private async Task StartTiwNew(string? matricule)
     {
@@ -554,6 +511,12 @@
 
     private async Task AddChild(int selectedGroup)
     {
+        var parent = curTiw;
+        if (string.IsNullOrEmpty(curTiw.Zmatri))
+        {
+            Imessage = "Matricule tiers obligatoire";
+            return;
+        }
         ChldMatri = "";
         var s2afilia = "";
         s2afilia = selectedGroup switch
@@ -566,7 +529,6 @@
             6 => "F",
             _ => "T"
         };
-        var parent = curTiw;
         try
         {
             var cgenmatri = await _mordService.GenerateOrdreAsync(
@@ -679,53 +641,53 @@
         }
     }
 
-    private async Task VaOpenAdres()
-    {
-        Actx = new() { Agpe = 3, Itie = 0, Itiw = curTiw.Id, Iefl = 0, Iwfl = 0 };
-        isOpenAdres = !isOpenAdres;
-    }
+    // private async Task VaOpenAdres()
+    // {
+    //     Actx = new() { Agpe = 3, Itie = 0, Itiw = curTiw.Id, Iefl = 0, Iwfl = 0 };
+    //     isOpenAdres = !isOpenAdres;
+    // }
 
-    private RenderFragment RenderCategories(IEnumerable<Gpcat> cats) => builder =>
-    {
-        foreach (var cat in cats.Where(c => c.Eta != 0))
-        {
-            builder.OpenElement(0, "div");
-            builder.AddAttribute(1, "class", cat.Pid == null ? "mb-2" : "form-check ms-3");
-            builder.OpenComponent<InputCheckbox>(2);
-            builder.AddAttribute(3, "class", "form-check-input checkbox-bordered");
-            builder.AddAttribute(4, "Value", cat.IsSelected);
-            builder.AddAttribute(5, "ValueChanged", EventCallback.Factory.Create<bool>(this, args =>
-            {
-                cat.IsSelected = args;
-                foreach (var child in cat.Children) child.IsSelected = args;
-                CascadeUp(cat.Parent, args);
-            }));
-            builder.AddAttribute(6, "ValueExpression", (Expression<Func<bool>>)(() => cat.IsSelected));
-            builder.CloseComponent();
-            builder.OpenElement(7, "label");
-            builder.AddAttribute(8, "class", "form-check-label");
-            builder.AddContent(9, cat.Liba);
-            builder.CloseElement();
-            if (cat.Children.Any())
-                builder.AddContent(10, RenderCategories(cat.Children));
-            builder.CloseElement();
-        }
-    };
+    // private RenderFragment RenderCategories(IEnumerable<Gpcat> cats) => builder =>
+    // {
+    //     foreach (var cat in cats.Where(c => c.Eta != 0))
+    //     {
+    //         builder.OpenElement(0, "div");
+    //         builder.AddAttribute(1, "class", cat.Pid == null ? "mb-2" : "form-check ms-3");
+    //         builder.OpenComponent<InputCheckbox>(2);
+    //         builder.AddAttribute(3, "class", "form-check-input checkbox-bordered");
+    //         builder.AddAttribute(4, "Value", cat.IsSelected);
+    //         builder.AddAttribute(5, "ValueChanged", EventCallback.Factory.Create<bool>(this, args =>
+    //         {
+    //             cat.IsSelected = args;
+    //             foreach (var child in cat.Children) child.IsSelected = args;
+    //             CascadeUp(cat.Parent, args);
+    //         }));
+    //         builder.AddAttribute(6, "ValueExpression", (Expression<Func<bool>>)(() => cat.IsSelected));
+    //         builder.CloseComponent();
+    //         builder.OpenElement(7, "label");
+    //         builder.AddAttribute(8, "class", "form-check-label");
+    //         builder.AddContent(9, cat.Liba);
+    //         builder.CloseElement();
+    //         if (cat.Children.Any())
+    //             builder.AddContent(10, RenderCategories(cat.Children));
+    //         builder.CloseElement();
+    //     }
+    // };
 
-    private void CascadeUp(Gpcat? parent, bool selected)
-    {
-        if (parent == null) return;
-        if (selected)
-        {
-            parent.IsSelected = true;
-            CascadeUp(parent.Parent, true);
-        }
-        else if (parent.Children.All(c => !c.IsSelected))
-        {
-            parent.IsSelected = false;
-            CascadeUp(parent.Parent, false);
-        }
-    }
+    // private void CascadeUp(Gpcat? parent, bool selected)
+    // {
+    //     if (parent == null) return;
+    //     if (selected)
+    //     {
+    //         parent.IsSelected = true;
+    //         CascadeUp(parent.Parent, true);
+    //     }
+    //     else if (parent.Children.All(c => !c.IsSelected))
+    //     {
+    //         parent.IsSelected = false;
+    //         CascadeUp(parent.Parent, false);
+    //     }
+    // }
 
     private void ShowModal() => isModalVisible = true;
     private Task OnModalVisibilityChanged(bool isVisible) { isModalVisible = isVisible; return Task.CompletedTask; }

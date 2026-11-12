@@ -29,7 +29,7 @@
 {
     <div class="text-center">
         <Spinner Color="SpinnerColor.Primary" Size="SpinnerSize.Large" />
-        <p>Pilotage Loading...</p>
+        <p>Chargement Pilotage...</p>
     </div>
 }
 else
@@ -42,7 +42,7 @@ else
             @if (!canSupportLoad && !inAccepting)
             {
                 <div class="mb-3">
-                    <label>Email or Username :</label>
+                    <label>Email ou Pseudo :</label>
                     <InputText class="form-control" @bind-Value="loginModel.UsernameOrEmail" />
                 </div>
                 <div class="mb-3">
@@ -52,11 +52,11 @@ else
                 <button class="btn btn-primary w-100" type="submit" disabled="@isBusy">
                     @if (isBusy)
                     {
-                        <span>Connecting...</span>
+                        <span>Chargement Utilisateur...</span>
                     }
                     else
                     {
-                        <span>Login</span>
+                        <span>Se Connecter</span>
                     }
                 </button>
 
@@ -99,7 +99,7 @@ else
                 }
                 else
                 {
-                    <p>Admin Loading...</p>
+                    <p>Chargement Utilisateur...</p>
                 }
             }
         }

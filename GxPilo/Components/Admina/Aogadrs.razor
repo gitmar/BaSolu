@@ -274,7 +274,7 @@
     //[Parameter] public EventCallback<GsadrDto> ConfAdrDelete { get; set; }
     //[Parameter] public EventCallback<GsadrDto> CancAdrDelete { get; set; }
 
-    [Parameter] public int vientde { get; set; }
+    [Parameter] public int VientDe { get; set; }
     [Parameter] public int isfor { get; set; }
     [Parameter] public TierspDto tiersp { get; set; }
     [Parameter] public TiewelDto tiewel { get; set; }
@@ -356,7 +356,7 @@
         GsadrDto nwAdr = new();
         nwAdr.Rowguid = Guid.NewGuid();
         nwAdr.Idorg = curOrga.Idorg;
-        nwAdr.Orig = vientde; //institution
+        nwAdr.Orig = VientDe; //1-institution
         nwAdr.Atyp = ITypAdr; //1debase2second3paiement...
 
         nwAdr.Eta = 1; //actif

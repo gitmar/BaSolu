@@ -47,15 +47,15 @@
         <span>---</span>
         <div class="d-flex flex-row">
             <label class="fw-bold">Identity no :</label>
-            <span>@curTier.Smatri</span>
+            <span>@curTie.Smatri</span>
             <label class="fw-bold ms-4">nom:</label>
-            <span> @curTier.Nom @curTier.Pnom </span>
+            <span> @curTie.Nom @curTie.Pnom </span>
         </div>
         <div class="d-flex flex-row">
             <label class="fw-bold">Date Inscription :</label>
-            <span>@curTier.Datc?.ToString("dd/MM/yyyy : HH:mm")</span>
+            <span>@curTie.Datc?.ToString("dd/MM/yyyy : HH:mm")</span>
             <label class="fw-bold ms-4">Date naissance :</label>
-            <span> @curTier.Dnais?.ToString("dd/MM/yyyy") </span>
+            <span> @curTie.Dnais?.ToString("dd/MM/yyyy") </span>
         </div>
         @* <small>Date: @DateTime.Now.ToShortDateString()</small> *@
     </CardHeader>
@@ -70,7 +70,7 @@
             <div class="col-2">date</div>
             <div class="col-3">rowId</div>
         </div>
-        @foreach(var atie in curTier.Tieafls)
+        @foreach(var atie in curTie.Tieafls)
         {
             <div class="row">
                 <div class="col-1">@atie.Irang</div>
@@ -118,7 +118,7 @@
     [Parameter]
     public ChildVars toChild { get; set; }
     [Parameter]
-    public TierspDto curTier { get; set; } = new();
+    public TierspDto curTie { get; set; } = new();
 
     private ClaimsPrincipal authUser;
     private bool isAuthenticated = false;

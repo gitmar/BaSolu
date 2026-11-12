@@ -4,65 +4,94 @@
 @using GxShared.Sess
 @using GxShared.Cols.Models
 @using GxTie.Components
+@using GxTie.Components.Cols
 @using Newtonsoft.Json
 
-<!-- Person fields -->
+<!-- Person -->
 <div class="card mb-3">
     <div class="card-body p-3">
-        <ColDrivenFields Idorg="@Idorg" PColCtx="@Ctx" Model="@(IsEditing ? (Draft ?? Entity) : Entity)"
-                          EnsTbls="@EnsTbls" IsEditing="@IsEditing" />
+        <ColDrivenFields @ref="_fields" PrefReader="@PrefReader" Idorg="@Idorg" PColCtx="@Ctx"
+                         Model="@CurrentPerson" EnsTbls="@EnsTbls" IsEditing="@IsEditing" />
+        <PlusAttributeFields Definitions="@EnsAtrs.AttributesFor((int)Ugpe)"
+                             Values="@CurrentPerson.Tiejatrs"
+                             EnsTbls="@EnsTbls" IsEditing="@IsEditing" />
+
+        @if (_error is not null)
+        {
+            <div class="alert alert-danger py-1">@_error</div>
+        }
 
         @if (IsEditing)
         {
-            <div class="d-flex gap-2 mt-2">
-                <Button Color="ButtonColor.Success" @onclick="() => OnConfirm.InvokeAsync(Entity)">✅ Confirm</Button>
-                <Button Color="ButtonColor.Secondary" @onclick="() => OnCancel.InvokeAsync(Entity)">✖ Cancel</Button>
+            <div class="d-flex align-items-center gap-2 mt-2">
+                <Button Color="ButtonColor.Success" Disabled="@ChildBusy" Size="ButtonSize.Small" @onclick="ConfirmAsync">✅ Confirm</Button>
+                <Button Color="ButtonColor.Secondary" Size="ButtonSize.Small" @onclick="CancelAsync">✖ Cancel</Button>
+                @if (ChildBusy)
+                {
+                    @* <small class="text-muted">Terminez ou annulez l'affilié en cours.</small> *@
+                }
             </div>
         }
     </div>
 </div>
 
-<!-- Affiliates — folded in, no separate tab -->
-@if (CanEditChildren)
+<!-- Affiliates -->
+@if (ShowAffiliates)
 {
-    <label class="fw-bold">Affiliés</label>
+    <!-- Generated matricule -->
+    <div class="matricule-row">
+        <label class="fw-bold">Affiliés</label>
+        <span class="fw-bold text-nowrap">
+            @ChldMatri
+        </span>
+    </div>
+
     <div class="d-flex align-items-center gap-2 mb-2">
         <label>Groupe :</label>
-        @* TValue="int" *@
-        <InputSelect  
-             Value="SelectedGroup" 
-             ValueChanged="EventCallback.Factory.Create<int>(this, OnGroupChanged)" 
-             ValueExpression="@(() => SelectedGroup)">
+        <InputSelect TValue="int" Value="SelectedGroup"
+                     ValueChanged="EventCallback.Factory.Create<int>(this, OnGroupChanged)"
+                     ValueExpression="@(() => SelectedGroup)">
             <option value="0">Sélectionner...</option>
             @foreach (var g in GroupOptions)
             {
                 <option value="@g.Elea">@g.Liba</option>
             }
         </InputSelect>
-
         <Button Color="ButtonColor.Primary" Size="ButtonSize.Small"
-                Disabled="@(SelectedGroup < 1 || IsAnyEditing)"
+                Disabled="@(SelectedGroup < 1 || ChildBusy)"
                 @onclick="() => OnAddChild.InvokeAsync(SelectedGroup)">
-            ➕ Add Child
+            ➕ Ajt Affilié
         </Button>
     </div>
 
-    <CTieGdHelper Idorg="@Idorg" CurTie="@Entity" 
-                  AflItems="@AflItems" 
-                  EnsTbls="@EnsTbls"
-                  Ugpe="@Ugpe"
-                  IsViewing="@IsAflViewing"
-                  IsAnyEditing="@IsAnyEditing"
+    <CTieGdHelper Idorg="@Idorg" CurTie="@Entity" AflItems="@AflItems" EnsTbls="@EnsTbls"
+                  SelectedGroup="@SelectedGroup"
+                  PrefReader="@PrefReader"
+                  IsAnyEditing="@ChildBusy"
                   IsEditingFn="@IsEditingFn"
                   GetDraftFn="@GetDraftFn"
+                  IsDeletingFn="@IsDeletingFn"
                   OnStartEdit="@OnStartEditAfl"
                   OnConfirm="@OnConfirmAfl"
                   OnCancel="@OnCancelAfl"
-                  OnDelete="@OnDeleteAfl" />
+                  OnDelete="@OnDeleteAfl"
+                  OnConfirmDelete="@OnConfirmDeleteAfl"
+                  OnCancelDelete="@OnCancelDeleteAfl" />
 }
 else
 {
-    @* <div class="alert alert-warning">🚫 Save the main record before adding children.</div> *@
+    <div class="text-muted small">
+        Affiliés non disponibles :
+        @if (!HasMatricule)
+        {
+            <text>saisissez d'abord le matricule.</text>
+        }
+        else
+        {
+
+            <text>aucun groupe d'affiliés configuré pour cette catégorie.</text>
+        }
+    </div>
 }
 
 @code {
@@ -70,32 +99,77 @@ else
     [Parameter, EditorRequired] public int Idorg { get; set; }
     [Parameter, EditorRequired] public TierspDto Entity { get; set; } = default!;
     [Parameter] public TierspDto? Draft { get; set; }
+    [Parameter] public IColumnPreferencesReader? PrefReader { get; set; }
+
     [Parameter, EditorRequired] public List<Gtabl> EnsTbls { get; set; } = new();
+    [Parameter, EditorRequired] public List<Gpatr> EnsAtrs { get; set; } = new();
     [Parameter] public int Ugpe { get; set; }
     [Parameter] public bool IsEditing { get; set; }
+    [Parameter] public bool ChildBusy { get; set; }
+
+    //[Parameter] public PublicColumnFormValidator L1PrefReader { get; set; } = default!;
     [Parameter] public EventCallback<TierspDto> OnConfirm { get; set; }
     [Parameter] public EventCallback<TierspDto> OnCancel { get; set; }
 
     // --- Affiliate-level passthrough ---
     [Parameter, EditorRequired] public List<TieaflDto> AflItems { get; set; } = new();
-    [Parameter] public bool IsAflViewing { get; set; }
-    [Parameter] public bool IsAnyEditing { get; set; }
     [Parameter, EditorRequired] public Func<TieaflDto, bool> IsEditingFn { get; set; } = default!;
     [Parameter, EditorRequired] public Func<TieaflDto?> GetDraftFn { get; set; } = default!;
     [Parameter] public EventCallback<TieaflDto> OnStartEditAfl { get; set; }
     [Parameter] public EventCallback<TieaflDto> OnConfirmAfl { get; set; }
     [Parameter] public EventCallback<TieaflDto> OnCancelAfl { get; set; }
     [Parameter] public EventCallback<TieaflDto> OnDeleteAfl { get; set; }
+    [Parameter] public Func<TieaflDto, bool> IsDeletingFn { get; set; } = _ => false;
+    [Parameter] public EventCallback<TieaflDto> OnConfirmDeleteAfl { get; set; }
+    [Parameter] public EventCallback<TieaflDto> OnCancelDeleteAfl { get; set; }
 
     // --- Add-child controls ---
     [Parameter] public List<Gpvar> GroupOptions { get; set; } = new();
     [Parameter] public int SelectedGroup { get; set; }
+    [Parameter, EditorRequired] public string? ChldMatri { get; set; }
     [Parameter] public EventCallback<int> SelectedGroupChanged { get; set; }
     [Parameter] public EventCallback<int> OnAddChild { get; set; }
+    //[Parameter] public bool AjtState { get; set; }
+    [Parameter] public AddEdtMode ConfState { get; set; } = AddEdtMode.None;
 
+    // private bool CanEditChildren => AjtState &&
+    //     !string.IsNullOrEmpty((IsEditing ? (Draft ?? Entity) : Entity).Zmatri) && GroupOptions.Any();
 
-    private bool CanEditChildren => Entity.Id > 0;
-
-    private ColPrefContext Ctx => new() { Totyp = Ugpe, Efrm = 2, Styp = 1 };
     private async Task OnGroupChanged(int value) => await SelectedGroupChanged.InvokeAsync(value);
+    private ColDrivenFields _fields = default!;
+    private string? _error;
+
+    //private string ASorga = "";
+    //private string ASafilia = "";
+    //private string ASgpe = "";
+
+    private TierspDto CurrentPerson => IsEditing ? (Draft ?? Entity) : Entity;
+    private ColPrefContext Ctx => ColumnContexts.Person(Ugpe);
+
+    private bool HasMatricule => !string.IsNullOrEmpty(CurrentPerson.Zmatri);
+    private bool HasAffiliates => AflItems.Any(w => w.Prowguid == Entity.Rowguid
+                                             || (Entity.Id > 0 && w.Itie == Entity.Id));
+    private bool ShowAffiliates => HasMatricule && (GroupOptions.Any() || HasAffiliates);
+
+    private bool CanAddEdtChild => (ConfState == AddEdtMode.AddPConfirmed || ConfState == AddEdtMode.EdtPConfirmed)
+              && !string.IsNullOrEmpty((IsEditing ? (Draft ?? Entity) : Entity).Zmatri) && GroupOptions.Any();
+
+    //private TieaflDto SelectedAfil = new();
+
+    private async Task ConfirmAsync()
+    {
+        if (!_fields.Validate())
+        {
+            _error = "Champs obligatoires : " + string.Join(", ", _fields.MissingLabels);
+            return;
+        }
+        _error = null;
+        await OnConfirm.InvokeAsync(Entity);
+    }
+
+    private async Task CancelAsync()
+    {
+        _error = null;
+        await OnCancel.InvokeAsync(Entity);
+    }
 }

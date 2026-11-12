@@ -32,25 +32,15 @@
 @inject IJSRuntime _jsRun
 
 <h3>OlneLink</h3>
-
+<div class="d-flex align-items-center">
+    <GxNavMenu BrandText="A24soft Gx-Solutions"
+           YaGroup="false"
+           MenuSelected="1"
+           GroupSelected="0"
+           OnBack="@NavigateBack" />
+</div>
 <div class="card mb-3">
-   @*  <div class="card-header">
-        Create LINKS
-        <a class="navbar-brand gx-navbar-brand"
-           @onclick:stopPropagation="true"
-           @onclick="() => NavigateBack()">
-            <i class="bi bi-grid-3x3-gap-fill me-2"></i>
-            <span class="brand-text">Gx-Solutions</span>
-        </a>
-    </div> *@
-    <div class="card-header d-flex justify-content-between align-items-center py-2">
-        <button type="button"
-                class="btn btn-outline-secondary btn-sm"
-                @onclick:stopPropagation="true"
-                @onclick="NavigateBack">
-            <i class="bi bi-grid-3x3-gap-fill me-1"></i>
-            Gx-Solutions
-        </button>
+    <div class="card-header d-flex align-items-center">
     </div>
     <div class="card-body">
         <div class="row g-2 align-items-end">

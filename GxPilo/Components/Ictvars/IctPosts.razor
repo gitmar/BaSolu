@@ -66,13 +66,13 @@ else
                         <option value="0">?dom</option>
                         @foreach (var tob in LsDoms)
                         {
-                            <option value="@tob.Elea">@tob.Liba</option>
+                            <option value="@tob.Gp2">@tob.Liba</option>
                         }
                     </InputSelect>
+                    @* key="PlnRenderKey" *@
                     <label class="me-2">Modele :</label>
                     <InputSelect @bind-Value="IMyPlan"
                                  @bind-Value:after="OuvreMGrid"
-                                 @key="PlnRenderKey"
                                  class="me-3"
                                  style="width:auto">
                         <option value="0">?modele</option>
@@ -81,6 +81,13 @@ else
                             <option value="@upl.Id">@upl.Liba</option>
                         }
                     </InputSelect>
+                    @if(IMyDom != 0 && IMyPlan != 0)
+                    {
+                        <Button Color="ButtonColor.Secondary" Size="ButtonSize.Small"
+                            @onclick="() => showSchema(curPlan)">
+                            Schema
+                        </Button>
+                    }
                 </div>
             </div>
             @* <div class="form-group">
@@ -158,7 +165,7 @@ else
                                                         <!---->
                                                                     <HeaderContent>
                                                                         Code
-                                                                        if (!String.IsNullOrEmpty(Jmessage))
+                                                                        @if (!String.IsNullOrEmpty(Jmessage))
                                                                         {
                                                                             <span class="bg-info bg-opacity-10" style="font-style:italic;color:red">&nbsp; Jmessage</span>
                                                                         }
@@ -491,8 +498,6 @@ else
                                                          style="font-weight:bold" />
                                         </td>
                                     </tr>
-
-
                                 </tbody>
                             </table>
                         </div>
@@ -532,21 +537,20 @@ else
                     <Button Color="ButtonColor.Secondary" @onclick="() => rForuModal.HideAsync()">Fermer</Button>
                 </FooterTemplate>
             </Modal>
-            <!-- Modal for FORMULE FMT -->
-            @* <Modal @ref="gForuModal" Size="ModalSize.Large" Title="Edit Formula">
+            <!-- Modal for FORMULE PLAN -->
+            <Modal @ref="pSchmModal" Size="ModalSize.Large" Title=@fstrSchm" ShowCloseButton="false">
                 <BodyTemplate>
-                    <div class="mb-3">
-                        <label class="form-label">Formula</label>
-                        <InputTextArea class="form-control"
-                                       @bind-Value="curFmat.Ftsrc"
-                                       rows="3"
-                                       style="resize: vertical;" />
+                    <div class="d-flex flex-column gap=2 mb-2">
+                        <OrgaSchem @ref="myorgn"
+                                   curOrga="@curOrga"
+                                   curSchm="@curSchm">
+                        </OrgaSchem>
                     </div>
                 </BodyTemplate>
                 <FooterTemplate>
-                    <Button Color="ButtonColor.Secondary" @onclick="() => gForuModal.HideAsync()">Cancel</Button>
+                    <Button Color="ButtonColor.Secondary" @onclick="() => pSchmModal.HideAsync()">Fermer</Button>
                 </FooterTemplate>
-            </Modal> *@
+            </Modal>
         </Authorized>
     </AuthorizeView>
 }
@@ -766,6 +770,7 @@ else
     private PlngenDto curPlan = new();
     private RubhieDto curRubr = new();
     private RubpstDto curPmat = new();
+    public PlngenDto curSchm = new();
 
     private bool isRubCodeValid = false; //child blur
     private CodeMode _mode = CodeMode.Numeric;
@@ -800,10 +805,11 @@ else
     Modal rForuModal = new(); //rubriques
     Modal gForuModal = new(); //formats
     Modal rHieModal = new(); //readonly rubhie
+    Modal pSchmModal = new(); //organigramme
 
     private string patTitle = "", chlTitle = "", gsnTitle = "";
     private string patInitTitle = "", chlInitTitle = "", gsnInitTitle = "";
-    private string pstrFormu = "", rstrFormu = "", fstrFormu = "";
+    private string pstrFormu = "", rstrFormu = "", fstrFormu = "", fstrSchm = "";
     protected async Task TestConfirm()
     {
         Imessage = "TestConfirm reached";
@@ -1143,6 +1149,17 @@ else
         }
     }
     //FMT Formule modals
+    void showSchema(PlngenDto myschem)
+    {
+        fstrSchm = "";
+        curSchm = myschem;
+        if (pSchmModal != null)
+        {
+            fstrSchm = $"Organigramme : {curSchm.Abg} - {curSchm.Liba}";
+            pSchmModal.BodyCssClass = "readonly";
+            pSchmModal.ShowAsync();
+        }
+    }
     void showFrFmtModal(RubpstDto myfmt, int orig)
     {
         fstrFormu = "";

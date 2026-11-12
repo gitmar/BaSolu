@@ -4,36 +4,52 @@
 @using GxShared.Sess
 @using GxShared.Cols.Models
 @using GxTie.Components
+@using GxTie.Components.Cols
 @using Newtonsoft.Json
 
 <div class="card">
     <div class="card-body p-3">
-        @foreach (var afl in AflItems)
+        @if (_error is not null)
+        {
+            <div class="alert alert-danger py-1">@_error</div>
+        }
+
+        @foreach (var afl in SubAfls)
         {
             var editing = IsEditingFn(afl);
             var model = editing ? (GetDraftFn() ?? afl) : afl;
-            var itemCtx = BuildCtx(model.Tyafl);
+            var itemCtx = ColumnContexts.Affiliate(model.Tyafl);
 
-            <div class="border-bottom pb-2 mb-2">
-                <ColDrivenFields Idorg="@Idorg" PColCtx="@itemCtx" Model="@model"
-                                  EnsTbls="@EnsTbls" IsEditing="@editing" />
-
+            <div class="border-bottom pb-2 mb-2" @key="afl.Rowguid">
                 @if (editing)
                 {
+                    <ColDrivenFields @ref="_editingFields" Idorg="@Idorg" PColCtx="@itemCtx"
+                                     PrefReader="@PrefReader" Model="@model"
+                                     EnsTbls="@EnsTbls" IsEditing="true" />
                     <div class="d-flex gap-2 mt-1">
                         <Button Color="ButtonColor.Success" Size="ButtonSize.Small"
-                                @onclick="() => OnConfirm.InvokeAsync(afl)">✅</Button>
+                                @onclick="() => ConfirmAsync(afl)">
+                            ✅Confirm
+                        </Button>
                         <Button Color="ButtonColor.Secondary" Size="ButtonSize.Small"
-                                @onclick="() => OnCancel.InvokeAsync(afl)">✖</Button>
+                                @onclick="() => CancelAsync(afl)">
+                            ✖Cancel
+                        </Button>
                     </div>
                 }
-                else if (!IsViewing)
+                else if (IsDeletingFn(afl))
                 {
+                    <ColDrivenFields Idorg="@Idorg" PColCtx="@itemCtx" PrefReader="@PrefReader"
+                                     Model="@model" EnsTbls="@EnsTbls" IsEditing="false" />
                     <div class="d-flex gap-2 mt-1">
-                        <Button Color="ButtonColor.Warning" Size="ButtonSize.Small"
-                                Disabled="@IsAnyEditing" @onclick="() => OnStartEdit.InvokeAsync(afl)">✏️ Edit</Button>
                         <Button Color="ButtonColor.Danger" Size="ButtonSize.Small"
-                                Disabled="@IsAnyEditing" @onclick="() => OnDelete.InvokeAsync(afl)">🗑</Button>
+                                @onclick="() => OnConfirmDelete.InvokeAsync(afl)">
+                            ⚠️ Confirmer la suppression
+                        </Button>
+                        <Button Color="ButtonColor.Secondary" Size="ButtonSize.Small"
+                                @onclick="() => OnCancelDelete.InvokeAsync(afl)">
+                            ❎ Annuler
+                        </Button>
                     </div>
                 }
             </div>
@@ -46,12 +62,12 @@
     [Parameter, EditorRequired] public TierspDto CurTie { get; set; } = default!;
     [Parameter, EditorRequired] public List<TieaflDto> AflItems { get; set; } = new();
     [Parameter, EditorRequired] public List<Gtabl> EnsTbls { get; set; } = new();
-    
-    [Parameter] public int Ugpe { get; set; }
-    [Parameter] public bool IsViewing { get; set; }
-    [Parameter] public bool IsAnyEditing { get; set; }
 
-    // Base-class state, exposed via delegates rather than duplicated here.
+    [Parameter] public IColumnPreferencesReader? PrefReader { get; set; }
+
+    //[Parameter] public bool IsViewing { get; set; }
+
+    [Parameter] public bool IsAnyEditing { get; set; }
     [Parameter, EditorRequired] public Func<TieaflDto, bool> IsEditingFn { get; set; } = default!;
     [Parameter, EditorRequired] public Func<TieaflDto?> GetDraftFn { get; set; } = default!;
 
@@ -59,8 +75,34 @@
     [Parameter] public EventCallback<TieaflDto> OnConfirm { get; set; }
     [Parameter] public EventCallback<TieaflDto> OnCancel { get; set; }
     [Parameter] public EventCallback<TieaflDto> OnDelete { get; set; }
+    [Parameter] public Func<TieaflDto, bool> IsDeletingFn { get; set; } = _ => false;
+    [Parameter] public EventCallback<TieaflDto> OnConfirmDelete { get; set; }
+    [Parameter] public EventCallback<TieaflDto> OnCancelDelete { get; set; }
 
-    //private List<TieaflDto> SubAfls => CurTie?.Tieafls?.Where(w => w.Itiw == CurTie.Id).ToList();
+    private ColDrivenFields? _editingFields;
 
-    private ColPrefContext BuildCtx(int? tyafl) => new() { Totyp = Ugpe, Efrm = 2, Styp = tyafl ?? 0 };
+    [Parameter] public int SelectedGroup { get; set; } //affilie
+    private string? _error;
+
+    private List<TieaflDto> SubAfls => AflItems
+        .Where(w => w.Prowguid == CurTie.Rowguid || (CurTie.Id > 0 && w.Itie == CurTie.Id))
+        .ToList();
+
+    private async Task ConfirmAsync(TieaflDto afl)
+    {
+        if (_editingFields is not null && !_editingFields.Validate())
+        {
+            _error = "Champs obligatoires : " + string.Join(", ", _editingFields.MissingLabels);
+            return;
+        }
+        //a verifier: si ajout d'affilie, il faut ajouter l'affilie à la liste des affiliés du parent (CurTie)
+        _error = null;
+        await OnConfirm.InvokeAsync(afl);
+    }
+
+    private async Task CancelAsync(TieaflDto afl)
+    {
+        _error = null;
+        await OnCancel.InvokeAsync(afl);
+    }
 }

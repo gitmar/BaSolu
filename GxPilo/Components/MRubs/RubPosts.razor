@@ -64,13 +64,13 @@ else
                         <option value="0">?domaine</option>
                         @foreach (var tob in LsDoms)
                         {
-                            <option value=@tob.Elea>@tob.Liba</option>
+                            <option value=@tob.Gp2>@tob.Liba</option>
                         }
                     </InputSelect>
                     <label class="me-2">Base :</label>
+                    @* key="RubRenderKey" *@
                     <InputSelect @bind-Value="IMyVue"
                                  @bind-Value:after="OuvreMGrid"
-                                 @key="RubRenderKey"
                                  class="me-3"
                                  style="width:auto">
                         <option value="0">?base</option>
@@ -81,32 +81,6 @@ else
                     </InputSelect>
                 </div>
         </div>
-
-
-        @* <div class="form-group">
-            <label class="me-2">Domaine :</label>
-            <InputSelect @bind-Value="IMyDom"
-                             @bind-Value:after="OuvreMGrid"
-                             class="me-3"
-                             style="width:auto">
-                    <option value=0>?domaine</option>
-                    @foreach (var tob in LsDoms)
-                    {
-                        <option value=@tob.Elea>@tob.Liba</option>
-                    }
-            </InputSelect>
-            <label class="fw-bold">Base :</label>
-            <InputSelect @bind-Value="IMyVue"
-                             @bind-Value:after="OuvreMGrid"
-                             class="me-3"
-                             style="width:auto">
-                    <option value=0>?util</option>
-                @foreach (var tob in LsVues)
-                {
-                    <option value=@tob.Gp2>@tob.Liba</option>
-                }
-                </InputSelect>
-        </div> *@ 
 
         <div class="container-fluid-fixed-top">
             @if (curOrga == null)
@@ -155,7 +129,6 @@ else
                                                     <ChildContent Context="item">
                                                         @if (IsPlanEditing(item) && draftPln is not null)
                                                         {
-
                                                             <InputText @bind-Value="draftPln.Liba" />
                                                         }
                                                         else
@@ -168,7 +141,6 @@ else
                                                     <ChildContent Context="item">
                                                         @if (IsPlanEditing(item) && draftPln is not null)
                                                         {
-
                                                             <InputText @bind-Value="draftPln.Abg" />
                                                         }
                                                         else
@@ -177,6 +149,46 @@ else
                                                         }
                                                     </ChildContent>
                                                 </GridColumn>
+                                                    <GridColumn TItem="PlngenDto" HeaderText="groupe" Class="xcol2">
+                                                        <ChildContent Context="item">
+                                                            <div class="d-flex align-items-center gap-2">
+                                                                @if (IsPlanEditing(item) && draftPln is not null)
+                                                                {
+                                                                    <InputSelect @bind-Value="draftPln.Styp">
+                                                                        <option value=1>Adm</option>
+                                                                        <option value=2>Geo</option>
+                                                                    </InputSelect>
+                                                                    if (draftPln.Styp == 1)
+                                                                    {//adm+geo?
+                                                                        <InputSelect @bind-Value="draftPln.Plsgeo">
+                                                                            <option value=0>aucun</option>
+                                                                            @foreach (var tob in LsPlans.Where(ut => ut.Ptyp == 4 && ut.Todom == IMyDom && ut.Styp == 2))
+                                                                            {
+                                                                                <option value=@tob.Elea>@tob.Abg</option>
+                                                                            }
+                                                                        </InputSelect>
+                                                                    }
+                                                                }
+                                                                else
+                                                                {
+                                                                    <InputSelect @bind-Value="item.Styp" disabled>
+                                                                        <option value=1>Adm</option>
+                                                                        <option value=2>Geo</option>
+                                                                    </InputSelect>
+                                                                    if (item.Styp == 1)
+                                                                    {//adm+geo?
+                                                                        <InputSelect @bind-Value="item.Plsgeo" disabled>
+                                                                            <option value=0>aucun</option>
+                                                                            @foreach (var tob in LsPlans.Where(ut => ut.Todom == IMyDom && ut.Styp == 2))
+                                                                            {
+                                                                                <option value=@tob.Elea>@tob.Abg</option>
+                                                                            }
+                                                                        </InputSelect>
+                                                                    }
+                                                                }
+                                                            </div>
+                                                        </ChildContent>
+                                                    </GridColumn>
                                                 <GridColumn TItem="PlngenDto" HeaderText="Etat" Class="xcol1">
                                                     <HeaderContent>
                                                         @if (CanOpenMGrid)
@@ -257,6 +269,10 @@ else
                                                                     </Button>
                                                                     break;
                                                                 default:
+                                                                    <Button Color="ButtonColor.Secondary" Size="ButtonSize.Small"
+                                                                            @onclick="() => showSchema(item)">
+                                                                        Schema
+                                                                    </Button>
                                                                     <Button Color="ButtonColor.Warning" Size="ButtonSize.Small"
                                                                             @onclick="() => StartPlnEdit(item)">
                                                                         ✏️ Edit
@@ -500,7 +516,7 @@ else
                                 </div>
                             </Content>
                         </Tab>
-                        <Tab Title="Organigramme" Name="organTab" onClick="() => OnOrgnSelected()">
+                        @* <Tab Title="Organigramme" Name="organTab" onClick="() => OnOrgnSelected()">
                             <Content>
                                 @if (CanOpenMGrid)
                                 {
@@ -511,7 +527,7 @@ else
                                     </div>
                                 }
                             </Content>
-                        </Tab>
+                        </Tab> *@
                     </Tabs>
                 </EditForm>
             }
@@ -615,6 +631,20 @@ else
             </BodyTemplate>
             <FooterTemplate>
                 <Button Color="ButtonColor.Secondary" @onclick="() => pForuModal.HideAsync()">Fermer</Button>
+            </FooterTemplate>
+        </Modal>
+            <!-- Modal for FORMULE PLAN -->
+        <Modal @ref="pSchmModal" Size="ModalSize.Large" Title=@fstrSchm" ShowCloseButton="false">
+            <BodyTemplate>
+                    <div class="d-flex flex-column gap=2 mb-2">
+                        <OrgaSchem @ref="myorgn"
+                                   curOrga="@curOrga"
+                                   curSchm="@curSchm">
+                        </OrgaSchem>
+                    </div>
+            </BodyTemplate>
+            <FooterTemplate>
+                <Button Color="ButtonColor.Secondary" @onclick="() => pSchmModal.HideAsync()">Fermer</Button>
             </FooterTemplate>
         </Modal>
     </Authorized>
@@ -834,11 +864,13 @@ else
     private PlngenDto curPlan = new();
     private RubhieDto curRubr = new();
     private RubpstDto curPmat = new();
+    public PlngenDto curSchm = new();
 
     private bool isRubCodeValid = false; //child blur
     //private bool inModM => draftRub?.Ecmode != 1;
     //private bool outModM => draftRub?.Ecmode == 1;
     //data
+    //public List<PlngenDto> MyOrgans => RendsOrgas();
     public List<PlngenDto> MyDaPlans => PlanItems;
     public List<RubhieDto> MyDaHies => HieItems;
     public List<RubpstDto> MyDaPsts => PstItems;
@@ -867,10 +899,12 @@ else
     Modal rForuModal = new(); //rubriques
     Modal gForuModal = new(); //formats
     Modal rHieModal = new(); //edit rubhie
+    Modal pSchmModal = new(); //organigramme
 
     private string patTitle = "", chlTitle = "", gsnTitle = "";
     private string patInitTitle = "", chlInitTitle = "", gsnInitTitle = "";
-    private string pstrFormu = "", rstrFormu = "", fstrFormu = "";
+    private string pstrFormu = "", rstrFormu = "", fstrFormu = "", fstrSchm = "";
+
     protected async Task TestConfirm()
     {
         Imessage = "TestConfirm reached";
@@ -894,22 +928,11 @@ else
                 Imessage = "CONNEXION, Utilisateur non authentifie";
                 return;
             }
-            LsVars = toChild.LsVars;
-            LsFixes = toChild.LsFixes;
-            LsDoms = LsFixes.Where(ut => ut.Gvars == 36 && ut.Itb == 2 && ut.Gp1 == 4 && ut.Elea != 0).ToList();
-            LsAtrs = LsFixes.Where(ut => ut.Gvars == 36 && ut.Itb == 1 && ut.Gp1 == 3 && ut.Elea != 0).ToList();
-            LsVues = LsFixes.Where(ut => ut.Gvars == 36 && ut.Itb == 4 && ut.Gp1 == 4 && ut.Elea != 0).ToList();
-            LsGties = LsFixes.Where(ut => ut.Gvars == 36 && ut.Itb == 6 && ut.Elea != 0 && ut.Elea != 9).ToList();
-            LsPlans = toChild.LsPlans;
-            _lgcdu = 3;
-            var noslims = LsVars.Where(uv => uv.Idhie == 0 && uv.Gvars == 21 && uv.Itb == 1 && uv.Elea == 1);
-            if (noslims.Any()) _lgcdu = noslims.FirstOrDefault().Ivala;
+
 
             Console.WriteLine($"lsplans {LsPlans.Count} IS NULL");
 
-            InitializeMyDaPlans();
-            InitializeMyDaHies();  // If you have this
-            InitializeMyDaPsts();
+
 
             Console.WriteLine($"MyDaPlans initialized: {MyDaPlans.Count}");
 
@@ -928,8 +951,26 @@ else
         }
     }
     // and call this in OnParametersSet
-    protected override void OnParametersSet()
+
+    protected override async Task OnParametersSetAsync()
     {
+        if (toChild != null)
+        {
+            LsVars = toChild.LsVars;
+            LsFixes = toChild.LsFixes;
+            LsDoms = LsFixes.Where(ut => ut.Gvars == 36 && ut.Itb == 2 && ut.Gp1 == 4 && ut.Elea != 0).ToList();
+            LsAtrs = LsFixes.Where(ut => ut.Gvars == 36 && ut.Itb == 1 && ut.Gp1 == 3 && ut.Elea != 0).ToList();
+            LsVues = LsFixes.Where(ut => ut.Gvars == 36 && ut.Itb == 4 && ut.Gp1 == 4 && ut.Elea != 0).ToList();
+            LsGties = LsFixes.Where(ut => ut.Gvars == 36 && ut.Itb == 6 && ut.Elea != 0 && ut.Elea != 9).ToList();
+            LsPlans = toChild.LsPlans;
+            _lgcdu = 3;
+            var noslims = LsVars.Where(uv => uv.Idhie == 0 && uv.Gvars == 21 && uv.Itb == 1 && uv.Elea == 1);
+            if (noslims.Any()) _lgcdu = noslims.FirstOrDefault().Ivala;
+        }
+        InitializeMyDaPlans();
+        InitializeMyDaHies();  // If you have this
+        InitializeMyDaPsts();
+
         SubscribeToGuard();
     }
     // Register guards and handlers ONCE when the component is initialized
@@ -941,20 +982,6 @@ else
             _locationHandler = _navManager.RegisterLocationChangingHandler(OnLocationChangingAsync);
         }
     }
-    // private async Task OuvreMGrid()
-    // {
-    //     if (IMyDom != 0 && IMyVue != 0)
-    //     {
-    //         await UpdateMyDaPlans();
-    //         PlnRenderKey = Guid.NewGuid();
-    //         CanOpenMGrid = true;
-    //         //await InvokeAsync(StateHasChanged);
-    //     }
-    //     else
-    //     {
-    //         CanOpenMGrid = false;
-    //     }
-    // }
     private async Task OuvreMGrid()
     {
         if (IMyDom != 0 && IMyVue != 0)
@@ -1006,7 +1033,7 @@ else
 
         StateHasChanged();
     }
-    
+
     public async Task StartPlnNew()
     {
         if (curOrga == null)
@@ -1025,7 +1052,7 @@ else
             Todom = IMyDom,
             //Ogtyp = 0,
             Totyp = IMyGtie,
-            Toatr = 0,
+            Toatr = 0, //1adm2geo
             Tovue = IMyVue,
             Liba = "",
             Abg = "",
@@ -1256,6 +1283,7 @@ else
         PlanItems = orgPlns?.Where(pl => pl.Ptyp == IMyGpln).ToList() // && pl.Todom == IMyDom && pl.Toatr == 0 && pl.Tovue == IMyVue).ToList()
             ?? new List<PlngenDto>();
         if (PlanItems.Any()) curPlan = PlanItems.FirstOrDefault();
+        var siw = MyDaPlans.Count();
     }
     private void InitializeMyDaHies()
     {
@@ -1290,6 +1318,7 @@ else
         PlanItems = orgPlns?
             .Where(pl => pl.Ptyp == IMyGpln && pl.Todom == IMyDom && pl.Toatr == 0 && pl.Tovue == IMyVue)
             .ToList() ?? new List<PlngenDto>();
+        //var siw = MyDaPlans.Count();
         return Task.CompletedTask;
     }
     private Task UpdateMyDaHies()
@@ -1338,6 +1367,17 @@ else
         }
     }
     //FMT Formule modals
+    void showSchema(PlngenDto myschem)
+    {
+        fstrSchm = "";
+        curSchm = myschem;
+        if (pSchmModal != null)
+        {
+            fstrSchm = $"Organigramme : {curSchm.Abg} - {curSchm.Liba}";
+            pSchmModal.BodyCssClass = "readonly";
+            pSchmModal.ShowAsync();
+        }
+    }
     void showFrFmtModal(RubpstDto myfmt, int orig)
     {
         fstrFormu = "";

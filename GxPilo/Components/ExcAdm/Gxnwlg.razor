@@ -43,7 +43,7 @@ else
         </div>
         <div class="card-body">
             <div class="row g-2">
-                <div class="col-md-4">
+                @* <div class="col-md-4">
                     <div class="col-md-8">
                         <Button Color="ButtonColor.Warning"
                             Size="ButtonSize.Small"
@@ -52,7 +52,7 @@ else
                                 Synchronize dictionary
                         </Button>
                     </div>
-                </div>
+                </div> *@
                 <div class="col-md-3">
                     <label class="form-label">New language code</label>
                     <input class="form-control" @bind="_newLanguage" />
@@ -193,13 +193,13 @@ private async Task AddNewLanguageAsync()
 }
 
 
-    private async Task SynchronizeDictionaryAsync()
-    {
-        await RunAdminOperationAsync(
-            () => AdminClient.SynchronizeDictionaryAsync(
-                _currentIdorg,
-                null));
-    }
+    // private async Task SynchronizeDictionaryAsync()
+    // {
+    //     await RunAdminOperationAsync(
+    //         () => AdminClient.SynchronizeDictionaryAsync(
+    //             _currentIdorg,
+    //             null));
+    // }
     private async Task RunAdminOperationAsync(
         Func<Task<AdminOperationResultDto>> operation)
     {

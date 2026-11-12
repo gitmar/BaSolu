@@ -1,0 +1,725 @@
+﻿@page "/VldeTie"
+@layout EnrolMenu
+@inherits CompUICrudBase
+
+@using System.Linq.Expressions
+@using GxShared.GxDtos
+@using GxShared.Others
+@using GxShared.Sess
+@using GxShared.Helpers
+@using GxShared.Helpers.CrudHelpers
+@using GxShared.Cols.Models
+@using GxShared.Interfaces
+@using GxTie.Components.Paccu.RtPer
+@using GxTie.Components.Uifrags
+@using GxTie.Components.PfrmHelper
+@using GxTie.Components.Cols
+@using GxTie.Services
+@using Simple.OData.Client
+@using GxTie.Components.Apcomp
+
+@inject RendAgres _rendAgres
+@inject ColumnFormValidator _colValidator
+@inject ColumnPreferencesClient _prefReader
+@inject IHttpClientFactory _clientFactory
+@inject IClientMatriculeOrdreService _mordService
+
+<PageTitle>Validation Enrollement</PageTitle>
+<div>@Imessage</div>
+
+@if (isLoading)
+{
+    <div class="text-center">
+        <Spinner Color="SpinnerColor.Primary" Size="SpinnerSize.Medium" />
+        <p>Chargement Enrollement...</p>
+    </div>
+}
+<p> @curOrga?.Sigle - @curOrga?.Raison </p>
+@if (curTie != null && curOrga != null && isModalVisible)
+{
+    <GlobModal IsVisible="@isModalVisible"
+               IsVisibleChanged="@OnModalVisibilityChanged"
+               Title="Chargement des documents"
+               UploadCtx="@uploadCtx"
+               Idorg="@curOrga.Idorg"
+               EntyTiw="null"
+               EntyTie="@EditTie"
+               LsmVars="@LsVars"
+               Oparent="1">
+    </GlobModal>
+}
+
+<div class="my-container">
+    @if (toChild != null)
+    {
+        @ChildContent
+    }
+</div>
+
+@if (!isLoading)
+{
+    <AuthorizeView>
+        <Authorized Context="authtiecontext">
+            <div class="d-flex align-items-center gap-2">
+                @if (GtieMode == GridMode.TiersAdding || GtieMode == GridMode.TiersEditing)
+                {
+                    <Button Color="ButtonColor.Success"
+                            Size="ButtonSize.Small"
+                            Class="px-2 py-1 small-btn"
+                            @onclick="() => ConfirmPerson(curTie)">
+                        ✅ Confirm
+                    </Button>
+                    <Button Color="ButtonColor.Secondary"
+                            Size="ButtonSize.Small"
+                            Class="px-2 py-1 small-btn"
+                            @onclick="() => CancelPerson(curTie)">
+                        ❌ Cancel
+                    </Button>
+                    <Button Color="ButtonColor.Info"
+                            Size="ButtonSize.Small"
+                            Class="px-2 py-1 small-btn"
+                            @onclick="ShowModal">
+                        piece(s)
+                    </Button>
+                }
+            </div>
+            <div class="container">
+                <Tabs>
+                    <Tab Title="Enrollé" Name="TieTab" onClick="() => OnTabChanged(1)">
+                        <Content>
+                            <EditForm Context="invform" Model="curTie">
+                                <DataAnnotationsValidator />
+                                <ValidationSummary />
+                                <!-- Explicit immatriculation "> first -->
+                                <RegistrationInput Sorga="@Sorga"
+                                                   Ugpe="@Ugpe"
+                                                   Sgpe="@Sgpe"
+                                                   Saffilia="@Saffilia"
+                                                   IsProvisional="true"
+                                                   VientDe="2"
+                                                   AjtState="@(GtieMode == GridMode.TiersAdding)"
+                                                   OnAddNewTie="StartTieNew"
+                                                   GenerationMode="MatriculeGenerationMode.Local"
+                                                   @bind-Value="Smatri"
+                                                   IsBusy="@IsBusy"
+                                                   ValidChanged="OnSmatriValidChanged" />
+
+                                <PTieGdHelper Idorg="@curOrga.Idorg" Entity="@curTie"
+                                              Draft="@(GetDraft(EntityLevel.Tie) as TierspDto)"
+                                              PrefReader="@_prefReader"
+                                              IsEditing="@IsTieEditing(curTie)"
+                                              ConfState="@ConfState"
+                                              EnsTbls="@EnsTbls"
+                                              EnsAtrs="@EnsAtrs"
+                                              Ugpe="@Ugpe"
+                                              OnConfirm="@ConfirmPerson"
+                                              OnCancel="@CancelPerson"
+                                              AflItems="@AflItems"
+                                              ChildBusy="@ChildBusy"
+                                              IsEditingFn="@(a => IsAflEditing(a))"
+                                              GetDraftFn="@(() => GetDraft(EntityLevel.Afl) as TieaflDto)"
+                                              OnStartEditAfl="@StartEditAfl"
+                                              OnConfirmAfl="@ConfirmAfl"
+                                              OnCancelAfl="@CancelAfl"
+                                              OnDeleteAfl="@(a => StartRowDelete(EntityLevel.Afl, a.Rowguid))"
+                                              GroupOptions="@ChldAfls.Where(af => af.Atyp == Ugpe && af.Elea is >= 2 and <= 6).ToList()"
+                                              SelectedGroup="@IMyGAfl"
+                                              ChldMatri="@ChldMatri"
+                                              SelectedGroupChanged="@(v => IMyGAfl = v)"
+                                              OnAddChild="@AddChild" />
+                            </EditForm>
+                        </Content>
+                    </Tab>
+                    <Tab Title="Plus..." Name="TiwTab" onClick="() => OnTabChanged(2)">
+                        <Content>
+                            <!-- Additional dynamic Categories -->
+                            <label class="fw-bold mt-3 d-block">CATEGORIE++(s)</label>
+                            <div class="card-body p-3">
+                                @RenderCategories(EnsCats.Where(c => c.Pid == null))
+                            </div>
+
+                            @if (curOrga != null && canOpenAdres && !string.IsNullOrEmpty(curTie?.Smatri))
+                            {
+                                <Gstadr @bind-NbChanges="_nbChanges" curOrga="@curOrga" _guard="@Guard"
+                                      EnsTbls="@EnsTbls" Actx="@Actx" />
+                            }
+                            @* </div> *@
+                        </Content>
+                    </Tab>
+                    <Tab Title="Validation" Name="TiwTab" onClick="() => OnTabChanged(3)">
+                        <Content>
+                            @if (canbeVerified)
+                            {
+                                <div class="container row">
+                                    <Grid TItem="TierspDto" Data="@WaitingTiersps" AllowSelection="true"
+                                          SelectionMode="GridSelectionMode.Multiple" Responsive="true">
+                                        <GridColumns>
+                                            <GridColumn TItem="TierspDto" HeaderText="No">
+                                                <ChildContent Context="item">
+                                                    <span>@(item.Xedt1 == -1 ? item?.Iui : (item?.Iui == 0 ? item?.Iele : item?.Iui))</span>
+                                                </ChildContent>
+                                            </GridColumn>
+                                            <GridColumn TItem="TierspDto" HeaderText="Matricule">
+                                                <ChildContent Context="item">@item.Smatri</ChildContent>
+                                            </GridColumn>
+                                            <GridColumn TItem="TierspDto" HeaderText="Institution">
+                                                <ChildContent Context="item">@item.Xmatri</ChildContent>
+                                            </GridColumn>
+                                            <GridColumn TItem="TierspDto" HeaderText="Dossier">
+                                                <ChildContent Context="item">@item.Zmatri</ChildContent>
+                                            </GridColumn>
+                                            <GridColumn TItem="TierspDto" HeaderText="Nom">
+                                                <ChildContent Context="item">@item.Nom</ChildContent>
+                                            </GridColumn>
+                                            <GridColumn TItem="TierspDto" HeaderText="Pnom">
+                                                <ChildContent Context="item">@item.Pnom</ChildContent>
+                                            </GridColumn>
+                                            <GridColumn TItem="TierspDto" HeaderText="etat" IsVisible="true">
+                                                <ChildContent Context="item">
+                                                    <InputSelect @bind-Value="item.Eta" disabled="true">
+                                                        <option class="jchx" value=0>?choisir</option>
+                                                        @foreach (var tob in LsFixes.Where(ut => ut.Gvars == 32 && ut.Itb == 1 && ut.Elea != 0))
+                                                        {
+                                                            <option value=@tob.Elea>@tob.Liba</option>
+                                                        }
+                                                    </InputSelect>
+                                                </ChildContent>
+                                            </GridColumn>
+                                            <GridColumn TItem="TierspDto" HeaderText="Actions" Filterable="false" Class="xcol2 actions-col">
+                                                <ChildContent Context="item">
+                                                    <Button Color="ButtonColor.Secondary" Size="ButtonSize.Small"
+                                                            @onclick="() => VueDetails(EntityLevel.Tie, item)">
+                                                        Details
+                                                    </Button>
+                                                </ChildContent>
+                                            </GridColumn>
+                                        </GridColumns>
+                                    </Grid>
+                                </div>
+                            }
+                        </Content>
+                    </Tab>
+                    <Tab Title="EnAttente" Name="Tietab" onClick="() => OnTabChanged(4)">
+                        <Content>
+                            Tiewel en attente validation
+                        </Content>
+                    </Tab>
+                    <Tab Title="Contrat" Name="TieTab" onClick="() => OnTabChanged(5)">
+                        <Content>
+                            <span>Contrat</span>
+                            <RtV11Fic curOrga="@curOrga"
+                                      _InODaClient="@_InODaClient"
+                                      toChild="@toChild"
+                                      curTie="@curTie">
+                            </RtV11Fic>
+                        </Content>
+                    </Tab>
+                    <Tab Title="Carte" Name="TieTab" onClick="() => OnTabChanged(6)">
+                        <Content>
+                            <span>Carte</span>
+                            <RtV11Fic curOrga="@curOrga"
+                                      _InODaClient="@_InODaClient"
+                                      toChild="@toChild"
+                                      curTie="@curTie">
+                            </RtV11Fic>
+                        </Content>
+                    </Tab>
+                </Tabs>
+            </div>
+        </Authorized>
+    </AuthorizeView>
+}
+
+<style>
+    .my-container {
+        background-color: yellow;
+    }
+
+    .small-btn {
+        font-size: 0.75rem;
+        line-height: 1.2;
+    }
+</style>
+
+@code {
+    public VldeTie(IPendingChangesGuard guard) : base(guard) { }
+
+    private bool isLoading = true;
+    private string Imessage = "";
+
+    [Parameter] public RenderFragment ChildContent { get; set; }
+    [Parameter] public IODataClient _InODaClient { get; set; }
+    [Parameter] public GxorgaDto curOrga { get; set; } = new();
+    [Parameter] public List<TierspDto> orgTiers { get; set; } = new();
+    [Parameter] public ChildVars toChild { get; set; }
+    [Parameter] public int Tgpe { get; set; }
+    [Parameter] public int Ugpe { get; set; } = 0;
+    [Parameter] public int toMenu { get; set; }
+    [Parameter] public List<Gtabl> EnsTbls { get; set; }
+    //[Parameter] public List<Gpatr> EnsAtrs { get; set; } = new();
+    //[Parameter] public List<Gpcat> EnsCats { get; set; } = new();
+    [Parameter] public IPendingChangesGuard _guard { get; set; }
+    [Parameter] public EventCallback<PendingState> OnPendingStateChanged { get; set; }
+    [Parameter] public int NbChanges { get; set; }
+    [Parameter] public EventCallback<int> NbChangesChanged { get; set; }
+
+    //format code rubriques
+    private int _lgcdu = 3;
+    private string _lgfmt = "";
+
+    private List<Gplan> LsPlans = new();
+    private List<Gpfixe> LsFixes = new();
+    private List<Gpvar> LsVars = new();
+
+    private List<Gpvar> GpeAfls = new();
+    private List<Gpvar> ChldAfls = new();
+
+    //editing workflow
+    //adding and editing workflow
+    public GridMode GtieMode = GridMode.None;
+    public GridMode GaflMode = GridMode.None;
+    //public bool AjtState => LocTieAdding || LocTieEditing;
+    private AddEdtMode ConfState = AddEdtMode.None;
+
+    private bool IsBusy => IsLevelBusy(EntityLevel.Tie);
+    private bool ChildBusy => IsLevelBusy(EntityLevel.Afl);   // an affiliate row is being added or edited
+
+    private HttpClient _dftClient = default!;
+    private Acatbag _acatBag = new();
+    public List<Gpatr> EnsAtrs = new();
+    public List<Gpcat> EnsCats = new();
+
+    //private bool isOpenAdres = false;
+    private bool isTieValidate = false;
+
+    //private Modal gTieModal = null;
+    private bool isModalVisible = false;
+    private bool AllowMultipleEdits { get; set; } = false;
+
+    private int IMyGAfl = 0;
+    private int refTab = 1;
+
+    private bool IsProvisional = true;
+    private string Sorga = "";
+    private string Sgpe = "";
+    private string mstrTie = "";
+    private string Saffilia = "T";
+    public string ChldMatri = "";
+    private bool InAddingMode = false;
+
+    private bool SmatriValid;
+    private void OnSmatriValidChanged(bool isValid)
+    {
+        SmatriValid = isValid;
+        curTie.Smatri = SmatriValid ? Smatri : "";
+    }
+    private TierspDto EditTie => EditTarget(EntityLevel.Tie, curTie);
+
+    private string? Smatri { get; set; }
+
+    public AdrContext Actx { get; set; }
+    public UplCxtDto uploadCtx { get; set; } = new();
+    private TierspDto curTie = new();
+    private int _nbChanges = 0;
+
+    private List<TierspDto> WaitingTiersps => TieItems.Where(tie => tie.Xadd1 != -1).ToList();
+    private bool canbeVerified => WaitingTiersps.Any();
+    private bool canOpenAdres = false;
+    //private List<TieaflDto> WflItems => curTie.Tieafls.ToList();
+
+    protected override async Task OnInitializedAsync()
+    {
+        isLoading = false;
+        try
+        {
+            _dftClient = _clientFactory.CreateClient("AUTHClient");
+            if (toChild == null || curOrga == null)
+            {
+                Console.WriteLine("Missing parent data");
+                return;
+            }
+            LsFixes = toChild.LsFixes;
+            LsVars = toChild.LsVars;
+            LsPlans = toChild.LsPlans;
+            //Ityp:options Oui/Non
+            GpeAfls = LsVars.Where(uv => uv.Gvars == 3 && uv.Itb == 5 && uv.Ityp == 1 && uv.Elea != 0).ToList();
+            ChldAfls = LsVars.Where(uv => uv.Gvars == 3 && uv.Itb == 6 && uv.Ityp == 1 && uv.Elea != 0).ToList();
+
+            Console.WriteLine("✅ LoadOrgaVariabs done");
+            //limites
+            _lgcdu = curOrga.Lftrub ?? 3;
+            _lgfmt = curOrga.Ftrub ?? "";
+            Console.WriteLine($"lsplans {LsPlans.Count} IS NULL");
+
+            //InitializeMyDaPlans();
+            //InitializeMyDaRubs();  // If you have this
+            //InitializeMyDaFmts();
+
+            //Console.WriteLine($"MyDaPlans initialized: {MyDaPlans.Count}");
+            TieItems.Clear();
+            if (orgTiers?.Any() == true)
+            {
+                TieItems.AddRange(orgTiers);
+                curTie = TieItems.First();
+            }
+            int myIdorg = curOrga?.Idorg ?? 0;
+            var bgresponse = await _dftClient.GetFromJsonAsync<Acatbag>($"olines/acatbag/{myIdorg}", default);
+            if (bgresponse != null)
+            {
+                Console.WriteLine($"✅ Acatbag loaded: {bgresponse.Natrs.Count} attributes, {bgresponse.Ncats.Count} categories");
+                _acatBag = bgresponse;
+                EnsAtrs = _acatBag.Natrs;
+                EnsCats = _acatBag.Ncats;
+            }
+            else
+            {
+                Console.WriteLine("Missing attribut/categories data");
+                return;
+            }
+            BuildHierarchy();
+            //atrTitle = "Saisie";
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Child crash: {ex.Message}");
+            Console.WriteLine($"Stack: {ex.StackTrace}");
+            Imessage = $"Erreur chargement: {ex.Message}";
+        }
+        finally
+        {
+            isLoading = false;
+            StateHasChanged();
+        }
+        isLoading = false;
+        //Imessage = "InscTie charged";
+    }
+    protected override async Task OnParametersSetAsync()
+    {
+        await base.OnParametersSetAsync();
+        Sorga = curOrga?.Idorg.ToString() ?? "";
+        Saffilia = "T";
+
+        Sgpe = Ugpe switch
+        {
+            1 => "1CB",
+            2 => "2OP",
+            3 => "3CL",
+            4 => "4FN",
+            5 => "5PA",
+            _ => "1CB"
+        };
+    }
+
+    protected override void SubscribeToGuard() { }
+
+    //build hierarchy
+    private void BuildHierarchy()
+    {
+        var lookup = EnsCats.ToDictionary(c => c.Id);
+
+        foreach (var cat in EnsCats)
+        {
+            if (cat.Pid != null && lookup.TryGetValue(cat.Pid.Value, out var parent))
+            {
+                cat.Parent = parent;
+                parent.Children.Add(cat);
+            }
+        }
+    }
+
+    private void OnTabChanged(int tabIndex)
+    {
+        refTab = tabIndex;
+        canOpenAdres = false;
+        if (refTab == 2 && curOrga != null)
+        {
+            Actx = new()
+            {
+                Agpe = Ugpe, //tie
+                Orig = 2, //enreg..1tiw2tie 9orga
+                Itie = curTie.Id,
+                Itiw = 0,
+                Iefl = 0,
+                Iwfl = 0
+            };
+            canOpenAdres = true;
+        }
+    }
+    private async Task StartTieNew(string? matricule)
+    {
+        var newTie = new TierspDto
+        {
+            Rowguid = Guid.NewGuid(),
+            Idorg = curOrga.Idorg,
+            Utyp = Ugpe,
+            Smatri = matricule ?? "",
+            Xmatri = "",
+            Zmatri = "",
+            Nom = "",
+            Pnom = "",
+            Datc = DateTime.Now,
+            Eta = 1
+        };
+
+        await StartRowAdd(
+            EntityLevel.Tie,
+            newTie,
+            TieItems,
+            d => SetDraft(EntityLevel.Tie, d));
+
+        curTie = newTie;
+
+        GtieMode = GridMode.TiersAdding;
+
+        SetRowState(
+            EntityLevel.Tie,
+            newTie.Rowguid,
+            RowState.AddPending);
+    }
+
+    private async Task StartEditTie(TierspDto item)
+        => await StartRowEdit(EntityLevel.Tie, item, _edTieOriginals, d => SetDraft(EntityLevel.Tie, d));
+
+    private async Task StartEditAfl(TieaflDto item)
+        => await StartRowEdit(EntityLevel.Afl, item, _edAflOriginals, d => SetDraft(EntityLevel.Afl, d));
+    // Affiliates of a saved person are tracked on their own; those of a new person ride in its insert.
+    protected override bool TrackOnItsOwn(EntityLevel level, object entity)
+    {
+        if (level != EntityLevel.Afl || entity is not TieaflDto a) return true;
+        var parent = TieItems.FirstOrDefault(t => t.Rowguid == a.Prowguid) ?? curTie;
+        return parent.Id > 0;
+    }
+    // OlneInsc only:  protected override bool TrackOnItsOwn(EntityLevel l, object e) => false;
+
+    // Keep curTie.Tieafls in step, but only for a new person (the payload needs it; display uses WflItems)
+    protected override void OnLocalCollectionMutated(EntityLevel level, CollectionMutation mutation, object entity)
+    {
+        if (level != EntityLevel.Afl || entity is not TieaflDto a) return;
+        var parent = TieItems.FirstOrDefault(t => t.Rowguid == a.Prowguid) ?? curTie;
+        if (parent.Id > 0) return;
+
+        if (mutation == CollectionMutation.Added && !parent.Tieafls.Any(x => x.Rowguid == a.Rowguid))
+            parent.Tieafls.Add(a);
+        else if (mutation == CollectionMutation.Removed)
+            parent.Tieafls.RemoveAll(x => x.Rowguid == a.Rowguid);
+    }
+
+    private async Task ConfirmPerson(TierspDto person)
+    {
+        if (ChildBusy)
+        {
+            Imessage = "Terminez ou annulez l'affilié en cours avant de valider la personne.";
+            return;
+        }
+        if (GetEditState(EntityLevel.Tie).IsAdd)
+        {
+            await ConfirmAdd(EntityLevel.Tie, person, true);
+            ConfState = AddEdtMode.AddPConfirmed;
+        }
+        else
+        {
+            await ConfirmEdit(EntityLevel.Tie, person, true);
+            ConfState = AddEdtMode.EdtPConfirmed;
+        }
+        GtieMode = GaflMode = GridMode.None;
+    }
+
+    private async Task CancelPerson(TierspDto person)
+    {
+        if (ChildBusy && GetDraft(EntityLevel.Afl) is TieaflDto d
+            && AflItems.FirstOrDefault(a => a.Rowguid == d.Rowguid) is { } open)
+            await CancelAfl(open);                                   // its draft belongs to this person
+
+        var wasAdd = GetEditState(EntityLevel.Tie).IsAdd;
+        if (wasAdd) await CancelAdd(EntityLevel.Tie, person);
+        else await CancelEdit(EntityLevel.Tie, person);
+
+        if (wasAdd) AflItems.RemoveAll(w => w.Prowguid == person.Rowguid && w.Id == 0);   // children of a person that never existed
+        GtieMode = GaflMode = GridMode.None;
+    }
+
+    private async Task AddChild(int selectedGroup)
+    {
+        var parent = curTie;
+        if (string.IsNullOrEmpty(curTie.Smatri))
+        {
+            Imessage = "Matricule tiers obligatoire";
+            return;
+        }
+        ChldMatri = "";
+        var s2afilia = "";
+        s2afilia = selectedGroup switch
+        {
+            1 => "T",
+            2 => "C",
+            3 => "P",
+            4 => "E",
+            5 => "G",
+            6 => "F",
+            _ => "T"
+        };
+        try
+        {
+            var cgenmatri = await _mordService.GenerateOrdreAsync(
+                Sorga, Ugpe, Sgpe, s2afilia,
+                MatriculeGenerationMode.Local, default);
+            ChldMatri =
+                $"PV-{Sorga}-{Sgpe}-{cgenmatri}{s2afilia}";
+            Console.WriteLine($"[StartTieNew] Generated matricule: '{s2afilia}'");
+        }
+        catch (Exception ex)
+        {
+
+        }
+        var newAfl = new TieaflDto
+        {
+            Rowguid = Guid.NewGuid(),
+            Prowguid = parent.Rowguid,
+            Itie = parent.Id,                                         // 0 while the person is new
+            Tyafl = selectedGroup,
+            Smatri = ChldMatri,
+            Xmatri = "",
+            Zmatri = "",
+            Irang = NextSeq(AflItems.Where(a => a.Prowguid == parent.Rowguid), p => p.Iui),
+            Nom = "",
+            Pnom = "",
+            Datc = DateTime.Now,
+            Eta = 1
+        };
+        GaflMode = GridMode.AflsAdding;
+        //curTie.Tieafls.Add(newAfl); // Add the new child to the parent collection
+        await StartRowAdd(EntityLevel.Afl, newAfl, AflItems, d => SetDraft(EntityLevel.Afl, d));
+        // no curTie.Tieafls.Add here: the hook adds it when the affiliate is confirmed
+        Console.WriteLine($"[AddChild] AflItems={AflItems.Count}, add-state={GetEditState(EntityLevel.Afl).IsAdd}");
+    }
+    public async Task<List<string>> ValidateForSaveAsync()
+    {
+        static string Who(string? nom, string? pnom, string fallback)
+            => string.IsNullOrWhiteSpace($"{nom} {pnom}") ? fallback : $"{nom} {pnom}".Trim();
+
+        // Only inserts and updates need checking; a pending delete must not be blocked.
+        bool NeedsCheck(EntityLevel level, Guid rowguid)
+            => GetOpInfo(level, rowguid)?.OpType is PendingOpType.Insert or PendingOpType.Update;
+
+        bool Include(EntityLevel level, object e, Guid rowguid)
+            => !TrackOnItsOwn(level, e) || NeedsCheck(level, rowguid);
+
+        var items = new List<(EntityLevel Level, ColPrefContext Ctx, object Model, string Title)>();
+
+        foreach (var tie in TieItems.Where(t => Include(EntityLevel.Tie, t, t.Rowguid)))
+            items.Add((EntityLevel.Tie, ColumnContexts.Person(Ugpe), EditTarget(EntityLevel.Tie, tie), Who(tie.Nom, tie.Pnom, "Personne")));
+
+        foreach (var afl in AflItems.Where(a => Include(EntityLevel.Afl, a, a.Rowguid)))
+            items.Add((EntityLevel.Afl, ColumnContexts.Affiliate(afl.Tyafl), EditTarget(EntityLevel.Afl, afl), "Affilié " + Who(afl.Nom, afl.Pnom, "")));
+        foreach (var tie in TieItems.Where(t => NeedsCheck(EntityLevel.Tie, t.Rowguid)))
+            items.Add((EntityLevel.Tie, ColumnContexts.Person(Ugpe), tie,
+                       Who(tie.Nom, tie.Pnom, "Personne")));
+
+        var problems = await _colValidator.ValidateManyAsync(
+            curOrga.Idorg, items.Select(i => (i.Ctx, i.Model, i.Title)));
+
+        // Business rules (minimum lengths...). Skipped if you don't override Validate(level, entity).
+        foreach (var (level, _, model, title) in items)
+            if (!Validate(level, model))
+                problems.Add($"{title} : {Imessage}");
+
+        return problems;
+    }
+    private async Task ConfirmAfl(TieaflDto item)
+    {
+        var es = GetEditState(EntityLevel.Afl);
+        if (es.IsAdd) await ConfirmAdd(EntityLevel.Afl, item, true);
+        else await ConfirmEdit(EntityLevel.Afl, item, true);
+    }
+
+    private async Task CancelAfl(TieaflDto item)
+    {
+        var es = GetEditState(EntityLevel.Afl);
+        if (es.IsAdd) await CancelAdd(EntityLevel.Afl, item);
+        else await CancelEdit(EntityLevel.Afl, item);
+    }
+
+    private async Task ConfirmDeleteAfl(TieaflDto a)
+    {
+        if (a.Id == 0)   // never saved: nothing to delete on the server
+        {
+            RemoveByRowguid(EntityLevel.Afl, a.Rowguid);
+            ResetRowState(EntityLevel.Afl, a.Rowguid);
+            return;
+        }
+        await ConfirmDelete(EntityLevel.Afl, a, true);
+    }
+
+    private async Task VueDetails(EntityLevel level, object entity)
+    {
+        var rowguid = MLEntityKeyHelper.GetRowguidAsGuid(entity);
+        if (level == EntityLevel.Tie)
+        {
+            //mstrTie = "";
+            curTie = (TierspDto)entity;
+            if (curTie != null)
+            {
+                //mstrTie = curTie.Zmatri + "/" + curTie.Nom + " " + curTie.Pnom;
+            }
+
+            // if (gTieModal != null)
+            // {
+            //     ///gForuModal.BodyCssClass = (orig == 1) ? "editable" : "readonly";
+            //     gTieModal.ShowAsync();
+            // }
+            //isTieViewing = true;
+            //await StartEditTie(curTie);
+        }
+    }
+
+    // private async Task VaOpenAdres()
+    // {
+    //     Actx = new() { Agpe = 3, Itie = curTie.Id, Itiw = 0, Iefl = 0, Iwfl = 0 };
+    //     isOpenAdres = !isOpenAdres;
+    // }
+
+    private RenderFragment RenderCategories(IEnumerable<Gpcat> cats) => builder =>
+    {
+        foreach (var cat in cats.Where(c => c.Eta != 0))
+        {
+            builder.OpenElement(0, "div");
+            builder.AddAttribute(1, "class", cat.Pid == null ? "mb-2" : "form-check ms-3");
+            builder.OpenComponent<InputCheckbox>(2);
+            builder.AddAttribute(3, "class", "form-check-input checkbox-bordered");
+            builder.AddAttribute(4, "Value", cat.IsSelected);
+            builder.AddAttribute(5, "ValueChanged", EventCallback.Factory.Create<bool>(this, args =>
+            {
+                cat.IsSelected = args;
+                foreach (var child in cat.Children) child.IsSelected = args;
+                CascadeUp(cat.Parent, args);
+            }));
+            builder.AddAttribute(6, "ValueExpression", (Expression<Func<bool>>)(() => cat.IsSelected));
+            builder.CloseComponent();
+            builder.OpenElement(7, "label");
+            builder.AddAttribute(8, "class", "form-check-label");
+            builder.AddContent(9, cat.Liba);
+            builder.CloseElement();
+            if (cat.Children.Any())
+                builder.AddContent(10, RenderCategories(cat.Children));
+            builder.CloseElement();
+        }
+    };
+
+    private void CascadeUp(Gpcat? parent, bool selected)
+    {
+        if (parent == null) return;
+        if (selected)
+        {
+            parent.IsSelected = true;
+            CascadeUp(parent.Parent, true);
+        }
+        else if (parent.Children.All(c => !c.IsSelected))
+        {
+            parent.IsSelected = false;
+            CascadeUp(parent.Parent, false);
+        }
+    }
+
+    private void ShowModal() => isModalVisible = true;
+    private Task OnModalVisibilityChanged(bool isVisible) { isModalVisible = isVisible; return Task.CompletedTask; }
+}
