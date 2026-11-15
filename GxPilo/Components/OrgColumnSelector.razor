@@ -23,7 +23,51 @@
         </InputSelect>
     </div>
 
-    @if (selTotyp == 1)
+    @if (selTotyp is >= 1 and <= 5)
+{
+    <div>
+        <label class="fw-bold">Formulaire :</label>
+        <InputSelect @bind-Value="selEfrm" @bind-Value:after="OnSelectionChanged">
+            @foreach (var f in ColumnContexts.PersonForms)
+            {
+                <option value="@f.Efrm">@f.Label</option>
+            }
+        </InputSelect>
+    </div>
+        <div>
+            <label class="fw-bold">Affilié :</label>
+            <InputSelect @bind-Value="selStyp"
+                         @bind-Value:after="OnSelectionChanged">
+                <option value="1">Lui-même</option>
+                @foreach (var tgpe in ChldAfls)
+                {
+                    <option value=@tgpe.Elea>@tgpe.Liba</option>
+                }
+            </InputSelect>
+        </div>
+}
+else if (selTotyp == 6)
+{
+    <div>
+        <label class="fw-bold">Formulaire :</label>
+        <InputSelect @bind-Value="selEfrm" @bind-Value:after="OnSelectionChanged">
+            @foreach (var (efrm, label) in ColumnContexts.ProductForms)
+            {
+                <option value="@efrm">@label</option>
+            }
+        </InputSelect>
+    </div>
+        <div>
+            <label class="fw-bold">Formulaire :</label>
+            <InputSelect @bind-Value="selEfrm"
+                         @bind-Value:after="OnSelectionChanged">
+                <option value="1">Stkun (Livraison)</option>
+                <option value="2">Validation (Entree)</option>
+            </InputSelect>
+        </div>
+    }
+
+    @* @if (selTotyp == 1)
     {
         <div>
             <label class="fw-bold">Formulaire :</label>
@@ -31,6 +75,7 @@
                          @bind-Value:after="OnSelectionChanged">
                 <option value="1">Tiewel (accueil)</option>
                 <option value="2">Tiersp (validation)</option>
+                <option value="3">Tiewel (online)</option>
             </InputSelect>
         </div>
 
@@ -56,7 +101,7 @@
                 <option value="2">Validation (Entree)</option>
             </InputSelect>
         </div>
-    }
+    } *@
 </div>
 
 <div class="d-flex align-items-end gap-3 flex-wrap mb-3">
@@ -130,6 +175,10 @@
                     Appliquer la synchronisation
                 </button>
 
+                <button class="btn btn-outline-secondary btn-sm" 
+                    @onclick="ResetVisibility" 
+                    disabled="@isBusy">Visibilité par défaut
+                </button>
                 <button type="button"
                         class="btn btn-sm btn-secondary"
                         @onclick="CloseSyncPreview"
@@ -165,6 +214,12 @@
                     <GridColumn TItem="LSelCol" HeaderText="Personnalisé" Class="xcol3">
                         <InputText @bind-Value="@context.Ulabel" placeholder="Libellé" />
                     </GridColumn>
+
+                            
+                            @* <GridColumn TItem="LSelCol" HeaderText="Visible" Class="xcol1">
+                                <input type="checkbox" checked="@context.IsVisible"
+                                       @onchange="@(e => { context.IsVisible = (bool)e.Value!; if (!context.IsVisible) context.IsRequired = false; })" />
+                            </GridColumn>
                     <GridColumn TItem="LSelCol" HeaderText="Visible" Class="xcol1">
                         <input type="checkbox" checked="@context.IsVisible"
                                  @onchange="@(e => { context.IsVisible = (bool)e.Value!; if (!context.IsVisible) context.IsRequired = false; })" />
@@ -172,7 +227,22 @@
                     <GridColumn TItem="LSelCol" HeaderText="Obligatoire" Class="xcol1">
                         <input type="checkbox" checked="@context.IsRequired" disabled="@(!context.IsVisible)"
                             @onchange="@(e => context.IsRequired = (bool)e.Value!)" />
-                    </GridColumn>
+                    </GridColumn> *@
+
+                            <GridColumn TItem="LSelCol" HeaderText="Visible" Class="xcol1">
+                                <input type="checkbox" checked="@context.IsVisible"
+                                       @onchange="@(e => { context.IsVisible = (bool)e.Value!; context.Normalize(); })" />
+                            </GridColumn>
+                            <GridColumn TItem="LSelCol" HeaderText="Lecture seule" Class="xcol1">
+                                <input type="checkbox" checked="@context.IsReadOnly" disabled="@(!context.IsVisible)"
+                                       @onchange="@(e => { context.IsReadOnly = (bool)e.Value!; context.Normalize(); })" />
+                            </GridColumn>
+                            <GridColumn TItem="LSelCol" HeaderText="Obligatoire" Class="xcol1">
+                                <input type="checkbox" checked="@context.IsRequired"
+                                       disabled="@(!context.IsVisible || context.IsReadOnly)"
+                                       @onchange="@(e => { context.IsRequired = (bool)e.Value!; context.Normalize(); })" />
+                            </GridColumn>
+
                     <GridColumn TItem="LSelCol" HeaderText="Type" Class="xcol2">
                         <span class="text-muted">@AtypLabel(context.Atyp)</span>
                     </GridColumn>
@@ -298,24 +368,24 @@
         isLoading || isSaving || isResetting || isSynchronizing;
 
     // Only visible columns appear in forms, in custom order
-private IEnumerable<LSelCol> PreviewColumns =>
-    _workingCols.Where(c => c.IsVisible).InDisplayOrder();
+    private IEnumerable<LSelCol> PreviewColumns =>
+        _workingCols.Where(c => c.IsVisible).InDisplayOrder();
 
-private IEnumerable<int?> DuplicateRanks =>
-    _workingCols.Where(c => c.IsVisible && c.CustNo is > 0)
-                .GroupBy(c => c.CustNo)
-                .Where(g => g.Count() > 1)
-                .Select(g => g.Key);
+    private IEnumerable<int?> DuplicateRanks =>
+        _workingCols.Where(c => c.IsVisible && c.CustNo is > 0)
+                    .GroupBy(c => c.CustNo)
+                    .Where(g => g.Count() > 1)
+                    .Select(g => g.Key);
 
-private static string AtypLabel(ColAtyp atyp) => atyp switch
-{
-    ColAtyp.Text     => "Texte",
-    ColAtyp.Number   => "Nombre",
-    ColAtyp.Date     => "Date",
-    ColAtyp.Checkbox => "Case à cocher",
-    ColAtyp.Dropdown => "Liste",
-    _                => "—"
-};
+    private static string AtypLabel(ColAtyp atyp) => atyp switch
+    {
+        ColAtyp.Text     => "Texte",
+        ColAtyp.Number   => "Nombre",
+        ColAtyp.Date     => "Date",
+        ColAtyp.Checkbox => "Case à cocher",
+        ColAtyp.Dropdown => "Liste",
+        _                => "—"
+    };
     protected override async Task OnInitializedAsync()
     {
         //Ityp:options Oui/Non
@@ -327,32 +397,35 @@ private static string AtypLabel(ColAtyp atyp) => atyp switch
 
     private ColPrefContext BuildContext() => new()
     {
+        //Totyp = selTotyp,
+        //Efrm = selTotyp is 1 or 6 ? selEfrm : 1,
+        //Styp = selTotyp == 1 ? selStyp : 1
         Totyp = selTotyp,
-        Efrm = selTotyp is 1 or 6 ? selEfrm : 1,
+        Efrm = selEfrm,
         Styp = selTotyp == 1 ? selStyp : 1
     };
     private async Task LoadColumnsAsync()
-{
-    isLoading = true;
-    statusMessage = null;
-    try
     {
-        // Server returns custom order; Tab 1 shows the natural order.
-        _workingCols = (await PrefClient.LoadAsync(Idorg, BuildContext()))
-            .OrderBy(c => c.ColNo)
-            .ToList();
+        isLoading = true;
+        statusMessage = null;
+        try
+        {
+            // Server returns custom order; Tab 1 shows the natural order.
+            _workingCols = (await PrefClient.LoadAsync(Idorg, BuildContext()))
+                .OrderBy(c => c.ColNo)
+                .ToList();
+        }
+        catch (HttpRequestException ex)
+        {
+            _workingCols = new();
+            statusOk = false;
+            statusMessage = $"Chargement impossible ({(int?)ex.StatusCode}).";
+        }
+        finally
+        {
+            isLoading = false;
+        }
     }
-    catch (HttpRequestException ex)
-    {
-        _workingCols = new();
-        statusOk = false;
-        statusMessage = $"Chargement impossible ({(int?)ex.StatusCode}).";
-    }
-    finally
-    {
-        isLoading = false;
-    }
-}
     private async Task OnSelectionChanged()
     {
         if (selTotyp != 1 && selTotyp != 6)
@@ -364,7 +437,10 @@ private static string AtypLabel(ColAtyp atyp) => atyp switch
         {
             selStyp = 1;
         }
-
+        if (selEfrm == 3)
+        {
+            selStyp = 1;
+        }
         await LoadColumnsAsync();
     }
 
@@ -374,17 +450,6 @@ private static string AtypLabel(ColAtyp atyp) => atyp switch
     private static bool HasLookup(LSelCol column)
         => column.Tref.HasValue && column.Tref.Value > 0;
 
-    // private async Task OnAtypChangedAsync(LSelCol column)
-    // {
-    //     if (!CanHaveLookup(column))
-    //     {
-    //         column.Tref = null;
-    //         column.Pref = null;
-    //     }
-
-    //     await Task.CompletedTask;
-    // }
-
     private async Task OnLookupChangedAsync(LSelCol column)
     {
         if (!CanHaveLookup(column) || !HasLookup(column))
@@ -393,6 +458,15 @@ private static string AtypLabel(ColAtyp atyp) => atyp switch
         }
 
         await Task.CompletedTask;
+    }
+
+    private void ResetVisibility()
+    {
+        foreach (var c in _workingCols)
+        {
+            ////c.IsVisible = c.DefaultVisible;
+            if (!c.IsVisible) c.IsRequired = false;
+        }
     }
 
     private async Task SaveSelection()
@@ -502,13 +576,6 @@ private static string AtypLabel(ColAtyp atyp) => atyp switch
 
         await LoadColumnsAsync();
     }
-
-    // private void AskResetConfirmation()
-    // {
-    //     awaitingResetConfirmation = true;
-    //     statusMessage = null;
-    //     syncPreview = null;
-    // }
 
     private void CancelReset()
     {

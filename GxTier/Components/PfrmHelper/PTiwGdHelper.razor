@@ -11,7 +11,7 @@
 <div class="card mb-3">
     <div class="card-body p-3">
         <ColDrivenFields @ref="_fields" PrefReader="@PrefReader" Idorg="@Idorg" PColCtx="@Ctx"
-                         Model="@CurrentPerson" EnsTbls="@EnsTbls" IsEditing="@IsEditing" />
+                         Model="@CurrentPerson" EnsTbls="@EnsTbls" Tgpe="@Ugpe" IsEditing="@IsEditing" />
         <div>
             @* EnsAtrs.Count = @EnsAtrs.Count
             <br />
@@ -25,7 +25,7 @@
             } *@
         </div>
         <PlusAttributeFields Definitions="@EnsAtrs.AttributesFor((int)Ugpe)"
-                             Values="@CurrentPerson.Tiejatrs"
+                             Values="@CurrentPerson.Tiejatrs" Tgpe="@Ugpe"
                              EnsTbls="@EnsTbls" IsEditing="@IsEditing" />
 
         @if (_error is not null)
@@ -77,11 +77,15 @@
         </Button>
     </div>
   
-    <CTiwGdHelper Idorg="@Idorg" CurTiw="@Entity" WflItems="@WflItems" EnsTbls="@EnsTbls"
+    <CTiwGdHelper Idorg="@Idorg" CurTiw="@Entity"
+                  WflItems="@WflItems"
                   SelectedGroup="@SelectedGroup"
                   PrefReader="@PrefReader"
                   IsAnyEditing="@ChildBusy"
                   IsEditingFn="@IsEditingFn"
+                  EnsTbls="@EnsTbls"
+                  Kgpe="@Ugpe"
+                  Efrm="@Efrm"
                   GetDraftFn="@GetDraftFn"
                   IsDeletingFn="@IsDeletingFn"
                   OnStartEdit="@OnStartEditWfl"
@@ -102,6 +106,7 @@ else
 
 @code {
     // --- Person-level ---
+    [Parameter] public int Efrm { get; set; } = ColumnContexts.TiewelEfrm;
     [Parameter, EditorRequired] public int Idorg { get; set; }
     [Parameter, EditorRequired] public TiewelDto Entity { get; set; } = default!;
     [Parameter] public TiewelDto? Draft { get; set; }
@@ -137,7 +142,7 @@ else
     [Parameter] public EventCallback<int> OnAddChild { get; set; }
     //[Parameter] public bool AjtState { get; set; }
     [Parameter] public AddEdtMode ConfState { get; set; } = AddEdtMode.None;
-    
+
     // private bool CanEditChildren => AjtState &&
     //     !string.IsNullOrEmpty((IsEditing ? (Draft ?? Entity) : Entity).Zmatri) && GroupOptions.Any();
 
@@ -150,16 +155,17 @@ else
     //private string ASgpe = "";
 
     private TiewelDto CurrentPerson => IsEditing ? (Draft ?? Entity) : Entity;
-    private ColPrefContext Ctx => ColumnContexts.Person(Ugpe);
+    //private ColPrefContext Ctx => ColumnContexts.Person(Ugpe);
+    private ColPrefContext Ctx => ColumnContexts.Person(Ugpe, Efrm);
 
     private bool HasMatricule => !string.IsNullOrEmpty(CurrentPerson.Zmatri);
     private bool HasAffiliates => WflItems.Any(w => w.Prowguid == Entity.Rowguid
                                              || (Entity.Id > 0 && w.Itiw == Entity.Id));
     private bool ShowAffiliates => HasMatricule && (GroupOptions.Any() || HasAffiliates);
-    
+
     private bool AddEditingAffile => (ConfState == AddEdtMode.AddPConfirmed || ConfState == AddEdtMode.EdtPConfirmed)
           && !string.IsNullOrEmpty((IsEditing? (Draft ?? Entity) : Entity).Zmatri) && GroupOptions.Any();
-    
+
     //private TiwaflDto SelectedAfil = new();
     
     private async Task ConfirmAsync()

@@ -44,6 +44,7 @@
     [Parameter, EditorRequired] public List<TiejatrDto> Values { get; set; } = new();
     [Parameter, EditorRequired] public List<Gtabl> EnsTbls { get; set; } = new();
     //[Parameter, EditorRequired] public List<Gpatr> EnsAtrs { get; set; } = new();
+    [Parameter] public int Tgpe { get; set; } = 0;
     [Parameter] public bool IsEditing { get; set; }
 
     private void Set(Gpatr def, string? raw)

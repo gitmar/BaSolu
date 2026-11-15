@@ -77,6 +77,17 @@ else
                             <option value=@tob.Elea>@tob.Liba</option>
                         }
                     </InputSelect>
+                    @* <label class="me-2">Statut :</label>
+                    <InputSelect @bind-Value="IMyStat"
+                                 @bind-Value:after="OuvreMGrid"
+                                 class="me-3"
+                                 style="width:auto">
+                        <option value=0>tous</option>
+                        @foreach (var tbi in StatItems?.ToList())
+                        {
+                            <option value=@tbi.Tref>@tbi.Liba</option>
+                        }
+                    </InputSelect> *@
                     <label class="me-2">Base :</label>
                     <InputSelect @bind-Value="IMyVue"
                                  @bind-Value:after="OuvreMGrid"
@@ -158,6 +169,24 @@ else
                                                             }
                                                         </ChildContent>
                                                     </GridColumn>
+                                        <GridColumn TItem="PlngenDto" HeaderText="Statut" Class="xcol1">
+                                            <ChildContent Context="item">
+                                                @if (IsPlanEditing(item) && draftPln is not null)
+                                                {
+                                                    <input type="checkbox"
+                                                           class="form-check-input"
+                                                           checked="@(draftPln.Siatr ?? 0)"
+                                                           @onchange="e => draftPln.Siatr = (int)e.Value!" />
+                                                }
+                                                else
+                                                {
+                                                    <input type="checkbox"
+                                                           class="form-check-input"
+                                                           checked="@(item.Siatr ?? 0)"
+                                                           disabled />
+                                                }
+                                            </ChildContent>
+                                        </GridColumn>
                                                     <GridColumn TItem="PlngenDto" HeaderText="Eta" Class="xcol1">
                                                         <HeaderContent>
                                                             @* @if (PeutOuvrirPlan)
@@ -831,6 +860,8 @@ else
     [Parameter]
     public List<PlngenDto> orgPlns { get; set; } = new();
     [Parameter]
+    public List<Gtabl> ensTbls { get; set; } = new();
+    [Parameter]
     public IODataClient _InODaClient { get; set; }
     [Parameter]
     public ChildVars toChild { get; set; }
@@ -860,6 +891,7 @@ else
     //private int IMyAtr = 1; ////1Adm2Geo
     //private int ItkDom = 0; //6Tiers7Mat
     private int IMyGtie = 1; //1Cible/2Operat...
+    //private int IMyStat = 0; //11Perm12Occasio
 
     //Global
     private int _lgcdu = 0;
@@ -906,6 +938,7 @@ else
     private List<Gpfixe> LsAtrs = new();
     private List<Gpfixe> LsVues = new();
     private List<Gpfixe> LsGties = new();
+    //private List<Gtvar> StatItems = new();
 
     private bool isPlnFilteringEnabled = false;
     private bool isRubFilteringEnabled = false;
@@ -983,6 +1016,7 @@ else
             LsAtrs = LsFixes.Where(ut => ut.Gvars == 36 && ut.Itb == 1 && ut.Gp1 == 3 && ut.Elea != 0).ToList();
             LsVues = LsFixes.Where(ut => ut.Gvars == 36 && ut.Itb == 4 && ut.Gp1 == 4 && ut.Elea != 0).ToList();
             LsGties = LsFixes.Where(ut => ut.Gvars == 36 && ut.Itb == 6 && ut.Elea != 0 && ut.Elea != 9).ToList();
+            //StatItems = ensTbls?.FirstOrDefault(tb => tb.Pref == 11 && tb.Tenr == 1)?.TbItems.ToList() ?? new();
             LsPlans = toChild.LsPlans;
             _lgcdu = 3;
             var noslims = LsVars.Where(uv => uv.Idhie == 0 && uv.Gvars == 21 && uv.Itb == 1 && uv.Elea == 1);
@@ -1115,8 +1149,8 @@ else
             Ptyp = IMyGpln,
             Todom = IMyDom, ////1Variables2Durables3Factures
             //Ogtyp = 0,
-            Totyp = IMyGtie,
-            Tostyp = 0,
+            Totyp = IMyGtie, //cibleoperat
+            //Tostyp = IMyStat, //statut
             Toatr = 0,
             Tovue = IMyVue,
             Liba = "",
@@ -1351,7 +1385,8 @@ else
     // Update method -call this when source data changes
     private void InitializeMyDaPlans()
     {
-        PlanItems = orgPlns?.Where(pl => pl.Ptyp == IMyGpln).ToList() // && pl.Todom == IMyDom && pl.Toatr == 0 && pl.Tovue == IMyVue).ToList()
+        PlanItems = orgPlns?
+        .Where(pl => pl.Ptyp == IMyGpln && pl.Todom == IMyDom && pl.Totyp == IMyGtie && pl.Tovue == IMyVue).ToList()
             ?? new List<PlngenDto>();
         if (PlanItems.Any()) curPlan = PlanItems.FirstOrDefault();
     }
@@ -1386,9 +1421,9 @@ else
     private Task UpdateMyDaPlans()
     {
         //PlanItems = orgPlns.ToList();
-        PlanItems = orgPlns
-            .Where(pl => pl.Ptyp == IMyGpln && pl.Todom == IMyDom && pl.Toatr == 0 && pl.Tovue == IMyVue)
-            .ToList(); // ?? new List<PlngenDto>();
+        PlanItems = orgPlns?
+            .Where(pl => pl.Ptyp == IMyGpln && pl.Todom == IMyDom && pl.Tovue == IMyVue).ToList()
+            ?? new List<PlngenDto>();
         return Task.CompletedTask;
     }
     private Task UpdateMyDaRubs()

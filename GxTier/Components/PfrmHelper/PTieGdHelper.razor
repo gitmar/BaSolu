@@ -11,9 +11,9 @@
 <div class="card mb-3">
     <div class="card-body p-3">
         <ColDrivenFields @ref="_fields" PrefReader="@PrefReader" Idorg="@Idorg" PColCtx="@Ctx"
-                         Model="@CurrentPerson" EnsTbls="@EnsTbls" IsEditing="@IsEditing" />
+                         Model="@CurrentPerson" EnsTbls="@EnsTbls" Tgpe="@Ugpe" IsEditing="@IsEditing" />
         <PlusAttributeFields Definitions="@EnsAtrs.AttributesFor((int)Ugpe)"
-                             Values="@CurrentPerson.Tiejatrs"
+                             Values="@CurrentPerson.Tiejatrs" Tgpe="@Ugpe"
                              EnsTbls="@EnsTbls" IsEditing="@IsEditing" />
 
         @if (_error is not null)
@@ -64,13 +64,17 @@
         </Button>
     </div>
 
-    <CTieGdHelper Idorg="@Idorg" CurTie="@Entity" AflItems="@AflItems" EnsTbls="@EnsTbls"
+    <CTieGdHelper Idorg="@Idorg" CurTie="@Entity" 
+                  AflItems="@AflItems"
                   SelectedGroup="@SelectedGroup"
                   PrefReader="@PrefReader"
                   IsAnyEditing="@ChildBusy"
                   IsEditingFn="@IsEditingFn"
                   GetDraftFn="@GetDraftFn"
                   IsDeletingFn="@IsDeletingFn"
+                  EnsTbls="@EnsTbls"
+                  Kgpe="@Ugpe"
+                  Efrm="@Efrm"
                   OnStartEdit="@OnStartEditAfl"
                   OnConfirm="@OnConfirmAfl"
                   OnCancel="@OnCancelAfl"
@@ -96,6 +100,7 @@ else
 
 @code {
     // --- Person-level ---
+    [Parameter] public int Efrm { get; set; } = ColumnContexts.TiewelEfrm;
     [Parameter, EditorRequired] public int Idorg { get; set; }
     [Parameter, EditorRequired] public TierspDto Entity { get; set; } = default!;
     [Parameter] public TierspDto? Draft { get; set; }
@@ -144,7 +149,20 @@ else
     //private string ASgpe = "";
 
     private TierspDto CurrentPerson => IsEditing ? (Draft ?? Entity) : Entity;
-    private ColPrefContext Ctx => ColumnContexts.Person(Ugpe);
+    //private ColPrefContext Ctx => ColumnContexts.Person(Ugpe);
+    private ColPrefContext Ctx => ColumnContexts.Person(Ugpe, Efrm);  
+
+    private List<Gtabl> StatItems => EnsTbls
+        .Select(tb => new Gtabl
+        {
+            Id = tb.Id,
+            Liba = tb.Liba,
+
+            TbItems = tb.TbItems?
+            .Where(it => it.Tgpe != 0)
+            .ToList() ?? new List<Gtvar>()
+        })
+    .ToList();
 
     private bool HasMatricule => !string.IsNullOrEmpty(CurrentPerson.Zmatri);
     private bool HasAffiliates => AflItems.Any(w => w.Prowguid == Entity.Rowguid

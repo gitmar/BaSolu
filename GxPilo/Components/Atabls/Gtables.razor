@@ -73,13 +73,6 @@ else
             <div class="form-group">
                 <div class="btn btn-group">
                     <label class="mb-0 me-2">Groupe :</label>
-                    @* <InputSelect @bind-Value="IMyGtbl" class="me-3" style="width:auto">
-                        <option value=0>?choisir</option>
-                        @foreach (var utb in LsFixes.Where(u => u.Gvars == 35 && u.Itb == 1 && u.Elea != 0))
-                        {
-                            <option value=@utb.Elea>@utb.Liba</option>
-                        }
-                    </InputSelect> *@
                     <InputSelect @bind-Value="IMyGtbl"
                                  @bind-Value:after="OuvreMGrid"
                                  class="me-3"
@@ -101,7 +94,6 @@ else
                             <option value=@utb.Gp2>@utb.Liba</option>
                         }
                     </InputSelect>
-
                 </div>
             </div>
             <div class="container-fluid-fixed-top">
@@ -128,7 +120,7 @@ else
                                 <!--Contenu des tables-->
                                 if (CanOpenMGrid)
                                 {
-                                <Grid TItem="GstablDto"
+                                    <Grid TItem="GstablDto"
                                       Data="@MyDaGtbs"
                                       @key="GetRenderKey(EntityLevel.Gtb)"
                                       AllowRowClick="true"
@@ -167,7 +159,6 @@ else
                                             <ChildContent Context="item">
                                                 @if (GetRowState(EntityLevel.Gtb, item.Rowguid) is RowState.AddPending or RowState.EditPending)
                                                 {
-
                                                     <InputText @bind-Value="draftGtb.Abg" />
                                                 }
                                                 else
@@ -226,7 +217,7 @@ else
                                         </GridColumn>
                                         <GridColumn TItem="GstablDto" HeaderText="Eta" Class="xcol1">
                                             <HeaderContent>
-                                                @if (IMyGtbl != 1)
+                                                @if (IMyGtbl != 1 || IMyGtbl != 3)
                                                 {
                                                     <button class="btn btn-primary btn-sm @(IsLevelBusy(EntityLevel.Gtb) ? "disabled-action" : "")"
                                                             @onclick="() => StartGtbNew()">
@@ -324,9 +315,26 @@ else
                                         </GridColumn>
                                     </GridColumns>
                                     <GridDetailView TItem="GstablDto" Context="selectedGtb">
-                                        <Grid TItem="GstablDto"
+                                            @if (selectedGtb.Gtyp == 3)
+                                            {
+                                                <div class="form-group">
+                                                    <div class="btn btn-group">
+                                                        <label class="me-2">G.Tiers :</label>
+                                                        <InputSelect @bind-Value="IMyGtie"
+                                                        @bind-Value:after="OuvreTbGroup"
+                                                        class="me-3"
+                                                        style="width:auto">
+                                                            <option value=0>?gtiers</option>
+                                                            @foreach (var tob in LsGties)
+                                                            {
+                                                                <option value=@tob.Elea>@tob.Liba</option>
+                                                            }
+                                                        </InputSelect>
+                                                    </div>
+                                                </div>
+                                            }
+                                            <Grid TItem="GstablDto"
                                               Data="@MyDaGt2s.Where(el => el.Pid == selectedGtb.Id).ToList()"
-                                              
                                               AllowPaging="true"
                                               Responsive="true">
                                             <GridColumns>
@@ -705,6 +713,9 @@ else
     //private List<Gplan> LsPlans = new();
     private List<Gpfixe> LsFixes = new();
     private List<Gpfixe> LsDoms = new();
+
+    private List<Gpfixe> LsGties = new();
+
     //private List<Gpvar> LsVars = new();
     // private Dictionary<int, string> LsDocs = new()
     // {
@@ -719,7 +730,8 @@ else
     //Global
     private int _lgcdu = 0;
     private int IMyDom = 1; //Otyp1tiers2Matiere
-    //private int IMyGtbl = 0, IMyBas = 0;
+    private int IMyGtie = 0;
+
     private int _myGtbl = 0;
     public int IMyGtbl
     {
@@ -803,6 +815,7 @@ else
             //LsVars = toChild.LsVars;
             LsFixes = toChild.LsFixes;
             LsDoms = toChild.LsFixes.Where(ut => ut.Gvars == 36 && ut.Itb == 4 && ut.Gp1 == 3 && ut.Elea != 0).ToList();
+            LsGties = LsFixes.Where(ut => ut.Gvars == 36 && ut.Itb == 6 && ut.Elea != 0 && ut.Elea != 9).ToList();
             //LsDoms = LsFixes.Where(ut => ut.Gvars == 36 && ut.Itb == 4 && ut.Gp1 == 3 && ut.Elea != 0).ToList();
             //LsSites = toChild.LsSites;
             _lgcdu = 3;
@@ -884,6 +897,7 @@ else
             CanOpenMGrid = false;
         }
     }
+    
     private async Task OnGtbRowClick(GridRowEventArgs<GstablDto> args)
     {
         Console.WriteLine($"OnGtbRowClick Triggered : {args.Item.Id}");
@@ -919,8 +933,9 @@ else
             Rowguid = Guid.NewGuid(),
             Idorg = curOrga.Idorg, //pere Id
             Otyp = IMyDom, //1tiers2Matiere tables
-            Gtyp = IMyGtbl, //2optionnel1integre
+            Gtyp = IMyGtbl, //2optionnel1integre3groupe
             Ktyp = IMyBas, //1tiers2matiere
+            Tgpe = 0,
             Tenr = 1, //1base2elemt
             Iui = lsnb,
             Pid = 0,
@@ -936,7 +951,7 @@ else
             Xedt1 = 0,
             Xdel1 = 0
         }; //session pas creation
-     
+
         //prise order
         curOrga.Gstabls?.Add(newGtb);
         draftGtb = DeepClone(newGtb);
@@ -962,9 +977,10 @@ else
             Rowguid = Guid.NewGuid(),
             //Prowguid = mytabl.Rowguid,
             Idorg = curOrga.Idorg, //pere Id
-            Otyp = IMyDom, //dom1tiers2matiere tables
-            Gtyp = IMyGtbl, //2optionnel1integre
+            Otyp = IMyDom, //1tables
+            Gtyp = IMyGtbl, //2optionnel1integre3groupe
             Ktyp = IMyBas, //1tiers2matiere
+            Tgpe = IMyGtie, //1cibl2oper4clie5fourn
             Tenr = 2, //1base2elemt
             Iui = lsnb,
             Pid = mytabl.Id,
@@ -990,7 +1006,7 @@ else
         await InvokeAsync(StateHasChanged);
 
     }
-    
+
     public async Task StartGtbEdit(GstablDto item)
     {
         var rowguid = item.Rowguid;
@@ -1054,7 +1070,7 @@ else
 
         // StateHasChanged();
     }
-    
+
     private async Task StartCancelAdd(EntityLevel level, object entity)
     {
         var rowguid = MLEntityKeyHelper.GetRowguidAsGuid(entity);
@@ -1072,7 +1088,19 @@ else
                 break;
         }
     }
-
+    private async Task OuvreTbGroup()
+    {
+        if (IMyGtbl != 0 && IMyBas != 0 && IMyGtie != 0)
+        {
+            await UpdateMyDaGt2s();
+            //GpeRenderKey = Guid.NewGuid();
+            CanOpenMGrid = true;
+        }
+        else
+        {
+            CanOpenMGrid = false;
+        }
+    }
     // Update method -call this when source data changes
     private void InitializeMyDaGtbs()
     {
@@ -1080,8 +1108,8 @@ else
         if (curOrga != null)
         {
             GtbItems = curOrga.Gstabls
-                        .Where(uv => uv.Otyp == IMyDom && uv.Tenr == 1)
-                        .ToList() ?? new List<GstablDto>();
+                .Where(uv => uv.Otyp == IMyDom && uv.Tenr == 1)
+                .ToList() ?? new List<GstablDto>();
             curGtb = GtbItems.FirstOrDefault();
         }
         else
@@ -1094,10 +1122,20 @@ else
         curGt2 = new();
         if (curGtb != null)
         {
-            Gt2Items = curOrga.Gstabls
-                        .Where(ln => ln.Otyp == IMyDom && ln.Tenr == 2)
-                        .ToList() ?? new List<GstablDto>();
-            curGt2 = Gt2Items.FirstOrDefault();
+            if (IMyGtbl == 3 && IMyGtie != 0)
+            {
+                Gt2Items = curOrga.Gstabls
+                    .Where(ln => ln.Otyp == IMyDom && ln.Tenr == 2 && ln.Tgpe == IMyGtie)
+                    .ToList() ?? new List<GstablDto>();
+                curGt2 = Gt2Items.FirstOrDefault();
+            }
+            else
+            { //pour tous
+                Gt2Items = curOrga.Gstabls
+                    .Where(ln => ln.Otyp == IMyDom && ln.Tenr == 2 && ln.Tgpe == 0)
+                    .ToList() ?? new List<GstablDto>();
+                curGt2 = Gt2Items.FirstOrDefault();
+            }
         }
         else
         {
@@ -1107,15 +1145,28 @@ else
     private Task UpdateMyDaGtbs()
     {
         GtbItems = curOrga.Gstabls
-                        .Where(uv => uv.Otyp == IMyDom && uv.Tenr == 1 && uv.Gtyp == IMyGtbl && uv.Ktyp == IMyBas)
-                        .ToList() ?? new List<GstablDto>();
+            .Where(uv => uv.Otyp == IMyDom && uv.Tenr == 1 && uv.Gtyp == IMyGtbl && uv.Ktyp == IMyBas)
+            .ToList() ?? new List<GstablDto>();
         return Task.CompletedTask;
     }
     private Task UpdateMyDaGt2s()
     {
-        Gt2Items = curOrga.Gstabls
+        if (IMyGtbl == 3)
+        {
+            Gt2Items = new();
+            if (IMyGtie != 0)
+            {
+                Gt2Items = curOrga.Gstabls
+                    .Where(uv => uv.Otyp == IMyDom && uv.Tenr == 2 && uv.Pid == curGtb.Id && uv.Tgpe == IMyGtie)
+                    .ToList() ?? new List<GstablDto>();
+            }
+        }
+        else
+        {
+            Gt2Items = curOrga.Gstabls
                         .Where(uv => uv.Otyp == IMyDom && uv.Tenr == 2 && uv.Pid == curGtb.Id)
                         .ToList() ?? new List<GstablDto>();
+        }
         return Task.CompletedTask;
     }
      private void SelDomTabl(int orig)

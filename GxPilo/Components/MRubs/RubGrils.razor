@@ -640,6 +640,8 @@ else
     [Parameter]
     public List<PlngenDto> orgPlns { get; set; } = new();
     [Parameter]
+    public List<Gtabl> ensTbls { get; set; } = new();
+    [Parameter]
     public IODataClient _InODaClient { get; set; }
     [Parameter]
     public ChildVars toChild { get; set; }
@@ -664,6 +666,7 @@ else
     //private int IMyAtr = 1; ////1Adm2Geo
     //private int ItkDom = 0; //6Tiers7Mat
     private int IMyGtie = 0; //1Cible/2Operat...
+    private int IMyStat = 0; //11Perm12Occasio
 
     //Global
     private int _lgcdu = 0;
@@ -692,6 +695,7 @@ else
     private List<Gpfixe> LsAtrs = new();
     private List<Gpfixe> LsVues = new();
     private List<Gpfixe> LsGties = new();
+    private List<Gtvar> StatItems = new();
 
     private bool isPlnFilteringEnabled = false;
     private bool isRubFilteringEnabled = false;
@@ -766,6 +770,7 @@ else
             LsAtrs = LsFixes.Where(ut => ut.Gvars == 36 && ut.Itb == 1 && ut.Gp1 == 3 && ut.Elea != 0).ToList();
             LsVues = LsFixes.Where(ut => ut.Gvars == 36 && ut.Itb == 4 && ut.Gp1 == 4 && ut.Elea != 0).ToList();
             LsGties = LsFixes.Where(ut => ut.Gvars == 36 && ut.Itb == 6 && ut.Elea != 0 && ut.Elea != 9).ToList();
+            //StatItems = ensTbls?.FirstOrDefault(tb => tb.Pref == 11 && tb.Tenr == 1)?.TbItems.ToList() ?? new();
             LsPlans = toChild.LsPlans;
             _lgcdu = 3;
             var noslims = LsVars.Where(uv => uv.Idhie == 0 && uv.Gvars == 21 && uv.Itb == 1 && uv.Elea == 1);

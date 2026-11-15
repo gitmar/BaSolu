@@ -79,7 +79,7 @@
                             Size="ButtonSize.Small"
                             Class="px-2 py-1 small-btn"
                             @onclick="ShowModal">
-                        piece(s)
+                        pièce(s)
                     </Button>
                 }
             </div>
@@ -109,9 +109,10 @@
                                               PrefReader="@_prefReader"
                                               IsEditing="@IsTieEditing(curTie)"
                                               ConfState="@ConfState"
-                                              EnsTbls="@EnsTbls"
+                                              EnsTbls="@gpeTbls"
                                               EnsAtrs="@EnsAtrs"
                                               Ugpe="@Ugpe"
+                                              Efrm="@FormEfrm"
                                               OnConfirm="@ConfirmPerson"
                                               OnCancel="@CancelPerson"
                                               AflItems="@AflItems"
@@ -141,7 +142,7 @@
                             @if (curOrga != null && canOpenAdres && !string.IsNullOrEmpty(curTie?.Smatri))
                             {
                                 <Gstadr @bind-NbChanges="_nbChanges" curOrga="@curOrga" _guard="@Guard"
-                                      EnsTbls="@EnsTbls" Actx="@Actx" />
+                                      EnsTbls="@ensTbls" Actx="@Actx" />
                             }
                             @* </div> *@
                         </Content>
@@ -255,7 +256,7 @@
     [Parameter] public int Tgpe { get; set; }
     [Parameter] public int Ugpe { get; set; } = 0;
     [Parameter] public int toMenu { get; set; }
-    [Parameter] public List<Gtabl> EnsTbls { get; set; }
+    [Parameter] public List<Gtabl> ensTbls { get; set; }
     //[Parameter] public List<Gpatr> EnsAtrs { get; set; } = new();
     //[Parameter] public List<Gpcat> EnsCats { get; set; } = new();
     [Parameter] public IPendingChangesGuard _guard { get; set; }
@@ -275,6 +276,7 @@
     private List<Gpvar> ChldAfls = new();
 
     //editing workflow
+    private const int FormEfrm = 2;
     //adding and editing workflow
     public GridMode GtieMode = GridMode.None;
     public GridMode GaflMode = GridMode.None;
@@ -313,6 +315,17 @@
         SmatriValid = isValid;
         curTie.Smatri = SmatriValid ? Smatri : "";
     }
+    //copy inner entities
+    private List<Gtabl> gpeTbls => ensTbls
+    .Select(tb =>
+    {
+        var copy = tb.Clone();
+        copy.TbItems = tb.TbItems?
+            .Where(it => (it.Tgpe == 0 || it.Tgpe == Ugpe))
+            .ToList() ?? new List<Gtvar>();
+        return copy;
+    })
+    .ToList();
     private TierspDto EditTie => EditTarget(EntityLevel.Tie, curTie);
 
     private string? Smatri { get; set; }

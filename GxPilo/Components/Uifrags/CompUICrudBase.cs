@@ -1036,6 +1036,7 @@ namespace GxPilo.Components.Uifrags
                         gtb.Idorg = draftGtb.Idorg; //pere Id
                         gtb.Gtyp = draftGtb.Gtyp; //2optionnel1integre
                         gtb.Ktyp = draftGtb.Ktyp; //1tiers2matiere
+                        gtb.Tgpe = draftGtb.Tgpe; //1cibl2oper3clie
                         gtb.Tenr = draftGtb.Tenr; //1base2elemt
                         gtb.Pid = draftGtb.Pid;
                         gtb.Tcol = draftGtb.Tcol;
@@ -1057,6 +1058,7 @@ namespace GxPilo.Components.Uifrags
                         gt2.Idorg = draftGt2.Idorg; //pere Id
                         gt2.Gtyp = draftGt2.Gtyp; //2optionnel1integre
                         gt2.Ktyp = draftGt2.Ktyp; //1tiers2matiere
+                        gt2.Tgpe = draftGt2.Tgpe; //1cibl2oper3clie
                         gt2.Tenr = draftGt2.Tenr; //1base2elemt
                         gt2.Pid = draftGt2.Pid;
                         gt2.Tcol = draftGt2.Tcol;
@@ -1187,6 +1189,7 @@ namespace GxPilo.Components.Uifrags
                         gtb.Idorg = originalGtb.Idorg; //pere Id
                         gtb.Gtyp = originalGtb.Gtyp; //2optionnel1integre
                         gtb.Ktyp = originalGtb.Ktyp; //1tiers2matiere
+                        gtb.Tgpe = originalGtb.Tgpe; //1cibl2oper3clie
                         gtb.Tenr = originalGtb.Tenr; //1base2elemt
                         gtb.Pid = originalGtb.Pid;
                         gtb.Tcol = originalGtb.Tcol;
@@ -1208,6 +1211,7 @@ namespace GxPilo.Components.Uifrags
                         gt2.Idorg = originalGt2.Idorg; //pere Id
                         gt2.Gtyp = originalGt2.Gtyp; //2optine1integ
                         gt2.Ktyp = originalGt2.Ktyp; //1tiers2matiere
+                        gt2.Tgpe = originalGt2.Tgpe; //1cibl2oper3clie
                         gt2.Tenr = originalGt2.Tenr; //1base2elemt
                         gt2.Pid = originalGt2.Pid;
                         gt2.Tcol = originalGt2.Tcol;
@@ -1333,6 +1337,7 @@ namespace GxPilo.Components.Uifrags
             target.Rowguid = source.Rowguid;
             target.Gtyp = source.Gtyp; //2optionnel1integre
             target.Ktyp = source.Ktyp; //1tiers2matiere
+            target.Tgpe = source.Tgpe; //1cibl2oper3clie
             target.Tenr = source.Tenr; //1base2elemt
             target.Pid = source.Pid;
             target.Tcol = source.Tcol;

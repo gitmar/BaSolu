@@ -43,7 +43,7 @@ else
             <div class="@(HasProblem(col) ? "border border-danger rounded p-1" : null)">
                 @if (IsDropdown(col))
                 {
-                    @if (IsEditing)
+                    @if (CanEdit(col))
                     {
                         <select class="form-select"
                                 value="@GetText(col)"
@@ -66,7 +66,7 @@ else
                     {
                         case ColAtyp.Text:
                         case ColAtyp.Dropdown:   @* a Dropdown with no list configured falls back to free text *@
-                            @if (IsEditing)
+                            @if (CanEdit(col))
                             {
                                 <input class="form-control" value="@GetText(col)"
                                        @onchange="@(e => SetRaw(col.ColName, e.Value))" />
@@ -78,7 +78,7 @@ else
                             break;
 
                         case ColAtyp.Number:
-                            @if (IsEditing)
+                            @if (CanEdit(col))
                             {
                                 <input type="number" step="any" class="form-control" value="@GetText(col)"
                                        @onchange="@(e => SetRaw(col.ColName, e.Value))" />
@@ -90,7 +90,7 @@ else
                             break;
 
                         case ColAtyp.Date:
-                            @if (IsEditing)
+                            @if (CanEdit(col))
                             {
                                 <input type="date" class="form-control" value="@GetDateInputValue(col)"
                                        @onchange="@(e => SetRaw(col.ColName, e.Value))" />
@@ -102,7 +102,7 @@ else
                             break;
 
                         case ColAtyp.Checkbox:
-                            <input type="checkbox" checked="@GetBoolValue(col)" disabled="@(!IsEditing)"
+                            <input type="checkbox" checked="@GetBoolValue(col)" disabled="@(!CanEdit(col))"
                                    @onchange="@(e => SetRaw(col.ColName, e.Value))" />
                             break;
 
@@ -131,6 +131,7 @@ else
     [Parameter, EditorRequired] public object Model { get; set; } = default!;
     [Parameter, EditorRequired] public List<Gtabl> EnsTbls { get; set; } = new();
     [Parameter] public bool IsEditing { get; set; }
+    [Parameter] public int Tgpe { get; set; } = 0;
     [Parameter] public IColumnPreferencesReader? PrefReader { get; set; }
 
     private List<LSelCol> _columns = new();
@@ -139,15 +140,22 @@ else
     private (int, int, int, int)? _loadedKey;
     private int _loadTicket;
 
+    //private readonly HashSet<string> _missing = new(StringComparer.OrdinalIgnoreCase);
+    // ColDrivenFields @code
     private readonly HashSet<string> _missing = new(StringComparer.OrdinalIgnoreCase);
     private readonly HashSet<string> _badInput = new(StringComparer.OrdinalIgnoreCase);
+
+    // // Shared, in ColumnRules
+    // public static List<LSelCol> GetMissing(object model, IEnumerable<LSelCol> columns)
+    //     => columns
+    //         .Where(c => c.IsVisible && c.IsRequired && !c.IsReadOnly && Columnrule.IsEmpty(model, c))
+    //         .ToList();
 
     // Columns owned by another component (the matricule is handled by RegistrationInput)
     private readonly HashSet<string> _reservedCols = new(StringComparer.OrdinalIgnoreCase)
     {
         "Xmatri", "Smatri"
     };
-
     // ---------- Loading ----------
     protected override async Task OnParametersSetAsync()
     {
@@ -218,6 +226,7 @@ else
     public bool Validate()
     {
         _missing.Clear();
+
         foreach (var c in ColumnRules.GetMissing(Model, VisibleColumns))
             _missing.Add(c.ColName);
 
@@ -233,7 +242,7 @@ else
          : !string.IsNullOrWhiteSpace(c.Olabel) ? c.Olabel
          : c.ColName;
 
-    // ---------- Lookup lists ----------
+    // ---------- Lookup lists ---------- 
     private static bool IsDropdown(LSelCol c) => c.CanHaveLookup() && c.Tref is > 0;
 
     private List<Gtvar> GetLookupItems(LSelCol c)
@@ -270,9 +279,13 @@ else
 
     private bool GetBoolValue(LSelCol c) => GetRaw(c.ColName) is true;
 
+    private bool CanEdit(LSelCol c) => IsEditing && !c.IsReadOnly;
+
     // ---------- Writing values ----------
     private void SetRaw(string colName, object? raw)
     {
+        if (_columns.FirstOrDefault(c => c.ColName.Equals(colName, StringComparison.OrdinalIgnoreCase))?.IsReadOnly == true)
+            return;
         var pi = ModelProps.Find(Model.GetType(), colName);
         if (pi is null || !pi.CanWrite) return;      // read-only property: display only
 

@@ -79,7 +79,7 @@ else
                 Size="ButtonSize.Small"
                 Class="px-2 py-1 small-btn"
                 @onclick="ShowModal">
-            piece(s)
+            pièce(s)
         </Button>
         <Button Class="w-auto flex-grow-0 flex-shrink-0" Color="ButtonColor.Info" Size="ButtonSize.Small"
             @onclick="SaveAllChanges"
@@ -118,9 +118,10 @@ else
                             <PTiwGdHelper Idorg="@InIdorg" Entity="@curTiw"
                                           Draft="@(GetDraft(EntityLevel.Tiw) as TiewelDto)"
                                           PrefReader="@_prefReader"
-                                          EnsTbls="@EnsTbls"
+                                          EnsTbls="@gpeTbls"
                                           EnsAtrs="@EnsAtrs"
                                           Ugpe="@Ugpe"
+                                          Efrm="@FormEfrm"
                                           OnConfirm="@ConfirmPerson"  
                                           OnCancel="@CancelPerson"
                                           WflItems="@WflItems"
@@ -147,7 +148,7 @@ else
                     @if (genOrga != null && canOpenAdres && !string.IsNullOrEmpty(curTiw?.Zmatri))
                     { 
                         <Gstadr @bind-NbChanges="_nbChanges" curOrga="@genOrga" _guard="@Guard"
-                             EnsTbls="@EnsTbls" Actx="@Actx" />
+                             EnsTbls="@ensTbls" Actx="@Actx" />
                     }
                 </Content>
             </Tab>
@@ -211,7 +212,7 @@ else
 
     private Gporga olnOrga = new();
     private GxorgaDto genOrga = new();
-    private List<Gtabl> EnsTbls = new();
+    private List<Gtabl> ensTbls = new();
     private List<Gpatr> EnsAtrs = new();
     private List<Gpcat> EnsCats = new();
     private List<Gpvar> EnsVars = new();
@@ -245,7 +246,17 @@ else
         get => EditTiw.Zmatri;
         set => EditTiw.Zmatri = value;
     }
-
+    //copy inner entities
+    private List<Gtabl> gpeTbls => ensTbls
+    .Select(tb =>
+    {
+        var copy = tb.Clone();
+        copy.TbItems = tb.TbItems?
+            .Where(it => (it.Tgpe == 0 || it.Tgpe == Ugpe))
+            .ToList() ?? new List<Gtvar>();
+        return copy;
+    })
+    .ToList();
     private bool IsTiwValidate = false;
     private bool IsTiwLoaded = false;
 
@@ -255,6 +266,7 @@ else
 
     private int IMyGAfl = 0;
     private int refTab = 1;
+    private const int FormEfrm = 3;
 
     private bool IsProvisional = true;
     private string Sorga = "";
@@ -370,7 +382,7 @@ else
     private async Task RendsOlneBags(int myIdorg)
     {
         olnOrga = new();
-        EnsTbls = new();
+        ensTbls = new();
         EnsAtrs = new();
         EnsCats = new();
         EnsVars = new();
@@ -381,7 +393,7 @@ else
             _olneBag = bgresponse;
             genOrga = _olneBag.GenOrga;
             olnOrga = _olneBag.Norga;
-            EnsTbls = _olneBag.Ntabls;
+            ensTbls = _olneBag.Ntabls;
             EnsAtrs = _olneBag.Natrs;
             EnsCats = _olneBag.Ncats;
             EnsVars = _olneBag.Nvars;
@@ -617,11 +629,11 @@ else
         var items = new List<(EntityLevel Level, ColPrefContext Ctx, object Model, string Title)>();
 
         foreach (var tiw in TiwItems.Where(t => NeedsCheck(EntityLevel.Tiw, t.Rowguid)))
-            items.Add((EntityLevel.Tiw, ColumnContexts.Person(Ugpe), tiw,
+            items.Add((EntityLevel.Tiw, ColumnContexts.Person(Ugpe, FormEfrm), tiw,
                        Who(tiw.Nom, tiw.Pnom, "Personne")));
 
         foreach (var wfl in WflItems.Where(w => NeedsCheck(EntityLevel.Wfl, w.Rowguid)))
-            items.Add((EntityLevel.Wfl, ColumnContexts.Affiliate(wfl.Tyafl), wfl,
+            items.Add((EntityLevel.Wfl, ColumnContexts.Affiliate(wfl.Tyafl, FormEfrm), wfl,
                        "Affilié " + Who(wfl.Nom, wfl.Pnom, "")));
 
         var problems = await _colValidator.ValidateManyAsync(_prefReader,

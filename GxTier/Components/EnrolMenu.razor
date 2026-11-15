@@ -78,7 +78,7 @@ else
                                      toChild="@toChild"
                                      orgTwels="@orgTwels"
                                      _guard="@_guard"
-                                     EnsTbls="@EnsTbls"
+                                     EnsTbls="@ensTbls"
                                      _InODaClient="@_MyODaClient">
                                      <ChildContent>
                                         @* <h2 class="child-box">Hello INTEGRATION</h2> *@
@@ -95,7 +95,7 @@ else
                                      toChild="@toChild"
                                      orgTiers="@orgTiers"
                                      _guard="@_guard"
-                                     EnsTbls="@EnsTbls"
+                                     EnsTbls="@ensTbls"
                                      _InODaClient="@_MyODaClient">
                                 <ChildContent>
                                     @* <h2 class="child-box">Hello INTEGRATION</h2> *@
@@ -209,7 +209,7 @@ else
     public List<Grole> Uroles = new();
 
     private List<Grole> LsRoles = new();
-    private List<Gtabl> EnsTbls = new();
+    private List<Gtabl> ensTbls = new();
     //private List<Gpatr> EnsAtrs = new();
     //private List<Gpcat> EnsCats = new();
     //Navigation
@@ -278,9 +278,8 @@ else
             Console.WriteLine("✅ LoadOrgaRoles done");
 
             // ... etc, one log line after every await ...
-
-            EnsTbls = await _rendAgres.LoadOrgaTables();
-            Console.WriteLine($"✅ LoadOrgaTables done: {EnsTbls.Count}");
+            ensTbls = await _rendAgres.LoadOrgaTables();
+            Console.WriteLine($"✅ LoadOrgaTables done: {ensTbls.Count}");
 
             await LoadTieAplAsync(_usrBag.Idorg);
             Console.WriteLine("✅ LoadTieAplAsync done");

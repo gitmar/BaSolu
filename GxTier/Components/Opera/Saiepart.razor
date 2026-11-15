@@ -83,6 +83,21 @@ else
                         Réinitialiser
                 </Button>
             </div>
+            @if (curProg.Siatr == 1)
+            {
+                <div class="col-auto">
+                    <label>statut </label>
+                    <InputSelect class="form-select"
+                                 @bind-Value="IMyStat">
+                        <option value="0">?choisir</option>
+                        @foreach (var sta in statTbl.TbItems
+                            .Where(ut => ut.Tgpe == ChxGpe && ut.Elea != 0))
+                        {
+                            <option value="@sta.Tref">@sta.Liba</option>
+                        }
+                    </InputSelect>
+                </div>
+            }
         </div>
         <div class="d-flex align-items-center gap-3 mb-2 ms-2">
             <!-- Label -->
@@ -235,6 +250,7 @@ else
     [Parameter] public List<TierspDto> PreTiers { get; set; } = new();
     [Parameter] public bool SessOpen { get; set; }
 
+    [Parameter] public List<Gtabl> ensTbls { get; set; }
     [Parameter] public IPendingChangesGuard _guard { get; set; }
     [Parameter] public PendingSaveMode inSaveMode { get; set; }
     [Parameter] public SaieSession? _saieSession { get; set; }
@@ -274,6 +290,10 @@ else
         Matricule = 1,
         Name = 2
     }
+    //statut
+    private Gtabl statTbl = new();
+    // private bool yaStat = false;
+    private int IMyStat = 0;
 
     ///private DateTime SessionDate = DateTime.Today;
 
@@ -301,7 +321,9 @@ else
 
     protected override async Task OnInitializedAsync()
     {
-        isLoading = false; 
+        isLoading = true;
+        statTbl = ensTbls.FirstOrDefault(st => st.Gtyp == 3);
+        isLoading = false;
     }
 
     protected override Task OnParametersSetAsync()

@@ -153,8 +153,8 @@
     public List<Gpdivh> LsDivs = new();
     public List<Gpvar> LsVars = new();
     public List<Gplan> LsPlans = new();
-    public List<Gpvar> LtTabls = new();
-    public List<Gpvar> LsTabls = new();
+    //public List<Gpvar> LtTabls = new();
+    //public List<Gpvar> LsTabls = new();
     //Navigation
     private int _chxGpe = 0, _chxMenu = 1;
     private string strComp = "Sessions";
@@ -222,8 +222,8 @@
             LsFixes = _usrBag.Ufixes.ToList();
             LsVars = _usrBag.Usorga.Uvars.ToList();
             LsPlans = _usrBag.Usorga.Uplns.ToList();
-            LtTabls = _usrBag.Usorga.Uvars.Where(tb => tb.Gvars == 4).ToList();
-            LsTabls = _usrBag.Usorga.Uvars.Where(tb => tb.Gvars == 5).ToList();
+            //LtTabls = _usrBag.Usorga.Uvars.Where(tb => tb.Gvars == 4).ToList();
+            //LsTabls = _usrBag.Usorga.Uvars.Where(tb => tb.Gvars == 5).ToList();
             
 
             // 3. Parallel loads for performance
@@ -239,7 +239,7 @@
             toChild.LsVars = LsVars;
             toChild.LsFixes = LsFixes;
             toChild.LsPlans = LsPlans;
-            toChild.LsTabls = LsTabls;
+            //toChild.LsTabls = LsTabls;
             toChild.curOrga = curOrga;  // ADD THIS!
             //_guard.RegisterUnconfirmedPredicate<Gsgfix>(g => g.Xadd1 == -1 || g.Xedt1 == -1 || g.Xdel1 == -1);
             _nbChanges = _guard.GetPendingChangesCount();  // Initial value

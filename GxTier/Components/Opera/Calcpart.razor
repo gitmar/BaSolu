@@ -55,70 +55,46 @@ else
 {
     if (SessOpen)
     {
-<div class="d-flex align-items-center gap-2 ms-2">
-    <InputRadioGroup @bind-Value="CalcDir" onchange="OnCalcDirChanged" class="d-flex flex-row gap-2">
-        <div class="form-check">
-            <InputRadio class="form-check-input border-1 border-dark" Value="1" />
-            <label class="form-check-label">All</label>
-        </div>
-        <div class="form-check">
-            <InputRadio class="form-check-input border-1 border-dark" Value="2" />
-            <label class="form-check-label">From</label>
-        </div>
-    </InputRadioGroup>
-
-    <InputSelect @bind-Value="Ditie" disabled="@(CalcDir != 2)">
-        @foreach (var tie in PreTiers)
-        {
-            <option value="@tie.Id">@tie.Smatri - @tie.Nom - @tie.Pnom</option>
-        }
-    </InputSelect>
-
-    <span>To</span>
-
-    <InputSelect @bind-Value="Fitie" disabled="@(CalcDir != 2)">
-        @foreach (var tie in PreTiers)
-        {
-            <option value="@tie.Id">@tie.Smatri - @tie.Nom - @tie.Pnom</option>
-        }
-    </InputSelect>
-
-</div>
-
-
-    @* <div class="d-flex align-items-center g-2">
-        <InputRadioGroup @bind-Value="CalcDir" onchange="OnCalcDirChanged">
-    <div class="col-3">
-        <div class="form-check">
-            <InputRadio class="form-check-input border-1 border-dark" Value="1" />
-            <label class="form-check-label">All</label>
-        </div>
-        <div class="form-check">
-            <InputRadio class="form-check-input border-1 border-dark" Value="2" />
-            <label class="form-check-label">From</label>
-        </div>
-    </div>
-</InputRadioGroup>
-        <div class="col-auto">
+        <div class="d-flex align-items-center gap-2 ms-2">
+            <InputRadioGroup @bind-Value="CalcDir" onchange="OnCalcDirChanged" class="d-flex flex-row gap-2">
+                <div class="form-check">
+                    <InputRadio class="form-check-input border-1 border-dark" Value="1" />
+                    <label class="form-check-label">All</label>
+                </div>
+                <div class="form-check">
+                    <InputRadio class="form-check-input border-1 border-dark" Value="2" />
+                    <label class="form-check-label">From</label>
+                </div>
+            </InputRadioGroup>
+            @if (curProg.Siatr == 1)
+            {
+                <div class="col-auto">
+                    <label>statut </label>
+                    <InputSelect class="form-select"
+                                 @bind-Value="IMyStat">
+                        <option value="0">?choisir</option>
+                        @foreach (var sta in statTbl.TbItems
+                            .Where(ut => ut.Tgpe == ChxGpe && ut.Elea != 0))
+                        {
+                            <option value="@sta.Tref">@sta.Liba</option>
+                        }
+                    </InputSelect>
+                </div>
+            }
             <InputSelect @bind-Value="Ditie" disabled="@(CalcDir != 2)">
                 @foreach (var tie in PreTiers)
                 {
-                    <option value=@tie.Id>@tie.Smatri - @tie.Nom - @tie.Pnom</option>
+                    <option value="@tie.Id">@tie.Smatri - @tie.Nom - @tie.Pnom</option>
                 }
             </InputSelect>
-        </div>
-        <div class="col-auto">
             <span>To</span>
-        </div>
-        <div class="col-auto">
             <InputSelect @bind-Value="Fitie" disabled="@(CalcDir != 2)">
                 @foreach (var tie in PreTiers)
                 {
-                    <option value=@tie.Id>@tie.Smatri - @tie.Nom - @tie.Pnom</option>
+                    <option value="@tie.Id">@tie.Smatri - @tie.Nom - @tie.Pnom</option>
                 }
             </InputSelect>
         </div>
-    </div> *@
     }
     <div class="d-flex align-items-center gap-2">
         @if (CanCalc)
@@ -148,7 +124,6 @@ else
             </div>
         }
     </div>
-
     @if (PreviewRows.Count > 0)
     {
         <table class="table table-sm">
@@ -210,6 +185,7 @@ else
     [Parameter] public List<TierspDto> PreTiers { get; set; } = new();
     [Parameter] public bool SessOpen { get; set; }
 
+    [Parameter] public List<Gtabl> ensTbls { get; set; }
     [Parameter] public IPendingChangesGuard _guard { get; set; }
     [Parameter] public PendingSaveMode inSaveMode { get; set; }
 
@@ -241,6 +217,10 @@ else
     private int CalcDir = 1;
     private int Ditie = 0, Fitie = 0;
 
+    //statut
+    private Gtabl statTbl = new();
+    //private bool yaStat = false;
+    private int IMyStat = 0;
     // Loading / UI state
     private bool isLoading = true;
     private bool isBusy = false;
@@ -253,6 +233,7 @@ else
     protected override Task OnInitializedAsync()
     {
         isLoading = true;
+        statTbl = ensTbls.FirstOrDefault(st => st.Gtyp == 3);
         //as CalcDir = 1 //tous
         if (PreTiers.Any())
         {
@@ -296,7 +277,6 @@ else
             .ToList();
     }
 
-    
     private void ToggleScdrub(string scdrub, bool isChecked)
     {
         if (isChecked) SelectedScdrubs.Add(scdrub);

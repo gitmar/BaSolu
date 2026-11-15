@@ -161,8 +161,8 @@ else
     public List<Gpdivh> LsDivs = new();
     public List<Gpvar> LsVars = new();
     public List<Gplan> LsPlans = new();
-    public List<Gpvar> LtTabls = new();
-    public List<Gpvar> LsTabls = new();
+    //public List<Gpvar> LtTabls = new();
+    //public List<Gpvar> LsTabls = new();
     private int _chxGpe = 0, _chxMenu = 1;
 
     public List<PlngenDto> orgPlns = new();
@@ -184,8 +184,8 @@ else
             LsVars = _usrBag.Usorga.Uvars.ToList();
             LsFixes = _usrBag.Ufixes.ToList();
             LsPlans = _usrBag.Usorga.Uplns.Where(pl => pl.Ptyp == 2 || pl.Ptyp == 3 || pl.Ptyp == 4).ToList();
-            LtTabls = _usrBag.Usorga.Uvars.Where(tb => tb.Gvars == 4).ToList();
-            LsTabls = _usrBag.Usorga.Uvars.Where(tb => tb.Gvars == 5).ToList();
+            //LtTabls = _usrBag.Usorga.Uvars.Where(tb => tb.Gvars == 4).ToList();
+            //LsTabls = _usrBag.Usorga.Uvars.Where(tb => tb.Gvars == 5).ToList();
             await LoadOrgaAsync(_usrBag.Idorg);
 
             //Console.WriteLine($"Usrbag plans : {_usrBag.Usorga.Uplns.Count()}");
@@ -197,7 +197,7 @@ else
                 LsVars = LsVars.ToList(),
                 LsFixes = LsFixes.ToList(),
                 LsPlans = LsPlans.ToList(),
-                LsTabls = LsTabls.ToList()
+                //LsTabls = LsTabls.ToList()
             };
             _nbChanges = _guard.GetPendingChangesCount();  // Initial value
         }

@@ -137,6 +137,7 @@
                                           _guard="@_guard"
                                           PreTiers="@PreTiers"
                                           InsGpdata="_inGldata"
+                                          ensTbls="@ensTbls"
                                           SessOpen="@CanOpenSaiepart"
                                           _sessionDate="@SessionDate"
                                           _saieSession="@_saieSession"
@@ -256,6 +257,7 @@
 
     public List<TierspDto> EnsTiers { get; set; } = new();
     public List<TierspDto> PreTiers { get; set; } = new();
+    public List<Gtabl> ensTbls = new();
 
     public List<TierspDto> orgTiers = new();
     //public List<ActsaieDto> orgActs = new();
@@ -379,7 +381,7 @@
             //LsFixes = _usrBag.Ufixes?.ToList() ?? new List<YourFixDto>();
             //LsPlans = _usrBag.Usorga.Uplns?.ToList() ?? new List<YourPlnDto>();
             LsProgs = LsPlans.Where(pl => pl.Ptyp == 5 && pl.Todom == 1).ToList();
-            LsTabls = LsVars.Where(tb => tb.Gvars == 5).ToList();
+            //LsTabls = LsVars.Where(tb => tb.Gvars == 5).ToList();
 
             Console.WriteLine($"Programmes en cours : {LsProgs.Count}");
 
@@ -418,7 +420,7 @@
                 toChild.LsVars = LsVars;
                 toChild.LsFixes = LsFixes;
                 toChild.LsPlans = LsPlans;
-                toChild.LsTabls = LsTabls;
+                //toChild.LsTabls = LsTabls;
                 toChild.inExo = LsVars.LastOrDefault(v => v.Gvars == 11 && v.Itb == 1 && v.Eta == 1);
             }
 
@@ -437,7 +439,7 @@
             strSes = curSes.Liba;
             if (toChild != null)
                 toChild.inSes = curSes;
-
+            ensTbls = await _rendAgres.LoadOrgaTables();
             await LoadSaieOrgaAsync(_usrBag.Idorg, curSes.Dsess.Year, curSes.Dsess.Month);
         }
         catch (Exception ex)

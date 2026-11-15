@@ -18,14 +18,14 @@
         {
             var editing = IsEditingFn(wfl);
             var model = editing ? (GetDraftFn() ?? wfl) : wfl;
-            var itemCtx = ColumnContexts.Affiliate(model.Tyafl);
+            var itemCtx = ColumnContexts.Affiliate(model.Tyafl, Efrm);
 
             <div class="border-bottom pb-2 mb-2" @key="wfl.Rowguid">
                 @if (editing)
                 {
                     <ColDrivenFields @ref="_editingFields" Idorg="@Idorg" PColCtx="@itemCtx"
                                      PrefReader="@PrefReader" Model="@model"
-                                     EnsTbls="@EnsTbls" IsEditing="true" />
+                                     EnsTbls="@EnsTbls" Tgpe="@Kgpe" IsEditing="true" />
                      <div class="d-flex gap-2 mt-1">
                         <Button Color="ButtonColor.Success" Size="ButtonSize.Small"
                                 @onclick="() => ConfirmAsync(wfl)">✅Confirm</Button>
@@ -36,7 +36,7 @@
                 else if (IsDeletingFn(wfl))
                 {
                     <ColDrivenFields Idorg="@Idorg" PColCtx="@itemCtx" PrefReader="@PrefReader"
-                        Model="@model" EnsTbls="@EnsTbls" IsEditing="false" />
+                                     Model="@model" EnsTbls="@EnsTbls" Tgpe="@Kgpe" IsEditing="false" />
                     <div class="d-flex gap-2 mt-1">
                         <Button Color="ButtonColor.Danger" Size="ButtonSize.Small"
                             @onclick="() => OnConfirmDelete.InvokeAsync(wfl)">⚠️ Confirmer la suppression</Button>
@@ -50,6 +50,7 @@
 </div>
 
 @code {
+    [Parameter] public int Efrm { get; set; } = ColumnContexts.TiewelEfrm;
     [Parameter, EditorRequired] public int Idorg { get; set; }
     [Parameter, EditorRequired] public TiewelDto CurTiw { get; set; } = default!;
     [Parameter, EditorRequired] public List<TiwaflDto> WflItems { get; set; } = new();
@@ -58,6 +59,7 @@
     [Parameter] public IColumnPreferencesReader? PrefReader { get; set; }
 
     //[Parameter] public bool IsViewing { get; set; }
+    [Parameter] public int Kgpe { get; set; } = 0;
 
     [Parameter] public bool IsAnyEditing { get; set; }
     [Parameter, EditorRequired] public Func<TiwaflDto, bool> IsEditingFn { get; set; } = default!;
@@ -70,11 +72,11 @@
     [Parameter] public Func<TiwaflDto, bool> IsDeletingFn { get; set; } = _ => false;
     [Parameter] public EventCallback<TiwaflDto> OnConfirmDelete { get; set; }
     [Parameter] public EventCallback<TiwaflDto> OnCancelDelete { get; set; }
-
-    private ColDrivenFields? _editingFields;
-
     [Parameter] public int SelectedGroup { get; set; } //affilie
+    
     private string? _error;
+    private ColDrivenFields? _editingFields;
+    //private ColPrefContext Ctx => ColumnContexts.Affiliate(model.Tyafl, Efrm);
 
     private List<TiwaflDto> SubAfls => WflItems
         .Where(w => w.Prowguid == CurTiw.Rowguid || (CurTiw.Id > 0 && w.Itiw == CurTiw.Id))

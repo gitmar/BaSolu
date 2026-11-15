@@ -154,8 +154,8 @@ else
     public List<Gpdivh> LsDivs = new();
     public List<Gpvar> LsVars = new();
     public List<Gplan> LsPlans = new();
-    public List<Gpvar> LtTabls = new();
-    public List<Gpvar> LsTabls = new();
+    //public List<Gpvar> LtTabls = new();
+    //public List<Gpvar> LsTabls = new();
     //Navigation
     private int _chxGpe = 0, _chxMenu = 1;
     private string strComp = "Tables";
@@ -225,8 +225,8 @@ else
             LsFixes = _usrBag.Ufixes.ToList();
             LsVars = _usrBag.Usorga.Uvars.ToList();
             LsPlans = _usrBag.Usorga.Uplns.ToList();
-            LtTabls = _usrBag.Usorga.Uvars.Where(tb => tb.Gvars == 4).ToList();
-            LsTabls = _usrBag.Usorga.Uvars.Where(tb => tb.Gvars == 5).ToList();
+            //LtTabls = _usrBag.Usorga.Uvars.Where(tb => tb.Gvars == 4).ToList();
+            //LsTabls = _usrBag.Usorga.Uvars.Where(tb => tb.Gvars == 5).ToList();
 
             // 3. Parallel loads for performance
             var allDivsTask = _rendAgres.LoadOrgaPostes();
@@ -241,7 +241,7 @@ else
             toChild.LsVars = LsVars;
             toChild.LsFixes = LsFixes;
             toChild.LsPlans = LsPlans;
-            toChild.LsTabls = LsTabls;
+            //toChild.LsTabls = LsTabls;
             toChild.curOrga = curOrga;  // ADD THIS!
             _nbChanges = _guard.GetPendingChangesCount();  // Initial value
         }

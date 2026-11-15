@@ -15,8 +15,11 @@
 @using System.Text.RegularExpressions
 @using System.Security.Claims
 @using GxPilo.Components.Uifrags
+@using GxPilo.Components.Atabls
 @using GxPilo.Services
-@using Microsoft.AspNetCore.WebUtilities
+@using BlazorBootstrap
+@using Blazored.LocalStorage
+@using AutoMapper
 @using Newtonsoft.Json
 
 @inject NavigationManager _navManager
@@ -65,19 +68,22 @@ else
                         {
                             <option value=@tob.Elea>@tob.Liba</option>
                         }
-                    </InputSelect>
-                    <label class="me-2">Statut :</label>
+                    </InputSelect>                   
+                    @*<label class="me-2">Statut :</label>
+                    <InputCheckbox 
+                        @bind-Value="CanUseStatut" />
+                        <span class="me-2">Lect.</span>
                     <InputSelect @bind-Value="IMyStat"
                                  @bind-Value:after="OuvreMGrid"
                                  @key="RubRenderKey"
                                  class="me-3"
                                  style="width:auto">
-                        <option value=0>?statut</option>
+                        <option value=0>tous</option>
                         @foreach (var tbi in StatItems?.ToList())
                         {
                             <option value=@tbi.Tref>@tbi.Liba</option>
                         }
-                    </InputSelect>
+                    </InputSelect> *@
                     <label class="me-2">Base :</label>
                     <InputSelect @bind-Value="IMyVue"
                                  @bind-Value:after="OuvreMGrid"
@@ -157,6 +163,24 @@ else
                                                 else
                                                 {
                                                     @item.Abg
+                                                }
+                                            </ChildContent>
+                                        </GridColumn>
+                                        <GridColumn TItem="PlngenDto" HeaderText="Statut" Class="xcol1">
+                                            <ChildContent Context="item">
+                                                @if (IsPlanEditing(item) && draftPln is not null)
+                                                {
+                                                    <input type="checkbox"
+                                                           class="form-check-input"
+                                                           checked="@(draftPln.Siatr ?? 0)"
+                                                           @onchange="e => draftPln.Siatr = (int)e.Value!" />
+                                                }
+                                                else
+                                                {
+                                                    <input type="checkbox"
+                                                           class="form-check-input"
+                                                           checked="@(item.Siatr ?? 0)"
+                                                           disabled />
                                                 }
                                             </ChildContent>
                                         </GridColumn>
@@ -386,8 +410,7 @@ else
                                                         @if (draftPln?.Rowguid == selectedPln.Rowguid)
                                                         {
                                                             <div class="col-3">
-                                                                <InputSelect @bind-Value="draftPln.Rpbrut"
-                                                                             class="w-100">
+                                                                <InputSelect @bind-Value="draftPln.Rpbrut" class="w-100">
                                                                     <option value=0>?choisir</option>
                                                                     @foreach (var rub in selectedPln.Rubvars)
                                                                     {
@@ -574,26 +597,6 @@ else
                                                                         }
                                                                     </ChildContent>
                                                                 </GridColumn>
-                                                                @* <GridColumn TItem="RubvarDto" HeaderText="Formule" Class="xcol1">
-                                                                    <ChildContent Context="item">
-                                                                        @if (IsRubEditing(item) && draftRub is not null)
-                                                                        { // show draftPln inputs
-                                                                            <Button Color="ButtonColor.Secondary" Class="btn btn-default btn-sm d-inline-flex align-items-center gap-1"
-                                                                                    @onclick="() => showFrRubModal(draftRub, 1)">
-                                                                                <i class="bi bi-pencil-square"></i>
-                                                                                <span class="text-truncate flex-grow-1">@draftRub?.Frsrc</span>
-                                                                            </Button>
-                                                                        }
-                                                                        else
-                                                                        { // show item as read-only
-                                                                            <Button Color="ButtonColor.Secondary" Class="btn btn-default btn-sm d-inline-flex align-items-center gap-1"
-                                                                                    @onclick="() => showFrRubModal(item, 2)">
-                                                                                <i class="bi bi-pencil-square"></i>
-                                                                                <span class="text-truncate flex-grow-1">@item.Frsrc</span>
-                                                                            </Button>
-                                                                        }
-                                                                    </ChildContent>
-                                                                </GridColumn> *@
                                                                 <GridColumn TItem="RubvarDto" HeaderText="Eta">
                                                                     <HeaderContent>
                                                                         @if (selectedPln != null)
@@ -1115,9 +1118,9 @@ else
     [Parameter]
     public List<PlngenDto> orgPlns { get; set; } = new();
     [Parameter]
-    public IODataClient _InODaClient { get; set; }
-    [Parameter] 
     public List<Gtabl> ensTbls { get; set; } = new();
+    [Parameter]
+    public IODataClient _InODaClient { get; set; }
     [Parameter]
     public ChildVars toChild { get; set; }
     [Parameter]
@@ -1135,8 +1138,8 @@ else
     private IDisposable? _locationHandler;
 
     private int IMyGtie = 1; //1Cible/2Operat...
-    private int IMyStat = 0; //11Perm12Occasio
-
+    //private int IMyStat = 0; //11Perm12Occasio
+   
     //Global
     private int _lgcdu = 0;
     private int IMyGpln = 5; //5Programme
@@ -1173,7 +1176,7 @@ else
     private List<Gpfixe> LsAtrs = new();
     private List<Gpfixe> LsVues = new();
     private List<Gpfixe> LsGties = new();
-    private List<Gtvar> StatItems = new();
+    //private List<Gtvar> StatItems = new();
 
     private bool isPlnFilteringEnabled = false;
     private bool isRubFilteringEnabled = false;
@@ -1249,8 +1252,7 @@ else
             LsAtrs = LsFixes.Where(ut => ut.Gvars == 36 && ut.Itb == 1 && ut.Gp1 == 3 && ut.Elea != 0).ToList();
             LsVues = LsFixes.Where(ut => ut.Gvars == 36 && ut.Itb == 4 && ut.Gp1 == 4 && ut.Elea != 0).ToList();
             LsGties = LsFixes.Where(ut => ut.Gvars == 36 && ut.Itb == 6 && ut.Elea != 0 && ut.Elea != 9).ToList();
-            StatItems = ensTbls?.Where(tb => tb.Pref == 11 && tb.Tenr == 1)
-                .FirstOrDefault().TbItems?.ToList(); 
+            //StatItems = ensTbls?.FirstOrDefault(tb => tb.Pref == 11 && tb.Tenr == 1)?.TbItems.ToList() ?? new();
             LsPlans = toChild.LsPlans;
             _lgcdu = 3;
             var noslims = LsVars.Where(uv => uv.Idhie == 0 && uv.Gvars == 21 && uv.Itb == 1 && uv.Elea == 1);
@@ -1294,7 +1296,7 @@ else
     }
     private async Task OuvreMGrid()
     {
-        if (IMyGtie != 0 && IMyStat != 0 && IMyDom != 0 && IMyVue != 0)
+        if (IMyGtie != 0 && IMyDom != 0 && IMyVue != 0)
         {
             await UpdateMyDaPlans();
             PlnRenderKey = Guid.NewGuid();
@@ -1374,7 +1376,7 @@ else
             Todom = IMyDom, //5Calculs
             //Ogtyp = 0,
             Totyp = IMyGtie, //cibleoperat
-            Tostyp = IMyStat, //statut
+            //Tostyp = IMyStat, //statut
             Toatr = 0,
             Tovue = IMyVue,
             Liba = "",
@@ -1605,7 +1607,7 @@ else
     // Update method -call this when source data changes
     private void InitializeMyDaPlans()
     {
-        PlanItems = orgPlns?.Where(pl => pl.Ptyp == IMyGpln && pl.Todom == IMyDom && pl.Totyp == IMyGtie && pl.Tostyp == IMyStat  && pl.Tovue == IMyVue).ToList() // && pl.Todom == IMyDom && pl.Toatr == 0 && pl.Tovue == IMyVue).ToList()
+        PlanItems = orgPlns?.Where(pl => pl.Ptyp == IMyGpln && pl.Todom == IMyDom && pl.Totyp == IMyGtie && pl.Tovue == IMyVue).ToList() // && pl.Todom == IMyDom && pl.Toatr == 0 && pl.Tovue == IMyVue).ToList()
             ?? new List<PlngenDto>();
         if (PlanItems.Any()) curPlan = PlanItems.FirstOrDefault();
     }
@@ -1641,7 +1643,7 @@ else
     {
         //pl.Todom == IMyDom && pl.Toatr == 0 &&
         PlanItems = orgPlns?
-            .Where(pl => pl.Ptyp == IMyGpln && pl.Todom == IMyDom && pl.Totyp == IMyGtie && pl.Tostyp == IMyStat && pl.Tovue == IMyVue)
+            .Where(pl => pl.Ptyp == IMyGpln && pl.Todom == IMyDom && pl.Totyp == IMyGtie && pl.Tovue == IMyVue)
             .ToList() ?? new List<PlngenDto>();
         return Task.CompletedTask;
     }
