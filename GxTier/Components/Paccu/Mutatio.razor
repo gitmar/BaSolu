@@ -1586,7 +1586,8 @@ else
     {
         if (xdom != 0)
         {
-            LsGties = LsFixes.Where(ut => ut.Gvars == 36 && ut.Itb == xdom && ut.Elea != 0 && ut.Elea != 9).ToList();
+            //LsGties = LsFixes.Where(ut => ut.Gvars == 36 && ut.Itb == xdom && ut.Elea != 0 && ut.Elea != 9).ToList();
+            LsGties = toChild.LsVars.Where(uv => uv.Gvars == 5 && uv.Itb == 5 && uv.Ityp == 1 && uv.Elea != 0).ToList();
         }
         else
         {

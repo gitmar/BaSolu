@@ -1,0 +1,1149 @@
+﻿@page "/gsafil"
+@inherits CompUICrudBase
+
+@using System
+@using System.Collections.ObjectModel
+@using System.ComponentModel.DataAnnotations
+@using System.Dynamic
+@using System.Linq.Expressions
+@using System.Net.Http.Headers
+@using System.Reflection
+@using System.Security.Claims
+@using System.Text.RegularExpressions
+@using System.Web
+@using BlazorBootstrap
+@using Blazored.LocalStorage
+@using GxPilo.Services
+@using GxPilo.Components.Uifrags
+@using GxShared.Helpers
+@using GxShared.Helpers.CrudHelpers
+@using GxShared.Sess
+@using GxShared.Others
+@using Simple.OData.Client
+@using GxShared.GxDtos
+@using GxShared.Interfaces
+@using AutoMapper
+@using Microsoft.AspNetCore.Components.Forms
+@using Microsoft.AspNetCore.WebUtilities
+@using Newtonsoft.Json
+
+@inject ILocalStorageService _localStorage
+@inject NavigationManager _navManager
+@inject HttpClientService _clieManager
+@inject IMapper Mapper
+@inject IJSRuntime _jsRun
+
+<!-- InscTiewComponent.razor -->
+<PageTitle>Table.Documents</PageTitle>
+
+@if (!isAuthenticated)
+{
+    <Button Color="ButtonColor.Warning" Size="ButtonSize.Small"
+            @onclick="() => SeReConnecter()">
+        se Reconnecter
+    </Button>
+}
+@if (isLoading)
+{
+    <div class="text-center">
+        <Spinner Color="SpinnerColor.Primary" Size="SpinnerSize.Medium" />
+        <p>Table.Documents Loading...</p>
+    </div>
+}
+else
+{
+    <div class="d-flex flex-column">
+        <div class="my-container">
+            @* @if (toChild != null)
+            { *@
+                @ChildContent
+            @* } *@
+        </div>
+    </div>
+    <AuthorizeView>
+        <Authorized Context="AuthContext">
+            <div class="row">
+                <div class="col-md-12 input-group align-middle">
+                    &nbsp;&nbsp;
+                    @if (!String.IsNullOrEmpty(Imessage))
+                    {
+                        <span class="bg-info bg-opacity-10" style="font-style:italic;color:red">&nbsp;--> @Imessage</span>
+                    }
+                </div>
+            </div>
+            <div class="container-fluid-fixed-top">
+                @if (curOrga == null)
+                {
+                    <p style="color:red;">Warning: curOrga is unexpectedly null.</p>
+                }
+                else
+                {
+                    <EditForm Context="invform" Model="@curOrga">
+                        <DataAnnotationsValidator />
+                        <!-- Filiation base -->
+                        <div class="row mt-2">
+                            <span style="font-weight:bold"> Filiation -> Base</span>
+                        </div>
+                        <div class="row mt-2">
+                            <Grid Data="@MyDaDocus"
+                            TItem="GsgfixDto"
+                            AllowRowClick="true"
+                            @* OnRowClick="OnAflRowClick" *@
+                            AllowDetailView="true"
+                            Responsive="true">
+                                <GridColumns>
+                                    <GridColumn TItem="GsgfixDto" HeaderText="No" Class="xcol1">
+                                        <ChildContent Context="item">@item.Elea</ChildContent>
+                                    </GridColumn>
+                                    <GridColumn TItem="GsgfixDto" HeaderText="Avec">
+                                        <ChildContent Context="item">
+                                            @item.Liba
+                                        </ChildContent>
+                                    </GridColumn>
+                                    <GridColumn TItem="GsgfixDto" HeaderText="Libelle" Class="xcol2">
+                                        <ChildContent Context="item">
+                                            @if (GetRowState(EntityLevel.Gfx, item.Rowguid) is RowState.AddPending or RowState.EditPending)
+                                            {
+                                                <InputText @bind-Value="@draftGfx.Sliba" style="width:100%" />
+                                            }
+                                            else
+                                            {
+                                                <span style="width:100%">@item.Sliba</span>
+                                            }
+                                        </ChildContent>
+                                    </GridColumn>
+                                    <GridColumn TItem="GsgfixDto" HeaderText="Opt." Class="xcol1">
+                                        <ChildContent Context="item">
+                                            @if (GetRowState(EntityLevel.Gfx, item.Rowguid) is RowState.AddPending or RowState.EditPending)
+                                            {
+                                                var isCible = draftGfx.Ityp == 1 ? true : false;
+                                                <InputSelect @bind-Value="draftGfx.Ityp" disabled="@isCible">
+                                                    @foreach (var tob in LsFixes.Where(ut => ut.Gvars == 31 && ut.Itb == 2 && ut.Gp1 == 1))
+                                                    {
+                                                        <option value=@tob.Elea>@tob.Liba</option>
+                                                    }
+                                                </InputSelect>
+                                            }
+                                            else
+                                            {
+                                                <InputSelect @bind-Value="item.Ityp" disabled>
+                                                    @foreach (var tob in LsFixes.Where(ut => ut.Gvars == 31 && ut.Itb == 2 && ut.Gp1 == 1))
+                                                    {
+                                                        <option value=@tob.Elea>@tob.Liba</option>
+                                                    }
+                                                </InputSelect>
+                                            }
+                                        </ChildContent>
+                                    </GridColumn>
+                                    <GridColumn TItem="GsgfixDto" HeaderText="Avis" Class="xcol1">
+                                        <ChildContent Context="item">
+                                            <div class="col-1">
+                                                @if (GetRowState(EntityLevel.Gfx, item.Rowguid) is RowState.AddPending or RowState.EditPending)
+                                                {
+                                                    <InputSelect @bind-Value="draftGfx.Jtyp">
+                                                        @foreach (var tob in LsFixes.Where(ut => ut.Gvars == 31 && ut.Itb == 6 && ut.Gp1 == 1))
+                                                        {
+                                                            <option value=@tob.Elea>@tob.Liba</option>
+                                                        }
+                                                    </InputSelect>
+                                                }
+                                                else
+                                                {
+                                                    <InputSelect @bind-Value="item.Jtyp" disabled>
+                                                        @foreach (var tob in LsFixes.Where(ut => ut.Gvars == 31 && ut.Itb == 6 && ut.Gp1 == 1))
+                                                        {
+                                                            <option value=@tob.Elea>@tob.Liba</option>
+                                                        }
+                                                    </InputSelect>
+                                                }
+                                            </div>
+                                        </ChildContent>
+                                    </GridColumn>
+                                    <GridColumn TItem="GsgfixDto" HeaderText="max." Class="xcol1">
+                                        <ChildContent Context="item">
+                                            @if (GetRowState(EntityLevel.Gfx, item.Rowguid) is RowState.AddPending or RowState.EditPending)
+                                            {
+                                                <InputNumber class="my-input" @bind-Value="draftGfx.Mtyp"
+                                                style="font-weight:bold;width:80px" />
+                                            }
+                                            else
+                                            {
+                                                <span style="font-weight:bold;width:80px">@item.Mtyp</span>
+                                            }
+                                        </ChildContent>
+                                    </GridColumn>
+                                    <GridColumn TItem="GsgfixDto" HeaderText="notif." Class="xcol1">
+                                        <ChildContent Context="item">
+                                            @if (GetRowState(EntityLevel.Gfx, item.Rowguid) is RowState.AddPending or RowState.EditPending)
+                                            {
+                                                <InputSelect @bind-Value="draftGfx.Ntyp">
+                                                    @foreach (var tob in LsFixes.Where(ut => ut.Gvars == 31 && ut.Itb == 4 && ut.Gp1 == 1))
+                                                    {
+                                                        <option value=@tob.Elea>@tob.Liba</option>
+                                                    }
+                                                </InputSelect>
+                                            }
+                                            else
+                                            {
+                                                <InputSelect @bind-Value="item.Ntyp" disabled>
+                                                    @foreach (var tob in LsFixes.Where(ut => ut.Gvars == 31 && ut.Itb == 4 && ut.Gp1 == 1))
+                                                    {
+                                                        <option value=@tob.Elea>@tob.Liba</option>
+                                                    }
+                                                </InputSelect>
+                                            }
+                                        </ChildContent>
+                                    </GridColumn>
+                                    <GridColumn TItem="GsgfixDto" HeaderText="Actions" Class="xcol2">
+                                        <ChildContent Context="item">
+                                            @switch (GetRowState(EntityLevel.Gfx, item.Rowguid))
+                                            {
+                                                case RowState.Locked:
+                                                    <span class="text-muted">—</span>
+                                                    break;
+
+                                                case RowState.AddPending:
+                                                    <Button Color="ButtonColor.Success" Size="ButtonSize.Small"
+                                                    @onclick="() => ConfirmAdd(EntityLevel.Gfx, draftGfx, true)">
+                                                        ✅ Confirm
+                                                    </Button>
+                                                    <Button Color="ButtonColor.Success" Size="ButtonSize.Small"
+                                                    @onclick="() => StartCancelAdd(EntityLevel.Gfx, draftGfx)">
+                                                        ❌ Cancel
+                                                    </Button>
+                                                    break;
+
+                                                case RowState.DeletePending:
+                                                    <Button Color="ButtonColor.Danger" Size="ButtonSize.Small"
+                                                    @onclick="() => ConfirmDelete(EntityLevel.Gfx, item, true)">
+                                                        ⚠️ Confirm
+                                                    </Button>
+                                                    <Button Color="ButtonColor.Secondary" Size="ButtonSize.Small"
+                                                    @onclick="() => CancelDelete(EntityLevel.Gfx, item)">
+                                                        ❎ Cancel
+                                                    </Button>
+                                                    break;
+                                                case RowState.EditPending:
+                                                    @if (draftGfx != null)
+                                                    {
+                                                        <Button Color="ButtonColor.Success" Size="ButtonSize.Small"
+                                                        @onclick="() => ConfirmEdit(EntityLevel.Gfx, draftGfx, true)">
+                                                            ✅ Confirm
+                                                        </Button>
+                                                        <Button Color="ButtonColor.Secondary" Size="ButtonSize.Small"
+                                                        @onclick="() => CancelEdit(EntityLevel.Gfx, draftGfx)">
+                                                            ❌ Cancel
+                                                        </Button>
+                                                    }
+                                                    break;
+                                                default:
+                                                    <Button Color="ButtonColor.Warning" Size="ButtonSize.Small"
+                                                    @onclick="() => StartDocuEdit(item)">
+                                                        ✏️ Edit
+                                                    </Button>
+                                                    @if (item.Eaut != 9)
+                                                    {
+                                                        <Button Color="ButtonColor.Danger" Size="ButtonSize.Small"
+                                                        @onclick="() => StartRowDelete(EntityLevel.Gfx, item.Rowguid)">
+                                                            🗑 Delete
+                                                        </Button>
+                                                    }
+                                                    break;
+                                            }
+
+                                            @* <div class="col-md-2 d-flex gap-2">
+                                                            @if (GetRowState(EntityLevel.Gfx, item.Rowguid) is RowState.AddPending or RowState.EditPending)
+                                                            {
+                                                                <button class="btn btn-warning btn-sm @(!isEdingApt && EdAptRowguid != item.Rowguid ? "" : "disabled-action")" @onclick="() => StartAptEdit(item)">Edit</button>
+                                                            }
+                                                            else
+                                                            {
+                                                                <button class="btn btn-warning btn-sm @(EdAptRowguid == item.Rowguid ? "" : "disabled-action")" @onclick="() => ConfGapt(draftGfx)">Confirm</button>
+                                                                <button class="btn btn-danger btn-sm @(EdAptRowguid == item.Rowguid ? "" : "disabled-action")" @onclick="() => CancGapt(item)">Annul</button>
+                                                            }
+                                                        </div> *@
+                                        </ChildContent>
+                                    </GridColumn>
+                                    <GridDetailView TItem="GsgfixDto" Context="selectedGfix">
+                                        <div class="d-flex align-items-center g-2">
+                                            <div class="col-md-2"></div>
+                                            <div class="col-md-3">Adm</div>
+                                            <div class="col-md-3">Geo</div>
+                                        </div>
+                                        <div class="d-flex align-items-center g-2">
+                                            <div class="col-md-2"></div>
+                                            <div class="col-md-3">
+                                                @if (GetRowState(EntityLevel.Gf2, selectedGfix.Rowguid) is RowState.AddPending or RowState.EditPending)
+                                                {
+                                                    <InputSelect @bind-Value="selectedGfix.Jdiv">
+                                                        <option value=0>choisir</option>
+                                                        @* @foreach (var udp in LsDivs.Where(dv => dv.Rpdom == 1 && dv.Tyhie == 1))
+                                                        {
+                                                            <option value=@udp.Ihie>@udp.Liba</option>
+                                                        } *@
+                                                    </InputSelect>
+                                                }
+                                                else
+                                                {
+                                                    <InputSelect @bind-Value="selectedGfix.Jdiv" disabled>
+                                                        <option value=0>choisir</option>
+                                                        @* @foreach (var udp in LsDivs.Where(dv => dv.Rpdom == 1 && dv.Tyhie == 1))
+                                                        {
+                                                            <option value=@udp.Ihie>@udp.Liba</option>
+                                                        } *@
+                                                    </InputSelect>
+                                                }
+                                            </div>
+                                            <div class="col-md-3">
+                                                @if (GetRowState(EntityLevel.Gf2, selectedGfix.Rowguid) is RowState.AddPending or RowState.EditPending)
+                                                {
+                                                    <InputSelect @bind-Value="selectedGfix.Kdiv">
+                                                        <option value=0>choisir</option>
+                                                        @* @foreach (var udp in LsDivs.Where(dv => dv.Rpdom == 3 && dv.Tyhie == 3))
+                                                        {
+                                                            <option value=@udp.Ihie>@udp.Liba</option>
+                                                        } *@
+                                                    </InputSelect>
+                                                }
+                                                else
+                                                {
+                                                    <InputSelect @bind-Value="selectedGfix.Kdiv" disabled>
+                                                        <option value=0>choisir</option>
+                                                        @* @foreach (var udp in LsDivs.Where(dv => dv.Rpdom == 3 && dv.Tyhie == 3))
+                                                        {
+                                                            <option value=@udp.Ihie>@udp.Liba</option>
+                                                        } *@
+                                                    </InputSelect>
+                                                }
+                                            </div>
+                                        </div>
+                                        <!-- Filiation affilies -->
+                                        @if (selectedGfix.Totyp == 1) //only
+                                        {
+                                            <div class="row mt-2">
+                                                <div class="col-md-1"></div>
+                                                <span style="font-weight:bold"> Filiation -> Affilies Cible</span>
+                                            </div>
+                                            <div class="row mt-2">
+                                                <div class="col-md-1"></div>
+                                                <div class="col-md-11">
+                                                    @* @orgFixes.Where(uf => uf.Gvars == 3 && uf.Itb == 6 && uf.Atyp == selectedGfix.Totyp && uf.Elea != 0).OrderBy(uo => uo.Elea)"
+ *@                                                    <Grid Data="@MyDaAfils"
+                                                    TItem="GsgfixDto"
+                                                    @* key="AflRenderKey" *@
+                                                    Responsive="true">
+                                                        <GridColumns>
+                                                            <GridColumn TItem="GsgfixDto" HeaderText="No" Class="xcol1">
+                                                                <ChildContent Context="ita">@ita.Elea</ChildContent>
+                                                            </GridColumn>
+                                                            <GridColumn TItem="GsgfixDto" HeaderText="Avec">
+                                                                <ChildContent Context="ita">
+                                                                    @ita.Liba
+                                                                </ChildContent>
+                                                            </GridColumn>
+                                                            <GridColumn TItem="GsgfixDto" HeaderText="Libelle" Class="xcol2">
+                                                                <ChildContent Context="ita">
+                                                                    @if (GetRowState(EntityLevel.Gf2, ita.Rowguid) is RowState.AddPending or RowState.EditPending)
+                                                                    {
+                                                                        <InputText @bind-Value="@draftGf2.Sliba" style="width:100%" />
+                                                                    }
+                                                                    else
+                                                                    {
+                                                                        <span style="width:100%">@ita.Sliba</span>
+                                                                    }
+                                                                </ChildContent>
+                                                            </GridColumn>
+                                                            <GridColumn TItem="GsgfixDto" HeaderText="Opt." Class="xcol1">
+                                                                <ChildContent Context="ita">
+                                                                    @if (GetRowState(EntityLevel.Gf2, ita.Rowguid) is RowState.AddPending or RowState.EditPending)
+                                                                    {
+                                                                        <InputSelect @bind-Value="draftGf2.Ityp">
+                                                                            @foreach (var tob in LsFixes.Where(ut => ut.Gvars == 31 && ut.Itb == 2 && ut.Gp1 == 1))
+                                                                            {
+                                                                                <option value=@tob.Elea>@tob.Liba</option>
+                                                                            }
+                                                                        </InputSelect>
+                                                                    }
+                                                                    else
+                                                                    {
+                                                                        <InputSelect @bind-Value="ita.Ityp" disabled>
+                                                                            @foreach (var tob in LsFixes.Where(ut => ut.Gvars == 31 && ut.Itb == 2 && ut.Gp1 == 1))
+                                                                            {
+                                                                                <option value=@tob.Elea>@tob.Liba</option>
+                                                                            }
+                                                                        </InputSelect>
+                                                                    }
+                                                                </ChildContent>
+                                                            </GridColumn>
+                                                            <GridColumn TItem="GsgfixDto" HeaderText="Avis" Class="xcol1">
+                                                                <ChildContent Context="ita">
+                                                                    <div class="col-1">
+                                                                        @if (GetRowState(EntityLevel.Gf2, ita.Rowguid) is RowState.AddPending or RowState.EditPending)
+                                                                        {
+                                                                            <InputSelect @bind-Value="draftGf2.Jtyp">
+                                                                                @foreach (var tob in LsFixes.Where(ut => ut.Gvars == 31 && ut.Itb == 6 && ut.Gp1 == 1))
+                                                                                {
+                                                                                    <option value=@tob.Elea>@tob.Liba</option>
+                                                                                }
+                                                                            </InputSelect>
+                                                                        }
+                                                                        else
+                                                                        {
+                                                                            <InputSelect @bind-Value="ita.Jtyp" disabled>
+                                                                                @foreach (var tob in LsFixes.Where(ut => ut.Gvars == 31 && ut.Itb == 6 && ut.Gp1 == 1))
+                                                                                {
+                                                                                    <option value=@tob.Elea>@tob.Liba</option>
+                                                                                }
+                                                                            </InputSelect>
+                                                                        }
+                                                                    </div>
+                                                                </ChildContent>
+                                                            </GridColumn>
+                                                            <GridColumn TItem="GsgfixDto" HeaderText="max." Class="xcol1">
+                                                                <ChildContent Context="ita">
+                                                                    @if (GetRowState(EntityLevel.Gf2, ita.Rowguid) is RowState.AddPending or RowState.EditPending)
+                                                                    {
+                                                                        <InputNumber class="my-input" @bind-Value="draftGf2.Mtyp"
+                                                                        style="font-weight:bold;width:80px" />
+                                                                    }
+                                                                    else
+                                                                    {
+                                                                        <span style="font-weight:bold;width:80px">@ita.Mtyp</span>
+                                                                    }
+                                                                </ChildContent>
+                                                            </GridColumn>
+                                                            <GridColumn TItem="GsgfixDto" HeaderText="notif." Class="xcol1">
+                                                                <ChildContent Context="ita">
+                                                                    @if (GetRowState(EntityLevel.Gf2, ita.Rowguid) is RowState.AddPending or RowState.EditPending)
+                                                                    {
+                                                                        <InputSelect @bind-Value="draftGf2.Ntyp" style="width:100%">
+                                                                            @foreach (var tob in LsFixes.Where(ut => ut.Gvars == 31 && ut.Itb == 4 && ut.Gp1 == 1))
+                                                                            {
+                                                                                <option value=@tob.Elea>@tob.Liba</option>
+                                                                            }
+                                                                        </InputSelect>
+                                                                    }
+                                                                    else
+                                                                    {
+                                                                        <InputSelect @bind-Value="ita.Ntyp" style="width:100%" disabled>
+                                                                            @foreach (var tob in LsFixes.Where(ut => ut.Gvars == 31 && ut.Itb == 4 && ut.Gp1 == 1))
+                                                                            {
+                                                                                <option value=@tob.Elea>@tob.Liba</option>
+                                                                            }
+                                                                        </InputSelect>
+                                                                    }
+                                                                </ChildContent>
+                                                            </GridColumn>
+                                                            <GridColumn TItem="GsgfixDto" HeaderText="Actions" Class="xcol2">
+                                                                <ChildContent Context="ita">
+                                                                    @switch (GetRowState(EntityLevel.Gf2, ita.Rowguid))
+                                                                    {
+                                                                        case RowState.Locked:
+                                                                            <span class="text-muted">—</span>
+                                                                            break;
+
+                                                                        case RowState.AddPending:
+                                                                            <Button Color="ButtonColor.Success" Size="ButtonSize.Small"
+                                                                            @onclick="() => ConfirmAdd(EntityLevel.Gf2, draftGf2, true)">
+                                                                                ✅ Confirm
+                                                                            </Button>
+                                                                            @* <Button Color="ButtonColor.Success" Size="ButtonSize.Small"
+                                                                                @onclick="() => StartCancelAdd(EntityLevel.Gf2, draftGf2)">
+                                                                            ❌ Cancel
+                                                                        </Button> *@
+                                                                            break;
+
+                                                                        case RowState.DeletePending:
+                                                                            <Button Color="ButtonColor.Danger" Size="ButtonSize.Small"
+                                                                            @onclick="() => ConfirmDelete(EntityLevel.Gf2, ita, true)">
+                                                                                ⚠️ Confirm
+                                                                            </Button>
+                                                                            <Button Color="ButtonColor.Secondary" Size="ButtonSize.Small"
+                                                                            @onclick="() => CancelDelete(EntityLevel.Gf2, ita)">
+                                                                                ❎ Cancel
+                                                                            </Button>
+                                                                            break;
+                                                                        case RowState.EditPending:
+                                                                            @if (draftGf2 != null)
+                                                                            {
+                                                                                <Button Color="ButtonColor.Success" Size="ButtonSize.Small"
+                                                                                @onclick="() => ConfirmEdit(EntityLevel.Gf2, draftGf2, true)">
+                                                                                    ✅ Confirm
+                                                                                </Button>
+                                                                                <Button Color="ButtonColor.Secondary" Size="ButtonSize.Small"
+                                                                                @onclick="() => CancelEdit(EntityLevel.Gf2, draftGf2)">
+                                                                                    ❌ Cancel
+                                                                                </Button>
+                                                                            }
+                                                                            break;
+                                                                        default:
+                                                                            @* <Button Color="ButtonColor.Warning" Size="ButtonSize.Small"
+                                                                                @onclick="() => StartGf2Edit(item)">
+                                                                            ✏️ Edit
+                                                                        </Button> *@
+                                                                            @if (ita.Eaut != 9)
+                                                                            {
+                                                                                <Button Color="ButtonColor.Danger" Size="ButtonSize.Small"
+                                                                                @onclick="() => StartRowDelete(EntityLevel.Gf2, ita.Rowguid)">
+                                                                                    🗑 Delete
+                                                                                </Button>
+                                                                            }
+                                                                            break;
+                                                                    }
+                                                                    @* <div class="col-md-2 d-flex gap-2">
+                                                                                    @if (GetRowState(EntityLevel.Gf2, item.Rowguid) is RowState.AddPending or RowState.EditPending)
+                                                                                    {
+                                                                                        <button class="btn btn-warning btn-sm @(!isEdingAfl && EdAflRowguid != ita.Rowguid ? "" : "disabled-action")" @onclick="() => StartAflEdit(ita)">Edit</button>
+                                                                                    }
+                                                                                    else
+                                                                                    {
+                                                                                        <button class="btn btn-warning btn-sm @(EdAflRowguid == ita.Rowguid ? "" : "disabled-action")" @onclick="() => ConfGafl(draftAfl)">Confirm</button>
+                                                                                        <button class="btn btn-danger btn-sm @(EdAflRowguid == ita.Rowguid ? "" : "disabled-action")" @onclick="() => CancGafl(ita)">Annul</button>
+                                                                                    }
+                                                                                </div> *@
+                                                                </ChildContent>
+                                                            </GridColumn>
+                                                        </GridColumns>
+                                                    </Grid>
+                                                </div>
+                                            </div>
+                                        }
+                                    </GridDetailView>
+                                </GridColumns>
+                            </Grid>
+                        </div>
+                    </EditForm>
+                }
+            </div>
+        </Authorized>
+    </AuthorizeView>
+}
+<style>
+    .modal-wide .modal-dialog {
+        max-width: 50vw;
+        width: auto;
+        margin: auto;
+    }
+
+    .rubModal-wide .modal-dialog {
+        max-width: 65vw;
+        width: auto;
+        margin: auto;
+    }
+
+    .disabled-action {
+        pointer-events: none;
+        opacity: 0.5;
+    }
+
+    .formul.button {
+        pointer-events: none;
+        opacity: 0.5;
+        height: 160px;
+    }
+
+    .plnpoint {
+        font-weight: bold;
+        background-color: blue;
+        color: white;
+    }
+
+    .rubpoint {
+        font-weight: bold;
+        background-color: yellow;
+        color: black;
+    }
+
+    .fmtpoint {
+        font-weight: bold;
+        background-color: darkolivegreen;
+        color: black;
+    }
+
+    .xcolx {
+        width: 40px !important;
+    }
+
+    .xcol1 {
+        width: 60px;
+    }
+
+    .xcol2 {
+        width: 120px;
+    }
+
+    .xcol3 {
+        width: 180px;
+    }
+
+    .xcol4 {
+        width: 240px;
+    }
+        /* Ensure inputs inside these columns fill the width */
+        .xcol1 input,
+        .xcol2 input,
+        .xcol3 input,
+        .xcol4 input {
+            width: 100%;
+            box-sizing: border-box; /* prevents overflow due to padding/border */
+        }
+
+    .editing-row {
+        pointer-events: none; /* Blocks all clicks on row */
+    }
+
+        .editing-row * {
+            pointer-events: auto; /* Re-enables clicks on buttons/inputs */
+        }
+
+    .new-add-indicator::after {
+        content: "➕ NEW";
+        float: right;
+        margin-left: 8px;
+        background: #ffc107;
+        color: #000;
+        font-size: 0.65em;
+        padding: 1px 4px;
+        border-radius: 8px;
+        font-weight: bold;
+    }
+
+    .readonly input,
+    .readonly textarea,
+    .readonly select,
+    .readonly button {
+        pointer-events: none;
+        background-color: #f8f9fa; /* light gray to indicate disabled */
+        opacity: 0.8;
+    }
+    /* Add to your CSS */
+    .row-active-edit {
+        background-color: #fff3cd !important; /* Light yellow */
+        border-left: 5px solid #ffc107 !important; /* Thick yellow border */
+        box-shadow: 0 2px 8px rgba(255,193,7,0.3);
+        z-index: 10;
+    }
+
+    .row-readonly {
+        opacity: 0.65 !important;
+        background-color: #f8f9fa !important;
+        cursor: not-allowed !important;
+    }
+
+        .row-readonly button,
+        .row-readonly .btn {
+            pointer-events: none !important;
+            opacity: 0.4 !important;
+        }
+
+    /* Make the whole cell a flex container so buttons line up horizontally */
+    .actions-col {
+        display: flex;
+        flex-direction: row;
+        gap: 6px; /* spacing between buttons */
+        align-items: center; /* vertical alignment */
+        justify-content: flex-start;
+    }
+        /* Apply to all buttons in your grid (or globally if you prefer) */
+        .actions-col .btn {
+            display: inline-flex; /* flex container */
+            flex-direction: row; /* horizontal layout */
+            align-items: center; /* vertical centering */
+            gap: 4px; /* spacing between emoji and text */
+            white-space: nowrap; /* prevent wrapping onto two lines */
+            line-height: 1.2; /* normalize baseline */
+        }
+
+</style>
+
+@code {
+    private bool isLoading = true;
+    private string Imessage = "", Jmessage = "", Kmessage = "";
+    private bool yaPgLink = false;
+
+    [CascadingParameter]
+    private Task<AuthenticationState>? AuthState { get; set; }
+    [Parameter]
+    public RenderFragment ChildContent { get; set; }
+    [Parameter]
+    public IODataClient _InODaClient { get; set; }
+    [Parameter]
+    public GxorgaDto curOrga { get; set; } = new();
+    //[Parameter]
+    //public ChildVars toChild { get; set; }
+    //[Parameter]
+    //public int toMenu { get; set; }
+    //guard
+    [Parameter]
+    public IPendingChangesGuard _guard { get; set; }
+    [Parameter]
+    public EventCallback<PendingState> OnPendingStateChanged { get; set; }
+    [Parameter]
+    public int NbChanges { get; set; }
+    [Parameter]
+    public EventCallback<int> NbChangesChanged { get; set; }  // 🔥 CRITICAL
+    //author
+    private ClaimsPrincipal authUser;
+    private bool isAuthenticated = true;
+    //usrbag
+    private Userbag _usrBag = new Userbag();
+    private string _UserId = "";
+    private int _UorgId = 0;
+    private int IMyDest = 0;
+
+    private Dictionary<int, bool> EdState = new Dictionary<int, bool>();
+    private Dictionary<Guid, RowState> _rowStates = new();
+    private Dictionary<Guid, bool> _isLightBg = new();  // Track light background
+    private List<GsgfixDto> orgFixes { get; set; } = new();
+    private List<Gpvar> gpeOpts { get; set; } = new();
+    // private void SetLightBackground(Guid rowguid, bool isLight)
+    // {
+    //     _isLightBg[rowguid] = isLight;
+    // }
+    // private bool GetLightBackground(Guid rowguid)
+    // {
+    //     return _isLightBg.GetValueOrDefault(rowguid, false);
+    // }
+    // Disable ALL actions when ANY row editing
+    private Guid? _activeEditRowguid = null;
+    private EntityLevel? _activeEditLevel = null;
+    private bool CanEditRows() => _activeEditRowguid == null;
+    private bool IsRowEditing(Guid rowguid) => _activeEditRowguid == rowguid;
+    private bool IsAnyRowEditing => _activeEditRowguid != null;
+
+    private Guid EdGf2Rowguid = new();
+    // public enum RowState
+    // {
+    //     Normal,
+    //     EditPending,
+    //     DeletePending,
+    //     AddPending,  // 🔥 NEW for Add
+    //     Locked
+    // }
+    //public enum EntityLevel { Plan, Rub, Fmt }
+
+    //private List<Gplan> LsPlans = new();
+    private List<Gpfixe> LsFixes = new();
+    //private List<Gpvar> LsVars = new();
+    private Dictionary<int, string> LsDocs = new()
+    {
+        [1] = "Actes",
+        [2] = "Pieces",
+        //[7] = "Langues",
+        //[3] = "Sessions"
+    };
+
+    private bool isFixFilteringEnabled = false;
+
+    //Global
+    private int _lgcdu = 0;
+    //private int ITyDoc = 1; //1Actes
+    private int _iTyDoc = 1; //1Actes
+    public int ITyDoc
+    {
+        get => _iTyDoc;
+        set
+        {
+            _iTyDoc = value;
+            SelTypDoc(value);
+        }
+    }
+    private string atrTitle = "";
+
+    //data
+    //data
+    private List<GsgfixDto> MyDaDocus => GfxItems;
+    private List<GsgfixDto> MyDaAfils => Gf2Items;
+
+    //add/edit options
+    private bool AllowMultipleEdits { get; set; } = false;
+    private bool isFiltre { get; set; } = false;
+    //FIX
+    private Guid? FixRenderKey = null;
+    //private Dictionary<Guid, GsgfixDto> _edFixOriginals = new();
+    private GsgfixDto? draftGfx = null;
+    private GsgfixDto? draftGf2 = null;
+    private GsgfixDto curGfx = new();
+    private GsgfixDto curGf2 = new();
+    //private bool isAddFix = false;
+    //private bool isEdtFix = false;
+    //private Guid? AdFixRowguid = null;
+    //private Guid? EdFixRowguid = null;// Currently editing row ID
+    //private Guid? DlFixRowguid = null;
+
+    // bool IsFixRowLocked(Guid rowGuid) =>
+    //     !AllowMultipleEdits &&
+    //     (EdFixRowguid.HasValue || DlFixRowguid.HasValue) &&
+    //     EdFixRowguid != rowGuid &&
+    //     DlFixRowguid != rowGuid;
+
+    protected override async Task OnInitializedAsync()
+    {
+        isLoading = true;
+        try
+        {
+            // if (toChild == null || curOrga == null)
+            // {
+            //     Console.WriteLine("Missing parent data");
+            //     return;
+            // }
+            // isAuthenticated = toChild.isAuthenticated;
+            // authUser = toChild.authUser;
+            isAuthenticated = true;
+            if (!isAuthenticated)
+            {
+                Imessage = "CONNEXION, Utilisateur non authentifie";
+                return;
+            }
+            //LsVars = toChild.LsVars;
+            ////LsFixes = toChild.LsFixes;
+            //LsDoms = LsFixes.Where(ut => ut.Gvars == 36 && ut.Itb == 4 && ut.Gp1 == 3 && ut.Elea != 0).ToList();
+            //LsSites = toChild.LsSites;
+            _lgcdu = 3;
+            //uv => uv.Gvars == 3 && uv.Itb == 5 && uv.Ityp == 1 && uv.Elea != 0
+            ////gpeOpts = toChild.LsVars.Where(uv => uv.Gvars == 3 && uv.Itb == 6 && uv.Elea is >= 2 and <= 6).ToList();
+            //var noslims = LsVars.Where(uv => uv.Idhie == 0 && uv.Gvars == 21 && uv.Itb == 1 && uv.Elea == 1);
+            //if (noslims.Any()) _lgcdu = noslims.FirstOrDefault().Ivala;
+            //ChargeParentData;
+            ////await connection.StartAsync();
+
+            // 🔥 SAFE - Only initialize if Gsgfixs EXISTS
+            await LoadDocusAsync(curOrga.Idorg);
+            if (orgFixes != null && orgFixes.Any())
+            {
+                InitializeMyDaGfxs();
+                Console.WriteLine($"Gsgfixes loaded: {orgFixes.Count}");
+            }
+            else
+            {
+                Console.WriteLine("Gsgfixes null/empty - initializing empty collections");
+            }
+            
+            atrTitle = "Saisie";
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Child crash: {ex.Message}");
+            Console.WriteLine($"Stack: {ex.StackTrace}");  // 🔥 More debug info
+            Imessage = $"Erreur chargement: {ex.Message}";
+        }
+        finally
+        {
+            isLoading = false;
+            StateHasChanged();
+        }
+    }
+    private async Task LoadDocusAsync(int key)
+    {
+        try
+        {
+            var msgs = await _InODaClient
+                .For<GsgfixDto>("Gsgfixes")
+                .Filter(f => f.Idorg == key && (f.Gvars == 3 || f.Gvars == 9 || f.Gvars == 41))
+                //.Select("Idorg, Xseq, Elea,Gp1")
+                .FindEntriesAsync();
+            orgFixes = msgs.ToList();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Load error: {ex.Message}");
+        }
+    }
+    // and call this in OnParametersSet
+    protected override void OnParametersSet()
+    {
+        // SubscribeToGuard();
+    }
+    // set up subscription locally
+    // private void SubscribeToGuard()
+    // {
+    //     _guard.OnChanges += async () =>
+    //     {
+    //         NbChanges = _guard.GetPendingChangesCount();
+    //         await NbChangesChanged.InvokeAsync(NbChanges);
+    //         StateHasChanged();
+    //     };
+    // }
+    private async Task StartDocuNew(int tydoc)
+    {
+        Console.WriteLine("🚨 StartDocNew");
+        var lsnb = NextSeq(MyDaDocus, p => p.Iui);
+        var newDoc = new GsgfixDto();
+        if (tydoc == 1)
+        {//docS
+            newDoc = new GsgfixDto
+            {
+                Rowguid = Guid.NewGuid(),
+                Idorg = curOrga.Idorg, //pere Id
+                Iui = lsnb,
+                Gvars = 3,
+                Itb = 1,
+                Gtyp = 1,
+                Etyp = 1,
+                Ktyp = IMyDest, //0main1affilies
+                Ivala = 0,
+                Eta = 1,
+                Xadd1 = -1, //newly added
+                Xedt1 = 0,
+                Xdel1 = 0
+            };
+        }
+        else if (tydoc == 2)
+        {//docP
+            newDoc = new GsgfixDto
+            {
+                //Rowguid = Guid.NewGuid(),
+                Rowguid = Guid.NewGuid(),
+                Idorg = curOrga.Idorg, //pere Id
+                Iui = lsnb,
+                Gvars = 3,
+                Itb = 2,
+                Gtyp = 2,
+                Etyp = 1,
+                Ktyp = IMyDest, //0main1affilies
+                Totyp = 0,
+                Ivala = 0,
+                Eta = 1,
+                Xadd1 = -1, //newly added
+                Xedt1 = 0,
+                Xdel1 = 0
+            };
+        }
+        // else if (tydoc == 7)
+        // {//langues
+        //     newDoc = new GsgfixDto
+        //     {
+        //         //Rowguid = Guid.NewGuid(),
+        //         Rowguid = Guid.NewGuid(),
+        //         Idorg = curOrga.Idorg, //pere Id
+        //         Iui = lsnb,
+        //         Gvars = 3,
+        //         Itb = 11,
+        //         Gtyp = 1,
+        //         Etyp = 1,
+        //         Totyp = 0,
+        //         Ktyp = 0,
+        //         Ivala = 0,
+        //         Eta = 1,
+        //         Xadd1 = -1, //newly added
+        //         Xedt1 = 0,
+        //         Xdel1 = 0
+        //     };
+        // }
+        //session pas creation
+        else
+        {
+            return;
+        }
+        //prise order
+        orgFixes?.Add(newDoc);
+        draftGfx = DeepClone(newDoc);
+        //SetRowState(EntityLevel.Gfx, newDoc.Rowguid, RowState.AddPending);
+        BeginAdd(EntityLevel.Gfx, newDoc.Rowguid, draftGfx);
+
+        await UpdateMyDaGfxs(tydoc);     // now state is already correct when this renders
+        //PlnRenderKey = newPln.Rowguid;
+        await InvokeAsync(StateHasChanged);
+    }
+    public async Task StartDocuEdit(GsgfixDto item)
+    {
+        var rowguid = item.Rowguid;
+        if (item.Xseq == default) return;
+        if (rowguid == Guid.Empty) return;
+        if (IsAnyRowEditing && !IsRowEditing(rowguid)) return;
+
+        SetRowState(EntityLevel.Gfx, item.Rowguid, RowState.EditPending);
+        _edGfxOriginals[rowguid] = DeepClone(item);
+        draftGfx = DeepClone(item);
+        //isEdtGtb = true;
+        BeginEdit(EntityLevel.Gfx, rowguid, draftGfx);
+        _rowPendingOpTypeByRow[rowguid] = PendingOpType.Update;
+
+        StateHasChanged();
+    }
+
+    private async Task StartCancelAdd(EntityLevel level, object entity)
+    {
+        var rowguid = MLEntityKeyHelper.GetRowguidAsGuid(entity);
+        switch (level)
+        {
+            case EntityLevel.Gfx:
+                await CancelAdd(level, entity);
+                orgFixes.RemoveAll(x => x.Rowguid == rowguid);
+                //PlnRenderKey = Guid.Empty;
+                break;
+            case EntityLevel.Gf2:
+                await CancelAdd(level, entity);
+                orgFixes.RemoveAll(x => x.Rowguid == rowguid);
+                //RubRenderKey = Guid.Empty;
+                break;
+        }
+    }
+    // Update method -call this when source data changes
+    private void InitializeMyDaGfxs()
+    {
+        curGfx = new();
+        if (curOrga != null)
+        {
+            GfxItems = orgFixes
+                .Where(uv => uv.Gvars == 3 && uv.Itb == 1)
+                .ToList() ?? new List<GsgfixDto>();
+            curGfx = GfxItems.FirstOrDefault();
+        }
+        else
+        {
+            GfxItems = new List<GsgfixDto>();
+        }
+    }
+    private Task UpdateMyDaGfxs(int jtb)
+    {
+        GfxItems = orgFixes
+            .Where(uv => uv.Gvars == 3 && uv.Itb == jtb)
+                .ToList() ?? new List<GsgfixDto>();
+        return Task.CompletedTask;
+    }
+    
+    private string GetEntitySetName<T>() where T : class
+    {
+        return typeof(T) switch
+        {
+            Type t when t == typeof(GsgfixDto) => "Gsgfixes",
+            _ => throw new ArgumentException($"Unknown entity type: {typeof(T).Name}")
+        };
+    }
+    private string GetEntitySet(object entity)
+    {
+        return entity switch
+        {
+            GsgfixDto _ => "Gsgfixes",
+            _ => throw new ArgumentException("Unknown entity type")
+        };
+    }
+
+    // ✅ 6. VALIDATIONS
+    private bool ValidateEntity<T>(T item)
+    {
+        return item switch
+        {
+            GsgfixDto pln => ValidatePln(pln),
+            _ => true
+        };
+    }
+    private bool ValidatePln(GsgfixDto? mypln)
+    {
+        Console.WriteLine($"A verifier {mypln.Liba}");
+        //liba
+        if (string.IsNullOrEmpty(mypln.Liba)
+            || mypln.Liba.Length < 6)
+        {
+            Imessage = "designation obligatoire/longueur";
+            return false;
+        }
+        //abrege
+        if (string.IsNullOrEmpty(mypln.Abg)
+            || mypln.Abg.Length < 3)
+        {
+            Imessage = "abrege obligatoire/longueur";
+            return false;
+        }
+        // //etat
+        // if (mypln.Eta < 0)
+        // {
+        //     Imessage = "etat obligatoire";
+        //     return false;
+        // }
+        return true;
+    }
+
+    // ✅ 6. ROW Management
+    
+    // ✅ 6. SELECTIONS
+    // private void SelPlanAtr(int xatr)
+    // {
+
+    // }
+    private void OnDocChanged(ChangeEventArgs e)
+    {
+        if (int.TryParse(e.Value?.ToString(), out int selectedKey))
+        {
+            SelTypDoc(selectedKey);
+        }
+    }
+    private void SelTypDoc(int xdom)
+    {
+        if (xdom == 1 || xdom == 2)
+        {
+            GfxItems = orgFixes
+              .Where(uv => uv.Gvars == 3 && uv.Itb == xdom && uv.Elea >= 1)
+              .ToList();
+        }
+        else if (xdom == 7)
+        {
+            GfxItems = orgFixes
+              .Where(uv => uv.Gvars == 3 && uv.Itb == 11 && uv.Elea != 0)
+              .ToList();
+        }
+        else
+        {
+            GfxItems = new();
+        }
+        Console.WriteLine($"Nb. documents : {MyDaDocus.Count}");
+        StateHasChanged();
+    }
+    
+    private object GetEntityKey<TDto>(TDto entity)
+    {
+        switch (entity)
+        {
+            case GsgfixDto pln:
+                return pln.Xseq;
+            default:
+                throw new InvalidOperationException($"Unknown entity type {typeof(TDto).Name}");
+        }
+    }
+    bool AreRowsEqual(GsgfixDto row1, GsgfixDto row2) =>
+        row1.Liba == row2.Liba && row1.Abg == row2.Abg;
+    private int NextSeq<T>(IEnumerable<T> source, Func<T, int?> selector)
+    {
+        int maxSeq = source.Any() ? source.Max(selector) ?? 0 : 0;
+        return maxSeq + 1;
+    }
+    //FILTRES
+    private Grid<GsgfixDto> grid = default!;
+    private async void TogglePlnFiltering()
+    {
+        isFixFilteringEnabled = !isFixFilteringEnabled;
+        await grid.RefreshDataAsync(); // Refresh the grid to apply the change
+    }
+    private void showPgLink()
+    {
+        yaPgLink = !yaPgLink;
+    }
+    private string GetCodeStyle()
+    {
+        return "width:50%;";
+    }
+    private string GetStyle(int? itemId)
+    {
+        int oId = Convert.ToInt32(itemId);
+        Console.WriteLine($" style state : {oId}");
+        return EdState.TryGetValue(oId, out bool onEditing) && onEditing
+        ? "background-color:yellow;"
+        : "";
+    }
+    private string GetButton(int itemId)
+    {
+        int oId = Convert.ToInt32(itemId);
+        return EdState.TryGetValue(oId, out bool onEditing) && onEditing ? "Confirm" : "Edit";
+    }
+    public void SeReConnecter()
+    {
+        _navManager.NavigateTo("/login");
+    }
+    public void Dispose()  // ← ADD THIS
+    {
+        Console.WriteLine("🧹 Child Prubsaie cleaning up");
+    }
+}
+
+

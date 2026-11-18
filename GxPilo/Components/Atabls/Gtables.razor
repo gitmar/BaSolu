@@ -70,31 +70,29 @@ else
                     }
                 </div>
             </div>
-            <div class="form-group">
-                <div class="btn btn-group">
-                    <label class="mb-0 me-2">Groupe :</label>
-                    <InputSelect @bind-Value="IMyGtbl"
-                                 @bind-Value:after="OuvreMGrid"
-                                 class="me-3"
-                                 style="width:auto">
-                        <option value=0>?chosir</option>
-                        @foreach (var tob in LsFixes.Where(u => u.Gvars == 35 && u.Itb == 1 && u.Elea != 0))
-                        {
-                            <option value=@tob.Elea>@tob.Liba</option>
-                        }
-                    </InputSelect>
-                    <label> Base : </label>
-                    <InputSelect @bind-Value="IMyBas"
-                                 @bind-Value:after="OuvreMGrid"
-                                 class="me-3"
-                                 style="width:auto">
-                        <option value=0>?base</option>
-                        @foreach (var utb in LsDoms)
-                        {
-                            <option value=@utb.Gp2>@utb.Liba</option>
-                        }
-                    </InputSelect>
-                </div>
+            <div class="btn btn-group">
+                <label class="mb-0 me-2">Groupe :</label>
+                <InputSelect @bind-Value="IMyGtbl"
+                             @bind-Value:after="OuvreMGrid"
+                             class="me-3"
+                             style="width:auto">
+                    <option value=0>?chosir</option>
+                    @foreach (var tob in LsFixes.Where(u => u.Gvars == 35 && u.Itb == 1 && u.Elea != 0))
+                    {
+                        <option value=@tob.Elea>@tob.Liba</option>
+                    }
+                </InputSelect>
+                <label> Base : </label>
+                <InputSelect @bind-Value="IMyBas"
+                             @bind-Value:after="OuvreMGrid"
+                             class="me-3"
+                             style="width:auto">
+                    <option value=0>?base</option>
+                    @foreach (var utb in LsDoms)
+                    {
+                        <option value=@utb.Gp2>@utb.Liba</option>
+                    }
+                </InputSelect>
             </div>
             <div class="container-fluid-fixed-top">
                 @if (curOrga == null)
@@ -317,20 +315,18 @@ else
                                     <GridDetailView TItem="GstablDto" Context="selectedGtb">
                                             @if (selectedGtb.Gtyp == 3)
                                             {
-                                                <div class="form-group">
-                                                    <div class="btn btn-group">
-                                                        <label class="me-2">G.Tiers :</label>
-                                                        <InputSelect @bind-Value="IMyGtie"
-                                                        @bind-Value:after="OuvreTbGroup"
-                                                        class="me-3"
-                                                        style="width:auto">
-                                                            <option value=0>?gtiers</option>
-                                                            @foreach (var tob in LsGties)
-                                                            {
-                                                                <option value=@tob.Elea>@tob.Liba</option>
-                                                            }
-                                                        </InputSelect>
-                                                    </div>
+                                                <div class="btn btn-group">
+                                                    <label class="me-2">G.Tiers :</label>
+                                                    <InputSelect @bind-Value="IMyGtie"
+                                                                 @bind-Value:after="OuvreTbGroup"
+                                                                 class="me-3"
+                                                                 style="width:auto">
+                                                        <option value=0>?gtiers</option>
+                                                        @foreach (var tob in LsGties)
+                                                        {
+                                                            <option value=@tob.Elea>@tob.Liba</option>
+                                                        }
+                                                    </InputSelect>
                                                 </div>
                                             }
                                             <Grid TItem="GstablDto"
@@ -1046,7 +1042,6 @@ else
         //isEdtGt2 = true;
         BeginEdit(EntityLevel.Gt2, rowguid, draftGt2);
         _rowPendingOpTypeByRow[rowguid] = PendingOpType.Update;
-        //StartRowEdit(rowguid, EntityLevel.Gt2);
         StateHasChanged();
 
         // var rowguid = item.Rowguid;

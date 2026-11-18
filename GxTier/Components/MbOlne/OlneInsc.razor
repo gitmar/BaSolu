@@ -6,6 +6,8 @@
 
 @inherits CompUICrudBase
 
+@inject IODataClient _MyODaClient
+
 @using System.Linq.Expressions
 @using GxShared.GxDtos
 @using GxShared.Others
@@ -16,7 +18,8 @@
 @using GxShared.Interfaces
 @using GxShared.ShdServices
 @using GxTie.Components.Paccu
-@using GxTie.Components.Paccu.RtPer
+@using GxTie.Components.Paccu.Rtper
+@using GxTie.Components.Paccu.Dwnmd
 @using GxTie.Components.Uifrags
 @using GxTie.Components.PfrmHelper
 @using GxTie.Components.Cols
@@ -40,16 +43,16 @@
 <p> @olnOrga?.Sigle - @olnOrga?.Raison </p>
 @if (curTiw != null && InIdorg != 0 && isModalVisible)
 {
-    <GlobModal IsVisible="@isModalVisible"
-               IsVisibleChanged="@OnModalVisibilityChanged"
-               Title="Chargement des documents"
-               UploadCtx="@uploadCtx"
-               Idorg="@InIdorg"
-               EntyTiw="@curTiw"
-               EntyTie="null"
-               LsmVars="@EnsVars"
-               Oparent="2">
-    </GlobModal>
+    <DownTie IsVisible="@isModalVisible"
+             IsVisibleChanged="@OnModalVisibilityChanged"
+             Title="Chargement des documents"
+             UploadCtx="@uploadCtx"
+             Idorg="@InIdorg"
+             EntyTiw="@EditTiw"
+             EntyTie="null"
+             LsmVars="@EnsVars"
+             Oparent="1">
+    </DownTie>
 }
 @if (!IsTiwLoaded)
 {
@@ -114,22 +117,23 @@ else
                                     @Saffilia
                                 </span>
                             </div>
-
                             <PTiwGdHelper Idorg="@InIdorg" Entity="@curTiw"
                                           Draft="@(GetDraft(EntityLevel.Tiw) as TiewelDto)"
                                           PrefReader="@_prefReader"
-                                          EnsTbls="@gpeTbls"
+                                          IsEditing="@IsTiwEditing(curTiw)"
+                                          ConfState="@ConfState"
+                                          EnsTbls="@ensTbls"
                                           EnsAtrs="@EnsAtrs"
+                                          EnsVars="@EnsVars"
                                           Ugpe="@Ugpe"
                                           Efrm="@FormEfrm"
-                                          OnConfirm="@ConfirmPerson"  
+                                          OnConfirm="@ConfirmPerson"
                                           OnCancel="@CancelPerson"
                                           WflItems="@WflItems"
+                                          curWfl="@curWfl"
                                           ChildBusy="@ChildBusy"
                                           IsEditingFn="@(a => IsWflEditing(a))"
                                           GetDraftFn="@(() => GetDraft(EntityLevel.Wfl) as TiwaflDto)"
-                                          IsEditing="@IsTiwEditing(curTiw)"
-                                          ConfState="@ConfState"
                                           OnStartEditWfl="@StartEditWfl"
                                           OnConfirmWfl="@ConfirmWfl"
                                           OnCancelWfl="@CancelWfl"
@@ -145,9 +149,9 @@ else
             </Tab>
             <Tab Title="Adresses" Name="Tiw2Tab" onClick="() => OnTabChanged(2)">
                 <Content>
-                    @if (genOrga != null && canOpenAdres && !string.IsNullOrEmpty(curTiw?.Zmatri))
+                    @if (olnOrga != null && canOpenAdres && !string.IsNullOrEmpty(curTiw?.Zmatri))
                     { 
-                        <Gstadr @bind-NbChanges="_nbChanges" curOrga="@genOrga" _guard="@Guard"
+                        <Gstadr @bind-NbChanges="_nbChanges" curOrga="@olnOrga" _guard="@Guard"
                              EnsTbls="@ensTbls" Actx="@Actx" />
                     }
                 </Content>
@@ -155,7 +159,7 @@ else
             <Tab Title="Récépissé" Name="Tiw3Tab" onClick="() => OnTabChanged(4)">
                 <Content>
                     <span>Recepisse</span>
-                    <RtW11Fic olnOrga="@olnOrga"
+                    <RtW11Fic curOrga="@olnOrga"
                               _InODaClient="@_InODaClient"
                               toChild="@toChild"
                               curTiw="@curTiw">
@@ -210,8 +214,7 @@ else
 
     private InviteLinkData? _InviteData;
 
-    private Gporga olnOrga = new();
-    private GxorgaDto genOrga = new();
+    private GxorgaDto olnOrga = new();
     private List<Gtabl> ensTbls = new();
     private List<Gpatr> EnsAtrs = new();
     private List<Gpcat> EnsCats = new();
@@ -240,23 +243,16 @@ else
     private bool IsBusy => IsLevelBusy(EntityLevel.Tiw);
     private bool ChildBusy => IsLevelBusy(EntityLevel.Wfl);   // an affiliate row is being added or edited
 
+    private TiewelDto curTiw = new();
     private TiewelDto EditTiw => EditTarget(EntityLevel.Tiw, curTiw);
+    private TiwaflDto curWfl = new();
+    private TiwaflDto EditWfl => EditTarget(EntityLevel.Wfl, curWfl);
+ 
     private string? Zmatri
     {
         get => EditTiw.Zmatri;
         set => EditTiw.Zmatri = value;
     }
-    //copy inner entities
-    private List<Gtabl> gpeTbls => ensTbls
-    .Select(tb =>
-    {
-        var copy = tb.Clone();
-        copy.TbItems = tb.TbItems?
-            .Where(it => (it.Tgpe == 0 || it.Tgpe == Ugpe))
-            .ToList() ?? new List<Gtvar>();
-        return copy;
-    })
-    .ToList();
     private bool IsTiwValidate = false;
     private bool IsTiwLoaded = false;
 
@@ -286,7 +282,7 @@ else
 
     public AdrContext Actx { get; set; }
     public UplCxtDto uploadCtx { get; set; } = new();
-    private TiewelDto curTiw = new();
+    
     private int _nbChanges = 0;
 
     protected override async Task OnInitializedAsync()
@@ -350,7 +346,7 @@ else
             };
 
             // Load organization data
-            await RendsOlneBags(InIdorg);
+            await RendsOlneBags(InIdorg, Ugpe);
             //Console.WriteLine("[OlneInsc] BEFORE RENDER");
 
             //Console.WriteLine($"Organization: {InIdorg}");
@@ -379,45 +375,52 @@ else
             isLoading = false;
         }
     }
-    private async Task RendsOlneBags(int myIdorg)
+    private async Task RendsOlneBags(int inOrgId, int inGpeId)
     {
-        olnOrga = new();
+        isLoading = true;
         ensTbls = new();
         EnsAtrs = new();
         EnsCats = new();
         EnsVars = new();
         ChldAfls = new();
-        var bgresponse = await _dftClient.GetFromJsonAsync<Olnebag>($"olines/olnebag/{myIdorg}", default);
+        var bgresponse = await _dftClient.GetFromJsonAsync<Olnebag>($"lgauth/olnebag/{inOrgId}/{inGpeId}");
         if (bgresponse != null)
         {
             _olneBag = bgresponse;
-            genOrga = _olneBag.GenOrga;
-            olnOrga = _olneBag.Norga;
             ensTbls = _olneBag.Ntabls;
             EnsAtrs = _olneBag.Natrs;
             EnsCats = _olneBag.Ncats;
             EnsVars = _olneBag.Nvars;
             //Ityp - Oui/Non
-            ChldAfls = EnsVars.Where(uv => uv.Gvars == 3 && uv.Itb == 6 && uv.Ityp == 1 && uv.Elea != 0).ToList();
-            _lgcdu = olnOrga?.Lftrub ?? 3;
-            _lgfmt = olnOrga?.Ftrub ?? "";
-            await StartTiwNew();
+            ChldAfls = EnsVars.Where(uv => uv.Gvars == 5 && uv.Itb == 6 && uv.Atyp == 1 && uv.Ityp == 1 && uv.Elea != 0).ToList();
         } 
         else
         {
             _olneBag = new();
             IsTiwLoaded = false;
+            return;
         }
+        await LoadOrgaAsync(inOrgId);
+        _lgcdu = olnOrga?.Lftrub ?? 3;
+        _lgfmt = olnOrga?.Ftrub ?? "";
+        await StartTiwNew();
         Console.WriteLine($"FINAL {curTiw?.Zmatri}");
+        isLoading = false;
     }
-
+    private async Task LoadOrgaAsync(int key)
+    {
+        olnOrga = await _MyODaClient
+                .For<GxorgaDto>("Gxorgas")
+                .Key(key)
+                .FindEntryAsync();        
+    }
     protected override void SubscribeToGuard() { }
 
     private void OnTabChanged(int tabIndex)
     {
         refTab = tabIndex;
         canOpenAdres = false;
-        if (refTab == 2 && genOrga != null)
+        if (refTab == 2 && olnOrga != null)
         {
             Actx = new()
             {

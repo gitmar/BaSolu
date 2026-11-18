@@ -64,12 +64,23 @@ namespace GxTie.Services
                 return new();
             }
         }
-        public async Task<List<Gtabl>> LoadOrgaTables()
+        //public async Task<List<Gtabl>> LoadOrgaTables()
+        //{
+        //    var json = await _clieManager.SendRequestAsync(
+        //        "AUTHClient",
+        //        HttpMethod.Get,
+        //        "lgauth/alltables");
+
+        //    var result = JsonConvert.DeserializeObject<List<Gtabl>>(json);
+
+        //    return result ?? new List<Gtabl>();
+        //}
+        public async Task<List<Gtabl>> LoadOrgaTables(int inOrgId, int tGpeId)
         {
             var json = await _clieManager.SendRequestAsync(
                 "AUTHClient",
                 HttpMethod.Get,
-                "lgauth/alltables");
+                $"lgauth/alltables/{inOrgId}/{tGpeId}");
 
             var result = JsonConvert.DeserializeObject<List<Gtabl>>(json);
 
@@ -109,15 +120,15 @@ namespace GxTie.Services
             return result ?? new List<Gpcat>();
         }
         
-        public async Task<Acatbag> LoadOrgaTieAtrCats(int inIdorg)
-        {
-            var json = await _clieManager.SendRequestAsync(
-                "LOCALClient",
-                HttpMethod.Get,
-                $"olines/acatbag/{inIdorg}");
-            var result = JsonConvert.DeserializeObject<Acatbag>(json);
-            return result ?? new Acatbag();
-        }
+        //public async Task<Acatbag> LoadOrgaTieAtrCats(int inIdorg)
+        //{
+        //    var json = await _clieManager.SendRequestAsync(
+        //        "LOCALClient",
+        //        HttpMethod.Get,
+        //        $"olines/acatbag/{inIdorg}");
+        //    var result = JsonConvert.DeserializeObject<Acatbag>(json);
+        //    return result ?? new Acatbag();
+        //}
 
         //public async Task<List<Gpcol>> LoadOrgaColons()
         //{

@@ -11,6 +11,6 @@ namespace GxTie.Components.Cols
 
         public async Task<List<LSelCol>> LoadAsync(int idorg, ColPrefContext c, CancellationToken ct = default)
             => await _dftClient.GetFromJsonAsync<List<LSelCol>>(
-                   $"Olines/{idorg}/columns?Totyp={c.Totyp}&Efrm={c.Efrm}&Styp={c.Styp}", ct) ?? [];
+                   $"olines/{idorg}/columns?Totyp={c.Totyp}&Efrm={c.Efrm}&Styp={c.Styp}", ct) ?? [];
     }
 }

@@ -17,7 +17,7 @@
 @inject ILocalStorageService _localStorage
 @inject NavigationManager _navManager
 @inject HttpClientService _clieManager
-@inject RendAgres _rendAgres
+@inject RendGxAgres _rendAgres
 @inject IMapper Mapper
 @inject IJSRuntime _jsRun
 
@@ -293,8 +293,9 @@
     //[Parameter] public StockClientService StockService { get; set; }
     private int IMyGtie { get; set; } = 0;
     private List<TieatrDto> LsAtrs = new();
+    private List<Gpvar> LsVars = new();
     private List<Gpfixe> LsFixes = new();
-    private List<Gpfixe> LsGties = new();
+    private List<Gpvar> LsGties = new();
     public List<GxGroupe> Groupes = new();
     private int inZfro = 0;
     private Guid? editRowguid;
@@ -319,7 +320,7 @@
             //     Imessage = "CONNEXION, Utilisateur non authentifie";
             //     return;
             // }
-            // //LsVars = toChild.LsVars;
+            LsVars = toChild.LsVars;
             // LsFixes = toChild.LsFixes;
             //LsDoms = toChild.LsFixes.Where(ut => ut.Gvars == 36 && ut.Itb == 4 && ut.Gp1 == 3 && ut.Elea != 0).ToList();
             //LsDoms = LsFixes.Where(ut => ut.Gvars == 36 && ut.Itb == 4 && ut.Gp1 == 3 && ut.Elea != 0).ToList();
@@ -327,12 +328,13 @@
             //_lgcdu = 3;
             LsAtrs = curOrga?.Tieatrs.ToList();
             LsFixes = toChild.LsFixes.ToList();
-            LsGties = LsFixes
-                .Where(ut => ut.Gvars == 36 && ut.Elea != 0 && ut.Elea != 9)
-                .ToList();
+            //LsGties = LsFixes
+            //    .Where(ut => ut.Gvars == 36 && ut.Elea != 0 && ut.Elea != 9)
+            //    .ToList();
+            LsGties = LsVars.Where(uv => uv.Gvars == 5 && uv.Itb == 5 && uv.Ityp == 1 && uv.Elea != 0).ToList();
             Groupes.Clear();
             //foreach(var gr in LsGties.Where(gr => gr.Gp1 == 1 && gr.Itb == 6))
-            foreach (var gr in LsGties.Where(gr => gr.Itb == 6))
+            foreach (var gr in LsGties.Where(gr => gr.Itb == 5))
             {
                 Groupes.Add(new GxGroupe { Itb = gr.Itb, Elea = gr.Elea, Liba = gr.Liba });
             }

@@ -29,6 +29,8 @@ namespace GxPilo.Components.Uifrags
         protected readonly Dictionary<Guid, ResbroDto> _edBroOriginals = new();
         protected readonly Dictionary<Guid, GstablDto> _edGtbOriginals = new();
         protected readonly Dictionary<Guid, GstablDto> _edGt2Originals = new();
+        protected readonly Dictionary<Guid, GsgfixDto> _edGfxOriginals = new();
+        protected readonly Dictionary<Guid, GsgfixDto> _edGf2Originals = new();
         protected CompUICrudBase(IPendingChangesGuard guard) : base(guard)
         {
 
@@ -54,14 +56,6 @@ namespace GxPilo.Components.Uifrags
             BumpRenderKey(level);                 // <-- add this
             await InvokeAsync(StateHasChanged);
         }
-        //protected override async Task ConfirmDelete(EntityLevel level, object entity, bool isConfirm)
-        //{
-        //    var rowguid = MLEntityKeyHelper.GetRowguidAsGuid(entity);
-        //    await UnifiedDeleteAction(level, entity, isConfirm);
-        //    ClearAddRow(level, rowguid);
-        //    BumpRenderKey(level);                 // <-- add this
-        //    await InvokeAsync(StateHasChanged);
-        //}
         protected override async Task ConfirmDelete(
     EntityLevel level,
     object entity,
@@ -96,33 +90,6 @@ namespace GxPilo.Components.Uifrags
             BumpRenderKey(level);                 // <-- add this
             await InvokeAsync(StateHasChanged);
         }
-        //protected override async Task CancelDelete(EntityLevel level, object entity)
-        //{
-        //    var rowguid = MLEntityKeyHelper.GetRowguidAsGuid(entity);
-        //    await UnifiedCancelAction(level, entity, PendingOpType.Delete);
-        //    BumpRenderKey(level);                 // <-- add this
-        //    await InvokeAsync(StateHasChanged);
-        //}
-//        object entity)
-//{
-//    if (entity is null)
-//        return;
-
-//    var rowguid = EntityKeyHelper.GetRowguid(entity);
-
-//        SetRowState(level, rowguid, RowState.Default);
-
-//        BumpRenderKey(level);
-//        await InvokeAsync(StateHasChanged);
-//}
-
-        //protected void ClearDeleteUiState(
-        //    EntityLevel level,
-        //Guid rowguid)
-        //{
-        //    _rowStates.Remove((level, rowguid));
-        //    _rowPendingOpTypeByRow.Remove(rowguid);
-        //}
         // --- Unified actions (generic) ---
         protected async Task UnifiedAddAction(EntityLevel level, object entity, PendingOpType opType, bool isConfirm)
         {
@@ -185,57 +152,6 @@ namespace GxPilo.Components.Uifrags
 
             FinalizeConfirmedState(level, entity, $"✅ {entitySetName} tracked");
         }
-        //protected async Task UnifiedDeleteAction(EntityLevel level, object entity, PendingOpType opType, bool isConfirm)
-        //{
-        //    var rowguid = EntityKeyHelper.GetRowguid(entity);
-        //    string entitySetName = GetEntitySetName(level);
-        //    if (!isConfirm)
-        //    {
-        //        SetRowState(level, rowguid, RowState.Default);
-        //        return;
-        //    }
-
-        //    var key = EntityKeyHelper.GetKey(entity, level);
-        //    var opId = await Guard.TrackDelete(entitySetName, key, rowguid);
-        //    ////SetPendingOpType(level, rowguid, PendingOpType.Delete);
-        //    SetOpInfo(level, rowguid, new PendingOpInfo(opId, PendingOpType.Delete));
-
-        //    RemoveFromLocalCollection(level, entity);
-
-        //    FinalizeConfirmedState(level, entity, $"✅ {entitySetName} deletion tracked");
-        //}
-    //    protected override async Task ConfirmDelete(
-    //EntityLevel level,
-    //object entity,
-    //bool isConfirm)
-    //    {
-    //        if (entity is null)
-    //            return;
-
-    //        var rowguid = EntityKeyHelper.GetRowguid(entity);
-    //        var entitySetName = GetEntitySetName(level);
-    //        var key = EntityKeyHelper.GetKey(entity, level);
-
-    //        var opId = await Guard.TrackDelete(
-    //            entitySetName,
-    //            key,
-    //            rowguid);
-
-    //        SetOpInfo(
-    //            level,
-    //            rowguid,
-    //            new PendingOpInfo(
-    //                opId,
-    //                PendingOpType.Delete));
-
-    //        RemoveFromLocalCollection(level, entity);
-
-    //        ClearDeleteUiState(level, rowguid);
-
-    //        BumpRenderKey(level);
-    //        await InvokeAsync(StateHasChanged);
-    //    }
-
         protected override async Task CancelDelete(
             EntityLevel level,
             object entity)
@@ -323,66 +239,6 @@ namespace GxPilo.Components.Uifrags
             // The operation is pending in the guard until FlushAsync().
             ClearDeleteUiState(level, rowguid);
         }
-        //    protected async Task StartRowAdd<TDto>(
-        //EntityLevel level,
-        //TDto newItem,
-        //List<TDto> list,
-        //Action<TDto> setDraftField) where TDto : class
-        //    {
-        //        var rowguid = EntityKeyHelper.GetRowguid(newItem);
-        //        if (rowguid == Guid.Empty) return;
-        //        if (IsAnyRowEditing && !IsRowEditing(rowguid)) return;
-
-        //        list.Insert(0, newItem);
-        //        var draft = DeepClone(newItem);
-        //        setDraftField(draft);
-
-        //        BeginAdd(level, rowguid, draft);
-        //        BumpRenderKey(level);                 // <-- add this
-        //        await InvokeAsync(StateHasChanged);
-        //    }
-        //    protected async Task StartRowEdit<TDto>(
-        //        EntityLevel level,
-        //        TDto item,
-        //        Dictionary<Guid, TDto> originalsStore,
-        //        Action<TDto> setDraftField) where TDto : class
-        //    {
-        //        var rowguid = EntityKeyHelper.GetRowguid(item);
-        //        if (rowguid == Guid.Empty) return;
-        //        if (IsAnyRowEditing && !IsRowEditing(rowguid)) return;
-
-        //        originalsStore[rowguid] = DeepClone(item);
-        //        var draft = DeepClone(item);
-        //        setDraftField(draft);
-
-        //        BeginEdit(level, rowguid, draft);
-        //        BumpRenderKey(level);                 // <-- add this
-        //        await InvokeAsync(StateHasChanged);
-        //    }
-        //    //protected async Task StartRowDelete(EntityLevel level, Guid rowguid)
-        //    //{
-        //    //    if (rowguid == Guid.Empty) return;
-        //    //    if (IsAnyRowEditing && !IsRowEditing(rowguid)) return;
-
-        //    //    SetRowState(level, rowguid, RowState.DeletePending);
-        //    //    BumpRenderKey(level);                 // <-- add this
-        //    //    await InvokeAsync(StateHasChanged);
-        //    //}
-        //    protected async Task StartRowDelete(EntityLevel level, Guid rowguid)
-        //    {
-        //        if (rowguid == Guid.Empty)
-        //            return;
-
-        //        // Do not block deletion because another row is already DeletePending.
-        //        // Only prevent deletion of a row that is already pending deletion.
-        //        if (GetRowState(level, rowguid) == RowState.DeletePending)
-        //            return;
-
-        //        SetRowState(level, rowguid, RowState.DeletePending);
-
-        //        BumpRenderKey(level);
-        //        await InvokeAsync(StateHasChanged);
-        //    }
         protected async Task StartRowAdd<TDto>(
         EntityLevel level,
         TDto newItem,
@@ -476,6 +332,8 @@ namespace GxPilo.Components.Uifrags
         protected bool IsPstEditing(RubpstDto item) => IsEditing(EntityLevel.Pst, item.Rowguid);
         protected bool IsGtbEditing(GstablDto item) => IsEditing(EntityLevel.Gtb, item.Rowguid);
         protected bool IsGt2Editing(GstablDto item) => IsEditing(EntityLevel.Gt2, item.Rowguid);
+        protected bool IsGfxEditing(GsgfixDto item) => IsEditing(EntityLevel.Gfx, item.Rowguid);
+        protected bool IsGf2Editing(GsgfixDto item) => IsEditing(EntityLevel.Gf2, item.Rowguid);
         protected bool IsEditing(EntityLevel level, Guid rowguid)
         {
             var es = GetEditState(level);
@@ -483,38 +341,6 @@ namespace GxPilo.Components.Uifrags
                    ((es.IsAdd && es.AddRowguid == rowguid) ||
                     (es.IsEdit && es.EditRowguid == rowguid));
         }
-        //protected bool IsEditing(EntityLevel level, Guid rowguid)
-        //{
-        //    var es = GetEditState(level);
-        //    return (es.IsAdd || es.IsEdit) &&
-        //           ((es.IsAdd && es.AddRowguid == rowguid) ||
-        //            (es.IsEdit && es.EditRowguid == rowguid));
-        //}
-
-        //protected bool IsPlanEditing(PlngenDto item)
-        //{
-        //    var es = GetEditState(EntityLevel.Plan);
-        //    return (es.IsAdd || es.IsEdit) &&
-        //           ((es.IsAdd && es.AddRowguid == item.Rowguid) ||
-        //            (es.IsEdit && es.EditRowguid == item.Rowguid));
-        //}
-
-
-        //protected bool IsRubEditing(RubvarDto item)
-        //{
-        //    var es = GetEditState(EntityLevel.Rub);
-        //    return (es.IsAdd || es.IsEdit) &&
-        //           ((es.IsAdd && es.AddRowguid == item.Rowguid) ||
-        //            (es.IsEdit && es.EditRowguid == item.Rowguid));
-        //}
-
-        //protected bool IsFmtEditing(RubfmtDto item)
-        //{
-        //    var es = GetEditState(EntityLevel.Fmt);
-        //    return (es.IsAdd || es.IsEdit) &&
-        //           ((es.IsAdd && es.AddRowguid == item.Rowguid) ||
-        //            (es.IsEdit && es.EditRowguid == item.Rowguid));
-        //}
         private void SetDeleteFlags(object item) => SetFlags(item, 0, 0, -1);
         // Generic flag setter
         private void SetFlags<T>(T entity, int xadd1, int xedt1, int xdel1)
@@ -534,30 +360,6 @@ namespace GxPilo.Components.Uifrags
             //_messageService.Show("✅ Saved successfully", ToastType.Success);
             StateHasChanged();
         }
-        //protected void ClearRowState(EntityLevel level, Guid rowguid)
-        //{
-        //    _rowStates.Remove((level, rowguid));
-        //    Console.WriteLine("22Pln ROW cleared");
-        //}
-        //protected void ClearEditFlags()
-        //{
-        //    IsAdd = false;
-        //    IsEdit = false;
-        //    AddRowguid = null;
-        //    EditRowguid = null;
-        //    DeleteRowguid = null;
-        //}
-        //UI Page row manage
-        //protected void BeginAddRow(EntityLevel level, Guid rowguid, object draft)
-        //{
-        //    SetDraft(level, draft);
-        //    StartRowEdit(rowguid, level);
-        //    SetRowState(level, rowguid, RowState.AddPending);
-        //    //var opId = await CommitAddOrUpdateAsync(entity, isNew, entitySet);
-        //    ////_rowPendingOpTypeByRow[rowguid] = PendingOpType.Insert;
-        //    //_pendingOpIdsByRow[rowguid] = opId;
-        //    SetLightBackground(rowguid, true);
-        //}
         protected override void RollbackPendingState(EntityLevel level, object entity, bool isNew)
         {
             var rowguid = MLEntityKeyHelper.GetRowguidAsGuid(entity);
@@ -638,6 +440,12 @@ namespace GxPilo.Components.Uifrags
                 case EntityLevel.Gt2:
                     if (entity is GstablDto gt2) Gt2Items.Add(gt2);
                     break;
+                case EntityLevel.Gfx:
+                    if (entity is GsgfixDto gfx) GfxItems.Add(gfx);
+                    break;
+                case EntityLevel.Gf2:
+                    if (entity is GsgfixDto gf2) Gf2Items.Add(gf2);
+                    break;
                 default:
                     throw new ArgumentOutOfRangeException(nameof(level));
             }
@@ -698,6 +506,14 @@ namespace GxPilo.Components.Uifrags
                 case EntityLevel.Gt2:
                     if (entity is GstablDto gt2)
                         Gt2Items.RemoveAll(x => x.Rowguid == gt2.Rowguid);
+                    break;
+                case EntityLevel.Gfx:
+                    if (entity is GsgfixDto gfx)
+                        GfxItems.RemoveAll(x => x.Rowguid == gfx.Rowguid);
+                    break;
+                case EntityLevel.Gf2:
+                    if (entity is GsgfixDto gf2)
+                        Gf2Items.RemoveAll(x => x.Rowguid == gf2.Rowguid);
                     break;
                 default:
                     throw new ArgumentOutOfRangeException(nameof(level));
@@ -797,6 +613,20 @@ namespace GxPilo.Components.Uifrags
                     {
                         var index = Gt2Items.FindIndex(x => x.Rowguid == gt2.Rowguid);
                         if (index >= 0) Gt2Items[index] = gt2;
+                    }
+                    break;
+                case EntityLevel.Gfx:
+                    if (entity is GsgfixDto gfx)
+                    {
+                        var index = GfxItems.FindIndex(x => x.Rowguid == gfx.Rowguid);
+                        if (index >= 0) GfxItems[index] = gfx;
+                    }
+                    break;
+                case EntityLevel.Gf2:
+                    if (entity is GsgfixDto gf2)
+                    {
+                        var index = Gf2Items.FindIndex(x => x.Rowguid == gf2.Rowguid);
+                        if (index >= 0) Gf2Items[index] = gf2;
                     }
                     break;
                 default:
@@ -1072,6 +902,50 @@ namespace GxPilo.Components.Uifrags
                         gt2.Eta = draftGt2.Eta;
                     }
                     break;
+                case EntityLevel.Gfx:
+                    if (entity is GsgfixDto gfx && _draftGfx is GsgfixDto draftFix)
+                    {
+                        if (draftFix == null) return;
+                        gfx.Rowguid = draftFix.Rowguid;
+                        gfx.Idorg = draftFix.Idorg; //pere Id
+                        gfx.Gvars = draftFix.Gvars;
+                        gfx.Itb = draftFix.Itb;
+                        gfx.Gtyp = draftFix.Gtyp; //2optionnel1integre
+                        gfx.Ktyp = draftFix.Ktyp; //1tiers2matiere
+                        gfx.Etyp = draftFix.Etyp;
+                        gfx.Xdpd = draftFix.Xdpd;
+                        gfx.Ydpd = draftFix.Ydpd;
+                        gfx.Liba = draftFix.Liba; // string.Empty, placeholder
+                        gfx.Abg = draftFix.Abg; // string.Empty, placeholder
+                        gfx.Ivala = draftFix.Ivala;
+                        gfx.Elea = draftFix.Elea;
+                        gfx.Ityp = draftFix.Ityp;
+                        gfx.Jtyp = draftFix.Jtyp;
+                        gfx.Eta = draftFix.Eta;
+                    }
+                    break;
+                case EntityLevel.Gf2:
+                    if (entity is GsgfixDto gf2 && _draftGf2 is GsgfixDto draftFx2)
+                    {
+                        if (draftFx2 == null) return;
+                        gf2.Rowguid = draftFx2.Rowguid;
+                        gf2.Idorg = draftFx2.Idorg; //pere Id
+                        gf2.Gvars = draftFx2.Gvars;
+                        gf2.Itb = draftFx2.Itb;
+                        gf2.Gtyp = draftFx2.Gtyp; //2optionnel1integre
+                        gf2.Ktyp = draftFx2.Ktyp; //1tiers2matiere
+                        gf2.Etyp = draftFx2.Etyp;
+                        gf2.Xdpd = draftFx2.Xdpd;
+                        gf2.Ydpd = draftFx2.Ydpd;
+                        gf2.Liba = draftFx2.Liba; // string.Empty, placeholder
+                        gf2.Abg = draftFx2.Abg; // string.Empty, placeholder
+                        gf2.Ivala = draftFx2.Ivala;
+                        gf2.Elea = draftFx2.Elea;
+                        gf2.Ityp = draftFx2.Ityp;
+                        gf2.Jtyp = draftFx2.Jtyp;
+                        gf2.Eta = draftFx2.Eta;
+                    }
+                    break;
                 default:
                     throw new ArgumentOutOfRangeException(nameof(level));
             }
@@ -1225,6 +1099,50 @@ namespace GxPilo.Components.Uifrags
                         gt2.Eta = originalGt2.Eta;
                     }
                     break;
+                case EntityLevel.Gfx:
+                    if (entity is GsgfixDto gfx &&
+                        _edGfxOriginals.TryGetValue(gfx.Rowguid, out var originalGfx))
+                    {
+                        gfx.Rowguid = originalGfx.Rowguid;
+                        gfx.Idorg = originalGfx.Idorg; //pere Id
+                        gfx.Gvars = originalGfx.Gvars;
+                        gfx.Itb = originalGfx.Itb;
+                        gfx.Gtyp = originalGfx.Gtyp; //2optionnel1integre
+                        gfx.Ktyp = originalGfx.Ktyp; //1tiers2matiere
+                        gfx.Etyp = originalGfx.Etyp;
+                        gfx.Xdpd = originalGfx.Xdpd;
+                        gfx.Ydpd = originalGfx.Ydpd;
+                        gfx.Liba = originalGfx.Liba; // string.Empty, placeholder
+                        gfx.Abg = originalGfx.Abg; // string.Empty, placeholder
+                        gfx.Ivala = originalGfx.Ivala;
+                        gfx.Elea = originalGfx.Elea;
+                        gfx.Ityp = originalGfx.Ityp;
+                        gfx.Jtyp = originalGfx.Jtyp;
+                        gfx.Eta = originalGfx.Eta;
+                    }
+                    break;
+                case EntityLevel.Gf2:
+                    if (entity is GsgfixDto gf2 &&
+                        _edGf2Originals.TryGetValue(gf2.Rowguid, out var originalGf2))
+                    {
+                        gf2.Rowguid = originalGf2.Rowguid;
+                        gf2.Idorg = originalGf2.Idorg; //pere Id
+                        gf2.Gvars = originalGf2.Gvars;
+                        gf2.Itb = originalGf2.Itb;
+                        gf2.Gtyp = originalGf2.Gtyp; //2optionnel1integre
+                        gf2.Ktyp = originalGf2.Ktyp; //1tiers2matiere
+                        gf2.Etyp = originalGf2.Etyp;
+                        gf2.Xdpd = originalGf2.Xdpd;
+                        gf2.Ydpd = originalGf2.Ydpd;
+                        gf2.Liba = originalGf2.Liba; // string.Empty, placeholder
+                        gf2.Abg = originalGf2.Abg; // string.Empty, placeholder
+                        gf2.Ivala = originalGf2.Ivala;
+                        gf2.Elea = originalGf2.Elea;
+                        gf2.Ityp = originalGf2.Ityp;
+                        gf2.Jtyp = originalGf2.Jtyp;
+                        gf2.Eta = originalGf2.Eta;
+                    }
+                    break;
             }
         }
         //committing drafts
@@ -1330,7 +1248,6 @@ namespace GxPilo.Components.Uifrags
             target.Xadd1 = source.Xadd1;
             target.Xedt1 = source.Xedt1;
         }
-
         protected void CommitGtbDraft(GstablDto target, GstablDto source)
         {
             target.Idorg = source.Idorg; //pere Id
@@ -1376,6 +1293,44 @@ namespace GxPilo.Components.Uifrags
             target.Xadd1 = source.Xadd1;
             target.Xedt1 = source.Xedt1;
         }
+        protected void CommitGfxDraft(GsgfixDto target, GsgfixDto source)
+        {
+            target.Idorg = source.Idorg; //pere Id
+            target.Rowguid = source.Rowguid;
+            target.Gvars = source.Gvars;
+            target.Itb = source.Itb;
+            target.Gtyp = source.Gtyp; //2optionnel1integre
+            target.Ktyp = source.Ktyp; //1tiers2matiere
+            target.Etyp = source.Etyp;
+            target.Xdpd = source.Xdpd;
+            target.Ydpd = source.Ydpd;
+            target.Liba = source.Liba; // string.Empty, placeholder
+            target.Abg = source.Abg; // string.Empty, placeholder
+            target.Ivala = source.Ivala;
+            target.Elea = source.Elea;
+            target.Ityp = source.Ityp;
+            target.Jtyp = source.Jtyp;
+            target.Eta = source.Eta;
+        }
+        protected void CommitGf2Draft(GsgfixDto target, GsgfixDto source)
+        {
+            target.Idorg = source.Idorg; //pere Id
+            target.Rowguid = source.Rowguid;
+            target.Gvars = source.Gvars;
+            target.Itb = source.Itb;
+            target.Gtyp = source.Gtyp; //2optionnel1integre
+            target.Ktyp = source.Ktyp; //1tiers2matiere
+            target.Etyp = source.Etyp;
+            target.Xdpd = source.Xdpd;
+            target.Ydpd = source.Ydpd;
+            target.Liba = source.Liba; // string.Empty, placeholder
+            target.Abg = source.Abg; // string.Empty, placeholder
+            target.Ivala = source.Ivala;
+            target.Elea = source.Elea;
+            target.Ityp = source.Ityp;
+            target.Jtyp = source.Jtyp;
+            target.Eta = source.Eta;
+        }
         //divers settings
         protected object? GetDraft(EntityLevel level)
         {
@@ -1394,6 +1349,8 @@ namespace GxPilo.Components.Uifrags
                 EntityLevel.Bro => _draftBro,
                 EntityLevel.Gtb => _draftGtb,
                 EntityLevel.Gt2 => _draftGt2,
+                EntityLevel.Gfx => _draftGfx,
+                EntityLevel.Gf2 => _draftGf2,
                 _ => throw new ArgumentOutOfRangeException(nameof(level))
             };
         }
@@ -1439,6 +1396,12 @@ namespace GxPilo.Components.Uifrags
                     break;
                 case EntityLevel.Gt2:
                     _draftGt2 = draft;
+                    break;
+                case EntityLevel.Gfx:
+                    _draftGfx = draft;
+                    break;
+                case EntityLevel.Gf2:
+                    _draftGf2 = draft;
                     break;
                 default:
                     throw new ArgumentOutOfRangeException(nameof(level));

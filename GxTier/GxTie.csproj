@@ -1,9 +1,9 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.BlazorWebAssembly">
   <PropertyGroup>
-    <TargetFramework>net9.0</TargetFramework>
+    <TargetFramework>net10.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
-    <Version>1.1.65</Version>
+    <Version>1.1.73</Version>
     <SchemaVersion>1</SchemaVersion>
     <ServiceWorkerAssetsManifest>service-worker-assets.js</ServiceWorkerAssetsManifest>
   </PropertyGroup>
@@ -20,6 +20,8 @@
   <ItemGroup>
     <Compile Remove="ClieModels\**" />
     <Compile Remove="Components\ABrou\**" />
+    <Compile Remove="Components\Opera\Calculs\**" />
+    <Compile Remove="Components\Opera\Saisies\**" />
     <Compile Remove="Connected Services\OData Service\**" />
     <Compile Remove="Formulas\**" />
     <Compile Remove="MyApp.Tests\**" />
@@ -28,6 +30,8 @@
     <Compile Remove="YYYFormulas\**" />
     <Content Remove="ClieModels\**" />
     <Content Remove="Components\ABrou\**" />
+    <Content Remove="Components\Opera\Calculs\**" />
+    <Content Remove="Components\Opera\Saisies\**" />
     <Content Remove="Connected Services\OData Service\**" />
     <Content Remove="Formulas\**" />
     <Content Remove="MyApp.Tests\**" />
@@ -36,6 +40,8 @@
     <Content Remove="YYYFormulas\**" />
     <EmbeddedResource Remove="ClieModels\**" />
     <EmbeddedResource Remove="Components\ABrou\**" />
+    <EmbeddedResource Remove="Components\Opera\Calculs\**" />
+    <EmbeddedResource Remove="Components\Opera\Saisies\**" />
     <EmbeddedResource Remove="Connected Services\OData Service\**" />
     <EmbeddedResource Remove="Formulas\**" />
     <EmbeddedResource Remove="MyApp.Tests\**" />
@@ -44,6 +50,8 @@
     <EmbeddedResource Remove="YYYFormulas\**" />
     <None Remove="ClieModels\**" />
     <None Remove="Components\ABrou\**" />
+    <None Remove="Components\Opera\Calculs\**" />
+    <None Remove="Components\Opera\Saisies\**" />
     <None Remove="Connected Services\OData Service\**" />
     <None Remove="Formulas\**" />
     <None Remove="MyApp.Tests\**" />
@@ -98,12 +106,9 @@
     <Content Remove="Components\Identity\Register.razor" />
     <Content Remove="Components\Identity\Repareg.razor" />
     <Content Remove="Components\Opera\Atest.razor" />
-    <Content Remove="Components\Opera\Calculs\CalcResLnes.razor" />
     <Content Remove="Components\Opera\Etats\EtatMenu.razor" />
     <Content Remove="Components\Opera\Ordres\OrdaLoad.razor" />
     <Content Remove="Components\Opera\Ordres\TestNav.razor" />
-    <Content Remove="Components\Opera\Saisies\SaieActLnes.razor" />
-    <Content Remove="Components\Opera\Saisies\Z3SaieActLnes.razor" />
     <Content Remove="Components\Opera\Z4Saiepart.razor" />
     <Content Remove="Components\Paccu\InvOper.razor" />
     <Content Remove="Components\Paccu\Mutatio.razor" />
@@ -124,16 +129,53 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Content Include="Components\ABrou\Z3Login.razor" />
-  </ItemGroup>
-
-  <ItemGroup>
     <None Update="wwwroot\manifest.webmanifest">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
     </None>
   </ItemGroup>
   <ItemGroup>
+    <PackageReference Include="Blazor.Bootstrap" Version="3.5.0" />
+    <PackageReference Include="BlazorDownloadFile" Version="2.4.0.2" />
+    <PackageReference Include="Blazored.LocalStorage" Version="4.5.0" />
+    <PackageReference Include="Flee" Version="2.0.0" />
+
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="10.0.15" />
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Authentication" Version="10.0.15" />
+    <PackageReference Include="Microsoft.AspNetCore.Components.Authorization" Version="10.0.15" />
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="10.0.15" PrivateAssets="all" />
+
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="10.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Http" Version="10.0.15" />
+
+    <PackageReference Include="Microsoft.IdentityModel.JsonWebTokens" Version="8.15.0" />
+    <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.15.0" />
+
+    <PackageReference Include="Simple.OData.Client" Version="6.0.1" />
+    <PackageReference Include="Microsoft.OData.Core" Version="7.9.4" />
+    <PackageReference Include="Microsoft.OData.Edm" Version="7.9.4" />
+    <PackageReference Include="Microsoft.Spatial" Version="7.9.4" />
+    
+    <!--<PackageReference Include="Simple.OData.Client" Version="6.0.1" />
+    <PackageReference Include="Microsoft.OData.Core" Version="8.4.3" />
+    <PackageReference Include="Microsoft.OData.Edm" Version="8.4.3" />
+    <PackageReference Include="Microsoft.Spatial" Version="8.4.3" />-->
+    
+    
+    
+    <PackageReference Include="TG.Blazor.IndexedDB" Version="1.5.0-preview" />
+
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
+    <PackageReference Include="System.ComponentModel.Annotations" Version="5.0.0" />
+
+    <PackageReference Include="Microsoft.AspNetCore.WebUtilities" Version="10.0.15" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ServiceWorker Include="wwwroot\service-worker.js" PublishedContent="wwwroot\service-worker.published.js" />
+  </ItemGroup>
+  
+  <!--<ItemGroup>
     <PackageReference Include="Blazor.Bootstrap" Version="3.5.0" />
     <PackageReference Include="BlazorDownloadFile" Version="2.4.0.2" />
     <PackageReference Include="Flee" Version="2.0.0" />
@@ -148,31 +190,30 @@
     <PackageReference Include="Microsoft.AspNetCore.Http" Version="2.3.0" />
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.22" />
 
-    <!-- EF Core: keep ONLY 8.x -->
-    <PackageReference Include="Simple.OData.Client" Version="5.26.0" /> <!--6.0.1-->
+    --><!-- EF Core: keep ONLY 8.x --><!--
+    <PackageReference Include="Simple.OData.Client" Version="5.26.0" /> --><!--6.0.1--><!--
     <PackageReference Include="Microsoft.OData.Core" Version="7.9.4" />
     <PackageReference Include="Microsoft.OData.Edm" Version="7.9.4" />
     <PackageReference Include="Microsoft.Spatial" Version="7.9.4" />
     <PackageReference Include="TG.Blazor.IndexedDB" Version="1.5.0-preview" />
     
-  </ItemGroup>
+  </ItemGroup>-->
 
-  <ItemGroup>
+  <!--<ItemGroup>
     <PackageReference Include="Blazored.LocalStorage" Version="4.5.0" />
     <PackageReference Include="System.ComponentModel.Annotations" Version="5.0.0" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />  
     <PackageReference Include="System.Text.Json" Version="10.0.3" />
-  </ItemGroup>
+  </ItemGroup>-->
 
-  <ItemGroup>
+  <!--<ItemGroup>
     <ServiceWorker Include="wwwroot\service-worker.js" PublishedContent="wwwroot\service-worker.published.js" />
-  </ItemGroup>
+  </ItemGroup>-->
 
   <ItemGroup>
-    <Folder Include="Components\Opera\Calculs\" />
+    <Folder Include="Components\ABrou\" />
     <Folder Include="Components\Opera\Etats\" />
     <Folder Include="Components\Opera\Ordres\" />
-    <Folder Include="Components\Opera\Saisies\" />
     <Folder Include="Connected Services\" />
     <Folder Include="wwwroot\_content\Blazor.Bootstrap\" />
   </ItemGroup>
@@ -182,7 +223,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\GxFormula\GxFormula\GxFormula.csproj" />
+    <ProjectReference Include="..\..\GxFormula\GxFormula.csproj" />
     <ProjectReference Include="..\..\GxShared\GxShared.csproj" />
     <ProjectReference Include="..\..\GxSmenu\Gx.Components.csproj" />
   </ItemGroup>

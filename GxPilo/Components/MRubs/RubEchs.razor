@@ -88,7 +88,7 @@ else
                             {
                                 <Grid TItem="PlngenDto"
                                       Data="@MyDaPlans"
-                                      @key="GetRenderKey(EntityLevel.Plan)"
+                                      @key="@GetRenderKey(EntityLevel.Plan)"
                                       AllowRowClick="true"
                                       OnRowClick="OnPlnRowClick"
                                       AllowDetailView="true"
@@ -139,14 +139,14 @@ else
                                                 {
                                                     <input type="checkbox"
                                                            class="form-check-input"
-                                                           checked="@(draftPln.Siatr ?? 0)"
-                                                           @onchange="e => draftPln.Siatr = (int)e.Value!" />
+                                                           checked="@(draftPln.Siatr == 1)"
+                                                           @onchange="e => draftPln.Siatr = (bool)e.Value! ? 1 : 0" />
                                                 }
                                                 else
                                                 {
                                                     <input type="checkbox"
                                                            class="form-check-input"
-                                                           checked="@(item.Siatr ?? 0)"
+                                                           checked="@(item.Siatr == 1)"
                                                            disabled />
                                                 }
                                             </ChildContent>
@@ -270,7 +270,7 @@ else
                                                     <div class="col-12">
                                                         <Grid TItem="RubvarDto"
                                                               Data="selectedPln.Rubvars.ToList()"
-                                                              @key="GetRenderKey(EntityLevel.Rub)"
+                                                              @key="@GetRenderKey(EntityLevel.Rub)"
                                                               AllowDetailView="true"
                                                               RowClass="@((item) => GetRubRowClass(item))"
                                                               Responsive="true">
@@ -789,7 +789,7 @@ else
     private List<Gpfixe> LsDoms = new();
     private List<Gpfixe> LsAtrs = new();
     private List<Gpfixe> LsVues = new();
-    private List<Gpfixe> LsGties = new();
+    private List<Gpvar> LsGties = new();
     //private List<Gtvar> StatItems = new();
 
     private bool isPlnFilteringEnabled = false;
@@ -864,7 +864,8 @@ else
             LsDoms = LsFixes.Where(ut => ut.Gvars == 36 && ut.Itb == 4 && ut.Gp1 == 3 && ut.Elea != 0).ToList();
             LsAtrs = LsFixes.Where(ut => ut.Gvars == 36 && ut.Itb == 1 && ut.Gp1 == 3 && ut.Elea != 0).ToList();
             LsVues = LsFixes.Where(ut => ut.Gvars == 36 && ut.Itb == 4 && ut.Gp1 == 4 && ut.Elea != 0).ToList();
-            LsGties = LsFixes.Where(ut => ut.Gvars == 36 && ut.Itb == 6 && ut.Elea != 0 && ut.Elea != 9).ToList();
+            //LsGties = LsFixes.Where(ut => ut.Gvars == 36 && ut.Itb == 6 && ut.Elea != 0 && ut.Elea != 9).ToList();
+            LsGties = LsVars.Where(uv => uv.Gvars == 5 && uv.Itb == 5 && uv.Ityp == 1 && uv.Elea != 0).ToList();
             //StatItems = ensTbls?.FirstOrDefault(tb => tb.Pref == 11 && tb.Tenr == 1)?.TbItems.ToList() ?? new();
             LsPlans = toChild.LsPlans;
             _lgcdu = 3;
@@ -913,7 +914,7 @@ else
         {
             int gtib = 7;
             if (IMyDom == 1) gtib = 6;
-            LsGties = LsFixes.Where(ut => ut.Gvars == 36 && ut.Itb == gtib && ut.Elea != 0 && ut.Elea != 9).ToList();
+            LsGties = LsVars.Where(ut => ut.Gvars == 36 && ut.Itb == gtib && ut.Elea != 0 && ut.Elea != 9).ToList();
             await UpdateMyDaPlans();
             PlnRenderKey = Guid.NewGuid();
             CanOpenMGrid = true;

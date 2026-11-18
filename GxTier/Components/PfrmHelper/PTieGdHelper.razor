@@ -5,13 +5,43 @@
 @using GxShared.Cols.Models
 @using GxTie.Components
 @using GxTie.Components.Cols
+@using GxTie.Components.Paccu.Dwnmd
 @using Newtonsoft.Json
 
+@* @if (curAfl != null && Idorg > 10000 && isAflModalVisible)
+{ *@
+    <DownAfl IsVisible="@isAflModalVisible"
+               IsVisibleChanged="@OnAflModalVisibilityChanged"
+               Title="Chargement des documents"
+               UploadCtx="@uploadCtx"
+               Idorg="@Idorg"
+               PUgpe="@Ugpe"
+               EntyTiw="null"
+               EntyTwfl="null"
+               EntyTie="@Draft"
+               EntyTafl="@curAfl"
+               LsmVars="@EnsVars"
+               Oparent="2">
+    </DownAfl>
+@* }
+ *@
 <!-- Person -->
 <div class="card mb-3">
     <div class="card-body p-3">
         <ColDrivenFields @ref="_fields" PrefReader="@PrefReader" Idorg="@Idorg" PColCtx="@Ctx"
                          Model="@CurrentPerson" EnsTbls="@EnsTbls" Tgpe="@Ugpe" IsEditing="@IsEditing" />
+        <div>
+             EnsAtrs.Count = @EnsAtrs.Count
+            <br />
+            @*Ugpe = @Ugpe
+            <br />
+            Matching = @EnsAtrs.Count(a => a.Totyp == Ugpe && a.Eta == 1)
+            totyp foreach :
+            @foreach (var a in EnsAtrs.Where(a => a.Eta == 1))
+            {
+                <div>@a.Totyp et @a.Liba</div>
+            } *@
+        </div>
         <PlusAttributeFields Definitions="@EnsAtrs.AttributesFor((int)Ugpe)"
                              Values="@CurrentPerson.Tiejatrs" Tgpe="@Ugpe"
                              EnsTbls="@EnsTbls" IsEditing="@IsEditing" />
@@ -19,18 +49,6 @@
         @if (_error is not null)
         {
             <div class="alert alert-danger py-1">@_error</div>
-        }
-
-        @if (IsEditing)
-        {
-            <div class="d-flex align-items-center gap-2 mt-2">
-                <Button Color="ButtonColor.Success" Disabled="@ChildBusy" Size="ButtonSize.Small" @onclick="ConfirmAsync">✅ Confirm</Button>
-                <Button Color="ButtonColor.Secondary" Size="ButtonSize.Small" @onclick="CancelAsync">✖ Cancel</Button>
-                @if (ChildBusy)
-                {
-                    @* <small class="text-muted">Terminez ou annulez l'affilié en cours.</small> *@
-                }
-            </div>
         }
     </div>
 </div>
@@ -44,8 +62,13 @@
         <span class="fw-bold text-nowrap">
             @ChldMatri
         </span>
+        @* <p>Zmatri-> @(Entity.Zmatri)</p>
+        <p>Confstate -> @ConfState</p>
+        <p>HasMatricule -> @HasMatricule</p>
+        <p>HasAffiliates -> @HasAffiliates</p>
+        <p>ShowAffiliates -> @ShowAffiliates</p> *@
     </div>
-
+        
     <div class="d-flex align-items-center gap-2 mb-2">
         <label>Groupe :</label>
         <InputSelect TValue="int" Value="SelectedGroup"
@@ -58,23 +81,59 @@
             }
         </InputSelect>
         <Button Color="ButtonColor.Primary" Size="ButtonSize.Small"
+                Class="px-2 py-1 small-btn"
                 Disabled="@(SelectedGroup < 1 || ChildBusy)"
                 @onclick="() => OnAddChild.InvokeAsync(SelectedGroup)">
             ➕ Ajt Affilié
         </Button>
+        @if (ChildBusy)
+        {
+            <Button Color="ButtonColor.Info" Size="ButtonSize.Small"
+                    Class="px-2 py-1 small-btn"
+                    disabled="!ChildBusy"
+                    @onclick="ShowModal">
+                pièce(s)
+            </Button>
+            <div class="d-flex align-items-center gap-2 mt-2">
+                <Button Color="ButtonColor.Success" Disabled="@(!ChildBusy)" Size="ButtonSize.Small" 
+                    Class="px-2 py-1 small-btn" 
+                    @onclick="ConfirmAsync">
+                    ✅ Confirm
+                </Button>
+                <Button Color="ButtonColor.Secondary" Size="ButtonSize.Small" 
+                    Class="px-2 py-1 small-btn" 
+                    @onclick="CancelAsync">
+                    ❌ Cancel
+                </Button>
+            </div>
+        }
+        @if (!ChildBusy)
+        {
+                <Button Color="ButtonColor.Success" Disabled="@ChildBusy" 
+                    Size="ButtonSize.Small" 
+                    Class="px-2 py-1 small-btn"
+                    @onclick="ConfirmAsync">
+                    ✅ Confirm
+                </Button>
+                <Button Color="ButtonColor.Secondary" 
+                    Size="ButtonSize.Small"
+                    Class="px-2 py-1 small-btn"
+                    @onclick="CancelAsync">
+                    ❌ Cancel
+                </Button>
+        }
     </div>
-
-    <CTieGdHelper Idorg="@Idorg" CurTie="@Entity" 
+    <CTieGdHelper Idorg="@Idorg" CurTie="@Entity"
                   AflItems="@AflItems"
                   SelectedGroup="@SelectedGroup"
                   PrefReader="@PrefReader"
                   IsAnyEditing="@ChildBusy"
                   IsEditingFn="@IsEditingFn"
-                  GetDraftFn="@GetDraftFn"
-                  IsDeletingFn="@IsDeletingFn"
                   EnsTbls="@EnsTbls"
                   Kgpe="@Ugpe"
                   Efrm="@Efrm"
+                  GetDraftFn="@GetDraftFn"
+                  IsDeletingFn="@IsDeletingFn"
                   OnStartEdit="@OnStartEditAfl"
                   OnConfirm="@OnConfirmAfl"
                   OnCancel="@OnCancelAfl"
@@ -86,15 +145,8 @@ else
 {
     <div class="text-muted small">
         Affiliés non disponibles :
-        @if (!HasMatricule)
-        {
-            <text>saisissez d'abord le matricule.</text>
-        }
-        else
-        {
-
-            <text>aucun groupe d'affiliés configuré pour cette catégorie.</text>
-        }
+        @if (!HasMatricule) { <text>saisissez d'abord le matricule.</text> }
+        else { <text>aucun groupe d'affiliés configuré pour cette catégorie.</text> }
     </div>
 }
 
@@ -108,6 +160,8 @@ else
 
     [Parameter, EditorRequired] public List<Gtabl> EnsTbls { get; set; } = new();
     [Parameter, EditorRequired] public List<Gpatr> EnsAtrs { get; set; } = new();
+    [Parameter, EditorRequired] public List<Gpvar> EnsVars { get; set; } = new();
+    
     [Parameter] public int Ugpe { get; set; }
     [Parameter] public bool IsEditing { get; set; }
     [Parameter] public bool ChildBusy { get; set; }
@@ -131,6 +185,8 @@ else
     // --- Add-child controls ---
     [Parameter] public List<Gpvar> GroupOptions { get; set; } = new();
     [Parameter] public int SelectedGroup { get; set; }
+    [Parameter] public TieaflDto curAfl { get; set; }
+
     [Parameter, EditorRequired] public string? ChldMatri { get; set; }
     [Parameter] public EventCallback<int> SelectedGroupChanged { get; set; }
     [Parameter] public EventCallback<int> OnAddChild { get; set; }
@@ -152,26 +208,19 @@ else
     //private ColPrefContext Ctx => ColumnContexts.Person(Ugpe);
     private ColPrefContext Ctx => ColumnContexts.Person(Ugpe, Efrm);  
 
-    private List<Gtabl> StatItems => EnsTbls
-        .Select(tb => new Gtabl
-        {
-            Id = tb.Id,
-            Liba = tb.Liba,
-
-            TbItems = tb.TbItems?
-            .Where(it => it.Tgpe != 0)
-            .ToList() ?? new List<Gtvar>()
-        })
-    .ToList();
-
     private bool HasMatricule => !string.IsNullOrEmpty(CurrentPerson.Zmatri);
     private bool HasAffiliates => AflItems.Any(w => w.Prowguid == Entity.Rowguid
                                              || (Entity.Id > 0 && w.Itie == Entity.Id));
     private bool ShowAffiliates => HasMatricule && (GroupOptions.Any() || HasAffiliates);
 
-    private bool CanAddEdtChild => (ConfState == AddEdtMode.AddPConfirmed || ConfState == AddEdtMode.EdtPConfirmed)
-              && !string.IsNullOrEmpty((IsEditing ? (Draft ?? Entity) : Entity).Zmatri) && GroupOptions.Any();
+    // private bool CanAddEdtChild => (ConfState == AddEdtMode.AddPConfirmed || ConfState == AddEdtMode.EdtPConfirmed)
+    //           && !string.IsNullOrEmpty((IsEditing ? (Draft ?? Entity) : Entity).Zmatri) && GroupOptions.Any();
+    private bool AddEditingAffile => (ConfState == AddEdtMode.AddPConfirmed || ConfState == AddEdtMode.EdtPConfirmed)
+          && !string.IsNullOrEmpty((IsEditing ? (Draft ?? Entity) : Entity).Zmatri) && GroupOptions.Any();
 
+    private bool isAflModalVisible = false;
+
+    public UplCxtDto uploadCtx { get; set; } = new();
     //private TieaflDto SelectedAfil = new();
 
     private async Task ConfirmAsync()
@@ -190,4 +239,6 @@ else
         _error = null;
         await OnCancel.InvokeAsync(Entity);
     }
+    private void ShowModal() => isAflModalVisible = true;
+    private Task OnAflModalVisibilityChanged(bool isVisible) { isAflModalVisible = isVisible; return Task.CompletedTask; }
 }

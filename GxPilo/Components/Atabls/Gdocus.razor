@@ -1,4 +1,5 @@
 ﻿@page "/gdocus"
+@inherits CompUICrudBase
 @layout AtblMenu
 
 @using System
@@ -14,6 +15,7 @@
 @using BlazorBootstrap
 @using Blazored.LocalStorage
 @using GxPilo.Services
+@using GxPilo.Components.Uifrags
 @using GxShared.Helpers
 @using GxShared.Helpers.CrudHelpers
 @using GxShared.Sess
@@ -99,15 +101,23 @@ else
                                                     <option value=@tob.Key>@tob.Value</option>
                                                 }
                                             </InputSelect>
+                                            <label class="fw-bold">Destination :</label>
+                                            <InputSelect @bind-Value="IMyDest" class="me-3" style="width:auto">
+                                                <option value=0>institution</option>
+                                                @foreach (var fl in gpeOpts)
+                                                {
+                                                    <option value=@fl.Elea>@fl.Liba</option>
+                                                }
+                                            </InputSelect>
                                         </div>
                                         <div class="row">
                                             @if (ITyDoc != 0)
                                             {
                                                 <Grid TItem="GsgfixDto"
-                                                      Data="@MyDaDocus"
+                                                      Data="@MyDaDocus.Where(ud => ud.Ktyp == IMyDest)"
                                                       @key="FixRenderKey"
                                                       AllowPaging="true"
-                                                      RowClass="@((item) => GetPlnRowClass(item))"
+                                                      RowClass="@((item) => GetGfxRowClass(item))"
                                                       Responsive="true">
                                                     <GridColumns>
                                                         <GridColumn TItem="GsgfixDto" HeaderText="No" Class="xcol1">
@@ -124,9 +134,9 @@ else
                                                         </GridColumn>
                                                         <GridColumn TItem="GsgfixDto" HeaderText="Designation" Class="xcol3">
                                                             <ChildContent Context="item">
-                                                                @if (EdFixRowguid == item?.Rowguid)
+                                                                @if (GetRowState(EntityLevel.Gfx, item.Rowguid) is RowState.AddPending or RowState.EditPending)
                                                                 { // show draftPln inputs
-                                                                  <InputText @bind-Value="draftFix.Liba" />
+                                                                  <InputText @bind-Value="draftGfx.Liba" />
                                                                 }
                                                                 else
                                                                 { // show item as read-only
@@ -136,9 +146,9 @@ else
                                                         </GridColumn>
                                                         <GridColumn TItem="GsgfixDto" HeaderText="Abrege" IsVisible="ITyDoc == 7" Class="xcol1">
                                                             <ChildContent Context="item">
-                                                                @if (EdFixRowguid == item?.Rowguid)
+                                                                @if (GetRowState(EntityLevel.Gfx, item.Rowguid) is RowState.AddPending or RowState.EditPending)
                                                                 { // show draftPln inputs
-                                                                  <InputText @bind-Value="draftFix.Abg" />
+                                                                  <InputText @bind-Value="draftGfx.Abg" />
                                                                 }
                                                                 else
                                                                 { // show item as read-only
@@ -148,9 +158,9 @@ else
                                                         </GridColumn>
                                                         <GridColumn TItem="GsgfixDto" HeaderText="Taille" IsVisible="ITyDoc != 3" class="xcol1">
                                                             <ChildContent Context="item">
-                                                                @if (EdFixRowguid == item?.Rowguid)
+                                                                @if (GetRowState(EntityLevel.Gfx, item.Rowguid) is RowState.AddPending or RowState.EditPending)
                                                                 { // show draftPln inputs
-                                                                  <InputNumber @bind-Value="draftFix.Ivala"
+                                                                  <InputNumber @bind-Value="draftGfx.Ivala"
                                                                                style="font-weight:bold; width:60px" />
                                                                 }
                                                                 else
@@ -192,7 +202,7 @@ else
                                                             <HeaderContent>
                                                                 @if (ITyDoc == 1 || ITyDoc == 2 || ITyDoc == 7)
                                                                 {
-                                                                    <button class="btn btn-primary btn-sm @(isAddFix || isEdtFix ? "disabled-action" : "")"
+                                                                    <button class="btn btn-primary btn-sm @(IsLevelBusy(EntityLevel.Gfx) ? "disabled-action" : "")"
                                                                             @onclick="() => StartDocuNew(ITyDoc)">
                                                                         <span style="display:inline-flex; align-items:center; gap:2px;">
                                                                             <span>➕</span>
@@ -206,9 +216,9 @@ else
                                                                 }
                                                             </HeaderContent>
                                                             <ChildContent Context="item">
-                                                                @if (EdFixRowguid == item.Rowguid)
+                                                                @if (GetRowState(EntityLevel.Gfx, item.Rowguid) is RowState.AddPending or RowState.EditPending)
                                                                 {
-                                                                    <InputSelect @bind-Value="draftFix.Eta">
+                                                                    <InputSelect @bind-Value="draftGfx.Eta">
                                                                         <option class="jchx" value=0>?choisir</option>
                                                                         @foreach (var tob in LsFixes.Where(ut => ut.Gvars == 32 && ut.Itb == 1 && ut.Elea != 0))
                                                                         {
@@ -230,7 +240,7 @@ else
                                                         </GridColumn>
                                                         <GridColumn TItem="GsgfixDto" HeaderText="Actions" Filterable="false" Class="xcol2 actions-col">
                                                             <ChildContent Context="item">
-                                                                @switch (GetRowState(item.Rowguid))
+                                                                @switch (GetRowState(EntityLevel.Gfx, item.Rowguid))
                                                                 {
                                                                     case RowState.Locked:
                                                                         <span class="text-muted">—</span>
@@ -238,47 +248,47 @@ else
 
                                                                     case RowState.AddPending:
                                                                         <Button Color="ButtonColor.Success" Size="ButtonSize.Small"
-                                                                                @onclick="() => ConfirmAdd(EntityLevel.Plan, draftFix)">
+                                                                                @onclick="() => ConfirmAdd(EntityLevel.Gfx, draftGfx, true)">
                                                                             ✅ Confirm
                                                                         </Button>
                                                                         <Button Color="ButtonColor.Success" Size="ButtonSize.Small"
-                                                                                @onclick="() => StartCancelAdd(EntityLevel.Plan, draftFix)">
+                                                                                @onclick="() => StartCancelAdd(EntityLevel.Gfx, draftGfx)">
                                                                             ❌ Cancel
                                                                         </Button>
                                                                         break;
 
                                                                     case RowState.DeletePending:
                                                                         <Button Color="ButtonColor.Danger" Size="ButtonSize.Small"
-                                                                                @onclick="() => ConfirmDelete(item, EntityLevel.Plan)">
+                                                                                @onclick="() => ConfirmDelete(EntityLevel.Gfx, item, true)">
                                                                             ⚠️ Confirm
                                                                         </Button>
                                                                         <Button Color="ButtonColor.Secondary" Size="ButtonSize.Small"
-                                                                                @onclick="() => CancelDelete(item, EntityLevel.Plan)">
+                                                                                @onclick="() => CancelDelete(EntityLevel.Gfx, item)">
                                                                             ❎ Cancel
                                                                         </Button>
                                                                         break;
                                                                     case RowState.EditPending:
-                                                                        @if (draftFix != null)
+                                                                        @if (draftGfx != null)
                                                                         {
                                                                             <Button Color="ButtonColor.Success" Size="ButtonSize.Small"
-                                                                                    @onclick="() => ConfirmEdit(draftFix, EntityLevel.Plan)">
+                                                                                    @onclick="() => ConfirmEdit(EntityLevel.Gfx, draftGfx, true)">
                                                                                 ✅ Confirm
                                                                             </Button>
                                                                             <Button Color="ButtonColor.Secondary" Size="ButtonSize.Small"
-                                                                                    @onclick="() => CancelEdit(draftFix, EntityLevel.Plan)">
+                                                                                    @onclick="() => CancelEdit(EntityLevel.Gfx, draftGfx)">
                                                                                 ❌ Cancel
                                                                             </Button>
                                                                         }
                                                                         break;
                                                                     default:
                                                                         <Button Color="ButtonColor.Warning" Size="ButtonSize.Small"
-                                                                                @onclick="() => StartDocuEdit(item, item.Rowguid)">
+                                                                                @onclick="() => StartDocuEdit(item)">
                                                                             ✏️ Edit
                                                                         </Button>
                                                                         @if (item.Eaut != 9)
                                                                         {
                                                                             <Button Color="ButtonColor.Danger" Size="ButtonSize.Small"
-                                                                                    @onclick="() => StartRowDelete(item.Rowguid, EntityLevel.Plan)">
+                                                                                    @onclick="() => StartRowDelete(EntityLevel.Gfx, item.Rowguid)">
                                                                                 🗑 Delete
                                                                             </Button>
                                                                         }
@@ -452,8 +462,6 @@ else
     [Parameter]
     public GxorgaDto curOrga { get; set; } = new();
     [Parameter]
-    public List<GsgfixDto> orgFixes { get; set; } = new();
-    [Parameter]
     public ChildVars toChild { get; set; }
     [Parameter]
     public int toMenu { get; set; }
@@ -473,18 +481,21 @@ else
     private Userbag _usrBag = new Userbag();
     private string _UserId = "";
     private int _UorgId = 0;
+    private int IMyDest = 0;
 
     private Dictionary<int, bool> EdState = new Dictionary<int, bool>();
     private Dictionary<Guid, RowState> _rowStates = new();
     private Dictionary<Guid, bool> _isLightBg = new();  // Track light background
-    private void SetLightBackground(Guid rowguid, bool isLight)
-    {
-        _isLightBg[rowguid] = isLight;
-    }
-    private bool GetLightBackground(Guid rowguid)
-    {
-        return _isLightBg.GetValueOrDefault(rowguid, false);
-    }
+    private List<GsgfixDto> orgFixes { get; set; } = new();
+    private List<Gpvar> gpeOpts { get; set; } = new();
+    // private void SetLightBackground(Guid rowguid, bool isLight)
+    // {
+    //     _isLightBg[rowguid] = isLight;
+    // }
+    // private bool GetLightBackground(Guid rowguid)
+    // {
+    //     return _isLightBg.GetValueOrDefault(rowguid, false);
+    // }
     // Disable ALL actions when ANY row editing
     private Guid? _activeEditRowguid = null;
     private EntityLevel? _activeEditLevel = null;
@@ -492,15 +503,15 @@ else
     private bool IsRowEditing(Guid rowguid) => _activeEditRowguid == rowguid;
     private bool IsAnyRowEditing => _activeEditRowguid != null;
 
-    public enum RowState
-    {
-        Normal,
-        EditPending,
-        DeletePending,
-        AddPending,  // 🔥 NEW for Add
-        Locked
-    }
-    public enum EntityLevel { Plan, Rub, Fmt }
+    // public enum RowState
+    // {
+    //     Normal,
+    //     EditPending,
+    //     DeletePending,
+    //     AddPending,  // 🔥 NEW for Add
+    //     Locked
+    // }
+    //public enum EntityLevel { Plan, Rub, Fmt }
 
     //private List<Gplan> LsPlans = new();
     private List<Gpfixe> LsFixes = new();
@@ -512,7 +523,7 @@ else
         //[7] = "Langues",
         //[3] = "Sessions"
     };
-    
+
     private bool isFixFilteringEnabled = false;
 
     //Global
@@ -531,26 +542,29 @@ else
     private string atrTitle = "";
 
     //data
-    private List<GsgfixDto> MyDaDocus { get; set; } = new();
-    
+    //data
+    private List<GsgfixDto> MyDaDocus => GfxItems;
+  
     //add/edit options
     private bool AllowMultipleEdits { get; set; } = false;
     private bool isFiltre { get; set; } = false;
     //FIX
     private Guid? FixRenderKey = null;
-    private Dictionary<Guid, GsgfixDto> _edFixOriginals = new();
-    private GsgfixDto? draftFix = null;
-    private bool isAddFix = false;
-    private bool isEdtFix = false;
-    private Guid? AdFixRowguid = null;
-    private Guid? EdFixRowguid = null;// Currently editing row ID
-    private Guid? DlFixRowguid = null;
+    //private Dictionary<Guid, GsgfixDto> _edFixOriginals = new();
+    private GsgfixDto? draftGfx = null;
+    private GsgfixDto curGfx = new();
 
-    bool IsFixRowLocked(Guid rowGuid) =>
-        !AllowMultipleEdits &&
-        (EdFixRowguid.HasValue || DlFixRowguid.HasValue) &&
-        EdFixRowguid != rowGuid &&
-        DlFixRowguid != rowGuid;
+    //private bool isAddFix = false;
+    //private bool isEdtFix = false;
+    //private Guid? AdFixRowguid = null;
+    //private Guid? EdFixRowguid = null;// Currently editing row ID
+    //private Guid? DlFixRowguid = null;
+
+    // bool IsFixRowLocked(Guid rowGuid) =>
+    //     !AllowMultipleEdits &&
+    //     (EdFixRowguid.HasValue || DlFixRowguid.HasValue) &&
+    //     EdFixRowguid != rowGuid &&
+    //     DlFixRowguid != rowGuid;
 
     protected override async Task OnInitializedAsync()
     {
@@ -574,24 +588,24 @@ else
             //LsDoms = LsFixes.Where(ut => ut.Gvars == 36 && ut.Itb == 4 && ut.Gp1 == 3 && ut.Elea != 0).ToList();
             //LsSites = toChild.LsSites;
             _lgcdu = 3;
+            //uv => uv.Gvars == 3 && uv.Itb == 5 && uv.Ityp == 1 && uv.Elea != 0
+            gpeOpts = toChild.LsVars.Where(uv => uv.Gvars == 5 && uv.Itb == 5 && uv.Ityp == 1 && uv.Elea != 0).ToList();
+            //azgpeOpts = toChild.LsVars.Where(uv => uv.Gvars == 3 && uv.Itb == 6 && uv.Elea is >= 2 and <= 6).ToList();
             //var noslims = LsVars.Where(uv => uv.Idhie == 0 && uv.Gvars == 21 && uv.Itb == 1 && uv.Elea == 1);
             //if (noslims.Any()) _lgcdu = noslims.FirstOrDefault().Ivala;
             //ChargeParentData;
             ////await connection.StartAsync();
-            Console.WriteLine($"Child init: Gsgfixes={orgFixes?.Count ?? 0}");
 
             // 🔥 SAFE - Only initialize if Gsgfixs EXISTS
+            await LoadDocusAsync(curOrga.Idorg);
             if (orgFixes != null && orgFixes.Any())
             {
-                MyDaDocus = orgFixes
-                    .Where(uv => uv.Gvars == 3 && uv.Itb == 1 && uv.Elea >= 1)
-                    .ToList();
+                InitializeMyDaGfxs();
                 Console.WriteLine($"Gsgfixes loaded: {orgFixes.Count}");
             }
             else
             {
                 Console.WriteLine("Gsgfixes null/empty - initializing empty collections");
-                MyDaDocus = new();
             }
             
             atrTitle = "Saisie";
@@ -608,24 +622,40 @@ else
             StateHasChanged();
         }
     }
+    private async Task LoadDocusAsync(int key)
+    {
+        try
+        {
+            var msgs = await _InODaClient
+                .For<GsgfixDto>("Gsgfixes")
+                .Filter(f => f.Idorg == key && f.Gvars == 3)
+                //.Select("Idorg, Xseq, Elea,Gp1")
+                .FindEntriesAsync();
+            orgFixes = msgs.ToList();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Load error: {ex.Message}");
+        }
+    }
     // and call this in OnParametersSet
     protected override void OnParametersSet()
     {
-        SubscribeToGuard();
+        // SubscribeToGuard();
     }
     // set up subscription locally
-    private void SubscribeToGuard()
-    {
-        _guard.OnChanges += async () =>
-        {
-            NbChanges = _guard.GetPendingChangesCount();
-            await NbChangesChanged.InvokeAsync(NbChanges);
-            StateHasChanged();
-        };
-    }
+    // private void SubscribeToGuard()
+    // {
+    //     _guard.OnChanges += async () =>
+    //     {
+    //         NbChanges = _guard.GetPendingChangesCount();
+    //         await NbChangesChanged.InvokeAsync(NbChanges);
+    //         StateHasChanged();
+    //     };
+    // }
     private async Task StartDocuNew(int tydoc)
     {
-        Console.WriteLine("🚨 StartPlnNew");
+        Console.WriteLine("🚨 StartDocNew");
         var lsnb = NextSeq(MyDaDocus, p => p.Iui);
         var newDoc = new GsgfixDto();
         if (tydoc == 1)
@@ -639,6 +669,7 @@ else
                 Itb = 1,
                 Gtyp = 1,
                 Etyp = 1,
+                Ktyp = IMyDest, //0main1affilies
                 Ivala = 0,
                 Eta = 1,
                 Xadd1 = -1, //newly added
@@ -658,8 +689,8 @@ else
                 Itb = 2,
                 Gtyp = 2,
                 Etyp = 1,
+                Ktyp = IMyDest, //0main1affilies
                 Totyp = 0,
-                Tstyp = 0,
                 Ivala = 0,
                 Eta = 1,
                 Xadd1 = -1, //newly added
@@ -680,7 +711,7 @@ else
         //         Gtyp = 1,
         //         Etyp = 1,
         //         Totyp = 0,
-        //         Tstyp = 0,
+        //         Ktyp = 0,
         //         Ivala = 0,
         //         Eta = 1,
         //         Xadd1 = -1, //newly added
@@ -693,502 +724,74 @@ else
         {
             return;
         }
-        SetRowState(newDoc.Rowguid, RowState.AddPending);
-        SetLightBackground(newDoc.Rowguid, true);
-        MyDaDocus.Insert(0, newDoc);
-        draftFix = (GsgfixDto)DeepClone(newDoc);
-        EdFixRowguid = draftFix.Rowguid;
-        isAddFix = true;
-        isEdtFix = false;
-        //SetRowState(draftFix.Rowguid, RowState.EditPending);  // Shows Confirm/Cancel ✓
-        FixRenderKey = draftFix.Rowguid;
-        //Console.WriteLine($"✅ New row added to curOrga.Gsgfixes - Count: {curOrga.Gsgfixes.Count}");
-        StartRowEdit(draftFix.Rowguid, EntityLevel.Plan);
-        StateHasChanged();
-    }
-    
-    private async Task StartDocuEdit(GsgfixDto item, Guid rowguid)
-    {
-        //var client = (ODataClient)_InODaClient;
-        //bool isNew = await client.IsNewAsync<GsgfixDto>("Gsgfixes", item.Xseq);
-        bool isNew = item.Xseq == default; // for int, default == 0
-        if (isNew)
-        {
-            Imessage = "🚫 Cannot edit new Plan: Please save it first.";
-            return;
-        }
+        //prise order
+        orgFixes?.Add(newDoc);
+        draftGfx = DeepClone(newDoc);
+        //SetRowState(EntityLevel.Gfx, newDoc.Rowguid, RowState.AddPending);
+        BeginAdd(EntityLevel.Gfx, newDoc.Rowguid, draftGfx);
 
-        if (isNew)
-        { //not saved yet
-            Imessage = "🚫 Cannot edit new Plan: Please save it first.";
-            return;
-        }
-        if (rowguid == Guid.Empty) return;
-        item.Xedt1 = -1;
-        if (item.Jele != 0) item.Iui = (int)item.Jele;
-        SetRowState(rowguid, RowState.EditPending);  // Shows Confirm/Cancel buttons
-        _edFixOriginals[rowguid] = (GsgfixDto)DeepClone(item);
-        EdFixRowguid = AllowMultipleEdits ? null : rowguid;
-        draftFix = (GsgfixDto)DeepClone(item);
-        isEdtFix = true;
-        StartRowEdit(rowguid, EntityLevel.Plan);
-        StateHasChanged();
+        await UpdateMyDaGfxs(tydoc);     // now state is already correct when this renders
+        //PlnRenderKey = newPln.Rowguid;
+        await InvokeAsync(StateHasChanged);
     }
-    private async Task StartImmatEdit(GsgfixDto item)
+    public async Task StartDocuEdit(GsgfixDto item)
     {
         var rowguid = item.Rowguid;
-        //var client = (ODataClient)_InODaClient;
-        //bool isNew = await client.IsNewAsync<GsgfixDto>("Gsgfixes", item.Xseq);
-        bool isNew = item.Xseq == default; // for int, default == 0
-        if (isNew)
-        {
-            Imessage = "🚫 Cannot edit new Plan: Please save it first.";
-            return;
-        }
-
-        if (isNew)
-        { //not saved yet
-            Imessage = "🚫 Cannot edit new Plan: Please save it first.";
-            return;
-        }
+        if (item.Xseq == default) return;
         if (rowguid == Guid.Empty) return;
-        item.Xedt1 = -1;
-        if (item.Jele != 0) item.Iui = (int)item.Jele;
-        SetRowState(rowguid, RowState.EditPending);  // Shows Confirm/Cancel buttons
-        _edFixOriginals[rowguid] = (GsgfixDto)DeepClone(item);
-        EdFixRowguid = AllowMultipleEdits ? null : rowguid;
-        draftFix = (GsgfixDto)DeepClone(item);
-        isEdtFix = true;
-        StartRowEdit(rowguid, EntityLevel.Plan);
+        if (IsAnyRowEditing && !IsRowEditing(rowguid)) return;
+
+        SetRowState(EntityLevel.Gfx, item.Rowguid, RowState.EditPending);
+        _edGfxOriginals[rowguid] = DeepClone(item);
+        draftGfx = DeepClone(item);
+        //isEdtGtb = true;
+        BeginEdit(EntityLevel.Gfx, rowguid, draftGfx);
+        _rowPendingOpTypeByRow[rowguid] = PendingOpType.Update;
+
         StateHasChanged();
     }
-    
-    // ✅ 2.1 CONFIRM OPERATIONS
-    private async Task ConfirmAdd<T>(EntityLevel level, T item) where T : class
+
+    private async Task StartCancelAdd(EntityLevel level, object entity)
     {
-        await UnifiedEditAction(item, true, level);
-        CopyDraftTblToGridItem(item, level, 3);
-
-        // Replace item in collection to trigger UI update
-        if (item is GsgfixDto fix)
-        {
-            var index = MyDaDocus.FindIndex(r => r.Rowguid == fix.Rowguid);
-            if (index >= 0)
-                MyDaDocus[index] = fix; // replace reference
-        }
-
-        EndRowEdit();
-        FixRenderKey = Guid.NewGuid(); // force grid refresh
-        StateHasChanged();
-    }
-    private async Task ConfirmDocuEdit(GsgfixDto item) =>
-        await UnifiedEditAction(item, true, EntityLevel.Plan);
-
-    // ✅ 2.2 CANCEL OPERATIONS
-    private async Task CancelDocuEdit(GsgfixDto item) =>
-        await UnifiedEditAction(item, true, EntityLevel.Plan);
-
-    private async Task UnifiedEditAction(object item, bool isConfirm, EntityLevel level)
-    {
+        var rowguid = MLEntityKeyHelper.GetRowguidAsGuid(entity);
         switch (level)
         {
-            case EntityLevel.Plan:
-                await ProcessPlan((GsgfixDto)item, isConfirm);
+            case EntityLevel.Gfx:
+                await CancelAdd(level, entity);
+                orgFixes.RemoveAll(x => x.Rowguid == rowguid);
+                //PlnRenderKey = Guid.Empty;
+                break;
+            case EntityLevel.Gf2:
+                await CancelAdd(level, entity);
+                orgFixes.RemoveAll(x => x.Rowguid == rowguid);
+                //RubRenderKey = Guid.Empty;
                 break;
         }
     }
-
-    private async Task ProcessPlan(GsgfixDto pln, bool isConfirm)
+    // Update method -call this when source data changes
+    private void InitializeMyDaGfxs()
     {
-        await ProcessEntity(pln, isConfirm, "Gsgfixes", EntityLevel.Plan, p => ValidatePln(p));
-    }
-
-    private async Task ProcessEntity<T>(T entity, bool isConfirm, string entitySet, EntityLevel level, Func<T, bool> validate)
-    where T : class
-    {
-        Console.WriteLine($"🔄 Process{typeof(T).Name}: {(isConfirm ? "CONFIRM" : "CANCEL")}");
-
-        if (entity == null)
+        curGfx = new();
+        if (curOrga != null)
         {
-            Imessage = "entity nulle";
-            StateHasChanged();
-            return;
-        }
-
-        if (isConfirm)
-        {
-            // 🔥 1. Copy draft → entity (for validation)
-            //CopyDraftToGridItem(entity);
-            CopyDraftTblToGridItem(entity, level, 3);
-            // 🔥 2. VALIDATE (now has updated values)
-            if (!validate(entity))
-            {
-                Console.WriteLine($"❌ Validation failed: {Imessage}");
-                StateHasChanged();
-                return;
-            }
-
-            // 🔥 3. NEW vs EXISTING (SINGLE operation)
-            bool isNew = GetXadd1(entity) == -1;  // Assumes GetXadd1<T>
-            if (isNew)
-            {
-                await _guard.TrackInsert(entitySet, entity);
-                Console.WriteLine($"➕ NEW {typeof(T).Name} → TrackInsert");
-            }
-            else
-            {
-                var key = GetEntityKey(entity); // helper to extract PK
-                await _guard.TrackUpdate(entitySet, key, entity);
-                Console.WriteLine($"✏️ EXISTING {typeof(T).Name} → TrackUpdate");
-            }
-
-            // 🔥 4. Confirm flags ONCE
-            SetFlags(entity, 0, -1, 0);  // Xadd1=0 confirmed
-
-            // 🔥 6. UI + notify
-            var rowguid = GetRowguid(entity);  // Generic helper
-            ResetRowState(rowguid);
-            SetLightBackground(rowguid, false);
-            ResetEntityUIState<T>();
-            await NotifyPendingChanges();
-            Imessage = $"✅ {typeof(T).Name} confirmed";
-        }
-        else  // CANCEL (unchanged - perfect)
-        {
-            if (GetXadd1(entity) == -1) // New only
-            {
-                RemoveFromParentCollection(entity);
-                Console.WriteLine($"🗑️ Removed new {typeof(T).Name}");
-            }
-            else
-            {
-                ClearDraft<T>();
-            }
-
-            var rowguid = GetRowguid(entity);
-            ResetRowState(rowguid);
-            ResetEntityUIState<T>();
-            Imessage = "";
-        }
-        StateHasChanged();
-    }
-    // 🔥 Generic Rowguid (no reflection)
-    private static Guid GetRowguid<T>(T entity) where T : class
-        => ((dynamic)entity).Rowguid;  // Or property expression
-
-    // Generic flag setter
-    private void SetFlags<T>(T entity, int xadd1, int xedt1, int xdel1)
-    {
-        typeof(T).GetProperty("Xadd1")?.SetValue(entity, xadd1);
-        typeof(T).GetProperty("Xedt1")?.SetValue(entity, xedt1);
-        typeof(T).GetProperty("Xdel1")?.SetValue(entity, xdel1);
-    }
-    // private void ResetFlags(object item)
-    // {
-    //     SetFlags(item, 0, 0, 0);  // Xadd1=0, Xedt1=0, Xdel1=0 (normal state)
-    // }
-    // Generic Xadd1 getter
-    private int GetXadd1<T>(T entity)
-    {
-        return (int)typeof(T).GetProperty("Xadd1")?.GetValue(entity)!;
-    }
-    // Remove from parent collection
-    private void RemoveFromParentCollection<T>(T entity)
-    {
-        //Gsgfix: top-level
-        if (entity is GsgfixDto pln && MyDaDocus.Any(p => p.Rowguid == pln.Rowguid))
-            MyDaDocus.Remove(pln);
-        // Rubvar: parent Gsgfixes.Rubvars
-        // else if (entity is RubvarDto rub)
-        // {
-        //     var parent = MyDaDocus.FirstOrDefault(p => p.Xseq == rub.Ipln);
-        //     parent?.Rubvars?.Remove(rub);
-        // }
-    }
-    // private async Task MarkAsModified<T>(T item, string entitySet) where T : class
-    // {
-    //     SetFlags(item, 0, 0, 0);  // Xadd1=Xedt1=Xdel1=0
-
-    //     catch (InvalidOperationException)
-    //     {
-    //         // Already tracked ✅
-    //     }
-    //     Console.WriteLine($"modified liba {((dynamic)item).Liba} et abg {((dynamic)item).Abg}");
-    //     Console.WriteLine($"✅ {entitySet} marked Modified");
-    // }
-    // private void CopyDraftToGridItem<T>(T gridItem) where T : class
-    // {
-    //     switch (typeof(T).Name)
-    //     { // ONLY editable UI fields - 5-10x faster than reflection!
-    //         case nameof(GsgfixDto):
-    //             if (draftFix == null) return;
-    //             var pln = (GsgfixDto)(object)gridItem;
-    //             pln.Liba = draftFix.Liba; //designation
-    //             pln.Abg = draftFix.Abg; //abrege
-    //             //pln.Fpsrc = draftFix.Fpsrc; //formule-non valider
-    //             pln.Eta = draftFix.Eta; //etat
-    //             break;
-    //     }
-    // }
-    private void CopyDraftTblToGridItem<T>(T gridItem, EntityLevel level, int tent) where T : class
-    {
-        switch (level)
-        {
-            case EntityLevel.Plan:
-                if (gridItem is GsgfixDto gsg && draftFix is GsgfixDto gf)
-                {
-                    // Copy all relevant fields from draftgsg into the grid item
-                    gsg.Gvars = gf.Gvars;
-                    gsg.Itb = gf.Itb;
-                    gsg.Liba = gf.Liba;
-                    gsg.Abg = gf.Abg;
-                    gsg.Rowguid = gf.Rowguid;
-                    gsg.Idorg = gf.Idorg;
-                    gsg.Gtyp = gf.Gtyp;
-                    gsg.Etyp = gf.Etyp;
-                    gsg.Xdpd = gf.Xdpd;
-                    gsg.Ydpd = gf.Ydpd;
-                    gsg.Ivala = gf.Ivala;
-                    gsg.Eta = gf.Eta;
-                    // add more fields if needed
-                    FixRenderKey = gsg.Rowguid;
-                }
-                break;
-            // case EntityLevel.Rub:
-            //     if (gridItem is GstablDto chl && draftChl is GstablDto dc)
-            //     {
-            //         // Copy all relevant fields from draftFix into the grid item
-            //         chl.Liba = dc.Liba;
-            //         chl.Abg = dc.Abg;
-            //         chl.Rowguid = dc.Rowguid;
-            //         chl.Idorg = dc.Idorg;
-            //         chl.Gtyp = dc.Gtyp;
-            //         chl.Btyp = dc.Btyp;
-            //         chl.Tenr = dc.Tenr;
-            //         chl.Pid = dc.Pid;
-            //         chl.Xdpd = dc.Xdpd;
-            //         chl.Ydpd = dc.Ydpd;
-            //         chl.Jacc = dc.Jacc;
-            //         chl.Jenr = dc.Jenr;
-            //         chl.Eta = dc.Eta;
-            //         // add more fields if needed
-            //         ChldRenderKey = chl.Rowguid;
-            //     }
-            //     break;
-            default:
-                throw new ArgumentOutOfRangeException(nameof(level));
-        }
-    }
-    private void ClearDraft<T>()
-    {
-        switch (typeof(T).Name)
-        {
-            case nameof(GsgfixDto):
-                draftFix = null;
-                Console.WriteLine("EdFixRowguid is become null");
-                EdFixRowguid = null;
-                break;
-        }
-    }
-    // ROWS MANAGEMENT
-    private void StartRowEdit(Guid rowguid, EntityLevel level)
-    {
-        _activeEditRowguid = rowguid;
-        _activeEditLevel = level;
-        StateHasChanged();
-    }
-    private void EndRowEdit()
-    {
-        _activeEditRowguid = null;
-        _activeEditLevel = null;
-        StateHasChanged();
-    }
-    private string GetPlnRowClass(GsgfixDto pln)
-    {
-        var state = GetRowState(pln.Rowguid);
-        var isLight = IsLightBackground(pln.Rowguid);  // 🔥 Uses your existing
-
-        // 🔥 NEW: Single Active Row Editing
-        var isActiveEdit = _activeEditRowguid == pln.Rowguid;
-        var isOtherRowEditing = _activeEditRowguid != null && !isActiveEdit;
-
-        return GetRowCss(state, isLight, pln.Rowguid, isActiveEdit, isOtherRowEditing);
-    }
-    private RowState GetRowState(Guid rowguid, object? parent = null)
-    {
-        if (_rowStates.TryGetValue(rowguid, out var state)) return state;
-
-        // Context-aware lookup
-        // if (parent is Gsgfix mypln)
-        // {
-        //     if (mypln.Rowguid == rowguid && IsFixRowLocked(rowguid)) return RowState.Locked;
-        //     var rub = mypln.Rubvars?.FirstOrDefault(r => r.Rowguid == rowguid);
-        //     if (rub != null && IsRubRowLocked(rowguid)) return RowState.Locked;
-        // }
-        // 🔥 MISSING: Final return for normal state
-        return _rowStates.TryGetValue(rowguid, out var cachedState) ? cachedState : RowState.Normal;
-    }
-    private void SetRowState(Guid rowguid, RowState state)  // Remove <T>
-    {
-        _rowStates[rowguid] = state;
-    }
-    private void ResetRowState(Guid rowguid)  // Reset specific row
-    {
-        _rowStates.Remove(rowguid);  // Back to Normal
-    }
-    private bool IsLightBackground(Guid rowguid)
-    {
-        return _isLightBg.ContainsKey(rowguid) && _isLightBg[rowguid];
-    }
-
-    private void ResetEntityUIState<T>()
-    {
-        switch (typeof(T).Name)
-        {
-            case nameof(GsgfixDto): ResetPlnUI(); break;
-        }
-    }
-    private void ResetPlnUI()
-    {
-        Console.WriteLine("🔄 ResetPlnUI");
-
-        // 🔥 CLEAR ALL MODES
-        isEdtFix = false;
-        isAddFix = false;  // ← CRITICAL - Exits add mode
-
-        draftFix = null;
-        EdFixRowguid = null;
-        DlFixRowguid = null;
-
-        FixRenderKey = Guid.NewGuid();  // Force grid refresh
-        StateHasChanged();
-    }
-    // ✅ 3. NOTIFICATIONS
-    private async Task NotifyPendingChanges()
-    {
-        await OnPendingStateChanged.InvokeAsync(new PendingState(
-            _guard.HasPendingChanges(),
-            _guard.GetPendingChangesCount()
-        ));
-
-        NbChanges = _guard.GetPendingChangesCount();
-        await NbChangesChanged.InvokeAsync(NbChanges);
-        StateHasChanged();
-    }
-
-    private void StartDelete<T>(T item, string entitySet) where T : class
-    {
-        var rowguid = ((dynamic)item).Rowguid;
-        SetDeleteFlags(item); // e.g. Xdel1 = -1
-        SetRowState(rowguid, RowState.DeletePending);  // Triggers
-        Console.WriteLine($"🗑 {typeof(T).Name} {rowguid} marked as pending delete");
-        StateHasChanged();
-    }
-    private void StartRowDelete(Guid rowguid, EntityLevel level)
-    {
-        // 🔥 1. Set DeletePending → triggers your @switch
-        SetRowState(rowguid, RowState.DeletePending);
-
-        // 🔥 2. Enable single-row editing (CSS)
-        StartRowEdit(rowguid, level);
-
-        StateHasChanged();
-    }
-    private async Task ConfirmDelete<T>(T item, EntityLevel level) where T : class
-    {
-        await UnifiedDeleteAction(item, true, level);
-        EndRowEdit();  // Close single delete mode
-    }
-    // SINGLE method - ALL delete cancels
-    private async Task CancelDelete<T>(T item, EntityLevel level) where T : class
-    {
-        await UnifiedDeleteAction(item, false, level);
-        EndRowEdit();  // Close single delete mode
-    }
-
-    private void SetDeleteFlags(object item) => SetFlags(item, 0, 0, -1);
-    // SINGLE method handles ALL confirm operations
-    // private async Task ConfirmAdd<T>(EntityLevel level, T item) where T : class
-    // {
-    //     await UnifiedEditAction(item, true, level);
-    //     EndRowEdit();  // Close single edit mode
-    // }
-
-    // SINGLE method handles ALL confirm operations
-    private async Task ConfirmEdit<T>(T item, EntityLevel level) where T : class
-    {
-        await UnifiedEditAction(item, true, level);
-        EndRowEdit();  // Close single edit mode
-    }
-    // SINGLE method handles ALL cancel operations
-    private async Task StartCancelAdd<T>(EntityLevel level, T item) where T : class
-    {
-        //Console.WriteLine("CancelAdding");
-        var rowguid = MLEntityKeyHelper.GetRowguidAsGuid(item);
-        try
-        {
-            // Console.WriteLine($"Before MyDaDocus {MyDaDocus.Count} et rowguid {rowguid}");
-            // foreach (var udoc in MyDaDocus)
-            // {
-            //     Console.WriteLine($"Rowguid in MyDaDocus: {udoc.Rowguid}");
-            // }
-            MyDaDocus.RemoveAll(x => x.Rowguid == rowguid);
-            // Console.WriteLine($"After MyDaDocus {MyDaDocus.Count} et rowguid {rowguid}");
-            // Console.WriteLine($"Before Gsgfixes {curOrga.Gsgfixes.Count} et rowguid {rowguid}");
-            orgFixes.RemoveAll(x => x.Rowguid == rowguid);
-            //Console.WriteLine($"After Gsgfixes {orgFixes.Count} et rowguid {rowguid}");
-            EndRowEdit();
-            FixRenderKey = null;
-        }
-        catch(Exception ex)
-        {
-            Console.WriteLine($"erreur message {ex.Message}");
-        }
-        await InvokeAsync(StateHasChanged);
-        // if (_origOrgGuid.TryGetValue(rowguid, out var original))
-        // {
-        //     Imessage = "Annulation effectuee";
-        //     curGfixe = original;
-        // }
-    }
-    private async Task CancelEdit<T>(T item, EntityLevel level) where T : class
-    {
-        Console.WriteLine("CancelEditing");
-        await UnifiedEditAction(item, false, level);
-        EndRowEdit();  // Close single edit mode
-    }
-    private async Task UnifiedDeleteAction<T>(T item, bool isConfirm, EntityLevel level) where T : class
-    {
-        switch (level)
-        {
-            case EntityLevel.Plan: await ProcessDelete<GsgfixDto>(item as GsgfixDto, isConfirm); break;
-        }
-    }
-    private async Task ProcessDelete<T>(T item, bool isConfirm) where T : class
-    {
-        if (item == null) return;
-
-        var rowguid = (Guid)typeof(T).GetProperty("Rowguid")!.GetValue(item)!;
-
-        if (isConfirm)
-        {
-            // 🔥 Generic delete logic
-            RemoveFromParentCollection(item);
-            //await _guard.TrackDelete<T>(GetEntitySet(item), GetEntityKey(item));
-            var key = GetEntityKey(item); // helper to extract PK
-            await _guard.TrackDelete(GetEntitySetName<T>(), key, rowguid);
-
-            SetDeleteFlags(item);
-            SetRowState(rowguid, RowState.Normal);
-            //await NotifyPendingChanges();
+            GfxItems = orgFixes
+                .Where(uv => uv.Gvars == 3 && uv.Itb == 1)
+                .ToList() ?? new List<GsgfixDto>();
+            curGfx = GfxItems.FirstOrDefault();
         }
         else
         {
-            SetRowState(rowguid, RowState.Normal);
+            GfxItems = new List<GsgfixDto>();
         }
-
-        StateHasChanged();
     }
+    private Task UpdateMyDaGfxs(int jtb)
+    {
+        GfxItems = orgFixes
+            .Where(uv => uv.Gvars == 3 && uv.Itb == jtb)
+                .ToList() ?? new List<GsgfixDto>();
+         return Task.CompletedTask;
+    }
+    
     private string GetEntitySetName<T>() where T : class
     {
         return typeof(T) switch
@@ -1226,26 +829,12 @@ else
             return false;
         }
         //abrege
-        // if (ITyDoc == 7)
-        // {
-        //     if (string.IsNullOrEmpty(mypln.Abg)
-        //         || mypln.Abg.Length != 2)
-        //     {
-        //         Imessage = "abrege obligatoire,longueur(2)";
-        //         return false;
-        //     } 
-        //     if (mypln.Abg.Any(char.IsDigit))
-        //     {
-        //         Imessage = "doit etre en lettres";
-        //         return false;
-        //     }
-        // }
-        // if (string.IsNullOrEmpty(mypln.Abg)
-        //     || mypln.Abg.Length < 4)
-        // {
-        //     Imessage = "abrege obligatoire/longueur";
-        //     return false;
-        // }
+        if (string.IsNullOrEmpty(mypln.Abg)
+            || mypln.Abg.Length < 3)
+        {
+            Imessage = "abrege obligatoire/longueur";
+            return false;
+        }
         // //etat
         // if (mypln.Eta < 0)
         // {
@@ -1256,52 +845,7 @@ else
     }
 
     // ✅ 6. ROW Management
-    private string GetRowCss(RowState state, bool isLight, Guid rowguid,
-                        bool isActiveEdit, bool isOtherRowEditing)
-    {
-        var css = new List<string>();
-
-        if (isLight) css.Add("bg-light");
-
-        // 🔥 YOUR EXISTING: NEW ADD detection (Xadd1 == -1)
-        var isNewAdd = ((dynamic)MyDaDocus.FirstOrDefault(p => p.Rowguid == rowguid))?.Xadd1 == -1;
-
-        // 🔥 HIGHEST PRIORITY: Single Row Editing
-        if (isActiveEdit)
-        {
-            css.Add("row-active-edit");  // Thick yellow border + highlight
-            return string.Join(" ", css);  // EARLY RETURN - editing overrides all
-        }
-
-        // 🔥 NEXT: Other rows when editing active → READONLY
-        if (isOtherRowEditing)
-        {
-            css.Add("row-readonly");
-            css.Add("opacity-65");
-            css.Add("cursor-not-allowed");
-        }
-
-        // 🔥 YOUR EXISTING RowState logic
-        switch (state)
-        {
-            case RowState.AddPending:
-            case RowState.EditPending when isNewAdd:
-                css.Add("border-start border-warning border-3");
-                //css.Add("new-add-indicator");
-                break;
-            case RowState.EditPending:
-                css.Add("border-start border-info border-3");
-                break;
-            case RowState.DeletePending:
-                css.Add("bg-danger-subtle");
-                break;
-            case RowState.Locked:
-                css.Add("bg-secondary-subtle opacity-75");
-                break;
-        }
-
-        return string.Join(" ", css);
-    }
+    
     // ✅ 6. SELECTIONS
     // private void SelPlanAtr(int xatr)
     // {
@@ -1318,48 +862,24 @@ else
     {
         if (xdom == 1 || xdom == 2)
         {
-            MyDaDocus = orgFixes
+            GfxItems = orgFixes
               .Where(uv => uv.Gvars == 3 && uv.Itb == xdom && uv.Elea >= 1)
               .ToList();
-        } else if (xdom == 7)
+        }
+        // else if (xdom == 7)
+        // {
+        //     GfxItems = orgFixes
+        //       .Where(uv => uv.Gvars == 5 && uv.Itb == 11 && uv.Elea != 0)
+        //       .ToList();
+        // } 
+        else
         {
-            MyDaDocus = orgFixes
-              .Where(uv => uv.Gvars == 3 && uv.Itb == 11 && uv.Elea != 0)
-              .ToList();
-        } else
-        {
-           MyDaDocus = new();
+           GfxItems = new();
         }
         Console.WriteLine($"Nb. documents : {MyDaDocus.Count}");
         StateHasChanged();
     }
     
-    // ✅ 6. HELPERS - Mark Count and Clone
-
-    private async Task MarkAsModified<TDto>(TDto item, string entitySet) where TDto : class
-    {
-        // Reset flags (your convention)
-        SetFlags(item, 0, 0, 0);  // Xadd1=Xedt1=Xdel1=0
-
-        // Extract PK using your helper
-        var key = GetEntityKey(item);
-
-        // Queue update in guard
-        await _guard.TrackUpdate(entitySet, key, item);
-
-        Console.WriteLine($"modified liba {((dynamic)item).Liba} et abg {((dynamic)item).Abg}");
-        Console.WriteLine($"✅ {entitySet} marked Modified (queued for update)");
-    }
-    private object DeepClone(object entity)
-    {
-        var settings = new JsonSerializerSettings
-        {
-            ReferenceLoopHandling = ReferenceLoopHandling.Ignore
-        };
-
-        var json = JsonConvert.SerializeObject(entity, settings);
-        return JsonConvert.DeserializeObject(json, entity.GetType(), settings)!;
-    }
     private object GetEntityKey<TDto>(TDto entity)
     {
         switch (entity)
@@ -1411,7 +931,8 @@ else
     }
     public void Dispose()  // ← ADD THIS
     {
+        var asi = 18;
+        Console.WriteLine($"je suis mois et {asi}");
         Console.WriteLine("🧹 Child Prubsaie cleaning up");
     }
 }
-

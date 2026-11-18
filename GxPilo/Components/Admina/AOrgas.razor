@@ -27,6 +27,7 @@
 @using GxPilo.Services
 @using GxPilo.Services.Cols
 @using GxPilo.Components
+@using GxPilo.Components.Rtdocs
 
 @using Simple.OData.Client
 
@@ -37,7 +38,7 @@
 
 @inject IODataClient _MyODaClient
 @inject SessionContextService _sessionContext
-@inject RendAgres _rendAgres
+@inject RendGxAgres _rendAgres
 @inject IPendingChangesGuard _guard
 @inject IJSRuntime _JsRUN
 @inject IMessageService _messageService
@@ -82,6 +83,37 @@ else if (edOrgContext != null && curOrga != null)
                         <div class="col-auto">
                             <label style="font-weight:bold;font-size:larger">@curOrga.Sigle</label>
                         </div>
+                        <div class="col-auto">
+                            <button class="btn btn-outline-warning btn-sm d-flex align-items-center" 
+                                @onclick="() => VaOpenFiche()">
+                                    <i class="bi bi-printer me-1"></i>
+                                Fiche @curOrga.Sigle
+                            </button>
+                        </div>
+                        @if (vueFiche)
+                        {
+                        <div class="col-auto">
+                            <InputSelect @bind-Value="IMyFic" style="font-weight:bold">
+                                <option value="1">base</option>
+                                <option value="2">documents</option>
+                                <option value="3">adresses</option>
+                                <option value="4">orga.adm</option>
+                                <option value="5">orga.geo</option>
+                            </InputSelect>
+                        </div>
+                        <div class="row">
+                            @switch (IMyFic)
+                            {
+                                case 1:
+                                    <Rt1aFic curOrga="@curOrga"
+                                             _InODaClient="@_MyODaClient"
+                                             ensTbls="@EnsTbls">
+                                    </Rt1aFic>
+                                    break;
+                            }
+                            
+                        </div>
+                        }
                     </div>
                 <div class="row">
                     <Tabs>
@@ -366,7 +398,7 @@ else if (edOrgContext != null && curOrga != null)
                                                                 curOrga="@curOrga"
                                                                 _guard="@_guard"
                                                                 Actx="@Actx"
-                                                                VientDe="9"
+                                                                @* VientDe="9" *@
                                                                 EnsTbls="@EnsTbls">
                                                                 @* <ChildContent>
                                                                      <h2 class="child-box">Hello GRILLES</h2>
@@ -504,7 +536,7 @@ else if (edOrgContext != null && curOrga != null)
                                 </EditForm>
                             </Content>
                         </Tab>
-                        <Tab Title="Filiations" Name="FiliaTab" OnClick="@(() => OnTabChanged(1))">
+                        <Tab Title="Filiations" Name="FiliaTab" OnClick="@(() => OnTabChanged(11))">
                             <Content>
                                 <EditForm EditContext="edFixContext">
                                     <DataAnnotationsValidator />
@@ -513,7 +545,8 @@ else if (edOrgContext != null && curOrga != null)
                                         <span style="font-weight:bold"> Filiation -> Base</span>
                                     </div>
                                     <div class="row mt-2">
-                                        <Grid Data="@MyDaApts"
+                                        <p>@MyDaApts.Count</p>
+                                        <Grid Data="@MyDaApts.ToList()"
                                               TItem="GsgfixDto"
                                               AllowRowClick="true"
                                               OnRowClick="OnAflRowClick"
@@ -544,7 +577,7 @@ else if (edOrgContext != null && curOrga != null)
                                                     <ChildContent Context="item">
                                                         @if (item.Rowguid == EdAptRowguid)
                                                         {
-                                                            var isCible = draftApt.Ityp == 1 ? true : false;
+                                                            var isCible = draftApt.Elea == 1 ? true : false;
                                                             <InputSelect @bind-Value="draftApt.Ityp" disabled="@isCible">
                                                                 @foreach (var tob in LsFixes.Where(ut => ut.Gvars == 31 && ut.Itb == 2 && ut.Gp1 == 1))
                                                                 {
@@ -700,7 +733,7 @@ else if (edOrgContext != null && curOrga != null)
                                                         <div class="row mt-2">
                                                             <div class="col-md-1"></div>
                                                             <div class="col-md-11">
-                                                                <Grid Data="@orgFixes.Where(uf => uf.Gvars == 3 && uf.Itb == 6 && uf.Atyp == selectedGfix.Totyp && uf.Elea != 0).OrderBy(uo => uo.Elea)"
+                                                                <Grid Data="@orgFixes.Where(uf => uf.Gvars == 5 && uf.Itb == 6 && uf.Atyp == selectedGfix.Totyp && uf.Elea != 0).OrderBy(uo => uo.Elea)"
                                                                       TItem="GsgfixDto"
                                                                       @key="AflRenderKey"
                                                                       Responsive="true">
@@ -833,6 +866,16 @@ else if (edOrgContext != null && curOrga != null)
                                 </EditForm>
                             </Content>
                         </Tab>
+                        @* <Tab Title="Filiations2" Name="FiliaTab2" OnClick="@(() => OnTabChanged(1))">
+                            <Content>
+                                <Gsafil curOrga="@curOrga"
+                                        @bind-NbChanges="_nbChanges"
+                                        _guard="@_guard"
+                                        _InODaClient="@_MyODaClient"
+                                        EnsTbls="@EnsTbls">
+                                </Gsafil>
+                            </Content>
+                        </Tab> *@
                         <Tab Title="Colonnes" Name="ColonTab" OnClick="@(() => OnTabChanged(2))">
                             <Content>
                                 <OrgColumnSelector Idorg="@curOrga.Idorg" EnsTbls="@EnsTbls" EnsVars="@LsVars"/>
@@ -841,6 +884,11 @@ else if (edOrgContext != null && curOrga != null)
                         <Tab Title="Dictionnaire" Name="DicoTab" OnClick="@(() => OnTabChanged(3))">
                             <Content>
                                 <DicoAdmin IdcOrg="@curOrga.Idorg" LsVars="@LsVars" />
+                            </Content>
+                        </Tab>
+                        <Tab Title="Editions" Name="ImprTab" OnClick="@(() => OnTabChanged(4))">
+                            <Content>
+                                options edition des documents
                             </Content>
                         </Tab>
                     </Tabs>
@@ -1042,6 +1090,7 @@ else if (edOrgContext != null && curOrga != null)
     private int selTyp = 0;
     private int IMyDom = 1; //Zfro 1tiers2matiere
     private int IMyDest = 0; //Etyp 1accueil2enrol
+    private int IMyFic = 0; //edition fiche
     //Itb/1princ2affil
 
     private int IMyBas = 0;
@@ -1109,6 +1158,7 @@ else if (edOrgContext != null && curOrga != null)
     GsgfixDto? draftAfl = null;
     private bool isEdingAfl = false;
     private bool isOpenAdres = false;
+    private bool vueFiche = false;
     private AdrContext? Actx = null;
     //bool isDelingTfl = false;
     List<GsgfixDto> MyDaAfls = new();
@@ -1182,7 +1232,7 @@ else if (edOrgContext != null && curOrga != null)
         var postesTask = _rendAgres.LoadOrgaPostes();
         ////var colsTask = _rendAgres.LoadOrgaColons();
         var rolesTask = _rendAgres.LoadOrgaRoles();
-        var tablesTask = _rendAgres.LoadOrgaTables();
+        var tablesTask = _rendAgres.LoadGxOrgaTables();
         await Task.WhenAll(postesTask, rolesTask, tablesTask);
         ////var lscols = await _rendAgres.LoadOrgaColons();
         ////var lscols = (await colsTask).Where(tc => tc.Otyp == 2).ToList();
@@ -1212,9 +1262,9 @@ else if (edOrgContext != null && curOrga != null)
         //itb = rubtto
         MyDaDoms = orgFixes.Where(utl => utl.Gvars == 21 && utl.Elea != 0).ToList();
         //itb = 5
-        MyDaApts = orgFixes.Where(uf => uf.Gvars == 3 && uf.Itb == 5 && uf.Atyp == 1 && uf.Elea != 0).OrderBy(uo => uo.Elea).ToList();
+        MyDaApts = orgFixes.Where(uf => uf.Gvars == 5 && uf.Itb == 5 && uf.Atyp == 1 && uf.Elea != 0).OrderBy(uo => uo.Elea).ToList();
         //itb = 6
-        MyDaAfls = orgFixes.Where(uf => uf.Gvars == 3 && uf.Itb == 6 && uf.Atyp == 1 && uf.Elea != 0).OrderBy(uo => uo.Elea).ToList();
+        MyDaAfls = orgFixes.Where(uf => uf.Gvars == 5 && uf.Itb == 6 && uf.Atyp == 1 && uf.Elea != 0).OrderBy(uo => uo.Elea).ToList();
         //Immatriculation
         MyDaImats = orgFixes
                     .Where(uv => uv.Gvars == 9 && uv.Elea != 0)
@@ -1270,7 +1320,7 @@ else if (edOrgContext != null && curOrga != null)
             // Second query: load fixes only when needed
             var msgs = await _MyODaClient
                 .For<GsgfixDto>("Gsgfixes")
-                .Filter(f => f.Idorg == key && (f.Gvars == 3 || f.Gvars == 9 || f.Gvars == 21))
+                .Filter(f => f.Idorg == key && (f.Gvars >= 3 && f.Gvars <= 9) || f.Gvars == 21)
                 //.Select("Idorg, Xseq, Elea,Gp1")
                 .FindEntriesAsync();
             orgFixes = msgs.ToList();
@@ -1396,6 +1446,16 @@ else if (edOrgContext != null && curOrga != null)
         else
         {
             isOpenAdres = true;
+        }
+    }
+    private async Task VaOpenFiche()
+    {
+        if (vueFiche)
+        {
+            vueFiche = false;
+        } else
+        {
+            vueFiche = true;
         }
     }
     private void RemoveSegment(GsgfixDto segment) => Segments.Remove(segment);

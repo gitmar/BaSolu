@@ -20,13 +20,30 @@
                 <div class="d-flex flex-column">
                     @foreach (var upie in LsmVars.Where(uv => uv.Gvars == 3 && uv.Itb == 6 && uv.Elea != 0))
                     {
+                        <p>niv 1 @upie.Liba</p>
                         var lsPics = LsmVars.Where(ud => ud.Gvars == 3 && ud.Itb == 2 && ud.Totyp == @upie.Elea).ToList();
-                        @if (lsPics.Count() > 0){
+                        @if (lsPics.Count() > 0)
+                        {
                             <div class="d-flex flex-row">
                                 <div><b><i>@upie.Liba</i></b></div>
                             </div>
-                            @foreach (var udw in lsPics)
+                            // gx (Institution et tiw/tie)
+                            @foreach (var udw in lsPics.Where(ud => ud.Ktyp == 0))
                             {
+                                <p>niv 2-1 @udw.Liba</p>
+                                <div class="d-flex flex-row">
+                                    <div>
+                                        <label for="idphoto">@udw.Liba</label>
+                                        <InputFile OnChange="HandleFilesSelected" accept="image/*" multiple />
+                                        @* <InputFile id="idphoto" OnChange="HandleFileSelected" accept="image/*" />
+                                        <button @onclick="UploadFile">Upload</button> *@
+                                    </div>
+                                </div>
+                            }
+                            //affilies
+                            @foreach (var udw in lsPics.Where(ud => ud.Ktyp == upie.Elea))
+                            {
+                                <p>niv 2-2 @udw.Liba</p>
                                 <div class="d-flex flex-row">
                                     <div>
                                         <label for="idphoto">@udw.Liba</label>
@@ -170,10 +187,11 @@
 
             // Add extra fields
             content.Add(new StringContent(UploadCtx.Idorg.ToString()), "Idorg");
+
             content.Add(new StringContent(UploadCtx.Itie.ToString()), "Itie");
             content.Add(new StringContent(UploadCtx.Itiw.ToString()), "Itiw");
-            content.Add(new StringContent(UploadCtx.Ioper.ToString()), "Ioper");
-            content.Add(new StringContent(UploadCtx.Xmatri ?? ""), "Xmatri");
+            content.Add(new StringContent(UploadCtx?.Ioper?.ToString() ?? ""), "Ioper");
+            content.Add(new StringContent(UploadCtx?.Xmatri ?? ""), "Xmatri");
 
             //_apiClient = _httpfacClient.CreateClient("LOCALClient");
             var response = await _apiClient.PostAsync("Lgfileup/upload", content);

@@ -27,7 +27,7 @@
 @inject NavigationManager _navManager
 @inject SessionContextService _sessionContext
 @inject IJSRuntime _jsRun
-@inject RendAgres _rendAgres
+@inject RendGxAgres _rendAgres
 
 <PageTitle>OPERATEURS</PageTitle>
 @* @if (!string.IsNullOrEmpty(Imessage))
@@ -617,6 +617,7 @@ else
                 .ToList();
             _invModel.Utyp = 0; //cible
             //Groupe tiers
+            //_iVgties = LsVars.Where(uv => uv.Gvars == 5 && uv.Itb == 5 && uv.Ityp == 1 && uv.Elea != 0).ToList();
             _iVgties = _usrBag.Ufixes
                 .Where(ut => ut.Gvars == 36 && ut.Itb == 11 && ut.Gp3 == 1 && ut.Elea != 0)
                 .ToList();

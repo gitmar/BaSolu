@@ -1,9 +1,9 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.BlazorWebAssembly">
   <PropertyGroup>
-    <TargetFramework>net9.0</TargetFramework>
+    <TargetFramework>net10.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
-    <Version>1.2.65</Version>
+    <Version>1.2.73</Version>
     <SchemaVersion>1</SchemaVersion>
     <ServiceWorkerAssetsManifest>service-worker-assets.js</ServiceWorkerAssetsManifest>
   </PropertyGroup>
@@ -68,7 +68,7 @@
     <Compile Remove="Components\Abrou\ZZZRubFact.Razor.cs" />
     <Compile Remove="Components\Admina\ImmatPatternEditor.razor.cs" />
     <Compile Remove="Components\Admina\OrgaCrudPage.razor.cs" />
-    <Compile Remove="Components\Atabls\Gdocus.razor.cs" />
+    <Compile Remove="Components\Admina\X2Gsafil.razor.cs" />
     <Compile Remove="Components\Atabls\Z3Gtables.razor.cs" />
     <Compile Remove="Components\PRubs\CrudUIDemo.razor.cs" />
     <Compile Remove="Components\PRubs\Z3CrudUIDemo.razor.cs" />
@@ -76,6 +76,7 @@
     <Compile Remove="Components\Identity\GxRegister.cshtml.cs" />
     <Compile Remove="Components\Identity\RegisterSuccess.cshtml.cs" />
     <Compile Remove="Components\Uifrags\CrudGridBase.cs" />
+    <Compile Remove="Components\Uifrags\Z3CrudGridBase.cs" />
     <Compile Remove="oldProgram.cs" />
     <Compile Remove="Services\AdautService.cs" />
     <Compile Remove="Services\AppStateServices.cs" />
@@ -110,6 +111,8 @@
     <Content Remove="Components\Abrou\ZZZRubFact.razor" />
     <Content Remove="Components\Admina\Aogadrs.razor" />
     <Content Remove="Components\Admina\Aogcols.razor" />
+    <Content Remove="Components\Admina\X2Gsafil.razor" />
+    <Content Remove="Components\Admina\Z3Aogcols.razor" />
     <Content Remove="Components\Atabls\Gplans.razor" />
     <Content Remove="Components\Atabls\Z3Gtables.razor" />
     <Content Remove="Components\Atabls\Z4Gdocus.razor" />
@@ -154,34 +157,45 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <!--<PackageReference Include="AutoMapper" Version="16.1.1" />-->
     <PackageReference Include="Blazor.Bootstrap" Version="3.5.0" />
     <PackageReference Include="BlazorDownloadFile" Version="2.4.0.2" />
+    <PackageReference Include="Blazored.LocalStorage" Version="4.5.0" />
     <PackageReference Include="Flee" Version="2.0.0" />
-    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="9.0.10" />
-    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="9.0.10" PrivateAssets="all" />
-    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Authentication" Version="9.0.10" />
-    <PackageReference Include="Microsoft.AspNetCore.Components.Authorization" Version="9.0.10" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.22" />
-    <!--<PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="8.0.22" />-->
-    <PackageReference Include="Microsoft.Extensions.Http" Version="10.0.1" />
+
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="10.0.15" />
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Authentication" Version="10.0.15" />
+    <PackageReference Include="Microsoft.AspNetCore.Components.Authorization" Version="10.0.15" />
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="10.0.15" PrivateAssets="all" />
+
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="10.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Http" Version="10.0.15" />
+
     <PackageReference Include="Microsoft.IdentityModel.JsonWebTokens" Version="8.15.0" />
+    <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.15.0" />
+
+    <!--<PackageReference Include="Simple.OData.Client" Version="6.0.1" />
+    <PackageReference Include="Microsoft.OData.Core" Version="8.4.3" />
+    <PackageReference Include="Microsoft.OData.Edm" Version="8.4.3" />
+    <PackageReference Include="Microsoft.Spatial" Version="8.4.3" />-->
     
-    <PackageReference Include="Simple.OData.Client" Version="5.26.0" />  <!--5.26.0 // 6.0.1-->
+    <PackageReference Include="Simple.OData.Client" Version="6.0.1" />
     <PackageReference Include="Microsoft.OData.Core" Version="7.9.4" />
     <PackageReference Include="Microsoft.OData.Edm" Version="7.9.4" />
     <PackageReference Include="Microsoft.Spatial" Version="7.9.4" />
     
-    <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.13.0" />
-    <PackageReference Include="Microsoft.AspNetCore.WebUtilities" Version="9.0.0" />
-    <PackageReference Include="Microsoft.AspNetCore.Http" Version="2.3.0" />
+    <PackageReference Include="TG.Blazor.IndexedDB" Version="1.5.0-preview" />
+
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
+    <PackageReference Include="System.ComponentModel.Annotations" Version="5.0.0" />
+
+    <PackageReference Include="Microsoft.AspNetCore.WebUtilities" Version="10.0.15" />
   </ItemGroup>
-  <ItemGroup>
+  <!--<ItemGroup>
     <PackageReference Include="Blazored.LocalStorage" Version="4.5.0" />
     <PackageReference Include="System.ComponentModel.Annotations" Version="5.0.0" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />  
-    <!--<PackageReference Include="System.Text.Json" Version="9.0.4" />-->
-  </ItemGroup>
+    --><!--<PackageReference Include="System.Text.Json" Version="9.0.4" />--><!--
+  </ItemGroup>-->
 
   <ItemGroup>
     <ServiceWorker Include="wwwroot\service-worker.js" PublishedContent="wwwroot\service-worker.published.js" />
@@ -197,9 +211,9 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\DicTools\Gxdictio\GxDicto.csproj" />
     <ProjectReference Include="..\..\GxShared\GxShared.csproj" />
     <ProjectReference Include="..\..\GxSmenu\Gx.Components.csproj" />
-    <ProjectReference Include="..\DicTools\Gxdictio\GxDicto.csproj" />
   </ItemGroup>
 
   <ProjectExtensions><VisualStudio><UserProperties properties_4launchsettings_1json__JsonSchema="" /></VisualStudio></ProjectExtensions>

@@ -229,7 +229,7 @@ else
     public TierspDto opTier = new();
 
     public List<Gpfixe> LsFixes = new();
-    public List<Gpfixe> LsGties = new();
+    public List<Gpvar> LsGties = new();
     public List<Gpdivh> LsDivs = new();
     //public List<Rubpst> LsPsts = new();
     public List<Gpvar> LsVars = new();
@@ -295,15 +295,16 @@ else
                 LsFixes = LsFixes.ToList(),
                 LsPlans = LsPlans.ToList(),
             };
-            LsGties = _usrBag.Ufixes
-                .Where(ut => ut.Gvars == 36 && ut.Elea != 0 && ut.Elea != 9)
-                .ToList();
+            //LsGties = _usrBag.Ufixes
+            //    .Where(ut => ut.Gvars == 36 && ut.Elea != 0 && ut.Elea != 9)
+            //    .ToList();
+            LsGties = toChild.LsVars.Where(uv => uv.Gvars == 5 && uv.Itb == 5 && uv.Ityp == 1 && uv.Elea != 0).ToList();
             LsRoles = await _rendAgres.LoadOrgaRoles();
             Console.WriteLine("✅ LoadOrgaRoles done");
 
             // ... etc, one log line after every await ...
 
-            EnsTbls = await _rendAgres.LoadOrgaTables();
+            EnsTbls = await _rendAgres.LoadOrgaTables(_usrBag.Idorg, Ugpe);
             Console.WriteLine($"✅ LoadOrgaTables done: {EnsTbls.Count}");
 
             await LoadTieAplAsync(_usrBag.Idorg);

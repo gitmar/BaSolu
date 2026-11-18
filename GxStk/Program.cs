@@ -136,7 +136,9 @@ builder.Services.AddScoped<IPendingChangesGuard, PendingChangesGuard>();
 // ----------------------------
 // App Services
 // ----------------------------
-builder.Services.AddAutoMapper(typeof(SharedMappingProfile).Assembly);
+builder.Services.AddAutoMapper(
+    cfg => { },
+    typeof(SharedMappingProfile).Assembly);
 builder.Services.AddScoped<Userbag>();
 builder.Services.AddScoped<IPuzzleSyncService, PuzzleSyncService>();
 builder.Services.AddScoped<ChildVars>();

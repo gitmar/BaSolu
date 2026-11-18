@@ -100,15 +100,16 @@ builder.Services.AddScoped<ColumnPreferencesClient>();
 // ----------------------------
 // App Services
 // ----------------------------
-builder.Services.AddAutoMapper(typeof(SharedMappingProfile).Assembly);
+builder.Services.AddAutoMapper(
+    cfg => { },
+    typeof(SharedMappingProfile).Assembly);
 
 // ----------------------------
 // Core State & Context Services
 // ----------------------------
 builder.Services.AddScoped<Userbag>();
 builder.Services.AddScoped<ChildVars>();
-builder.Services.AddScoped<RendAgres>();
-builder.Services.AddScoped<RendBOlne>();
+builder.Services.AddScoped<RendGxAgres>();
 builder.Services.AddScoped<ClieAppState>();
 builder.Services.AddScoped<SessionContextService>();
 builder.Services.AddScoped<SessionContextClient>();

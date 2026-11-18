@@ -10,7 +10,8 @@
 @using GxShared.Helpers.CrudHelpers
 @using GxShared.Cols.Models
 @using GxShared.Interfaces
-@using GxTie.Components.Paccu.RtPer
+@using GxTie.Components.Paccu.Rtper
+@using GxTie.Components.Paccu.Dwnmd
 @using GxTie.Components.Uifrags
 @using GxTie.Components.PfrmHelper
 @using GxTie.Components.Cols
@@ -37,7 +38,7 @@
 <p> @curOrga?.Sigle - @curOrga?.Raison </p>
 @if (curTie != null && curOrga != null && isModalVisible)
 {
-    <GlobModal IsVisible="@isModalVisible"
+    <DownTie IsVisible="@isModalVisible"
                IsVisibleChanged="@OnModalVisibilityChanged"
                Title="Chargement des documents"
                UploadCtx="@uploadCtx"
@@ -45,8 +46,8 @@
                EntyTiw="null"
                EntyTie="@EditTie"
                LsmVars="@LsVars"
-               Oparent="1">
-    </GlobModal>
+               Oparent="2">
+    </DownTie>
 }
 
 <div class="my-container">
@@ -109,7 +110,7 @@
                                               PrefReader="@_prefReader"
                                               IsEditing="@IsTieEditing(curTie)"
                                               ConfState="@ConfState"
-                                              EnsTbls="@gpeTbls"
+                                              EnsTbls="@ensTbls"
                                               EnsAtrs="@EnsAtrs"
                                               Ugpe="@Ugpe"
                                               Efrm="@FormEfrm"
@@ -287,7 +288,7 @@
     private bool ChildBusy => IsLevelBusy(EntityLevel.Afl);   // an affiliate row is being added or edited
 
     private HttpClient _dftClient = default!;
-    private Acatbag _acatBag = new();
+    private Olnebag _olneBag = new();
     public List<Gpatr> EnsAtrs = new();
     public List<Gpcat> EnsCats = new();
 
@@ -316,16 +317,16 @@
         curTie.Smatri = SmatriValid ? Smatri : "";
     }
     //copy inner entities
-    private List<Gtabl> gpeTbls => ensTbls
-    .Select(tb =>
-    {
-        var copy = tb.Clone();
-        copy.TbItems = tb.TbItems?
-            .Where(it => (it.Tgpe == 0 || it.Tgpe == Ugpe))
-            .ToList() ?? new List<Gtvar>();
-        return copy;
-    })
-    .ToList();
+    // private List<Gtabl> gpeTbls => ensTbls
+    // .Select(tb =>
+    // {
+    //     var copy = tb.Clone();
+    //     copy.TbItems = tb.TbItems?
+    //         .Where(it => (it.Tgpe == 0 || it.Tgpe == Ugpe))
+    //         .ToList() ?? new List<Gtvar>();
+    //     return copy;
+    // })
+    // .ToList();
     private TierspDto EditTie => EditTarget(EntityLevel.Tie, curTie);
 
     private string? Smatri { get; set; }
@@ -355,8 +356,8 @@
             LsVars = toChild.LsVars;
             LsPlans = toChild.LsPlans;
             //Ityp:options Oui/Non
-            GpeAfls = LsVars.Where(uv => uv.Gvars == 3 && uv.Itb == 5 && uv.Ityp == 1 && uv.Elea != 0).ToList();
-            ChldAfls = LsVars.Where(uv => uv.Gvars == 3 && uv.Itb == 6 && uv.Ityp == 1 && uv.Elea != 0).ToList();
+            GpeAfls = LsVars.Where(uv => uv.Gvars == 5 && uv.Itb == 5 && uv.Ityp == 1 && uv.Elea != 0).ToList();
+            ChldAfls = LsVars.Where(uv => uv.Gvars == 5 && uv.Itb == 6 && uv.Ityp == 1 && uv.Elea != 0).ToList();
 
             Console.WriteLine("✅ LoadOrgaVariabs done");
             //limites
@@ -376,13 +377,13 @@
                 curTie = TieItems.First();
             }
             int myIdorg = curOrga?.Idorg ?? 0;
-            var bgresponse = await _dftClient.GetFromJsonAsync<Acatbag>($"olines/acatbag/{myIdorg}", default);
+            var bgresponse = await _dftClient.GetFromJsonAsync<Olnebag>($"lgauth/olnebag/{myIdorg}/{Ugpe}");
             if (bgresponse != null)
             {
-                Console.WriteLine($"✅ Acatbag loaded: {bgresponse.Natrs.Count} attributes, {bgresponse.Ncats.Count} categories");
-                _acatBag = bgresponse;
-                EnsAtrs = _acatBag.Natrs;
-                EnsCats = _acatBag.Ncats;
+                Console.WriteLine($"✅ Olnebag loaded: {bgresponse.Natrs.Count} attributes, {bgresponse.Ncats.Count} categories");
+                _olneBag = bgresponse;
+                EnsAtrs = _olneBag.Natrs;
+                EnsCats = _olneBag.Ncats;
             }
             else
             {

@@ -1,9 +1,9 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.BlazorWebAssembly">
   <PropertyGroup>
-    <TargetFramework>net9.0</TargetFramework>
+    <TargetFramework>net10.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
-    <Version>1.0.3</Version>
+    <Version>1.1.73</Version>
     <SchemaVersion>1</SchemaVersion>
     <ServiceWorkerAssetsManifest>service-worker-assets.js</ServiceWorkerAssetsManifest>
   </PropertyGroup>
@@ -127,32 +127,38 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Blazor.Bootstrap" Version="3.4.0" />
+    <PackageReference Include="Blazor.Bootstrap" Version="3.5.0" />
     <PackageReference Include="BlazorDownloadFile" Version="2.4.0.2" />
+    <PackageReference Include="Blazored.LocalStorage" Version="4.5.0" />
     <PackageReference Include="Flee" Version="2.0.0" />
-    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="9.0.10" />
-    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="9.0.10" PrivateAssets="all" />
-    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Authentication" Version="9.0.10" />
-    <PackageReference Include="Microsoft.AspNetCore.Components.Authorization" Version="9.0.10" />
-    <PackageReference Include="Microsoft.Extensions.Http" Version="10.0.1" />
-    <PackageReference Include="Microsoft.IdentityModel.JsonWebTokens" Version="8.13.0" />
-    <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.13.0" />
-    <PackageReference Include="Microsoft.AspNetCore.WebUtilities" Version="9.0.0" />
-    <PackageReference Include="Microsoft.AspNetCore.Http" Version="2.3.0" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="9.0.2" />
-    <!-- EF Core: keep ONLY 8.x -->
-    <PackageReference Include="Simple.OData.Client" Version="5.26.0" />
-    <!--6.0.1-->
+
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="10.0.15" />
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Authentication" Version="10.0.15" />
+    <PackageReference Include="Microsoft.AspNetCore.Components.Authorization" Version="10.0.15" />
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="10.0.15" PrivateAssets="all" />
+
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="10.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Http" Version="10.0.15" />
+
+    <PackageReference Include="Microsoft.IdentityModel.JsonWebTokens" Version="8.15.0" />
+    <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.15.0" />
+
+    <PackageReference Include="Simple.OData.Client" Version="6.0.1" />
     <PackageReference Include="Microsoft.OData.Core" Version="7.9.4" />
     <PackageReference Include="Microsoft.OData.Edm" Version="7.9.4" />
     <PackageReference Include="Microsoft.Spatial" Version="7.9.4" />
+    
+    <!--<PackageReference Include="Simple.OData.Client" Version="6.0.1" />
+    <PackageReference Include="Microsoft.OData.Core" Version="8.4.3" />
+    <PackageReference Include="Microsoft.OData.Edm" Version="8.4.3" />
+    <PackageReference Include="Microsoft.Spatial" Version="8.4.3" />-->
+    
     <PackageReference Include="TG.Blazor.IndexedDB" Version="1.5.0-preview" />
-  </ItemGroup>
-  <ItemGroup>
-    <PackageReference Include="Blazored.LocalStorage" Version="4.5.0" />
+
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
     <PackageReference Include="System.ComponentModel.Annotations" Version="5.0.0" />
-    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />  
-    <PackageReference Include="System.Text.Json" Version="10.0.3" />
+
+    <PackageReference Include="Microsoft.AspNetCore.WebUtilities" Version="10.0.15" />
   </ItemGroup>
 
   <ItemGroup>
@@ -160,25 +166,10 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="wwwroot\_content\Blazor.Bootstrap\" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Content Include="Components\Secuope\AccsMenu.razor" />
-    <Content Include="Components\Secuope\Asessions.razor" />
-    <None Include="efpt.config.json.user" />
-  </ItemGroup>
-
-  <ItemGroup>
+    <ProjectReference Include="..\..\DicTools\Gxdictio\GxDicto.csproj" />
+    <ProjectReference Include="..\..\GxFormula\GxFormula.csproj" />
     <ProjectReference Include="..\..\GxShared\GxShared.csproj" />
     <ProjectReference Include="..\..\GxSmenu\Gx.Components.csproj" />
-    <ProjectReference Include="..\DicTools\Gxdictio\GxDicto.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Reference Include="GxDicto">
-      <HintPath>..\DicTools\GxDicto\bin\Debug\net9.0\GxDicto.dll</HintPath>
-    </Reference>
   </ItemGroup>
 
   <ProjectExtensions><VisualStudio><UserProperties /></VisualStudio></ProjectExtensions>

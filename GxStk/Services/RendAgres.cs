@@ -21,10 +21,27 @@ namespace GxStk.Services
         {
             _clieManager = clieManager;
         }
+
+        public async Task<List<Gsedat>> LoadOrgaSessios()
+        {
+            //FmtPsts
+            var json = await _clieManager.SendRequestAsync("AUTHClient", HttpMethod.Get, "lgauth/allsesios");
+            var result = JsonConvert.DeserializeObject<List<Gsedat>>(json);
+            if (result.Any())
+            {
+                Console.WriteLine($"Nb sessions : {result.Count}");
+                return result.ToList();
+            }
+            else
+            {
+                Console.WriteLine("Nb sessions : null");
+                return new();
+            }
+        }
         public async Task<List<Gpdivh>> LoadOrgaPostes()
         {
             //FmtPsts
-            var json = await _clieManager.SendRequestAsync("AuthClient", HttpMethod.Get, "lgauth/allpostes");
+            var json = await _clieManager.SendRequestAsync("AUTHClient", HttpMethod.Get, "lgauth/allpostes");
             var result = JsonConvert.DeserializeObject<List<Gpdivh>>(json);
             if (result.Any())
             {
@@ -42,7 +59,7 @@ namespace GxStk.Services
         public async Task<List<Grole>> LoadOrgaRoles()
         {
             //FmtPsts
-            var json = await _clieManager.SendRequestAsync("AuthClient", HttpMethod.Get, "lgauth/allroles");
+            var json = await _clieManager.SendRequestAsync("AUTHClient", HttpMethod.Get, "lgauth/allroles");
             var result = JsonConvert.DeserializeObject<List<Grole>>(json);
             if (result.Any())
             {
@@ -55,30 +72,115 @@ namespace GxStk.Services
                 return new();
             }
         }
-        public async Task<List<Gtabl>> LoadOrgaTables()
+        //public async Task<List<Gtabl>> LoadOrgaTables()
+        //{
+        //    var json = await _clieManager.SendRequestAsync(
+        //        "AUTHClient",
+        //        HttpMethod.Get,
+        //        "lgauth/alltables");
+
+        //    var result = JsonConvert.DeserializeObject<List<Gtabl>>(json);
+
+        //    return result ?? new List<Gtabl>();
+        //}
+        public async Task<List<Gtabl>> LoadOrgaTables(int inOrgId, int tGpeId)
         {
             var json = await _clieManager.SendRequestAsync(
-                "AuthClient",
+                "AUTHClient",
                 HttpMethod.Get,
-                "lgauth/alltables");
+                $"lgauth/alltables/{inOrgId}/{tGpeId}");
 
             var result = JsonConvert.DeserializeObject<List<Gtabl>>(json);
 
             return result ?? new List<Gtabl>();
         }
-        public async Task<List<Gpcol>> LoadOrgaColons()
+        public async Task<List<Gtabl>> LoadOrgaVgroups()
+        {
+            var json = await _clieManager.SendRequestAsync(
+                "AUTHClient",
+                HttpMethod.Get,
+                "lgauth/allvgroups");
+
+            var result = JsonConvert.DeserializeObject<List<Gtabl>>(json);
+
+            return result ?? new List<Gtabl>();
+        }
+        public async Task<List<Gpatr>> LoadOrgaAtribs()
+        {
+            var json = await _clieManager.SendRequestAsync(
+                "AUTHClient",
+                HttpMethod.Get,
+                "lgauth/allatribs");
+
+            var result = JsonConvert.DeserializeObject<List<Gpatr>>(json);
+
+            return result ?? new List<Gpatr>();
+        }
+        public async Task<List<Gpcat>> LoadOrgaCategs()
+        {
+            var json = await _clieManager.SendRequestAsync(
+                "AUTHClient",
+                HttpMethod.Get,
+                "lgauth/allcategs");
+
+            var result = JsonConvert.DeserializeObject<List<Gpcat>>(json);
+
+            return result ?? new List<Gpcat>();
+        }
+
+        //public async Task<Acatbag> LoadOrgaTieAtrCats(int inIdorg)
+        //{
+        //    var json = await _clieManager.SendRequestAsync(
+        //        "LOCALClient",
+        //        HttpMethod.Get,
+        //        $"olines/acatbag/{inIdorg}");
+        //    var result = JsonConvert.DeserializeObject<Acatbag>(json);
+        //    return result ?? new Acatbag();
+        //}
+
+        //public async Task<List<Gpcol>> LoadOrgaColons()
+        //{
+        //    //FmtPsts
+        //    var json = await _clieManager.SendRequestAsync(
+        //        "AUTHClient", 
+        //        HttpMethod.Get, 
+        //        "lgauth/allcolons");
+        //    var result = JsonConvert.DeserializeObject<List<Gpcol>>(json);
+        //    if (result.Any())
+        //    {
+        //        Console.WriteLine($"Nb colonnes : {result.Count}");
+        //        return result.ToList();
+        //    }
+        //    else
+        //    {
+        //        Console.WriteLine("Nb colonnes : null");
+        //        return new();
+        //    }
+        //}
+        public async Task<List<Gpgrid>> LoadOrgaGdata(int ipl)
+        {
+            var json = await _clieManager.SendRequestAsync(
+                "AUTHClient",
+                HttpMethod.Get,
+                $"lgauth/allgrids/{ipl}");
+
+            var result = JsonConvert.DeserializeObject<List<Gpgrid>>(json);
+
+            return result ?? new List<Gpgrid>();
+        }
+        public async Task<List<Gxuser>> LoadOrgaUsers()
         {
             //FmtPsts
-            var json = await _clieManager.SendRequestAsync("AuthClient", HttpMethod.Get, "lgauth/allcolons");
-            var result = JsonConvert.DeserializeObject<List<Gpcol>>(json);
+            var json = await _clieManager.SendRequestAsync("AUTHClient", HttpMethod.Get, "lgauth/allusers");
+            var result = JsonConvert.DeserializeObject<List<Gxuser>>(json);
             if (result.Any())
             {
-                Console.WriteLine($"Nb colonnes : {result.Count}");
+                Console.WriteLine($"Nb Roles : {result.Count}");
                 return result.ToList();
             }
             else
             {
-                Console.WriteLine("Nb colonnes : null");
+                Console.WriteLine("Nb Roles : null");
                 return new();
             }
         }

@@ -231,7 +231,7 @@
     public List<Gpdivh> LsDivs = new();
     //public List<Gplan> LsProgs = new List<Gplan>();
     //public List<Gpvar> LsTabls = new();
-    public List<Gpfixe> LsGties = new();
+    public List<Gpvar> LsGties = new();
     public List<Grole> _invRoles = new();
     public List<Gpvar> EnsSess = new();
     public List<Gpgrid> _inGldata = new();
@@ -367,12 +367,12 @@
 
             Console.WriteLine($"Programmes en cours : {LsProgs.Count}");
             int xdom = 6;
-            LsGties = LsFixes
-                .Where(ut => ut.Gvars == 36 && ut.Itb == xdom && ut.Elea != 0 && ut.Elea != 9)
-                .ToList();
-
+            //LsGties = LsFixes
+            //    .Where(ut => ut.Gvars == 36 && ut.Itb == xdom && ut.Elea != 0 && ut.Elea != 9)
+            //    .ToList();
+            LsGties = LsVars.Where(uv => uv.Gvars == 5 && uv.Itb == 5 && uv.Ityp == 1 && uv.Elea != 0).ToList();
             Groupes.Clear();
-            foreach (var gr in LsGties.Where(gr => gr.Itb == 6))
+            foreach (var gr in LsGties.Where(gr => gr.Itb == 5))
             {
                 Groupes.Add(new GxGroupe
                 {
@@ -415,7 +415,7 @@
             strSes = curSes.Liba;
             if (toChild != null)
                 toChild.inSes = curSes;
-            ensTbls = await _rendAgres.LoadOrgaTables();
+            ensTbls = await _rendAgres.LoadOrgaTables(_usrBag.Idorg, Ugpe);
 
             await LoadCalcOrgaAsync(_usrBag.Idorg, curSes.Dsess.Year, curSes.Dsess.Month);
         }

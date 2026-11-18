@@ -25,7 +25,7 @@
 @inject IODataClient _MyODaClient
 @inject SessionContextService _sessionContext
 @inject MyAuthStateProvider _authProvider
-@inject RendAgres _rendAgres
+@inject RendGxAgres _rendAgres
 @inject IJSRuntime _JsRUN
 @inject IPendingChangesGuard _guard
 @inject IMessageService _messageService
@@ -301,7 +301,7 @@
             //toChild.LsTabls = LsTabls;
             toChild.curOrga = curOrga;  // ADD THIS!
             //_guard.RegisterUnconfirmedPredicate<Gsgfix>(g => g.Xadd1 == -1 || g.Xedt1 == -1 || g.Xdel1 == -1);
-            EnsTbls = await _rendAgres.LoadOrgaTables();
+            EnsTbls = await _rendAgres.LoadGxOrgaTables();
             _nbChanges = _guard.GetPendingChangesCount();  // Initial value
         }
         catch (Exception ex)

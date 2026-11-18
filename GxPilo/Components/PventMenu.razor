@@ -23,7 +23,7 @@
 @inject IODataClient _MyODaClient
 @inject SessionContextService _sessionContext
 @inject MyAuthStateProvider _authProvider
-@inject RendAgres _rendAgres
+@inject RendGxAgres _rendAgres
 @inject IPendingChangesGuard _guard
 @inject IJSRuntime _JsRUN
 @inject IMessageService _messageService
@@ -200,7 +200,7 @@ else
                 LsPlans = LsPlans.ToList(),
                 //LsTabls = LsTabls.ToList()
             };
-            ensTbls = await _rendAgres.LoadOrgaTables();
+            ensTbls = await _rendAgres.LoadGxOrgaTables();
             _nbChanges = _guard.GetPendingChangesCount();  // Initial value
         }
         finally

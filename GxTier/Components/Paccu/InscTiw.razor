@@ -10,7 +10,8 @@
 @using GxShared.Helpers.CrudHelpers
 @using GxShared.Cols.Models
 @using GxShared.Interfaces
-@using GxTie.Components.Paccu.RtPer
+@using GxTie.Components.Paccu.Rtper
+@using GxTie.Components.Paccu.Dwnmd
 @using GxTie.Components.Uifrags
 @using GxTie.Components.PfrmHelper
 @using GxTie.Components.Cols
@@ -37,7 +38,7 @@
 <p> @curOrga?.Sigle - @curOrga?.Raison </p>
 @if (curTiw != null && curOrga != null && isModalVisible)
 {
-    <GlobModal IsVisible="@isModalVisible"
+    <DownTie IsVisible="@isModalVisible"
                IsVisibleChanged="@OnModalVisibilityChanged"
                Title="Chargement des documents"
                UploadCtx="@uploadCtx"
@@ -46,7 +47,7 @@
                EntyTie="null"
                LsmVars="@LsVars"
                Oparent="1">
-    </GlobModal>
+    </DownTie>
 }
 
 <div class="my-container">
@@ -108,13 +109,15 @@
                                         PrefReader="@_prefReader"
                                         IsEditing="@IsTiwEditing(curTiw)"
                                         ConfState="@ConfState"
-                                        EnsTbls="@gpeTbls"
+                                        EnsTbls="@ensTbls"
                                         EnsAtrs="@EnsAtrs"
+                                        EnsVars="@EnsVars"
                                         Ugpe="@Ugpe"
                                         Efrm="@FormEfrm"
                                         OnConfirm="@ConfirmPerson"  
                                         OnCancel="@CancelPerson"
                                         WflItems="@WflItems"
+                                        curWfl="@curWfl"
                                         ChildBusy="@ChildBusy"
                                         IsEditingFn="@(a => IsWflEditing(a))"
                                         GetDraftFn="@(() => GetDraft(EntityLevel.Wfl) as TiwaflDto)"
@@ -257,8 +260,9 @@
     private bool ChildBusy => IsLevelBusy(EntityLevel.Wfl);   // an affiliate row is being added or edited
 
     private HttpClient _dftClient = default!;
-    private Acatbag _acatBag = new();
+    private Olnebag _olneBag = new();
     public List<Gpatr> EnsAtrs = new();
+    public List<Gpvar> EnsVars = new();
     public List<Gpcat> EnsCats = new();
     //private bool isOpenAdres = false;
     private bool isTiwValidate = false;
@@ -269,7 +273,7 @@
 
     private int IMyGAfl = 0;
     private int refTab = 1;
- 
+
     private bool IsProvisional = true;
     private string Sorga = "";
     private string Sgpe = "";
@@ -285,23 +289,27 @@
         curTiw.Zmatri = ZmatriValid ? Zmatri : "";
     }
     //copy inner entities
-    private List<Gtabl> gpeTbls => ensTbls
-    .Select(tb =>
-    {
-        var copy = tb.Clone();
-        copy.TbItems = tb.TbItems?
-            .Where(it => (it.Tgpe == 0 || it.Tgpe == Ugpe))
-            .ToList() ?? new List<Gtvar>();
-        return copy;
-    })
-    .ToList();
+    // private List<Gtabl> gpeTbls => ensTbls
+    // .Select(tb =>
+    // {
+    //     var copy = tb.Clone();
+    //     copy.TbItems = tb.TbItems?
+    //         .Where(it => (it.Tgpe == 0 || it.Tgpe == Ugpe))
+    //         .ToList() ?? new List<Gtvar>();
+    //     return copy;
+    // })
+    // .ToList();
+    private TiewelDto curTiw = new();
     private TiewelDto EditTiw => EditTarget(EntityLevel.Tiw, curTiw);
-   
-    private string? Zmatri { get; set; }
 
+    private TiwaflDto curWfl = new();
+    private TiwaflDto EditWfl => EditTarget(EntityLevel.Wfl, curWfl);
+
+    private string? Zmatri { get; set; }
     public AdrContext Actx { get; set; }
     public UplCxtDto uploadCtx { get; set; } = new();
-    private TiewelDto curTiw = new();
+
+
     private int _nbChanges = 0;
 
     private List<TiewelDto> WaitingTiewels => TiwItems.Where(tw => tw.Xadd1 != -1).ToList();
@@ -324,8 +332,8 @@
             LsVars = toChild.LsVars;
             LsPlans = toChild.LsPlans;
             //Ityp:options Oui/Non
-            GpeAfls = LsVars.Where(uv => uv.Gvars == 3 && uv.Itb == 5 && uv.Ityp == 1 && uv.Elea != 0).ToList();
-            ChldAfls = LsVars.Where(uv => uv.Gvars == 3 && uv.Itb == 6 && uv.Ityp == 1 && uv.Elea != 0).ToList();
+            GpeAfls = LsVars.Where(uv => uv.Gvars == 5 && uv.Itb == 5 && uv.Ityp == 1 && uv.Elea != 0).ToList();
+            ChldAfls = LsVars.Where(uv => uv.Gvars == 5 && uv.Itb == 6 && uv.Ityp == 1 && uv.Elea != 0).ToList();
 
             Console.WriteLine("✅ LoadOrgaVariabs done");
             //limites
@@ -345,13 +353,14 @@
                 curTiw = TiwItems.First();
             }
             int myIdorg = curOrga?.Idorg ?? 0;
-            var bgresponse = await _dftClient.GetFromJsonAsync<Acatbag>($"olines/acatbag/{myIdorg}", default);
+            var bgresponse = await _dftClient.GetFromJsonAsync<Olnebag>($"lgauth/olnebag/{myIdorg}/{Ugpe}");
             if (bgresponse != null)
             {
-                Console.WriteLine($"✅ Acatbag loaded: {bgresponse.Natrs.Count} attributes, {bgresponse.Ncats.Count} categories");
-                _acatBag = bgresponse;
-                EnsAtrs = _acatBag.Natrs;
-                EnsCats = _acatBag.Ncats;
+                Console.WriteLine($"✅ Olnebag loaded: {bgresponse.Natrs.Count} attributes, {bgresponse.Ncats.Count} categories");
+                _olneBag = bgresponse;
+                EnsAtrs = _olneBag.Natrs;
+                EnsCats = _olneBag.Ncats;
+                EnsVars = _olneBag.Nvars;
             }
             else
             {
@@ -396,7 +405,7 @@
 
     protected override void SubscribeToGuard() { }
 
-    
+
     //build hierarchy
     private void BuildHierarchy()
     {
@@ -466,7 +475,10 @@
         => await StartRowEdit(EntityLevel.Tiw, item, _edTiwOriginals, d => SetDraft(EntityLevel.Tiw, d));
 
     private async Task StartEditWfl(TiwaflDto item)
-        => await StartRowEdit(EntityLevel.Wfl, item, _edWflOriginals, d => SetDraft(EntityLevel.Wfl, d));
+    {
+        await StartRowEdit(EntityLevel.Wfl, item, _edWflOriginals, d => SetDraft(EntityLevel.Wfl, d));
+        curWfl = item;
+    }
     // Affiliates of a saved person are tracked on their own; those of a new person ride in its insert.
     protected override bool TrackOnItsOwn(EntityLevel level, object entity)
     {
@@ -554,9 +566,9 @@
         }
         catch (Exception ex)
         {
-            
+
         }
-    var newWfl = new TiwaflDto
+        var newWfl = new TiwaflDto
     {
         Rowguid = Guid.NewGuid(),
         Prowguid = parent.Rowguid,
@@ -569,6 +581,7 @@
         Datc = DateTime.Now, 
         Eta = 1
     };
+    curWfl = newWfl;
     GaflMode = GridMode.AflsAdding;
     //curTiw.Tiwafls.Add(newWfl); // Add the new child to the parent collection
     await StartRowAdd(EntityLevel.Wfl, newWfl, WflItems, d => SetDraft(EntityLevel.Wfl, d));

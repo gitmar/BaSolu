@@ -60,7 +60,6 @@ else
                     <label class="me-2">G.Tiers :</label>
                     <InputSelect @bind-Value="IMyGtie"
                                  @bind-Value:after="OuvreMGrid"
-                                 @key="RubRenderKey"
                                  class="me-3"
                                  style="width:auto">
                         <option value=0>?gtiers</option>
@@ -87,7 +86,6 @@ else
                     <label class="me-2">Base :</label>
                     <InputSelect @bind-Value="IMyVue"
                                  @bind-Value:after="OuvreMGrid"
-                                 @key="RubRenderKey"
                                  class="me-3"
                                  style="width:auto">
                         <option value="0">?base</option>
@@ -119,8 +117,8 @@ else
                             {
                                 <Grid TItem="PlngenDto"
                                        Data="@MyDaPlans"
-                                       @key="GetRenderKey(EntityLevel.Plan)"
                                        AllowRowClick="true"
+                                       @key="@GetRenderKey(EntityLevel.Plan)"
                                        OnRowClick="OnPlnRowClick"
                                        AllowDetailView="true"
                                        RowClass="@((item) => GetPlanRowClass(item))"
@@ -172,14 +170,14 @@ else
                                                 {
                                                     <input type="checkbox"
                                                            class="form-check-input"
-                                                           checked="@(draftPln.Siatr ?? 0)"
-                                                           @onchange="e => draftPln.Siatr = (int)e.Value!" />
+                                                           checked="@(draftPln.Siatr == 1)"
+                                                           @onchange="e => draftPln.Siatr = (bool)e.Value! ? 1 : 0" />
                                                 }
                                                 else
                                                 {
                                                     <input type="checkbox"
                                                            class="form-check-input"
-                                                           checked="@(item.Siatr ?? 0)"
+                                                           checked="@(item.Siatr == 1)"
                                                            disabled />
                                                 }
                                             </ChildContent>
@@ -488,7 +486,7 @@ else
                                                     <div class="col-12">
                                                         <Grid TItem="RubvarDto"
                                                               Data="selectedPln.Rubvars.ToList()"
-                                                              @key="GetRenderKey(EntityLevel.Rub)"
+                                                              @key="@GetRenderKey(EntityLevel.Rub)"
                                                               AllowRowClick="true"
                                                               OnRowClick="OnRubRowClick"
                                                               AllowDetailView="true"
@@ -710,7 +708,7 @@ else
                                                                         </div>
                                                                         <Grid TItem="RubfmtDto"
                                                                               Data="selectedRub.Rubfmts.ToList()"
-                                                                              @key="GetRenderKey(EntityLevel.Fmt)"
+                                                                              @key="@GetRenderKey(EntityLevel.Fmt)"
                                                                               AllowRowClick="true"
                                                                               OnRowClick="OnFmtRowClick"
                                                                               AllowPaging="true"
@@ -1175,8 +1173,10 @@ else
     private List<Gpfixe> LsDoms = new();
     private List<Gpfixe> LsAtrs = new();
     private List<Gpfixe> LsVues = new();
-    private List<Gpfixe> LsGties = new();
+    private List<Gpvar> LsGties = new();
     //private List<Gtvar> StatItems = new();
+
+    private string PlanGridKey { get; set; } = Guid.NewGuid().ToString();
 
     private bool isPlnFilteringEnabled = false;
     private bool isRubFilteringEnabled = false;
@@ -1251,7 +1251,8 @@ else
             LsDoms = LsFixes.Where(ut => ut.Gvars == 36 && ut.Itb == 2 && ut.Gp1 == 2 && ut.Elea != 0).ToList();
             LsAtrs = LsFixes.Where(ut => ut.Gvars == 36 && ut.Itb == 1 && ut.Gp1 == 3 && ut.Elea != 0).ToList();
             LsVues = LsFixes.Where(ut => ut.Gvars == 36 && ut.Itb == 4 && ut.Gp1 == 4 && ut.Elea != 0).ToList();
-            LsGties = LsFixes.Where(ut => ut.Gvars == 36 && ut.Itb == 6 && ut.Elea != 0 && ut.Elea != 9).ToList();
+            //LsGties = LsFixes.Where(ut => ut.Gvars == 36 && ut.Itb == 6 && ut.Elea != 0 && ut.Elea != 9).ToList();
+            LsGties = LsVars.Where(uv => uv.Gvars == 5 && uv.Itb == 5 && uv.Ityp == 1 && uv.Elea != 0).ToList();
             //StatItems = ensTbls?.FirstOrDefault(tb => tb.Pref == 11 && tb.Tenr == 1)?.TbItems.ToList() ?? new();
             LsPlans = toChild.LsPlans;
             _lgcdu = 3;

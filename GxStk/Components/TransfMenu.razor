@@ -152,8 +152,11 @@ else
     public List<Gpdivh> LsDivs = new();
     public List<Gpvar> LsVars = new();
     public List<Gplan> LsPlans = new();
-    public List<Gpvar> LtTabls = new();
-    public List<Gpvar> LsTabls = new();
+    public List<Gtabl> ensTbls = new();
+    public List<Gpvar> LsGties = new();
+    //public List<Gpvar> LtTabls = new();
+    //public List<Gpvar> LsTabls = new();
+    public int Ugpe = 0, Tgpe = 0; //gpe ref1..6/tiers type6..7
     private int _chxGpe = 0, _chxMenu = 1;
 
     //modal management
@@ -173,8 +176,8 @@ else
             LsVars = _usrBag.Usorga.Uvars.ToList();
             LsFixes = _usrBag.Ufixes.ToList();
             LsPlans = _usrBag.Usorga.Uplns.Where(pl => pl.Ptyp == 2 || pl.Ptyp == 3 || pl.Ptyp == 4).ToList();
-            LtTabls = _usrBag.Usorga.Uvars.Where(tb => tb.Gvars == 4).ToList();
-            LsTabls = _usrBag.Usorga.Uvars.Where(tb => tb.Gvars == 5).ToList();
+            //LtTabls = _usrBag.Usorga.Uvars.Where(tb => tb.Gvars == 4).ToList();
+            //LsTabls = _usrBag.Usorga.Uvars.Where(tb => tb.Gvars == 5).ToList();
             await LoadOrgaAsync(_usrBag.Idorg);
 
             Console.WriteLine($"Usrbag plans : {_usrBag.Usorga.Uplns.Count()}");
@@ -186,8 +189,18 @@ else
                 LsVars = LsVars.ToList(),
                 LsFixes = LsFixes.ToList(),
                 LsPlans = LsPlans.ToList(),
-                LsTabls = LsTabls.ToList()
+                //LsTabls = LsTabls.ToList()
             };
+            LsGties = LsVars.Where(uv => uv.Gvars == 5 && uv.Itb == 5 && uv.Ityp == 1 && uv.Elea != 0).ToList();
+            Groupes.Clear();
+            foreach (var gr in LsGties.Where(gr => gr.Itb == 5))
+            {
+                Groupes.Add(new GxGroupe { Itb = gr.Itb, Elea = gr.Elea, Liba = gr.Liba });
+            }
+            ;
+            Console.WriteLine("✅ LoadOrgaRoles done");
+            ensTbls = await _rendAgres.LoadOrgaTables(_usrBag.Idorg, Ugpe);
+            Console.WriteLine($"✅ LoadOrgaTables done: {ensTbls.Count}");
             _nbChanges = _guard.GetPendingChangesCount();  // Initial value
         }
         finally

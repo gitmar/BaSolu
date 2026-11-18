@@ -1,0 +1,226 @@
+﻿@page "/downafl";
+
+@using GxShared.Sess
+@using GxShared.GxDtos
+@using GxShared.Helpers
+@using GxShared.Others
+@using System.Net.Http.Headers
+
+@inject IHttpClientFactory _httpfacClient
+
+<div class="modal fade @(IsVisible ? "show" : "")" tabindex="-1" style="display: @(IsVisible ? "block" : "none")" aria-modal="true" role="dialog">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title"><h2>@Title</h2></div>
+                <button type="button" class="btn-close" @onclick="CloseModal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body bg-info bg-opacity-50 text-black">
+                @ChildContent
+                <div class="d-flex flex-column">
+                    @if (Pour1Afl != null)
+                    {
+                        var lsPics = LsmVars.Where(ud => ud.Gvars == 3 && ud.Itb == 2 && ud.Totyp == PUgpe).ToList();
+                        @if (lsPics.Count() > 0)
+                        {
+                            <div class="d-flex flex-row">
+                                <div><b><i>@Pour1Afl.Liba</i></b></div>
+                            </div>
+                            @foreach (var udw in lsPics)
+                            {
+                                <div class="d-flex flex-row">
+                                    <div>
+                                        <label for="idphoto">@udw.Liba</label>
+                                        <InputFile OnChange="HandleFilesSelected" accept="image/*" multiple />
+                                    </div>
+                                </div>
+                            }
+                        }
+                    }
+                </div>
+                @if (PeutLister)
+                {
+                    <div class="row">
+                        <ListImages _apiClient="_apiClient">
+                        </ListImages>
+                    </div>
+                }
+                <div class="d-flex align-items-center gap-2">
+                    <button type="button" class="btn btn-secondary btn-small" @onclick="UploadFiles">Upload</button>
+                    <button type="button" class="btn btn-primary btn-small" @onclick="AcceptList">Lister</button>
+                </div>
+                <!-- Here you can bind inputs to properties of Entity -->
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" @onclick="CloseModal">Fermer</button>
+            </div>
+        </div>
+    </div>
+    @if (errors)
+    {
+        <div class="alert alert-danger" role="alert">
+            @foreach (var error in errorList)
+            {
+                <p>@error</p>
+            }
+        </div>
+    }
+</div>
+
+@code {
+    [Parameter] public RenderFragment ChildContent { get; set; }
+
+    private bool success, errors;
+    private string successmsg = "";
+    private List<string> errorList = new List<string>();
+
+    //private IBrowserFile selectedFile;
+    public HttpClient _apiClient;
+
+    [Parameter]
+    public bool IsVisible { get; set; }
+    [Parameter]
+    public EventCallback<bool> IsVisibleChanged { get; set; }
+    [Parameter]
+    public string Title { get; set; }
+    //to chose from parent
+    [Parameter]
+    public int Idorg { get; set; }
+    [Parameter]
+    public int PUgpe { get; set; }
+    [Parameter]
+    public TierspDto EntyTie { get; set; }
+    [Parameter]
+    public TiewelDto EntyTiw { get; set; }
+    [Parameter]
+    public TieaflDto EntyTafl { get; set; }
+    [Parameter]
+    public TiwaflDto EntyTwfl { get; set; }
+    [Parameter]
+    public UplCxtDto UploadCtx { get; set; } = new();
+    [Parameter]
+    public List<Gpvar> LsmVars { get; set; }
+    [Parameter]
+    public int Oparent { get; set; }
+    [Parameter]
+    public EventCallback<TiewelDto> OnTiwSave { get; set; } // Callback to return the modified entity
+    [Parameter]
+    public EventCallback<TierspDto> OnTieSave { get; set; } // Callback to return the modified entity
+
+    private List<IBrowserFile> selectedFiles = new();
+    private List<ImageInfo>? images;
+    private List<Gpvar> LsPics = new();
+    private Gpvar Pour1Afl = new();
+
+    private bool PeutLister = false;
+    private string Imessage = "entrée images";
+
+    private void CloseModal()
+    {
+        IsVisible = false;
+        IsVisibleChanged.InvokeAsync(IsVisible);
+    }
+    protected override async Task OnInitializedAsync()
+    {
+        _apiClient = _httpfacClient.CreateClient("LOCALClient");
+        //UploadCtx.Idorg = Idorg;
+        //UploadCtx.Itie = EntyTie?.Id ?? 0;
+        //UploadCtx.Itiw = EntyTiw?.Id ?? 0;
+        //UploadCtx.Ioper = GmUser.Userid;
+        Pour1Afl = LsmVars?.FirstOrDefault(ud => ud.Gvars == 3 && ud.Itb == 2 && ud.Totyp == PUgpe) ?? new();
+    }
+    private async Task SaveChanges()
+    {
+        // Optionally, perform any validation or processing here
+        if (Oparent == 1)
+        {
+            //await OnTiwSave.InvokeAsync(EntyTiw);
+        }
+        else
+        {
+            //await OnTieSave.InvokeAsync(EntyTie);
+        }
+        CloseModal();
+    }
+    private void HandleFilesSelected(InputFileChangeEventArgs e)
+    {
+        // Collect all selected files
+        selectedFiles = e.GetMultipleFiles().ToList();
+    }
+
+    private async Task UploadFiles()
+    {
+        if (selectedFiles == null || selectedFiles.Count == 0)
+        {
+            errors = true;
+            errorList.Add("❌ No file selected.");
+            return;
+        }
+        if (UploadCtx == null)
+        {
+            errors = true;
+            errorList.Add("❌ Upload context is missing.");
+            return;
+        }
+        try
+        {
+            var content = new MultipartFormDataContent();
+
+            foreach (var file in selectedFiles)
+            {
+                var stream = file.OpenReadStream(maxAllowedSize: 10 * 1024 * 1024);
+                var fileContent = new StreamContent(stream);
+                fileContent.Headers.ContentType = new MediaTypeHeaderValue(file.ContentType);
+
+                // IMPORTANT: "File" must match your Web API DTO property name
+                content.Add(fileContent, "File", file.Name);
+            }
+
+            // Add extra fields
+            content.Add(new StringContent(UploadCtx.Idorg.ToString()), "Idorg");
+            content.Add(new StringContent(UploadCtx.Itie.ToString()), "Itie");
+            content.Add(new StringContent(UploadCtx.Itiw.ToString()), "Itiw");
+            
+            content.Add(new StringContent(UploadCtx.Ioper.ToString()), "Ioper");
+            content.Add(new StringContent(UploadCtx.Xmatri ?? ""), "Xmatri");
+
+            //_apiClient = _httpfacClient.CreateClient("LOCALClient");
+            var response = await _apiClient.PostAsync("Lgfileup/upload", content);
+
+            if (response.IsSuccessStatusCode)
+            {
+                errors = true;
+                errorList.Add("✅ Success, File(s) uploaded successfully.");
+            }
+            else
+            {
+                errors = true;
+                errorList.Add($"❌ Echec, File upload failed. Status: {response.StatusCode}");
+            }
+        }
+        catch (Exception ex)
+        {
+            errors = true;
+            errorList.Add($"❌ Exception during upload: {ex.Message}");
+        }
+    }
+
+    private async Task AcceptList()
+    {
+        // toggle PeutLister
+        PeutLister = !PeutLister;
+
+        if (PeutLister)
+        {
+            Imessage = "entrée images";
+            images = await _apiClient.GetFromJsonAsync<List<ImageInfo>>("api/lgfileup/list");
+            Imessage = $"sortie images {images?.Count}";
+        }
+    }
+    public class ImageInfo
+    {
+        public int Id { get; set; }
+        public string FileName { get; set; }
+        public string ContentType { get; set; }
+    }
+}

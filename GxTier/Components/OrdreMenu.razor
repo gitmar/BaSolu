@@ -138,10 +138,11 @@ else
     public int Ugpe = 0, Tgpe = 0; //gpe ref1..6/tiers type6..7
 
     public List<Gpfixe> LsFixes = new();
-    public List<Gpfixe> LsGties = new();
+    public List<Gpvar> LsGties = new();
     public List<Gpdivh> LsDivs = new();
     public List<Gplan> LsPlans = new();
     private List<Gtabl> EnsTbls = new();
+    private List<Gpvar> LsVars = new();
     //public List<GsesioDto> EnsExos = new();
     //public List<GsesioDto> EnsSess = new();
 
@@ -190,7 +191,7 @@ else
             // Load lightweight user data FIRST
             _usrBag = await _sessionContext.GetUserbagAsync();
             LsDivs = await _rendAgres.LoadOrgaPostes();
-            EnsTbls = await _rendAgres.LoadOrgaTables();
+            EnsTbls = await _rendAgres.LoadOrgaTables(_usrBag.Idorg, Ugpe);
             LsPlans = _usrBag.Usorga.Uplns.Where(pl => pl.Ptyp == 4).ToList();
             // Create shared OData context
             //curODContext = await _contextFactory.CreateAsync();
@@ -198,12 +199,14 @@ else
 
             _usrBag = await _sessionContext.GetUserbagAsync();
 
+            LsVars = _usrBag?.Usorga.Uvars.ToList() ?? new();
             // Groupe tiers
-            LsGties = _usrBag.Ufixes
-                .Where(ut => ut.Gvars == 36 && ut.Elea != 0 && ut.Elea != 9)
-                .ToList();
+            //LsGties = _usrBag.Ufixes
+            //    .Where(ut => ut.Gvars == 36 && ut.Elea != 0 && ut.Elea != 9)
+            //    .ToList();
+            LsGties = LsVars.Where(uv => uv.Gvars == 5 && uv.Itb == 5 && uv.Ityp == 1 && uv.Elea != 0).ToList();
             Groupes.Clear();
-            foreach (var gr in LsGties.Where(gr => gr.Itb == 6))
+            foreach (var gr in LsGties.Where(gr => gr.Itb == 5))
             {
                 Groupes.Add(new GxGroupe { Itb = gr.Itb, Elea = gr.Elea, Liba = gr.Liba });
             }
@@ -322,7 +325,7 @@ else
         if (noG == 0) return;
         var mygpe = LsGties.Where(gt => gt.Itb == 6 && gt.Elea == noG).FirstOrDefault();
         Ugpe = noG;
-        Tgpe = mygpe.Gp2;
+        //Tgpe = mygpe.Gp2;
         gpeLiba = mygpe.Liba.ToUpperInvariant(); //LsGties.Where(ut => ut.Elea == mygpe.Elea).FirstOrDefault().Liba.ToUpperInvariant();
         StateHasChanged();
         Console.WriteLine("PAS 2");

@@ -105,21 +105,22 @@
     private int _inUgpe = 0;
     private DateTime _expDate = DateTime.Today.AddDays(7);
     private List<LkGroupe> _groupes = new();
-    public List<Gpfixe> LsGties = new();
+    public List<Gpvar> LsGties = new();
+    public List<Gpvar> LsVars = new();
 
     private HttpClient _apiClient = default!;
 
     private bool isSuccess = false;
-    
 
-     protected override async Task OnInitializedAsync()
+
+    protected override async Task OnInitializedAsync()
     {
         if (AuthState == null)
             return;
 
         var authState = await AuthState;
         var user = authState.User;
-       
+
         if (user.Identity?.IsAuthenticated == true)
         {
             int.TryParse(user.FindFirst("Gx.Orgid")?.Value, out int inIdorg);
@@ -133,12 +134,14 @@
             Console.WriteLine("User bag or Usorga is null");
             return;
         }
-        LsGties = _usrBag.Ufixes
-                .Where(ut => ut.Gvars == 36 && ut.Elea != 0 && ut.Elea != 9)
-                .ToList();
+        //LsGties = _usrBag.Ufixes
+        //        .Where(ut => ut.Gvars == 36 && ut.Elea != 0 && ut.Elea != 9)
+        //        .ToList();
+        LsVars = _usrBag?.Usorga.Uvars.ToList() ?? new();
+        LsGties = LsVars.Where(uv => uv.Gvars == 5 && uv.Itb == 5 && uv.Ityp == 1 && uv.Elea != 0).ToList();
         _groupes.Clear();
         //foreach(var gr in LsGties.Where(gr => gr.Gp1 == 1 && gr.Itb == 6))
-        foreach (var gr in LsGties.Where(gr => gr.Itb == 6))
+        foreach (var gr in LsGties.Where(gr => gr.Itb == 5))
         {
             _groupes.Add(new LkGroupe { Itb = gr.Itb, Elea = gr.Elea, Liba = gr.Liba });
         }
